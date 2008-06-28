@@ -202,36 +202,23 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 //        }
         return Arrays.equals(getAnchorImage(), other.getAnchorImage());
     }
-//    
-//    /**
-//     * Tests if co-context maps of two rule events coincide.
-//     * Callback method from {@link #equals(Object)}.
-//     */
-//    private boolean equalsCoContextMap(SPOEvent other) {
-//    	return Arrays.equals(coRootImage, other.coRootImage);
-//    }
-    
+
 	@Override
 	public String toString() {
 	    StringBuffer result = new StringBuffer(getRule().getName().name());
 //	    result.append(getAnchorImageString());
-	    if( getRule().getProperties().useParameters())
+	    if( getRule().getProperties().isUseParameters()) {
 	    	result.append(getParameterString());
-	    
+	    }
 	    return result.toString();
 	}
 	
 	@Override
 	public Label getLabel() {
-		boolean brackets = this.getRule().getProperties().showTransitionBrackets();
-		
+		boolean brackets = this.getRule().getProperties().isShowTransitionBrackets();
 		return new NameLabel(this.toString(), brackets);
 	}
-	
-//	public Label getParameterLabel() {
-//		return DefaultLabel.createLabel(getRule().getName().name() + getParameterString());
-//	}
-	
+
 	/**
 	 * Returns the string of actual parameter values of this event.
 	 */

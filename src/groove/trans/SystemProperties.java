@@ -1,6 +1,5 @@
 package groove.trans;
 
-import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.Property;
 
@@ -8,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,26 +27,26 @@ public class SystemProperties extends java.util.Properties {
 	public void setFixed() {
 		fixed = true;
 	}
-	
-    /** 
-     * Indicates if the rule system is attributed, according to the
-     * properties. 
-     * @see #ATTRIBUTES_KEY
-     * @see #ATTRIBUTES_YES
-     */
-    public boolean isAttributed() {
-    	String attributed = getProperty(SystemProperties.ATTRIBUTES_KEY);
-    	return attributed != null && attributed.equals(SystemProperties.ATTRIBUTES_YES);
-    }        /**     * Indicates if the LTS labels should contain transition parameters.
-     * Default value: <code>false</code>.     */    public boolean useParameters() {    	String params = getProperty(SystemProperties.PARAMETERS_KEY);    	return params != null && params.equals(SystemProperties.PARAMETERS_YES);    }
-        /**     * Indicates if the LTS labels should be surrounded by angular brackets.     * Default value: <code>false</code>.     */    public boolean showTransitionBrackets() {    	String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);    	return property != null && property.equals(SystemProperties.TRANSITION_BRACKETS_YES);    }            /** Sets the useparameters property to the given value **/        public void setParameters(boolean useParameters) {    	setProperty(PARAMETERS_KEY,useParameters ? PARAMETERS_YES : PARAMETERS_NO );    }        
-    /**
-     * Sets the attributed property to a given value.
-     * @param attributed <code>true</code> if the rules have attributes
-     */
-    public void setAttributed(boolean attributed) {
-    	setProperty(ATTRIBUTES_KEY, attributed ? ATTRIBUTES_YES : ATTRIBUTES_NO);
-    }
+//	
+//    /** 
+//     * Indicates if the rule system is attributed, according to the
+//     * properties. 
+//     * @see #ATTRIBUTES_KEY
+//     * @see #ATTRIBUTES_YES
+//     */
+//    public boolean isAttributed() {
+//    	String attributed = getProperty(SystemProperties.ATTRIBUTES_KEY);
+//    	return attributed != null && attributed.equals(SystemProperties.ATTRIBUTES_YES);
+//    }////        /**     * Indicates if the LTS labels should contain transition parameters.
+     * Default value: <code>false</code>.     */    public boolean isUseParameters() {    	String params = getProperty(SystemProperties.PARAMETERS_KEY);    	return params != null && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));    }
+        /**     * Indicates if the LTS labels should be surrounded by angular brackets.     * Default value: <code>false</code>.     */    public boolean isShowTransitionBrackets() {    	String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);    	return property != null && (new Boolean(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));    }            /** Sets the {@link #PARAMETERS_KEY} property to the given value **/    public void setUseParameters(boolean useParameters) {    	setProperty(PARAMETERS_KEY, ""+useParameters);    }//    //    
+//    /**
+//     * Sets the attributed property to a given value.
+//     * @param attributed <code>true</code> if the rules have attributes
+//     */
+//    public void setAttributed(boolean attributed) {
+//    	setProperty(ATTRIBUTES_KEY, attributed ? ATTRIBUTES_YES : ATTRIBUTES_NO);
+//    }
 
     /** 
      * Returns a list of control labels, according to the {@link #CONTROL_LABELS_KEY}
@@ -312,11 +310,9 @@ public class SystemProperties extends java.util.Properties {
     /** 
      * Returns a default, fixed properties object, with a given value for
      * attribute support.
-     * @param attributed <code>true</code> if the attributed property of the
-     * returned properties object is to be set
      */
-    static public SystemProperties getInstance(boolean attributed) {
-        return instances.get(attributed);
+    static public SystemProperties getInstance() {
+        return instance;
     }
 
     /** 
@@ -349,19 +345,19 @@ public class SystemProperties extends java.util.Properties {
      * for optimal performance, presumably because they occur frequently.
 	 */
 	static public final String COMMON_LABELS_KEY = "commonLabels";
-	/** 
-	 * Property that determines if the graph grammar uses attributes.
-	 * @see #ATTRIBUTES_YES
-	 */
-	static public final String ATTRIBUTES_KEY = "attributeSupport";
-	/**
-	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are used.
-	 */
-	static public final String ATTRIBUTES_YES = "1";
-	/**
-	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are not used.
-	 */
-	static public final String ATTRIBUTES_NO = "0";
+//	/** 
+//	 * Property that determines if the graph grammar uses attributes.
+//	 * @see #ATTRIBUTES_YES
+//	 */
+//	static public final String ATTRIBUTES_KEY = "attributeSupport";
+//	/**
+//	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are used.
+//	 */
+//	static public final String ATTRIBUTES_YES = "1";
+//	/**
+//	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are not used.
+//	 */
+//	static public final String ATTRIBUTES_NO = "0";
 	/** (User) Property that holds the grammar history (max 10 separated by ',') **/ 
 	static public final String HISTORY_KEY = "open_history";		/** Property that determines if transition parameters are included	 *  in the LTS transition labels	 */	static public final String PARAMETERS_KEY="transitionParameters";		/** Value of {@link #PARAMETERS_KEY} that means parameters are used **/	static public final String PARAMETERS_YES = "1";		/** Value of {@link #PARAMETERS_KEY} that means parameters are not used **/	static public final String PARAMETERS_NO = "0";		/** Property that determines if transition parameters are included	 *  in the LTS transition labels	 */	static public final String TRANSITION_BRACKETS_KEY="transitionBrackets";		/** Value of {@link #TRANSITION_BRACKETS_KEY} that means transition brackets are included **/	static public final String TRANSITION_BRACKETS_YES = "1";		/** Value of {@link #TRANSITION_BRACKETS_KEY} that means transition brackets are not included **/	static public final String TRANSITION_BRACKETS_NO = "0";				
 	/** 
@@ -407,47 +403,25 @@ public class SystemProperties extends java.util.Properties {
 	static {
 		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
 		defaultKeys.put(REMARK_KEY, new Property.True<String>("A one-line description of the graph production system"));
-		String attributesDescription = String.format("'%s' for default attributes", ATTRIBUTES_YES);
-		StringBuilder attributesCommentBuilder = new StringBuilder();
-		attributesCommentBuilder.append("Indicates whether the graphs and rules are attributed\n");
-		attributesCommentBuilder.append(String.format("Use '%s' for default attributes, '%s' or empty for no attributes",
-		ATTRIBUTES_YES, ATTRIBUTES_NO));
-		String attributesComment = Converter.HTML_TAG.on(Converter.toHtml(attributesCommentBuilder)).toString();
-		defaultKeys.put(ATTRIBUTES_KEY, new Property<String>(attributesDescription, attributesComment) {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
-            }
-		});
+//		String attributesDescription = String.format("'%s' for default attributes", ATTRIBUTES_YES);
+//		StringBuilder attributesCommentBuilder = new StringBuilder();
+//		attributesCommentBuilder.append("Indicates whether the graphs and rules are attributed\n");
+//		attributesCommentBuilder.append(String.format("Use '%s' for default attributes, '%s' or empty for no attributes",
+//		ATTRIBUTES_YES, ATTRIBUTES_NO));
+//		String attributesComment = Converter.HTML_TAG.on(Converter.toHtml(attributesCommentBuilder)).toString();
+//		defaultKeys.put(ATTRIBUTES_KEY, new Property<String>(attributesDescription, attributesComment) {
+//            @Override
+//            public boolean isSatisfied(String value) {
+//                return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
+//            }
+//		});
 		defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean("Flag controlling if matches should be injective", true));
 		defaultKeys.put(DANGLING_KEY, new Property.IsBoolean("Flag controlling if dangling edges should be forbidden rather than deleted", true));
 		defaultKeys.put(CREATOR_EDGE_KEY, new Property.IsBoolean("Flag controlling if creator edges should be treated as implicit NACs", true));
         defaultKeys.put(RHS_AS_NAC_KEY, new Property.IsBoolean("Flag controlling if RHSs should be treated as implicit NACs", true));
         defaultKeys.put(ISOMORPHISM_KEY, new Property.IsBoolean("Flag controlling state graphs are checked up to isomorphism", true));
-        String transitionDescription = String.format("'%s' for angular brackets", TRANSITION_BRACKETS_YES);
-        StringBuilder transitionCommentBuilder = new StringBuilder();
-        transitionCommentBuilder.append("Indicates whether transition labels should be bracketed\n");
-        transitionCommentBuilder.append(String.format("Use '%s' for angular brackets, '%s' or empty for no brackets",
-            TRANSITION_BRACKETS_YES, TRANSITION_BRACKETS_NO));
-        String transitionComment = Converter.HTML_TAG.on(Converter.toHtml(transitionCommentBuilder)).toString();
-        defaultKeys.put(TRANSITION_BRACKETS_KEY, new Property<String>(transitionDescription, transitionComment) {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.equals(TRANSITION_BRACKETS_YES) || value.equals(TRANSITION_BRACKETS_NO);
-            }
-        });
-        String parameterDescription = String.format("'%s' for rule parameters", PARAMETERS_YES);
-        StringBuilder parametersCommentBuilder = new StringBuilder();
-        parametersCommentBuilder.append("Indicates whether transition labels should be bracketed\n");
-        parametersCommentBuilder.append(String.format("Use '%s' for rule parameters, '%s' or empty for no parameters",
-            PARAMETERS_YES, PARAMETERS_NO));
-        String parametersComment = Converter.HTML_TAG.on(Converter.toHtml(parametersCommentBuilder)).toString();
-        defaultKeys.put(PARAMETERS_KEY, new Property<String>(parameterDescription, parametersComment) {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.equals(PARAMETERS_YES) || value.equals(PARAMETERS_NO);
-            }
-        });
+        defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean("Flag controlling if transition labels should be bracketed"));
+        defaultKeys.put(PARAMETERS_KEY, new IsExtendedBoolean("Flag controlling if transition labels should include rule parameters"));
 		defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>("A list of rare labels, used to optimise rule matching"));
 		defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>("A list of frequent labels, used to optimise rule matching"));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
@@ -459,20 +433,45 @@ public class SystemProperties extends java.util.Properties {
 	 */ 
 	static public final String DESCRIPTION = "Rule system properties for %s";
 	/** Map storing default property instances. */
-	static private final Map<Boolean,SystemProperties> instances = new HashMap<Boolean,SystemProperties>();
-	
-	static {
-		// initialise the instance map
-		for (boolean attributed: new boolean[] { true, false } ) {
-			SystemProperties properties = new SystemProperties();
-			properties.setAttributed(attributed);
-			properties.setFixed();
-			instances.put(attributed, properties);
-		}
-	}
+	static private SystemProperties instance = new SystemProperties();
+//	
+//	static {
+//		// initialise the instance map
+//		for (boolean attributed: new boolean[] { true, false } ) {
+//			SystemProperties properties = new SystemProperties();
+//			properties.setAttributed(attributed);
+//			properties.setFixed();
+//			instances.put(attributed, properties);
+//		}
+//	}
 
 	/** 
 	 * The default rule properties: not attributed and no control or common labels.
 	 */
-	static public final SystemProperties DEFAULT_PROPERTIES = getInstance(false);
+	static public final SystemProperties DEFAULT_PROPERTIES = getInstance();
+	
+	/** 
+	 * Extends the {@link Property.IsBoolean} class by also allowing positive numerical values
+	 * to stand for <code>true</code>, and <code>0</code> for <code>false</code>.
+	 * Used for compatibility purposes (these properties at some point
+	 * only accepted numerical values).
+	 */
+	static private class IsExtendedBoolean extends Property.IsBoolean {
+		/** 
+		 * Constructs an extended boolean property,
+		 * with a comment used to describe the expected value.
+		 */
+		public IsExtendedBoolean(String comment) {
+			super(comment, true);
+		}
+
+		@Override
+		public boolean isSatisfied(String value) {
+			try {
+				return super.isSatisfied(value) || Integer.parseInt(value) > 0;
+			} catch (NumberFormatException exc) {
+				return false;
+			}
+		}
+	}
 }

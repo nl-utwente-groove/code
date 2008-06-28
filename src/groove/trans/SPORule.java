@@ -191,25 +191,25 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     	}
     	return directSubRules;
     }
-    
-    /**
-     * Apart from the super method, also tests the RHS of the rule for 
-     * attributes.
-     */
-    @Override
-    public void testConsistent() throws FormatException {
-    	super.testConsistent();
-    	if (!getProperties().isAttributed() && ValueNode.hasValueNodes(rhs())) {
-    		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
-    		String attributeProperty = getProperties().getProperty(attributeKey);
-    		if (attributeProperty == null) {
-    			throw new FormatException("Rule uses attributes, but \"%s\" not declared", attributeKey);
-    		} else {
-        		throw new FormatException("Rule uses attributes, violating \"%s=%s\"", attributeKey, attributeProperty);
-    		}
-    	}
-    }
-    
+//    
+//    /**
+//     * Apart from the super method, also tests the RHS of the rule for 
+//     * attributes.
+//     */
+//    @Override
+//    public void testConsistent() throws FormatException {
+//    	super.testConsistent();
+//    	if (!getProperties().isAttributed() && ValueNode.hasValueNodes(rhs())) {
+//    		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
+//    		String attributeProperty = getProperties().getProperty(attributeKey);
+//    		if (attributeProperty == null) {
+//    			throw new FormatException("Rule uses attributes, but \"%s\" not declared", attributeKey);
+//    		} else {
+//        		throw new FormatException("Rule uses attributes, violating \"%s=%s\"", attributeKey, attributeProperty);
+//    		}
+//    	}
+//    }
+//    
     @Deprecated
     public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
         return new SPOEvent(this, anchorMap, nodeFactory, reuse);

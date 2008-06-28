@@ -177,22 +177,22 @@ public class GraphGrammar extends RuleSystem {
 	@Override
 	public void testConsistent() throws FormatException {
 		List<String> errors = new ArrayList<String>();
-		// collect the exception o fthe super test, if any
+		// collect the exception of the super test, if any
 		try {
 			super.testConsistent();
 		} catch (FormatException exc) {
 			errors.addAll(exc.getErrors());
 		}
 		// chain the consistency problems in the start graph
-		if (!getProperties().isAttributed() && ValueNode.hasValueNodes(getStartGraph())) {
-			String attributeKey = SystemProperties.ATTRIBUTES_KEY;
-			String attributeProperty = getProperties().getProperty(attributeKey);
-			if (attributeProperty == null) {
-				errors.add(String.format("Start graph uses attributes, but \"%s\" not declared", attributeKey));
-			} else {
-				errors.add(String.format("Start graph uses attributes, violating \"%s=%s\"", attributeKey, attributeProperty));
-			}
-		}
+//		if (!getProperties().isAttributed() && ValueNode.hasValueNodes(getStartGraph())) {
+//			String attributeKey = SystemProperties.ATTRIBUTES_KEY;
+//			String attributeProperty = getProperties().getProperty(attributeKey);
+//			if (attributeProperty == null) {
+//				errors.add(String.format("Start graph uses attributes, but \"%s\" not declared", attributeKey));
+//			} else {
+//				errors.add(String.format("Start graph uses attributes, violating \"%s=%s\"", attributeKey, attributeProperty));
+//			}
+//		}
 		if (!errors.isEmpty()) {
 			throw new FormatException(errors);
 		}

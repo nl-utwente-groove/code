@@ -22,6 +22,7 @@ import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
@@ -390,6 +391,10 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, Node image) {
         	assert nodeAnchors[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s", nodeKeys[index], image, nodeAnchors[index]);
+        	// value nodes only matched by value nodes
+        	if (nodeKeys[index] instanceof ValueNode != image instanceof ValueNode) {
+        		return false;
+        	}
         	if (injective) {
         		Node oldImage = nodeImages[index];
         		if (oldImage != null) {

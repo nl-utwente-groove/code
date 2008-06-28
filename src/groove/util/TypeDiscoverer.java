@@ -82,7 +82,7 @@ public class TypeDiscoverer {
             }
             Morphism introduceMorph = new DefaultMorphism(createGraph(), ruleHandle);
             Rule introduce = createRule(introduceMorph, rule.getName(), introduceSystem);
-            introduce.addSubCondition(new NotCondition(introduceMorph.cod(), SystemProperties.getInstance(true)));
+            introduce.addSubCondition(new NotCondition(introduceMorph.cod(), SystemProperties.getInstance()));
             introduceSystem.add(introduce);
             // now the deletion rule
             Graph deleteLhs = createGraph();

@@ -97,12 +97,12 @@ public class NACTest extends TestCase {
 			throw new IllegalStateException(exc);
 		}
 
-        NACs[0] = new MergeEmbargo(lhs, n[0][0],n[0][1], SystemProperties.getInstance(true));
+        NACs[0] = new MergeEmbargo(lhs, n[0][0],n[0][1], SystemProperties.getInstance());
         //String[] NAC1Lab = {"c"};
         //NACs[1] = new Embargo(lhs, n[0][1],labelArray(NAC1Lab));
         //String[] NAC2Lab = {"c","a"};
         //NACs[2] = new Embargo(lhs, n[0][1],labelArray(NAC2Lab));
-        NACs[3] = new EdgeEmbargo(lhs, DefaultEdge.createEdge(n[0][1], "c" ,n[0][0]), SystemProperties.getInstance(true));
+        NACs[3] = new EdgeEmbargo(lhs, DefaultEdge.createEdge(n[0][1], "c" ,n[0][0]), SystemProperties.getInstance());
 
         Graph protGraph = new DefaultGraph();
         int[] g0Src    = { 1 , 1 , 2 };
