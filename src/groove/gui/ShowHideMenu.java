@@ -34,6 +34,7 @@ import groove.util.KeyPartition;
 import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -119,6 +120,7 @@ public class ShowHideMenu extends JMenu {
      */
     public ShowHideMenu(JGraph jgraph) {
         super(Options.SHOW_HIDE_MENU_NAME);
+        setMnemonic(MENU_MNEMONIC);
         this.jgraph = jgraph;
         fillOutMenu(this.getPopupMenu());
     }
@@ -225,6 +227,19 @@ public class ShowHideMenu extends JMenu {
     
     /** The jgraph upon which this menu works. */
     private final JGraph jgraph;
+    
+    /** Mnemonic key for the {@link AllAction} */
+    private static int ALL_MNEMONIC = KeyEvent.VK_A;
+    /** Mnemonic key for the {@link SelectedAction} */
+    private static int SELECTED_MNEMONIC = KeyEvent.VK_S;
+    /** Mnemonic key for the {@link SelectedAction} */
+    private static int EMPHASIZED_MNEMONIC = KeyEvent.VK_E;
+    /** Mnemonic key for the {@link ContextAction} */
+    private static int CONTEXT_MNEMONIC = KeyEvent.VK_C;
+    /** Mnemonic key for the {@link RegExprAction} */
+    private static int REG_EXPR_MNEMONIC = KeyEvent.VK_P;
+    /** Mnemonic key for the menu. */
+    private static int MENU_MNEMONIC = KeyEvent.VK_S;
     
     /**
      * Abstract class that supports showing and hiding actions based on two criteria:
@@ -361,6 +376,7 @@ public class ShowHideMenu extends JMenu {
     	 */
         protected AllAction(JGraph jgraph, int showMode) {
             super(jgraph, showMode, ALL_ACTION_NAME);
+            putValue(MNEMONIC_KEY, ALL_MNEMONIC);
         }
 
         /**
@@ -412,6 +428,7 @@ public class ShowHideMenu extends JMenu {
     	 */
         protected SelectedAction(JGraph jgraph, int showMode, boolean selected) {
             super(jgraph, showMode, selected ? SELECTED_ACTION_NAME : UNSELECTED_ACTION_NAME);
+            putValue(MNEMONIC_KEY, SELECTED_MNEMONIC);
             this.selected = selected;
         }
 
@@ -437,6 +454,7 @@ public class ShowHideMenu extends JMenu {
     	 */
         protected ContextAction(JGraph jgraph, int showMode) {
             super(jgraph, showMode, CONTEXT_ACTION_NAME);
+            putValue(MNEMONIC_KEY, CONTEXT_MNEMONIC);
         }
 
         @Override
@@ -596,6 +614,7 @@ public class ShowHideMenu extends JMenu {
     	 */
         protected RegExprAction(JGraph jgraph, int showMode) {
             super(jgraph, showMode, REGEXPR_ACTION_NAME);
+            putValue(MNEMONIC_KEY, REG_EXPR_MNEMONIC);
         }
 
         @Override
@@ -661,6 +680,7 @@ public class ShowHideMenu extends JMenu {
     	 */
         public EmphasizedAction(JGraph jgraph, int showMode) {
             super(jgraph, showMode, EMPHASIZED_ACTION_NAME);
+            putValue(MNEMONIC_KEY, EMPHASIZED_MNEMONIC);
         }
 
         /**

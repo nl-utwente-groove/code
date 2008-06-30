@@ -33,6 +33,7 @@ public class VerifyMenu extends JMenu {
      */
     public VerifyMenu(Simulator simulator) {
         super(Options.VERIFY_MENU_NAME);
+        setMnemonic(Options.VERIFY_MENU_MNEMONIC);
         JMenuItem item = new JMenuItem(simulator.getProvideTemporalFormulaAction());
         add(item);
     }

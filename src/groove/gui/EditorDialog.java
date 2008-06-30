@@ -99,23 +99,24 @@ abstract public class EditorDialog {
      * Creates and returns the menu bar. Requires the actions to have been initialised first.
      */
     private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-        menuBar.add(editor.createEditMenu());
-        menuBar.add(editor.createPropertiesMenu());
-        menuBar.add(editor.createDisplayMenu());
-        menuBar.add(createOptionsMenu());
-        menuBar.add(editor.createHelpMenu());
-        return menuBar;
+        JMenuBar result = new JMenuBar();
+        result.add(editor.createEditMenu());
+        result.add(editor.createPropertiesMenu());
+        result.add(editor.createDisplayMenu());
+        result.add(createOptionsMenu());
+        result.add(editor.createHelpMenu());
+        return result;
     }
 
 	/**
 	 * Creates and returns an options menu for the menu bar.
 	 */
 	private JMenu createOptionsMenu() {
-        JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
-        optionsMenu.add(options.getItem(Options.PREVIEW_ON_CLOSE_OPTION));
-        optionsMenu.add(options.getItem(Options.SHOW_VALUE_NODES_OPTION));
-        return optionsMenu;
+        JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
+        result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
+        result.add(options.getItem(Options.PREVIEW_ON_CLOSE_OPTION));
+        result.add(options.getItem(Options.SHOW_VALUE_NODES_OPTION));
+        return result;
 	}
 
     /**
