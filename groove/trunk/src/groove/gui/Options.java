@@ -65,30 +65,52 @@ public class Options {
 	// Menus
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
+    /** Edit menu mnemonic. */
+    static public final int EDIT_MENU_MNEMONIC = KeyEvent.VK_E;
     /** Display menu name */
     public static final String DISPLAY_MENU_NAME = "View";
+    /** Display (i.e., View) menu mnemonic. */
+    static public final int DISPLAY_MENU_MNEMONIC = KeyEvent.VK_V;
     /** Explore menu name */
     public static final String EXPLORE_MENU_NAME = "Explore";
+    /** Explore menu mnemonic. */
+    static public final int EXPLORE_MENU_MNEMONIC = KeyEvent.VK_X;
     /** File menu name */
     public static final String FILE_MENU_NAME = "File";
+    /** File menu mnemonic. */
+    static public final int FILE_MENU_MNEMONIC = KeyEvent.VK_F;
     /** Open Recent menu name **/
     public static final String OPEN_RECENT_MENU_NAME = "Open Recent..";
+    /** Open Recent menu mnemonic. */
+    static public final int OPEN_RECENT_MENU_MNEMONIC = KeyEvent.VK_R;
     /** Help menu name */
     public static final String HELP_MENU_NAME = "Help";
+    /** Help menu mnemonic. */
+    static public final int HELP_MENU_MNEMONIC = KeyEvent.VK_H;
+    /** Create (i.e., New) menu name. */
+    static public final String CREATE_MENU_NAME = "New";
+    /** Create (i.e., New) menu mnemonic. */
+    static public final int CREATE_MENU_MNEMONIC = KeyEvent.VK_N;
     /** Options menu name */
     public static final String OPTIONS_MENU_NAME = "Options";
+    /** Options menu mnemonic. */
+    static public final int OPTIONS_MENU_MNEMONIC = KeyEvent.VK_O;
     /** Options menu name */
     public static final String PROPERTIES_MENU_NAME = "Properties";
-    /** Save menu name */
-    public static final String SAVE_MENU_NAME = "Save";
+    /** Options menu mnemonic. */
+    static public final int PROPERTIES_MENU_MNEMONIC = KeyEvent.VK_P;
     /** Set line style context menu name */
     static public final String SET_LINE_STYLE_MENU = "Set Line Style";
     /** Set layout menu name */
     public static final String SET_LAYOUT_MENU_NAME = "Set layouter";
     /** Show/Hide menu name */
     static public final String SHOW_HIDE_MENU_NAME = "Show/Hide";
+    /** Show/Hide menu mnemonic */
+    static public final int SHOW_HIDE_MENU_MNEMONIC = KeyEvent.VK_S;
     /** Verify menu name */
     public static final String VERIFY_MENU_NAME = "Verify";
+    /** Verify menu mnemonic. */
+    static public final int VERIFY_MENU_MNEMONIC = KeyEvent.VK_Y;
     
     // Button texts
     /** Button text to confirm an action. */

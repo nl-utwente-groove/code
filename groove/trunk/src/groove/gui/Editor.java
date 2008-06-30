@@ -889,6 +889,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 */
 	JMenu createFileMenu() {
 		JMenu result = new JMenu(Options.FILE_MENU_NAME);
+		result.setMnemonic(Options.FILE_MENU_MNEMONIC);
 	    result.add(getNewAction());
 	    result.add(getOpenGraphAction());
 	    result.addSeparator();
@@ -906,6 +907,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 */
 	JMenu createEditMenu() {
 	    JMenu result = new JMenu(Options.EDIT_MENU_NAME);
+	    result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
 	    result.add(getUndoAction());
 	    result.add(getRedoAction());
 	    result.addSeparator();
@@ -925,10 +927,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 * Creates and returns an options menu for the menu bar.
 	 */
 	JMenu createOptionsMenu() {
-        JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
-        optionsMenu.add(getOptions().getItem(Options.PREVIEW_ON_SAVE_OPTION));
-        optionsMenu.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
-        return optionsMenu;
+        JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
+        result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
+        result.add(getOptions().getItem(Options.PREVIEW_ON_SAVE_OPTION));
+        result.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
+        return result;
 	}
 
 	/**
@@ -936,6 +939,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 */
 	JMenu createPropertiesMenu() {
         JMenu result = new JMenu(Options.PROPERTIES_MENU_NAME);
+        result.setMnemonic(Options.PROPERTIES_MENU_MNEMONIC);
 	    result.addSeparator();
 	    result.add(getEditPropertiesAction());
         return result;
@@ -945,11 +949,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 * Creates and returns a display menu for the menu bar.
 	 */
 	JMenu createDisplayMenu() {
-        JMenu displayMenu = new JMenu(Options.DISPLAY_MENU_NAME);
-        jgraph.fillOutDisplayMenu(displayMenu.getPopupMenu());
-        displayMenu.addSeparator();
-        displayMenu.add(getGraphPanel().getViewLabelListItem());
-        return displayMenu;
+        JMenu result = new JMenu(Options.DISPLAY_MENU_NAME);
+        result.setMnemonic(Options.DISPLAY_MENU_MNEMONIC);
+        jgraph.fillOutDisplayMenu(result.getPopupMenu());
+        result.addSeparator();
+        result.add(getGraphPanel().getViewLabelListItem());
+        return result;
 	}
 
 	/**
@@ -957,6 +962,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 */
 	JMenu createHelpMenu() {
 		JMenu result = new JMenu(HELP_MENU_NAME);
+		result.setMnemonic(Options.HELP_MENU_MNEMONIC);
     	result.add(new JMenuItem(new AboutAction()));
     	return result;
 	}

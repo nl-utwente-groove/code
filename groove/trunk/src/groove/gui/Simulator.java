@@ -1440,6 +1440,7 @@ public class Simulator {
 	 */
 	private JMenu createFileMenu() {
 	    JMenu result = new JMenu(Options.FILE_MENU_NAME);
+	    result.setMnemonic(Options.FILE_MENU_MNEMONIC);
 	    result.add(createNewMenu());
 	    result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
@@ -1466,7 +1467,8 @@ public class Simulator {
     }
 	
 	private JMenu createNewMenu() {
-		JMenu result = new JMenu(Options.NEW_ACTION_NAME);
+		JMenu result = new JMenu(Options.CREATE_MENU_NAME);
+		result.setMnemonic(Options.CREATE_MENU_MNEMONIC);
 //        result.setAccelerator(Options.NEW_KEY);
 		String menuName = result.getText();
 		result.add(createItem(getNewGrammarAction(), menuName));
@@ -1480,6 +1482,7 @@ public class Simulator {
 	 */
 	private JMenu createEditMenu() {
 	    JMenu result = new JMenu(Options.EDIT_MENU_NAME);
+		result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
 	    result.add(getNewRuleAction());
 		result.addSeparator();
 		result.add(getEnableRuleAction());
@@ -1530,6 +1533,7 @@ public class Simulator {
 	            super.menuSelectionChanged(selected);
 	        }
 	    };
+	    result.setMnemonic(Options.DISPLAY_MENU_MNEMONIC);
 	    return result;
 	}
 
@@ -1538,6 +1542,7 @@ public class Simulator {
 	 */
 	JMenu createOptionsMenu() {
         JMenu result = new JMenu(OPTIONS_MENU_NAME);
+        result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
         result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
     	result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
@@ -1559,6 +1564,7 @@ public class Simulator {
 	 */
 	private JMenu createExploreMenu() {
 		JMenu result = new JMenu();
+		result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
 		JMenu exploreMenu = new ScenarioMenu(this, false);
 		result.setText(exploreMenu.getText());
         result.add(new JMenuItem(getUndoAction()));
@@ -1599,6 +1605,7 @@ public class Simulator {
 	 */
 	private JMenu createHelpMenu() {
 		JMenu result = new JMenu(HELP_MENU_NAME);
+		result.setMnemonic(Options.HELP_MENU_MNEMONIC);
 		result.add(new JMenuItem(new AboutAction()));
 		return result;
 	}
@@ -3444,6 +3451,7 @@ public class Simulator {
     		}
     		
     		menu = new JMenu(Options.OPEN_RECENT_MENU_NAME);
+    		menu.setMnemonic(Options.OPEN_RECENT_MENU_MNEMONIC);
     		
     		synchMenu();
     		

@@ -22,6 +22,7 @@ import groove.util.Groove;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.AbstractAction;
@@ -48,6 +49,7 @@ public class ZoomMenu extends JMenu {
         add(zoomInAction);
         add(zoomOutAction);
         add(resetZoomAction);
+        setMnemonic(MENU_MNEMONIC);
         reset();
     }
 
@@ -133,4 +135,7 @@ public class ZoomMenu extends JMenu {
 
     /** The component for which zooming is to be done. */
     final JGraph jgraph;
+    
+    /** Mnemonic key for the menu. */
+    private static int MENU_MNEMONIC = KeyEvent.VK_Z;
 }
