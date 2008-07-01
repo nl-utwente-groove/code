@@ -1616,6 +1616,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         /** Constructs an instance of the action. */
         NewGraphAction() {
             super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(Groove.getResource("new.gif")));
+            putValue(MNEMONIC_KEY, Options.NEW_MNEMONIC);
         }
     
         @Override
@@ -1635,6 +1636,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         /** Constructs an instance of the action. */
         protected OpenGraphAction() {
             super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(Groove.getResource("open.gif")));
+            putValue(MNEMONIC_KEY, Options.OPEN_MNEMONIC);
         }
     
         @Override
@@ -1653,6 +1655,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         public QuitAction() {
             super(Options.QUIT_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
+            putValue(MNEMONIC_KEY, Options.QUIT_MNEMONIC);
         }
     
         /**
@@ -1670,6 +1673,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         /** Constructs an instance of the action. */
         protected SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(Groove.getResource("save.gif")));
+            putValue(MNEMONIC_KEY, Options.SAVE_MNEMONIC);
         }
     
         @Override

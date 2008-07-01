@@ -359,6 +359,15 @@ public class Options {
     /** Manhattan line style keystroke */
     public static final KeyStroke MANHATTAN_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
 
+    /** Mnemonic key for the New action. */
+    public static final int NEW_MNEMONIC = KeyEvent.VK_N;
+    /** Mnemonic key for the Quit action. */
+    public static final int QUIT_MNEMONIC = KeyEvent.VK_Q;
+    /** Mnemonic key for the Open action. */
+    public static final int OPEN_MNEMONIC = KeyEvent.VK_O;
+    /** Mnemonic key for the Save action. */
+    public static final int SAVE_MNEMONIC = KeyEvent.VK_S;
+    
     /** Indication for an empty label in a list of labels. */
     static public final String EMPTY_LABEL_TEXT = "(empty)";
     /** Indication for no label in a list of labels. */
