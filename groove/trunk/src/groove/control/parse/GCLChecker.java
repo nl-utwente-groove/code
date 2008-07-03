@@ -1,471 +1,798 @@
-// $ANTLR 2.7.6 (2005-12-22): "gcl.g" -> "GCLChecker.java"$
+// $ANTLR 3.0.1 GCLChecker.g 2008-07-03 14:34:51
 
 package groove.control.parse;
-import groove.control.ControlAutomaton;
-import antlr.NoViableAltException;
-import antlr.RecognitionException;
-import antlr.collections.AST;
-import antlr.collections.impl.BitSet;
+import groove.control.*;
 
 
-public class GCLChecker extends antlr.TreeParser       implements GCLCheckerTokenTypes
- {
+import org.antlr.runtime.*;
+import org.antlr.runtime.tree.*;import java.util.Stack;
+import java.util.List;
+import java.util.ArrayList;
 
-	private ControlAutomaton aut;
-	
-	public GCLChecker(ControlAutomaton ca) {
-		this.aut = ca;
-	}
-	
-    private Namespace namespace;
-	public void setNamespace(Namespace namespace) {
-		this.namespace = namespace;
-	}
-public GCLChecker() {
-	tokenNames = _tokenNames;
+public class GCLChecker extends TreeParser {
+    public static final String[] tokenNames = new String[] {
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "TRY", "IF", "ELSE", "CH_OR", "PLUS", "STAR", "SHARP", "CHOICE", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'", "'true'"
+    };
+    public static final int FUNCTION=7;
+    public static final int STAR=19;
+    public static final int SHARP=20;
+    public static final int FUNCTIONS=6;
+    public static final int WHILE=12;
+    public static final int ELSE=16;
+    public static final int DO=13;
+    public static final int NOT=25;
+    public static final int ALAP=11;
+    public static final int AND=22;
+    public static final int EOF=-1;
+    public static final int TRY=14;
+    public static final int IF=15;
+    public static final int WS=26;
+    public static final int COMMA=23;
+    public static final int IDENTIFIER=9;
+    public static final int BLOCK=5;
+    public static final int OR=10;
+    public static final int CH_OR=17;
+    public static final int PLUS=18;
+    public static final int PROGRAM=4;
+    public static final int CALL=8;
+    public static final int DOT=24;
+    public static final int CHOICE=21;
+
+        public GCLChecker(TreeNodeStream input) {
+            super(input);
+        }
+        
+
+    public String[] getTokenNames() { return tokenNames; }
+    public String getGrammarFileName() { return "GCLChecker.g"; }
+
+    
+    	private ControlAutomaton aut;
+    	
+    	public GCLChecker(ControlAutomaton ca) {
+    		this.aut = ca;
+    	}
+    	
+        private Namespace namespace;
+    	public void setNamespace(Namespace namespace) {
+    		this.namespace = namespace;
+    	}
+
+
+
+    // $ANTLR start program
+    // GCLChecker.g:26:1: program : ^( PROGRAM ( proc )* ( statement )* ) ;
+    public final void program() throws RecognitionException {
+        try {
+            // GCLChecker.g:27:3: ( ^( PROGRAM ( proc )* ( statement )* ) )
+            // GCLChecker.g:27:6: ^( PROGRAM ( proc )* ( statement )* )
+            {
+            match(input,PROGRAM,FOLLOW_PROGRAM_in_program45); 
+
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // GCLChecker.g:27:16: ( proc )*
+                loop1:
+                do {
+                    int alt1=2;
+                    int LA1_0 = input.LA(1);
+
+                    if ( (LA1_0==FUNCTION) ) {
+                        alt1=1;
+                    }
+
+
+                    switch (alt1) {
+                	case 1 :
+                	    // GCLChecker.g:27:16: proc
+                	    {
+                	    pushFollow(FOLLOW_proc_in_program47);
+                	    proc();
+                	    _fsp--;
+
+
+                	    }
+                	    break;
+
+                	default :
+                	    break loop1;
+                    }
+                } while (true);
+
+                // GCLChecker.g:27:22: ( statement )*
+                loop2:
+                do {
+                    int alt2=2;
+                    int LA2_0 = input.LA(1);
+
+                    if ( ((LA2_0>=CALL && LA2_0<=IF)||(LA2_0>=PLUS && LA2_0<=CHOICE)) ) {
+                        alt2=1;
+                    }
+
+
+                    switch (alt2) {
+                	case 1 :
+                	    // GCLChecker.g:27:22: statement
+                	    {
+                	    pushFollow(FOLLOW_statement_in_program50);
+                	    statement();
+                	    _fsp--;
+
+
+                	    }
+                	    break;
+
+                	default :
+                	    break loop2;
+                    }
+                } while (true);
+
+
+                match(input, Token.UP, null); 
+            }
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end program
+
+
+    // $ANTLR start proc
+    // GCLChecker.g:30:1: proc : ^( FUNCTION IDENTIFIER block ) ;
+    public final void proc() throws RecognitionException {
+        CommonTree IDENTIFIER1=null;
+        CommonTree FUNCTION2=null;
+
+        try {
+            // GCLChecker.g:31:3: ( ^( FUNCTION IDENTIFIER block ) )
+            // GCLChecker.g:32:3: ^( FUNCTION IDENTIFIER block )
+            {
+            FUNCTION2=(CommonTree)input.LT(1);
+            match(input,FUNCTION,FOLLOW_FUNCTION_in_proc70); 
+
+            match(input, Token.DOWN, null); 
+            IDENTIFIER1=(CommonTree)input.LT(1);
+            match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_proc72); 
+            pushFollow(FOLLOW_block_in_proc74);
+            block();
+            _fsp--;
+
+
+            match(input, Token.UP, null); 
+             namespace.store(IDENTIFIER1.getText()), FUNCTION2); 
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end proc
+
+
+    // $ANTLR start block
+    // GCLChecker.g:35:1: block : ^( BLOCK ( statement )* ) ;
+    public final void block() throws RecognitionException {
+        try {
+            // GCLChecker.g:36:3: ( ^( BLOCK ( statement )* ) )
+            // GCLChecker.g:36:5: ^( BLOCK ( statement )* )
+            {
+            match(input,BLOCK,FOLLOW_BLOCK_in_block94); 
+
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // GCLChecker.g:36:13: ( statement )*
+                loop3:
+                do {
+                    int alt3=2;
+                    int LA3_0 = input.LA(1);
+
+                    if ( ((LA3_0>=CALL && LA3_0<=IF)||(LA3_0>=PLUS && LA3_0<=CHOICE)) ) {
+                        alt3=1;
+                    }
+
+
+                    switch (alt3) {
+                	case 1 :
+                	    // GCLChecker.g:36:14: statement
+                	    {
+                	    pushFollow(FOLLOW_statement_in_block97);
+                	    statement();
+                	    _fsp--;
+
+
+                	    }
+                	    break;
+
+                	default :
+                	    break loop3;
+                    }
+                } while (true);
+
+
+                match(input, Token.UP, null); 
+            }
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end block
+
+
+    // $ANTLR start statement
+    // GCLChecker.g:39:1: statement : ( ^( ALAP block ) | ^( WHILE condition DO block ) | ^( DO block WHILE condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE block ( OR block )* ) | expression );
+    public final void statement() throws RecognitionException {
+        try {
+            // GCLChecker.g:40:3: ( ^( ALAP block ) | ^( WHILE condition DO block ) | ^( DO block WHILE condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE block ( OR block )* ) | expression )
+            int alt7=7;
+            switch ( input.LA(1) ) {
+            case ALAP:
+                {
+                alt7=1;
+                }
+                break;
+            case WHILE:
+                {
+                alt7=2;
+                }
+                break;
+            case DO:
+                {
+                alt7=3;
+                }
+                break;
+            case TRY:
+                {
+                alt7=4;
+                }
+                break;
+            case IF:
+                {
+                alt7=5;
+                }
+                break;
+            case CHOICE:
+                {
+                alt7=6;
+                }
+                break;
+            case CALL:
+            case IDENTIFIER:
+            case OR:
+            case PLUS:
+            case STAR:
+            case SHARP:
+                {
+                alt7=7;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("39:1: statement : ( ^( ALAP block ) | ^( WHILE condition DO block ) | ^( DO block WHILE condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE block ( OR block )* ) | expression );", 7, 0, input);
+
+                throw nvae;
+            }
+
+            switch (alt7) {
+                case 1 :
+                    // GCLChecker.g:40:5: ^( ALAP block )
+                    {
+                    match(input,ALAP,FOLLOW_ALAP_in_statement114); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_block_in_statement116);
+                    block();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 2 :
+                    // GCLChecker.g:41:5: ^( WHILE condition DO block )
+                    {
+                    match(input,WHILE,FOLLOW_WHILE_in_statement124); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_condition_in_statement126);
+                    condition();
+                    _fsp--;
+
+                    match(input,DO,FOLLOW_DO_in_statement128); 
+                    pushFollow(FOLLOW_block_in_statement130);
+                    block();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 3 :
+                    // GCLChecker.g:42:5: ^( DO block WHILE condition )
+                    {
+                    match(input,DO,FOLLOW_DO_in_statement138); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_block_in_statement140);
+                    block();
+                    _fsp--;
+
+                    match(input,WHILE,FOLLOW_WHILE_in_statement142); 
+                    pushFollow(FOLLOW_condition_in_statement144);
+                    condition();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 4 :
+                    // GCLChecker.g:43:5: ^( TRY block ( block )? )
+                    {
+                    match(input,TRY,FOLLOW_TRY_in_statement152); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_block_in_statement154);
+                    block();
+                    _fsp--;
+
+                    // GCLChecker.g:43:17: ( block )?
+                    int alt4=2;
+                    int LA4_0 = input.LA(1);
+
+                    if ( (LA4_0==BLOCK) ) {
+                        alt4=1;
+                    }
+                    switch (alt4) {
+                        case 1 :
+                            // GCLChecker.g:43:18: block
+                            {
+                            pushFollow(FOLLOW_block_in_statement157);
+                            block();
+                            _fsp--;
+
+
+                            }
+                            break;
+
+                    }
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 5 :
+                    // GCLChecker.g:44:5: ^( IF condition block ( ELSE block )? )
+                    {
+                    match(input,IF,FOLLOW_IF_in_statement167); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_condition_in_statement169);
+                    condition();
+                    _fsp--;
+
+                    pushFollow(FOLLOW_block_in_statement171);
+                    block();
+                    _fsp--;
+
+                    // GCLChecker.g:44:26: ( ELSE block )?
+                    int alt5=2;
+                    int LA5_0 = input.LA(1);
+
+                    if ( (LA5_0==ELSE) ) {
+                        alt5=1;
+                    }
+                    switch (alt5) {
+                        case 1 :
+                            // GCLChecker.g:44:27: ELSE block
+                            {
+                            match(input,ELSE,FOLLOW_ELSE_in_statement174); 
+                            pushFollow(FOLLOW_block_in_statement176);
+                            block();
+                            _fsp--;
+
+
+                            }
+                            break;
+
+                    }
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 6 :
+                    // GCLChecker.g:45:5: ^( CHOICE block ( OR block )* )
+                    {
+                    match(input,CHOICE,FOLLOW_CHOICE_in_statement186); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_block_in_statement188);
+                    block();
+                    _fsp--;
+
+                    // GCLChecker.g:45:20: ( OR block )*
+                    loop6:
+                    do {
+                        int alt6=2;
+                        int LA6_0 = input.LA(1);
+
+                        if ( (LA6_0==OR) ) {
+                            alt6=1;
+                        }
+
+
+                        switch (alt6) {
+                    	case 1 :
+                    	    // GCLChecker.g:45:21: OR block
+                    	    {
+                    	    match(input,OR,FOLLOW_OR_in_statement191); 
+                    	    pushFollow(FOLLOW_block_in_statement193);
+                    	    block();
+                    	    _fsp--;
+
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop6;
+                        }
+                    } while (true);
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 7 :
+                    // GCLChecker.g:46:5: expression
+                    {
+                    pushFollow(FOLLOW_expression_in_statement204);
+                    expression();
+                    _fsp--;
+
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end statement
+
+
+    // $ANTLR start expression
+    // GCLChecker.g:49:1: expression : ( ^( OR expression expression ) | ^( PLUS expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule );
+    public final void expression() throws RecognitionException {
+        try {
+            // GCLChecker.g:50:2: ( ^( OR expression expression ) | ^( PLUS expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule )
+            int alt8=6;
+            switch ( input.LA(1) ) {
+            case OR:
+                {
+                alt8=1;
+                }
+                break;
+            case PLUS:
+                {
+                alt8=2;
+                }
+                break;
+            case STAR:
+                {
+                alt8=3;
+                }
+                break;
+            case SHARP:
+                {
+                alt8=4;
+                }
+                break;
+            case CALL:
+                {
+                alt8=5;
+                }
+                break;
+            case IDENTIFIER:
+                {
+                alt8=6;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("49:1: expression : ( ^( OR expression expression ) | ^( PLUS expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule );", 8, 0, input);
+
+                throw nvae;
+            }
+
+            switch (alt8) {
+                case 1 :
+                    // GCLChecker.g:50:4: ^( OR expression expression )
+                    {
+                    match(input,OR,FOLLOW_OR_in_expression218); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_expression_in_expression220);
+                    expression();
+                    _fsp--;
+
+                    pushFollow(FOLLOW_expression_in_expression222);
+                    expression();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 2 :
+                    // GCLChecker.g:51:4: ^( PLUS expression )
+                    {
+                    match(input,PLUS,FOLLOW_PLUS_in_expression229); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_expression_in_expression231);
+                    expression();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 3 :
+                    // GCLChecker.g:52:4: ^( STAR expression )
+                    {
+                    match(input,STAR,FOLLOW_STAR_in_expression238); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_expression_in_expression240);
+                    expression();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 4 :
+                    // GCLChecker.g:53:4: ^( SHARP expression )
+                    {
+                    match(input,SHARP,FOLLOW_SHARP_in_expression247); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_expression_in_expression249);
+                    expression();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 5 :
+                    // GCLChecker.g:54:4: ^( CALL IDENTIFIER )
+                    {
+                    match(input,CALL,FOLLOW_CALL_in_expression256); 
+
+                    match(input, Token.DOWN, null); 
+                    match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_expression258); 
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 6 :
+                    // GCLChecker.g:55:4: rule
+                    {
+                    pushFollow(FOLLOW_rule_in_expression264);
+                    rule();
+                    _fsp--;
+
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end expression
+
+
+    // $ANTLR start condition
+    // GCLChecker.g:58:1: condition : ( ^( OR condition condition ) | rule | 'true' );
+    public final void condition() throws RecognitionException {
+        try {
+            // GCLChecker.g:59:3: ( ^( OR condition condition ) | rule | 'true' )
+            int alt9=3;
+            switch ( input.LA(1) ) {
+            case OR:
+                {
+                alt9=1;
+                }
+                break;
+            case IDENTIFIER:
+                {
+                alt9=2;
+                }
+                break;
+            case 32:
+                {
+                alt9=3;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("58:1: condition : ( ^( OR condition condition ) | rule | 'true' );", 9, 0, input);
+
+                throw nvae;
+            }
+
+            switch (alt9) {
+                case 1 :
+                    // GCLChecker.g:59:5: ^( OR condition condition )
+                    {
+                    match(input,OR,FOLLOW_OR_in_condition278); 
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_condition_in_condition280);
+                    condition();
+                    _fsp--;
+
+                    pushFollow(FOLLOW_condition_in_condition282);
+                    condition();
+                    _fsp--;
+
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 2 :
+                    // GCLChecker.g:60:5: rule
+                    {
+                    pushFollow(FOLLOW_rule_in_condition289);
+                    rule();
+                    _fsp--;
+
+
+                    }
+                    break;
+                case 3 :
+                    // GCLChecker.g:61:5: 'true'
+                    {
+                    match(input,32,FOLLOW_32_in_condition295); 
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end condition
+
+
+    // $ANTLR start rule
+    // GCLChecker.g:64:1: rule : IDENTIFIER ;
+    public final void rule() throws RecognitionException {
+        try {
+            // GCLChecker.g:65:3: ( IDENTIFIER )
+            // GCLChecker.g:65:5: IDENTIFIER
+            {
+            match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule308); 
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end rule
+
+
+ 
+
+    public static final BitSet FOLLOW_PROGRAM_in_program45 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_proc_in_program47 = new BitSet(new long[]{0x00000000003CFF88L});
+    public static final BitSet FOLLOW_statement_in_program50 = new BitSet(new long[]{0x00000000003CFF08L});
+    public static final BitSet FOLLOW_FUNCTION_in_proc70 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_proc72 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_proc74 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_BLOCK_in_block94 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_statement_in_block97 = new BitSet(new long[]{0x00000000003CFF08L});
+    public static final BitSet FOLLOW_ALAP_in_statement114 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement116 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_WHILE_in_statement124 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement126 = new BitSet(new long[]{0x0000000000002000L});
+    public static final BitSet FOLLOW_DO_in_statement128 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement130 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DO_in_statement138 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement140 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_WHILE_in_statement142 = new BitSet(new long[]{0x0000000100000600L});
+    public static final BitSet FOLLOW_condition_in_statement144 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_TRY_in_statement152 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement154 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_block_in_statement157 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_IF_in_statement167 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement169 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement171 = new BitSet(new long[]{0x0000000000010008L});
+    public static final BitSet FOLLOW_ELSE_in_statement174 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement176 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CHOICE_in_statement186 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement188 = new BitSet(new long[]{0x0000000000000408L});
+    public static final BitSet FOLLOW_OR_in_statement191 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement193 = new BitSet(new long[]{0x0000000000000408L});
+    public static final BitSet FOLLOW_expression_in_statement204 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_expression218 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression220 = new BitSet(new long[]{0x00000000001C0700L});
+    public static final BitSet FOLLOW_expression_in_expression222 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PLUS_in_expression229 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression231 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_STAR_in_expression238 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression240 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_SHARP_in_expression247 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression249 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CALL_in_expression256 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_expression258 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_expression264 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_condition278 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_condition280 = new BitSet(new long[]{0x0000000100000600L});
+    public static final BitSet FOLLOW_condition_in_condition282 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_condition289 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_32_in_condition295 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule308 = new BitSet(new long[]{0x0000000000000002L});
+
 }
-
-	public final void program(AST _t) throws RecognitionException {
-		
-		AST program_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		
-		try {      // for error handling
-			AST __t23 = _t;
-			AST tmp1_AST_in = (AST)_t;
-			match(_t,PROGRAM);
-			_t = _t.getFirstChild();
-			{
-			_loop25:
-			do {
-				if (_t==null) _t=ASTNULL;
-				if ((_t.getType()==PROC)) {
-					proc(_t);
-					_t = _retTree;
-				}
-				else {
-					break _loop25;
-				}
-				
-			} while (true);
-			}
-			_t = __t23;
-			_t = _t.getNextSibling();
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	public final void proc(AST _t) throws RecognitionException {
-		
-		AST proc_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		AST p = null;
-		AST o = null;
-		
-		try {      // for error handling
-			AST __t27 = _t;
-			p = _t==ASTNULL ? null :(AST)_t;
-			match(_t,PROC);
-			_t = _t.getFirstChild();
-			o = (AST)_t;
-			match(_t,IDENTIFIER);
-			_t = _t.getNextSibling();
-			block(_t);
-			_t = _retTree;
-			_t = __t27;
-			_t = _t.getNextSibling();
-			namespace.store(o.getText(), p);
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	public final void block(AST _t) throws RecognitionException {
-		
-		AST block_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		
-		try {      // for error handling
-			AST __t29 = _t;
-			AST tmp2_AST_in = (AST)_t;
-			match(_t,BLOCK);
-			_t = _t.getFirstChild();
-			{
-			_loop31:
-			do {
-				if (_t==null) _t=ASTNULL;
-				if ((_tokenSet_0.member(_t.getType()))) {
-					statement(_t);
-					_t = _retTree;
-				}
-				else {
-					break _loop31;
-				}
-				
-			} while (true);
-			}
-			_t = __t29;
-			_t = _t.getNextSibling();
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	public final void statement(AST _t) throws RecognitionException {
-		
-		AST statement_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		
-		try {      // for error handling
-			if (_t==null) _t=ASTNULL;
-			switch ( _t.getType()) {
-			case ALAP:
-			{
-				AST __t33 = _t;
-				AST tmp3_AST_in = (AST)_t;
-				match(_t,ALAP);
-				_t = _t.getFirstChild();
-				block(_t);
-				_t = _retTree;
-				_t = __t33;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case WHILE:
-			{
-				AST __t34 = _t;
-				AST tmp4_AST_in = (AST)_t;
-				match(_t,WHILE);
-				_t = _t.getFirstChild();
-				condition(_t);
-				_t = _retTree;
-				block(_t);
-				_t = _retTree;
-				_t = __t34;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case DO:
-			{
-				AST __t35 = _t;
-				AST tmp5_AST_in = (AST)_t;
-				match(_t,DO);
-				_t = _t.getFirstChild();
-				block(_t);
-				_t = _retTree;
-				condition(_t);
-				_t = _retTree;
-				_t = __t35;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case TRY:
-			{
-				AST __t36 = _t;
-				AST tmp6_AST_in = (AST)_t;
-				match(_t,TRY);
-				_t = _t.getFirstChild();
-				block(_t);
-				_t = _retTree;
-				{
-				if (_t==null) _t=ASTNULL;
-				switch ( _t.getType()) {
-				case BLOCK:
-				{
-					block(_t);
-					_t = _retTree;
-					break;
-				}
-				case 3:
-				{
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(_t);
-				}
-				}
-				}
-				_t = __t36;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case IF:
-			{
-				AST __t38 = _t;
-				AST tmp7_AST_in = (AST)_t;
-				match(_t,IF);
-				_t = _t.getFirstChild();
-				condition(_t);
-				_t = _retTree;
-				block(_t);
-				_t = _retTree;
-				{
-				if (_t==null) _t=ASTNULL;
-				switch ( _t.getType()) {
-				case BLOCK:
-				{
-					block(_t);
-					_t = _retTree;
-					break;
-				}
-				case 3:
-				{
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(_t);
-				}
-				}
-				}
-				_t = __t38;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case CHOICE:
-			{
-				AST __t40 = _t;
-				AST tmp8_AST_in = (AST)_t;
-				match(_t,CHOICE);
-				_t = _t.getFirstChild();
-				{
-				int _cnt42=0;
-				_loop42:
-				do {
-					if (_t==null) _t=ASTNULL;
-					if ((_t.getType()==BLOCK)) {
-						block(_t);
-						_t = _retTree;
-					}
-					else {
-						if ( _cnt42>=1 ) { break _loop42; } else {throw new NoViableAltException(_t);}
-					}
-					
-					_cnt42++;
-				} while (true);
-				}
-				_t = __t40;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case OR:
-			case PROCUSE:
-			case IDENTIFIER:
-			case PLUS:
-			case STAR:
-			case SHARP:
-			{
-				expression(_t);
-				_t = _retTree;
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(_t);
-			}
-			}
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	public final void condition(AST _t) throws RecognitionException {
-		
-		AST condition_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		
-		try {      // for error handling
-			if (_t==null) _t=ASTNULL;
-			switch ( _t.getType()) {
-			case OR:
-			{
-				AST __t50 = _t;
-				AST tmp9_AST_in = (AST)_t;
-				match(_t,OR);
-				_t = _t.getFirstChild();
-				condition(_t);
-				_t = _retTree;
-				condition(_t);
-				_t = _retTree;
-				_t = __t50;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case IDENTIFIER:
-			{
-				rule(_t);
-				_t = _retTree;
-				break;
-			}
-			case TRUE:
-			{
-				AST tmp10_AST_in = (AST)_t;
-				match(_t,TRUE);
-				_t = _t.getNextSibling();
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(_t);
-			}
-			}
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	public final void expression(AST _t) throws RecognitionException {
-		
-		AST expression_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		AST i = null;
-		
-		try {      // for error handling
-			if (_t==null) _t=ASTNULL;
-			switch ( _t.getType()) {
-			case OR:
-			{
-				AST __t44 = _t;
-				AST tmp11_AST_in = (AST)_t;
-				match(_t,OR);
-				_t = _t.getFirstChild();
-				expression(_t);
-				_t = _retTree;
-				expression(_t);
-				_t = _retTree;
-				_t = __t44;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case PLUS:
-			{
-				AST __t45 = _t;
-				AST tmp12_AST_in = (AST)_t;
-				match(_t,PLUS);
-				_t = _t.getFirstChild();
-				expression(_t);
-				_t = _retTree;
-				_t = __t45;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case STAR:
-			{
-				AST __t46 = _t;
-				AST tmp13_AST_in = (AST)_t;
-				match(_t,STAR);
-				_t = _t.getFirstChild();
-				expression(_t);
-				_t = _retTree;
-				_t = __t46;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case SHARP:
-			{
-				AST __t47 = _t;
-				AST tmp14_AST_in = (AST)_t;
-				match(_t,SHARP);
-				_t = _t.getFirstChild();
-				expression(_t);
-				_t = _retTree;
-				_t = __t47;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case PROCUSE:
-			{
-				AST __t48 = _t;
-				AST tmp15_AST_in = (AST)_t;
-				match(_t,PROCUSE);
-				_t = _t.getFirstChild();
-				i = (AST)_t;
-				match(_t,IDENTIFIER);
-				_t = _t.getNextSibling();
-				_t = __t48;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case IDENTIFIER:
-			{
-				rule(_t);
-				_t = _retTree;
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(_t);
-			}
-			}
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	public final void rule(AST _t) throws RecognitionException {
-		
-		AST rule_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		
-		try {      // for error handling
-			AST tmp16_AST_in = (AST)_t;
-			match(_t,IDENTIFIER);
-			_t = _t.getNextSibling();
-		}
-		catch (RecognitionException ex) {
-			reportError(ex);
-			if (_t!=null) {_t = _t.getNextSibling();}
-		}
-		_retTree = _t;
-	}
-	
-	
-	public static final String[] _tokenNames = {
-		"<0>",
-		"EOF",
-		"<2>",
-		"NULL_TREE_LOOKAHEAD",
-		"\"alap\"",
-		"\"while\"",
-		"\"try\"",
-		"\"else\"",
-		"\"do\"",
-		"\"if\"",
-		"\"choice\"",
-		"\"or\"",
-		"\"proc\"",
-		"PROCUSE",
-		"PROGRAM",
-		"BLOCK",
-		"\"true\"",
-		"LCURLY",
-		"RCURLY",
-		"IDENTIFIER",
-		"LPAREN",
-		"RPAREN",
-		"SEMICOLON",
-		"PLUS",
-		"STAR",
-		"SHARP"
-	};
-	
-	private static final long[] mk_tokenSet_0() {
-		long[] data = { 59256688L, 0L};
-		return data;
-	}
-	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
-	}
-	

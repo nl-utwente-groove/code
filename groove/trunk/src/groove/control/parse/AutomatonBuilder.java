@@ -19,9 +19,6 @@ package groove.control.parse;
 import groove.control.ControlShape;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
-import groove.control.ElseControlTransition;
-import groove.control.LambdaControlTransition;
-import groove.control.RuleControlTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 
@@ -42,7 +39,14 @@ import antlr.SemanticException;
  */
 public class AutomatonBuilder extends Namespace {
 
+	/** label used to identify delta in init result **/
+	public static final String _DELTA_ = "/%/__DELTA__/%/";
+	
+	private HashSet<ControlTransition> mergeCandidates = new HashSet<ControlTransition>();
+	
 	private HashSet<String> openScopes = new HashSet<String>();
+	
+	private ControlShape programShape;
 	
 	private ControlShape current;
 	private String currentName;
@@ -56,7 +60,7 @@ public class AutomatonBuilder extends Namespace {
 	/** Holds the active end state, a local endstate for the next parsed block */
 	private ControlState currentEnd;
 	
-	/**
+	/*
 	 * Returns the current ControlState.
 	 * @return ControlState
 	 */
@@ -75,6 +79,7 @@ public class AutomatonBuilder extends Namespace {
 	public void restore(ControlState start, ControlState end) {
 		this.currentStart = start;
 		this.currentEnd = end;
+		debug("restore: start = " + start + ", end = " + end);
 	}
 	
 	public void openScope(String name) throws SemanticException {
@@ -88,6 +93,7 @@ public class AutomatonBuilder extends Namespace {
 		this.currentName = name;
 		openScopes.add(name);
 	}
+	
 	
 	public void closeScope() {
 		openScopes.remove(currentName);
@@ -106,6 +112,8 @@ public class AutomatonBuilder extends Namespace {
 	 */
 	public void startProgram() throws SemanticException {
 		current = new ControlShape(null, null, "program");
+		
+		programShape = current;
 		
 		currentStart = new ControlState(current);
 		currentEnd = new ControlState(current);
@@ -142,26 +150,72 @@ public class AutomatonBuilder extends Namespace {
 	 * @param label
 	 */
 	public void addTransition(String label) {
-		ControlTransition ct = new RuleControlTransition(currentStart, currentEnd, label);
-		//currentStart.add(ct);
+		ControlTransition ct = new ControlTransition(currentStart, currentEnd, label);
+		
+		// basic init stuff: if an outgoing transitions is added, the init of the state gets the label added
+		currentStart.addInit(label);
+		
+		debug("addTransition: " + ct);
+		
 		storeTransition(ct);
 	}
 	
 	public void addLambda() {
-		ControlTransition ct = new LambdaControlTransition(currentStart, currentEnd);
-		//currentStart.add(ct);
+		ControlTransition ct = new ControlTransition(currentStart, currentEnd);
+		
+		debug("addLambda: " + ct);
+		
+		testMerge(ct);
+		
 		storeTransition(ct);
 	}
 	
-	public void addElse() {
-		ControlTransition ct = new ElseControlTransition(currentStart, currentEnd);
-		//currentStart.add(ct);
+	public void tagDelta(ControlState state) {
+		state.addInit(_DELTA_);
+		debug("tagDelta: " + state);
+	}
+	
+	public void initCopy(ControlState source, ControlState target) {
+		debug("initCopy: " + source + " to " + target);
+		
+		target.addInit(source);
+		
+		debug("initCopy: updated target " + target);
+	}
+
+	public void deltaInitCopy(ControlState source, ControlState target) {
+		debug("deltaInitCopy: " + source  + " to " + target);
+		if( target.getInit().contains(_DELTA_)) {
+			debug("deltaInitCopy: Delta found in " + target + target.getInit() );
+			target.delInit(_DELTA_); 
+			target.addInit(source);
+			debug("deltaInitCopy: updated target " + target );
+		} else {
+			debug("deltaInitCopy: No delta found");
+		}
+	}
+	
+	public void fail(ControlState state, ControlTransition trans) {
+		debug("fail: " + state + " to " + trans);
+		if( state.getInit().contains(_DELTA_) ) {
+			rmTransition(trans);
+		} else {
+			trans.setFailureFromInit(state);
+		}
+		debug("fail: updated trans = " + trans);
+	}
+	
+	
+	public ControlTransition addElse() {
+		ControlTransition ct = new ControlTransition(currentStart, currentEnd);
 		storeTransition(ct);
+		return ct;
 	}
 	
 	public ControlState newState() {
 		ControlState newState = new ControlState(current);
 		current.addState(newState);
+		debug("newState: created " + newState);
 		return newState;
 	}
 	
@@ -173,12 +227,16 @@ public class AutomatonBuilder extends Namespace {
 	}
 	
 	public void rmTransition(ControlTransition ct) {
+		debug("rmTransition: removed transition " + ct);
 		this.transitions.remove(ct);
+		// in case it is a mergecandidate
+		this.mergeCandidates.remove(ct);
 		ct.getParent().removeTransition(ct);
 	}
 	
 	public void rmState(ControlState state) {
 		// TODO: make sure the state has no incoming or outgoing edges
+		debug("rmState: " + state);
 		state.getParent().removeState(state);
 	}
 	
@@ -187,6 +245,8 @@ public class AutomatonBuilder extends Namespace {
 	 * Will result in currentStart to become currentEnd
 	 */
 	public void merge() {
+		
+		debug("merge: Merging " + currentStart + " with " + currentEnd);
 		
 		// so: currentEnd becomes currentStart
 		for( ControlTransition ct : this.transitions ) {
@@ -201,40 +261,58 @@ public class AutomatonBuilder extends Namespace {
 		if( currentStart.isSuccess() ) {
 			currentEnd.setSuccess();
 		}
+		
+		// copy any init values, since the states are considered only seperated by a lambda, 
+		// the target init is reachable from the source also
+		currentEnd.addInit(currentStart);
+		
 		rmState(currentStart);
+		
+		debug("merge: removed " + currentStart);
+		debug("merge: updated " + currentEnd);
+		
 		currentStart = currentEnd;
 	}
 	
 	
 	/**
-	 * TODO: Remove stupid automaton stuff, e.g. lambda's (by merging).
+	 * TODO: Remove stupid automaton stuff, e.g. lambda's (by merging)
 	 * 
 	 */
 	public void optimize() {
-		// remove elses when there are lambda's
-
-		Set<ControlTransition> remove = new HashSet<ControlTransition>();
-		// find an else-transition
-		for( ControlTransition t1 : transitions ) {
-			if( t1 instanceof ElseControlTransition ) {
-				ControlState source1 = t1.source();
-				for( ControlTransition t2 : transitions ) {
-					if( source1 == t2.source() && t2 instanceof LambdaControlTransition ) {
-						remove.add(t1);
-					}
-				}
-			}
-		}
-		
 		
 		Set<ControlState> checkOrphan = new HashSet<ControlState>();
 		
-		for( ControlTransition ct : remove ) {
-			rmTransition(ct);
-			checkOrphan.add(ct.target());
+		for( ControlTransition ct : mergeCandidates ) {
+			boolean merge = true;
+			
+			boolean sourceProblem = false;
+			boolean targetProblem = false;
+
+			// let's first see if the source has any other outgoing transitions (with a different target)
+			for( ControlTransition t : transitions ) {
+				if( t != ct && t.source() == t.source() && t.target() != ct.target() ) {
+					merge = true;
+				}
+			}
+			
+			// there is only a problem if the target has any incoming transitions other then ct
+			for( ControlTransition t : transitions ) {
+				if( t != ct && t.target() == ct.target() ) {
+					targetProblem = true;
+				}
+			}
+			
+			if( !targetProblem && !sourceProblem ) {
+				checkOrphan.add(ct.target());
+				restore(ct.source(), ct.target());
+				rmTransition(ct);
+				merge();
+			}
+			
 		}
 		
-		// removing unreachablestates
+		// removing unreachable states
 		for( ControlState t : checkOrphan ) {
 			boolean delete = true;
 			for( ControlTransition ct : transitions ) {
@@ -242,7 +320,7 @@ public class AutomatonBuilder extends Namespace {
 					delete = false;
 				}
 			}
-			if( delete ) {
+			if( delete && this.programShape.source() != t) {
 				rmState(t);
 			}
 		}
@@ -255,26 +333,29 @@ public class AutomatonBuilder extends Namespace {
 	 * @param grammar
 	 */
 	public void finalize(GraphGrammar grammar) {
-		
+
+
 		for( ControlTransition transition : this.transitions )
 		{
-			if( transition instanceof RuleControlTransition ) {
-				RuleControlTransition RT = (RuleControlTransition) transition;
+			if( transition instanceof ControlShape ) {
+				// don't process these
+			}
+			else if( transition.hasLabel() ) {
 				
-				Rule rule = grammar.getRule(RT.getText());
+				Rule rule = grammar.getRule(transition.getLabel());
 				if( rule != null ) {
-					RT.setRule(rule);
+					transition.setRule(rule);
 					transition.source().add(transition);
 				}
 				else
 				{
-					// if the rulename is a group, this will add all child rules.
-					Set<Rule> rules = grammar.getChildRules(RT.getText());
+				// if the rulename is a group, this will add all child rules.
+					Set<Rule> rules = grammar.getChildRules(transition.getText());
 					if( !rules.isEmpty() ) {
-						RuleControlTransition childTrans;
+						ControlTransition childTrans;
 						for( Rule childRule : rules) {
 							//automaton.removeTransition(transition);
-							childTrans = new RuleControlTransition(transition.source(), transition.target(), childRule.getName().name());
+							childTrans = new ControlTransition(transition.source(), transition.target(), childRule.getName().name());
 							childTrans.setRule(childRule);
 							transition.source().add(childTrans);
 							// this is for viewing purposes only
@@ -282,7 +363,7 @@ public class AutomatonBuilder extends Namespace {
 						}
 						// remove the original transition;
 					} else {
-						System.err.println("Something is wrong, finalizing before rules are loaded in?");
+						debug("Unable to find Rule labelled " + transition.getLabel());
 					}
 				}
 			}
@@ -295,9 +376,22 @@ public class AutomatonBuilder extends Namespace {
 		// update the failure sets of else-transitions
 		// this assumes that there are no outgoing lambda's from states that have else-transitions
 		for( ControlTransition transition : this.transitions ) {
-			if( transition instanceof ElseControlTransition ) {
-				((ElseControlTransition)transition).setFailureSet(transition.source().rules());
+			if( transition.hasFailures() ) {
+				Set<Rule> failures = new HashSet<Rule>();
+				
+				for( String s : transition.getFailures() ) {
+					failures.add(grammar.getRule(s));
+				}
+				transition.setFailureSet(failures);
 			}
 		}
     }
+	
+	public void testMerge(ControlTransition ct) {
+		mergeCandidates.add(ct);
+	}
+	
+	public void debug(String msg) {
+		//System.err.println("debug: " + msg);
+	}
 }
