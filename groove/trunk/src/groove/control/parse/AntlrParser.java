@@ -28,8 +28,12 @@ public class AntlrParser {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		antlr.Tool.main(new String[]{"gcl.g"});
-		antlr.Tool.main(new String[]{"builder.g"});
+		//System.err.println("Lexer/Parser");
+		////org.antlr.Tool.main(new String[]{"GCL.g"});
+		//System.err.println("Checker");
+		//org.antlr.Tool.main(new String[]{"GCLChecker.g"});
+		System.err.println("Builder");
+		org.antlr.Tool.main(new String[]{"GCLBuilder.g"});
 	}
 
 }

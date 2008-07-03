@@ -24,8 +24,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.tree.CommonTree;
+
 import antlr.SemanticException;
-import antlr.collections.AST;
 
 /**
  * Namespace class for the AutomatonBuilder (for checking).
@@ -41,14 +43,14 @@ public class Namespace {
 	private GraphGrammar grammar;
 	private DefaultGrammarView view;
 
-	private HashMap<String, AST> procs = new HashMap<String, AST>();
+	private HashMap<String, CommonTree> procs = new HashMap<String, CommonTree>();
 
 	/**
 	 * Stores the AST of a procedure.
 	 * @param name
 	 * @param ast
 	 */
-	public void store(String name, AST ast) {
+	public void store(String name, CommonTree ast) {
 		this.procs.put(name, ast);
 	}
 	
@@ -58,11 +60,9 @@ public class Namespace {
 	 * @return AST
 	 * @throws SemanticException
 	 */
-	public AST getProc(String name) throws SemanticException {
-		AST ast = procs.get(name);
-		if( ast == null )
-			throw new SemanticException("Procedure not found: \""+ name + "\"");
-		return ast;
+	public CommonTree getProc(String name) throws RecognitionException {
+		// TODO: throw exception if no such function
+		return procs.get(name);
 	}
 	
 	public boolean ruleExists(String name) throws SemanticException {

@@ -1,4 +1,4 @@
-// $ANTLR 3.0.1 GCL.g 2008-07-03 14:35:49
+// $ANTLR 3.0.1 GCL.g 2008-07-03 15:30:35
 
 package groove.control.parse;
 import groove.control.*;
@@ -127,7 +127,7 @@ public class GCLParser extends Parser {
 
 
             // AST REWRITE
-            // elements: procdef, statement
+            // elements: statement, procdef
             // token labels: 
             // rule labels: retval
             // token list labels: 

@@ -25,6 +25,9 @@ import groove.trans.Rule;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.antlr.runtime.EarlyExitException;
+import org.antlr.runtime.RecognitionException;
+
 import antlr.SemanticException;
 
 /**
@@ -108,9 +111,8 @@ public class AutomatonBuilder extends Namespace {
 	
 	/**
 	 * Start method for building the automaton of a program
-	 * @throws SemanticException
 	 */
-	public void startProgram() throws SemanticException {
+	public void startProgram() {
 		current = new ControlShape(null, null, "program");
 		
 		programShape = current;
@@ -137,11 +139,8 @@ public class AutomatonBuilder extends Namespace {
 	 * Finished building the automaton of the program
 	 * @throws SemanticException
 	 */
-	public void endProgram() throws SemanticException {
+	public void endProgram() throws RecognitionException {
 		closeScope();
-		// TODO: remove this check if all works fine
-		if( current != null )
-			throw new SemanticException("Scope not closed: " + currentName);
 	}
 	
 
