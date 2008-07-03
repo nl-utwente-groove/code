@@ -1,199 +1,99 @@
-///////////////////////////////////////////////////////////////////////////
-// Parser for gcl files (groove control language)
-///////////////////////////////////////////////////////////////////////////
+grammar GCL;
 
-header {
+options {
+	output=AST;
+	k=2;
+}
+
+tokens {
+	PROGRAM;
+	BLOCK;
+	FUNCTIONS;
+	FUNCTION;
+	CALL;
+}
+
+@lexer::header {
 package groove.control.parse;
 import groove.control.*;
 }
 
-class GCLParser extends Parser;
-
-options {
-        buildAST = true;
-        k = 2;
-		defaultErrorHandler = false;
+@header {
+package groove.control.parse;
+import groove.control.*;
 }
 
-tokens {
-	ALAP = "alap";
-	WHILE = "while";
-	TRY = "try";
-	ELSE = "else";
-	DO	 = "do";
-	IF = "if";
-	CHOICE = "choice";
-	OR = "or";
-	PROC = "proc";  // not sure if i need a keyword for proc declarations
-	PROCUSE;
-	PROGRAM;
-	BLOCK;
-	TRUE = "true";
-}
 
-program
-	: proclist EOF!
-	{ #program = #([PROGRAM,"program"], #program); }
-	;
+// PARSER rules
 
-block
-	: LCURLY! statements  RCURLY!
-	{ #block = #([BLOCK,"block"],#block); }
-	;
+program : (procdef|statement)* -> ^(PROGRAM procdef* statement* );
 
-proclist
-	: procdef (proclist)?
-	;
+block	: '{'! statement*  '}'!;
 
-procdef
-	: p:PROC^ i:IDENTIFIER LPAREN! RPAREN! block
-	;
-
-statements
-	: statement (statements)?;
-
-statement
-	: ALAP^ block
-	| WHILE^ LPAREN! condition RPAREN! DO! block
-	| DO^ block WHILE! LPAREN! condition RPAREN!
-    | TRY^ block (ELSE! block)?
-	| IF^ LPAREN! condition RPAREN! block (ELSE! block)?
-    | CHOICE^ block (OR! block)*
-    | expression SEMICOLON!
-    ;
+procdef : FUNCTION IDENTIFIER '('! ')'! block;
 
 condition
 	: conditionliteral (OR^ condition)?
 	;
+statement 
+	: ALAP block
+	| WHILE '('! condition ')'! DO block
+	| DO block WHILE '('! condition ')'!	
+	| TRY block ('else' block)?
+	| IF '('! condition ')'! block (ELSE block)?
+    	| 'choice' block (CH_OR! block)*
+	| expression ';'!
+    ;
+
 
 conditionliteral
-	: TRUE
-	| rule
-	;
+	: 'true' | rule ;
 
 expression	
-	: expression_atom ((OR^ expression) | PLUS^ | STAR^)?
-	| SHARP^ expression_atom
+	: expression_atom ( (OR^ expression) | PLUS^ | STAR^)?
+	| SHARP expression_atom
 	;
 
 expression_atom
 	: rule
-	| LPAREN! expression RPAREN!
+	| '('! expression ')'!
 	| procuse
 	; 
 
 procuse
-	: IDENTIFIER LPAREN! RPAREN!
-	{ #procuse = #([PROCUSE,"procuse"],#procuse); }
-	;
+	: IDENTIFIER '(' ')';
 
-rule
-	: IDENTIFIER
-	;
+rule 	: IDENTIFIER;
 
-///////////////////////////////////////////////////////////////////////////
-// Some scope operations and checks
-///////////////////////////////////////////////////////////////////////////
+// LEXER rules
 
-class GCLChecker extends TreeParser;
-options {
-	buildAST = false;
-	importVocab = GCLParser;
-}
+ALAP 	:	'alap';
+WHILE	:	'while';
+DO	:	'do';
+IF	:	'if';
+ELSE	:	'else';
+CHOICE	:	'choice';
+CH_OR 	:	'or';
+TRY	:	'try';
+FUNCTION:	'function';
 
-{
-	private ControlAutomaton aut;
-	
-	public GCLChecker(ControlAutomaton ca) {
-		this.aut = ca;
-	}
-	
-    private Namespace namespace;
-	public void setNamespace(Namespace namespace) {
-		this.namespace = namespace;
-	}
-}
 
-program 
-  :  #(PROGRAM (proc)*)
-  ;
+IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_')*;
 
-proc
-  : 
-  #(p:PROC o:IDENTIFIER block)
-  { namespace.store(o.getText(), p); }
-  ;
-  
-block
-  : #(BLOCK (statement)*)
-  ;
+AND 	:	 '&';
+COMMA 	:	 ',' ;
+DOT 	:	 '.' ;
+NOT 	:	 '!';
+OR 	:	 '|';
+SHARP 	:	 '#' ;
+PLUS 	:	 '+' ;
+STAR 	:	 '*' ;
 
-statement
-  : #(ALAP block)
-  | #(WHILE condition block)
-  | #(DO block condition)
-  | #(TRY block (block)?)
-  | #(IF condition block (block)?)
-  | #(CHOICE (block)+)
-  | expression
-  ;
-
-expression	
-	: #(OR expression expression)
-	| #(PLUS expression)
-	| #(STAR expression)
-	| #(SHARP expression)
-	| #(PROCUSE i:IDENTIFIER)
-	| rule
-	; 
-
-condition
-  : #(OR condition condition)
-  | rule
-  | TRUE
-  ;
-
-rule
-  : IDENTIFIER
-  ;
-
-///////////////////////////////////////////////////////////////////////////
-// Lexer for Cps files
-///////////////////////////////////////////////////////////////////////////
-
-class GCLLexer extends Lexer;
-options {
-        k = 2;
-   		testLiterals=false;
-        charVocabulary = '\3'..'\377'; // just handle ASCII not Unicode
-}
-
-AND                     : '&';
-COMMA                   : ',' ;
-DOT                     : '.' ;
-LCURLY                  : '{' ;
-LPAREN		            : '(';
-NOT                     : '!';
-OR                      : '|';
-RCURLY                  : '}' ;
-RPAREN                  : ')';
-RSQUARE                 : ']' ;
-SHARP					: '#' ;
-SEMICOLON               : ';' ;
-PLUS					: '+' ;
-STAR					: '*' ;
-
-protected DIGIT         : '0'..'9' ;
-protected LETTER        : 'a'..'z'|'A'..'Z' ;
-protected NEWLINE       : (("\r\n") => "\r\n"           //DOS
-                          | '\r'                        //Macintosh
-                          | '\n'){newline();};          //Unix
-
-// NEWLINE and WS.... you can combine those
-WS                      : (NEWLINE) => NEWLINE { /*newline();*/ $setType(Token.SKIP);}
-                          | (' ' | '\t' | '\f') { $setType(Token.SKIP); } ;
-
-protected SPECIAL       : '_' | '-';
+WS  :   (   ' '
+        |   '\t'
+        |   '\r'
+        |   '\n'
+        )+
+        { $channel=HIDDEN; }
+    ;    
     
-IDENTIFIER options {testLiterals=true;}
-	: (LETTER | SPECIAL) (LETTER | DIGIT | SPECIAL)*;
