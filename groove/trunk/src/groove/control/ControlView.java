@@ -35,6 +35,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.CommonTreeNodeStream;
+
 /**
  * 
  * The Control part of the GrammarView. For loading, saving, getting an actual representation, etc.
@@ -85,20 +90,27 @@ public class ControlView {
 		}
 		try
         {
-			GCLLexer lexer = new GCLLexer(new StringReader(this.controlProgram));
-			GCLParser parser = new GCLParser(lexer);
-            parser.program();
+			new StringReader(this.controlProgram);
+			GCLLexer lexer = new GCLLexer(new ANTLRStringStream(this.controlProgram));
+			GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
             
-            GCLChecker checker = new GCLChecker();
+			GCLParser.program_return r = parser.program();
+            // walk resulting tree
+            CommonTree t = (CommonTree)r.getTree();
+            CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
+   
+            GCLChecker checker = new GCLChecker(nodes);
             checker.setNamespace(this.builder);
-            checker.program(parser.getAST());
+            checker.program();
             
-            GCLBuilder gclb = new GCLBuilder();
+            nodes.rewind();
+            
+            GCLBuilder gclb = new GCLBuilder(nodes);
             gclb.setBuilder(this.builder);
 
             // reset the counter for unique controlstate numbers to 0
 			Counter.reset();
-            this.programShape = gclb.program(parser.getAST());
+            this.programShape = gclb.program();
 
             builder.optimize();
 
@@ -107,6 +119,7 @@ public class ControlView {
         }
 		catch(Exception e)
 		{
+			e.printStackTrace();
 			throw new FormatException("Error in control: load error =>" + e.getMessage());
 		}
 	}
