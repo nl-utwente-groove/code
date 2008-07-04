@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.abs.lts.AbstrGraphState;
 import groove.control.ControlView;
 import groove.explore.util.MatchesIterator;
 import groove.graph.GraphInfo;
@@ -279,7 +280,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         if (getCurrentState() == null) {
             refreshMatchesClosed(Collections.<GraphTransition>emptySet());
     	} else if (setDisplayedState(getCurrentState())) {
-    		if( getCurrentState().isClosed() ) {
+    		if( getCurrentState().isClosed()) {
     			refreshMatchesClosed(getCurrentGTS().outEdgeSet(getCurrentState()));
     		} else {
     			Set<RuleMatch> matches = new HashSet<RuleMatch>();

@@ -36,9 +36,11 @@ public class GraphPatternPopupWindow {
 	// -----------------------------------------------------------
 	// FIELDS, CONSTRUCTORS, STANDARD METHODS
 	// -----------------------------------------------------------
-	public GraphPatternPopupWindow (GraphPattern graph, Options options) {
+	/** Creates and shows a graph pattern popup window. */
+	public GraphPatternPopupWindow (GraphPattern graph, Options options, String windowTitle) {
 		this.jgraph = new JGraph(PatternGraphJModel.getInstance(graph, options), false); 
 		this.jgraph.setPreferredSize(new Dimension(250, 250));
+		this.title = windowTitle;
 		
 		this.jgraph.setEnabled(true);
 		getFrame().pack();
@@ -47,7 +49,7 @@ public class GraphPatternPopupWindow {
 	
 	private JFrame getFrame() {
 		if (this.frame == null) {
-			this.frame = new JFrame("Graph pattern");
+			this.frame = new JFrame(title);
 			this.frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
 			
 			this.frame.getContentPane().setLayout(new BorderLayout());
@@ -67,5 +69,6 @@ public class GraphPatternPopupWindow {
 	
 	private JGraph jgraph;
 	JFrame frame;
+	String title;
 	
 }

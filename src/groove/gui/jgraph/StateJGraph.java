@@ -19,8 +19,10 @@ package groove.gui.jgraph;
 import groove.abs.AbstrGraph;
 import groove.abs.GraphPattern;
 import groove.graph.DefaultGraph;
+import groove.graph.Node;
 import groove.gui.GraphPatternPopupWindow;
 import groove.gui.Simulator;
+import groove.lts.GraphState;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -118,8 +120,11 @@ public class StateJGraph extends JGraph {
 				DefaultGraphCell cell = (DefaultGraphCell) getFirstCellForLocation(loc.x,	loc.y);
             	if (cell instanceof GraphJVertex) {
             		GraphJVertex vertex = (GraphJVertex) cell;
-            		GraphPattern pattern = ((AbstrGraph) vertex.getGraphJModel().getGraph()).typeOf(vertex.getNode());
-                	new GraphPatternPopupWindow(pattern, vertex.getGraphJModel().getOptions());
+            		Node node = vertex.getNode();
+            		GraphState state = simulator.getCurrentState();
+            		GraphPattern pattern = ((AbstrGraph) vertex.getGraphJModel().getGraph()).typeOf(node);
+                	new GraphPatternPopupWindow(pattern, vertex.getGraphJModel().getOptions(), 
+                			"Type of node " + node.toString() + (state == null ? "" : " of state " + state.toString()));
             	}
 
             }

@@ -626,7 +626,8 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	/** */
 	private void checkInvC() {
 		for (Node n : this.nodeSet()) {
-			assert this.family.issued(this.typeOf(n)) : "Invariant C failed";
+			GraphPattern type = typeOf(n);
+			assert this.family.issued(type) : "Invariant C failed for node " + n + " and type "  + type;
 		}
 	}
 	

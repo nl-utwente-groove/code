@@ -33,6 +33,8 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
+import groove.gui.Options;
+import groove.gui.ShowGraphPopupWindow;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.RuleApplication;
@@ -45,7 +47,6 @@ import groove.trans.RuleApplication;
  * @version $Revision $
  */
 public class SetMaterialisations {
-
 
 	/** Performs the actual transformation and returns the set of resulting abstract graphs.
 	 * @param appl The matching associated to this rule application should be the same as for the construction of this SetMaterialiastion object.
@@ -186,6 +187,7 @@ public class SetMaterialisations {
 	}
 	
 	Collection<AbstrGraph> _transfResults(NodeFactory nodeFactory) {
+		
 		Collection<AbstrGraph> result = new ArrayList<AbstrGraph>();
 
 		// # For all possible origin
@@ -209,8 +211,10 @@ public class SetMaterialisations {
 				ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
 				ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
 				ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-				possibleLinks(origin, mapNodePattern, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
+				ArrayList<Set<Edge>> internalEdges = new ArrayList<Set<Edge>>();
+				possibleLinks(origin, mapNodePattern, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, internalEdges, nodeFactory);
 			
+
 				// # For all possible links
 				for (int i = 0; i < possibleSrcLinks.size(); i++) {
 					// # Merge the concrete and abstract part
@@ -224,6 +228,18 @@ public class SetMaterialisations {
 						res.removeEdge(e);
 					}
 					
+					// o If there are some internal edges, they have to be added to the concrete part
+					// o Only edges in the new concrete part are to be considered (i.e. not edges to/from deleted nodes)
+					Graph newConcrPartCopy = newConcrPart;
+					if (internalEdges.size() != 0) {
+						newConcrPartCopy = newConcrPart.clone();
+						for (Edge e : internalEdges.get(i)) {
+							if (newConcrPartCopy.containsElement(e.source()) && newConcrPartCopy.containsElement(e.opposite())) {
+								newConcrPartCopy.addEdge(e);
+							}
+						}
+					}
+					
 					// o Add the concrete part to the abstract part
 					ConcretePart.Typing nodeTypes = new ConcretePart.Typing () {
 						public GraphPattern typeOf(Node n) {
@@ -232,7 +248,7 @@ public class SetMaterialisations {
 						}
 					};
 					
-					_addConcrToAbstr(res, this.newConcrPart, nodeTypes);
+					_addConcrToAbstr(res, newConcrPartCopy, nodeTypes);
 					
 					// o Add the link edges
 					for (Edge ee : possibleSrcLinks.get(i)) {
@@ -538,6 +554,7 @@ public class SetMaterialisations {
 			                     ArrayList<Set<Edge>> tgtLinks,
 			                     ArrayList<Set<Node>> zeroNodes,
 			                     ArrayList<Set<Edge>> consumedEdges,
+			                     ArrayList<Set<Edge>> internalEdges,
 			                     NodeFactory nodeFactory) 
 	{
 		assert srcLinks.size() == 0 && tgtLinks.size() == 0 : "The out parameter sets are not empty.";
@@ -546,10 +563,28 @@ public class SetMaterialisations {
 			public GraphPattern typeOf(Node n) { return SetMaterialisations.this.abstrPart.typeOf(origin.getNode(n)); }
 			public NodeEdgeMap typeMapOf(Node n) { return typing.get(n).getMap(); }
 		};
-		
+
 		// First compute all the extensions, and for each extension its possible embeddings
 		for (Graph g : ConcretePart.extensions(this.concrPart, getDist1Nodes(), subTyping, this.abstrPart.family(), this.options.SYMMETRY_REDUCTION, nodeFactory)) {
 		
+			// Determine the new edges, which are to be added to the concrete part
+			Set<Edge> currInternalEdges = new HashSet<Edge>();
+			for (Edge e : g.edgeSet()) {
+				if (this.concrPart.graph().containsElement(e.source())
+						&& this.concrPart.graph().containsElement(e.opposite())
+						&& ! this.concrPart.graph().containsElement(e)) {
+					
+//					if (this.concrPart.centerNodes().contains(e.source()) &&
+//						! this.concrPart.centerNodes().contains(e.opposite())) {
+//						System.err.println("The edges to be added should not come from/to centre nodes of the concrete part :" + e);
+//					}
+//					assert ! this.concrPart.centerNodes().contains(e.source()) &&
+//						! this.concrPart.centerNodes().contains(e.opposite()) : 
+//						"The edges to be added should not come from/to centre nodes of the concrete part : " + e;
+					currInternalEdges.add(e);
+				}
+			}
+			
 			// Determine the new nodes, common to all possible embeddings
 			Collection<Node> newNodes = new ArrayList<Node>();
 			for (Node n : g.nodeSet()) { if (! this.concrPart.graph().containsElement(n)) { newNodes.add(n); } }
@@ -584,6 +619,7 @@ public class SetMaterialisations {
 				tgtLinks.add(currTgtLinks);
 				zeroNodes.add(currZeroNodes);
 				consumedEdges.add(currConsEdges);
+				internalEdges.add(currInternalEdges);
 			}
 		}
 	} 
@@ -675,6 +711,7 @@ public class SetMaterialisations {
 	 * @param tgtLinks Out parameter. After return, contains the set of links which target node is in the concrete part.
 	 * @param zeroNodes Out parameter. After return, contains the set of nodes which multiplicity became 0 while computing the links. 
 	 * @param consumedEdges Out parameter. After return, contains the edges from the abstract part that have been consumed by some link.
+	 * @param internalEdges Out parameter. After return, contains the edges between nodes of the concrete part that have to be added to the concrete part.
 	 * @require srcLinks and tgtLinks are empty sets and zeroNodes
 	 */
 	private void possibleLinks (final VarNodeEdgeMap origin, 
@@ -683,12 +720,13 @@ public class SetMaterialisations {
             ArrayList<Set<Edge>> tgtLinks,
             ArrayList<Set<Node>> zeroNodes,
             ArrayList<Set<Edge>> consumedEdges,
+            ArrayList<Set<Edge>> internalEdges,
             NodeFactory nodeFactory) 
 	{
 		if (this.abstrPart.family().getRadius() == 0 || this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
 			possibleLinksLow(origin, srcLinks, tgtLinks, consumedEdges);
 		} else {
-			possibleLinksHigh(origin, typing, srcLinks, tgtLinks, zeroNodes, consumedEdges, nodeFactory);
+			possibleLinksHigh(origin, typing, srcLinks, tgtLinks, zeroNodes, consumedEdges, internalEdges, nodeFactory);
 		}
 	}
 	
