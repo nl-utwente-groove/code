@@ -156,7 +156,7 @@ public class MyGenerator {
 	 */
 	public static void main (String args[]) {
 		
-		String usage = "Usage : MyGenerator <grammar> <startGraph> -p<precision> -r<radius> -m<max_incidence> -o<output_file_name>.";
+		String usage = "Usage : MyGenerator <grammar> <startGraph> -r<radius> -p<precision> -m<max_incidence> -o<output_file_name>.";
 		if (args.length != 6) {
 			System.err.println("Error 0");
 			System.err.println(usage);

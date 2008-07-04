@@ -263,7 +263,7 @@ public class ConcretePart {
 			if (baseMorphMap.containsKey(n)) {
 				if (! this.graph.containsElement(n)) { mergeableNodesB.add(n); }
 			} 
-			else { 	mergeableNodesA.add(n); }
+			else {	mergeableNodesA.add(n);	}
 		}
 		// any of mergeableNodesB can be merged with any of mergeableNodesA (or with none)
 		// no repetitions allowed (i.e. if x,y \in B, x merged with a, y merged with b, then a != b)

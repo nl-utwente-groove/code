@@ -1128,9 +1128,13 @@ public class Simulator {
     public synchronized void applyMatch () {
     	if (getCurrentMatch() != null) {
     		ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
-    		GraphTransition trans = getGenerator().applyMatch(getCurrentState(), getCurrentMatch(), cache).iterator().next();
-    		setCurrentState(trans.target());
-    		fireApplyTransition(trans);
+    		Set<? extends GraphTransition> resultTransitions = getGenerator().applyMatch(getCurrentState(), getCurrentMatch(), cache);
+    		if (! resultTransitions.isEmpty()) {
+    			// may be empty in the case of abstract transformation
+    			GraphTransition trans = resultTransitions.iterator().next();
+    			setCurrentState(trans.target());
+    			fireApplyTransition(trans);
+    		}
     		refreshActions();
     	}
     }
