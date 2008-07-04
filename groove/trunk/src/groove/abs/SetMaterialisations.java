@@ -33,8 +33,6 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
-import groove.gui.Options;
-import groove.gui.ShowGraphPopupWindow;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.RuleApplication;
