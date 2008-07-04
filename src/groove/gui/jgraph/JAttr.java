@@ -444,8 +444,10 @@ public class JAttr {
     static public final AttributeMap CONTROL_SUCCESS_NODE_ATTR;
     /** The default edge attributes of the control automaton */
     static public final AttributeMap CONTROL_EDGE_ATTR;
-    /** The internal (else/lambda) edge attributes of the control automaton */
-    static public final AttributeMap CONTROL_INTERNAL_EDGE_ATTR;
+    /** The internal lambda edge attributes of the control automaton */
+    static public final AttributeMap CONTROL_LAMBDA_EDGE_ATTR;
+    /** The internal lambda edge attributes of the control automaton */
+    static public final AttributeMap CONTROL_FAILURE_EDGE_ATTR;
     /** The procedure edge attributes of the control automaton automaton */
     static public final AttributeMap CONTROL_SHAPE_EDGE_ATTR;
     
@@ -466,13 +468,15 @@ public class JAttr {
             GraphConstants.setConnectable(CONTROL_EDGE_ATTR, false);
             GraphConstants.setDisconnectable(CONTROL_EDGE_ATTR, false);
     		
-    		CONTROL_INTERNAL_EDGE_ATTR = CONTROL_EDGE_ATTR.clone();
+    		CONTROL_LAMBDA_EDGE_ATTR = CONTROL_EDGE_ATTR.clone();
+    		CONTROL_FAILURE_EDGE_ATTR = CONTROL_EDGE_ATTR.clone();
     		CONTROL_SHAPE_EDGE_ATTR = CONTROL_EDGE_ATTR.clone();
 
     		GraphConstants.setFont(CONTROL_SHAPE_EDGE_ATTR, ITALIC_FONT);
     		
     		GraphConstants.setLineEnd(CONTROL_EDGE_ATTR, GraphConstants.ARROW_CLASSIC);
-    		GraphConstants.setLineColor(CONTROL_INTERNAL_EDGE_ATTR, Color.GREEN);
+    		GraphConstants.setLineColor(CONTROL_LAMBDA_EDGE_ATTR, Color.GREEN);
+    		GraphConstants.setLineColor(CONTROL_FAILURE_EDGE_ATTR, Color.RED);
     		GraphConstants.setLineColor(CONTROL_SHAPE_EDGE_ATTR, Color.GRAY);
     }
     

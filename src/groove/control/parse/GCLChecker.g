@@ -2,6 +2,8 @@ tree grammar GCLChecker;
 
 options {
 	tokenVocab=GCL;
+	output=AST;
+	rewrite=true;
 	ASTLabelType=CommonTree;
 }
 
@@ -20,13 +22,15 @@ import groove.control.*;
 }
 
 program 
-  :  ^(PROGRAM proc* statement*) 
+  :  ^(PROGRAM functions block) 
   ;
 
-proc
+functions
+  : ^(FUNCTIONS function*);
+
+function
   : 
-  ^(FUNCTION IDENTIFIER block)  { namespace.store( $IDENTIFIER.text , $FUNCTION); }
-  ;
+  ^(FUNCTION IDENTIFIER block { namespace.store( $IDENTIFIER.text , $block.tree); } )  -> ^(FUNCTION IDENTIFIER);
   
 block
   : ^(BLOCK (statement)*)
@@ -34,17 +38,17 @@ block
 
 statement
   : ^(ALAP block)
-  | ^(WHILE condition DO block)
-  | ^(DO block WHILE condition)
+  | ^(WHILE condition block)
+  | ^(DO block condition)
   | ^(TRY block (block)?)
-  | ^(IF condition block (ELSE block)?)
-  | ^(CHOICE block (OR block)*  )
+  | ^(IF condition block (block)?)
+  | ^(CHOICE block+)
   | expression
   ;
 
 expression	
 	: ^(OR expression expression)
-	| ^(PLUS expression)
+	| ^(PLUS e1=expression) -> ^(PLUS $e1 $e1)
 	| ^(STAR expression)
 	| ^(SHARP expression)
 	| ^(CALL IDENTIFIER)

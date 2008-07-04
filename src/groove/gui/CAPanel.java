@@ -202,16 +202,18 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		public void actionPerformed(ActionEvent e)
 		{
 			ControlView cv = CAPanel.this.grammar.getControl();
+			
 			String program = CAPanel.this.textPanel.getText();
 			if( program == null ) {
 				return;
 			} 
 			if( cv == null ) {
-				return;
+				// return;
+				// we had no CV yet.
 			}
-			cv.setProgram(CAPanel.this.textPanel.getText());
+			//cv.setProgram(CAPanel.this.textPanel.getText());
 			
-			CAPanel.this.simulator.handleSaveControl();
+			CAPanel.this.simulator.handleSaveControl(program);
 			CAPanel.this.simulator.doRefreshGrammar();
 			
 			if( CAPanel.this.grammar.getControl().getAutomaton() != null ) {
@@ -236,8 +238,8 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	
 	class SaveButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			CAPanel.this.simulator.handleSaveControl();
-//			CAPanel.this.saveButton.setEnabled(false);
+			//CAPanel.this.simulator.handleSaveControl();
+			//CAPanel.this.saveButton.setEnabled(false);
 		}
 	}
 	

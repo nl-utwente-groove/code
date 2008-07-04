@@ -89,11 +89,15 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 	 * @throws FileNotFoundException
 	 */
 	private void loadControl(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
-		String controlFileName = result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
-		if( controlFileName == null)
-			return;
-		File controlProgramFile = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
+//		String controlFileName = result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
+//		if( controlFileName == null)
+//			return;
+//		File controlProgramFile = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
 		//System.out.println(controlProgram.getAbsolutePath());
+		
+		File controlProgramFile = new File( location, result.getName() + ".gcp");
+		
+		
 		if( controlProgramFile.exists() ) {
 			try
 			{				ControlView cv = new ControlView(result, controlProgramFile);				result.setControl(cv);			}

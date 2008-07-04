@@ -1,4 +1,4 @@
-// $ANTLR 3.0.1 GCLBuilder.g 2008-07-03 16:07:19
+// $ANTLR 3.1b1 GCLBuilder.g 2008-07-04 16:20:41
 
 package groove.control.parse;
 import groove.control.*;
@@ -11,39 +11,52 @@ import java.util.ArrayList;
 
 public class GCLBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "TRY", "IF", "ELSE", "CH_OR", "PLUS", "STAR", "SHARP", "CHOICE", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'", "'true'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "PLUS", "STAR", "SHARP", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'", "'true'"
     };
     public static final int FUNCTION=7;
-    public static final int STAR=19;
-    public static final int SHARP=20;
+    public static final int T__29=29;
+    public static final int STAR=20;
+    public static final int T__28=28;
+    public static final int SHARP=21;
+    public static final int T__27=27;
     public static final int FUNCTIONS=6;
     public static final int WHILE=12;
-    public static final int ELSE=16;
+    public static final int ELSE=15;
     public static final int DO=13;
     public static final int NOT=25;
     public static final int ALAP=11;
     public static final int AND=22;
     public static final int EOF=-1;
     public static final int TRY=14;
-    public static final int IF=15;
+    public static final int IF=16;
+    public static final int T__30=30;
+    public static final int T__31=31;
+    public static final int T__32=32;
     public static final int WS=26;
     public static final int COMMA=23;
     public static final int IDENTIFIER=9;
     public static final int BLOCK=5;
     public static final int OR=10;
-    public static final int CH_OR=17;
-    public static final int PLUS=18;
+    public static final int CH_OR=18;
     public static final int PROGRAM=4;
+    public static final int PLUS=19;
     public static final int CALL=8;
     public static final int DOT=24;
-    public static final int CHOICE=21;
+    public static final int CHOICE=17;
+
+    // delegates
+    // delegators
+
 
         public GCLBuilder(TreeNodeStream input) {
-            super(input);
+            this(input, new RecognizerSharedState());
+        }
+        public GCLBuilder(TreeNodeStream input, RecognizerSharedState state) {
+            super(input, state);
         }
         
 
-    public String[] getTokenNames() { return tokenNames; }
+    public String[] getTokenNames() { return GCLBuilder.tokenNames; }
     public String getGrammarFileName() { return "GCLBuilder.g"; }
 
     
@@ -53,9 +66,9 @@ public class GCLBuilder extends TreeParser {
         	this.builder = ab;
         }
         
-        private void proc(CommonTree proc) throws RecognitionException {
+        private void proc(CommonTree block) throws RecognitionException {
         	TreeNodeStream restore = input;
-        	input = new CommonTreeNodeStream(proc.getChild(1));
+        	input = new CommonTreeNodeStream(block);
         	block();
         	this.input = restore;
         }
@@ -65,53 +78,32 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start program
-    // GCLBuilder.g:30:1: program returns [ControlShape shape=null] : ^( PROGRAM ( statement )* ) ;
+    // GCLBuilder.g:30:1: program returns [ControlShape shape=null] : ^( PROGRAM functions block ) ;
     public final ControlShape program() throws RecognitionException {
         ControlShape shape = null;
 
          ControlState start; ControlState end; 
         try {
-            // GCLBuilder.g:32:3: ( ^( PROGRAM ( statement )* ) )
-            // GCLBuilder.g:32:5: ^( PROGRAM ( statement )* )
+            // GCLBuilder.g:32:3: ( ^( PROGRAM functions block ) )
+            // GCLBuilder.g:32:5: ^( PROGRAM functions block )
             {
             match(input,PROGRAM,FOLLOW_PROGRAM_in_program52); 
 
+            match(input, Token.DOWN, null); 
+            pushFollow(FOLLOW_functions_in_program54);
+            functions();
+
+            state._fsp--;
+
              builder.startProgram(); shape = builder.currentShape(); start = builder.getStart(); end = builder.getEnd(); 
+            pushFollow(FOLLOW_block_in_program64);
+            block();
 
-            if ( input.LA(1)==Token.DOWN ) {
-                match(input, Token.DOWN, null); 
-                // GCLBuilder.g:34:4: ( statement )*
-                loop1:
-                do {
-                    int alt1=2;
-                    int LA1_0 = input.LA(1);
+            state._fsp--;
 
-                    if ( ((LA1_0>=CALL && LA1_0<=IF)||(LA1_0>=PLUS && LA1_0<=CHOICE)||LA1_0==32) ) {
-                        alt1=1;
-                    }
+             builder.endProgram(); 
 
-
-                    switch (alt1) {
-                	case 1 :
-                	    // GCLBuilder.g:34:5: statement
-                	    {
-                	    pushFollow(FOLLOW_statement_in_program63);
-                	    statement();
-                	    _fsp--;
-
-
-                	    }
-                	    break;
-
-                	default :
-                	    break loop1;
-                    }
-                } while (true);
-
-                 builder.endProgram(); 
-
-                match(input, Token.UP, null); 
-            }
+            match(input, Token.UP, null); 
 
             }
 
@@ -127,8 +119,94 @@ public class GCLBuilder extends TreeParser {
     // $ANTLR end program
 
 
+    // $ANTLR start functions
+    // GCLBuilder.g:38:1: functions : ^( FUNCTIONS ( function )* ) ;
+    public final void functions() throws RecognitionException {
+        try {
+            // GCLBuilder.g:39:3: ( ^( FUNCTIONS ( function )* ) )
+            // GCLBuilder.g:39:5: ^( FUNCTIONS ( function )* )
+            {
+            match(input,FUNCTIONS,FOLLOW_FUNCTIONS_in_functions82); 
+
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // GCLBuilder.g:39:17: ( function )*
+                loop1:
+                do {
+                    int alt1=2;
+                    int LA1_0 = input.LA(1);
+
+                    if ( (LA1_0==FUNCTION) ) {
+                        alt1=1;
+                    }
+
+
+                    switch (alt1) {
+                	case 1 :
+                	    // GCLBuilder.g:39:17: function
+                	    {
+                	    pushFollow(FOLLOW_function_in_functions84);
+                	    function();
+
+                	    state._fsp--;
+
+
+                	    }
+                	    break;
+
+                	default :
+                	    break loop1;
+                    }
+                } while (true);
+
+
+                match(input, Token.UP, null); 
+            }
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end functions
+
+
+    // $ANTLR start function
+    // GCLBuilder.g:41:1: function : ^( FUNCTION IDENTIFIER ) ;
+    public final void function() throws RecognitionException {
+        try {
+            // GCLBuilder.g:42:3: ( ^( FUNCTION IDENTIFIER ) )
+            // GCLBuilder.g:42:5: ^( FUNCTION IDENTIFIER )
+            {
+            match(input,FUNCTION,FOLLOW_FUNCTION_in_function97); 
+
+            match(input, Token.DOWN, null); 
+            match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_function99); 
+
+            match(input, Token.UP, null); 
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end function
+
+
     // $ANTLR start block
-    // GCLBuilder.g:38:1: block : ^( BLOCK ( statement )* ) ;
+    // GCLBuilder.g:44:1: block : ^( BLOCK ( statement )* ) ;
     public final void block() throws RecognitionException {
          
         		ControlState start = builder.getStart(); 
@@ -140,31 +218,32 @@ public class GCLBuilder extends TreeParser {
           		ControlState tmpStart = start;
 
         try {
-            // GCLBuilder.g:48:1: ( ^( BLOCK ( statement )* ) )
-            // GCLBuilder.g:48:4: ^( BLOCK ( statement )* )
+            // GCLBuilder.g:54:1: ( ^( BLOCK ( statement )* ) )
+            // GCLBuilder.g:54:4: ^( BLOCK ( statement )* )
             {
-            match(input,BLOCK,FOLLOW_BLOCK_in_block87); 
+            match(input,BLOCK,FOLLOW_BLOCK_in_block115); 
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLBuilder.g:48:12: ( statement )*
+                // GCLBuilder.g:54:12: ( statement )*
                 loop2:
                 do {
                     int alt2=2;
                     int LA2_0 = input.LA(1);
 
-                    if ( ((LA2_0>=CALL && LA2_0<=IF)||(LA2_0>=PLUS && LA2_0<=CHOICE)||LA2_0==32) ) {
+                    if ( ((LA2_0>=CALL && LA2_0<=TRY)||(LA2_0>=IF && LA2_0<=CHOICE)||(LA2_0>=PLUS && LA2_0<=SHARP)||LA2_0==32) ) {
                         alt2=1;
                     }
 
 
                     switch (alt2) {
                 	case 1 :
-                	    // GCLBuilder.g:48:13: statement
+                	    // GCLBuilder.g:54:13: statement
                 	    {
-                	    pushFollow(FOLLOW_statement_in_block90);
+                	    pushFollow(FOLLOW_statement_in_block118);
                 	    statement();
-                	    _fsp--;
+
+                	    state._fsp--;
 
                 	     	if( !first ) { 
                 	    					builder.deltaInitCopy(tmpStart, start); 
@@ -209,11 +288,11 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start statement
-    // GCLBuilder.g:68:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( ELSE block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE ( block )+ ) | expression );
+    // GCLBuilder.g:74:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression );
     public final void statement() throws RecognitionException {
         ControlState start = builder.getStart(); ControlState end = builder.getEnd(); ControlState newState; ControlTransition fail;
         try {
-            // GCLBuilder.g:70:1: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( ELSE block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE ( block )+ ) | expression )
+            // GCLBuilder.g:75:133: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression )
             int alt6=7;
             switch ( input.LA(1) ) {
             case ALAP:
@@ -259,23 +338,24 @@ public class GCLBuilder extends TreeParser {
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("68:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( ELSE block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE ( block )+ ) | expression );", 6, 0, input);
+                    new NoViableAltException("", 6, 0, input);
 
                 throw nvae;
             }
 
             switch (alt6) {
                 case 1 :
-                    // GCLBuilder.g:70:4: ^( ALAP block )
+                    // GCLBuilder.g:76:2: ^( ALAP block )
                     {
-                    match(input,ALAP,FOLLOW_ALAP_in_statement127); 
+                    match(input,ALAP,FOLLOW_ALAP_in_statement155); 
 
                      fail = builder.addElse(); newState = builder.newState(); builder.restore(newState, start); builder.addLambda(); builder.restore(start, newState); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement141);
+                    pushFollow(FOLLOW_block_in_statement169);
                     block();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.fail(start,fail); builder.tagDelta(start); 
 
@@ -284,21 +364,23 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLBuilder.g:75:5: ^( WHILE condition block )
+                    // GCLBuilder.g:84:4: ^( WHILE condition block )
                     {
-                    match(input,WHILE,FOLLOW_WHILE_in_statement161); 
+                    match(input,WHILE,FOLLOW_WHILE_in_statement198); 
 
                      fail = builder.addElse(); newState = builder.newState(); builder.restore(start, newState); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_condition_in_statement174);
+                    pushFollow(FOLLOW_condition_in_statement211);
                     condition();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.fail(start, fail); builder.restore(newState, start);
-                    pushFollow(FOLLOW_block_in_statement187);
+                    pushFollow(FOLLOW_block_in_statement224);
                     block();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.deltaInitCopy(newState, start); builder.tagDelta(start); 
 
@@ -307,21 +389,23 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLBuilder.g:82:5: ^( DO block condition )
+                    // GCLBuilder.g:91:5: ^( DO block condition )
                     {
-                    match(input,DO,FOLLOW_DO_in_statement207); 
+                    match(input,DO,FOLLOW_DO_in_statement244); 
 
                      newState = builder.newState(); builder.restore(newState, end); fail = builder.addElse(); builder.restore(start, newState); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement218);
+                    pushFollow(FOLLOW_block_in_statement255);
                     block();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.restore(newState, start); 
-                    pushFollow(FOLLOW_condition_in_statement229);
+                    pushFollow(FOLLOW_condition_in_statement266);
                     condition();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.fail(newState,fail); builder.tagDelta(newState); builder.deltaInitCopy(newState, start); 
 
@@ -330,34 +414,35 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLBuilder.g:89:5: ^( TRY block ( ELSE block )? )
+                    // GCLBuilder.g:100:3: ^( TRY block ( block )? )
                     {
-                    match(input,TRY,FOLLOW_TRY_in_statement247); 
+                    match(input,TRY,FOLLOW_TRY_in_statement290); 
 
                      builder.debug("try,enter");
                      newState = builder.newState(); builder.restore(start, newState); fail = builder.addElse(); builder.restore(start, end);
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement262);
+                    pushFollow(FOLLOW_block_in_statement305);
                     block();
-                    _fsp--;
+
+                    state._fsp--;
 
                     builder.fail(start, fail); builder.restore(newState, end); boolean block = false; 
-                    // GCLBuilder.g:93:5: ( ELSE block )?
+                    // GCLBuilder.g:104:5: ( block )?
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
-                    if ( (LA3_0==ELSE) ) {
+                    if ( (LA3_0==BLOCK) ) {
                         alt3=1;
                     }
                     switch (alt3) {
                         case 1 :
-                            // GCLBuilder.g:93:6: ELSE block
+                            // GCLBuilder.g:104:6: block
                             {
-                            match(input,ELSE,FOLLOW_ELSE_in_statement276); 
-                            pushFollow(FOLLOW_block_in_statement278);
+                            pushFollow(FOLLOW_block_in_statement319);
                             block();
-                            _fsp--;
+
+                            state._fsp--;
 
                             block = true;
 
@@ -366,7 +451,7 @@ public class GCLBuilder extends TreeParser {
 
                     }
 
-                     if(block){builder.merge(); builder.tagDelta(start);}else{builder.initCopy(newState, start);}
+                     if(!block){builder.merge(); builder.tagDelta(start);}else{builder.initCopy(newState, start);}
                      builder.debug("try,exit");
 
                     match(input, Token.UP, null); 
@@ -374,38 +459,40 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLBuilder.g:96:5: ^( IF condition block ( ELSE block )? )
+                    // GCLBuilder.g:111:4: ^( IF condition block ( block )? )
                     {
-                    match(input,IF,FOLLOW_IF_in_statement303); 
+                    match(input,IF,FOLLOW_IF_in_statement356); 
 
                      newState = builder.newState(); builder.restore(start, newState); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_condition_in_statement314);
+                    pushFollow(FOLLOW_condition_in_statement367);
                     condition();
-                    _fsp--;
+
+                    state._fsp--;
 
                     builder.restore(newState, end);
-                    pushFollow(FOLLOW_block_in_statement325);
+                    pushFollow(FOLLOW_block_in_statement378);
                     block();
-                    _fsp--;
+
+                    state._fsp--;
 
                       newState = builder.newState(); builder.restore(start, newState); fail = builder.addElse(); builder.fail(start,fail); builder.restore(newState,end); boolean block = false; 
-                    // GCLBuilder.g:102:4: ( ELSE block )?
+                    // GCLBuilder.g:117:4: ( block )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
-                    if ( (LA4_0==ELSE) ) {
+                    if ( (LA4_0==BLOCK) ) {
                         alt4=1;
                     }
                     switch (alt4) {
                         case 1 :
-                            // GCLBuilder.g:102:5: ELSE block
+                            // GCLBuilder.g:117:5: block
                             {
-                            match(input,ELSE,FOLLOW_ELSE_in_statement337); 
-                            pushFollow(FOLLOW_block_in_statement339);
+                            pushFollow(FOLLOW_block_in_statement390);
                             block();
-                            _fsp--;
+
+                            state._fsp--;
 
                             block = true;
 
@@ -414,19 +501,19 @@ public class GCLBuilder extends TreeParser {
 
                     }
 
-                    if(block){builder.merge();}else{builder.initCopy(newState, start);}
+                    if(!block){builder.merge();builder.tagDelta(start);}else{builder.initCopy(newState, start);}
 
                     match(input, Token.UP, null); 
 
                     }
                     break;
                 case 6 :
-                    // GCLBuilder.g:105:5: ^( CHOICE ( block )+ )
+                    // GCLBuilder.g:122:5: ^( CHOICE ( block )+ )
                     {
-                    match(input,CHOICE,FOLLOW_CHOICE_in_statement363); 
+                    match(input,CHOICE,FOLLOW_CHOICE_in_statement422); 
 
                     match(input, Token.DOWN, null); 
-                    // GCLBuilder.g:106:4: ( block )+
+                    // GCLBuilder.g:123:4: ( block )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -440,12 +527,13 @@ public class GCLBuilder extends TreeParser {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // GCLBuilder.g:106:6: block
+                    	    // GCLBuilder.g:123:6: block
                     	    {
                     	     newState = builder.newState(); builder.restore(start, newState); builder.addLambda(); builder.restore(newState, end); 
-                    	    pushFollow(FOLLOW_block_in_statement373);
+                    	    pushFollow(FOLLOW_block_in_statement432);
                     	    block();
-                    	    _fsp--;
+
+                    	    state._fsp--;
 
                     	     start.addInit(newState); 
 
@@ -467,11 +555,12 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLBuilder.g:107:5: expression
+                    // GCLBuilder.g:124:5: expression
                     {
-                    pushFollow(FOLLOW_expression_in_statement385);
+                    pushFollow(FOLLOW_expression_in_statement444);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
 
                     }
@@ -491,13 +580,13 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start expression
-    // GCLBuilder.g:109:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | 'true' | rule );
+    // GCLBuilder.g:126:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | 'true' | rule );
     public final void expression() throws RecognitionException {
         CommonTree IDENTIFIER1=null;
 
          ControlState start = builder.getStart(); ControlState end = builder.getEnd(); ControlState newState; ControlTransition fail; 
         try {
-            // GCLBuilder.g:111:2: ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | 'true' | rule )
+            // GCLBuilder.g:128:2: ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | 'true' | rule )
             int alt7=7;
             switch ( input.LA(1) ) {
             case OR:
@@ -537,26 +626,28 @@ public class GCLBuilder extends TreeParser {
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("109:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | 'true' | rule );", 7, 0, input);
+                    new NoViableAltException("", 7, 0, input);
 
                 throw nvae;
             }
 
             switch (alt7) {
                 case 1 :
-                    // GCLBuilder.g:111:4: ^( OR expression expression )
+                    // GCLBuilder.g:128:4: ^( OR expression expression )
                     {
-                    match(input,OR,FOLLOW_OR_in_expression399); 
+                    match(input,OR,FOLLOW_OR_in_expression458); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression401);
+                    pushFollow(FOLLOW_expression_in_expression460);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
                     builder.restore(start, end);
-                    pushFollow(FOLLOW_expression_in_expression405);
+                    pushFollow(FOLLOW_expression_in_expression464);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
 
                     match(input, Token.UP, null); 
@@ -564,19 +655,21 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLBuilder.g:112:4: ^( PLUS expression expression )
+                    // GCLBuilder.g:129:4: ^( PLUS expression expression )
                     {
-                    match(input,PLUS,FOLLOW_PLUS_in_expression412); 
+                    match(input,PLUS,FOLLOW_PLUS_in_expression471); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression414);
+                    pushFollow(FOLLOW_expression_in_expression473);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.restore(end,end); 
-                    pushFollow(FOLLOW_expression_in_expression418);
+                    pushFollow(FOLLOW_expression_in_expression477);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
 
                     match(input, Token.UP, null); 
@@ -584,16 +677,17 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLBuilder.g:113:4: ^( STAR expression )
+                    // GCLBuilder.g:130:4: ^( STAR expression )
                     {
-                    match(input,STAR,FOLLOW_STAR_in_expression425); 
+                    match(input,STAR,FOLLOW_STAR_in_expression484); 
 
                      newState = builder.newState(); builder.restore(start,newState); builder.addLambda(); builder.restore(newState,newState); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression429);
+                    pushFollow(FOLLOW_expression_in_expression488);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.restore(newState,end); builder.addLambda(); builder.tagDelta(start);
 
@@ -602,16 +696,17 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLBuilder.g:114:4: ^( SHARP expression )
+                    // GCLBuilder.g:131:4: ^( SHARP expression )
                     {
-                    match(input,SHARP,FOLLOW_SHARP_in_expression439); 
+                    match(input,SHARP,FOLLOW_SHARP_in_expression498); 
 
                      fail = builder.addElse(); builder.restore(start, start); 
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression443);
+                    pushFollow(FOLLOW_expression_in_expression502);
                     expression();
-                    _fsp--;
+
+                    state._fsp--;
 
                      builder.fail(start,fail); 
 
@@ -620,33 +715,33 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLBuilder.g:115:4: ^( CALL IDENTIFIER )
+                    // GCLBuilder.g:132:4: ^( CALL IDENTIFIER )
                     {
-                    match(input,CALL,FOLLOW_CALL_in_expression452); 
+                    match(input,CALL,FOLLOW_CALL_in_expression511); 
 
                     match(input, Token.DOWN, null); 
-                    IDENTIFIER1=(CommonTree)input.LT(1);
-                    match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_expression454); 
+                    IDENTIFIER1=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_expression513); 
 
                     match(input, Token.UP, null); 
-                     proc(builder.getProc(IDENTIFIER1.getText())); 
+                     proc(builder.getProc((IDENTIFIER1!=null?IDENTIFIER1.getText():null))); 
 
                     }
                     break;
                 case 6 :
-                    // GCLBuilder.g:116:4: 'true'
+                    // GCLBuilder.g:133:4: 'true'
                     {
-                    match(input,32,FOLLOW_32_in_expression462); 
+                    match(input,32,FOLLOW_32_in_expression521); 
                      builder.addLambda(); builder.tagDelta(start); 
 
                     }
                     break;
                 case 7 :
-                    // GCLBuilder.g:117:4: rule
+                    // GCLBuilder.g:134:4: rule
                     {
-                    pushFollow(FOLLOW_rule_in_expression469);
+                    pushFollow(FOLLOW_rule_in_expression528);
                     rule();
-                    _fsp--;
+
+                    state._fsp--;
 
 
                     }
@@ -666,15 +761,16 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start condition
-    // GCLBuilder.g:120:1: condition : expression ;
+    // GCLBuilder.g:137:1: condition : expression ;
     public final void condition() throws RecognitionException {
         try {
-            // GCLBuilder.g:121:3: ( expression )
-            // GCLBuilder.g:121:5: expression
+            // GCLBuilder.g:138:3: ( expression )
+            // GCLBuilder.g:138:5: expression
             {
-            pushFollow(FOLLOW_expression_in_condition483);
+            pushFollow(FOLLOW_expression_in_condition542);
             expression();
-            _fsp--;
+
+            state._fsp--;
 
 
             }
@@ -692,17 +788,16 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start rule
-    // GCLBuilder.g:124:1: rule : IDENTIFIER ;
+    // GCLBuilder.g:141:1: rule : IDENTIFIER ;
     public final void rule() throws RecognitionException {
         CommonTree IDENTIFIER2=null;
 
         try {
-            // GCLBuilder.g:125:3: ( IDENTIFIER )
-            // GCLBuilder.g:125:5: IDENTIFIER
+            // GCLBuilder.g:142:3: ( IDENTIFIER )
+            // GCLBuilder.g:142:5: IDENTIFIER
             {
-            IDENTIFIER2=(CommonTree)input.LT(1);
-            match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule496); 
-             builder.addTransition(IDENTIFIER2.getText()); 
+            IDENTIFIER2=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule555); 
+             builder.addTransition((IDENTIFIER2!=null?IDENTIFIER2.getText():null)); 
 
             }
 
@@ -717,48 +812,53 @@ public class GCLBuilder extends TreeParser {
     }
     // $ANTLR end rule
 
+    // Delegated rules
+
 
  
 
     public static final BitSet FOLLOW_PROGRAM_in_program52 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_statement_in_program63 = new BitSet(new long[]{0x00000001003CFF08L});
-    public static final BitSet FOLLOW_BLOCK_in_block87 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_statement_in_block90 = new BitSet(new long[]{0x00000001003CFF08L});
-    public static final BitSet FOLLOW_ALAP_in_statement127 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement141 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_WHILE_in_statement161 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_statement174 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement187 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DO_in_statement207 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement218 = new BitSet(new long[]{0x00000001001C0700L});
-    public static final BitSet FOLLOW_condition_in_statement229 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_TRY_in_statement247 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement262 = new BitSet(new long[]{0x0000000000010008L});
-    public static final BitSet FOLLOW_ELSE_in_statement276 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement278 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_IF_in_statement303 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_statement314 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement325 = new BitSet(new long[]{0x0000000000010008L});
-    public static final BitSet FOLLOW_ELSE_in_statement337 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement339 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_CHOICE_in_statement363 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement373 = new BitSet(new long[]{0x0000000000000028L});
-    public static final BitSet FOLLOW_expression_in_statement385 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_expression399 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression401 = new BitSet(new long[]{0x00000001001C0700L});
-    public static final BitSet FOLLOW_expression_in_expression405 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_PLUS_in_expression412 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression414 = new BitSet(new long[]{0x00000001001C0700L});
-    public static final BitSet FOLLOW_expression_in_expression418 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_STAR_in_expression425 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression429 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_SHARP_in_expression439 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression443 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_CALL_in_expression452 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_expression454 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_32_in_expression462 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_rule_in_expression469 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_expression_in_condition483 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_rule496 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_functions_in_program54 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_program64 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_FUNCTIONS_in_functions82 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_function_in_functions84 = new BitSet(new long[]{0x0000000000000088L});
+    public static final BitSet FOLLOW_FUNCTION_in_function97 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_function99 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_BLOCK_in_block115 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_statement_in_block118 = new BitSet(new long[]{0x00000001003B7F08L});
+    public static final BitSet FOLLOW_ALAP_in_statement155 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement169 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_WHILE_in_statement198 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement211 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement224 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DO_in_statement244 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement255 = new BitSet(new long[]{0x00000001003B7F08L});
+    public static final BitSet FOLLOW_condition_in_statement266 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_TRY_in_statement290 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement305 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_block_in_statement319 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_IF_in_statement356 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement367 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement378 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_block_in_statement390 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CHOICE_in_statement422 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement432 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_expression_in_statement444 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_expression458 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression460 = new BitSet(new long[]{0x00000001003B7F08L});
+    public static final BitSet FOLLOW_expression_in_expression464 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PLUS_in_expression471 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression473 = new BitSet(new long[]{0x00000001003B7F08L});
+    public static final BitSet FOLLOW_expression_in_expression477 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_STAR_in_expression484 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression488 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_SHARP_in_expression498 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression502 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CALL_in_expression511 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_expression513 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_32_in_expression521 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_rule_in_expression528 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_expression_in_condition542 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule555 = new BitSet(new long[]{0x0000000000000002L});
 
 }

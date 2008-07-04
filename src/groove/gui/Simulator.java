@@ -615,33 +615,20 @@ public class Simulator {
         return selectedFile;
     }
     
-    File handleSaveControl() {
+    File handleSaveControl(String program) {
     	// check if we had a control program
     	ControlView cv = getCurrentGrammar().getControl();
     	File selectedFile = null;
 
     	if( cv != null ) {
     		selectedFile = cv.getFile();
-    	}
-    	
-    	if( selectedFile == null ) {
-   			FileFilter filter = Groove.getFilter("Groove Control File", ".gcp", false);
-    		JFileChooser chooser = new GrooveFileChooser();
-			chooser.addChoosableFileFilter(filter);
-			chooser.setFileFilter(filter);
-			
-			int result = chooser.showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION ) {
-            	Properties systemProperties = getCurrentGrammar().getProperties();
-            	// store selected file as grammar system property
-            	systemProperties.put(SystemProperties.CONTROL_PROGRAM_KEY, chooser.getSelectedFile().getName());
-             	selectedFile = chooser.getSelectedFile();
-            }
+    	} else {
+    		selectedFile = new File(this.getCurrentGrammarFile(), this.getCurrentGrammar().getName() + ".gcp");
+    		System.err.println("" + selectedFile);
     	}
 
     	if( selectedFile != null ) {
-    		doSaveControl(getCurrentGrammar().getControl().program(), selectedFile);
+    		doSaveControl(program, selectedFile);
     	}
     	
     	return selectedFile;
@@ -935,9 +922,7 @@ public class Simulator {
 
     void doSaveControl(String controlProgram, File file) {
     	try {
-    		
     		ControlView.saveFile(controlProgram, file);
-    		
     	} catch( IOException exc) {
     		showErrorDialog("Error while saving to " + file, exc);
     	}

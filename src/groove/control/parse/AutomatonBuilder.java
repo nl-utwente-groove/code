@@ -196,11 +196,12 @@ public class AutomatonBuilder extends Namespace {
 	
 	public void fail(ControlState state, ControlTransition trans) {
 		debug("fail: " + state + " to " + trans);
-		if( state.getInit().contains(_DELTA_) ) {
-			rmTransition(trans);
-		} else {
+//		if( state.getInit().contains(_DELTA_) ) {
+//			checkOrphan.add(trans.target());
+//			rmTransition(trans);
+//		} else {
 			trans.setFailureFromInit(state);
-		}
+//		}
 		debug("fail: updated trans = " + trans);
 	}
 	
@@ -282,16 +283,17 @@ public class AutomatonBuilder extends Namespace {
 		
 		Set<ControlState> checkOrphan = new HashSet<ControlState>();
 		
+		Set<ControlTransition> merge  = new HashSet<ControlTransition>();
+		
 		for( ControlTransition ct : mergeCandidates ) {
-			boolean merge = true;
 			
 			boolean sourceProblem = false;
 			boolean targetProblem = false;
 
 			// let's first see if the source has any other outgoing transitions (with a different target)
 			for( ControlTransition t : transitions ) {
-				if( t != ct && t.source() == t.source() && t.target() != ct.target() ) {
-					merge = true;
+				if( t != ct && t.source() == ct.source() && t.target() != ct.target() ) {
+					sourceProblem = true;
 				}
 			}
 			
@@ -303,12 +305,33 @@ public class AutomatonBuilder extends Namespace {
 			}
 			
 			if( !targetProblem && !sourceProblem ) {
-				checkOrphan.add(ct.target());
-				restore(ct.source(), ct.target());
-				rmTransition(ct);
-				merge();
+				merge.add(ct);	
 			}
 			
+		}
+		
+		// now we know what to merge we can do it
+		for( ControlTransition ct : merge ) {
+			checkOrphan.add(ct.target());
+			restore(ct.source(), ct.target());
+			rmTransition(ct);
+			merge();
+		}
+		
+		// now we go over the failure transitions and see if there are delta's
+		// transitions are removed, target may be unreachable 
+		
+		Set<ControlTransition> remove = new HashSet<ControlTransition>();
+		
+		for( ControlTransition ct : transitions ) {
+			if( ct.getFailures().contains(_DELTA_)) {
+				checkOrphan.add(ct.target());
+				remove.add(ct);
+			}
+		}
+		// do actual remove
+		for( ControlTransition ct : remove ) {
+			rmTransition(ct);
 		}
 		
 		// removing unreachable states

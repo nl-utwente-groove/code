@@ -33,10 +33,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 
@@ -88,39 +88,56 @@ public class ControlView {
 		if( builder == null ) {
 			throw new FormatException("Error in control: trying to parse before the scope is initialized");
 		}
-		try
-        {
-			new StringReader(this.controlProgram);
-			GCLLexer lexer = new GCLLexer(new ANTLRStringStream(this.controlProgram));
-			GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
-            
-			GCLParser.program_return r = parser.program();
-            // walk resulting tree
-            CommonTree t = (CommonTree)r.getTree();
-            CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
-   
-            GCLChecker checker = new GCLChecker(nodes);
-            checker.setNamespace(this.builder);
-            checker.program();
-            
-            nodes.rewind();
-            
-            GCLBuilder gclb = new GCLBuilder(nodes);
-            gclb.setBuilder(this.builder);
+		
+		this.automaton = null;
+		
+		GCLLexer lexer = new GCLLexer(new ANTLRStringStream(this.controlProgram));
+		GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
 
-            // reset the counter for unique controlstate numbers to 0
+		
+		GCLParser.program_return r = null;
+		// run the parser
+		try {
+			r = parser.program();
+		}
+		catch(RecognitionException re) {
+			throw new FormatException(re); 
+		}
+		// only continue without parsing errors
+			
+		if( parser.getNumberOfSyntaxErrors() !=0 ) {
+			throw new FormatException("Parse errors found in control program.");
+		} else {
+			// fetch the resulting tree
+			CommonTree t = (CommonTree)r.getTree();
+			CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
+			
+			// checker will store and remove functions
+			GCLChecker checker = new GCLChecker(nodes);
+			checker.setNamespace(this.builder);
+			GCLChecker.program_return c_r = null;
+			
+			try {
+				c_r = checker.program();
+			} catch(RecognitionException e) {
+				throw new FormatException(e);
+			}
+			// fetch checker tree (since it was edited)
+			t = (CommonTree) c_r.getTree();
+			nodes = new CommonTreeNodeStream(t);
+           
+			GCLBuilder gclb = new GCLBuilder(nodes);
+			gclb.setBuilder(this.builder);
+			// reset the counter for unique controlstate numbers to 0
 			Counter.reset();
-            this.programShape = gclb.program();
-
-            builder.optimize();
-
-
-            this.automaton = new ControlAutomaton(this.programShape);
-        }
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new FormatException("Error in control: load error =>" + e.getMessage());
+		
+			try {
+				this.programShape = gclb.program();
+			} catch(RecognitionException re) {
+				throw new FormatException(re);
+			}
+			builder.optimize();
+			this.automaton = new ControlAutomaton(this.programShape);
 		}
 	}
 

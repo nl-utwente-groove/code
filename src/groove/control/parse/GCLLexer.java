@@ -1,4 +1,4 @@
-// $ANTLR 3.0.1 GCL.g 2008-07-03 15:30:35
+// $ANTLR 3.1b1 GCL.g 2008-07-04 16:18:57
 
 package groove.control.parse;
 import groove.control.*;
@@ -11,164 +11,185 @@ import java.util.ArrayList;
 
 public class GCLLexer extends Lexer {
     public static final int FUNCTION=7;
-    public static final int STAR=19;
-    public static final int SHARP=20;
+    public static final int T__29=29;
+    public static final int STAR=20;
+    public static final int T__28=28;
+    public static final int SHARP=21;
+    public static final int T__27=27;
     public static final int FUNCTIONS=6;
     public static final int WHILE=12;
-    public static final int ELSE=16;
+    public static final int ELSE=15;
     public static final int DO=13;
-    public static final int T29=29;
-    public static final int T28=28;
-    public static final int T27=27;
     public static final int NOT=25;
     public static final int ALAP=11;
     public static final int AND=22;
-    public static final int Tokens=33;
     public static final int EOF=-1;
     public static final int TRY=14;
-    public static final int IF=15;
+    public static final int IF=16;
+    public static final int T__30=30;
+    public static final int T__31=31;
+    public static final int T__32=32;
     public static final int WS=26;
     public static final int COMMA=23;
     public static final int IDENTIFIER=9;
     public static final int BLOCK=5;
     public static final int OR=10;
-    public static final int CH_OR=17;
-    public static final int PLUS=18;
+    public static final int CH_OR=18;
     public static final int PROGRAM=4;
+    public static final int PLUS=19;
     public static final int CALL=8;
     public static final int DOT=24;
-    public static final int T30=30;
-    public static final int CHOICE=21;
-    public static final int T32=32;
-    public static final int T31=31;
+    public static final int CHOICE=17;
+
+    // delegates
+    // delegators
+
     public GCLLexer() {;} 
     public GCLLexer(CharStream input) {
-        super(input);
+        this(input, new RecognizerSharedState());
+    }
+    public GCLLexer(CharStream input, RecognizerSharedState state) {
+        super(input,state);
+
     }
     public String getGrammarFileName() { return "GCL.g"; }
 
-    // $ANTLR start T27
-    public final void mT27() throws RecognitionException {
+    // $ANTLR start T__27
+    public final void mT__27() throws RecognitionException {
         try {
-            int _type = T27;
-            // GCL.g:7:5: ( '{' )
-            // GCL.g:7:7: '{'
+            int _type = T__27;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:8:7: ( '{' )
+            // GCL.g:8:9: '{'
             {
             match('{'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
     }
-    // $ANTLR end T27
+    // $ANTLR end T__27
 
-    // $ANTLR start T28
-    public final void mT28() throws RecognitionException {
+    // $ANTLR start T__28
+    public final void mT__28() throws RecognitionException {
         try {
-            int _type = T28;
-            // GCL.g:8:5: ( '}' )
-            // GCL.g:8:7: '}'
+            int _type = T__28;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:9:7: ( '}' )
+            // GCL.g:9:9: '}'
             {
             match('}'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
     }
-    // $ANTLR end T28
+    // $ANTLR end T__28
 
-    // $ANTLR start T29
-    public final void mT29() throws RecognitionException {
+    // $ANTLR start T__29
+    public final void mT__29() throws RecognitionException {
         try {
-            int _type = T29;
-            // GCL.g:9:5: ( '(' )
-            // GCL.g:9:7: '('
+            int _type = T__29;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:10:7: ( '(' )
+            // GCL.g:10:9: '('
             {
             match('('); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
     }
-    // $ANTLR end T29
+    // $ANTLR end T__29
 
-    // $ANTLR start T30
-    public final void mT30() throws RecognitionException {
+    // $ANTLR start T__30
+    public final void mT__30() throws RecognitionException {
         try {
-            int _type = T30;
-            // GCL.g:10:5: ( ')' )
-            // GCL.g:10:7: ')'
+            int _type = T__30;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:11:7: ( ')' )
+            // GCL.g:11:9: ')'
             {
             match(')'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
     }
-    // $ANTLR end T30
+    // $ANTLR end T__30
 
-    // $ANTLR start T31
-    public final void mT31() throws RecognitionException {
+    // $ANTLR start T__31
+    public final void mT__31() throws RecognitionException {
         try {
-            int _type = T31;
-            // GCL.g:11:5: ( ';' )
-            // GCL.g:11:7: ';'
+            int _type = T__31;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:12:7: ( ';' )
+            // GCL.g:12:9: ';'
             {
             match(';'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
     }
-    // $ANTLR end T31
+    // $ANTLR end T__31
 
-    // $ANTLR start T32
-    public final void mT32() throws RecognitionException {
+    // $ANTLR start T__32
+    public final void mT__32() throws RecognitionException {
         try {
-            int _type = T32;
-            // GCL.g:12:5: ( 'true' )
-            // GCL.g:12:7: 'true'
+            int _type = T__32;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:13:7: ( 'true' )
+            // GCL.g:13:9: 'true'
             {
             match("true"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
     }
-    // $ANTLR end T32
+    // $ANTLR end T__32
 
     // $ANTLR start ALAP
     public final void mALAP() throws RecognitionException {
         try {
             int _type = ALAP;
-            // GCL.g:70:7: ( 'alap' )
-            // GCL.g:70:9: 'alap'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:75:7: ( 'alap' )
+            // GCL.g:75:9: 'alap'
             {
             match("alap"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -179,15 +200,17 @@ public class GCLLexer extends Lexer {
     public final void mWHILE() throws RecognitionException {
         try {
             int _type = WHILE;
-            // GCL.g:71:7: ( 'while' )
-            // GCL.g:71:9: 'while'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:76:7: ( 'while' )
+            // GCL.g:76:9: 'while'
             {
             match("while"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -198,15 +221,17 @@ public class GCLLexer extends Lexer {
     public final void mDO() throws RecognitionException {
         try {
             int _type = DO;
-            // GCL.g:72:4: ( 'do' )
-            // GCL.g:72:6: 'do'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:77:4: ( 'do' )
+            // GCL.g:77:6: 'do'
             {
             match("do"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -217,15 +242,17 @@ public class GCLLexer extends Lexer {
     public final void mIF() throws RecognitionException {
         try {
             int _type = IF;
-            // GCL.g:73:4: ( 'if' )
-            // GCL.g:73:6: 'if'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:78:4: ( 'if' )
+            // GCL.g:78:6: 'if'
             {
             match("if"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -236,15 +263,17 @@ public class GCLLexer extends Lexer {
     public final void mELSE() throws RecognitionException {
         try {
             int _type = ELSE;
-            // GCL.g:74:6: ( 'else' )
-            // GCL.g:74:8: 'else'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:79:6: ( 'else' )
+            // GCL.g:79:8: 'else'
             {
             match("else"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -255,15 +284,17 @@ public class GCLLexer extends Lexer {
     public final void mCHOICE() throws RecognitionException {
         try {
             int _type = CHOICE;
-            // GCL.g:75:8: ( 'choice' )
-            // GCL.g:75:10: 'choice'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:80:8: ( 'choice' )
+            // GCL.g:80:10: 'choice'
             {
             match("choice"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -274,15 +305,17 @@ public class GCLLexer extends Lexer {
     public final void mCH_OR() throws RecognitionException {
         try {
             int _type = CH_OR;
-            // GCL.g:76:8: ( 'or' )
-            // GCL.g:76:10: 'or'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:81:8: ( 'or' )
+            // GCL.g:81:10: 'or'
             {
             match("or"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -293,15 +326,17 @@ public class GCLLexer extends Lexer {
     public final void mTRY() throws RecognitionException {
         try {
             int _type = TRY;
-            // GCL.g:77:5: ( 'try' )
-            // GCL.g:77:7: 'try'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:82:5: ( 'try' )
+            // GCL.g:82:7: 'try'
             {
             match("try"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -312,15 +347,17 @@ public class GCLLexer extends Lexer {
     public final void mFUNCTION() throws RecognitionException {
         try {
             int _type = FUNCTION;
-            // GCL.g:78:9: ( 'function' )
-            // GCL.g:78:11: 'function'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:83:9: ( 'function' )
+            // GCL.g:83:11: 'function'
             {
             match("function"); 
 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -331,20 +368,20 @@ public class GCLLexer extends Lexer {
     public final void mIDENTIFIER() throws RecognitionException {
         try {
             int _type = IDENTIFIER;
-            // GCL.g:81:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )* )
-            // GCL.g:81:15: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:86:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )* )
+            // GCL.g:86:15: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
 
             }
             else {
-                MismatchedSetException mse =
-                    new MismatchedSetException(null,input);
-                recover(mse);    throw mse;
-            }
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;}
 
-            // GCL.g:81:35: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
+            // GCL.g:86:35: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
             loop1:
             do {
                 int alt1=2;
@@ -364,10 +401,9 @@ public class GCLLexer extends Lexer {
 
             	    }
             	    else {
-            	        MismatchedSetException mse =
-            	            new MismatchedSetException(null,input);
-            	        recover(mse);    throw mse;
-            	    }
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;}
 
 
             	    }
@@ -381,7 +417,8 @@ public class GCLLexer extends Lexer {
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -392,14 +429,16 @@ public class GCLLexer extends Lexer {
     public final void mAND() throws RecognitionException {
         try {
             int _type = AND;
-            // GCL.g:83:6: ( '&' )
-            // GCL.g:83:9: '&'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:88:6: ( '&' )
+            // GCL.g:88:9: '&'
             {
             match('&'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -410,14 +449,16 @@ public class GCLLexer extends Lexer {
     public final void mCOMMA() throws RecognitionException {
         try {
             int _type = COMMA;
-            // GCL.g:84:8: ( ',' )
-            // GCL.g:84:11: ','
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:89:8: ( ',' )
+            // GCL.g:89:11: ','
             {
             match(','); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -428,14 +469,16 @@ public class GCLLexer extends Lexer {
     public final void mDOT() throws RecognitionException {
         try {
             int _type = DOT;
-            // GCL.g:85:6: ( '.' )
-            // GCL.g:85:9: '.'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:90:6: ( '.' )
+            // GCL.g:90:9: '.'
             {
             match('.'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -446,14 +489,16 @@ public class GCLLexer extends Lexer {
     public final void mNOT() throws RecognitionException {
         try {
             int _type = NOT;
-            // GCL.g:86:6: ( '!' )
-            // GCL.g:86:9: '!'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:91:6: ( '!' )
+            // GCL.g:91:9: '!'
             {
             match('!'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -464,14 +509,16 @@ public class GCLLexer extends Lexer {
     public final void mOR() throws RecognitionException {
         try {
             int _type = OR;
-            // GCL.g:87:5: ( '|' )
-            // GCL.g:87:8: '|'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:92:5: ( '|' )
+            // GCL.g:92:8: '|'
             {
             match('|'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -482,14 +529,16 @@ public class GCLLexer extends Lexer {
     public final void mSHARP() throws RecognitionException {
         try {
             int _type = SHARP;
-            // GCL.g:88:8: ( '#' )
-            // GCL.g:88:11: '#'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:93:8: ( '#' )
+            // GCL.g:93:11: '#'
             {
             match('#'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -500,14 +549,16 @@ public class GCLLexer extends Lexer {
     public final void mPLUS() throws RecognitionException {
         try {
             int _type = PLUS;
-            // GCL.g:89:7: ( '+' )
-            // GCL.g:89:10: '+'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:94:7: ( '+' )
+            // GCL.g:94:10: '+'
             {
             match('+'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -518,14 +569,16 @@ public class GCLLexer extends Lexer {
     public final void mSTAR() throws RecognitionException {
         try {
             int _type = STAR;
-            // GCL.g:90:7: ( '*' )
-            // GCL.g:90:10: '*'
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:95:7: ( '*' )
+            // GCL.g:95:10: '*'
             {
             match('*'); 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -536,10 +589,11 @@ public class GCLLexer extends Lexer {
     public final void mWS() throws RecognitionException {
         try {
             int _type = WS;
-            // GCL.g:92:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // GCL.g:92:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:97:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // GCL.g:97:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // GCL.g:92:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCL.g:97:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt2=0;
             loop2:
             do {
@@ -560,10 +614,9 @@ public class GCLLexer extends Lexer {
 
             	    }
             	    else {
-            	        MismatchedSetException mse =
-            	            new MismatchedSetException(null,input);
-            	        recover(mse);    throw mse;
-            	    }
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;}
 
 
             	    }
@@ -578,11 +631,12 @@ public class GCLLexer extends Lexer {
                 cnt2++;
             } while (true);
 
-             channel=HIDDEN; 
+             _channel=HIDDEN; 
 
             }
 
-            this.type = _type;
+            state.type = _type;
+            state.channel = _channel;
         }
         finally {
         }
@@ -590,587 +644,180 @@ public class GCLLexer extends Lexer {
     // $ANTLR end WS
 
     public void mTokens() throws RecognitionException {
-        // GCL.g:1:8: ( T27 | T28 | T29 | T30 | T31 | T32 | ALAP | WHILE | DO | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS )
+        // GCL.g:1:8: ( T__27 | T__28 | T__29 | T__30 | T__31 | T__32 | ALAP | WHILE | DO | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS )
         int alt3=25;
-        switch ( input.LA(1) ) {
-        case '{':
-            {
-            alt3=1;
-            }
-            break;
-        case '}':
-            {
-            alt3=2;
-            }
-            break;
-        case '(':
-            {
-            alt3=3;
-            }
-            break;
-        case ')':
-            {
-            alt3=4;
-            }
-            break;
-        case ';':
-            {
-            alt3=5;
-            }
-            break;
-        case 't':
-            {
-            int LA3_6 = input.LA(2);
-
-            if ( (LA3_6=='r') ) {
-                switch ( input.LA(3) ) {
-                case 'u':
-                    {
-                    int LA3_34 = input.LA(4);
-
-                    if ( (LA3_34=='e') ) {
-                        int LA3_44 = input.LA(5);
-
-                        if ( (LA3_44=='-'||(LA3_44>='0' && LA3_44<='9')||(LA3_44>='A' && LA3_44<='Z')||LA3_44=='_'||(LA3_44>='a' && LA3_44<='z')) ) {
-                            alt3=16;
-                        }
-                        else {
-                            alt3=6;}
-                    }
-                    else {
-                        alt3=16;}
-                    }
-                    break;
-                case 'y':
-                    {
-                    int LA3_35 = input.LA(4);
-
-                    if ( (LA3_35=='-'||(LA3_35>='0' && LA3_35<='9')||(LA3_35>='A' && LA3_35<='Z')||LA3_35=='_'||(LA3_35>='a' && LA3_35<='z')) ) {
-                        alt3=16;
-                    }
-                    else {
-                        alt3=14;}
-                    }
-                    break;
-                default:
-                    alt3=16;}
-
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'a':
-            {
-            int LA3_7 = input.LA(2);
-
-            if ( (LA3_7=='l') ) {
-                int LA3_26 = input.LA(3);
-
-                if ( (LA3_26=='a') ) {
-                    int LA3_36 = input.LA(4);
-
-                    if ( (LA3_36=='p') ) {
-                        int LA3_46 = input.LA(5);
-
-                        if ( (LA3_46=='-'||(LA3_46>='0' && LA3_46<='9')||(LA3_46>='A' && LA3_46<='Z')||LA3_46=='_'||(LA3_46>='a' && LA3_46<='z')) ) {
-                            alt3=16;
-                        }
-                        else {
-                            alt3=7;}
-                    }
-                    else {
-                        alt3=16;}
-                }
-                else {
-                    alt3=16;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'w':
-            {
-            int LA3_8 = input.LA(2);
-
-            if ( (LA3_8=='h') ) {
-                int LA3_27 = input.LA(3);
-
-                if ( (LA3_27=='i') ) {
-                    int LA3_37 = input.LA(4);
-
-                    if ( (LA3_37=='l') ) {
-                        int LA3_47 = input.LA(5);
-
-                        if ( (LA3_47=='e') ) {
-                            int LA3_53 = input.LA(6);
-
-                            if ( (LA3_53=='-'||(LA3_53>='0' && LA3_53<='9')||(LA3_53>='A' && LA3_53<='Z')||LA3_53=='_'||(LA3_53>='a' && LA3_53<='z')) ) {
-                                alt3=16;
-                            }
-                            else {
-                                alt3=8;}
-                        }
-                        else {
-                            alt3=16;}
-                    }
-                    else {
-                        alt3=16;}
-                }
-                else {
-                    alt3=16;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'd':
-            {
-            int LA3_9 = input.LA(2);
-
-            if ( (LA3_9=='o') ) {
-                int LA3_28 = input.LA(3);
-
-                if ( (LA3_28=='-'||(LA3_28>='0' && LA3_28<='9')||(LA3_28>='A' && LA3_28<='Z')||LA3_28=='_'||(LA3_28>='a' && LA3_28<='z')) ) {
-                    alt3=16;
-                }
-                else {
-                    alt3=9;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'i':
-            {
-            int LA3_10 = input.LA(2);
-
-            if ( (LA3_10=='f') ) {
-                int LA3_29 = input.LA(3);
-
-                if ( (LA3_29=='-'||(LA3_29>='0' && LA3_29<='9')||(LA3_29>='A' && LA3_29<='Z')||LA3_29=='_'||(LA3_29>='a' && LA3_29<='z')) ) {
-                    alt3=16;
-                }
-                else {
-                    alt3=10;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'e':
-            {
-            int LA3_11 = input.LA(2);
-
-            if ( (LA3_11=='l') ) {
-                int LA3_30 = input.LA(3);
-
-                if ( (LA3_30=='s') ) {
-                    int LA3_40 = input.LA(4);
-
-                    if ( (LA3_40=='e') ) {
-                        int LA3_48 = input.LA(5);
-
-                        if ( (LA3_48=='-'||(LA3_48>='0' && LA3_48<='9')||(LA3_48>='A' && LA3_48<='Z')||LA3_48=='_'||(LA3_48>='a' && LA3_48<='z')) ) {
-                            alt3=16;
-                        }
-                        else {
-                            alt3=11;}
-                    }
-                    else {
-                        alt3=16;}
-                }
-                else {
-                    alt3=16;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'c':
-            {
-            int LA3_12 = input.LA(2);
-
-            if ( (LA3_12=='h') ) {
-                int LA3_31 = input.LA(3);
-
-                if ( (LA3_31=='o') ) {
-                    int LA3_41 = input.LA(4);
-
-                    if ( (LA3_41=='i') ) {
-                        int LA3_49 = input.LA(5);
-
-                        if ( (LA3_49=='c') ) {
-                            int LA3_55 = input.LA(6);
-
-                            if ( (LA3_55=='e') ) {
-                                int LA3_58 = input.LA(7);
-
-                                if ( (LA3_58=='-'||(LA3_58>='0' && LA3_58<='9')||(LA3_58>='A' && LA3_58<='Z')||LA3_58=='_'||(LA3_58>='a' && LA3_58<='z')) ) {
-                                    alt3=16;
-                                }
-                                else {
-                                    alt3=12;}
-                            }
-                            else {
-                                alt3=16;}
-                        }
-                        else {
-                            alt3=16;}
-                    }
-                    else {
-                        alt3=16;}
-                }
-                else {
-                    alt3=16;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'o':
-            {
-            int LA3_13 = input.LA(2);
-
-            if ( (LA3_13=='r') ) {
-                int LA3_32 = input.LA(3);
-
-                if ( (LA3_32=='-'||(LA3_32>='0' && LA3_32<='9')||(LA3_32>='A' && LA3_32<='Z')||LA3_32=='_'||(LA3_32>='a' && LA3_32<='z')) ) {
-                    alt3=16;
-                }
-                else {
-                    alt3=13;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'f':
-            {
-            int LA3_14 = input.LA(2);
-
-            if ( (LA3_14=='u') ) {
-                int LA3_33 = input.LA(3);
-
-                if ( (LA3_33=='n') ) {
-                    int LA3_43 = input.LA(4);
-
-                    if ( (LA3_43=='c') ) {
-                        int LA3_50 = input.LA(5);
-
-                        if ( (LA3_50=='t') ) {
-                            int LA3_56 = input.LA(6);
-
-                            if ( (LA3_56=='i') ) {
-                                int LA3_59 = input.LA(7);
-
-                                if ( (LA3_59=='o') ) {
-                                    int LA3_61 = input.LA(8);
-
-                                    if ( (LA3_61=='n') ) {
-                                        int LA3_62 = input.LA(9);
-
-                                        if ( (LA3_62=='-'||(LA3_62>='0' && LA3_62<='9')||(LA3_62>='A' && LA3_62<='Z')||LA3_62=='_'||(LA3_62>='a' && LA3_62<='z')) ) {
-                                            alt3=16;
-                                        }
-                                        else {
-                                            alt3=15;}
-                                    }
-                                    else {
-                                        alt3=16;}
-                                }
-                                else {
-                                    alt3=16;}
-                            }
-                            else {
-                                alt3=16;}
-                        }
-                        else {
-                            alt3=16;}
-                    }
-                    else {
-                        alt3=16;}
-                }
-                else {
-                    alt3=16;}
-            }
-            else {
-                alt3=16;}
-            }
-            break;
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-        case 'E':
-        case 'F':
-        case 'G':
-        case 'H':
-        case 'I':
-        case 'J':
-        case 'K':
-        case 'L':
-        case 'M':
-        case 'N':
-        case 'O':
-        case 'P':
-        case 'Q':
-        case 'R':
-        case 'S':
-        case 'T':
-        case 'U':
-        case 'V':
-        case 'W':
-        case 'X':
-        case 'Y':
-        case 'Z':
-        case 'b':
-        case 'g':
-        case 'h':
-        case 'j':
-        case 'k':
-        case 'l':
-        case 'm':
-        case 'n':
-        case 'p':
-        case 'q':
-        case 'r':
-        case 's':
-        case 'u':
-        case 'v':
-        case 'x':
-        case 'y':
-        case 'z':
-            {
-            alt3=16;
-            }
-            break;
-        case '&':
-            {
-            alt3=17;
-            }
-            break;
-        case ',':
-            {
-            alt3=18;
-            }
-            break;
-        case '.':
-            {
-            alt3=19;
-            }
-            break;
-        case '!':
-            {
-            alt3=20;
-            }
-            break;
-        case '|':
-            {
-            alt3=21;
-            }
-            break;
-        case '#':
-            {
-            alt3=22;
-            }
-            break;
-        case '+':
-            {
-            alt3=23;
-            }
-            break;
-        case '*':
-            {
-            alt3=24;
-            }
-            break;
-        case '\t':
-        case '\n':
-        case '\r':
-        case ' ':
-            {
-            alt3=25;
-            }
-            break;
-        default:
-            NoViableAltException nvae =
-                new NoViableAltException("1:1: Tokens : ( T27 | T28 | T29 | T30 | T31 | T32 | ALAP | WHILE | DO | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS );", 3, 0, input);
-
-            throw nvae;
-        }
-
+        alt3 = dfa3.predict(input);
         switch (alt3) {
             case 1 :
-                // GCL.g:1:10: T27
+                // GCL.g:1:10: T__27
                 {
-                mT27(); 
+                mT__27(); 
 
                 }
                 break;
             case 2 :
-                // GCL.g:1:14: T28
+                // GCL.g:1:16: T__28
                 {
-                mT28(); 
+                mT__28(); 
 
                 }
                 break;
             case 3 :
-                // GCL.g:1:18: T29
+                // GCL.g:1:22: T__29
                 {
-                mT29(); 
+                mT__29(); 
 
                 }
                 break;
             case 4 :
-                // GCL.g:1:22: T30
+                // GCL.g:1:28: T__30
                 {
-                mT30(); 
+                mT__30(); 
 
                 }
                 break;
             case 5 :
-                // GCL.g:1:26: T31
+                // GCL.g:1:34: T__31
                 {
-                mT31(); 
+                mT__31(); 
 
                 }
                 break;
             case 6 :
-                // GCL.g:1:30: T32
+                // GCL.g:1:40: T__32
                 {
-                mT32(); 
+                mT__32(); 
 
                 }
                 break;
             case 7 :
-                // GCL.g:1:34: ALAP
+                // GCL.g:1:46: ALAP
                 {
                 mALAP(); 
 
                 }
                 break;
             case 8 :
-                // GCL.g:1:39: WHILE
+                // GCL.g:1:51: WHILE
                 {
                 mWHILE(); 
 
                 }
                 break;
             case 9 :
-                // GCL.g:1:45: DO
+                // GCL.g:1:57: DO
                 {
                 mDO(); 
 
                 }
                 break;
             case 10 :
-                // GCL.g:1:48: IF
+                // GCL.g:1:60: IF
                 {
                 mIF(); 
 
                 }
                 break;
             case 11 :
-                // GCL.g:1:51: ELSE
+                // GCL.g:1:63: ELSE
                 {
                 mELSE(); 
 
                 }
                 break;
             case 12 :
-                // GCL.g:1:56: CHOICE
+                // GCL.g:1:68: CHOICE
                 {
                 mCHOICE(); 
 
                 }
                 break;
             case 13 :
-                // GCL.g:1:63: CH_OR
+                // GCL.g:1:75: CH_OR
                 {
                 mCH_OR(); 
 
                 }
                 break;
             case 14 :
-                // GCL.g:1:69: TRY
+                // GCL.g:1:81: TRY
                 {
                 mTRY(); 
 
                 }
                 break;
             case 15 :
-                // GCL.g:1:73: FUNCTION
+                // GCL.g:1:85: FUNCTION
                 {
                 mFUNCTION(); 
 
                 }
                 break;
             case 16 :
-                // GCL.g:1:82: IDENTIFIER
+                // GCL.g:1:94: IDENTIFIER
                 {
                 mIDENTIFIER(); 
 
                 }
                 break;
             case 17 :
-                // GCL.g:1:93: AND
+                // GCL.g:1:105: AND
                 {
                 mAND(); 
 
                 }
                 break;
             case 18 :
-                // GCL.g:1:97: COMMA
+                // GCL.g:1:109: COMMA
                 {
                 mCOMMA(); 
 
                 }
                 break;
             case 19 :
-                // GCL.g:1:103: DOT
+                // GCL.g:1:115: DOT
                 {
                 mDOT(); 
 
                 }
                 break;
             case 20 :
-                // GCL.g:1:107: NOT
+                // GCL.g:1:119: NOT
                 {
                 mNOT(); 
 
                 }
                 break;
             case 21 :
-                // GCL.g:1:111: OR
+                // GCL.g:1:123: OR
                 {
                 mOR(); 
 
                 }
                 break;
             case 22 :
-                // GCL.g:1:114: SHARP
+                // GCL.g:1:126: SHARP
                 {
                 mSHARP(); 
 
                 }
                 break;
             case 23 :
-                // GCL.g:1:120: PLUS
+                // GCL.g:1:132: PLUS
                 {
                 mPLUS(); 
 
                 }
                 break;
             case 24 :
-                // GCL.g:1:125: STAR
+                // GCL.g:1:137: STAR
                 {
                 mSTAR(); 
 
                 }
                 break;
             case 25 :
-                // GCL.g:1:130: WS
+                // GCL.g:1:142: WS
                 {
                 mWS(); 
 
@@ -1182,6 +829,135 @@ public class GCLLexer extends Lexer {
     }
 
 
+    protected DFA3 dfa3 = new DFA3(this);
+    static final String DFA3_eotS =
+        "\6\uffff\11\17\12\uffff\3\17\1\46\1\47\2\17\1\52\2\17\1\55\2\17"+
+        "\2\uffff\2\17\1\uffff\1\17\1\63\1\uffff\1\64\1\17\1\66\2\17\2\uffff"+
+        "\1\71\1\uffff\2\17\1\uffff\1\74\1\17\1\uffff\1\17\1\77\1\uffff";
+    static final String DFA3_eofS =
+        "\100\uffff";
+    static final String DFA3_minS =
+        "\1\11\5\uffff\1\162\1\154\1\150\1\157\1\146\1\154\1\150\1\162\1"+
+        "\165\12\uffff\1\165\1\141\1\151\2\55\1\163\1\157\1\55\1\156\1\145"+
+        "\1\55\1\160\1\154\2\uffff\1\145\1\151\1\uffff\1\143\1\55\1\uffff"+
+        "\1\55\1\145\1\55\1\143\1\164\2\uffff\1\55\1\uffff\1\145\1\151\1"+
+        "\uffff\1\55\1\157\1\uffff\1\156\1\55\1\uffff";
+    static final String DFA3_maxS =
+        "\1\175\5\uffff\1\162\1\154\1\150\1\157\1\146\1\154\1\150\1\162\1"+
+        "\165\12\uffff\1\171\1\141\1\151\2\172\1\163\1\157\1\172\1\156\1"+
+        "\145\1\172\1\160\1\154\2\uffff\1\145\1\151\1\uffff\1\143\1\172\1"+
+        "\uffff\1\172\1\145\1\172\1\143\1\164\2\uffff\1\172\1\uffff\1\145"+
+        "\1\151\1\uffff\1\172\1\157\1\uffff\1\156\1\172\1\uffff";
+    static final String DFA3_acceptS =
+        "\1\uffff\1\1\1\2\1\3\1\4\1\5\11\uffff\1\20\1\21\1\22\1\23\1\24\1"+
+        "\25\1\26\1\27\1\30\1\31\15\uffff\1\11\1\12\2\uffff\1\15\2\uffff"+
+        "\1\16\5\uffff\1\6\1\7\1\uffff\1\13\2\uffff\1\10\2\uffff\1\14\2\uffff"+
+        "\1\17";
+    static final String DFA3_specialS =
+        "\100\uffff}>";
+    static final String[] DFA3_transitionS = {
+            "\2\30\2\uffff\1\30\22\uffff\1\30\1\23\1\uffff\1\25\2\uffff\1"+
+            "\20\1\uffff\1\3\1\4\1\27\1\26\1\21\1\uffff\1\22\14\uffff\1\5"+
+            "\5\uffff\32\17\6\uffff\1\7\1\17\1\14\1\11\1\13\1\16\2\17\1\12"+
+            "\5\17\1\15\4\17\1\6\2\17\1\10\3\17\1\1\1\24\1\2",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\31",
+            "\1\32",
+            "\1\33",
+            "\1\34",
+            "\1\35",
+            "\1\36",
+            "\1\37",
+            "\1\40",
+            "\1\41",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\42\3\uffff\1\43",
+            "\1\44",
+            "\1\45",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\50",
+            "\1\51",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\53",
+            "\1\54",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\56",
+            "\1\57",
+            "",
+            "",
+            "\1\60",
+            "\1\61",
+            "",
+            "\1\62",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\65",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\67",
+            "\1\70",
+            "",
+            "",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "",
+            "\1\72",
+            "\1\73",
+            "",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            "\1\75",
+            "",
+            "\1\76",
+            "\1\17\2\uffff\12\17\7\uffff\32\17\4\uffff\1\17\1\uffff\32\17",
+            ""
+    };
+
+    static final short[] DFA3_eot = DFA.unpackEncodedString(DFA3_eotS);
+    static final short[] DFA3_eof = DFA.unpackEncodedString(DFA3_eofS);
+    static final char[] DFA3_min = DFA.unpackEncodedStringToUnsignedChars(DFA3_minS);
+    static final char[] DFA3_max = DFA.unpackEncodedStringToUnsignedChars(DFA3_maxS);
+    static final short[] DFA3_accept = DFA.unpackEncodedString(DFA3_acceptS);
+    static final short[] DFA3_special = DFA.unpackEncodedString(DFA3_specialS);
+    static final short[][] DFA3_transition;
+
+    static {
+        int numStates = DFA3_transitionS.length;
+        DFA3_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA3_transition[i] = DFA.unpackEncodedString(DFA3_transitionS[i]);
+        }
+    }
+
+    class DFA3 extends DFA {
+
+        public DFA3(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 3;
+            this.eot = DFA3_eot;
+            this.eof = DFA3_eof;
+            this.min = DFA3_min;
+            this.max = DFA3_max;
+            this.accept = DFA3_accept;
+            this.special = DFA3_special;
+            this.transition = DFA3_transition;
+        }
+        public String getDescription() {
+            return "1:1: Tokens : ( T__27 | T__28 | T__29 | T__30 | T__31 | T__32 | ALAP | WHILE | DO | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS );";
+        }
+    }
  
 
 }
