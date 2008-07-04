@@ -20,8 +20,6 @@ import groove.control.ControlAutomaton;
 import groove.control.ControlShape;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
-import groove.control.ElseControlTransition;
-import groove.control.LambdaControlTransition;
 import groove.control.Location;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
@@ -207,22 +205,6 @@ public class ControlJModel extends GraphJModel {
         
         return result;
     }
-
-//	@Override
-//	protected AttributeMap createJEdgeAttr(Edge edge) {
-//		AttributeMap result;
-//		
-//		ControlTransition t = (ControlTransition) edge;
-//		
-//		if( t instanceof ControlShape ) {
-//			result = JAttr.CONTROL_SHAPE_EDGE_ATTR.clone();
-//		} else if ( t instanceof LambdaControlTransition || t instanceof ElseControlTransition ) {
-//			result = JAttr.CONTROL_INTERNAL_EDGE_ATTR.clone();
-//		} else {
-//			result = JAttr.CONTROL_EDGE_ATTR.clone();
-//		}
-//		return result;
-//	}
 	
 	/**
 	 * This implementation adds special attributes for the active transition.
@@ -239,26 +221,15 @@ public class ControlJModel extends GraphJModel {
 		
 		if( t instanceof ControlShape ) {
 			result = JAttr.CONTROL_SHAPE_EDGE_ATTR.clone();
-		} else if ( t instanceof LambdaControlTransition || t instanceof ElseControlTransition ) {
-			result = JAttr.CONTROL_INTERNAL_EDGE_ATTR.clone();
+		} else if ( t.isLambda() ) {
+			result = JAttr.CONTROL_LAMBDA_EDGE_ATTR.clone();
+		} else if ( t.hasFailures() ) {
+			result = JAttr.CONTROL_FAILURE_EDGE_ATTR.clone();
 		} else {
 			result = JAttr.CONTROL_EDGE_ATTR.clone();
 		}
 		return result;
     }
-
-//    /** Adds the correct border emphasis. */
-//	@Override
-//	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
-//		AttributeMap result;
-//        ControlState state = ((StateJVertex) jCell).getNode();
-//        if (state.equals(getActiveState())) {
-//        	result = LTS_ACTIVE_EMPH_NODE_CHANGE;
-//        } else {
-//        	result = super.getJVertexEmphAttr(jCell);
-//        }
-//        return result;
-//	}
 
 	/** Dummy LTS model. */
 	static public final ControlJModel EMPTY_CONTROL_JMODEL = new ControlJModel();
@@ -281,14 +252,8 @@ public class ControlJModel extends GraphJModel {
 		
 		@Override
 		public StringBuilder getLine(Edge edge) {
-			if( edge instanceof LambdaControlTransition ) {
+			if( edge instanceof ControlTransition && ((ControlTransition) edge).isLambda()) {
 				return new StringBuilder("\u03BB");
-			}
-			else if( edge instanceof ElseControlTransition) {
-				return new StringBuilder("\u03B5");
-				// this would display the failureset
-				// does not work because the failuresets have not been initialized before the GTS is computed
-				//	return new StringBuilder(edge.toString());
 			}
 			else {
 				return super.getLine(edge);
@@ -327,7 +292,7 @@ public class ControlJModel extends GraphJModel {
     	 * in an LTS model.
     	 */
 		StateJVertex(ControlJModel jModel, Node node) {
-			super(jModel, node, true);
+			super(jModel, node, false);
 		}
 
         /**

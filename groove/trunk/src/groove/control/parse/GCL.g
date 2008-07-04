@@ -26,23 +26,24 @@ import groove.control.*;
 
 // PARSER rules
 
-program : (procdef|statement)* -> ^(PROGRAM procdef* statement* );
+program : (function|statement)* -> ^(PROGRAM ^(FUNCTIONS function*) ^(BLOCK statement*));
 
-block	: '{'! statement*  '}'!;
+block	: '{' statement*  '}' -> ^(BLOCK statement*);
 
-procdef : FUNCTION IDENTIFIER '('! ')'! block;
+function : FUNCTION IDENTIFIER '(' ')' block -> ^(FUNCTION IDENTIFIER block);
 
 condition
 	: conditionliteral (OR^ condition)?
 	;
+	
 statement 
-	: ALAP block
-	| WHILE '('! condition ')'! DO block
-	| DO block WHILE '('! condition ')'!	
-	| TRY block ('else' block)?
-	| IF '('! condition ')'! block (ELSE block)?
-    	| 'choice' block (CH_OR! block)*
-	| expression ';'!
+	: ALAP block -> ^(ALAP block)
+	| WHILE '(' condition ')' DO block -> ^(WHILE condition block)
+	| DO block WHILE '(' condition ')' -> ^(DO block condition) 	
+	| TRY block (ELSE block)? -> ^(TRY block+)
+	| IF '(' condition ')' block (ELSE block)? -> ^(IF condition block+)
+    | CHOICE block (CH_OR block)* -> ^(CHOICE block+)
+	| expression ';' -> expression
     ;
 
 
@@ -50,18 +51,22 @@ conditionliteral
 	: 'true' | rule ;
 
 expression	
-	: expression_atom ( (OR^ expression) | PLUS^ | STAR^)?
-	| SHARP expression_atom
+	: expression2 (OR^ expression)?
 	;
+
+expression2
+    : expression_atom (PLUS^ | STAR^)?
+    | SHARP^ expression_atom
+    ;
 
 expression_atom
 	: rule
 	| '('! expression ')'!
-	| procuse
+	| call
 	; 
 
-procuse
-	: IDENTIFIER '(' ')';
+call
+	: IDENTIFIER '(' ')' -> ^(CALL IDENTIFIER);
 
 rule 	: IDENTIFIER;
 

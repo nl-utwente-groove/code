@@ -1,4 +1,4 @@
-// $ANTLR 3.0.1 GCLChecker.g 2008-07-03 15:49:43
+// $ANTLR 3.1b1 GCLChecker.g 2008-07-04 15:52:46
 
 package groove.control.parse;
 import groove.control.*;
@@ -9,41 +9,63 @@ import org.antlr.runtime.tree.*;import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
 
+
 public class GCLChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "TRY", "IF", "ELSE", "CH_OR", "PLUS", "STAR", "SHARP", "CHOICE", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'", "'true'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "PLUS", "STAR", "SHARP", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'", "'true'"
     };
     public static final int FUNCTION=7;
-    public static final int STAR=19;
-    public static final int SHARP=20;
+    public static final int T__29=29;
+    public static final int STAR=20;
+    public static final int T__28=28;
+    public static final int SHARP=21;
+    public static final int T__27=27;
     public static final int FUNCTIONS=6;
     public static final int WHILE=12;
-    public static final int ELSE=16;
+    public static final int ELSE=15;
     public static final int DO=13;
     public static final int NOT=25;
     public static final int ALAP=11;
     public static final int AND=22;
     public static final int EOF=-1;
     public static final int TRY=14;
-    public static final int IF=15;
+    public static final int IF=16;
+    public static final int T__30=30;
+    public static final int T__31=31;
+    public static final int T__32=32;
     public static final int WS=26;
     public static final int COMMA=23;
     public static final int IDENTIFIER=9;
     public static final int BLOCK=5;
     public static final int OR=10;
-    public static final int CH_OR=17;
-    public static final int PLUS=18;
+    public static final int CH_OR=18;
     public static final int PROGRAM=4;
+    public static final int PLUS=19;
     public static final int CALL=8;
     public static final int DOT=24;
-    public static final int CHOICE=21;
+    public static final int CHOICE=17;
+
+    // delegates
+    // delegators
+
 
         public GCLChecker(TreeNodeStream input) {
-            super(input);
+            this(input, new RecognizerSharedState());
+        }
+        public GCLChecker(TreeNodeStream input, RecognizerSharedState state) {
+            super(input, state);
         }
         
+    protected TreeAdaptor adaptor = new CommonTreeAdaptor();
 
-    public String[] getTokenNames() { return tokenNames; }
+    public void setTreeAdaptor(TreeAdaptor adaptor) {
+        this.adaptor = adaptor;
+    }
+    public TreeAdaptor getTreeAdaptor() {
+        return adaptor;
+    }
+
+    public String[] getTokenNames() { return GCLChecker.tokenNames; }
     public String getGrammarFileName() { return "GCLChecker.g"; }
 
     
@@ -55,19 +77,119 @@ public class GCLChecker extends TreeParser {
     	}
 
 
+    public static class program_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
 
     // $ANTLR start program
-    // GCLChecker.g:22:1: program : ^( PROGRAM ( proc )* ( statement )* ) ;
-    public final void program() throws RecognitionException {
-        try {
-            // GCLChecker.g:23:3: ( ^( PROGRAM ( proc )* ( statement )* ) )
-            // GCLChecker.g:23:6: ^( PROGRAM ( proc )* ( statement )* )
-            {
-            match(input,PROGRAM,FOLLOW_PROGRAM_in_program45); 
+    // GCLChecker.g:24:1: program : ^( PROGRAM functions block ) ;
+    public final GCLChecker.program_return program() throws RecognitionException {
+        GCLChecker.program_return retval = new GCLChecker.program_return();
+        retval.start = input.LT(1);
 
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree PROGRAM1=null;
+        GCLChecker.functions_return functions2 = null;
+
+        GCLChecker.block_return block3 = null;
+
+
+        CommonTree PROGRAM1_tree=null;
+
+        try {
+            // GCLChecker.g:25:3: ( ^( PROGRAM functions block ) )
+            // GCLChecker.g:25:6: ^( PROGRAM functions block )
+            {
+            _last = (CommonTree)input.LT(1);
+            {
+            CommonTree _save_last_1 = _last;
+            CommonTree _first_1 = null;
+            _last = (CommonTree)input.LT(1);
+            PROGRAM1=(CommonTree)match(input,PROGRAM,FOLLOW_PROGRAM_in_program57); 
+
+
+            if ( _first_0==null ) _first_0 = PROGRAM1;
+            match(input, Token.DOWN, null); 
+            _last = (CommonTree)input.LT(1);
+            pushFollow(FOLLOW_functions_in_program59);
+            functions2=functions();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = functions2.tree;
+            _last = (CommonTree)input.LT(1);
+            pushFollow(FOLLOW_block_in_program61);
+            block3=block();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = block3.tree;
+
+            match(input, Token.UP, null); _last = _save_last_1;
+            }
+
+
+            retval.tree = (CommonTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end program
+
+    public static class functions_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start functions
+    // GCLChecker.g:28:1: functions : ^( FUNCTIONS ( function )* ) ;
+    public final GCLChecker.functions_return functions() throws RecognitionException {
+        GCLChecker.functions_return retval = new GCLChecker.functions_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree FUNCTIONS4=null;
+        GCLChecker.function_return function5 = null;
+
+
+        CommonTree FUNCTIONS4_tree=null;
+
+        try {
+            // GCLChecker.g:29:3: ( ^( FUNCTIONS ( function )* ) )
+            // GCLChecker.g:29:5: ^( FUNCTIONS ( function )* )
+            {
+            _last = (CommonTree)input.LT(1);
+            {
+            CommonTree _save_last_1 = _last;
+            CommonTree _first_1 = null;
+            _last = (CommonTree)input.LT(1);
+            FUNCTIONS4=(CommonTree)match(input,FUNCTIONS,FOLLOW_FUNCTIONS_in_functions77); 
+
+
+            if ( _first_0==null ) _first_0 = FUNCTIONS4;
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLChecker.g:23:16: ( proc )*
+                // GCLChecker.g:29:17: ( function )*
                 loop1:
                 do {
                     int alt1=2;
@@ -80,13 +202,20 @@ public class GCLChecker extends TreeParser {
 
                     switch (alt1) {
                 	case 1 :
-                	    // GCLChecker.g:23:16: proc
+                	    // GCLChecker.g:29:17: function
                 	    {
-                	    pushFollow(FOLLOW_proc_in_program47);
-                	    proc();
-                	    _fsp--;
+                	    _last = (CommonTree)input.LT(1);
+                	    pushFollow(FOLLOW_function_in_functions79);
+                	    function5=function();
 
+                	    state._fsp--;
 
+                	     
+                	    if ( _first_1==null ) _first_1 = function5.tree;
+
+                	    retval.tree = (CommonTree)_first_0;
+                	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                	        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                 	    }
                 	    break;
 
@@ -95,26 +224,192 @@ public class GCLChecker extends TreeParser {
                     }
                 } while (true);
 
-                // GCLChecker.g:23:22: ( statement )*
+
+                match(input, Token.UP, null); 
+            }_last = _save_last_1;
+            }
+
+
+            retval.tree = (CommonTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end functions
+
+    public static class function_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start function
+    // GCLChecker.g:31:1: function : ^( FUNCTION IDENTIFIER block ) -> ^( FUNCTION IDENTIFIER ) ;
+    public final GCLChecker.function_return function() throws RecognitionException {
+        GCLChecker.function_return retval = new GCLChecker.function_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree FUNCTION6=null;
+        CommonTree IDENTIFIER7=null;
+        GCLChecker.block_return block8 = null;
+
+
+        CommonTree FUNCTION6_tree=null;
+        CommonTree IDENTIFIER7_tree=null;
+        RewriteRuleNodeStream stream_FUNCTION=new RewriteRuleNodeStream(adaptor,"token FUNCTION");
+        RewriteRuleNodeStream stream_IDENTIFIER=new RewriteRuleNodeStream(adaptor,"token IDENTIFIER");
+        RewriteRuleSubtreeStream stream_block=new RewriteRuleSubtreeStream(adaptor,"rule block");
+        try {
+            // GCLChecker.g:32:3: ( ^( FUNCTION IDENTIFIER block ) -> ^( FUNCTION IDENTIFIER ) )
+            // GCLChecker.g:33:3: ^( FUNCTION IDENTIFIER block )
+            {
+            _last = (CommonTree)input.LT(1);
+            {
+            CommonTree _save_last_1 = _last;
+            CommonTree _first_1 = null;
+            _last = (CommonTree)input.LT(1);
+            FUNCTION6=(CommonTree)match(input,FUNCTION,FOLLOW_FUNCTION_in_function95);  
+            stream_FUNCTION.add(FUNCTION6);
+
+
+            if ( _first_0==null ) _first_0 = FUNCTION6;
+            match(input, Token.DOWN, null); 
+            _last = (CommonTree)input.LT(1);
+            IDENTIFIER7=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_function97);  
+            stream_IDENTIFIER.add(IDENTIFIER7);
+
+            pushFollow(FOLLOW_block_in_function99);
+            block8=block();
+
+            state._fsp--;
+
+            stream_block.add(block8.getTree());
+             namespace.store( (IDENTIFIER7!=null?IDENTIFIER7.getText():null) , (block8!=null?((CommonTree)block8.tree):null)); 
+
+            match(input, Token.UP, null); _last = _save_last_1;
+            }
+
+
+
+            // AST REWRITE
+            // elements: IDENTIFIER, FUNCTION
+            // token labels: 
+            // rule labels: retval
+            // token list labels: 
+            // rule list labels: 
+            retval.tree = root_0;
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+
+            root_0 = (CommonTree)adaptor.nil();
+            // 33:88: -> ^( FUNCTION IDENTIFIER )
+            {
+                // GCLChecker.g:33:91: ^( FUNCTION IDENTIFIER )
+                {
+                CommonTree root_1 = (CommonTree)adaptor.nil();
+                root_1 = (CommonTree)adaptor.becomeRoot(stream_FUNCTION.nextNode(), root_1);
+
+                adaptor.addChild(root_1, stream_IDENTIFIER.nextNode());
+
+                adaptor.addChild(root_0, root_1);
+                }
+
+            }
+
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
+            input.replaceChildren(adaptor.getParent(retval.start),
+                                  adaptor.getChildIndex(retval.start),
+                                  adaptor.getChildIndex(_last),
+                                  retval.tree);
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end function
+
+    public static class block_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start block
+    // GCLChecker.g:35:1: block : ^( BLOCK ( statement )* ) ;
+    public final GCLChecker.block_return block() throws RecognitionException {
+        GCLChecker.block_return retval = new GCLChecker.block_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree BLOCK9=null;
+        GCLChecker.statement_return statement10 = null;
+
+
+        CommonTree BLOCK9_tree=null;
+
+        try {
+            // GCLChecker.g:36:3: ( ^( BLOCK ( statement )* ) )
+            // GCLChecker.g:36:5: ^( BLOCK ( statement )* )
+            {
+            _last = (CommonTree)input.LT(1);
+            {
+            CommonTree _save_last_1 = _last;
+            CommonTree _first_1 = null;
+            _last = (CommonTree)input.LT(1);
+            BLOCK9=(CommonTree)match(input,BLOCK,FOLLOW_BLOCK_in_block125); 
+
+
+            if ( _first_0==null ) _first_0 = BLOCK9;
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // GCLChecker.g:36:13: ( statement )*
                 loop2:
                 do {
                     int alt2=2;
                     int LA2_0 = input.LA(1);
 
-                    if ( ((LA2_0>=CALL && LA2_0<=IF)||(LA2_0>=PLUS && LA2_0<=CHOICE)) ) {
+                    if ( ((LA2_0>=CALL && LA2_0<=TRY)||(LA2_0>=IF && LA2_0<=CHOICE)||(LA2_0>=PLUS && LA2_0<=SHARP)) ) {
                         alt2=1;
                     }
 
 
                     switch (alt2) {
                 	case 1 :
-                	    // GCLChecker.g:23:22: statement
+                	    // GCLChecker.g:36:14: statement
                 	    {
-                	    pushFollow(FOLLOW_statement_in_program50);
-                	    statement();
-                	    _fsp--;
+                	    _last = (CommonTree)input.LT(1);
+                	    pushFollow(FOLLOW_statement_in_block128);
+                	    statement10=statement();
 
+                	    state._fsp--;
 
+                	     
+                	    if ( _first_1==null ) _first_1 = statement10.tree;
+
+                	    retval.tree = (CommonTree)_first_0;
+                	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                	        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                 	    }
                 	    break;
 
@@ -125,46 +420,13 @@ public class GCLChecker extends TreeParser {
 
 
                 match(input, Token.UP, null); 
+            }_last = _save_last_1;
             }
 
-            }
 
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        return ;
-    }
-    // $ANTLR end program
-
-
-    // $ANTLR start proc
-    // GCLChecker.g:26:1: proc : ^( FUNCTION IDENTIFIER block ) ;
-    public final void proc() throws RecognitionException {
-        CommonTree IDENTIFIER1=null;
-        CommonTree FUNCTION2=null;
-
-        try {
-            // GCLChecker.g:27:3: ( ^( FUNCTION IDENTIFIER block ) )
-            // GCLChecker.g:28:3: ^( FUNCTION IDENTIFIER block )
-            {
-            FUNCTION2=(CommonTree)input.LT(1);
-            match(input,FUNCTION,FOLLOW_FUNCTION_in_proc70); 
-
-            match(input, Token.DOWN, null); 
-            IDENTIFIER1=(CommonTree)input.LT(1);
-            match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_proc72); 
-            pushFollow(FOLLOW_block_in_proc74);
-            block();
-            _fsp--;
-
-
-            match(input, Token.UP, null); 
-             namespace.store( IDENTIFIER1.getText() , FUNCTION2); 
-
+            retval.tree = (CommonTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
             }
 
         }
@@ -174,103 +436,96 @@ public class GCLChecker extends TreeParser {
         }
         finally {
         }
-        return ;
-    }
-    // $ANTLR end proc
-
-
-    // $ANTLR start block
-    // GCLChecker.g:31:1: block : ^( BLOCK ( statement )* ) ;
-    public final void block() throws RecognitionException {
-        try {
-            // GCLChecker.g:32:3: ( ^( BLOCK ( statement )* ) )
-            // GCLChecker.g:32:5: ^( BLOCK ( statement )* )
-            {
-            match(input,BLOCK,FOLLOW_BLOCK_in_block94); 
-
-            if ( input.LA(1)==Token.DOWN ) {
-                match(input, Token.DOWN, null); 
-                // GCLChecker.g:32:13: ( statement )*
-                loop3:
-                do {
-                    int alt3=2;
-                    int LA3_0 = input.LA(1);
-
-                    if ( ((LA3_0>=CALL && LA3_0<=IF)||(LA3_0>=PLUS && LA3_0<=CHOICE)) ) {
-                        alt3=1;
-                    }
-
-
-                    switch (alt3) {
-                	case 1 :
-                	    // GCLChecker.g:32:14: statement
-                	    {
-                	    pushFollow(FOLLOW_statement_in_block97);
-                	    statement();
-                	    _fsp--;
-
-
-                	    }
-                	    break;
-
-                	default :
-                	    break loop3;
-                    }
-                } while (true);
-
-
-                match(input, Token.UP, null); 
-            }
-
-            }
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        return ;
+        return retval;
     }
     // $ANTLR end block
 
+    public static class statement_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
 
     // $ANTLR start statement
-    // GCLChecker.g:35:1: statement : ( ^( ALAP block ) | ^( WHILE condition DO block ) | ^( DO block WHILE condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE block ( OR block )* ) | expression );
-    public final void statement() throws RecognitionException {
+    // GCLChecker.g:39:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression );
+    public final GCLChecker.statement_return statement() throws RecognitionException {
+        GCLChecker.statement_return retval = new GCLChecker.statement_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree ALAP11=null;
+        CommonTree WHILE13=null;
+        CommonTree DO16=null;
+        CommonTree TRY19=null;
+        CommonTree IF22=null;
+        CommonTree CHOICE26=null;
+        GCLChecker.block_return block12 = null;
+
+        GCLChecker.condition_return condition14 = null;
+
+        GCLChecker.block_return block15 = null;
+
+        GCLChecker.block_return block17 = null;
+
+        GCLChecker.condition_return condition18 = null;
+
+        GCLChecker.block_return block20 = null;
+
+        GCLChecker.block_return block21 = null;
+
+        GCLChecker.condition_return condition23 = null;
+
+        GCLChecker.block_return block24 = null;
+
+        GCLChecker.block_return block25 = null;
+
+        GCLChecker.block_return block27 = null;
+
+        GCLChecker.expression_return expression28 = null;
+
+
+        CommonTree ALAP11_tree=null;
+        CommonTree WHILE13_tree=null;
+        CommonTree DO16_tree=null;
+        CommonTree TRY19_tree=null;
+        CommonTree IF22_tree=null;
+        CommonTree CHOICE26_tree=null;
+
         try {
-            // GCLChecker.g:36:3: ( ^( ALAP block ) | ^( WHILE condition DO block ) | ^( DO block WHILE condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE block ( OR block )* ) | expression )
-            int alt7=7;
+            // GCLChecker.g:40:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression )
+            int alt6=7;
             switch ( input.LA(1) ) {
             case ALAP:
                 {
-                alt7=1;
+                alt6=1;
                 }
                 break;
             case WHILE:
                 {
-                alt7=2;
+                alt6=2;
                 }
                 break;
             case DO:
                 {
-                alt7=3;
+                alt6=3;
                 }
                 break;
             case TRY:
                 {
-                alt7=4;
+                alt6=4;
                 }
                 break;
             case IF:
                 {
-                alt7=5;
+                alt6=5;
                 }
                 break;
             case CHOICE:
                 {
-                alt7=6;
+                alt6=6;
                 }
                 break;
             case CALL:
@@ -280,83 +535,215 @@ public class GCLChecker extends TreeParser {
             case STAR:
             case SHARP:
                 {
-                alt7=7;
+                alt6=7;
                 }
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("35:1: statement : ( ^( ALAP block ) | ^( WHILE condition DO block ) | ^( DO block WHILE condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( ELSE block )? ) | ^( CHOICE block ( OR block )* ) | expression );", 7, 0, input);
+                    new NoViableAltException("", 6, 0, input);
 
                 throw nvae;
             }
 
-            switch (alt7) {
+            switch (alt6) {
                 case 1 :
-                    // GCLChecker.g:36:5: ^( ALAP block )
+                    // GCLChecker.g:40:5: ^( ALAP block )
                     {
-                    match(input,ALAP,FOLLOW_ALAP_in_statement114); 
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    ALAP11=(CommonTree)match(input,ALAP,FOLLOW_ALAP_in_statement145); 
 
+
+                    if ( _first_0==null ) _first_0 = ALAP11;
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement116);
-                    block();
-                    _fsp--;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_block_in_statement147);
+                    block12=block();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = block12.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
 
 
-                    match(input, Token.UP, null); 
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:37:5: ^( WHILE condition DO block )
+                    // GCLChecker.g:41:5: ^( WHILE condition block )
                     {
-                    match(input,WHILE,FOLLOW_WHILE_in_statement124); 
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    WHILE13=(CommonTree)match(input,WHILE,FOLLOW_WHILE_in_statement155); 
 
+
+                    if ( _first_0==null ) _first_0 = WHILE13;
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_condition_in_statement126);
-                    condition();
-                    _fsp--;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_condition_in_statement157);
+                    condition14=condition();
 
-                    match(input,DO,FOLLOW_DO_in_statement128); 
-                    pushFollow(FOLLOW_block_in_statement130);
-                    block();
-                    _fsp--;
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = condition14.tree;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_block_in_statement159);
+                    block15=block();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = block15.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
 
 
-                    match(input, Token.UP, null); 
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:38:5: ^( DO block WHILE condition )
+                    // GCLChecker.g:42:5: ^( DO block condition )
                     {
-                    match(input,DO,FOLLOW_DO_in_statement138); 
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    DO16=(CommonTree)match(input,DO,FOLLOW_DO_in_statement167); 
 
+
+                    if ( _first_0==null ) _first_0 = DO16;
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement140);
-                    block();
-                    _fsp--;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_block_in_statement169);
+                    block17=block();
 
-                    match(input,WHILE,FOLLOW_WHILE_in_statement142); 
-                    pushFollow(FOLLOW_condition_in_statement144);
-                    condition();
-                    _fsp--;
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = block17.tree;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_condition_in_statement171);
+                    condition18=condition();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = condition18.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
 
 
-                    match(input, Token.UP, null); 
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 4 :
-                    // GCLChecker.g:39:5: ^( TRY block ( block )? )
+                    // GCLChecker.g:43:5: ^( TRY block ( block )? )
                     {
-                    match(input,TRY,FOLLOW_TRY_in_statement152); 
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    TRY19=(CommonTree)match(input,TRY,FOLLOW_TRY_in_statement179); 
 
+
+                    if ( _first_0==null ) _first_0 = TRY19;
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement154);
-                    block();
-                    _fsp--;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_block_in_statement181);
+                    block20=block();
 
-                    // GCLChecker.g:39:17: ( block )?
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = block20.tree;
+                    // GCLChecker.g:43:17: ( block )?
+                    int alt3=2;
+                    int LA3_0 = input.LA(1);
+
+                    if ( (LA3_0==BLOCK) ) {
+                        alt3=1;
+                    }
+                    switch (alt3) {
+                        case 1 :
+                            // GCLChecker.g:43:18: block
+                            {
+                            _last = (CommonTree)input.LT(1);
+                            pushFollow(FOLLOW_block_in_statement184);
+                            block21=block();
+
+                            state._fsp--;
+
+                             
+                            if ( _first_1==null ) _first_1 = block21.tree;
+
+                            retval.tree = (CommonTree)_first_0;
+                            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                            }
+                            break;
+
+                    }
+
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 5 :
+                    // GCLChecker.g:44:5: ^( IF condition block ( block )? )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    IF22=(CommonTree)match(input,IF,FOLLOW_IF_in_statement194); 
+
+
+                    if ( _first_0==null ) _first_0 = IF22;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_condition_in_statement196);
+                    condition23=condition();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = condition23.tree;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_block_in_statement198);
+                    block24=block();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = block24.tree;
+                    // GCLChecker.g:44:26: ( block )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -365,116 +752,113 @@ public class GCLChecker extends TreeParser {
                     }
                     switch (alt4) {
                         case 1 :
-                            // GCLChecker.g:39:18: block
+                            // GCLChecker.g:44:27: block
                             {
-                            pushFollow(FOLLOW_block_in_statement157);
-                            block();
-                            _fsp--;
+                            _last = (CommonTree)input.LT(1);
+                            pushFollow(FOLLOW_block_in_statement201);
+                            block25=block();
 
+                            state._fsp--;
 
+                             
+                            if ( _first_1==null ) _first_1 = block25.tree;
+
+                            retval.tree = (CommonTree)_first_0;
+                            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                             }
                             break;
 
                     }
 
 
-                    match(input, Token.UP, null); 
-
-                    }
-                    break;
-                case 5 :
-                    // GCLChecker.g:40:5: ^( IF condition block ( ELSE block )? )
-                    {
-                    match(input,IF,FOLLOW_IF_in_statement167); 
-
-                    match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_condition_in_statement169);
-                    condition();
-                    _fsp--;
-
-                    pushFollow(FOLLOW_block_in_statement171);
-                    block();
-                    _fsp--;
-
-                    // GCLChecker.g:40:26: ( ELSE block )?
-                    int alt5=2;
-                    int LA5_0 = input.LA(1);
-
-                    if ( (LA5_0==ELSE) ) {
-                        alt5=1;
-                    }
-                    switch (alt5) {
-                        case 1 :
-                            // GCLChecker.g:40:27: ELSE block
-                            {
-                            match(input,ELSE,FOLLOW_ELSE_in_statement174); 
-                            pushFollow(FOLLOW_block_in_statement176);
-                            block();
-                            _fsp--;
-
-
-                            }
-                            break;
-
+                    match(input, Token.UP, null); _last = _save_last_1;
                     }
 
 
-                    match(input, Token.UP, null); 
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 6 :
-                    // GCLChecker.g:41:5: ^( CHOICE block ( OR block )* )
+                    // GCLChecker.g:45:5: ^( CHOICE ( block )+ )
                     {
-                    match(input,CHOICE,FOLLOW_CHOICE_in_statement186); 
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    CHOICE26=(CommonTree)match(input,CHOICE,FOLLOW_CHOICE_in_statement211); 
 
+
+                    if ( _first_0==null ) _first_0 = CHOICE26;
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement188);
-                    block();
-                    _fsp--;
-
-                    // GCLChecker.g:41:20: ( OR block )*
-                    loop6:
+                    // GCLChecker.g:45:14: ( block )+
+                    int cnt5=0;
+                    loop5:
                     do {
-                        int alt6=2;
-                        int LA6_0 = input.LA(1);
+                        int alt5=2;
+                        int LA5_0 = input.LA(1);
 
-                        if ( (LA6_0==OR) ) {
-                            alt6=1;
+                        if ( (LA5_0==BLOCK) ) {
+                            alt5=1;
                         }
 
 
-                        switch (alt6) {
+                        switch (alt5) {
                     	case 1 :
-                    	    // GCLChecker.g:41:21: OR block
+                    	    // GCLChecker.g:45:14: block
                     	    {
-                    	    match(input,OR,FOLLOW_OR_in_statement191); 
-                    	    pushFollow(FOLLOW_block_in_statement193);
-                    	    block();
-                    	    _fsp--;
+                    	    _last = (CommonTree)input.LT(1);
+                    	    pushFollow(FOLLOW_block_in_statement213);
+                    	    block27=block();
 
+                    	    state._fsp--;
 
+                    	     
+                    	    if ( _first_1==null ) _first_1 = block27.tree;
+
+                    	    retval.tree = (CommonTree)_first_0;
+                    	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                    	        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop6;
+                    	    if ( cnt5 >= 1 ) break loop5;
+                                EarlyExitException eee =
+                                    new EarlyExitException(5, input);
+                                throw eee;
                         }
+                        cnt5++;
                     } while (true);
 
 
-                    match(input, Token.UP, null); 
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
 
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 7 :
-                    // GCLChecker.g:42:5: expression
+                    // GCLChecker.g:46:5: expression
                     {
-                    pushFollow(FOLLOW_expression_in_statement204);
-                    expression();
-                    _fsp--;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_expression_in_statement221);
+                    expression28=expression();
 
+                    state._fsp--;
 
+                     
+                    if ( _first_0==null ) _first_0 = expression28.tree;
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
 
@@ -486,140 +870,434 @@ public class GCLChecker extends TreeParser {
         }
         finally {
         }
-        return ;
+        return retval;
     }
     // $ANTLR end statement
 
+    public static class expression_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
 
     // $ANTLR start expression
-    // GCLChecker.g:45:1: expression : ( ^( OR expression expression ) | ^( PLUS expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule );
-    public final void expression() throws RecognitionException {
+    // GCLChecker.g:49:1: expression : ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule );
+    public final GCLChecker.expression_return expression() throws RecognitionException {
+        GCLChecker.expression_return retval = new GCLChecker.expression_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree OR29=null;
+        CommonTree PLUS32=null;
+        CommonTree STAR33=null;
+        CommonTree SHARP35=null;
+        CommonTree CALL37=null;
+        CommonTree IDENTIFIER38=null;
+        GCLChecker.expression_return e1 = null;
+
+        GCLChecker.expression_return expression30 = null;
+
+        GCLChecker.expression_return expression31 = null;
+
+        GCLChecker.expression_return expression34 = null;
+
+        GCLChecker.expression_return expression36 = null;
+
+        GCLChecker.rule_return rule39 = null;
+
+
+        CommonTree OR29_tree=null;
+        CommonTree PLUS32_tree=null;
+        CommonTree STAR33_tree=null;
+        CommonTree SHARP35_tree=null;
+        CommonTree CALL37_tree=null;
+        CommonTree IDENTIFIER38_tree=null;
+        RewriteRuleNodeStream stream_PLUS=new RewriteRuleNodeStream(adaptor,"token PLUS");
+        RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
         try {
-            // GCLChecker.g:46:2: ( ^( OR expression expression ) | ^( PLUS expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule )
-            int alt8=6;
+            // GCLChecker.g:50:2: ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule )
+            int alt7=6;
+            switch ( input.LA(1) ) {
+            case OR:
+                {
+                alt7=1;
+                }
+                break;
+            case PLUS:
+                {
+                alt7=2;
+                }
+                break;
+            case STAR:
+                {
+                alt7=3;
+                }
+                break;
+            case SHARP:
+                {
+                alt7=4;
+                }
+                break;
+            case CALL:
+                {
+                alt7=5;
+                }
+                break;
+            case IDENTIFIER:
+                {
+                alt7=6;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("", 7, 0, input);
+
+                throw nvae;
+            }
+
+            switch (alt7) {
+                case 1 :
+                    // GCLChecker.g:50:4: ^( OR expression expression )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    OR29=(CommonTree)match(input,OR,FOLLOW_OR_in_expression235); 
+
+
+                    if ( _first_0==null ) _first_0 = OR29;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_expression_in_expression237);
+                    expression30=expression();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = expression30.tree;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_expression_in_expression239);
+                    expression31=expression();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = expression31.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 2 :
+                    // GCLChecker.g:51:4: ^( PLUS e1= expression )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    PLUS32=(CommonTree)match(input,PLUS,FOLLOW_PLUS_in_expression246);  
+                    stream_PLUS.add(PLUS32);
+
+
+                    if ( _first_0==null ) _first_0 = PLUS32;
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_expression_in_expression250);
+                    e1=expression();
+
+                    state._fsp--;
+
+                    stream_expression.add(e1.getTree());
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+
+                    // AST REWRITE
+                    // elements: e1, e1, PLUS
+                    // token labels: 
+                    // rule labels: retval, e1
+                    // token list labels: 
+                    // rule list labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_e1=new RewriteRuleSubtreeStream(adaptor,"token e1",e1!=null?e1.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 51:26: -> ^( PLUS $e1 $e1)
+                    {
+                        // GCLChecker.g:51:29: ^( PLUS $e1 $e1)
+                        {
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot(stream_PLUS.nextNode(), root_1);
+
+                        adaptor.addChild(root_1, stream_e1.nextTree());
+                        adaptor.addChild(root_1, stream_e1.nextTree());
+
+                        adaptor.addChild(root_0, root_1);
+                        }
+
+                    }
+
+                    retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
+                    input.replaceChildren(adaptor.getParent(retval.start),
+                                          adaptor.getChildIndex(retval.start),
+                                          adaptor.getChildIndex(_last),
+                                          retval.tree);
+                    }
+                    break;
+                case 3 :
+                    // GCLChecker.g:52:4: ^( STAR expression )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    STAR33=(CommonTree)match(input,STAR,FOLLOW_STAR_in_expression269); 
+
+
+                    if ( _first_0==null ) _first_0 = STAR33;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_expression_in_expression271);
+                    expression34=expression();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = expression34.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 4 :
+                    // GCLChecker.g:53:4: ^( SHARP expression )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    SHARP35=(CommonTree)match(input,SHARP,FOLLOW_SHARP_in_expression278); 
+
+
+                    if ( _first_0==null ) _first_0 = SHARP35;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_expression_in_expression280);
+                    expression36=expression();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = expression36.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 5 :
+                    // GCLChecker.g:54:4: ^( CALL IDENTIFIER )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    CALL37=(CommonTree)match(input,CALL,FOLLOW_CALL_in_expression287); 
+
+
+                    if ( _first_0==null ) _first_0 = CALL37;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    IDENTIFIER38=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_expression289); 
+                     
+                    if ( _first_1==null ) _first_1 = IDENTIFIER38;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 6 :
+                    // GCLChecker.g:55:4: rule
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_rule_in_expression295);
+                    rule39=rule();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_0==null ) _first_0 = rule39.tree;
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end expression
+
+    public static class condition_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start condition
+    // GCLChecker.g:58:1: condition : ( ^( OR condition condition ) | rule | 'true' );
+    public final GCLChecker.condition_return condition() throws RecognitionException {
+        GCLChecker.condition_return retval = new GCLChecker.condition_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree OR40=null;
+        CommonTree string_literal44=null;
+        GCLChecker.condition_return condition41 = null;
+
+        GCLChecker.condition_return condition42 = null;
+
+        GCLChecker.rule_return rule43 = null;
+
+
+        CommonTree OR40_tree=null;
+        CommonTree string_literal44_tree=null;
+
+        try {
+            // GCLChecker.g:59:3: ( ^( OR condition condition ) | rule | 'true' )
+            int alt8=3;
             switch ( input.LA(1) ) {
             case OR:
                 {
                 alt8=1;
                 }
                 break;
-            case PLUS:
+            case IDENTIFIER:
                 {
                 alt8=2;
                 }
                 break;
-            case STAR:
+            case 32:
                 {
                 alt8=3;
                 }
                 break;
-            case SHARP:
-                {
-                alt8=4;
-                }
-                break;
-            case CALL:
-                {
-                alt8=5;
-                }
-                break;
-            case IDENTIFIER:
-                {
-                alt8=6;
-                }
-                break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("45:1: expression : ( ^( OR expression expression ) | ^( PLUS expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule );", 8, 0, input);
+                    new NoViableAltException("", 8, 0, input);
 
                 throw nvae;
             }
 
             switch (alt8) {
                 case 1 :
-                    // GCLChecker.g:46:4: ^( OR expression expression )
+                    // GCLChecker.g:59:5: ^( OR condition condition )
                     {
-                    match(input,OR,FOLLOW_OR_in_expression218); 
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    OR40=(CommonTree)match(input,OR,FOLLOW_OR_in_condition309); 
 
+
+                    if ( _first_0==null ) _first_0 = OR40;
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression220);
-                    expression();
-                    _fsp--;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_condition_in_condition311);
+                    condition41=condition();
 
-                    pushFollow(FOLLOW_expression_in_expression222);
-                    expression();
-                    _fsp--;
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = condition41.tree;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_condition_in_condition313);
+                    condition42=condition();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = condition42.tree;
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
 
 
-                    match(input, Token.UP, null); 
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:47:4: ^( PLUS expression )
+                    // GCLChecker.g:60:5: rule
                     {
-                    match(input,PLUS,FOLLOW_PLUS_in_expression229); 
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_rule_in_condition320);
+                    rule43=rule();
 
-                    match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression231);
-                    expression();
-                    _fsp--;
+                    state._fsp--;
 
+                     
+                    if ( _first_0==null ) _first_0 = rule43.tree;
 
-                    match(input, Token.UP, null); 
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:48:4: ^( STAR expression )
+                    // GCLChecker.g:61:5: 'true'
                     {
-                    match(input,STAR,FOLLOW_STAR_in_expression238); 
+                    _last = (CommonTree)input.LT(1);
+                    string_literal44=(CommonTree)match(input,32,FOLLOW_32_in_condition326); 
+                     
+                    if ( _first_0==null ) _first_0 = string_literal44;
 
-                    match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression240);
-                    expression();
-                    _fsp--;
-
-
-                    match(input, Token.UP, null); 
-
-                    }
-                    break;
-                case 4 :
-                    // GCLChecker.g:49:4: ^( SHARP expression )
-                    {
-                    match(input,SHARP,FOLLOW_SHARP_in_expression247); 
-
-                    match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_expression_in_expression249);
-                    expression();
-                    _fsp--;
-
-
-                    match(input, Token.UP, null); 
-
-                    }
-                    break;
-                case 5 :
-                    // GCLChecker.g:50:4: ^( CALL IDENTIFIER )
-                    {
-                    match(input,CALL,FOLLOW_CALL_in_expression256); 
-
-                    match(input, Token.DOWN, null); 
-                    match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_expression258); 
-
-                    match(input, Token.UP, null); 
-
-                    }
-                    break;
-                case 6 :
-                    // GCLChecker.g:51:4: rule
-                    {
-                    pushFollow(FOLLOW_rule_in_expression264);
-                    rule();
-                    _fsp--;
-
-
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
                     }
                     break;
 
@@ -631,100 +1309,42 @@ public class GCLChecker extends TreeParser {
         }
         finally {
         }
-        return ;
-    }
-    // $ANTLR end expression
-
-
-    // $ANTLR start condition
-    // GCLChecker.g:54:1: condition : ( ^( OR condition condition ) | rule | 'true' );
-    public final void condition() throws RecognitionException {
-        try {
-            // GCLChecker.g:55:3: ( ^( OR condition condition ) | rule | 'true' )
-            int alt9=3;
-            switch ( input.LA(1) ) {
-            case OR:
-                {
-                alt9=1;
-                }
-                break;
-            case IDENTIFIER:
-                {
-                alt9=2;
-                }
-                break;
-            case 32:
-                {
-                alt9=3;
-                }
-                break;
-            default:
-                NoViableAltException nvae =
-                    new NoViableAltException("54:1: condition : ( ^( OR condition condition ) | rule | 'true' );", 9, 0, input);
-
-                throw nvae;
-            }
-
-            switch (alt9) {
-                case 1 :
-                    // GCLChecker.g:55:5: ^( OR condition condition )
-                    {
-                    match(input,OR,FOLLOW_OR_in_condition278); 
-
-                    match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_condition_in_condition280);
-                    condition();
-                    _fsp--;
-
-                    pushFollow(FOLLOW_condition_in_condition282);
-                    condition();
-                    _fsp--;
-
-
-                    match(input, Token.UP, null); 
-
-                    }
-                    break;
-                case 2 :
-                    // GCLChecker.g:56:5: rule
-                    {
-                    pushFollow(FOLLOW_rule_in_condition289);
-                    rule();
-                    _fsp--;
-
-
-                    }
-                    break;
-                case 3 :
-                    // GCLChecker.g:57:5: 'true'
-                    {
-                    match(input,32,FOLLOW_32_in_condition295); 
-
-                    }
-                    break;
-
-            }
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        return ;
+        return retval;
     }
     // $ANTLR end condition
 
+    public static class rule_return extends TreeRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
 
     // $ANTLR start rule
-    // GCLChecker.g:60:1: rule : IDENTIFIER ;
-    public final void rule() throws RecognitionException {
-        try {
-            // GCLChecker.g:61:3: ( IDENTIFIER )
-            // GCLChecker.g:61:5: IDENTIFIER
-            {
-            match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule308); 
+    // GCLChecker.g:64:1: rule : IDENTIFIER ;
+    public final GCLChecker.rule_return rule() throws RecognitionException {
+        GCLChecker.rule_return retval = new GCLChecker.rule_return();
+        retval.start = input.LT(1);
 
+        CommonTree root_0 = null;
+
+        CommonTree _first_0 = null;
+        CommonTree _last = null;
+
+        CommonTree IDENTIFIER45=null;
+
+        CommonTree IDENTIFIER45_tree=null;
+
+        try {
+            // GCLChecker.g:65:3: ( IDENTIFIER )
+            // GCLChecker.g:65:5: IDENTIFIER
+            {
+            _last = (CommonTree)input.LT(1);
+            IDENTIFIER45=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule339); 
+             
+            if ( _first_0==null ) _first_0 = IDENTIFIER45;
+
+            retval.tree = (CommonTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
             }
 
         }
@@ -734,61 +1354,60 @@ public class GCLChecker extends TreeParser {
         }
         finally {
         }
-        return ;
+        return retval;
     }
     // $ANTLR end rule
+
+    // Delegated rules
 
 
  
 
-    public static final BitSet FOLLOW_PROGRAM_in_program45 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_proc_in_program47 = new BitSet(new long[]{0x00000000003CFF88L});
-    public static final BitSet FOLLOW_statement_in_program50 = new BitSet(new long[]{0x00000000003CFF08L});
-    public static final BitSet FOLLOW_FUNCTION_in_proc70 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_proc72 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_proc74 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_BLOCK_in_block94 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_statement_in_block97 = new BitSet(new long[]{0x00000000003CFF08L});
-    public static final BitSet FOLLOW_ALAP_in_statement114 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement116 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_WHILE_in_statement124 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_statement126 = new BitSet(new long[]{0x0000000000002000L});
-    public static final BitSet FOLLOW_DO_in_statement128 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement130 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DO_in_statement138 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement140 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_WHILE_in_statement142 = new BitSet(new long[]{0x0000000100000600L});
-    public static final BitSet FOLLOW_condition_in_statement144 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_TRY_in_statement152 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement154 = new BitSet(new long[]{0x0000000000000028L});
-    public static final BitSet FOLLOW_block_in_statement157 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_IF_in_statement167 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_statement169 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement171 = new BitSet(new long[]{0x0000000000010008L});
-    public static final BitSet FOLLOW_ELSE_in_statement174 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement176 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_CHOICE_in_statement186 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement188 = new BitSet(new long[]{0x0000000000000408L});
-    public static final BitSet FOLLOW_OR_in_statement191 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement193 = new BitSet(new long[]{0x0000000000000408L});
-    public static final BitSet FOLLOW_expression_in_statement204 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_expression218 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression220 = new BitSet(new long[]{0x00000000001C0700L});
-    public static final BitSet FOLLOW_expression_in_expression222 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_PLUS_in_expression229 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression231 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_STAR_in_expression238 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression240 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_SHARP_in_expression247 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression249 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_CALL_in_expression256 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_expression258 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_rule_in_expression264 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_condition278 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_condition280 = new BitSet(new long[]{0x0000000100000600L});
-    public static final BitSet FOLLOW_condition_in_condition282 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_rule_in_condition289 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_32_in_condition295 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_rule308 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROGRAM_in_program57 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_functions_in_program59 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_program61 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_FUNCTIONS_in_functions77 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_function_in_functions79 = new BitSet(new long[]{0x0000000000000088L});
+    public static final BitSet FOLLOW_FUNCTION_in_function95 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_function97 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_function99 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_BLOCK_in_block125 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_statement_in_block128 = new BitSet(new long[]{0x00000000003B7F08L});
+    public static final BitSet FOLLOW_ALAP_in_statement145 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement147 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_WHILE_in_statement155 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement157 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement159 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DO_in_statement167 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement169 = new BitSet(new long[]{0x00000001003B7F08L});
+    public static final BitSet FOLLOW_condition_in_statement171 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_TRY_in_statement179 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement181 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_block_in_statement184 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_IF_in_statement194 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement196 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement198 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_block_in_statement201 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CHOICE_in_statement211 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement213 = new BitSet(new long[]{0x0000000000000028L});
+    public static final BitSet FOLLOW_expression_in_statement221 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_expression235 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression237 = new BitSet(new long[]{0x00000000003B7F08L});
+    public static final BitSet FOLLOW_expression_in_expression239 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PLUS_in_expression246 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression250 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_STAR_in_expression269 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression271 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_SHARP_in_expression278 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression280 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CALL_in_expression287 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_expression289 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_expression295 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_condition309 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_condition311 = new BitSet(new long[]{0x00000001003B7F08L});
+    public static final BitSet FOLLOW_condition_in_condition313 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_condition320 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_32_in_condition326 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule339 = new BitSet(new long[]{0x0000000000000002L});
 
 }

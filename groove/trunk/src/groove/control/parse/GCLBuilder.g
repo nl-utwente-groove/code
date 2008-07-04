@@ -17,9 +17,9 @@ import groove.control.*;
     	this.builder = ab;
     }
     
-    private void proc(CommonTree proc) throws RecognitionException {
+    private void proc(CommonTree block) throws RecognitionException {
     	TreeNodeStream restore = input;
-    	input = new CommonTreeNodeStream(proc.getChild(1));
+    	input = new CommonTreeNodeStream(block);
     	block();
     	this.input = restore;
     }
@@ -29,11 +29,17 @@ import groove.control.*;
 
 program returns [ControlShape shape=null] 
 @init{ ControlState start; ControlState end; }
-  : ^(PROGRAM 
+  : ^(PROGRAM functions 
   { builder.startProgram(); shape = builder.currentShape(); start = builder.getStart(); end = builder.getEnd(); }
-  	(statement)*
+  	block
   { builder.endProgram(); }
 	);
+
+functions
+  : ^(FUNCTIONS function*);
+
+function
+  : ^(FUNCTION IDENTIFIER);
 
 block	
 @init{ 
@@ -66,13 +72,16 @@ block
   ;
 
 statement
-@init{ControlState start = builder.getStart(); ControlState end = builder.getEnd(); ControlState newState; ControlTransition fail;}
-:  ^(ALAP 
+@init{ControlState start = builder.getStart(); ControlState end = builder.getEnd(); ControlState newState; ControlTransition fail;} :
+	^(ALAP 
     	{ fail = builder.addElse(); newState = builder.newState(); builder.restore(newState, start); builder.addLambda(); builder.restore(start, newState); }
     block
     	{ builder.fail(start,fail); builder.tagDelta(start); }
     )
-  | ^(WHILE
+  
+  |
+  
+  	^(WHILE
     	{ fail = builder.addElse(); newState = builder.newState(); builder.restore(start, newState); }
     condition
     	{ builder.fail(start, fail); builder.restore(newState, start);}
@@ -86,22 +95,30 @@ statement
   	condition
   		{ builder.fail(newState,fail); builder.tagDelta(newState); builder.deltaInitCopy(newState, start); }
   	)
-  | ^(TRY { builder.debug("try,enter");}
+  | 
+  
+  ^(TRY { builder.debug("try,enter");}
     	{ newState = builder.newState(); builder.restore(start, newState); fail = builder.addElse(); builder.restore(start, end);}
     block
     	{builder.fail(start, fail); builder.restore(newState, end); boolean block = false; }
-    (ELSE block {block = true;})?
-    	{ if(block){builder.merge(); builder.tagDelta(start);}else{builder.initCopy(newState, start);}}
+    (block {block = true;})?
+    	{ if(!block){builder.merge(); builder.tagDelta(start);}else{builder.initCopy(newState, start);}}
     { builder.debug("try,exit");})
-  | ^(IF
+  
+  |
+  
+  
+  	^(IF
   		{ newState = builder.newState(); builder.restore(start, newState); }
   	condition
   		{builder.restore(newState, end);}
   	block
   		{  newState = builder.newState(); builder.restore(start, newState); fail = builder.addElse(); builder.fail(start,fail); builder.restore(newState,end); boolean block = false; }
-  	(ELSE block {block = true;} )? 
-  		{if(block){builder.merge();}else{builder.initCopy(newState, start);}}
+  	(block {block = true;} )? 
+  		{if(!block){builder.merge();builder.tagDelta(start);}else{builder.initCopy(newState, start);}}
   	)
+  	
+  	
   | ^(CHOICE 
   	( { newState = builder.newState(); builder.restore(start, newState); builder.addLambda(); builder.restore(newState, end); } block { start.addInit(newState); } )+)
   | expression;
