@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -104,9 +105,13 @@ public class ControlView {
 			throw new FormatException(re); 
 		}
 		// only continue without parsing errors
+		
+		List<String> errors = parser.getErrors();
+		
+		if( errors.size() != 0 ) {
+			errors.add(0, "Encountered parse errors in control program");
+			throw new FormatException(errors);
 			
-		if( parser.getNumberOfSyntaxErrors() !=0 ) {
-			throw new FormatException("Parse errors found in control program.");
 		} else {
 			// fetch the resulting tree
 			CommonTree t = (CommonTree)r.getTree();

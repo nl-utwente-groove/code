@@ -16,13 +16,28 @@ tokens {
 @lexer::header {
 package groove.control.parse;
 import groove.control.*;
+import java.util.LinkedList;
 }
 
 @header {
 package groove.control.parse;
 import groove.control.*;
+import java.util.LinkedList;
 }
 
+
+@members {
+    private List<String> errors = new LinkedList<String>();
+    public void displayRecognitionError(String[] tokenNames,
+                                        RecognitionException e) {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, tokenNames);
+        errors.add(hdr + " " + msg);
+    }
+    public List<String> getErrors() {
+        return errors;
+    }
+}
 
 // PARSER rules
 

@@ -1,7 +1,8 @@
-// $ANTLR 3.1b1 GCL.g 2008-07-04 16:18:56
+// $ANTLR 3.1b1 GCL.g 2008-07-07 09:49:30
 
 package groove.control.parse;
 import groove.control.*;
+import java.util.LinkedList;
 
 
 import org.antlr.runtime.*;
@@ -70,6 +71,18 @@ public class GCLParser extends Parser {
     public String[] getTokenNames() { return GCLParser.tokenNames; }
     public String getGrammarFileName() { return "GCL.g"; }
 
+    
+        private List<String> errors = new LinkedList<String>();
+        public void displayRecognitionError(String[] tokenNames,
+                                            RecognitionException e) {
+            String hdr = getErrorHeader(e);
+            String msg = getErrorMessage(e, tokenNames);
+            errors.add(hdr + " " + msg);
+        }
+        public List<String> getErrors() {
+            return errors;
+        }
+
 
     public static class program_return extends ParserRuleReturnScope {
         Object tree;
@@ -77,7 +90,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start program
-    // GCL.g:29:1: program : ( function | statement )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) ) ;
+    // GCL.g:44:1: program : ( function | statement )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) ) ;
     public final GCLParser.program_return program() throws RecognitionException {
         GCLParser.program_return retval = new GCLParser.program_return();
         retval.start = input.LT(1);
@@ -92,19 +105,19 @@ public class GCLParser extends Parser {
         RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
         RewriteRuleSubtreeStream stream_function=new RewriteRuleSubtreeStream(adaptor,"rule function");
         try {
-            // GCL.g:29:9: ( ( function | statement )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) ) )
-            // GCL.g:29:11: ( function | statement )*
+            // GCL.g:44:9: ( ( function | statement )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) ) )
+            // GCL.g:44:11: ( function | statement )*
             {
-            // GCL.g:29:11: ( function | statement )*
+            // GCL.g:44:11: ( function | statement )*
             loop1:
             do {
                 int alt1=3;
                 alt1 = dfa1.predict(input);
                 switch (alt1) {
             	case 1 :
-            	    // GCL.g:29:12: function
+            	    // GCL.g:44:12: function
             	    {
-            	    pushFollow(FOLLOW_function_in_program71);
+            	    pushFollow(FOLLOW_function_in_program77);
             	    function1=function();
 
             	    state._fsp--;
@@ -114,9 +127,9 @@ public class GCLParser extends Parser {
             	    }
             	    break;
             	case 2 :
-            	    // GCL.g:29:21: statement
+            	    // GCL.g:44:21: statement
             	    {
-            	    pushFollow(FOLLOW_statement_in_program73);
+            	    pushFollow(FOLLOW_statement_in_program79);
             	    statement2=statement();
 
             	    state._fsp--;
@@ -143,19 +156,19 @@ public class GCLParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 29:33: -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) )
+            // 44:33: -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) )
             {
-                // GCL.g:29:36: ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) )
+                // GCL.g:44:36: ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( statement )* ) )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PROGRAM, "PROGRAM"), root_1);
 
-                // GCL.g:29:46: ^( FUNCTIONS ( function )* )
+                // GCL.g:44:46: ^( FUNCTIONS ( function )* )
                 {
                 Object root_2 = (Object)adaptor.nil();
                 root_2 = (Object)adaptor.becomeRoot((Object)adaptor.create(FUNCTIONS, "FUNCTIONS"), root_2);
 
-                // GCL.g:29:58: ( function )*
+                // GCL.g:44:58: ( function )*
                 while ( stream_function.hasNext() ) {
                     adaptor.addChild(root_2, stream_function.nextTree());
 
@@ -164,12 +177,12 @@ public class GCLParser extends Parser {
 
                 adaptor.addChild(root_1, root_2);
                 }
-                // GCL.g:29:69: ^( BLOCK ( statement )* )
+                // GCL.g:44:69: ^( BLOCK ( statement )* )
                 {
                 Object root_2 = (Object)adaptor.nil();
                 root_2 = (Object)adaptor.becomeRoot((Object)adaptor.create(BLOCK, "BLOCK"), root_2);
 
-                // GCL.g:29:77: ( statement )*
+                // GCL.g:44:77: ( statement )*
                 while ( stream_statement.hasNext() ) {
                     adaptor.addChild(root_2, stream_statement.nextTree());
 
@@ -211,7 +224,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start block
-    // GCL.g:31:1: block : '{' ( statement )* '}' -> ^( BLOCK ( statement )* ) ;
+    // GCL.g:46:1: block : '{' ( statement )* '}' -> ^( BLOCK ( statement )* ) ;
     public final GCLParser.block_return block() throws RecognitionException {
         GCLParser.block_return retval = new GCLParser.block_return();
         retval.start = input.LT(1);
@@ -229,22 +242,22 @@ public class GCLParser extends Parser {
         RewriteRuleTokenStream stream_28=new RewriteRuleTokenStream(adaptor,"token 28");
         RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
         try {
-            // GCL.g:31:7: ( '{' ( statement )* '}' -> ^( BLOCK ( statement )* ) )
-            // GCL.g:31:9: '{' ( statement )* '}'
+            // GCL.g:46:7: ( '{' ( statement )* '}' -> ^( BLOCK ( statement )* ) )
+            // GCL.g:46:9: '{' ( statement )* '}'
             {
-            char_literal3=(Token)match(input,27,FOLLOW_27_in_block103);  
+            char_literal3=(Token)match(input,27,FOLLOW_27_in_block109);  
             stream_27.add(char_literal3);
 
-            // GCL.g:31:13: ( statement )*
+            // GCL.g:46:13: ( statement )*
             loop2:
             do {
                 int alt2=2;
                 alt2 = dfa2.predict(input);
                 switch (alt2) {
             	case 1 :
-            	    // GCL.g:31:13: statement
+            	    // GCL.g:46:13: statement
             	    {
-            	    pushFollow(FOLLOW_statement_in_block105);
+            	    pushFollow(FOLLOW_statement_in_block111);
             	    statement4=statement();
 
             	    state._fsp--;
@@ -259,7 +272,7 @@ public class GCLParser extends Parser {
                 }
             } while (true);
 
-            char_literal5=(Token)match(input,28,FOLLOW_28_in_block109);  
+            char_literal5=(Token)match(input,28,FOLLOW_28_in_block115);  
             stream_28.add(char_literal5);
 
 
@@ -274,14 +287,14 @@ public class GCLParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 31:29: -> ^( BLOCK ( statement )* )
+            // 46:29: -> ^( BLOCK ( statement )* )
             {
-                // GCL.g:31:32: ^( BLOCK ( statement )* )
+                // GCL.g:46:32: ^( BLOCK ( statement )* )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(BLOCK, "BLOCK"), root_1);
 
-                // GCL.g:31:40: ( statement )*
+                // GCL.g:46:40: ( statement )*
                 while ( stream_statement.hasNext() ) {
                     adaptor.addChild(root_1, stream_statement.nextTree());
 
@@ -320,7 +333,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start function
-    // GCL.g:33:1: function : FUNCTION IDENTIFIER '(' ')' block -> ^( FUNCTION IDENTIFIER block ) ;
+    // GCL.g:48:1: function : FUNCTION IDENTIFIER '(' ')' block -> ^( FUNCTION IDENTIFIER block ) ;
     public final GCLParser.function_return function() throws RecognitionException {
         GCLParser.function_return retval = new GCLParser.function_return();
         retval.start = input.LT(1);
@@ -344,22 +357,22 @@ public class GCLParser extends Parser {
         RewriteRuleTokenStream stream_29=new RewriteRuleTokenStream(adaptor,"token 29");
         RewriteRuleSubtreeStream stream_block=new RewriteRuleSubtreeStream(adaptor,"rule block");
         try {
-            // GCL.g:33:10: ( FUNCTION IDENTIFIER '(' ')' block -> ^( FUNCTION IDENTIFIER block ) )
-            // GCL.g:33:12: FUNCTION IDENTIFIER '(' ')' block
+            // GCL.g:48:10: ( FUNCTION IDENTIFIER '(' ')' block -> ^( FUNCTION IDENTIFIER block ) )
+            // GCL.g:48:12: FUNCTION IDENTIFIER '(' ')' block
             {
-            FUNCTION6=(Token)match(input,FUNCTION,FOLLOW_FUNCTION_in_function126);  
+            FUNCTION6=(Token)match(input,FUNCTION,FOLLOW_FUNCTION_in_function132);  
             stream_FUNCTION.add(FUNCTION6);
 
-            IDENTIFIER7=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_function128);  
+            IDENTIFIER7=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_function134);  
             stream_IDENTIFIER.add(IDENTIFIER7);
 
-            char_literal8=(Token)match(input,29,FOLLOW_29_in_function130);  
+            char_literal8=(Token)match(input,29,FOLLOW_29_in_function136);  
             stream_29.add(char_literal8);
 
-            char_literal9=(Token)match(input,30,FOLLOW_30_in_function132);  
+            char_literal9=(Token)match(input,30,FOLLOW_30_in_function138);  
             stream_30.add(char_literal9);
 
-            pushFollow(FOLLOW_block_in_function134);
+            pushFollow(FOLLOW_block_in_function140);
             block10=block();
 
             state._fsp--;
@@ -377,9 +390,9 @@ public class GCLParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 33:46: -> ^( FUNCTION IDENTIFIER block )
+            // 48:46: -> ^( FUNCTION IDENTIFIER block )
             {
-                // GCL.g:33:49: ^( FUNCTION IDENTIFIER block )
+                // GCL.g:48:49: ^( FUNCTION IDENTIFIER block )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(stream_FUNCTION.nextNode(), root_1);
@@ -419,7 +432,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start condition
-    // GCL.g:35:1: condition : conditionliteral ( OR condition )? ;
+    // GCL.g:50:1: condition : conditionliteral ( OR condition )? ;
     public final GCLParser.condition_return condition() throws RecognitionException {
         GCLParser.condition_return retval = new GCLParser.condition_return();
         retval.start = input.LT(1);
@@ -435,18 +448,18 @@ public class GCLParser extends Parser {
         Object OR12_tree=null;
 
         try {
-            // GCL.g:36:2: ( conditionliteral ( OR condition )? )
-            // GCL.g:36:4: conditionliteral ( OR condition )?
+            // GCL.g:51:2: ( conditionliteral ( OR condition )? )
+            // GCL.g:51:4: conditionliteral ( OR condition )?
             {
             root_0 = (Object)adaptor.nil();
 
-            pushFollow(FOLLOW_conditionliteral_in_condition153);
+            pushFollow(FOLLOW_conditionliteral_in_condition159);
             conditionliteral11=conditionliteral();
 
             state._fsp--;
 
             adaptor.addChild(root_0, conditionliteral11.getTree());
-            // GCL.g:36:21: ( OR condition )?
+            // GCL.g:51:21: ( OR condition )?
             int alt3=2;
             int LA3_0 = input.LA(1);
 
@@ -455,13 +468,13 @@ public class GCLParser extends Parser {
             }
             switch (alt3) {
                 case 1 :
-                    // GCL.g:36:22: OR condition
+                    // GCL.g:51:22: OR condition
                     {
-                    OR12=(Token)match(input,OR,FOLLOW_OR_in_condition156); 
+                    OR12=(Token)match(input,OR,FOLLOW_OR_in_condition162); 
                     OR12_tree = (Object)adaptor.create(OR12);
                     root_0 = (Object)adaptor.becomeRoot(OR12_tree, root_0);
 
-                    pushFollow(FOLLOW_condition_in_condition159);
+                    pushFollow(FOLLOW_condition_in_condition165);
                     condition13=condition();
 
                     state._fsp--;
@@ -500,7 +513,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start statement
-    // GCL.g:39:1: statement : ( ALAP block -> ^( ALAP block ) | WHILE '(' condition ')' DO block -> ^( WHILE condition block ) | DO block WHILE '(' condition ')' -> ^( DO block condition ) | TRY block ( ELSE block )? -> ^( TRY ( block )+ ) | IF '(' condition ')' block ( ELSE block )? -> ^( IF condition ( block )+ ) | CHOICE block ( CH_OR block )* -> ^( CHOICE ( block )+ ) | expression ';' -> expression );
+    // GCL.g:54:1: statement : ( ALAP block -> ^( ALAP block ) | WHILE '(' condition ')' DO block -> ^( WHILE condition block ) | DO block WHILE '(' condition ')' -> ^( DO block condition ) | TRY block ( ELSE block )? -> ^( TRY ( block )+ ) | IF '(' condition ')' block ( ELSE block )? -> ^( IF condition ( block )+ ) | CHOICE block ( CH_OR block )* -> ^( CHOICE ( block )+ ) | expression ';' -> expression );
     public final GCLParser.statement_return statement() throws RecognitionException {
         GCLParser.statement_return retval = new GCLParser.statement_return();
         retval.start = input.LT(1);
@@ -585,17 +598,17 @@ public class GCLParser extends Parser {
         RewriteRuleSubtreeStream stream_condition=new RewriteRuleSubtreeStream(adaptor,"rule condition");
         RewriteRuleSubtreeStream stream_block=new RewriteRuleSubtreeStream(adaptor,"rule block");
         try {
-            // GCL.g:40:2: ( ALAP block -> ^( ALAP block ) | WHILE '(' condition ')' DO block -> ^( WHILE condition block ) | DO block WHILE '(' condition ')' -> ^( DO block condition ) | TRY block ( ELSE block )? -> ^( TRY ( block )+ ) | IF '(' condition ')' block ( ELSE block )? -> ^( IF condition ( block )+ ) | CHOICE block ( CH_OR block )* -> ^( CHOICE ( block )+ ) | expression ';' -> expression )
+            // GCL.g:55:2: ( ALAP block -> ^( ALAP block ) | WHILE '(' condition ')' DO block -> ^( WHILE condition block ) | DO block WHILE '(' condition ')' -> ^( DO block condition ) | TRY block ( ELSE block )? -> ^( TRY ( block )+ ) | IF '(' condition ')' block ( ELSE block )? -> ^( IF condition ( block )+ ) | CHOICE block ( CH_OR block )* -> ^( CHOICE ( block )+ ) | expression ';' -> expression )
             int alt7=7;
             alt7 = dfa7.predict(input);
             switch (alt7) {
                 case 1 :
-                    // GCL.g:40:4: ALAP block
+                    // GCL.g:55:4: ALAP block
                     {
-                    ALAP14=(Token)match(input,ALAP,FOLLOW_ALAP_in_statement174);  
+                    ALAP14=(Token)match(input,ALAP,FOLLOW_ALAP_in_statement180);  
                     stream_ALAP.add(ALAP14);
 
-                    pushFollow(FOLLOW_block_in_statement176);
+                    pushFollow(FOLLOW_block_in_statement182);
                     block15=block();
 
                     state._fsp--;
@@ -613,9 +626,9 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 40:15: -> ^( ALAP block )
+                    // 55:15: -> ^( ALAP block )
                     {
-                        // GCL.g:40:18: ^( ALAP block )
+                        // GCL.g:55:18: ^( ALAP block )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_ALAP.nextNode(), root_1);
@@ -631,27 +644,27 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCL.g:41:4: WHILE '(' condition ')' DO block
+                    // GCL.g:56:4: WHILE '(' condition ')' DO block
                     {
-                    WHILE16=(Token)match(input,WHILE,FOLLOW_WHILE_in_statement189);  
+                    WHILE16=(Token)match(input,WHILE,FOLLOW_WHILE_in_statement195);  
                     stream_WHILE.add(WHILE16);
 
-                    char_literal17=(Token)match(input,29,FOLLOW_29_in_statement191);  
+                    char_literal17=(Token)match(input,29,FOLLOW_29_in_statement197);  
                     stream_29.add(char_literal17);
 
-                    pushFollow(FOLLOW_condition_in_statement193);
+                    pushFollow(FOLLOW_condition_in_statement199);
                     condition18=condition();
 
                     state._fsp--;
 
                     stream_condition.add(condition18.getTree());
-                    char_literal19=(Token)match(input,30,FOLLOW_30_in_statement195);  
+                    char_literal19=(Token)match(input,30,FOLLOW_30_in_statement201);  
                     stream_30.add(char_literal19);
 
-                    DO20=(Token)match(input,DO,FOLLOW_DO_in_statement197);  
+                    DO20=(Token)match(input,DO,FOLLOW_DO_in_statement203);  
                     stream_DO.add(DO20);
 
-                    pushFollow(FOLLOW_block_in_statement199);
+                    pushFollow(FOLLOW_block_in_statement205);
                     block21=block();
 
                     state._fsp--;
@@ -669,9 +682,9 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 41:37: -> ^( WHILE condition block )
+                    // 56:37: -> ^( WHILE condition block )
                     {
-                        // GCL.g:41:40: ^( WHILE condition block )
+                        // GCL.g:56:40: ^( WHILE condition block )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_WHILE.nextNode(), root_1);
@@ -688,30 +701,30 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // GCL.g:42:4: DO block WHILE '(' condition ')'
+                    // GCL.g:57:4: DO block WHILE '(' condition ')'
                     {
-                    DO22=(Token)match(input,DO,FOLLOW_DO_in_statement214);  
+                    DO22=(Token)match(input,DO,FOLLOW_DO_in_statement220);  
                     stream_DO.add(DO22);
 
-                    pushFollow(FOLLOW_block_in_statement216);
+                    pushFollow(FOLLOW_block_in_statement222);
                     block23=block();
 
                     state._fsp--;
 
                     stream_block.add(block23.getTree());
-                    WHILE24=(Token)match(input,WHILE,FOLLOW_WHILE_in_statement218);  
+                    WHILE24=(Token)match(input,WHILE,FOLLOW_WHILE_in_statement224);  
                     stream_WHILE.add(WHILE24);
 
-                    char_literal25=(Token)match(input,29,FOLLOW_29_in_statement220);  
+                    char_literal25=(Token)match(input,29,FOLLOW_29_in_statement226);  
                     stream_29.add(char_literal25);
 
-                    pushFollow(FOLLOW_condition_in_statement222);
+                    pushFollow(FOLLOW_condition_in_statement228);
                     condition26=condition();
 
                     state._fsp--;
 
                     stream_condition.add(condition26.getTree());
-                    char_literal27=(Token)match(input,30,FOLLOW_30_in_statement224);  
+                    char_literal27=(Token)match(input,30,FOLLOW_30_in_statement230);  
                     stream_30.add(char_literal27);
 
 
@@ -726,9 +739,9 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 42:37: -> ^( DO block condition )
+                    // 57:37: -> ^( DO block condition )
                     {
-                        // GCL.g:42:40: ^( DO block condition )
+                        // GCL.g:57:40: ^( DO block condition )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_DO.nextNode(), root_1);
@@ -745,28 +758,28 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // GCL.g:43:4: TRY block ( ELSE block )?
+                    // GCL.g:58:4: TRY block ( ELSE block )?
                     {
-                    TRY28=(Token)match(input,TRY,FOLLOW_TRY_in_statement241);  
+                    TRY28=(Token)match(input,TRY,FOLLOW_TRY_in_statement247);  
                     stream_TRY.add(TRY28);
 
-                    pushFollow(FOLLOW_block_in_statement243);
+                    pushFollow(FOLLOW_block_in_statement249);
                     block29=block();
 
                     state._fsp--;
 
                     stream_block.add(block29.getTree());
-                    // GCL.g:43:14: ( ELSE block )?
+                    // GCL.g:58:14: ( ELSE block )?
                     int alt4=2;
                     alt4 = dfa4.predict(input);
                     switch (alt4) {
                         case 1 :
-                            // GCL.g:43:15: ELSE block
+                            // GCL.g:58:15: ELSE block
                             {
-                            ELSE30=(Token)match(input,ELSE,FOLLOW_ELSE_in_statement246);  
+                            ELSE30=(Token)match(input,ELSE,FOLLOW_ELSE_in_statement252);  
                             stream_ELSE.add(ELSE30);
 
-                            pushFollow(FOLLOW_block_in_statement248);
+                            pushFollow(FOLLOW_block_in_statement254);
                             block31=block();
 
                             state._fsp--;
@@ -790,9 +803,9 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 43:28: -> ^( TRY ( block )+ )
+                    // 58:28: -> ^( TRY ( block )+ )
                     {
-                        // GCL.g:43:31: ^( TRY ( block )+ )
+                        // GCL.g:58:31: ^( TRY ( block )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_TRY.nextNode(), root_1);
@@ -815,40 +828,40 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // GCL.g:44:4: IF '(' condition ')' block ( ELSE block )?
+                    // GCL.g:59:4: IF '(' condition ')' block ( ELSE block )?
                     {
-                    IF32=(Token)match(input,IF,FOLLOW_IF_in_statement264);  
+                    IF32=(Token)match(input,IF,FOLLOW_IF_in_statement270);  
                     stream_IF.add(IF32);
 
-                    char_literal33=(Token)match(input,29,FOLLOW_29_in_statement266);  
+                    char_literal33=(Token)match(input,29,FOLLOW_29_in_statement272);  
                     stream_29.add(char_literal33);
 
-                    pushFollow(FOLLOW_condition_in_statement268);
+                    pushFollow(FOLLOW_condition_in_statement274);
                     condition34=condition();
 
                     state._fsp--;
 
                     stream_condition.add(condition34.getTree());
-                    char_literal35=(Token)match(input,30,FOLLOW_30_in_statement270);  
+                    char_literal35=(Token)match(input,30,FOLLOW_30_in_statement276);  
                     stream_30.add(char_literal35);
 
-                    pushFollow(FOLLOW_block_in_statement272);
+                    pushFollow(FOLLOW_block_in_statement278);
                     block36=block();
 
                     state._fsp--;
 
                     stream_block.add(block36.getTree());
-                    // GCL.g:44:31: ( ELSE block )?
+                    // GCL.g:59:31: ( ELSE block )?
                     int alt5=2;
                     alt5 = dfa5.predict(input);
                     switch (alt5) {
                         case 1 :
-                            // GCL.g:44:32: ELSE block
+                            // GCL.g:59:32: ELSE block
                             {
-                            ELSE37=(Token)match(input,ELSE,FOLLOW_ELSE_in_statement275);  
+                            ELSE37=(Token)match(input,ELSE,FOLLOW_ELSE_in_statement281);  
                             stream_ELSE.add(ELSE37);
 
-                            pushFollow(FOLLOW_block_in_statement277);
+                            pushFollow(FOLLOW_block_in_statement283);
                             block38=block();
 
                             state._fsp--;
@@ -872,9 +885,9 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 44:45: -> ^( IF condition ( block )+ )
+                    // 59:45: -> ^( IF condition ( block )+ )
                     {
-                        // GCL.g:44:48: ^( IF condition ( block )+ )
+                        // GCL.g:59:48: ^( IF condition ( block )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_IF.nextNode(), root_1);
@@ -898,30 +911,30 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // GCL.g:45:7: CHOICE block ( CH_OR block )*
+                    // GCL.g:60:7: CHOICE block ( CH_OR block )*
                     {
-                    CHOICE39=(Token)match(input,CHOICE,FOLLOW_CHOICE_in_statement298);  
+                    CHOICE39=(Token)match(input,CHOICE,FOLLOW_CHOICE_in_statement304);  
                     stream_CHOICE.add(CHOICE39);
 
-                    pushFollow(FOLLOW_block_in_statement300);
+                    pushFollow(FOLLOW_block_in_statement306);
                     block40=block();
 
                     state._fsp--;
 
                     stream_block.add(block40.getTree());
-                    // GCL.g:45:20: ( CH_OR block )*
+                    // GCL.g:60:20: ( CH_OR block )*
                     loop6:
                     do {
                         int alt6=2;
                         alt6 = dfa6.predict(input);
                         switch (alt6) {
                     	case 1 :
-                    	    // GCL.g:45:21: CH_OR block
+                    	    // GCL.g:60:21: CH_OR block
                     	    {
-                    	    CH_OR41=(Token)match(input,CH_OR,FOLLOW_CH_OR_in_statement303);  
+                    	    CH_OR41=(Token)match(input,CH_OR,FOLLOW_CH_OR_in_statement309);  
                     	    stream_CH_OR.add(CH_OR41);
 
-                    	    pushFollow(FOLLOW_block_in_statement305);
+                    	    pushFollow(FOLLOW_block_in_statement311);
                     	    block42=block();
 
                     	    state._fsp--;
@@ -948,9 +961,9 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 45:35: -> ^( CHOICE ( block )+ )
+                    // 60:35: -> ^( CHOICE ( block )+ )
                     {
-                        // GCL.g:45:38: ^( CHOICE ( block )+ )
+                        // GCL.g:60:38: ^( CHOICE ( block )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_CHOICE.nextNode(), root_1);
@@ -973,15 +986,15 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 7 :
-                    // GCL.g:46:4: expression ';'
+                    // GCL.g:61:4: expression ';'
                     {
-                    pushFollow(FOLLOW_expression_in_statement321);
+                    pushFollow(FOLLOW_expression_in_statement327);
                     expression43=expression();
 
                     state._fsp--;
 
                     stream_expression.add(expression43.getTree());
-                    char_literal44=(Token)match(input,31,FOLLOW_31_in_statement323);  
+                    char_literal44=(Token)match(input,31,FOLLOW_31_in_statement329);  
                     stream_31.add(char_literal44);
 
 
@@ -996,7 +1009,7 @@ public class GCLParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 46:19: -> expression
+                    // 61:19: -> expression
                     {
                         adaptor.addChild(root_0, stream_expression.nextTree());
 
@@ -1031,7 +1044,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start conditionliteral
-    // GCL.g:50:1: conditionliteral : ( 'true' | rule );
+    // GCL.g:65:1: conditionliteral : ( 'true' | rule );
     public final GCLParser.conditionliteral_return conditionliteral() throws RecognitionException {
         GCLParser.conditionliteral_return retval = new GCLParser.conditionliteral_return();
         retval.start = input.LT(1);
@@ -1045,7 +1058,7 @@ public class GCLParser extends Parser {
         Object string_literal45_tree=null;
 
         try {
-            // GCL.g:51:2: ( 'true' | rule )
+            // GCL.g:66:2: ( 'true' | rule )
             int alt8=2;
             int LA8_0 = input.LA(1);
 
@@ -1063,11 +1076,11 @@ public class GCLParser extends Parser {
             }
             switch (alt8) {
                 case 1 :
-                    // GCL.g:51:4: 'true'
+                    // GCL.g:66:4: 'true'
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    string_literal45=(Token)match(input,32,FOLLOW_32_in_conditionliteral342); 
+                    string_literal45=(Token)match(input,32,FOLLOW_32_in_conditionliteral348); 
                     string_literal45_tree = (Object)adaptor.create(string_literal45);
                     adaptor.addChild(root_0, string_literal45_tree);
 
@@ -1075,11 +1088,11 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCL.g:51:13: rule
+                    // GCL.g:66:13: rule
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    pushFollow(FOLLOW_rule_in_conditionliteral346);
+                    pushFollow(FOLLOW_rule_in_conditionliteral352);
                     rule46=rule();
 
                     state._fsp--;
@@ -1114,7 +1127,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start expression
-    // GCL.g:53:1: expression : expression2 ( OR expression )? ;
+    // GCL.g:68:1: expression : expression2 ( OR expression )? ;
     public final GCLParser.expression_return expression() throws RecognitionException {
         GCLParser.expression_return retval = new GCLParser.expression_return();
         retval.start = input.LT(1);
@@ -1130,18 +1143,18 @@ public class GCLParser extends Parser {
         Object OR48_tree=null;
 
         try {
-            // GCL.g:54:2: ( expression2 ( OR expression )? )
-            // GCL.g:54:4: expression2 ( OR expression )?
+            // GCL.g:69:2: ( expression2 ( OR expression )? )
+            // GCL.g:69:4: expression2 ( OR expression )?
             {
             root_0 = (Object)adaptor.nil();
 
-            pushFollow(FOLLOW_expression2_in_expression357);
+            pushFollow(FOLLOW_expression2_in_expression363);
             expression247=expression2();
 
             state._fsp--;
 
             adaptor.addChild(root_0, expression247.getTree());
-            // GCL.g:54:16: ( OR expression )?
+            // GCL.g:69:16: ( OR expression )?
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1150,13 +1163,13 @@ public class GCLParser extends Parser {
             }
             switch (alt9) {
                 case 1 :
-                    // GCL.g:54:17: OR expression
+                    // GCL.g:69:17: OR expression
                     {
-                    OR48=(Token)match(input,OR,FOLLOW_OR_in_expression360); 
+                    OR48=(Token)match(input,OR,FOLLOW_OR_in_expression366); 
                     OR48_tree = (Object)adaptor.create(OR48);
                     root_0 = (Object)adaptor.becomeRoot(OR48_tree, root_0);
 
-                    pushFollow(FOLLOW_expression_in_expression363);
+                    pushFollow(FOLLOW_expression_in_expression369);
                     expression49=expression();
 
                     state._fsp--;
@@ -1195,7 +1208,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start expression2
-    // GCL.g:57:1: expression2 : ( expression_atom ( PLUS | STAR )? | SHARP expression_atom );
+    // GCL.g:72:1: expression2 : ( expression_atom ( PLUS | STAR )? | SHARP expression_atom );
     public final GCLParser.expression2_return expression2() throws RecognitionException {
         GCLParser.expression2_return retval = new GCLParser.expression2_return();
         retval.start = input.LT(1);
@@ -1215,7 +1228,7 @@ public class GCLParser extends Parser {
         Object SHARP53_tree=null;
 
         try {
-            // GCL.g:58:5: ( expression_atom ( PLUS | STAR )? | SHARP expression_atom )
+            // GCL.g:73:5: ( expression_atom ( PLUS | STAR )? | SHARP expression_atom )
             int alt11=2;
             int LA11_0 = input.LA(1);
 
@@ -1233,17 +1246,17 @@ public class GCLParser extends Parser {
             }
             switch (alt11) {
                 case 1 :
-                    // GCL.g:58:7: expression_atom ( PLUS | STAR )?
+                    // GCL.g:73:7: expression_atom ( PLUS | STAR )?
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    pushFollow(FOLLOW_expression_atom_in_expression2379);
+                    pushFollow(FOLLOW_expression_atom_in_expression2385);
                     expression_atom50=expression_atom();
 
                     state._fsp--;
 
                     adaptor.addChild(root_0, expression_atom50.getTree());
-                    // GCL.g:58:23: ( PLUS | STAR )?
+                    // GCL.g:73:23: ( PLUS | STAR )?
                     int alt10=3;
                     int LA10_0 = input.LA(1);
 
@@ -1255,9 +1268,9 @@ public class GCLParser extends Parser {
                     }
                     switch (alt10) {
                         case 1 :
-                            // GCL.g:58:24: PLUS
+                            // GCL.g:73:24: PLUS
                             {
-                            PLUS51=(Token)match(input,PLUS,FOLLOW_PLUS_in_expression2382); 
+                            PLUS51=(Token)match(input,PLUS,FOLLOW_PLUS_in_expression2388); 
                             PLUS51_tree = (Object)adaptor.create(PLUS51);
                             root_0 = (Object)adaptor.becomeRoot(PLUS51_tree, root_0);
 
@@ -1265,9 +1278,9 @@ public class GCLParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // GCL.g:58:32: STAR
+                            // GCL.g:73:32: STAR
                             {
-                            STAR52=(Token)match(input,STAR,FOLLOW_STAR_in_expression2387); 
+                            STAR52=(Token)match(input,STAR,FOLLOW_STAR_in_expression2393); 
                             STAR52_tree = (Object)adaptor.create(STAR52);
                             root_0 = (Object)adaptor.becomeRoot(STAR52_tree, root_0);
 
@@ -1281,15 +1294,15 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCL.g:59:7: SHARP expression_atom
+                    // GCL.g:74:7: SHARP expression_atom
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    SHARP53=(Token)match(input,SHARP,FOLLOW_SHARP_in_expression2398); 
+                    SHARP53=(Token)match(input,SHARP,FOLLOW_SHARP_in_expression2404); 
                     SHARP53_tree = (Object)adaptor.create(SHARP53);
                     root_0 = (Object)adaptor.becomeRoot(SHARP53_tree, root_0);
 
-                    pushFollow(FOLLOW_expression_atom_in_expression2401);
+                    pushFollow(FOLLOW_expression_atom_in_expression2407);
                     expression_atom54=expression_atom();
 
                     state._fsp--;
@@ -1324,7 +1337,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start expression_atom
-    // GCL.g:62:1: expression_atom : ( rule | '(' expression ')' | call );
+    // GCL.g:77:1: expression_atom : ( rule | '(' expression ')' | call );
     public final GCLParser.expression_atom_return expression_atom() throws RecognitionException {
         GCLParser.expression_atom_return retval = new GCLParser.expression_atom_return();
         retval.start = input.LT(1);
@@ -1344,7 +1357,7 @@ public class GCLParser extends Parser {
         Object char_literal58_tree=null;
 
         try {
-            // GCL.g:63:2: ( rule | '(' expression ')' | call )
+            // GCL.g:78:2: ( rule | '(' expression ')' | call )
             int alt12=3;
             int LA12_0 = input.LA(1);
 
@@ -1375,11 +1388,11 @@ public class GCLParser extends Parser {
             }
             switch (alt12) {
                 case 1 :
-                    // GCL.g:63:4: rule
+                    // GCL.g:78:4: rule
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    pushFollow(FOLLOW_rule_in_expression_atom415);
+                    pushFollow(FOLLOW_rule_in_expression_atom421);
                     rule55=rule();
 
                     state._fsp--;
@@ -1389,27 +1402,27 @@ public class GCLParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCL.g:64:4: '(' expression ')'
+                    // GCL.g:79:4: '(' expression ')'
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    char_literal56=(Token)match(input,29,FOLLOW_29_in_expression_atom420); 
-                    pushFollow(FOLLOW_expression_in_expression_atom423);
+                    char_literal56=(Token)match(input,29,FOLLOW_29_in_expression_atom426); 
+                    pushFollow(FOLLOW_expression_in_expression_atom429);
                     expression57=expression();
 
                     state._fsp--;
 
                     adaptor.addChild(root_0, expression57.getTree());
-                    char_literal58=(Token)match(input,30,FOLLOW_30_in_expression_atom425); 
+                    char_literal58=(Token)match(input,30,FOLLOW_30_in_expression_atom431); 
 
                     }
                     break;
                 case 3 :
-                    // GCL.g:65:4: call
+                    // GCL.g:80:4: call
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    pushFollow(FOLLOW_call_in_expression_atom431);
+                    pushFollow(FOLLOW_call_in_expression_atom437);
                     call59=call();
 
                     state._fsp--;
@@ -1444,7 +1457,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start call
-    // GCL.g:68:1: call : IDENTIFIER '(' ')' -> ^( CALL IDENTIFIER ) ;
+    // GCL.g:83:1: call : IDENTIFIER '(' ')' -> ^( CALL IDENTIFIER ) ;
     public final GCLParser.call_return call() throws RecognitionException {
         GCLParser.call_return retval = new GCLParser.call_return();
         retval.start = input.LT(1);
@@ -1463,16 +1476,16 @@ public class GCLParser extends Parser {
         RewriteRuleTokenStream stream_29=new RewriteRuleTokenStream(adaptor,"token 29");
 
         try {
-            // GCL.g:69:2: ( IDENTIFIER '(' ')' -> ^( CALL IDENTIFIER ) )
-            // GCL.g:69:4: IDENTIFIER '(' ')'
+            // GCL.g:84:2: ( IDENTIFIER '(' ')' -> ^( CALL IDENTIFIER ) )
+            // GCL.g:84:4: IDENTIFIER '(' ')'
             {
-            IDENTIFIER60=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_call443);  
+            IDENTIFIER60=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_call449);  
             stream_IDENTIFIER.add(IDENTIFIER60);
 
-            char_literal61=(Token)match(input,29,FOLLOW_29_in_call445);  
+            char_literal61=(Token)match(input,29,FOLLOW_29_in_call451);  
             stream_29.add(char_literal61);
 
-            char_literal62=(Token)match(input,30,FOLLOW_30_in_call447);  
+            char_literal62=(Token)match(input,30,FOLLOW_30_in_call453);  
             stream_30.add(char_literal62);
 
 
@@ -1487,9 +1500,9 @@ public class GCLParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 69:23: -> ^( CALL IDENTIFIER )
+            // 84:23: -> ^( CALL IDENTIFIER )
             {
-                // GCL.g:69:26: ^( CALL IDENTIFIER )
+                // GCL.g:84:26: ^( CALL IDENTIFIER )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CALL, "CALL"), root_1);
@@ -1528,7 +1541,7 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start rule
-    // GCL.g:71:1: rule : IDENTIFIER ;
+    // GCL.g:86:1: rule : IDENTIFIER ;
     public final GCLParser.rule_return rule() throws RecognitionException {
         GCLParser.rule_return retval = new GCLParser.rule_return();
         retval.start = input.LT(1);
@@ -1540,12 +1553,12 @@ public class GCLParser extends Parser {
         Object IDENTIFIER63_tree=null;
 
         try {
-            // GCL.g:71:7: ( IDENTIFIER )
-            // GCL.g:71:9: IDENTIFIER
+            // GCL.g:86:7: ( IDENTIFIER )
+            // GCL.g:86:9: IDENTIFIER
             {
             root_0 = (Object)adaptor.nil();
 
-            IDENTIFIER63=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule464); 
+            IDENTIFIER63=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule470); 
             IDENTIFIER63_tree = (Object)adaptor.create(IDENTIFIER63);
             adaptor.addChild(root_0, IDENTIFIER63_tree);
 
@@ -1637,7 +1650,7 @@ public class GCLParser extends Parser {
             this.transition = DFA1_transition;
         }
         public String getDescription() {
-            return "()* loopback of 29:11: ( function | statement )*";
+            return "()* loopback of 44:11: ( function | statement )*";
         }
     }
     static final String DFA2_eotS =
@@ -1696,7 +1709,7 @@ public class GCLParser extends Parser {
             this.transition = DFA2_transition;
         }
         public String getDescription() {
-            return "()* loopback of 31:13: ( statement )*";
+            return "()* loopback of 46:13: ( statement )*";
         }
     }
     static final String DFA7_eotS =
@@ -1755,7 +1768,7 @@ public class GCLParser extends Parser {
             this.transition = DFA7_transition;
         }
         public String getDescription() {
-            return "39:1: statement : ( ALAP block -> ^( ALAP block ) | WHILE '(' condition ')' DO block -> ^( WHILE condition block ) | DO block WHILE '(' condition ')' -> ^( DO block condition ) | TRY block ( ELSE block )? -> ^( TRY ( block )+ ) | IF '(' condition ')' block ( ELSE block )? -> ^( IF condition ( block )+ ) | CHOICE block ( CH_OR block )* -> ^( CHOICE ( block )+ ) | expression ';' -> expression );";
+            return "54:1: statement : ( ALAP block -> ^( ALAP block ) | WHILE '(' condition ')' DO block -> ^( WHILE condition block ) | DO block WHILE '(' condition ')' -> ^( DO block condition ) | TRY block ( ELSE block )? -> ^( TRY ( block )+ ) | IF '(' condition ')' block ( ELSE block )? -> ^( IF condition ( block )+ ) | CHOICE block ( CH_OR block )* -> ^( CHOICE ( block )+ ) | expression ';' -> expression );";
         }
     }
     static final String DFA4_eotS =
@@ -1817,7 +1830,7 @@ public class GCLParser extends Parser {
             this.transition = DFA4_transition;
         }
         public String getDescription() {
-            return "43:14: ( ELSE block )?";
+            return "58:14: ( ELSE block )?";
         }
     }
     static final String DFA5_eotS =
@@ -1879,7 +1892,7 @@ public class GCLParser extends Parser {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "44:31: ( ELSE block )?";
+            return "59:31: ( ELSE block )?";
         }
     }
     static final String DFA6_eotS =
@@ -1942,73 +1955,73 @@ public class GCLParser extends Parser {
             this.transition = DFA6_transition;
         }
         public String getDescription() {
-            return "()* loopback of 45:20: ( CH_OR block )*";
+            return "()* loopback of 60:20: ( CH_OR block )*";
         }
     }
  
 
-    public static final BitSet FOLLOW_function_in_program71 = new BitSet(new long[]{0x0000000020237A82L});
-    public static final BitSet FOLLOW_statement_in_program73 = new BitSet(new long[]{0x0000000020237A82L});
-    public static final BitSet FOLLOW_27_in_block103 = new BitSet(new long[]{0x0000000030237A80L});
-    public static final BitSet FOLLOW_statement_in_block105 = new BitSet(new long[]{0x0000000030237A80L});
-    public static final BitSet FOLLOW_28_in_block109 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FUNCTION_in_function126 = new BitSet(new long[]{0x0000000000000200L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_function128 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_29_in_function130 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_function132 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_function134 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_conditionliteral_in_condition153 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_OR_in_condition156 = new BitSet(new long[]{0x0000000100000200L});
-    public static final BitSet FOLLOW_condition_in_condition159 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ALAP_in_statement174 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement176 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_WHILE_in_statement189 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_29_in_statement191 = new BitSet(new long[]{0x0000000100000200L});
-    public static final BitSet FOLLOW_condition_in_statement193 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_statement195 = new BitSet(new long[]{0x0000000000002000L});
-    public static final BitSet FOLLOW_DO_in_statement197 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement199 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DO_in_statement214 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement216 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_WHILE_in_statement218 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_29_in_statement220 = new BitSet(new long[]{0x0000000100000200L});
-    public static final BitSet FOLLOW_condition_in_statement222 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_statement224 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRY_in_statement241 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement243 = new BitSet(new long[]{0x0000000000008002L});
-    public static final BitSet FOLLOW_ELSE_in_statement246 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement248 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IF_in_statement264 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_29_in_statement266 = new BitSet(new long[]{0x0000000100000200L});
-    public static final BitSet FOLLOW_condition_in_statement268 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_statement270 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement272 = new BitSet(new long[]{0x0000000000008002L});
-    public static final BitSet FOLLOW_ELSE_in_statement275 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement277 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CHOICE_in_statement298 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement300 = new BitSet(new long[]{0x0000000000040002L});
-    public static final BitSet FOLLOW_CH_OR_in_statement303 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_block_in_statement305 = new BitSet(new long[]{0x0000000000040002L});
-    public static final BitSet FOLLOW_expression_in_statement321 = new BitSet(new long[]{0x0000000080000000L});
-    public static final BitSet FOLLOW_31_in_statement323 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_32_in_conditionliteral342 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_rule_in_conditionliteral346 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_expression2_in_expression357 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_OR_in_expression360 = new BitSet(new long[]{0x0000000020237A80L});
-    public static final BitSet FOLLOW_expression_in_expression363 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_expression_atom_in_expression2379 = new BitSet(new long[]{0x0000000000180002L});
-    public static final BitSet FOLLOW_PLUS_in_expression2382 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STAR_in_expression2387 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SHARP_in_expression2398 = new BitSet(new long[]{0x0000000020000200L});
-    public static final BitSet FOLLOW_expression_atom_in_expression2401 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_rule_in_expression_atom415 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_29_in_expression_atom420 = new BitSet(new long[]{0x0000000060237A80L});
-    public static final BitSet FOLLOW_expression_in_expression_atom423 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_expression_atom425 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_call_in_expression_atom431 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_call443 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_29_in_call445 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_call447 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_rule464 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_function_in_program77 = new BitSet(new long[]{0x0000000020237A82L});
+    public static final BitSet FOLLOW_statement_in_program79 = new BitSet(new long[]{0x0000000020237A82L});
+    public static final BitSet FOLLOW_27_in_block109 = new BitSet(new long[]{0x0000000030237A80L});
+    public static final BitSet FOLLOW_statement_in_block111 = new BitSet(new long[]{0x0000000030237A80L});
+    public static final BitSet FOLLOW_28_in_block115 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FUNCTION_in_function132 = new BitSet(new long[]{0x0000000000000200L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_function134 = new BitSet(new long[]{0x0000000020000000L});
+    public static final BitSet FOLLOW_29_in_function136 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_30_in_function138 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_function140 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_conditionliteral_in_condition159 = new BitSet(new long[]{0x0000000000000402L});
+    public static final BitSet FOLLOW_OR_in_condition162 = new BitSet(new long[]{0x0000000100000200L});
+    public static final BitSet FOLLOW_condition_in_condition165 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ALAP_in_statement180 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement182 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_WHILE_in_statement195 = new BitSet(new long[]{0x0000000020000000L});
+    public static final BitSet FOLLOW_29_in_statement197 = new BitSet(new long[]{0x0000000100000200L});
+    public static final BitSet FOLLOW_condition_in_statement199 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_30_in_statement201 = new BitSet(new long[]{0x0000000000002000L});
+    public static final BitSet FOLLOW_DO_in_statement203 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement205 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DO_in_statement220 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement222 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_WHILE_in_statement224 = new BitSet(new long[]{0x0000000020000000L});
+    public static final BitSet FOLLOW_29_in_statement226 = new BitSet(new long[]{0x0000000100000200L});
+    public static final BitSet FOLLOW_condition_in_statement228 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_30_in_statement230 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRY_in_statement247 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement249 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_ELSE_in_statement252 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement254 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IF_in_statement270 = new BitSet(new long[]{0x0000000020000000L});
+    public static final BitSet FOLLOW_29_in_statement272 = new BitSet(new long[]{0x0000000100000200L});
+    public static final BitSet FOLLOW_condition_in_statement274 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_30_in_statement276 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement278 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_ELSE_in_statement281 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement283 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_CHOICE_in_statement304 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement306 = new BitSet(new long[]{0x0000000000040002L});
+    public static final BitSet FOLLOW_CH_OR_in_statement309 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_block_in_statement311 = new BitSet(new long[]{0x0000000000040002L});
+    public static final BitSet FOLLOW_expression_in_statement327 = new BitSet(new long[]{0x0000000080000000L});
+    public static final BitSet FOLLOW_31_in_statement329 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_32_in_conditionliteral348 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_rule_in_conditionliteral352 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_expression2_in_expression363 = new BitSet(new long[]{0x0000000000000402L});
+    public static final BitSet FOLLOW_OR_in_expression366 = new BitSet(new long[]{0x0000000020237A80L});
+    public static final BitSet FOLLOW_expression_in_expression369 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_expression_atom_in_expression2385 = new BitSet(new long[]{0x0000000000180002L});
+    public static final BitSet FOLLOW_PLUS_in_expression2388 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STAR_in_expression2393 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SHARP_in_expression2404 = new BitSet(new long[]{0x0000000020000200L});
+    public static final BitSet FOLLOW_expression_atom_in_expression2407 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_rule_in_expression_atom421 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_29_in_expression_atom426 = new BitSet(new long[]{0x0000000060237A80L});
+    public static final BitSet FOLLOW_expression_in_expression_atom429 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_30_in_expression_atom431 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_call_in_expression_atom437 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_call449 = new BitSet(new long[]{0x0000000020000000L});
+    public static final BitSet FOLLOW_29_in_call451 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_30_in_call453 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule470 = new BitSet(new long[]{0x0000000000000002L});
 
 }
