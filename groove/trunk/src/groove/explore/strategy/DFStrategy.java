@@ -40,7 +40,7 @@ import groove.lts.State;
  * @author Iovka Boneva
  *
  */
-public class DepthFirstStrategy4 extends AbstractStrategy {
+public class DFStrategy extends AbstractStrategy {
 	public boolean next() {
 		if (getAtState() == null) {
 			getGTS().removeGraphListener(toExplore);

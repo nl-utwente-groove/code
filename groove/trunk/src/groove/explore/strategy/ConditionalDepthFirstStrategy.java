@@ -19,7 +19,7 @@ package groove.explore.strategy;
 import groove.explore.result.ExploreCondition;
 
 /** A conditional strategy based on a DepthFirstStrategy4. */
-public class ConditionalDepthFirstStrategy extends DepthFirstStrategy4 implements ConditionalStrategy {
+public class ConditionalDepthFirstStrategy extends DFStrategy implements ConditionalStrategy {
 
 	
 	@Override

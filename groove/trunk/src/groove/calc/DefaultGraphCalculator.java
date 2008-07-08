@@ -24,7 +24,7 @@ import groove.explore.result.PropertyAcceptor;
 import groove.explore.result.Result;
 import groove.explore.result.SizedResult;
 import groove.explore.strategy.BreadthFirstStrategy;
-import groove.explore.strategy.DepthFirstStrategy1;
+import groove.explore.strategy.ExploreStateDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.Strategy;
 import groove.graph.Graph;
@@ -110,7 +110,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
         		result = results.getResult().iterator().next();
         	} else {
         		// try depth first
-        		sc = createScenario(new DepthFirstStrategy1(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
+        		sc = createScenario(new ExploreStateDFStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
         		try {
         			results = sc.play();
         		} catch (InterruptedException e) {

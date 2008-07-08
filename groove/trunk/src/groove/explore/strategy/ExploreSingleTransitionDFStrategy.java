@@ -36,7 +36,7 @@ import groove.trans.RuleMatch;
  * @author Iovka Boneva
  *
  */
-public class DepthFirstStrategy3 extends AbstractBacktrackingStrategy {
+public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrategy {
 
 	@Override
 	/**
@@ -119,7 +119,7 @@ public class DepthFirstStrategy3 extends AbstractBacktrackingStrategy {
 	 * @param cacheSize the number of states to be stored in the cache. A smaller
 	 * value optimizes memory usage.
 	 */
-	public DepthFirstStrategy3 () {
+	public ExploreSingleTransitionDFStrategy () {
 		this.explCacheCache = new CacheMap<GraphState,ExploreCache>(cacheSize);
 		this.matchIterCache = new CacheMap<GraphState,MatchesIterator>(cacheSize);
 	}

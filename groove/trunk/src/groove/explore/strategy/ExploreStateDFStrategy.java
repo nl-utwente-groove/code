@@ -41,7 +41,7 @@ import groove.trans.RuleMatch;
  * @author Iovka Boneva
  *
  */
-public class DepthFirstStrategy1 extends AbstractStrategy {
+public class ExploreStateDFStrategy extends AbstractStrategy {
 	/**
 	 * The next step makes atomic the full exploration of a state.
 	 */

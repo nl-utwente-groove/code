@@ -31,7 +31,7 @@ import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
-import groove.explore.strategy.DepthFirstStrategy2;
+import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.NestedDFSStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
@@ -118,7 +118,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getScenario(
-        		new DepthFirstStrategy2(), new EmptyResult<Object>(), new EmptyAcceptor(),
+        		new ExploreRuleDFStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
         		"Explores all the new states reachable from the current state (depth-first).", "Fully explore state (depth-first, no aliasing)");
         addScenarioHandler(handler);
 
@@ -134,7 +134,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(
-        		new DepthFirstStrategy2(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
+        		new ExploreRuleDFStrategy(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
         		"Looks for a final state starting from the current state (depth-first).", "Find a final state (depth-first)"	);
         addScenarioHandler(handler);
         
