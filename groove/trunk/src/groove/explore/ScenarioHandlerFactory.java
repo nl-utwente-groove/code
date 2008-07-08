@@ -202,7 +202,7 @@ public class ScenarioHandlerFactory {
 				str.setSimulator(sim);
 				str.setGTS(getGTS());
 				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
-				str.setResult(res);
+				str.setResult(res.getFreshResult());
 				scenar.setStrategy(str);
 
 //				String property = getProperty(sim);
@@ -283,7 +283,7 @@ public class ScenarioHandlerFactory {
 			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				scenar.setAcceptor(acc);
-				scenar.setResult(res);
+				scenar.setResult(res.getFreshResult());
 
 				if (acc instanceof CycleAcceptor) {
 					((CycleAcceptor) acc).setStrategy(str);
