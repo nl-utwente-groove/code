@@ -29,7 +29,7 @@ import groove.explore.result.SizedResult;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ConditionalBreadthFirstStrategy;
-import groove.explore.strategy.DepthFirstStrategy2;
+import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
@@ -832,7 +832,7 @@ public class Generator extends CommandLineTool {
     
         /** Constructs a parser that can recognize all implemented exploration strategies. */
         public ExploreStrategyParser() {
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new DepthFirstStrategy2(), "Depth first full exploration.", "barbed"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores one successor of each state until a final state or a loop is reached.", "linear"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
