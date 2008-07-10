@@ -571,14 +571,6 @@ public class SetMaterialisations {
 				if (this.concrPart.graph().containsElement(e.source())
 						&& this.concrPart.graph().containsElement(e.opposite())
 						&& ! this.concrPart.graph().containsElement(e)) {
-					
-//					if (this.concrPart.centerNodes().contains(e.source()) &&
-//						! this.concrPart.centerNodes().contains(e.opposite())) {
-//						System.err.println("The edges to be added should not come from/to centre nodes of the concrete part :" + e);
-//					}
-//					assert ! this.concrPart.centerNodes().contains(e.source()) &&
-//						! this.concrPart.centerNodes().contains(e.opposite()) : 
-//						"The edges to be added should not come from/to centre nodes of the concrete part : " + e;
 					currInternalEdges.add(e);
 				}
 			}
@@ -630,31 +622,63 @@ public class SetMaterialisations {
 	private void possibleLinksLow (final VarNodeEdgeMap origin,
 									ArrayList<Set<Edge>> srcLinks,
 									ArrayList<Set<Edge>> tgtLinks,
-									ArrayList<Set<Edge>> consumedEdges)
+									ArrayList<Set<Edge>> consumedEdges,
+									ArrayList<Set<Edge>> internalEdges)
 	{
 		
 		srcLinks.add(new HashSet<Edge>());
 		tgtLinks.add(new HashSet<Edge>());
+		internalEdges.add(new HashSet<Edge>());
 		Set<Edge> x = Collections.emptySet();
 		consumedEdges.add(x);
 		Set<Node> zeroMultNodes = this.abstrPart.zeroMultNodes(new ExtendedVarNodeEdgeMap(origin));
-		for (Node node : getLinkableNodesLow()) {
-			Node imageN = origin.getNode(node);
-			if (zeroMultNodes.contains(imageN)) {
-				continue;
-			}
+		ArrayList<Node> linkableNodes = getLinkableNodesLow();
+		ArrayList<Node> images = new ArrayList<Node>(linkableNodes.size());
+		for (int i = 0; i < linkableNodes.size(); i++) {
+			images.add(origin.getNode(linkableNodes.get(i)));
+		}
+		for (int i = 0; i < linkableNodes.size(); i++) {
+			Node node = linkableNodes.get(i);
+			Node imageN = images.get(i);
+//			if (zeroMultNodes.contains(imageN)) {
+//				continue;
+//			}
+			
 			// the srcLinks
 			for (Edge ee : this.abstrPart.edgeSet(imageN, Edge.SOURCE_INDEX)) {
 				DefaultEdge e = (DefaultEdge) ee;
 				if (! zeroMultNodes.contains(e.target())) {
 					srcLinks.get(0).add(DefaultEdge.createEdge(node, e.label(), e.target()));
+				} else {
+					// this will be an internal edge
+					ArrayList<Integer> targetsIndices = new ArrayList<Integer>();
+					for (int k = 0; k < images.size(); k++) {
+						if (images.get(k).equals(e.target())) {
+							targetsIndices.add(k);
+						}
+					}
+					for (int k = 0; k < targetsIndices.size(); k++) {
+						internalEdges.get(0).add(DefaultEdge.createEdge(node, e.label(), linkableNodes.get(k)));
+					}		
 				}
 			}
+			
 			// the tgtLinks
 			for (Edge ee : this.abstrPart.edgeSet(imageN, Edge.TARGET_INDEX)) {
 				DefaultEdge e = (DefaultEdge) ee;
 				if (! zeroMultNodes.contains(e.source())) {
 					tgtLinks.get(0).add(DefaultEdge.createEdge(e.source(), e.label(), node));
+				} else {
+					// this will be an internal edge
+					ArrayList<Integer> sourcesIndices = new ArrayList<Integer>();
+					for (int k = 0; k < images.size(); k++) {
+						if (images.get(k).equals(e.source())) {
+							sourcesIndices.add(k);
+						}
+					}
+					for (int k = 0; k < sourcesIndices.size(); k++) {
+						internalEdges.get(0).add(DefaultEdge.createEdge(linkableNodes.get(k), e.label(), node));
+					}
 				}
 			}
 		}
@@ -664,7 +688,7 @@ public class SetMaterialisations {
 	 * of the abstract part, in case of options.LINK_PRECISION == Abstraction.LinkPrecision.LOW
 	 * 
 	 */
-	private Collection<Node> getLinkableNodesLow() {
+	private ArrayList<Node> getLinkableNodesLow() {
 		assert this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW : "Should not use this with high precision"; 	
 		ArrayList<Node> linkableNodes = new ArrayList<Node>();
 		linkableNodes.addAll(this.concrPart.graph().nodeSet());
@@ -672,18 +696,6 @@ public class SetMaterialisations {
 			linkableNodes.removeAll(this.concrPart.centerNodes());
 		} 
 		return linkableNodes;
-//		ArrayList<Node> linkableNodes = null;
-//		if (linkableNodes == null) {
-//			linkableNodes = new ArrayList<Node>();
-//			if (this.abstrPart.family().getRadius() == 0) {
-//				linkableNodes.addAll(this.concrPart.graph().nodeSet());
-//			} else if (this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
-//				for (int i = 1; i <= this.abstrPart.family().getRadius(); i++) {
-//					linkableNodes.addAll(this.concrPart.nodesAtDist(i));
-//				}
-//			}
-//		}
-//		return linkableNodes;
 	}
 	
 	/** Callback method initializing the distance one nodes whenever necessary. */
@@ -722,7 +734,7 @@ public class SetMaterialisations {
             NodeFactory nodeFactory) 
 	{
 		if (this.abstrPart.family().getRadius() == 0 || this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
-			possibleLinksLow(origin, srcLinks, tgtLinks, consumedEdges);
+			possibleLinksLow(origin, srcLinks, tgtLinks, consumedEdges, internalEdges);
 		} else {
 			possibleLinksHigh(origin, typing, srcLinks, tgtLinks, zeroNodes, consumedEdges, internalEdges, nodeFactory);
 		}
