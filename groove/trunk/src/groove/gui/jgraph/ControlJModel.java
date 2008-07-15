@@ -70,7 +70,11 @@ public class ControlJModel extends GraphJModel {
 	@Override
 	public ControlAutomaton getGraph()
 	{
-		return (ControlAutomaton) super.getGraph();
+		if( super.getGraph() instanceof ControlAutomaton ) 
+			return (ControlAutomaton) super.getGraph();
+		else {
+			return null;
+		}
 	}
 	
 	/**

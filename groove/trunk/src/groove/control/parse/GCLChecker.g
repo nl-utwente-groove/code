@@ -40,6 +40,7 @@ statement
   : ^(ALAP block)
   | ^(WHILE condition block)
   | ^(DO block condition)
+  | ^(UNTIL condition block)
   | ^(TRY block (block)?)
   | ^(IF condition block (block)?)
   | ^(CHOICE block+)

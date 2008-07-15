@@ -26,14 +26,14 @@ import java.util.Set;
 /** * Representation of a Control automaton that can be visualised in a JGraphPanel. * This class is loosely coupled to a top-level GraphShape, which contains the actual model.  * * Through active shapres, child scopes can be toggled either visible as an edge,  * or with it's node- and edge-content. *  * @author Tom Staijen */
 public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	/** the top-level ControlShape **/	private ControlShape shape;
-	/** container for the active shapes **/	private List<ControlShape> activeShapes = new ArrayList<ControlShape>();
+
 	/**	 * Construct a new ControlAutomaton for passed ControlShape.	 * The ControlShape should have a start-state and not have a parent.	 * @param shape	 */	public ControlAutomaton(ControlShape shape) {
-		this.shape = shape;		// if there is a procedure, toggle it active		if( shape.transitions().size() == 1 ) {			this.toggleActive((ControlShape)shape.transitions().iterator().next());		}	}
-	/**	 * Return all edges in the active graphshapes dynamically.	 * @return Set<ControlTransition> 	 */	public Set<ControlTransition> edgeSet() {		Set<ControlTransition> tempSet = new HashSet<ControlTransition>();		tempSet.addAll(shape.transitions());		Set<ControlTransition> edgeSet = new HashSet<ControlTransition>();		while( tempSet.size() > 0 ) {			Set<ControlTransition> tempSet2 = new HashSet<ControlTransition>();			for( ControlTransition edge: tempSet ) {				if( edge instanceof ControlShape && isActive((ControlShape) edge)) {					tempSet2.addAll(((ControlShape)edge).transitions());				} else {					edgeSet.add(edge);				}			}			tempSet.clear();			tempSet.addAll(tempSet2);	    }		return edgeSet;	}
-	/**	 * Return all nodes in the active graphshapes dynamically.	 * Set<ControlState> 	 */	public Set<ControlState> nodeSet() {		Set<ControlState> nodeSet = new HashSet<ControlState>();		nodeSet.addAll(shape.states());		for( ControlShape shape : activeShapes ) {			nodeSet.addAll(shape.states());		}		return nodeSet;	}
+		this.shape = shape;	}
+	/**	 * Return all edges in the active graphshapes dynamically.	 * @return Set<ControlTransition> 	 */	public Set<ControlTransition> edgeSet() {		return shape.transitions();
+	}
+	/**	 * Return all nodes in the active graphshapes dynamically.	 * Set<ControlState> 	 */	public Set<ControlState> nodeSet() {		return shape.states();	}
 	/**	 * Returns the start-state of the top-level GraphShape.	 * @return ControlState.	 */	public ControlState startState() {		return shape.getStart();	}
+
 	/** 	 * Returns true if the given state is a success-state.	 * @param state	 * @return boolean	 */	public boolean isSuccess(ControlState state) {		return state.isSuccess();	}
-	private boolean isActive(ControlShape shape) {		return activeShapes.contains(shape);	}
-	/**	 * 	 * Toggles the activeness of the ControlShape.	 * @param shape	 */	public void toggleActive(ControlShape shape) {		if( activeShapes.contains(shape)) {			activeShapes.remove(shape);			this.fireAddEdge(shape);		}		else {			activeShapes.add(shape);			this.fireRemoveEdge(shape);		}	}
-	/**	 *   for the BACK button in the CAPanel, we have to be able to remove the last activated shape	 */	public void deactiveLast() {		if( activeShapes.size() > 0 ) {			this.fireAddEdge(activeShapes.remove(activeShapes.size()-1));		}	}
+	
 }

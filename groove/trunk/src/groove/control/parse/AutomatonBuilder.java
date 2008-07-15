@@ -21,11 +21,11 @@ import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.view.FormatException;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.antlr.runtime.EarlyExitException;
 import org.antlr.runtime.RecognitionException;
 
 import antlr.SemanticException;
@@ -354,7 +354,7 @@ public class AutomatonBuilder extends Namespace {
 	 * 
 	 * @param grammar
 	 */
-	public void finalize(GraphGrammar grammar) {
+	public void finalize(GraphGrammar grammar) throws FormatException {
 
 
 		for( ControlTransition transition : this.transitions )
@@ -371,7 +371,7 @@ public class AutomatonBuilder extends Namespace {
 				}
 				else
 				{
-				// if the rulename is a group, this will add all child rules.
+					// if the rulename is a group, this will add all child rules.
 					Set<Rule> rules = grammar.getChildRules(transition.getText());
 					if( !rules.isEmpty() ) {
 						ControlTransition childTrans;
@@ -385,7 +385,7 @@ public class AutomatonBuilder extends Namespace {
 						}
 						// remove the original transition;
 					} else {
-						debug("Unable to find Rule labelled " + transition.getLabel());
+						throw new FormatException("Control: Unknown rule reference: " + transition.getText());
 					}
 				}
 			}

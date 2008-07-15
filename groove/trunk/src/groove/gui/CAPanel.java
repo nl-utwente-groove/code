@@ -38,6 +38,7 @@ import java.util.Collections;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
@@ -49,7 +50,7 @@ import javax.swing.JToolBar;
  * @author Tom Staijen
  * @version $0.9$
  */
-public class CAPanel extends JPanel  implements SimulationListener {
+public class CAPanel extends JPanel implements SimulationListener {
 
 	Simulator simulator;
 	AutomatonPanel autPanel;
@@ -79,23 +80,14 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		doneButton.addActionListener(new DoneButtonListener());
 		doneButton.setEnabled(false);
 
-//		saveButton = new JButton("Save");
-//		toolBar.add(saveButton);
-//		saveButton.addActionListener(new SaveButtonListener());
-//		saveButton.setEnabled(false);
-
-
-		
-//		JButton backButton = new JButton("<<-");
-//		toolBar.add(backButton);
-//		backButton.addActionListener(new BackButtonListener());
-
 		this.add(toolBar, BorderLayout.NORTH);
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(300);
 		autPanel = new AutomatonPanel(simulator);
 		splitPane.add(autPanel);
-		splitPane.add(textPanel = new JTextPane());
+		
+		textPanel = new JTextPane();
+		splitPane.add(new JScrollPane(textPanel));
 		textPanel.setFont(textPanel.getFont().deriveFont((float)16));
 		textPanel.setEditable(false);
 		textPanel.setEnabled(false);
@@ -112,18 +104,13 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		return autPanel;
 	}
 
+	/**
+	 * We do nothing when a transition is applied
+	 */
 	public void applyTransitionUpdate(GraphTransition transition) {
-        setStateUpdate(transition.target());
+//        // do nothing
 	}
 
-//	/**
-//	 * Returns the Simulator instance the panel is part of.
-//	 * @return Simulator
-//	 */
-//	private Simulator getSimulator() {
-//		return this.simulator;
-//	}
-	
 	public void setGrammarUpdate(DefaultGrammarView grammar) {
 		this.grammar = grammar;
 		
@@ -161,27 +148,27 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void setStateUpdate(GraphState state) {
-		if( state.getLocation() != null ) {
-			
-			// thus, there is control
-			
-			// disable the active transition
-			// autPanel.getJModel().setActiveTransition(null);
-			
-			// set the active Location (set of control states)
-
-			// emphasize state if it isn't already done
-			autPanel.getJModel().setActiveLocation((Location)state.getLocation());
-			// we do layouting here because it's too expensive to do it
-			// every time a new state is added
-			if (autPanel.getJGraph().getLayouter() != null) {
-				autPanel.getJModel().freeze();
-				autPanel.getJGraph().getLayouter().start(false);
-			}
-			// addUpdate(lts, state);
-			//autPanel.getJGraph().scrollTo(state);
-
-		}
+//		if( state.getLocation() != null ) {
+//			
+//			// thus, there is control
+//			
+//			// disable the active transition
+//			// autPanel.getJModel().setActiveTransition(null);
+//			
+//			// set the active Location (set of control states)
+//
+//			// emphasize state if it isn't already done
+//			autPanel.getJModel().setActiveLocation((Location)state.getLocation());
+//			// we do layouting here because it's too expensive to do it
+//			// every time a new state is added
+//			if (autPanel.getJGraph().getLayouter() != null) {
+//				autPanel.getJModel().freeze();
+//				autPanel.getJGraph().getLayouter().start(false);
+//			}
+//			// addUpdate(lts, state);
+//			//autPanel.getJGraph().scrollTo(state);
+//
+//		}
 	}
 
 	public void setMatchUpdate(RuleMatch match) {
@@ -294,6 +281,9 @@ class AutomatonPanel extends JGraphPanel<ControlJGraph>
 	    @Override
 	    protected Collection<?> getSuggestedRoots() {
 	        ControlJModel jModel = getJModel();
+	        if( jModel.getGraph() == null ) {
+	        	System.err.println("jModel has no underlying graph...");
+	        }
 	        return Collections.singleton(jModel.getJCell(jModel.getGraph().startState()));
 	    }
 	

@@ -108,7 +108,7 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 //	/** Used to store a limited number of caches for states that have not been fully explored yet. */
 //	private CacheMap<GraphState,ExploreCache> cacheMap;
 	/** Used to register a state added to the GTS. */
-	private RandomNewStateChooser collector = new RandomNewStateChooser();;
+	private RandomNewStateChooser collector = new RandomNewStateChooser();
 	/** The current matches iterator, associated to atState.
 	 * Is initialized by {@link #next()} and is used in
 	 * {@link #updateAtState()}.

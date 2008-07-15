@@ -95,6 +95,17 @@ statement
   	condition
   		{ builder.fail(newState,fail); builder.tagDelta(newState); builder.deltaInitCopy(newState, start); }
   	)
+
+  | ^(UNTIL
+  		{ newState = builder.newState(); builder.restore(start, end); }
+  	condition
+  		{ builder.restore(start, newState); fail = builder.addElse(); builder.fail(start, fail); builder.restore(newState,start); }
+  	block
+  		{ builder.tagDelta(newState); builder.deltaInitCopy(newState, start); }
+  	)
+
+
+
   | 
   
   ^(TRY { builder.debug("try,enter");}
