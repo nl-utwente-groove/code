@@ -43,6 +43,7 @@ public class LocationCache implements ExploreCache {
 	}
 	
 	public void updateExplored(Rule rule) {
+//		System.out.println("*** Notifying of Exploration Complete for rule " + rule);
 		if( !matched.contains(rule)) {
 			 failed.add(rule);
 		}
@@ -114,15 +115,33 @@ public class LocationCache implements ExploreCache {
 	}
 
 	public boolean hasNext() {
-		return iterator.hasNext();
+		if( iterator == null ) {
+			return false;
+		}
+		else if( iterator.hasNext() ) {
+			return true;
+		} else {
+			iterator = createIterator(iterator instanceof RandomizedIterator);
+			if( iterator.hasNext() ) {
+				return true;
+			} else {
+				iterator = null;
+				return false;
+			}
+		}
 	}
 
 	public Rule next() {
 		// TODO: FIX THIS for interuptable
 //		this.last = null;
+		
+		if( iterator == null ) {
+			return null;
+		}
 		if( !iterator.hasNext())
 			iterator = createIterator(iterator instanceof RandomizedIterator);
 		if( !iterator.hasNext()) {
+			iterator = null;
 			return null;
 		}
 		else {
@@ -134,11 +153,9 @@ public class LocationCache implements ExploreCache {
 	private Iterator<Rule> createIterator(boolean isRandomized) {
 		if (isRandomized) {
 			return new RandomizedIterator<Rule>(location.moreRules(this));
+		} else {
+			return location.moreRules(this).iterator();
 		}
-		
-		Set<Rule> rules = location.moreRules(this);
-		
-		return location.moreRules(this).iterator();
 	}
 	
 	public void remove() {
@@ -158,9 +175,9 @@ public class LocationCache implements ExploreCache {
 	/** TODO
 	 * @return
 	 */
-	public Set<Rule> getExplored() {
-		return this.explored;
-	}
+//	public Set<Rule> getExplored() {
+//		return this.explored;
+//	}
 
 	
 	/** TODO

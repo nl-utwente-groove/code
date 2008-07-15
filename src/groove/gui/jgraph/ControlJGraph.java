@@ -32,7 +32,6 @@ public class ControlJGraph extends JGraph {
     public ControlJGraph(Simulator simulator) {
     	super(ControlJModel.EMPTY_CONTROL_JMODEL, true);
         this.simulator = simulator;
-        addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setEnabled(false);
         
@@ -46,38 +45,5 @@ public class ControlJGraph extends JGraph {
     @Override
     public ControlJModel getModel() {
     	return (ControlJModel) super.getModel();
-    }
-    
-    
-    class MyMouseListener extends MouseAdapter {
-    	@Override
-		public void mousePressed(MouseEvent evt) {
-			if (evt.getButton() == MouseEvent.BUTTON1) {
-				// scale from screen to model
-				java.awt.Point loc = evt.getPoint();
-				// find cell in model coordinates
-				DefaultGraphCell cell = (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
-				if( evt.getClickCount() == 2 ) {
-					if (cell instanceof GraphJEdge) {
-						ControlTransition edge = (ControlTransition) ((GraphJEdge) cell).getEdge();
-						//getSimulator().setTransition(edge);
-						if( edge instanceof ControlShape ) {
-							getSimulator().getCurrentGrammar().getControl().getAutomaton().toggleActive((ControlShape)edge);
-							ControlJGraph.this.getModel().reload();
-							ControlJGraph.this.getLayouter().start(false);
-						}
-					}
-				}
-				
-//				if( evt.getButton() == 2 ) {
-//					if (cell instanceof GraphJVertex) {
-//						GraphState node = (GraphState) ((GraphJVertex) cell).get();
-//						if (!getSimulator().getCurrentState().equals(node)) {
-//							getSimulator().setState(node);
-//						}
-//					}
-//				}
-			}
-    	}
     }
 }
