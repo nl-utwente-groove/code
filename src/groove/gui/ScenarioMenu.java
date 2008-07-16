@@ -19,7 +19,6 @@ package groove.gui;
 import groove.explore.ConditionalScenarioHandler;
 import groove.explore.ScenarioHandler;
 import groove.explore.ScenarioHandlerFactory;
-import groove.explore.result.CycleAcceptor;
 import groove.explore.result.EmptyAcceptor;
 import groove.explore.result.EmptyResult;
 import groove.explore.result.ExploreCondition;
@@ -27,15 +26,11 @@ import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.SizedResult;
-import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
-import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
-import groove.explore.strategy.NestedDFSStrategy;
-import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
-import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
+import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
@@ -47,7 +42,6 @@ import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
-import groove.util.GrooveModules;
 import groove.view.DefaultGrammarView;
 
 import java.util.HashMap;
@@ -126,6 +120,11 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         handler = ScenarioHandlerFactory.getScenario(
         		new LinearStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(), 
         		"Explores one transition for each state until a final state or a loop is reached.", "Linear exploration");
+        addScenarioHandler(handler);
+
+        handler = ScenarioHandlerFactory.getScenario(
+        		new RandomLinearStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(), 
+        		"Explores randomly (slower) one transition for each state until a final state or a loop is reached.", "Random Linear exploration");
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(

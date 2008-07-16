@@ -1212,7 +1212,7 @@ public class Simulator {
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
             graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Control specification" );
-            graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON, getTypePanel(), "Type graph");
+            //graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON, getTypePanel(), "Type graph");
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {

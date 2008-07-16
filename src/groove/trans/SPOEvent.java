@@ -235,7 +235,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     				result.append(node);
     			}
     			if( i < map.size()-1 ) {
-    				result.append('.');
+    				result.append(',');
     			}
     		}
 		}
