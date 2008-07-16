@@ -123,6 +123,34 @@ public class DefaultGraphCalculator implements GraphCalculator {
         }
         return result;
     }
+
+    /**
+     * Getting a maximal state given the passed strategy.
+     * Beware, maximal != final, maximal can have self-transitions
+     */
+    public GraphState getMax(Strategy strategy) {
+        testPrototype();
+
+        GraphState result = null;
+        // any final state is maximal; try that first
+        if ( gts.getFinalStates().size() > 0 ) {
+            result = gts.getFinalStates().iterator().next();
+        } else {
+        	// try linear
+        	Scenario<GraphState> sc = createScenario(strategy, new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
+        	sc.setState(getGTS().startState());
+        	Result<GraphState> results = null;
+        	try {
+        		results = sc.play();
+        	} catch (InterruptedException e) {
+        		results = sc.getComputedResult();
+        	}
+        	if( results.getResult().size() == 1 ) {
+        		result = results.getResult().iterator().next();
+        	}
+        }
+        return result;
+    }
     
     /**
 	 * Returns the first "maximal" graph, i.e., that cannot evolve further,
