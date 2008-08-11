@@ -104,6 +104,11 @@ public class Converter {
         }
     }
 
+    /** Writes a graph in LaTeX <code>tikz</code> format to a print writer. */
+    static public void graphToTikz(GraphShape graph, PrintWriter writer) {
+        // to be implemented
+    }
+
     // html defs
     /**
      * Converts a piece of text to HTML by replacing special characters

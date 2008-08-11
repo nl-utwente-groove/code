@@ -126,6 +126,7 @@ public class Exporter {
             formats.add(PngFormat.getInstance());
             formats.add(EpsFormat.getInstance());
             formats.add(AutFormat.getInstance());
+            formats.add(TikzFormat.getInstance());
             formats.add(FsmFormat.getInstance());
             formats.add(LispFormat.getInstance());
         }
@@ -556,7 +557,7 @@ public class Exporter {
         private static final Format instance = new EpsFormat();
     }
     
-    /** Class implementing the EPS export format. */
+    /** Class implementing the <code>.aut</code> export format. */
     private static class AutFormat implements StructuralFormat {
         /** Empty constructor to ensure singleton usage of the class. */
         private AutFormat() {
@@ -597,6 +598,49 @@ public class Exporter {
         
         /** The singleton instance of this class. */
         private static final Format instance = new AutFormat();
+    }
+    
+    /** Class implementing the LaTeX <code>tikz</code> export format. */
+    private static class TikzFormat implements StructuralFormat {
+        /** Empty constructor to ensure singleton usage of the class. */
+        private TikzFormat() {
+            // empty
+        }
+
+        public ExtensionFilter getFilter() {
+            return tikzFilter;
+        }
+
+        /** 
+         * Exports the jgraph by calling {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}
+         * on the graph contained therein.
+         */
+        public void export(JGraph jGraph, File file) throws IOException {
+            export(jGraph.getModel().toPlainGraph(), file);
+        }
+
+        /** 
+         * Exports the graph by calling {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}.
+         */
+        public void export(GraphShape graph, File file) throws IOException {
+            PrintWriter writer = new PrintWriter(new FileWriter(file));
+            Converter.graphToTikz(graph, writer);
+            writer.close();
+        }
+
+        /**
+         * Extension filter used for exporting graphs in aut format.
+         */
+        private final ExtensionFilter tikzFilter = new ExtensionFilter("LaTeX tikz files",
+                ".tikz");
+
+        /** Returns the singleton instance of this class. */
+        public static Format getInstance() {
+            return instance;
+        }
+        
+        /** The singleton instance of this class. */
+        private static final Format instance = new TikzFormat();
     }
 
     /**

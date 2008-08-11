@@ -57,9 +57,8 @@ import org.jgraph.graph.GraphConstants;
  * <li>A mapping of graph nodes and edges to the model cells representing them.
  * <li>Model vertex and model edge specializations that store graph nodes and edges as user objects
  * and provide easy retrieval.
- * <ul>
+ * </ul>
  * Instances of JModel are attribute stores.
- * <p>
  * @author Arend Rensink
  * @version $Revision: 1.22 $
  */
