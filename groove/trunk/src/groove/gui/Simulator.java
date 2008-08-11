@@ -1419,6 +1419,7 @@ public class Simulator {
         menuBar.add(createDisplayMenu());
         menuBar.add(createExploreMenu());
         menuBar.add(createVerifyMenu());
+        menuBar.add(getExternalActionsMenu());
         menuBar.add(createHelpMenu());
         return menuBar;
     }
@@ -1588,6 +1589,44 @@ public class Simulator {
 	    }
 	    return result;
 	}
+	
+    /**
+     * Lazily creates and returns a menu for externally provided actions in the menu bar.
+     */
+    private JMenu getExternalActionsMenu() {
+        if (externalMenu == null) {
+            externalMenu = createExternalActionsMenu();
+            dummyExternalAction = 
+            new AbstractAction("(empty)") {
+                public void actionPerformed(ActionEvent e) {
+                    // does nothing
+                }
+            };
+            dummyExternalAction.setEnabled(false);
+            externalMenu.add(dummyExternalAction);
+        }
+        return externalMenu;
+    }
+
+    /**
+     * Creates and returns a menu for externally provided actions in the menu bar.
+     */
+    private JMenu createExternalActionsMenu() {
+         return new JMenu(Options.EXTERNAL_MENU_NAME);
+    }
+
+    /** 
+     * Adds an action to the external actions menu of the simulator.
+     * This provides a primitive plugin mechanism. 
+     */
+    public void addExternalAction(Action action) {
+        JMenu externalMenu = getExternalActionsMenu();
+        // remove the dummy action if it is still there
+        if (externalMenu.getItem(0) == dummyExternalAction) {
+            externalMenu.remove(0);
+        }
+        getExternalActionsMenu().add(action);
+    }
 
 	/**
 	 * Creates and returns a help menu for the menu bar.
@@ -2186,6 +2225,12 @@ public class Simulator {
     /** panel for the rule directory. */
     private JScrollPane ruleJTreePanel;
 
+    /** Menu for externally provided actions. */
+    private JMenu externalMenu;
+
+    /** Dummy action for the {@link #externalMenu}. */
+    private Action dummyExternalAction;
+    
     /** 
      * Menu item in the file menu for
      * one of the graph or rule edit actions.

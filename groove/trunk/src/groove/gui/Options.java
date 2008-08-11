@@ -111,7 +111,9 @@ public class Options {
     public static final String VERIFY_MENU_NAME = "Verify";
     /** Verify menu mnemonic. */
     static public final int VERIFY_MENU_MNEMONIC = KeyEvent.VK_Y;
-    
+    /** For externally contributed commands */
+    public static final String EXTERNAL_MENU_NAME = "External";
+
     // Button texts
     /** Button text to confirm an action. */
     public static final String OK_BUTTON = "OK";
