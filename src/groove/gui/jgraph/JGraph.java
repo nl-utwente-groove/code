@@ -41,6 +41,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1266,13 +1267,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
          */
         @Override
 		public void setModel(GraphModel model) {
-			super.setModel(model);				
-			Object[] cells = DefaultGraphModel.getRoots(getModel());
-			CellView[] cellViews = getMapping(cells, true);
-			insertViews(cellViews);
-			// Update PortView Cache and Notify Observers
-			updatePorts();
-			cellViewsChanged(getRoots());
+            super.setModel(model);
+            Object[] cells = DefaultGraphModel.getRoots(getModel());
+            CellView[] cellViews = getMapping(cells, true);
+            insertViews(cellViews);
+            // Update PortView Cache and Notify Observers
+            updatePorts();
+            cellViewsChanged(getRoots());
 		}
 
 		@Override
