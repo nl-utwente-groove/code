@@ -80,12 +80,12 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * Indicates if this edge is a self-edge that can be shown as a label on
      * its source vertex.
-     * This is the case if the source and target of the edge coincide, and
-     * there are no explicit points stored for the edge.
+     * This is the case if the source node contains this edge in its user object (and
+     * there are no explicit points stored for the edge??).
      * Callback method from {@link #isSourceLabel()}.
      */
     boolean isSelfEdgeSourceLabel() {
-    	return getSource() == getTarget() && GraphConstants.getPoints(getAttributes()) == null;
+        return getSourceVertex().getUserObject().contains(getEdge()); // && GraphConstants.getPoints(getAttributes()) == null;
     }
 
     /** 

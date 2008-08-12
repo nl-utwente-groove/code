@@ -351,21 +351,15 @@ public class AspectJModel extends GraphJModel {
             }
             return res;
 		}
-//
-//		/**
-//         * Returns <tt>true</tt> only if the role of the edge to be added
-//         * equals the role of this j-vertex, and the superclass is also willing.
-//         * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-//         */
-//        @Override
-//        public boolean addSelfEdge(Edge edge) {
-//            AspectValue edgeRole = role((AspectEdge) edge);
-//            if (isAllowedNodeLabel((AspectEdge) edge)) {
-//                return super.addSelfEdge(edge);
-//            } else {
-//                return false;
-//            }
-//        }
+
+		/**
+         * Tests {@link #isAllowedNodeLabel(AspectEdge)} and calls the super method if
+         * the test is successful.
+         */
+        @Override
+        public boolean addSelfEdge(Edge edge) {
+            return isAllowedNodeLabel((AspectEdge) edge) && super.addSelfEdge(edge);
+        }
         
         /** Adds a quantifier, if the nesting aspect justifies this. */
 		@Override
@@ -381,26 +375,26 @@ public class AspectJModel extends GraphJModel {
 			}
 			return result;
 		}
-//
-//		/** 
-//		 * This implementation tests if rule role and nesting label of
-//		 * the edge coincide with those of the node.
-//		 */
-//		@Override
-//		boolean isAllowedNodeLabel(Edge dataEdge) {
-//			boolean result;
-//			// test for equal rule roles
-//			AspectValue edgeRole = RuleAspect.getRuleValue((AspectEdge) dataEdge);
-//			AspectValue sourceRole = RuleAspect.getRuleValue(getNode());
-//			result = edgeRole == null ? sourceRole == null : edgeRole.equals(sourceRole);
-//			// test for equal nesting level
-//			if (result) {
-//				AspectValue edgeNesting = NestingAspect.getNestingValue((AspectEdge) dataEdge);
-//				AspectValue sourceNesting = NestingAspect.getNestingValue(getNode());
-//				result = edgeNesting == null ? sourceNesting == null : edgeNesting.equals(sourceNesting);
-//			}
-//			return result;
-//		}
+
+		/** 
+		 * Tests if a given edge can be used as node label.
+		 * This is the case if rule role and nesting label of
+		 * the edge coincide with those of the node.
+		 */
+		boolean isAllowedNodeLabel(AspectEdge dataEdge) {
+			boolean result;
+			// test for equal rule roles
+			AspectValue edgeRole = role(dataEdge);
+			AspectValue sourceRole = role(getNode());
+			result = edgeRole == null ? sourceRole == null : edgeRole.equals(sourceRole);
+			// test for equal nesting level
+			if (result) {
+				AspectValue edgeNesting = NestingAspect.getNestingValue(dataEdge);
+				AspectValue sourceNesting = NestingAspect.getNestingValue(getNode());
+				result = edgeNesting == null ? sourceNesting == null : edgeNesting.equals(sourceNesting);
+			}
+			return result;
+		}
 
 		/** Returns an HTML-formatted line describing a given quantifier value. */
 		private StringBuilder getQuantifierLine(NamedAspectValue nesting) {
