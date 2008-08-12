@@ -128,12 +128,14 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * Constructs the generator. In particular, initializes the command line option classes.
+     * Constructs the generator. In particular, initialises the command line option classes.
      */
     public Generator(List<String> argsList) {
         super(argsList);
         addOption(new ExploreOption());
         addOption(new FinalSaveOption());
+        // clear the static field gts
+        gts = null;
     }
 
     /**
@@ -691,12 +693,13 @@ public class Generator extends CommandLineTool {
     private long endTime;
 
     /**
-     * The amunt of memory used at the moment at which exploration was started.
+     * The amount of memory used at the moment at which exploration was started.
      */
     private long startUsedMemory;
 
     /**
-     * The GTS that is being constructed. We make it static to enable mamory profiling.
+     * The GTS that is being constructed. We make it static to enable memory profiling.
+     * The field is cleared in the constructor, so consecutive Generator instances work as expected.
      */
     protected static GTS gts;
 
@@ -881,7 +884,7 @@ public class Generator extends CommandLineTool {
         }
     
         /**
-         * Returns a list of descriptions for the strategies recognized by this parser, indicating
+         * Returns a list of descriptions for the strategies recognised by this parser, indicating
          * the supported string format.
          */
         public List<String> getStrategyDescriptions() {
