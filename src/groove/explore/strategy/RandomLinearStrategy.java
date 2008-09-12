@@ -25,8 +25,8 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.RuleMatch;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Explores a single path until reaching a final state or a loop.
  * In case of abstract simulation, this implementation will prefer
@@ -44,12 +44,16 @@ public class RandomLinearStrategy extends AbstractStrategy {
 		MatchesIterator matchIter = getMatchesIterator(cache);
 		this.collector.reset();
 		if (matchIter.hasNext()) {
-			Set<RuleMatch> matches = new HashSet<RuleMatch>();
-			matchIter.collectMatches(matches);
+			// collect all matches
+			List<RuleMatch> matches = new ArrayList<RuleMatch>();
+			while (matchIter.hasNext()) {
+				matches.add(matchIter.next());
+			}
+			// select a random match
 			int matchCount = matches.size();
-			
-			int randomIndex = ((int)(10* Math.random()) * matchCount)/10;
-			getGenerator().addTransition(getAtState(), (RuleMatch)matches.toArray()[randomIndex], cache);
+			int randomIndex = (int) (Math.random() * matchCount);
+			// add the random match
+			getGenerator().addTransition(getAtState(), matches.get(randomIndex), cache);
 		} else {
 			setClosed(atState);
 		}

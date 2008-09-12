@@ -31,6 +31,7 @@ import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ConditionalBreadthFirstStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
+import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
 import groove.graph.GraphAdapter;
@@ -837,8 +838,9 @@ public class Generator extends CommandLineTool {
         public ExploreStrategyParser() {
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores one successor of each state until a final state or a loop is reached.", "linear"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new RandomLinearStrategy(), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
