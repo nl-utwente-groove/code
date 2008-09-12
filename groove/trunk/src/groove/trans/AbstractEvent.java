@@ -41,8 +41,12 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 	}
 
 	public Label getLabel() {
-		return new WrapperLabel<RuleEvent>(this);
+		boolean brackets = this.getRule().getProperties().isShowTransitionBrackets();
+		return new NameLabel(this.toString(), brackets);
 	}
+//	public Label getLabel() {
+//		return new WrapperLabel<RuleEvent>(this);
+//	}
 
 	public R getRule() {
 		return rule;
