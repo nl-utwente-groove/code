@@ -90,6 +90,8 @@ public class DefaultBooleanAlgebra extends Algebra {
 	public static final String OR_SYMBOL = "or";
 	/** boolean NOT-operator */
 	public static final String NOT_SYMBOL = "not";
+	/** boolean EQUAL-operator */
+	public static final String EQUAL_SYMBOL = "eq";
 
 	/** representing the boolean value <tt>true</tt> */
 	public static final String TRUE = "true";
@@ -105,6 +107,7 @@ public class DefaultBooleanAlgebra extends Algebra {
     	instance.addOperation(BooleanAndOperation.getInstance());
     	instance.addOperation(BooleanOrOperation.getInstance());
     	instance.addOperation(BooleanNotOperation.getInstance());
+    	instance.addOperation(BooleanEqualOperation.getInstance());
     }
     
     /**
@@ -209,6 +212,32 @@ public class DefaultBooleanAlgebra extends Algebra {
 
 		/** The singleton instance. */
 		static private final BooleanNotOperation instance = new BooleanNotOperation();
+	}
+	
+	/**
+	 * Boolean EQUAL-operation.
+	 * @author Eduard Bauer
+	 */
+	protected static class BooleanEqualOperation extends BoolBool2BoolOperation {
+		/** Constructor for the singleton instance of this class. */
+		private BooleanEqualOperation() {
+			super(EQUAL_SYMBOL);
+		}
+
+        @Override
+		public Boolean apply(Boolean arg0, Boolean arg1) throws IllegalArgumentException {
+			return arg0.equals(arg1);
+		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance. */
+		static final private BooleanEqualOperation instance = new BooleanEqualOperation();
 	}
 
 	/**
