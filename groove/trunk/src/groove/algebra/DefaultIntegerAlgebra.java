@@ -174,6 +174,10 @@ public class DefaultIntegerAlgebra extends Algebra {
      */
     public static final String TO_STRING_SYMBOL = "toString";
     /**
+     * The negation/opposite operator, like e.g. -x, or -5
+     */
+    public static final String NEG_SYMBOL = "neg";
+    /**
      * Integer addition operation.
      */
     private static final Operation ADD_OPERATION = new IntInt2IntOperation(ADD_SYMBOL) {
@@ -292,6 +296,16 @@ public class DefaultIntegerAlgebra extends Algebra {
             return ""+arg1;
         }
     };
+    
+    /**
+     * Integer opposite/negation operation.
+     */
+    private static final Operation NEG_OPERATION = new Int2IntOperation(NEG_SYMBOL) {
+        @Override
+        int apply(int arg1) {
+            return -arg1;
+        }
+    };
 
 	static {
 		instance.addOperation(ADD_OPERATION);
@@ -307,6 +321,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 		instance.addOperation(GE_OPERATION);
 		instance.addOperation(EQ_OPERATION);
         instance.addOperation(TO_STRING_OPERATION);
+        instance.addOperation(NEG_OPERATION);
 	}
     
 	/**
@@ -400,6 +415,30 @@ public class DefaultIntegerAlgebra extends Algebra {
         
         /** Applies the function encapsulated in this interface. */
         abstract String apply(int arg1);
+    }
+    
+    /** Unary integer operation of signature <code>int -> int</code>. */
+    private static abstract class Int2IntOperation extends DefaultOperation {
+        /** Constructs an operation in the current algebra, with arity 1 and a given symbol. */
+        protected Int2IntOperation(String symbol) {
+            super(getInstance(), symbol, 1);
+        }
+
+        /** 
+         * Performs a unary operation of type <code>int -> int</code>. 
+         * @throws IllegalArgumentException if the number or types of operands are incorrect.
+         */
+        public Object apply(List<Object> args) {
+            try {
+                Integer arg0 = (Integer) args.get(0);
+                return apply(arg0);
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            }
+        }
+        
+        /** Applies the function encapsulated in this interface. */
+        abstract int apply(int arg1);
     }
 //    
 //	/**

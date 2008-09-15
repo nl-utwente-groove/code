@@ -161,6 +161,10 @@ public class DefaultRealAlgebra extends Algebra {
 	 * Real-to-string coercion operation symbol.
 	 */
 	public static final String TO_STRING_SYMBOL = "toString";
+	/**
+     * The negation/opposite operator, like e.g. -x, or -5
+     */
+    public static final String NEG_SYMBOL = "neg";
 
 	/**
 	 * Real addition operation.
@@ -298,6 +302,16 @@ public class DefaultRealAlgebra extends Algebra {
 			return "" + arg1;
 		}
 	};
+	
+	/**
+     * Real opposite/negation operation.
+     */
+    private static final Operation NEG_OPERATION = new Double2DoubleOperation(NEG_SYMBOL) {
+        @Override
+        double apply(double arg1) {
+            return -arg1;
+        }
+    };
 
 	static {
 		instance.addOperation(ADD_OPERATION);
@@ -312,6 +326,7 @@ public class DefaultRealAlgebra extends Algebra {
 		instance.addOperation(GE_OPERATION);
 		instance.addOperation(EQ_OPERATION);
 		instance.addOperation(TO_STRING_OPERATION);
+		instance.addOperation(NEG_OPERATION);
 	}
 
 	/**
@@ -434,4 +449,28 @@ public class DefaultRealAlgebra extends Algebra {
 		/** Applies the function encapsulated in this interface. */
 		abstract String apply(double arg1);
 	}
+	
+	/** Unary double operation of signature <code>double -> double</code>. */
+    private static abstract class Double2DoubleOperation extends DefaultOperation {
+        /** Constructs an operation in the current algebra, with arity 1 and a given symbol. */
+        protected Double2DoubleOperation(String symbol) {
+            super(getInstance(), symbol, 1);
+        }
+
+        /** 
+         * Performs a unary operation of type <code>double -> double</code>. 
+         * @throws IllegalArgumentException if the number or types of operands are incorrect.
+         */
+        public Object apply(List<Object> args) {
+            try {
+                Double arg0 = (Double) args.get(0);
+                return apply(arg0);
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            }
+        }
+        
+        /** Applies the function encapsulated in this interface. */
+        abstract double apply(double arg1);
+    }
 }
