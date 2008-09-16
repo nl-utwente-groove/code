@@ -309,9 +309,10 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 					}
 				}
 				// In case of non injectivity of the anchorMap and injective strategy, ensure that no matches are found
-				if (injective && getUsedNodes().size() < anchorMap.nodeMap().size()) {
-					noMatches = true;
-				}
+				// this cannot be maintained, since the anchorMap may include attribute nodes
+//				if (injective && getUsedNodes().size() < anchorMap.nodeMap().size()) {
+//					noMatches = true;
+//				}
 				for (Map.Entry<Edge, Edge> edgeEntry : anchorMap.edgeMap().entrySet()) {
 					assert isEdgeFound(edgeEntry.getKey());
 					int i = getEdgeIx(edgeEntry.getKey());
@@ -392,10 +393,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         final boolean putNode(int index, Node image) {
         	assert nodeAnchors[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s", nodeKeys[index], image, nodeAnchors[index]);
         	// value nodes only matched by value nodes
-        	if (nodeKeys[index] instanceof ValueNode != image instanceof ValueNode) {
+        	boolean isValueNode = image instanceof ValueNode;
+        	if (nodeKeys[index] instanceof ValueNode != isValueNode) {
         		return false;
         	}
-        	if (injective) {
+        	if (injective && !isValueNode) {
         		Node oldImage = nodeImages[index];
         		if (oldImage != null) {
         			usedNodes.remove(oldImage);
@@ -516,7 +518,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         /** The host graph of the search. */
         private final GraphShape host;
         /** 
-         * The set of nodes already used as images, used for the injectivity test.
+         * The set of non-value nodes already used as images, used for the injectivity test.
          */
         private Set<Node> usedNodes;
         /** */
