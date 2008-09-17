@@ -55,14 +55,18 @@ public class RandomLinearStrategy extends AbstractStrategy {
 			// add the random match
 			getGenerator().addTransition(getAtState(), matches.get(randomIndex), cache);
 		} else {
-			setClosed(atState);
+			setClosed(getAtState());
 		}
 		updateAtState();
+		
 		return true;
 	}
 	
 	@Override
 	protected void updateAtState() {
+		if( closeExit() ) {
+			setClosed(getAtState());
+		}
 		this.atState = this.collector.getNewState();
 	}
 	

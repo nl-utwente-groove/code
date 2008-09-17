@@ -193,6 +193,18 @@ public abstract class AbstractStrategy implements Strategy {
 //		getGTS().addGraphListener(listener);
 	}
 
+	/** Enable closeExit, to close states when a strategy changes its atState.
+	 *  This can save memory when using linear strategies.
+	 */
+	public void enableCloseExit() {
+		closeExit = true;
+	}
+	
+	/** Return the current value of the "close on exit" setting **/
+	public boolean closeExit() {
+		return closeExit;
+	}
+	
 	/** The graph transition system explored by the strategy.*/
 	private GTS gts;
 	/** The state where the strategy starts exploring.*/
@@ -205,4 +217,9 @@ public abstract class AbstractStrategy implements Strategy {
 	// TODO this is set to false until the aliased matcher is debugged
 	protected boolean aliasing = true;
 
+	/** Option to close states after a transition has been added from them **/
+	/** Can optionally be used by linearstrategies to save memory by closing states asap **/
+	protected boolean closeExit = false;
+	
+	
 }
