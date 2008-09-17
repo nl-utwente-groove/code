@@ -42,7 +42,7 @@ public class LinearStrategy extends AbstractStrategy {
 		if (matchIter.hasNext()) {
 			getGenerator().addTransition(getAtState(), matchIter.next(), cache);
 		} else {
-			setClosed(atState);
+			setClosed(getAtState());
 		}
 		updateAtState();
 		return true;
@@ -50,6 +50,9 @@ public class LinearStrategy extends AbstractStrategy {
 	
 	@Override
 	protected void updateAtState() {
+		if( closeExit() ) {
+			setClosed(getAtState());
+		}
 		this.atState = this.collector.getNewState();
 	}
 	
