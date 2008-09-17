@@ -20,6 +20,7 @@ import groove.explore.DefaultScenario;
 import groove.explore.Scenario;
 import groove.explore.result.Acceptor;
 import groove.explore.result.EmptyResult;
+import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.PropertyAcceptor;
 import groove.explore.result.Result;
 import groove.explore.result.SizedResult;
@@ -98,7 +99,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
             result = gts.getFinalStates().iterator().next();
         } else {
         	// try linear
-        	Scenario<GraphState> sc = createScenario(new LinearStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
+        	Scenario<GraphState> sc = createScenario(new LinearStrategy(), new FinalStateAcceptor(), new SizedResult<GraphState>(1));
         	sc.setState(getGTS().startState());
         	Result<GraphState> results = null;
         	try {
@@ -110,7 +111,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
         		result = results.getResult().iterator().next();
         	} else {
         		// try depth first
-        		sc = createScenario(new ExploreStateDFStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
+        		sc = createScenario(new ExploreStateDFStrategy(), new FinalStateAcceptor(), new SizedResult<GraphState>(1));
         		try {
         			results = sc.play();
         		} catch (InterruptedException e) {
@@ -175,7 +176,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public Collection<GraphState> getAllMax() {
         testPrototype();
         
-        Scenario<GraphState> sc = createScenario(new BreadthFirstStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new EmptyResult<GraphState>());
+        Scenario<GraphState> sc = createScenario(new BreadthFirstStrategy(), new FinalStateAcceptor(), new EmptyResult<GraphState>());
         sc.setState(getGTS().startState());
         Result<GraphState> result = null;
         try {
@@ -229,7 +230,25 @@ public class DefaultGraphCalculator implements GraphCalculator {
             return gts.startState().getGraph();
         }
     }
+    
+    /**
+     * Returns the result from running the passed scenario 
+     * @param scenario
+     * @return
+     */
+    public Result<GraphState> getResult(Scenario<GraphState> sc) {
+        testPrototype();
 
+        sc.setState(getGTS().startState());
+        Result<GraphState> result = null;
+        try {
+        	result = sc.play();
+        } catch (InterruptedException e) {
+        	result = sc.getComputedResult();
+        }
+        return result;
+    }
+    
     public GraphCalculator newInstance(Graph start) throws IllegalArgumentException {
     	try {
 			GraphGrammar newGrammar = new GraphGrammar(grammar, start);
