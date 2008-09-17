@@ -141,7 +141,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 			initData();
 		}
 		Set<Node> result = nodeEdgeMap.keySet();
-		return copyData ? result : createNodeSet(result);
+		return ALIAS_SETS || copyData ? result : createNodeSet(result);
 	}
 	
 	public Set<DefaultEdge> edgeSet() {
@@ -149,13 +149,13 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 			initData();
 		}
 		DefaultEdgeSet result = edgeSet;
-		return copyData ? result : createEdgeSet(result);
+		return ALIAS_SETS || copyData ? result : createEdgeSet(result);
 	}
 
 	@Override
     public Set<DefaultEdge> labelEdgeSet(int arity, Label label) {
         DefaultEdgeSet result = labelEdgeMap(arity).get(label);
-        return copyData && result != null ? result : createEdgeSet(result);
+        return (ALIAS_SETS || copyData) && result != null ? result : createEdgeSet(result);
     }
 
     @Override
@@ -209,7 +209,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	@Override
 	public Set<? extends Edge> edgeSet(Node node) {
 		DefaultEdgeSet result = nodeEdgeMap().get(node);
-		return copyData && result != null ? result : createEdgeSet(result);
+		return (ALIAS_SETS || copyData) && result != null ? result : createEdgeSet(result);
 	}
 //
 //	/** 
@@ -314,6 +314,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	private Reference<CertificateStrategy> certifier;
 	/** Flag indicating that data should be copied rather than shared in {@link #getDataTarget()}. */ 
 	private boolean copyData = true;
+	/** 
+	 * Debug flag for aliasing the node and edge set.
+	 * Aliasing the sets gives problems in matching. 
+	 */
+	static private final boolean ALIAS_SETS = true;
 	/** Factory instance of this class. */
 	static private final NewDeltaGraph copyInstance = new NewDeltaGraph(null,null,true);
 	/** Factory instance of this class. */
