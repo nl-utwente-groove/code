@@ -35,6 +35,25 @@ import java.util.List;
  *
  */
 public class RandomLinearStrategy extends AbstractStrategy {
+    /** 
+     * Constructs a default instance of the strategy,
+     * in which states are only closed if they have been fully explored
+     */
+    public RandomLinearStrategy() {
+        // empty
+    }
+    
+    /** 
+     * Constructs an instance of the strategy with control over the closing of states.
+     * @param closeFast if <code>true</code>, close states immediately after a 
+     * single outgoing transition has been computed.
+     */
+    public RandomLinearStrategy(boolean closeFast) {
+        if (closeFast) {
+            enableCloseExit();
+        }
+    }
+    
 	public boolean next() {
 		if (this.atState == null) { 
 			getGTS().removeGraphListener(this.collector);

@@ -218,7 +218,7 @@ public abstract class AbstractStrategy implements Strategy {
 	protected boolean aliasing = true;
 
 	/** Option to close states after a transition has been added from them **/
-	/** Can optionally be used by linearstrategies to save memory by closing states asap **/
+	/** Can optionally be used by linear strategies to save memory by closing states asap **/
 	protected boolean closeExit = false;
 	
 	
