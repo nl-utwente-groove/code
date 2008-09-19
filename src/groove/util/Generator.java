@@ -34,6 +34,7 @@ import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
+import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Label;
@@ -46,6 +47,7 @@ import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.lts.StateGenerator;
@@ -839,7 +841,7 @@ public class Generator extends CommandLineTool {
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
            	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new RandomLinearStrategy(), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
            	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
@@ -1042,7 +1044,15 @@ public class Generator extends CommandLineTool {
 			edgeCount += state.getGraph().edgeCount();
 		}
     	
-		/** Returns the number of nodes in the added states. */
+		@Override
+        public void addUpdate(GraphShape graph, Edge edge) {
+            GraphTransition trans = (GraphTransition) edge;
+            if (trans.getEvent().getRule().getName().getContent().equals("end_turn")) {
+                System.out.println("\n"+trans.getEvent());
+            }
+        }
+
+        /** Returns the number of nodes in the added states. */
 		public int getNodeCount() {
 			return nodeCount;
 		}

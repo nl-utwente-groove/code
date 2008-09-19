@@ -307,9 +307,7 @@ public class ProductGTS implements LTS {
          */
     	@Override
         protected boolean areEqual(BuchiGraphState stateKey, BuchiGraphState otherStateKey) {
-			if (!getRecord().isReuse()) {
-			    return stateKey == otherStateKey;
-			} else if (
+			if (
 					(stateKey.getLocation() == null || stateKey.getLocation().equals(otherStateKey.getLocation())) &&
 					(stateKey.getBuchiLocation() == null || stateKey.getBuchiLocation().equals(otherStateKey.getBuchiLocation()))) {
 				Graph one = stateKey.getGraph();
@@ -332,9 +330,7 @@ public class ProductGTS implements LTS {
     	@Override
         protected int getCode(BuchiGraphState stateKey) {
     	    int result;
-    		if (!getRecord().isReuse()) { 
-    		    result = System.identityHashCode(stateKey);
-    		} else if (isCheckIsomorphism()) {
+    		if (isCheckIsomorphism()) {
     		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
     		} else {
     			Graph graph = stateKey.getGraph();

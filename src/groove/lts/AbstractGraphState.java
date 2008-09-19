@@ -85,7 +85,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
    
     public Set<GraphTransition> getTransitionSet() {
-        return new TransformSet<GraphTransitionStub,GraphTransition>(getTransitionStubSet()) {
+        return new TransformSet<GraphTransitionStub,GraphTransition>(getCachedTransitionStubs()) {
         	@Override
             protected GraphTransition toOuter(GraphTransitionStub stub) {
                 return stub.toTransition(AbstractGraphState.this);
@@ -106,7 +106,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     public boolean containsTransition(GraphTransition transition) {
-	    return transition.source().equals(this) && getTransitionStubSet().contains(createTransitionStub(transition.getEvent(), transition.getAddedNodes(), transition.target()));
+	    return transition.source().equals(this) && getCachedTransitionStubs().contains(createTransitionStub(transition.getEvent(), transition.getAddedNodes(), transition.target()));
 	}
 
 	//    
@@ -129,7 +129,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	}
 
 	public Collection<? extends GraphState> getNextStateSet() {
-        return new TransformSet<GraphTransitionStub,GraphState>(getTransitionStubSet()) {
+        return new TransformSet<GraphTransitionStub,GraphState>(getCachedTransitionStubs()) {
         	@Override
             public GraphState toOuter(GraphTransitionStub stub) {
                 return stub.target();
@@ -199,27 +199,28 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	    if (isClosed()) {
 	        return getStoredTransitionStubs().iterator();
 	    } else {
-	        return getTransitionStubSet().iterator();
+	        return getCachedTransitionStubs().iterator();
 	    }
 	}
 
 	/**
 	 * Returns a list view upon the current outgoing transitions.
 	 */
-	private Set<GraphTransitionStub> getTransitionStubSet() {
+	private Set<GraphTransitionStub> getCachedTransitionStubs() {
 		return getCache().getStubSet();
 	}
 
 	/**
-	 * Returns an iterator over the stored outgoing transitions.
-	 * Returns <code>null</code> if there are no transitions stored.
+	 * Returns the collection of currently stored outgoing transition stubs.
+	 * Note that this is only guaranteed to be synchronised with the cached stub set if the
+	 * state is closed.
 	 */
 	public final Collection<GraphTransitionStub> getStoredTransitionStubs() {
 		return Arrays.asList(transitionStubs);
 	}
 
 	/**
-	 * Stores the outgoing transitions in a memory efficient way.
+	 * Stores a set of outgoing transition stubs in a memory efficient way.
 	 */
 	private void setStoredTransitionStubs(Collection<GraphTransitionStub> outTransitionSet) {
 		if (outTransitionSet.isEmpty()) {
@@ -236,7 +237,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     public boolean setClosed() {
         if (!isClosed()) {
-            setStoredTransitionStubs(getTransitionStubSet());
+            setStoredTransitionStubs(getCachedTransitionStubs());
             setCacheCollectable();
             updateClosed();
             return true;
@@ -325,7 +326,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	@Override
 	public void clearCache() {
 		if (!isClosed()) {
-			setStoredTransitionStubs(getTransitionStubSet());
+			setStoredTransitionStubs(getCachedTransitionStubs());
 		}
 		super.clearCache();
 	}

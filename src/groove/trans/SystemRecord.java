@@ -18,7 +18,6 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.ProductGTS;
 import groove.lts.StateGenerator;
-import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
 
@@ -36,13 +35,12 @@ import java.util.Set;
  * fresh node identities (to ensure deterministic and consecutive
  * node numbers) and maintains a map of rule events (to save space
  * and time).
- * XXX: change for revamp
  * @author Arend Rensink
  * @version $Revision $
  */
 public class SystemRecord implements NodeFactory {
     /**
-     * The total number of events (over all rules) created in {@link #getEvent(Rule, VarNodeEdgeMap)}.
+     * The total number of events (over all rules) created in {@link #getEvent(RuleMatch)}.
      */
     private static int eventCount;
 
@@ -54,15 +52,13 @@ public class SystemRecord implements NodeFactory {
     }
 
     /** 
-     * Constructs a derivation record from a given fixed graph grammar and rule counter, using
-     * a given node number for the first fresh node. 
-     * @throws IllegalStateException if the grammar is not fixed.
+     * Constructs a derivation record from a given (fixed) graph grammar.
+     * The initial (fresh) node number is set to one higher than the highest node number occurring
+     * in the start graph. 
+     * @throws IllegalStateException if the grammar is not fixed according to {@link GraphGrammar#testFixed(boolean)}.
      */
 	public SystemRecord(final GraphGrammar grammar) throws IllegalStateException {
-		grammar.testFixed(true);
-		this.ruleSystem = grammar;
-		this.nodeCounter = new DefaultDispenser();
-		nodeCounter.setCount(computeHighestNodeNr(grammar.getStartGraph())+1);
+		this(grammar, false);
 	}
 
     /** 
@@ -73,11 +69,12 @@ public class SystemRecord implements NodeFactory {
      * @param considerRules whether to consider nodes in rules as "old" nodes. If 
      * <code>considerRules</code> is false, then the constructor is equivalent
      * to {@link #SystemRecord(GraphGrammar)}.
-     * @throws IllegalStateException if the grammar is not fixed.
+     * @throws IllegalStateException if the grammar is not fixed according to {@link GraphGrammar#testFixed(boolean)}.
      */
-	public SystemRecord(final GraphGrammar grammar, boolean considerRules) {
+	public SystemRecord(final GraphGrammar grammar, boolean considerRules) throws IllegalStateException {
 		grammar.testFixed(true);
 		this.ruleSystem = grammar;
+        this.checkIso = grammar.getProperties().isCheckIsomorphism();
 		this.nodeCounter = new DefaultDispenser();
 		int lastUsed = computeHighestNodeNr(grammar.getStartGraph());
 		if (considerRules) {
@@ -88,8 +85,10 @@ public class SystemRecord implements NodeFactory {
 		this.nodeCounter.setCount(lastUsed+1);
 	}
 	
-	/** Factory method to create a fresh node, based on the internally stored node counter.
-	 *  TODO: node for what? graphs? ltss? nodes added during rule applications probably? 
+	/** 
+	 * Factory method to create a fresh node during rule application.
+	 * Each call yields a node with an increased node number, based on a special counter.
+	 * @return fresh node with number increased by 1 with respect to previous call
 	 */
 	public Node newNode() {
 		return DefaultNode.createNode(nodeCounter);
@@ -99,11 +98,11 @@ public class SystemRecord implements NodeFactory {
 	public RuleSystem getRuleSystem() {
 		return ruleSystem;
 	}
-
-	/** Returns the RuleSetIterator for a certain State **/
-	public Iterator<Set<Rule>> getRuleSetIter() {
-		return getRuleSystem().getRuleSetIter();
-	}
+//
+//	/** Returns the RuleSetIterator for a certain State **/
+//	public Iterator<Set<Rule>> getRuleSetIter() {
+//		return getRuleSystem().getRuleSetIter();
+//	}
 	
 	/** Returns a rule application for a given rule and matching of that rule. */
 	public RuleApplication getApplication(RuleMatch match, Graph host) {
@@ -113,75 +112,61 @@ public class SystemRecord implements NodeFactory {
 			return getEvent(match).newApplication(host);
 		}
 	}
-
-	/** 
-	 * Returns an event for a given rule and matching of that rule.
-	 * The events are stored internally; an event is reused if it has the
-	 * correct rule and anchor map.
-	 * @deprecated use {@link #getEvent(RuleMatch)} instead
-	 */
-	@Deprecated
-    public RuleEvent getEvent(Rule rule, VarNodeEdgeMap elementMap) {
-    	RuleEvent result;
-    	reporter.start(GET_EVENT);
-        if (rule.isModifying()) {
-            RuleEvent event = rule.newEvent(elementMap, this, reuse);
-            if (isReuse()) {
-				result = normalEventMap.get(event);
-				if (result == null) {
-					// no, the event is new.
-					result = event;
-					normalEventMap.put(event, result);
-					eventCount++;
-				}
-			} else {
-				result = event;
-            }
-        } else {
-        	result = unmodifyingEventMap.get(rule);
-            // there can be at most one event
-            if (result == null) {
-                unmodifyingEventMap.put(rule, result = rule.newEvent(elementMap, this, reuse));
-                eventCount++;
-            }
-        }
-        reporter.stop();
-        return result;
-    }
-
-	/** 
-	 * Returns an event for a given rule and matching of that rule.
-	 * The events are stored internally; an event is reused if it has the
-	 * correct rule and anchor map.
-	 */
-    public RuleEvent getEvent(RuleMatch match) {
-    	RuleEvent result;
-    	reporter.start(GET_EVENT);
-    	Rule rule = match.getRule();
-        // FIXME:
-//    	if (rule.isModifying()) {
-    		
-            RuleEvent event;
-           	event = match.newEvent(this, reuse);
-            if (isReuse()) {
-				result = normalEventMap.get(event);
-				if (result == null) {
-					// no, the event is new.
-					result = event;
-					normalEventMap.put(event, result);
-					eventCount++;
-				}
-			} else {
-				result = event;
-            }
+//
+//	/** 
+//	 * Returns an event for a given rule and matching of that rule.
+//	 * The events are stored internally; an event is reused if it has the
+//	 * correct rule and anchor map.
+//	 * @deprecated use {@link #getEvent(RuleMatch)} instead
+//	 */
+//	@Deprecated
+//    public RuleEvent getEvent(Rule rule, VarNodeEdgeMap elementMap) {
+//    	RuleEvent result;
+//    	reporter.start(GET_EVENT);
+//        if (rule.isModifying()) {
+//            RuleEvent event = rule.newEvent(elementMap, this, reuse);
+//            if (isReuse()) {
+//				result = normalEventMap.get(event);
+//				if (result == null) {
+//					// no, the event is new.
+//					result = event;
+//					normalEventMap.put(event, result);
+//					eventCount++;
+//				}
+//			} else {
+//				result = event;
+//            }
 //        } else {
 //        	result = unmodifyingEventMap.get(rule);
 //            // there can be at most one event
 //            if (result == null) {
-//                unmodifyingEventMap.put(rule, result = match.newEvent(this, reuse));
+//                unmodifyingEventMap.put(rule, result = rule.newEvent(elementMap, this, reuse));
 //                eventCount++;
 //            }
 //        }
+//        reporter.stop();
+//        return result;
+//    }
+
+	/** 
+	 * Returns an event for a given rule match.
+	 * If {@link #isReuse()} is set, events are stored internally and reused.
+	 */
+    public RuleEvent getEvent(RuleMatch match) {
+    	RuleEvent result;
+    	reporter.start(GET_EVENT);
+        RuleEvent event = match.newEvent(this, isReuse());
+        if (isReuse()) {
+            result = eventMap.get(event);
+            if (result == null) {
+                // no, the event is new.
+                result = event;
+                eventMap.put(event, result);
+                eventCount++;
+            }
+        } else {
+            result = event;
+        }
         reporter.stop();
         return result;
     }
@@ -233,25 +218,46 @@ public class SystemRecord implements NodeFactory {
     	return dependencies;
     }
 
-    /** Rule dependencies of the rule system. */
-    private RuleDependencies dependencies;
-	/** The internally stored node counter. */
-	private final DefaultDispenser nodeCounter;
-	/** The associated rule system. */
-	private final RuleSystem ruleSystem;    
-	
-	/**
-     * Map from events to <i>normal events</i>, which are reused
-     * for time and space reasons.
-     */
-    private final Map<RuleEvent,RuleEvent> normalEventMap = new HashMap<RuleEvent,RuleEvent>();
     /** 
-     * Map from unmodifying rules to their (unique) events.
+     * Sets the policy of the GTS in determining state equivalence.
+     * This is only relevant if {@link #isCollapse()} is set to <code>true</code>.
+     * @param check if <code>true</code>, states with isomorphic graph structure
+     * are considered equivalent; otherwise, only equal graphs (with the same set of nodes
+     * and edges) are considered equivalent.
      */
-    private final Map<Rule,RuleEvent> unmodifyingEventMap = new HashMap<Rule,RuleEvent>();
+    public void setCheckIso(boolean check) {
+        this.checkIso = check;
+    }
 
     /** 
-     * Changes the behaviour of the GTS to reuse previously explored states and rule events.
+     * Returns the current value of the isomorphism checking policy.
+     * @see #setCheckIso(boolean)
+     */
+    public boolean isCheckIso() {
+        return checkIso;
+    }
+
+    /** 
+     * Sets the policy of the GTS in collapsing equivalent states.
+     * Which states are equivalent is partially determined by #isCheckIso.
+     * Not collapsing states only makes sense in linear exploration strategies.
+     * @param collapse if <code>true</code>, equivalent states are collapsed; otherwise,
+     * new states are always added to the GTS, without comparing them to existing states.
+     */
+    public void setCollapse(boolean collapse) {
+        this.collapse = collapse;
+    }
+
+    /** 
+     * Returns the current value of the state collapsing policy.
+     * @see #setCollapse(boolean)
+     */
+    public boolean isCollapse() {
+        return collapse;
+    }
+
+    /** 
+     * Changes the behaviour of the GTS in reusing previously explored states and rule events.
      * If the reuse property is <code>false</code>, state graph equality is never detected,
      * and backtracking is not supported.
      * Unpredictable behaviour will ensue if this method is called while an existing GTS is being explored.
@@ -272,10 +278,9 @@ public class SystemRecord implements NodeFactory {
     
     /** Constructs an appropriate fresh explore cache for the graph grammar.
      * The constructed cache is fresh in the sense that next is not called on it yet.
-     * @param state
+     * @param state start state for the exploration
      * @param isRandomized When <code>true</code>, the explore cache will return rules
-     * in random order. 
-     * TODO not supported for location cache
+     * in random order.
      * considers that a rule can be partially but not fully explored. 
      * When <code>false</code>, the result iterator is positioned on the first unexplored rule.
      * @return  An appropriate fresh explore cache, depending on the type of grammar.
@@ -315,26 +320,60 @@ public class SystemRecord implements NodeFactory {
 		}
 		return result;
     }
-    
-    /** caches the result of getRuleList **/
-    private List<Set<Rule>> prioRulesList;
-    
-    /** A list of sets of rules, ordered by rules priority.
-     * @return A list of sets of rules, ordered by rules priority.
+//    
+//    /** A list of sets of rules, ordered by rules priority.
+//     * @return A list of sets of rules, ordered by rules priority.
+//     */
+//    public List<Set<Rule>> getRulesList() {
+//    	if( prioRulesList == null ) {
+//    		prioRulesList = new ArrayList<Set<Rule>>();
+//    		for (Set<Rule> rulesSet: ruleSystem.getRuleMap().values()) {
+//    		    prioRulesList.add(rulesSet);
+//    		}
+//    	}
+//    	return prioRulesList;
+//    }
+//  
+//
+//    /** caches the result of getRuleList **/
+//    private List<Set<Rule>> prioRulesList;
+//    
+    /**
+     * Rule dependencies of the rule system. 
      */
-    public List<Set<Rule>> getRulesList() {
-    	if( prioRulesList == null ) {
-    		prioRulesList = new ArrayList<Set<Rule>>();
-    		Iterator<Set<Rule>> rulesSetIter = ruleSystem.getRuleSetIter();
-    		while( rulesSetIter.hasNext()) {
-    			prioRulesList.add(rulesSetIter.next());
-    		}
-    	}
-    	return prioRulesList;
-    }
-  
-    /** Flag indicating if previous result are reused. */
-    private boolean reuse = true;
+    private RuleDependencies dependencies;
+    /**
+     * The internally stored node counter. 
+     */
+    private final DefaultDispenser nodeCounter;
+    /**
+     * The associated rule system. 
+     */
+    private final RuleSystem ruleSystem;
+    /**
+     * Identity map for events that have been encountered during exploration.
+     * Events are stored only if {@link #isReuse()} is set.
+     */
+    private final Map<RuleEvent, RuleEvent> eventMap = new HashMap<RuleEvent, RuleEvent>();
+    /** 
+     * Flag indicating if states with isomorphic graph structure are to be considered equivalent.
+     * If <code>true</code>, new states are compared with old ones modulo isomorphism;
+     * otherwise, they are compared modulo equality of node and edge sets.
+     * Default value is <code>true</code>.
+     */
+    private boolean checkIso = true;
+    /** 
+     * Flag indicating if equivalent states are to be collapsed in the GTS.
+     * If <code>false</code>, new states are not compared with old ones,
+     * and are added to the state set straight away.
+     * Default value is <code>true</code>.
+     */
+    private boolean collapse = true;
+    /** 
+     * Flag indicating if previous result are reused.
+     * Default value: <code>true</code>. 
+     */
+    private boolean reuse = false;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");

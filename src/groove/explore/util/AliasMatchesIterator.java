@@ -2,7 +2,6 @@ package groove.explore.util;
 
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultAliasApplication;
-import groove.lts.DefaultGraphNextState;
 import groove.lts.GraphNextState;
 import groove.lts.GraphTransitionStub;
 import groove.trans.Rule;
@@ -23,11 +22,8 @@ import java.util.TreeMap;
 // the aliasMatchIter field is not needed, super.matchIter may be used instead
 
 public class AliasMatchesIterator extends MatchesIterator {
-	
-	//private Iterator<RuleMatch> aliasMatchIter;
-
-	/** Creates an aliased matches iterator for a state and a rule.
-	 * 
+	/** 
+	 * Creates an aliased matches iterator for a state and a rule.
 	 * @param state
 	 * @param rules
 	 * @param enabledRules The rules that may be enabled by the rule event that created this state.
@@ -41,14 +37,13 @@ public class AliasMatchesIterator extends MatchesIterator {
 		firstRule();
 		goToNext();
 	}	@Override	public RuleMatch next() {
-		
-		RuleMatch m;
+		RuleMatch result;
 		if( aliasMatchIter != null && aliasMatchIter.hasNext() ) {
-			m = aliasMatchIter.next();
+			result = aliasMatchIter.next();
 		} else {
-			m = super.next();
+			result = super.next();
 		}
-		return m;
+		return result;
 	}	
 	@Override
 	protected void firstRule() {
@@ -93,17 +88,11 @@ public class AliasMatchesIterator extends MatchesIterator {
 			return;
 		}
 		
-		if (currentRule.getPriority() == priority && 
+		if (currentRule.getPriority() <= priority && 
 				! ( (currentRule instanceof SPORule && ((SPORule)currentRule).hasSubRules()) || enabledRules.contains(currentRule) ) ) {
 			// it didn't match in the previous state or no matches left after rematching
 			this.matchIter = new EmptyMatchIter();
 			return;
-		}
-		
-		if (currentRule.getPriority() < priority && 
-				! ( (currentRule instanceof SPORule && ((SPORule)currentRule).hasSubRules())|| enabledRules.contains(currentRule)) ) {
-			// its neither a composite rule nor the rule was enabled
-			this.matchIter = new EmptyMatchIter();
 		}
 	}
 
@@ -118,7 +107,6 @@ public class AliasMatchesIterator extends MatchesIterator {
 	
 	/**
 	 * TODO: fixme, currently always enabled if this class is used... (?)
-	 * @return
 	 */
 	private boolean isUseDependencies() {
 		return true;

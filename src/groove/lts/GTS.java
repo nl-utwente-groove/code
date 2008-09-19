@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.Location;
 import groove.control.LocationAutomatonBuilder;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
@@ -75,31 +76,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /**
      * Constructs a GTS with an option to avoid storing transitions.
-     * @require startGraph != null
-     * @ensure startState().equals(startGraph)</tt> and
-     * <tt>nodeSet().contains(startState())</tt> 
      */
     private GTS(GraphGrammar grammar, boolean storeTransitions) {
     	grammar.testFixed(true);
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
-        this.checkIsomorphism = getGrammar().getProperties().isCheckIsomorphism();
     }
-    
-    /**
-     * Constructs a GTS with an option to avoid storing transitions, and
-     * additionally specifying whether isomorphism check should be performed.
-     * @require startGraph != null
-     * @ensure startState().equals(startGraph)</tt> and
-     * <tt>nodeSet().contains(startState())</tt> 
-     */
-    protected GTS(GraphGrammar grammar, boolean storeTransitions, boolean checkIsomorphism) {
-    	grammar.testFixed(true);
-        this.ruleSystem = grammar;
-        this.storeTransitions = storeTransitions;
-        this.checkIsomorphism = checkIsomorphism;
-    }
-    
 
     /**
      * Callback factory method to create and initialise the start graph of the GTS,
@@ -117,15 +99,10 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * on the basis of a given graph.
      */
     protected GraphState createStartState(Graph startGraph) {
-        // init the startstate with a control element if possible
-    	if( this.ruleSystem.getControl() != null )
-        {
-    		GraphState returnState = new StartGraphState(getRecord(), startGraph, new LocationAutomatonBuilder().startLocation(this.ruleSystem.getControl().startState()));
-    		
-    		return returnState;
-        }
-        else
-        {
+        // initialise the start state with a control location if necessary
+    	if( this.ruleSystem.getControl() != null ) {
+    		return new StartGraphState(getRecord(), startGraph, new LocationAutomatonBuilder().startLocation(this.ruleSystem.getControl().startState()));
+        } else {
         	return new StartGraphState(getRecord(), startGraph);
         }
     }
@@ -210,7 +187,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /**
      * Removes a state from the set of open states, and notifies the graph listeners.
-     * Also determinen the final status of the state.
+     * Also determines the final status of the state.
      * Only call this after all outgoing transitions of the state have been generated!
      * @param state the state to be removed from the set of open states
      * @require <tt>state instanceof GraphState</tt>
@@ -232,13 +209,13 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     // - without location, and then no outgoing transitions
     private boolean determineIsFinal(GraphState state) {
     	if (state.getLocation() == null) {
-    		return ! state.getTransitionIter().hasNext(); // TODO this can probably be optimized, with e.g. an additional function for a GTS
+    		return ! state.getTransitionIter().hasNext(); // TODO this can probably be optimised, with e.g. an additional function for a GTS
     	} else {
     		return state.getLocation().isSuccess(state);
     	}
     }
 
-    /** Returns the number of not fully expored states. */
+    /** Returns the number of not fully explored states. */
     public int openStateCount() {
         return nodeCount() - closedCount;
     }
@@ -363,10 +340,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
     }
     
-    boolean isCheckIsomorphism() {
-        return checkIsomorphism;
-    }
-
     /**
 	 * @return Returns the transitionCount.
 	 */
@@ -393,8 +366,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * @invariant <tt>freshStates \subseteq nodes</tt>
      */
     private final Set<GraphState> finalStates = new HashSet<GraphState>();
-    /** Flag indicating that graphs should be compared up to isomorphism. */
-    private final boolean checkIsomorphism;
+
     /** The system record for this GTS. */
     private SystemRecord record;
     /**
@@ -417,43 +389,48 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         
         /**
          * First compares the control locations, then calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
-         * @see GraphState#getControl()
+         * @see GraphState#getLocation()
          */
     	@Override
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
-			if (!getRecord().isReuse()) {
-			    return stateKey == otherStateKey;
-			} else if (stateKey.getLocation() == null || stateKey.getLocation().equals(otherStateKey.getLocation())) {
-				Graph one = stateKey.getGraph();
-				Graph two = otherStateKey.getGraph();
-				if (isCheckIsomorphism()) {
-				    return checker.areIsomorphic(one, two);
-				} else {
-				    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
-				}
-			}
-			else {
-				return false;
+			if (getRecord().isCollapse()) {
+			    // distinct control locations means distinct states
+			    Location control = stateKey.getLocation();
+			    if (control != null && ! control.equals(otherStateKey.getLocation())) {
+			        return false;
+			    }
+                Graph one = stateKey.getGraph();
+                Graph two = otherStateKey.getGraph();
+                if (getRecord().isCheckIso()) {
+                    // check for graph isomorphism
+                    return checker.areIsomorphic(one, two);
+                } else {
+                    // check for graph equality
+                    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
+                }
+			} else {
+                return stateKey == otherStateKey;
 			}
 		}
 
         /**
-		 * Returns the hash code of the isomorphism certificate, modified by the control
-		 * location (if any).
+		 * Returns the hash code of the state, modified by the control location (if any).
 		 */
     	@Override
         protected int getCode(GraphState stateKey) {
     	    int result;
-    		if (!getRecord().isReuse()) { 
-    		    result = System.identityHashCode(stateKey);
-    		} else if (isCheckIsomorphism()) {
-    		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+    		if (getRecord().isCollapse()) { 
+                if (getRecord().isCheckIso()) {
+                    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+                } else {
+                    Graph graph = stateKey.getGraph();
+                    result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+                }
+                Object control = stateKey.getLocation();
+                result += control == null ? 0 : System.identityHashCode(control);
     		} else {
-    			Graph graph = stateKey.getGraph();
-    		    result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
-    		}
-    		//Object control = stateKey.getControl();
-    		//result += control == null ? 0 : System.identityHashCode(control);
+                result = System.identityHashCode(stateKey);
+            }
     		return result;
         }
         

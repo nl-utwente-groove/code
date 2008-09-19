@@ -20,7 +20,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;

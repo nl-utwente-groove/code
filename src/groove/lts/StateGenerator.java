@@ -171,12 +171,7 @@ public class StateGenerator {
 	}
 	
 	/**
-	 * Applies a match and returns the corresponding graph transitions
-	 * 
-	 * @param source
-	 * @param match
-	 * @param cache
-	 * @return
+	 * Applies a match and returns the resulting complete set of graph transitions.
 	 */
 	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleMatch match, ExploreCache cache) {
 		DefaultScenario.reporter.start(DefaultScenario.GET_DERIVATIONS);
@@ -230,7 +225,6 @@ public class StateGenerator {
 		return new DefaultGraphNextState((AbstractGraphState) source, appl, null);
 	}
 
-    
     /**
      * Creates a fresh graph transition, based on a given rule application and source and target state.
      * A final parameter determines if the target state is directly derived from the source, or modulo a symmetry.
