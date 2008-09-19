@@ -162,7 +162,8 @@ public class AGTS extends GTS {
 	 * @param grammar
 	 */
 	public AGTS(GraphGrammar grammar, Abstraction.Parameters options) {
-		super(grammar, true, true);
+		super(grammar);
+		getRecord().setCheckIso(true);
 		this.options = options;
 		this.family = new PatternFamily (options.radius, options.maxIncidence);
 		((InvalidState) INVALID_STATE).removeStateNumber();

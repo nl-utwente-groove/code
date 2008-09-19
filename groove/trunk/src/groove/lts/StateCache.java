@@ -36,7 +36,8 @@ import java.util.Set;
 
 
 /**
- * Extends the cache with the outgoing transitions, as a set.
+ * Caches information of a state.
+ * Cached are the graph, the set of outgoing transitions, and the delta with respect to the previous state.
  * @author Arend Rensink
  * @version $Revision: 1.23 $
  */
@@ -47,7 +48,7 @@ class StateCache {
     StateCache(AbstractGraphState state) {
         this.state = state;    
         this.record = state.getRecord();
-        this.freezeGraphs = record.isReuse();
+        this.freezeGraphs = record.isCollapse();
         this.graphFactory = NewDeltaGraph.getInstance(record.isReuse());
     }
 
@@ -228,7 +229,7 @@ class StateCache {
      */
     private Map<RuleEvent,GraphState> computeTransitionMap() {
     	Map<RuleEvent,GraphState> result = createTransitionMap();
-    	for (GraphTransitionStub stub: state.getStoredTransitionStubs()) {
+    	for (GraphTransitionStub stub: getStubSet()) {
     		result.put(stub.getEvent(state), stub.target());
     	}
     	return result;
@@ -240,9 +241,9 @@ class StateCache {
     }
 
     /**
-     * Returns the cached set out {@link GraphTransitionStub}s.
+     * Returns the cached set of {@link GraphTransitionStub}s.
      * The set is constructed lazily if the state is closed,
-     * using {@link #computeStubSet()}; if the state s not closed,
+     * using {@link #computeStubSet()}; if the state is not closed,
      * an empty set is initialized.
      */
     Set<GraphTransitionStub> getStubSet() {
@@ -302,7 +303,10 @@ class StateCache {
     /** Cached graph for this state. */
     private Graph graph;
     private groove.graph.DeltaApplier delta;
-    /** Flag indicating if state graphs should be frozen. */
+    /** 
+     * Flag indicating if (a fraction of the) state graphs should be frozen.
+     * This is set to <code>true</code> if states in the GTS are collapsed. 
+     */
     private final boolean freezeGraphs;
     /** Factory used to create the state graphs. */
     private final DeltaGraphFactory graphFactory;
