@@ -4,7 +4,8 @@ import groove.control.Location;
 import groove.trans.Rule;
 
 
-/** Caches information about the current state of the exploration of
+/** 
+ * Caches information about the current state of the exploration of
  * some state in a graph transition system. This information concerns 
  * fully explored rules (see {@link #updateExplored(Rule)}) and rules for
  * which at least one match was found (see {@link #updateMatches(Rule)}).
@@ -16,23 +17,23 @@ import groove.trans.Rule;
  *
  */
 public interface ExploreCache extends ResumableIterator<Rule> {
-	
-	
-	/** Inform the cache that a rule has been fully explored. 
+	/** 
+	 * Inform the cache that a rule has been fully explored. 
 	 * This may prevent the iterator from returning the rule in the future,
 	 * even if it was not yet returned in the past.
 	 * @param rule A fully explored rule.
 	 */
 	public void updateExplored(Rule rule);
 	
-	/** Inform the cache that a match has been found for a rule.
+	/** 
+	 * Inform the cache that a match has been found for a rule.
 	 * This may influence the rules that will be returned by the iterator later on.
 	 * @param rule A rule that has a match.
 	 */
 	public void updateMatches(Rule rule);
 	
-	
-	/** The target location when a rule is applied.
+	/** 
+	 * The target location when a rule is applied.
 	 * @param rule
 	 * @return The target location when a rule is applied.
 	 */

@@ -114,13 +114,15 @@ class StateCache {
 		    DefaultGraphNextState state = (DefaultGraphNextState) this.state;
 		    // make sure states get reconstructed sequentially rather than recursively
 			if (state.source().isCacheCleared()) {
+			    // go back along the chain of states until the first one
+			    // that is frozen or still in cache
 			    AbstractGraphState backward = state.source();
 			    List<AbstractGraphState> stateChain = new LinkedList<AbstractGraphState>();
-			    while (backward instanceof GraphNextState && backward.isCacheCleared() && frozenGraph == null) {
+			    while (backward instanceof GraphNextState && backward.isCacheCleared() && backward.getFrozenGraph() == null) {
 	                stateChain.add(0, backward);
 			        backward = ((DefaultGraphNextState) backward).source();
-			        frozenGraph = backward.getFrozenGraph();
 			    }
+			    // now let all states along the chain reconstruct their graphs, from ancestor to this one
 			    for (AbstractGraphState forward: stateChain) {
 			        forward.getGraph();
 			    }
@@ -279,13 +281,15 @@ class StateCache {
     	return new TreeHashSet<GraphTransitionStub>() {
 			@Override
 			protected boolean areEqual(GraphTransitionStub key, GraphTransitionStub otherKey) {
-				return key.getEvent(getState()) == otherKey.getEvent(getState());
+                return key.getEvent(getState()).equals(otherKey.getEvent(getState()));
+//                return key.getEvent(getState()) == otherKey.getEvent(getState());
 			}
 
 			@Override
 			protected int getCode(GraphTransitionStub key) {
 				RuleEvent keyEvent = key.getEvent(getState());
-				return keyEvent == null ? 0 : keyEvent.identityHashCode();
+//                return keyEvent == null ? 0 : keyEvent.identityHashCode();
+                return keyEvent == null ? 0 : keyEvent.hashCode();
 			}
     	};
     }

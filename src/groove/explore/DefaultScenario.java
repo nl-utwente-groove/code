@@ -87,7 +87,7 @@ public class DefaultScenario<T> implements Scenario<T> {
 	/** Sets the acceptor for this scenario.
 	 * @param acceptor the acceptor for this scenario.
 	 */
-	public void setAcceptor(Acceptor<T> acceptor) {
+	public <A extends Acceptor<T>> void setAcceptor(A acceptor) {
 		this.acceptor = acceptor;
 	}
 	

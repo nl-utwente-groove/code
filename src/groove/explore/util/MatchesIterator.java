@@ -22,17 +22,38 @@ import groove.trans.RuleMatch;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 /** Iterates over all matches of a collection of rules into a graph.
  * The rules are given as an {@link ExploreCache}.
  * This implementation is suitable for iterators intended to iterate over 
  * several matches (and not for testing the existence of a match).
- * The iterator returns only one match for non modifying rules.
  * @author Iovka Boneva
  * @version $Revision: 1.5 $
  */
 public class MatchesIterator implements Iterator<RuleMatch> {
+    // ---------------------------------------------------------------
+    // CONSTRUCTOR, FIELDS ETC.
+    // ---------------------------------------------------------------
+    /**
+     * Constructs a new matches iterator for a given state, updating the cache given as parameter. 
+     * @param state 
+     * @param rules 
+     */
+    public MatchesIterator (GraphState state, ExploreCache rules) {
+        this(state, rules, true);
+        firstRule();
+        goToNext();
+        this.isEndRule = false; 
+    }
+
+    /** A minimal constructor, to be used by sub-classes.
+     * @param protect just for different signature */
+    protected MatchesIterator (GraphState state, ExploreCache rules, boolean protect) {
+        // minimal, for the use of sub-classes
+        this.state = state;
+        this.rulesIter = rules;
+    }
+    
 	public boolean hasNext() {
 		goToNext();
 		return matchIter != null && this.matchIter.hasNext();
@@ -71,7 +92,26 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 		throw new UnsupportedOperationException();
 	}
 
-	/** Increments the rule iterator.
+	/** Increments the rule iterator after the creation of this 
+     * matches iterator. Also initializes {@link #matchIter}, 
+     * except if this iterator is consumed.
+     * This is different from the general {@link #nextRule()}
+     * as some additional treatment is performed for the first rule.
+     */
+    protected void firstRule() {
+    	this.currentRule = rulesIter.last();
+    	if (this.currentRule == null) {
+    		// this means that rulesIter is freshly created and has never been incremented before
+    		if (!this.rulesIter.hasNext()) {  // this iterator is entirely consumed 
+    			this.matchIter = null;
+    			return;
+    		}
+    		this.currentRule = rulesIter.next();
+    	}
+    	this.matchIter = createMatchIter(currentRule);
+    }
+
+    /** Increments the rule iterator.
 	 * Also initializes {@link #matchIter}, except if this iterator is consumed.
 	 * @return <code>true</code> if the rules iterator is not consumed
 	 */
@@ -82,7 +122,7 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 			return false;
 		}
 		this.currentRule = rulesIter.next();
-		this.matchIter = this.currentRule.getMatchIter(this.state.getGraph(), null);
+		this.matchIter = createMatchIter(currentRule);
 //		if (! currentRule.isModifying() && matchIter.hasNext()) {
 //			// in the case of non modifying rule, only one match will be returned
 //			final RuleMatch m = matchIter.next();
@@ -103,25 +143,6 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 		return true;
 	}
 	
-	/** Increments the rule iterator after the creation of this 
-	 * matches iterator. Also initializes {@link #matchIter}, 
-	 * except if this iterator is consumed.
-	 * This is different from the general {@link #nextRule()}
-	 * as some additional treatment is performed for the first rule.
-	 */
-	protected void firstRule() {
-		this.currentRule = rulesIter.last();
-		if (this.currentRule == null) {
-			// this means that rulesIter is freshly created and has never been incremented before
-			if (!this.rulesIter.hasNext()) {  // this iterator is entirely consumed 
-				this.matchIter = null;
-				return;
-			}
-			this.currentRule = rulesIter.next();
-		}
-		this.matchIter = this.currentRule.getMatchIter(this.state.getGraph(), null);
-	}
-	
 	/** This method insures that matchIter is incremented until the next element to be returned,
 	 * or set to null if no more elements are available.
 	 * The method is idempotent (several successive calls have the same effect as a unique call).
@@ -133,39 +154,21 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 		
 	}
 	
-	
-	// ---------------------------------------------------------------
-	// CONSTRUCTOR, FIELDS ETC.
-	// ---------------------------------------------------------------
-	/**
-	 * Constructs a new matches iterator for a given state, updating the cache given as parameter. 
-	 * @param state 
-	 * @param rules 
-	 */
-	public MatchesIterator (GraphState state, ExploreCache rules) {
-		this(state, rules, true);
-		firstRule();
-		goToNext();
-		this.isEndRule = false; 
+	/** Callback method to create an iterator over the matches of a given rule. */
+	protected Iterator<RuleMatch> createMatchIter(Rule rule) {
+	   return rule.getMatchIter(this.state.getGraph(), null);
 	}
-
-	/** A minimal constructor, to be used by sub-classes.
-	 * @param protect just for different signature */
-	protected MatchesIterator (GraphState state, ExploreCache rules, boolean protect) {
-		// minimal, for the use of sub-classes
-		this.state = state;
-		this.rulesIter = rules;
-	}
-	
-	/** Collects the remaining matches for the iterator. 
-	 * @param matches 
-	 * */
-	public void collectMatches(Set<RuleMatch> matches) {
-		while( this.hasNext()) {
-			matches.add(this.next());
-		}
-	}
-	
+//	
+//	
+//	/** Collects the remaining matches for the iterator. 
+//	 * @param matches 
+//	 * */
+//	public void collectMatches(Set<RuleMatch> matches) {
+//		while( this.hasNext()) {
+//			matches.add(this.next());
+//		}
+//	}
+//	
 //	/** True when the last call to {@link #next()} returned
 //	 * the last matching for a rule. False otherwise */
 //	protected final boolean getEndRule() {

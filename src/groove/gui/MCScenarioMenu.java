@@ -67,7 +67,7 @@ public class MCScenarioMenu extends ScenarioMenu {
         	handler = ScenarioHandlerFactory.getModelCheckingScenario(
         			new NestedDFSStrategy(),
         			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(), 
+        			new CycleAcceptor(), 
         			"", "Nested Depth-First Search", simulator);
         	addScenarioHandler(handler);
 
@@ -81,7 +81,7 @@ public class MCScenarioMenu extends ScenarioMenu {
         	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
         			new BoundedNestedDFSStrategy(),
         			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
+        			new CycleAcceptor(),
 //        			new GraphNodeSizeBoundary(10,5),
         			"", "Bounded Nested Depth-First Search (naive)", simulator);
         	addScenarioHandler(handler);
@@ -89,7 +89,7 @@ public class MCScenarioMenu extends ScenarioMenu {
         	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
         			new BoundedNestedDFSPocketStrategy(),
         			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
+        			new CycleAcceptor(),
 //        			new GraphNodeSizeBoundary(10,5),
         			"", "Bounded Nested Depth-First Search (naive)", simulator);
         	addScenarioHandler(handler);
@@ -97,14 +97,14 @@ public class MCScenarioMenu extends ScenarioMenu {
         	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
         			new OptimizedBoundedNestedDFSStrategy(),
         			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
+        			new CycleAcceptor(),
         			"", "Bounded Nested Depth-First Search (optimized)", simulator);
         	addScenarioHandler(handler);
 
         	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
         			new OptimizedBoundedNestedDFSPocketStrategy(),
         			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
+        			new CycleAcceptor(),
         			"", "Bounded Nested Depth-First Search (optimized + pocket)", simulator);
         	addScenarioHandler(handler);
         }

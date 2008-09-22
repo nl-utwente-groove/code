@@ -32,13 +32,9 @@ import java.util.TreeSet;
  * @param <T> The type of the objects stored in the result.
  */
 public abstract class Result<T> {
-	
-	/** The elements stored in this result. */
-	protected Collection<T> elements;
-	
 	/** Creates a result with an empty set of elements. */
 	public Result() {
-		elements = new TreeSet<T>();
+		elements = createResultSet();
 	}
 
 	/** Adds an element to the result.
@@ -48,8 +44,8 @@ public abstract class Result<T> {
 		elements.add(t);
 	}	
 	
-	/** The set of elements contained in the result.
-	 * @return
+	/** 
+	 * The set of elements contained in the result.
 	 */
 	public Collection<T> getResult() {
 		return elements;
@@ -64,5 +60,12 @@ public abstract class Result<T> {
 	 * When the result is completed, no more elements should be added to it.
 	 */
 	public abstract boolean done();
-
+    
+	/** Callback factory method for the result set. */
+	protected Collection<T> createResultSet() {
+	    return new TreeSet<T>();
+	}
+	
+    /** The elements stored in this result. */
+    protected Collection<T> elements;
 }

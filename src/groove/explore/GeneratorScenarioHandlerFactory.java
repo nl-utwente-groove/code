@@ -18,7 +18,6 @@ package groove.explore;
 
 import groove.explore.ScenarioHandlerFactory.AbstractConditionalScenarioHandler;
 import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
-import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.EmptyAcceptor;
@@ -235,9 +234,9 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<Object> scenar = new DefaultScenario<Object>();
-				scenar.setAcceptor(new EmptyAcceptor());
-				Result<Object> r = new EmptyResult<Object>();
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
+				scenar.setAcceptor(new FinalStateAcceptor());
+				Result<GraphState> r = new EmptyResult<GraphState>();
 				this.result = r;
 				scenar.setResult(r);
 				scenar.setStrategy(str);
@@ -283,7 +282,7 @@ public class GeneratorScenarioHandlerFactory {
 	 * @return
 	 */
 	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
-			final BoundedModelCheckingStrategy<T> str,
+			final BoundedModelCheckingStrategy str,
 			final String description,
 			final String name) {
 		return new AbstractScenarioHandler() {
@@ -296,11 +295,11 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<T> scenar = new DefaultScenario<T>();
-				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
+				CycleAcceptor cycleAcc = new CycleAcceptor();
 				Boundary boundary = new GraphNodeSizeBoundary(8,2);
-				Result<T> result = new SizedResult<T>(1);
-				scenar.setAcceptor((Acceptor<T>) cycleAcc);
+				Result<GraphState> result = new SizedResult<GraphState>(1);
+				scenar.setAcceptor(cycleAcc);
 				scenar.setResult(result);
 
 				cycleAcc.setStrategy(str);
@@ -364,7 +363,7 @@ public class GeneratorScenarioHandlerFactory {
 	 * @return
 	 */
 	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
-			final BoundedModelCheckingStrategy<T> str,
+			final BoundedModelCheckingStrategy str,
 			final String description,
 			final String name,
 			final int initialBound,
@@ -380,11 +379,11 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<T> scenar = new DefaultScenario<T>();
-				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
+				CycleAcceptor cycleAcc = new CycleAcceptor();
 				Boundary boundary = new GraphNodeSizeBoundary(initialBound,stepSize);
-				Result<T> result = new SizedResult<T>(1);
-				scenar.setAcceptor((Acceptor<T>) cycleAcc);
+				Result<GraphState> result = new SizedResult<GraphState>(1);
+				scenar.setAcceptor(cycleAcc);
 				scenar.setResult(result);
 
 				cycleAcc.setStrategy(str);
@@ -436,7 +435,7 @@ public class GeneratorScenarioHandlerFactory {
 	 * @return
 	 */
 	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
-			final BoundedModelCheckingStrategy<T> str,
+			final BoundedModelCheckingStrategy str,
 			final String description,
 			final String name,
 			final Set<Rule> ruleSet,
@@ -451,16 +450,16 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<T> scenar = new DefaultScenario<T>();
-				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
+				CycleAcceptor cycleAcc = new CycleAcceptor();
 				Boundary boundary;
 				if (ModelChecking.START_FROM_BORDER_STATES) {
 					boundary = new RuleSetBorderBoundary(ruleSet);
 				} else {
 					boundary = new RuleSetStartBoundary(ruleSet);
 				}
-				Result<T> result = new SizedResult<T>(1);
-				scenar.setAcceptor((Acceptor<T>) cycleAcc);
+				Result<GraphState> result = new SizedResult<GraphState>(1);
+				scenar.setAcceptor(cycleAcc);
 				scenar.setResult(result);
 
 				cycleAcc.setStrategy(str);
@@ -512,7 +511,7 @@ public class GeneratorScenarioHandlerFactory {
 	 * @return
 	 */
 	public static <T> ScenarioHandler getModelCheckingScenario(
-			final ModelCheckingStrategy<T> str,
+			final ModelCheckingStrategy str,
 			final String description,
 			final String name,
 			final String property) {
@@ -526,10 +525,10 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<T> scenar = new DefaultScenario<T>();
-				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
-				Result<T> result = new SizedResult<T>(1);
-				scenar.setAcceptor((Acceptor<T>) cycleAcc);
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
+				CycleAcceptor cycleAcc = new CycleAcceptor();
+				Result<GraphState> result = new SizedResult<GraphState>(1);
+				scenar.setAcceptor(cycleAcc);
 				scenar.setResult(result);
 
 				cycleAcc.setStrategy(str);

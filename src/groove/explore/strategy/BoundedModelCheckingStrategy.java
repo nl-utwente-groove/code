@@ -32,7 +32,7 @@ package groove.explore.strategy;
  * @author Harmen Kastenberg
  * @version $Revision: 1.2 $
  */
-public interface BoundedModelCheckingStrategy<T>  extends ModelCheckingStrategy<T> {
+public interface BoundedModelCheckingStrategy  extends ModelCheckingStrategy {
 
 	/**
 	 * Sets the boundary specification used in the strategy.

@@ -21,10 +21,8 @@ import groove.lts.StateGenerator;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -373,7 +371,7 @@ public class SystemRecord implements NodeFactory {
      * Flag indicating if previous result are reused.
      * Default value: <code>true</code>. 
      */
-    private boolean reuse = false;
+    private boolean reuse = true;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");
@@ -390,7 +388,7 @@ public class SystemRecord implements NodeFactory {
 			} else if (gts instanceof GTS) {
 				this.stateGenerator = new StateGenerator((GTS) gts);
 			} else {
-				assert true : "Wrong type of a GTS";
+				assert false : "Wrong type of a GTS";
 			}
 		}
 		return this.stateGenerator;

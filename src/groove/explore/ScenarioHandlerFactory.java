@@ -175,10 +175,10 @@ public class ScenarioHandlerFactory {
 	 * used in menus, or as identification (for instance in command-line options).
 	 * @return
 	 */
-	public static <T> ScenarioHandler getModelCheckingScenario(
-			final DefaultModelCheckingStrategy<T> str,
-			final Result<T> res,
-			final Acceptor<T> acc, 
+	public static ScenarioHandler getModelCheckingScenario(
+			final DefaultModelCheckingStrategy str,
+			final Result<GraphState> res,
+			final Acceptor<GraphState> acc, 
 			final String description,
 			final String name,
 			final Simulator sim) {
@@ -192,7 +192,7 @@ public class ScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<T> scenar = new DefaultScenario<T>();
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
 				scenar.setAcceptor(acc);
 				scenar.setResult(res.getFreshResult());
 
@@ -264,10 +264,10 @@ public class ScenarioHandlerFactory {
 	 * used in menus, or as identification (for instance in command-line options).
 	 * @return
 	 */
-	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
-			final BoundedModelCheckingStrategy<T> str,
-			final Result<T> res,
-			final Acceptor<T> acc,
+	public static ScenarioHandler getBoundedModelCheckingScenario(
+			final BoundedModelCheckingStrategy str,
+			final Result<GraphState> res,
+			final Acceptor<GraphState> acc,
 			final String description,
 			final String name,
 			final Simulator sim) {
@@ -281,7 +281,7 @@ public class ScenarioHandlerFactory {
 
 			@Override
 			public void playScenario() throws InterruptedException {
-				DefaultScenario<T> scenar = new DefaultScenario<T>();
+				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
 				scenar.setAcceptor(acc);
 				scenar.setResult(res.getFreshResult());
 

@@ -24,11 +24,6 @@ package groove.explore.result;
  * @param <T>
  */
 public class SizedResult<T> extends Result<T> {
-
-	/** The number of elements to be collected. */
-	protected int size;
-	
-	
 	/** Creates a sized result by specifying the number of elements to be collected.
 	 * @param size The number of elements to be collected. 
 	 */
@@ -45,4 +40,7 @@ public class SizedResult<T> extends Result<T> {
 	public SizedResult<T> getFreshResult() {
 		return new SizedResult<T>(this.size);
 	}
+
+    /** The number of elements to be collected. */
+    protected int size;
 }

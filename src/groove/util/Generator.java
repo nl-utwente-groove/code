@@ -585,7 +585,7 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
+     * The finalisation phase of state space generation. Called from <tt>{@link #start}</tt>.
      */
     protected void exit(Collection<? extends Object> result) throws IOException, FormatException {
         if (getFinalSaveName() != null) {
@@ -767,12 +767,12 @@ public class Generator extends CommandLineTool {
             finalSaveName = parameter;
         }
         
-        /** Returns the name specified as a paramter to the command line option. */
+        /** Returns the name specified as a parameter to the command line option. */
         public String getFinalSaveName() {
         	return finalSaveName;
         }
 
-        /** The name spacified as a parameter of the command line option. */
+        /** The name specified as a parameter of the command line option. */
         private String finalSaveName;
     }
 
@@ -838,17 +838,17 @@ public class Generator extends CommandLineTool {
     
         /** Constructs a parser that can recognize all implemented exploration strategies. */
         public ExploreStrategyParser() {
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(), new SizedResult<GraphState>(1), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
         	addStrategy(GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking exploration", "model-checking"));
-        	addStrategy(new ControlledScenarioHandler("Performs a depth-firs search controlled by a sequence of rules.", "controlled"));
+        	addStrategy(new ControlledScenarioHandler("Performs a depth-first search controlled by a sequence of rules.", "controlled"));
         }
     
         /**
