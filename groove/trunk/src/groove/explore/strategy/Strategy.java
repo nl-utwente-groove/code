@@ -35,11 +35,11 @@ import groove.lts.StateGenerator;
  *
  */
 public interface Strategy {
-
-	/** Executes one step of the strategy. 
-	 * @return false if the strategy is completed, false otherwise.
+	/** 
+	 * Executes one step of the strategy. 
+	 * @return false if the strategy is completed, <code>true</code> otherwise.
 	 * @require The previous call of this method, if any, 
-	 * returned <code>true</code>. Otherwise, the behavior is not guaranteed.
+	 * returned <code>true</code>. Otherwise, the behaviour is not guaranteed.
 	 */
 	public boolean next();
 	
@@ -53,8 +53,7 @@ public interface Strategy {
 	public void setGTS(GTS gts);
 
 	/**
-	 * Adds a GTS-listener.
-	 * @param listener
+	 * Adds an acceptor to the strategy.
 	 */
-	public void addGTSListener(Acceptor listener);
+	public <T> void addGTSListener(Acceptor<T> listener);
 }

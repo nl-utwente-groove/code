@@ -18,6 +18,7 @@ package groove.explore.strategy;
 
 import groove.explore.result.Result;
 import groove.gui.Simulator;
+import groove.lts.GraphState;
 import groove.lts.ProductGTS;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -31,7 +32,7 @@ import java.util.List;
  * @author Harmen Kastenberg
  * @version $Revision: 1.2 $
  */
-public interface ModelCheckingStrategy<T> extends Strategy {
+public interface ModelCheckingStrategy extends Strategy {
 
 	/**
 	 * Sets the product gts for the strategy.
@@ -49,13 +50,13 @@ public interface ModelCheckingStrategy<T> extends Strategy {
 	 * Sets the result container for the strategy
 	 * @param result the result container
 	 */
-	public void setResult(Result<T> result);
+	public void setResult(Result<GraphState> result);
 
 	/**
 	 * Returns the result container.
 	 * @return the result container
 	 */
-	public Result<T> getResult();
+	public Result<GraphState> getResult();
 
 	/**
 	 * Initializes the strategy.

@@ -26,6 +26,7 @@ import groove.explore.util.RandomChooserInSequence;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.StartGraphState;
 import groove.lts.StateGenerator;
 
 import java.util.Iterator;
@@ -91,11 +92,11 @@ public abstract class AbstractStrategy implements Strategy {
 	 * @param state state for which the parent will be returned
 	 */
 	protected final GraphState parentOf(GraphState state) {
-		if (state.equals(startState())) {
+	    if (state instanceof StartGraphState) {
 			return null;
-		} 
-		GraphNextState ngs = (GraphNextState) state;
-		return (GraphState) ngs.source();
+		} else {
+		    return ((GraphNextState) state).source();
+		}
 	}
 	
 	/** Returns a random open successor of a state, if any. Returns null otherwise. 
@@ -189,8 +190,9 @@ public abstract class AbstractStrategy implements Strategy {
 		}
 	}
 
-	public void addGTSListener(Acceptor listener) {
-//		getGTS().addGraphListener(listener);
+	/** Default implementation; does nothing. */
+	public <T> void addGTSListener(Acceptor<T> listener) {
+	    // does nothing
 	}
 
 	/** Enable closeExit, to close states when a strategy changes its atState.

@@ -35,7 +35,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision: 1.5 $
  */
-public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> {
+public class NestedDFSStrategy extends DefaultModelCheckingStrategy {
 	/**
 	 * The next step makes atomic the full exploration of a state.
 	 */

@@ -37,7 +37,7 @@ import groove.verify.ModelChecking;
  * @author Harmen Kastenberg
  * @version $Revision: 1.4 $
  */
-public class CycleAcceptor<T> extends Acceptor<GraphState> {
+public class CycleAcceptor extends Acceptor<GraphState> {
 
 	@Override
 	public void closeUpdate(LTS gts, State state) {
@@ -82,9 +82,9 @@ public class CycleAcceptor<T> extends Acceptor<GraphState> {
 		return ModelChecking.OK;
 	}
 
-	public void setStrategy(ModelCheckingStrategy<T> strategy) {
+	public void setStrategy(ModelCheckingStrategy strategy) {
 		this.strategy = strategy;
 	}
 
-	private ModelCheckingStrategy<T> strategy;
+	private ModelCheckingStrategy strategy;
 }

@@ -30,7 +30,6 @@ import groove.lts.GraphTransition;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
 import groove.lts.StateGenerator;
-import groove.util.Reporter;
 import groove.verify.BuchiAutomatonGraph;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -57,7 +56,7 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  * @author Harmen Kastenberg
  * @version $Revision: 1.5 $
  */
-public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy implements ModelCheckingStrategy<T> {
+public abstract class DefaultModelCheckingStrategy extends AbstractStrategy implements ModelCheckingStrategy {
 
 	public void setProductGTS(ProductGTS gts) {
 		this.productGTS = gts;
@@ -65,11 +64,11 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
 		setup();
 	}
 
-	public void setResult(Result<T> result) {
+	public void setResult(Result<GraphState> result) {
 		this.result = result;
 	}
 
-	public Result<T> getResult() {
+	public Result<GraphState> getResult() {
 		return result;
 	}
 
@@ -147,8 +146,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
 		}
 	}
 
-	@Override
-	public void addGTSListener(Acceptor listener) {
+	public <T> void addGTSListener(Acceptor<T> listener) {
 		productGTS.addListener(listener);
 	}
 
@@ -450,5 +448,5 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     private BuchiLocation initialLocation;
     private Stack<BuchiGraphState> searchStack;
     private Stack<ProductTransition> transitionStack;
-    private Result<T> result;
+    private Result<GraphState> result;
 }
