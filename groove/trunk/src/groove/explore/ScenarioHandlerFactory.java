@@ -73,13 +73,13 @@ public class ScenarioHandlerFactory {
 		return new AbstractConditionalScenarioHandler<C>(description, name, null) {
 			@Override
 			protected Scenario createScenario() {
+				getCondition().setNegated(negated);
 				return new DefaultScenario(strategy, acceptor.newInstance());
 			}
 
 			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name) {
 				super.setCondition(explCond, name);
-				explCond.setNegated(negated);
 				acceptor.setCondition(explCond);
 			}
 
