@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.GraphTransition;
 import groove.lts.ProductTransition;
 
 /**
@@ -28,7 +27,6 @@ import groove.lts.ProductTransition;
  * @version $Revision: 1.2 $
  */
 public interface Boundary {
-
 	/**
 	 * Checks whether the given transition crosses the boundary.
 	 * If so, it return <tt>true</tt>, otherwise <tt>false</tt>.

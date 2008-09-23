@@ -29,9 +29,9 @@ import groove.lts.GraphState;
 public class NodeBoundCondition extends ExploreCondition<Integer> {
 
 	@Override
-	public boolean isSatisfiedBy(GraphState state) {
+	public boolean isSatisfied(GraphState state) {
 		boolean result = state.getGraph().nodeCount() <= this.condition;
-		return isNegated ? !result : result;
+		return negated ? !result : result;
 	}
 
 }

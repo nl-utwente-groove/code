@@ -50,13 +50,13 @@ public interface ModelCheckingStrategy extends Strategy {
 	 * Sets the result container for the strategy
 	 * @param result the result container
 	 */
-	public void setResult(Result<GraphState> result);
+	public void setResult(Result result);
 
 	/**
 	 * Returns the result container.
 	 * @return the result container
 	 */
-	public Result<GraphState> getResult();
+	public Result getValue();
 
 	/**
 	 * Initializes the strategy.

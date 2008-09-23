@@ -1218,7 +1218,10 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                     }
                 }
             }
-            return result;
+            this.graph = null;
+            NodeRelation tmpResult = result;
+            result = null;
+            return tmpResult;
         }
 //
 //        /**

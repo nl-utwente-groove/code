@@ -34,7 +34,7 @@ import groove.lts.GraphState;
 public class EdgeBoundCondition extends ExploreCondition<Map<Label,Integer>> {
 
 	@Override
-	public boolean isSatisfiedBy(GraphState state) {
+	public boolean isSatisfied(GraphState state) {
 		boolean result = true;
 		Graph g = state.getGraph();
 		for (Map.Entry<Label,Integer> entry : condition.entrySet()) {
@@ -45,7 +45,7 @@ public class EdgeBoundCondition extends ExploreCondition<Map<Label,Integer>> {
             if (! result) { break; }
 		}
 	
-		return isNegated ? !result : result;
+		return negated ? !result : result;
 	}
 
 }

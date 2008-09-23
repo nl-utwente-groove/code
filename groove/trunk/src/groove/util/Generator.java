@@ -25,7 +25,7 @@ import groove.explore.result.ExploreCondition;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
-import groove.explore.result.SizedResult;
+import groove.explore.result.Result;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ConditionalBreadthFirstStrategy;
@@ -301,7 +301,8 @@ public class Generator extends CommandLineTool {
 					} else {
 						ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
 						explCond.setCondition(condition);
-						((ConditionalScenarioHandler<Rule>) result).setCondition(explCond, conditionName, exploreParser.isNegated());
+						explCond.setNegated(exploreParser.isNegated());
+						((ConditionalScenarioHandler<Rule>) result).setCondition(explCond, conditionName);
 					}
 				} 
 			} else if (result instanceof ControlledScenarioHandler) {
@@ -348,13 +349,9 @@ public class Generator extends CommandLineTool {
         	getGTS().addGraphListener(getStatisticsListener());
         }
         startTime = System.currentTimeMillis();
-        try {
-        	getStrategy().setState(getGTS().startState());
-        	getStrategy().playScenario();
-        	result = getStrategy().getResult();
-        } catch (InterruptedException exc) {
-            result = null;
-        }
+        getStrategy().setState(getGTS().startState());
+        getStrategy().playScenario();
+        result = getStrategy().getResult().getValue();
         endTime = System.currentTimeMillis();
         if (getVerbosity() > LOW_VERBOSITY) {
             System.out.println("");
@@ -822,7 +819,7 @@ public class Generator extends CommandLineTool {
         /**
          * The underlying parser for this options.
          */
-        private final ExploreStrategyParser parser = new ExploreStrategyParser();
+        private final ExploreStrategyParser parser = new ExploreStrategyParser(false);
     }
 
     /**
@@ -836,17 +833,18 @@ public class Generator extends CommandLineTool {
         /** Condition negator. */
         static public final String NEGATION = "!";
     
-        /** Constructs a parser that can recognize all implemented exploration strategies. */
-        public ExploreStrategyParser() {
-        	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getFinalStateScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
+        /** Constructs a parser that can recognise all implemented exploration strategies. 
+         * @param closeFast TODO*/
+        public ExploreStrategyParser(boolean closeFast) {
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
+           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(), new SizedResult<GraphState>(1), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
         	addStrategy(GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking exploration", "model-checking"));
         	addStrategy(new ControlledScenarioHandler("Performs a depth-first search controlled by a sequence of rules.", "controlled"));
         }
@@ -939,7 +937,7 @@ public class Generator extends CommandLineTool {
                     			int bound = Integer.parseInt(parameter);
                     			ExploreCondition<Integer> explCond = new NodeBoundCondition();
                     			explCond.setCondition(bound);
-                    			((ConditionalScenarioHandler<Integer>) condStrategy).setCondition(explCond, ""+bound, false);
+                    			((ConditionalScenarioHandler<Integer>) condStrategy).setCondition(explCond, ""+bound);
                     		} catch (NumberFormatException exc) {
                     			throw new IllegalArgumentException(parameter
                     					+ " is not a valid node bound");
@@ -977,7 +975,7 @@ public class Generator extends CommandLineTool {
                             }
                             ExploreCondition<Map<Label,Integer>> explCond = new EdgeBoundCondition();
                             explCond.setCondition(conditions);
-                            ((ConditionalScenarioHandler<Map<Label,Integer>>) condStrategy).setCondition(explCond, "", false);
+                            ((ConditionalScenarioHandler<Map<Label,Integer>>) condStrategy).setCondition(explCond, "");
                     	} else {
                     		assert true : "Unknown condition type " + condStrategy.getConditionType();
                     	}

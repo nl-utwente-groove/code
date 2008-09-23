@@ -18,7 +18,6 @@
 package groove.explore.result;
 
 import groove.explore.strategy.ModelCheckingStrategy;
-import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
@@ -37,8 +36,17 @@ import groove.verify.ModelChecking;
  * @author Harmen Kastenberg
  * @version $Revision: 1.4 $
  */
-public class CycleAcceptor extends Acceptor<GraphState> {
-
+public class CycleAcceptor extends Acceptor {
+	/** Creates a new acceptor with a default {@link Result}. */
+	public CycleAcceptor() {
+		this(null);
+	}
+	
+	/** Creates a new acceptor with a given {@link Result}. */
+	public CycleAcceptor(Result result) {
+		super(result);
+	}
+	
 	@Override
 	public void closeUpdate(LTS gts, State state) {
 		if (state instanceof BuchiGraphState) {
@@ -51,7 +59,6 @@ public class CycleAcceptor extends Acceptor<GraphState> {
 						getResult().add(stackState.getGraphState());
 					}
 					getResult().add(((BuchiGraphState) state).getGraphState());
-//					System.err.println("Counter-example found.");
 				}
 				// else leave result empty and continue
 			}
@@ -82,8 +89,20 @@ public class CycleAcceptor extends Acceptor<GraphState> {
 		return ModelChecking.OK;
 	}
 
+	/** Sets a new strategy for this acceptor. */
 	public void setStrategy(ModelCheckingStrategy strategy) {
 		this.strategy = strategy;
+	}
+
+	/** 
+	 * This implementation returns a fresh {@link CycleAcceptor},
+	 * aliasing the strategy of this instance.
+	 */
+	@Override
+	public Acceptor newAcceptor() {
+		CycleAcceptor result = new CycleAcceptor(getResult().newResult());
+		result.setStrategy(strategy);
+		return result;
 	}
 
 	private ModelCheckingStrategy strategy;

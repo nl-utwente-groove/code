@@ -16,56 +16,76 @@
  */
 package groove.explore.result;
 
-
 import groove.explore.Scenario;
+import groove.lts.GraphState;
 
 import java.util.Collection;
 import java.util.TreeSet;
 
-/** A set of objects that are the result of the execution of
+/** 
+ * A set of objects that are the result of the execution of
  * some {@link Scenario}. Whether the result is fully computed 
  * is defined by the {@link #done()} method.
  * Typical such objects are elements of a graph transition system
  * (states, paths, etc.).
- * @author 
- *
- * @param <T> The type of the objects stored in the result.
  */
-public abstract class Result<T> {
-	/** Creates a result with an empty set of elements. */
+public class Result {
+	/** 
+	 * Creates a result with an empty set of elements,
+	 * without a bound on the size of the result. 
+	 */
 	public Result() {
-		elements = createResultSet();
+		this(0);
 	}
 
-	/** Adds an element to the result.
+	/** 
+	 * Creates a result with an empty set of elements,
+	 * with a given bound on the size of the result.
+	 * @param bound the bound on the size of the result.
+	 * {@link #done()} will return <code>true</code> as soon as
+	 * the size of {@link #getValue()} is at least <code>bound</code>.
+	 * If <code>bound</code> is 0, no bound is checked. 
+	 */
+	public Result(int bound) {
+		assert bound >= 0;
+		this.elements = createResultSet();
+		this.bound = bound;
+	}
+	/** 
+	 * Adds an element to the result.
 	 * @param t
 	 */
-	public void add(T t) {
+	public void add(GraphState t) {
 		elements.add(t);
 	}	
 	
 	/** 
 	 * The set of elements contained in the result.
 	 */
-	public Collection<T> getResult() {
+	public Collection<GraphState> getValue() {
 		return elements;
 	}
 	
-	/** Returns a result of the same type with no added elements. */ 
-	public abstract Result<T> getFreshResult ();
+	/** Factory method for a new result of the same type as this one. */ 
+	public Result newResult() {
+		return new Result(bound);
+	}
 	
-
-	/** Indicates whether the result is computed.
-	 * @return <code>true</code> if the result is computed, <code>false</code> otherwise.
-	 * When the result is completed, no more elements should be added to it.
+	/** Indicates whether the result is complete.
+	 * @return <code>true</code> if the result is complete, <code>false</code> otherwise.
+	 * When the result is complete, no more elements should be added to it.
 	 */
-	public abstract boolean done();
+	public boolean done() {
+		return bound > 0 && elements.size() >= bound;
+	}
     
 	/** Callback factory method for the result set. */
-	protected Collection<T> createResultSet() {
-	    return new TreeSet<T>();
+	protected Collection<GraphState> createResultSet() {
+	    return new TreeSet<GraphState>();
 	}
 	
     /** The elements stored in this result. */
-    protected Collection<T> elements;
+    private final Collection<GraphState> elements;
+    /** Bound on the size of the result; if <code>0</code>, no bound is used. */
+    private final int bound;
 }

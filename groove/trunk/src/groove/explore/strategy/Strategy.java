@@ -55,5 +55,5 @@ public interface Strategy {
 	/**
 	 * Adds an acceptor to the strategy.
 	 */
-	public <T> void addGTSListener(Acceptor<T> listener);
+	public void addGTSListener(Acceptor listener);
 }

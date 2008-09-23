@@ -18,15 +18,10 @@
 package groove.test;
 
 import groove.explore.ConditionalScenarioHandler;
-import groove.explore.DefaultScenario;
 import groove.explore.GeneratorScenarioHandlerFactory;
 import groove.explore.ScenarioHandler;
-import groove.explore.result.Acceptor;
-import groove.explore.result.EmptyAcceptor;
-import groove.explore.result.EmptyResult;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
-import groove.explore.result.Result;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.graph.Graph;
 import groove.io.AspectualViewGps;
@@ -282,34 +277,25 @@ public class ExplorationTest extends TestCase {
         try {
         	GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
-            DefaultScenario<Object> scenario = new DefaultScenario<Object>();
-            Result<Object> result = new EmptyResult<Object>();
-            Acceptor<Object> acceptor = new EmptyAcceptor();
-            acceptor.setResult(result);
-            scenario.setAcceptor(acceptor);
-            ScenarioHandler strategy;
+            ScenarioHandler handler;
             if (strategyDescr != null) {
             	parser.parse(strategyDescr);
-                strategy = parser.getStrategy();
+                handler = parser.getStrategy();
                 if (parser.getCondition() != null) {
                 	Rule conditionRule = gg.getRule(new RuleNameLabel(parser.getCondition()));
                 	assertNotNull(conditionRule);
                 	// the scenario handler must then be conditional
 					ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
 					explCond.setCondition(conditionRule);
-					((ConditionalScenarioHandler<Rule>) strategy).setCondition(explCond, parser.getCondition(), parser.isNegated());
+					explCond.setNegated(parser.isNegated());
+					((ConditionalScenarioHandler<Rule>) handler).setCondition(explCond, parser.getCondition());
                 }
             } else {
-            	strategy = GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
+            	handler = GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
             }
-
-            strategy.setState(lts.startState());
-            strategy.setGTS(lts);
-            try {
-				strategy.playScenario();
-			} catch (InterruptedException e) {
-				assertFalse(true);
-			}
+            handler.setGTS(lts);
+            handler.playScenario();
+            assertFalse(handler.isInterrupted());
 
            	if (save) {
 				try {
@@ -317,8 +303,7 @@ public class ExplorationTest extends TestCase {
 				} catch (IOException exc) { // proceed
 				}
 			}
-            if (nodeCount >= 0) {            	int actualNodeCount = lts.nodeCount();
-                assertEquals(nodeCount, lts.nodeCount());
+            if (nodeCount >= 0) {                assertEquals(nodeCount, lts.nodeCount());
             }
             if (edgeCount >= 0) {
                 assertEquals(edgeCount, lts.edgeCount());
@@ -458,7 +443,7 @@ public class ExplorationTest extends TestCase {
     /**
      * Parser for the exploration strategies.
      */
-    private Generator.ExploreStrategyParser parser = new Generator.ExploreStrategyParser();
+    private Generator.ExploreStrategyParser parser = new Generator.ExploreStrategyParser(false);
 
     /**
      * Grammar loader used in this test case.

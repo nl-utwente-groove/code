@@ -408,7 +408,7 @@ abstract public class RegExpr { //implements VarSetSupport {
 	 */
 	@Override
 	public int hashCode() {
-		return System.identityHashCode(RegExpr.class) ^ toString().hashCode();
+		return classHashCode ^ toString().hashCode();
 	}
 
 	/**
@@ -756,6 +756,8 @@ abstract public class RegExpr { //implements VarSetSupport {
         operators = result;
     }
 
+    /** Constant hash code characterising the class. */
+    static private final int classHashCode = System.identityHashCode(RegExpr.class);
 
     /** 
      * Abstract superclass for all regular expressions that are not constants.

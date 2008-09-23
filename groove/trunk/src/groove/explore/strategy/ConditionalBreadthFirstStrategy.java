@@ -31,7 +31,7 @@ public class ConditionalBreadthFirstStrategy extends BreadthFirstStrategy
 		this.atState = null;
 		while (! this.toExplore.isEmpty() && this.atState == null) {
 			this.atState = this.toExplore.poll();
-			if (!getExplCond().isSatisfiedBy(this.atState)) {
+			if (!getExplCond().isSatisfied(this.atState)) {
 				this.atState = null;
 			}
 		}

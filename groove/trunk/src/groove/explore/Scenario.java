@@ -20,8 +20,8 @@ import groove.explore.result.Result;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 
-/** A scenario for exploring a (a part of) graph transition system
- * yielding a result.
+/** 
+ * A scenario for exploring a (part of) a graph transition system yielding a result.
  * A scenario is a combination of a {@link groove.explore.strategy.Strategy},
  * a {@link groove.explore.result.Acceptor} and a {@link groove.explore.result.Result}.
  * Playing a scenario consists in repeating the {@link groove.explore.strategy.Strategy#next()}
@@ -31,11 +31,8 @@ import groove.lts.GraphState;
  *  
  * @author Iovka Boneva
  * @author Tom Staijen
- * @param <T> The type of the result.
  */
-public interface Scenario<T> {
-
-	
+public interface Scenario {
 	/** Sets the  {@link groove.lts.GTS} on which this scenario works. 
 	 * @param gts the  {@link groove.lts.GTS} on which this scenario works. 
 	 */
@@ -48,11 +45,12 @@ public interface Scenario<T> {
 	/** Plays the scenario, yielding a result.
 	 * @return the result of the scenario.
 	 */
-	public Result<T> play() throws InterruptedException ;
+	public Result play() throws InterruptedException ;
 	
-	/** The computed result, or a partial result if
-	 * the scenario was interrupted.
-	 * @return The computed result.
+	/**
+	 * Returns the result of this scenario.
+	 * The result is retrieved from the acceptor; it is an
+	 * error to call this method if no acceptor is set.
 	 */
-	public Result<T> getComputedResult();
+	public Result getResult();
 }

@@ -3,9 +3,7 @@ package groove.util;
 import groove.control.Location;
 import groove.explore.DefaultScenario;
 import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
-import groove.explore.result.EmptyAcceptor;
-import groove.explore.result.EmptyResult;
-import groove.explore.result.Result;
+import groove.explore.result.Acceptor;
 import groove.explore.strategy.AbstractStrategy;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchesIterator;
@@ -54,26 +52,9 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	public String getName() { return this.name; }
 
 	@Override
-	public void playScenario() throws InterruptedException {
-		DefaultScenario<Object> scenar = new DefaultScenario<Object>();
-		scenar.setAcceptor(new EmptyAcceptor());
-		Result<Object> r = new EmptyResult<Object>();
-		result = r;
-		scenar.setResult(r);
-		scenar.setStrategy(str);
-		
-		scenar.setGTS(getGTS());
-		scenar.setState(getState());
-		try {
-			this.result = scenar.play();
-		} catch (InterruptedException e) {
-			this.result = scenar.getComputedResult();
-			throw e;
-		}
+	public void playScenario() {
+		playScenario(new DefaultScenario(str, new Acceptor()));
 	}
-
-	@Override
-	public Class<?> resultType() { return Object.class; }
 
 	/** Sets a program for the scenario.
 	 * @param program a list of rules to be executed in this order

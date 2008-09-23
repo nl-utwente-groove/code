@@ -16,11 +16,11 @@
  */
 package groove.explore;
 
+import groove.explore.result.Result;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.ProductGTS;
 
-import java.util.Collection;
 
 /** An object holding a scenario. Should be implemented for any pre-defined scenario.
  * Is used as an interface between tools using a scenario (e.g. {@link groove.util.Generator}, 
@@ -31,9 +31,8 @@ import java.util.Collection;
 public interface ScenarioHandler {
 
 	/** Creates and launches the scenario this handler is responsible for. 
-	 * @throws InterruptedException 
 	 */
-	public void playScenario() throws InterruptedException;
+	public void playScenario();
 	
 	/** A short description of the scenario. 
 	 * @return A short description of the scenario. 
@@ -45,23 +44,26 @@ public interface ScenarioHandler {
 	 */
 	public String getName();
 	
-	/** Returns the result of the scenario. 
-	 * Is valid only after the Scenario is completed. 
-	 * @return 
+	/**
+	 * Returns the result of the scenario. 
+	 * The result is valid only after the scenario has been played.
 	 */
-	public Collection<? extends Object> getResult();
+	public Result getResult();
 	
-	/** The type of the result of this scenario.
-	 * @return
+	/** 
+	 * Indicates if the last call of {@link #playScenario()}
+	 * returned because of a thread interruption.
 	 */
-	public Class<?> resultType();
+	public boolean isInterrupted();
 	
 	/** Sets the state where the scenario should start exploring. 
 	 * @param state The state where the scenario should start exploring.
 	 */
 	public void setState (GraphState state);
 	
-	/** Sets the transition system on which the scenario works. 
+	/** 
+	 * Sets the transition system on which the scenario works. 
+	 * The start state is in addition set to the GTS start state.
 	 * @param gts The transition system on which the scenario works. 
 	 */
 	public void setGTS (GTS gts);	

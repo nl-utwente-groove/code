@@ -598,7 +598,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		report();
         		initialBound += step;
         		total += endTime - startTime;
-        	} while (!finishedIterations() && getStrategy().getResult().isEmpty());
+        	} while (!finishedIterations() && getStrategy().getResult().getValue().isEmpty());
     		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
@@ -743,7 +743,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		report();
         		initialBound += step;
         		total += endTime - startTime;
-        	} while (!finishedIterations() && getStrategy().getResult().isEmpty());
+        	} while (!finishedIterations() && getStrategy().getResult().getValue().isEmpty());
     		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
@@ -1033,13 +1033,8 @@ public class LTLBenchmarker extends CommandLineTool {
         	getProductGTS().addGraphListener(getStatisticsListener());
         }
         startTime = System.currentTimeMillis();
-        try {
-//        	getStrategy().setState(getProductGTS().startState());
-        	getStrategy().playScenario();
-        	result = getStrategy().getResult();
-        } catch (InterruptedException exc) {
-            result = null;
-        }
+        getStrategy().playScenario();
+        result = getStrategy().getResult().getValue();
         endTime = System.currentTimeMillis();
         if (getVerbosity() > LOW_VERBOSITY) {
             System.out.println("");
@@ -1271,7 +1266,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The finalization phase of state space generation.
      */
     protected void exit(long total) throws IOException, FormatException {
-    	if (getStrategy().getResult().size() > 0) {
+    	if (getStrategy().getResult().getValue().size() > 0) {
     		System.out.println("Counter-example found.");
     	} else {
     		System.out.println("No counter-example found.");

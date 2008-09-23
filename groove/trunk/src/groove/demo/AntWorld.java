@@ -1,13 +1,10 @@
 package groove.demo;
 
 import groove.calc.DefaultGraphCalculator;
-import groove.calc.MaximalStateProperty;
 import groove.explore.DefaultScenario;
 import groove.explore.Scenario;
 import groove.explore.result.Acceptor;
-import groove.explore.result.PropertyAcceptor;
 import groove.explore.result.Result;
-import groove.explore.result.SizedResult;
 import groove.explore.strategy.AbstractStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.Strategy;
@@ -67,7 +64,7 @@ public class AntWorld {
 			AbstractStrategy strategy = new RandomLinearStrategy();
 			strategy.enableCloseExit();
 			DefaultGraphCalculator calc = new DefaultGraphCalculator(grammar);
-			Scenario<GraphState> sc = createScenario(calc.getGTS(), strategy, new AntworldAcceptor(), new PrintResult<GraphState>());
+			Scenario sc = createScenario(calc.getGTS(), strategy, new AntworldAcceptor());
 
 			startTimer();
 			calc.getResult(sc);
@@ -76,12 +73,8 @@ public class AntWorld {
 		}
 	}
 
-    private Scenario<GraphState> createScenario(GTS gts, Strategy strategy, Acceptor<GraphState> acceptor, Result<GraphState> result) {
-    	DefaultScenario<GraphState> scenario = new DefaultScenario<GraphState>();
-    	scenario.setResult(result);
-    	scenario.setAcceptor(acceptor);
-    	scenario.setStrategy(strategy);
-    	acceptor.setResult(result);
+    private Scenario createScenario(GTS gts, Strategy strategy, Acceptor acceptor) {
+    	DefaultScenario scenario = new DefaultScenario(strategy, acceptor);
     	scenario.setGTS(gts);
     	return scenario;
     }
@@ -98,11 +91,18 @@ public class AntWorld {
 	 */
 	public long elapsedTime() {
 		long nowtime = System.currentTimeMillis();
-		long seconds = (nowtime-this.time)/1000;
 		return (nowtime-this.time);
 	}
-	
-	class AntworldAcceptor extends Acceptor<GraphState> {
+
+	/** Acceptor that accepts every 50th closed state, and uses a {@link PrintResult}. */
+	class AntworldAcceptor extends Acceptor {
+		/**
+		 * Creates a fresh instance.
+		 */
+		public AntworldAcceptor() {
+			super(new PrintResult());
+		}
+		
 		private int counter = 1;
 		
 		@Override
@@ -117,22 +117,23 @@ public class AntWorld {
 				}
 			}
 		}
-		
+
+		/** This implementation returns an {@link AntworldAcceptor}.*/
+		@Override
+		public Acceptor newAcceptor() {
+			return new AntworldAcceptor();
+		}
 	}
 	
-	
-	class PrintResult<GraphState> extends Result<GraphState> {
-
+	class PrintResult extends Result {
 		@Override
 		public boolean done() {
-			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
-		public Result<GraphState> getFreshResult() {
-			// TODO Auto-generated method stub
-			return new PrintResult<GraphState>();
+		public Result newResult() {
+			return new PrintResult();
 		}
 		
 		@Override
@@ -142,7 +143,5 @@ public class AntWorld {
 				System.out.println(AntWorld.this.elapsedTime() + "ms:" + gns.getEvent() + "(turns,circles,fields,ants)");
 			}
 		}
-		
 	}
-	
 }

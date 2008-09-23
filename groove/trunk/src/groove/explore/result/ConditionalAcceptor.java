@@ -16,7 +16,6 @@
  */
 package groove.explore.result;
 
-import groove.lts.GraphState;
 
 /** A graph state acceptor that can be fed with an external object that
  * defines the acceptance condition.
@@ -26,18 +25,41 @@ import groove.lts.GraphState;
  * @param <C> The parameter type of the explore condition.
  *
  */
-public abstract class ConditionalAcceptor<C> extends Acceptor<GraphState> {
+public abstract class ConditionalAcceptor<C> extends Acceptor {
+	/** Constructs a fresh acceptor without a set condition. */
+	public ConditionalAcceptor() {
+		this(null);
+	}
 	
-	/** Sets the condition to be used by {@link #isSatisfiedBy(Object)}. 
-	 * @param condition 
+	/** 
+	 * Constructs a fresh acceptor with a given condition.
+	 * @param condition the condition to be used; if <code>null</code>,
+	 * the condition must be set later using {@link #setCondition(ExploreCondition)} 
+	 */
+	public ConditionalAcceptor(ExploreCondition<C> condition) {
+		this(condition, null);
+	}
+	
+	/** 
+	 * Constructs a fresh acceptor with a given condition and Result.
+	 * @param condition the condition to be used; if <code>null</code>,
+	 * the condition must be set later using {@link #setCondition(ExploreCondition)} 
+	 */
+	public ConditionalAcceptor(ExploreCondition<C> condition, Result result) {
+		super(result);
+		this.condition = condition;
+	}
+	
+	/** Sets the condition to be used by the acceptor.
 	 */
 	public void setCondition(ExploreCondition<C> condition) {
 		this.condition = condition;
 	}
 	
-	/** The pre-set condition.
-	 * @return
-	 */
+	@Override
+	public abstract Acceptor newAcceptor();
+
+	/** The pre-set condition. */
 	protected ExploreCondition<C> getCondition() {
 		return this.condition;
 	}
