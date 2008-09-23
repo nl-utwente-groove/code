@@ -16,9 +16,6 @@
  */
 package groove.explore.result;
 
-import groove.graph.GraphShape;
-import groove.graph.Node;
-import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
@@ -26,7 +23,19 @@ import groove.lts.State;
 /**
  * Accepts final states.
  */
-public class FinalStateAcceptor extends Acceptor<GraphState> {
+public class FinalStateAcceptor extends Acceptor {
+	/**
+	 * Creates an instance with a default {@link Result}.
+	 */
+	public FinalStateAcceptor() {
+		// empty
+	}
+	
+	/** Creates an instance with given {@link Result}. */
+	public FinalStateAcceptor(Result result) {
+		super(result);
+	}
+	
 //    @Override
 //    public void addUpdate(GraphShape gts, Node state) {
 //        if (((GTS) gts).isFinal((GraphState) state)) {
@@ -39,4 +48,10 @@ public class FinalStateAcceptor extends Acceptor<GraphState> {
             this.getResult().add((GraphState) state);
         }
     }
+
+    /** This implementation returns a {@link FinalStateAcceptor}. */
+	@Override
+	public Acceptor newAcceptor() {
+		return new FinalStateAcceptor(getResult().newResult());
+	}
 }

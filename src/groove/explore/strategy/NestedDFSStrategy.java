@@ -75,7 +75,7 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy {
             			if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
             				// notify counter-example
             				for (BuchiGraphState state: searchStack()) {
-            					getResult().add(state.getGraphState());
+            					getValue().add(state.getGraphState());
             				}
             				return true;
             			}

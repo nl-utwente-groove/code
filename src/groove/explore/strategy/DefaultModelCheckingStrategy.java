@@ -64,11 +64,11 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 		setup();
 	}
 
-	public void setResult(Result<GraphState> result) {
+	public void setResult(Result result) {
 		this.result = result;
 	}
 
-	public Result<GraphState> getResult() {
+	public Result getValue() {
 		return result;
 	}
 
@@ -146,7 +146,8 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 		}
 	}
 
-	public <T> void addGTSListener(Acceptor<T> listener) {
+	@Override
+	public void addGTSListener(Acceptor listener) {
 		productGTS.addListener(listener);
 	}
 
@@ -448,5 +449,5 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
     private BuchiLocation initialLocation;
     private Stack<BuchiGraphState> searchStack;
     private Stack<ProductTransition> transitionStack;
-    private Result<GraphState> result;
+    private Result result;
 }

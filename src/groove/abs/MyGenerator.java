@@ -16,23 +16,21 @@
  */
 package groove.abs;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import groove.abs.lts.AGTS;
 import groove.explore.ScenarioHandler;
 import groove.explore.ScenarioHandlerFactory;
-import groove.explore.result.EmptyAcceptor;
-import groove.explore.result.EmptyResult;
+import groove.explore.result.Acceptor;
 import groove.explore.strategy.BranchingStrategy;
 import groove.io.AspectualViewGps;
-import groove.lts.GraphState;
 import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /** Performs a full abstract simulation of a grammar given as parameter and
  * saves the resulting LTS.
@@ -77,17 +75,15 @@ public class MyGenerator {
 		gts = new AGTS(grammar, parameters);
 		
         ScenarioHandler handler = ScenarioHandlerFactory.getScenario(
-        		new BranchingStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Explores the full state space.", "Full exploration (branching, aliasing)");
+        		new BranchingStrategy(), new Acceptor(), "Explores the full state space.",
+        		"Full exploration (branching, aliasing)");
         handler.setGTS(gts);
-		handler.setState((GraphState) gts.startState());
         
 		startTime = System.currentTimeMillis();
-		try {
-			handler.playScenario();
-			endTime = System.currentTimeMillis();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		handler.playScenario();
+		endTime = System.currentTimeMillis();
+		if (handler.isInterrupted()) {
+			new Exception().printStackTrace();
 		}
 	}
 	

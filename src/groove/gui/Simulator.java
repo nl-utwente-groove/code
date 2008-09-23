@@ -2928,13 +2928,7 @@ public class Simulator {
 			GTS gts = getCurrentGTS();
 			displayProgress(gts);
 			gts.addGraphListener(progressListener);
-			try {
-				handler.playScenario();
-			} catch (InterruptedException exc) {
-				// proceed
-			}
-
-			
+			handler.playScenario();
 			gts.removeGraphListener(progressListener);
 		}
 
@@ -3001,7 +2995,7 @@ public class Simulator {
 		}
 
 		private void showResult() {
-			Collection<? extends Object> result = handler.getResult();
+			Collection<? extends Object> result = handler.getResult().getValue();
 			Collection<GraphState> states = new HashSet<GraphState>();
 			for (Object object: result) {
 				if (object instanceof GraphState) {

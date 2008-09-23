@@ -19,13 +19,12 @@ package groove.gui;
 import groove.explore.ConditionalScenarioHandler;
 import groove.explore.ScenarioHandler;
 import groove.explore.ScenarioHandlerFactory;
-import groove.explore.result.EmptyAcceptor;
-import groove.explore.result.EmptyResult;
+import groove.explore.result.Acceptor;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
-import groove.explore.result.SizedResult;
+import groove.explore.result.Result;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
@@ -102,49 +101,49 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         ScenarioHandler handler;
 
         handler = ScenarioHandlerFactory.getScenario(
-        		new BranchingStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Explores the full state space.", "Full exploration (branching, aliasing)");
+        		new BranchingStrategy(), new Acceptor(), "Explores the full state space.",
+        		"Full exploration (branching, aliasing)");
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(
-        		new BreadthFirstStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Explores all the new states reachable from the current state (breadth-first).", "Fully explore state (breadth-first, aliasing)");
+        		new BreadthFirstStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (breadth-first).",
+        		"Fully explore state (breadth-first, aliasing)");
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getScenario(
-        		new ExploreRuleDFStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Explores all the new states reachable from the current state (depth-first).", "Fully explore state (depth-first, no aliasing)");
+        		new ExploreRuleDFStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (depth-first).",
+        		"Fully explore state (depth-first, no aliasing)");
         addScenarioHandler(handler);
 
         
         handler = ScenarioHandlerFactory.getScenario(
-        		new LinearStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(), 
-        		"Explores one transition for each state until a final state or a loop is reached.", "Linear exploration");
+        		new LinearStrategy(), new Acceptor(), "Explores one transition for each state until a final state or a loop is reached.", 
+        		"Linear exploration");
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getScenario(
-        		new RandomLinearStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(), 
-        		"Explores randomly (slower) one transition for each state until a final state or a loop is reached.", "Random Linear exploration");
+        		new RandomLinearStrategy(), new Acceptor(), "Explores randomly (slower) one transition for each state until a final state or a loop is reached.", 
+        		"Random Linear exploration");
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(
-        		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
-        		"Looks for a final state starting from the current state (breadth-first)", "Find a final state (breadth-first)"	);
+        		new BreadthFirstStrategy(), new FinalStateAcceptor(new Result(1)), "Looks for a final state starting from the current state (breadth-first)", 
+        		"Find a final state (breadth-first)"	);
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(
-        		new ExploreRuleDFStrategy(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
-        		"Looks for a final state starting from the current state (depth-first).", "Find a final state (depth-first)"	);
+        		new ExploreRuleDFStrategy(), new FinalStateAcceptor(new Result(1)), "Looks for a final state starting from the current state (depth-first).", 
+        		"Find a final state (depth-first)"	);
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getConditionalScenario(
-        		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
-        		"Explores all the new states reachable from the current state until the invariant is violated.", "Check invariant", false);
+        		new BreadthFirstStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
+        		"Check invariant", false);
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getConditionalScenario(
-        		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
-        		"Explores all the new states reachable from the current state until the invariant is violated.", "Check invariant", true);
+        		new BreadthFirstStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
+        		"Check invariant", true);
         addScenarioHandler(handler);
         
         // IOVKA items related to model-checking are in the MCMMenu class

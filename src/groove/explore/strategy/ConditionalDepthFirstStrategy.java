@@ -27,7 +27,7 @@ public class ConditionalDepthFirstStrategy extends DFStrategy implements Conditi
 		this.atState = null;
 		while (this.atState == null && !this.toExplore.isEmpty()) {
 			this.atState = this.toExplore.pop();
-			if (!getExplCond().isSatisfiedBy(this.atState)) {
+			if (!getExplCond().isSatisfied(this.atState)) {
 				this.atState = null;
 			}
 		}

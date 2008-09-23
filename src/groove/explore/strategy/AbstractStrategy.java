@@ -191,7 +191,7 @@ public abstract class AbstractStrategy implements Strategy {
 	}
 
 	/** Default implementation; does nothing. */
-	public <T> void addGTSListener(Acceptor<T> listener) {
+	public void addGTSListener(Acceptor listener) {
 	    // does nothing
 	}
 
@@ -202,7 +202,7 @@ public abstract class AbstractStrategy implements Strategy {
 		closeExit = true;
 	}
 	
-	/** Return the current value of the "close on exit" setting **/
+	/** Return the current value of the "close on exit" setting */
 	public boolean closeExit() {
 		return closeExit;
 	}

@@ -26,9 +26,9 @@ import groove.trans.Rule;
 public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
 
 	@Override
-	public boolean isSatisfiedBy(GraphState state) {
+	public boolean isSatisfied(GraphState state) {
 		boolean result = this.condition.hasMatch(state.getGraph());
-		return isNegated ? !result : result;
+		return negated ? !result : result;
 	}
 
 }

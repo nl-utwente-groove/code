@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.Location;
-import groove.explore.DefaultScenario;
 import groove.explore.util.ExploreCache;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -174,9 +173,7 @@ public class StateGenerator {
 	 * Applies a match and returns the resulting complete set of graph transitions.
 	 */
 	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleMatch match, ExploreCache cache) {
-		DefaultScenario.reporter.start(DefaultScenario.GET_DERIVATIONS);
 		RuleApplication appl = getRecord().getApplication(match, source.getGraph());
-		DefaultScenario.reporter.stop();
 		return this.addTransition(source, appl, cache);
 	}
 	

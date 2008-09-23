@@ -96,16 +96,13 @@ public class RandomLinearStrategy extends AbstractStrategy {
 	}
 
 	/** Collects states newly added to the GTS. */
-	private NewStateCollector collector = new NewStateCollector();
+	private final NewStateCollector collector = new NewStateCollector();
 	
-	/** Registers the first new state added to the 
-	 * GTS it listens to.
+	/** 
+	 * Registers the first new state added to the GTS it listens to.
 	 * Such an object should be added as listener only to a single GTS. 
 	 */
 	public class NewStateCollector extends GraphAdapter {
-
-		NewStateCollector() { reset(); }
-		
 		/** Returns the collected new state,
 		 * or null if no new state was registered.
 		 * @return the collected new state,
@@ -124,5 +121,4 @@ public class RandomLinearStrategy extends AbstractStrategy {
 		}
 		private GraphState newState;
 	}
-
 }

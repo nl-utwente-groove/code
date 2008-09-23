@@ -17,6 +17,7 @@
 package groove.explore.result;
 
 import groove.lts.GraphState;
+import groove.util.Property;
 
 /** Defines a condition that may or not hold in a {@link GraphState}.
  * The condition may be negated.
@@ -26,24 +27,17 @@ import groove.lts.GraphState;
  *
  * @param <C> Type of the object defining the condition.
  */
-public abstract class ExploreCondition<C> {
-	
-	/** Determines whether the condition is satisfied by a graph state. 
-	 * This method typically uses the condition set using
-	 * {@link #setCondition(Object)}.
-	 * 
-	 * @param state
-	 * @return
-	 */
-	public abstract boolean isSatisfiedBy (GraphState state);
-	
+public abstract class ExploreCondition<C> extends Property<GraphState> {
 	/** The parameter determines whether the condition
 	 * is to be checked positively or negatively.
-	 * 
-	 * @param b
 	 */
 	public void setNegated(boolean b) {
-		this.isNegated = b; 
+		this.negated = b; 
+	}
+	
+	/** Indicates whether the condition is negated or not. */
+	public boolean isNegated() {
+		return negated;
 	}
 	
 	/** Sets the condition.
@@ -55,15 +49,13 @@ public abstract class ExploreCondition<C> {
 	
 	/**
 	 * The type of the actual condition.
-	 * @return
 	 */
 	public Class<?> getConditionType() {
 		return condition.getClass();
 	}
 	
 	/** Indicates whether the condition is negated. */
-	protected boolean isNegated;
+	protected boolean negated;
 	/** The condition. */
 	protected C condition;
-
 }

@@ -25,19 +25,27 @@ import groove.util.Property;
  * Acceptor that accepts states that satisfy a certain property.
  * 
  * @author Staijen
- *
- * @param <GraphState>
  */
-public class PropertyAcceptor extends Acceptor<GraphState> {
-
-	Property<GraphState> property;
-	
+public class PropertyAcceptor extends Acceptor {
+	/** Creates a new instance with a given property and a default {@link Result}. */
 	public PropertyAcceptor(Property<GraphState> property) {
-		super();
+		this(property, null);
+	}
+	
+	/** Creates a new instance with a given property and {@link Result}. */
+	public PropertyAcceptor(Property<GraphState> property, Result result) {
+		super(result);
 		this.property = property;
 	}
 	
 	@Override
 	public void closeUpdate(LTS graph, State explored) {		if( property.isSatisfied((GraphState) explored)) {			getResult().add((GraphState) explored);		}	}
 
+	/** This implementation returns a {@link PropertyAcceptor}. */
+	@Override
+	public Acceptor newAcceptor() {
+		return new PropertyAcceptor(property, getResult().newResult());
+	}
+
+	private final Property<GraphState> property;
 }

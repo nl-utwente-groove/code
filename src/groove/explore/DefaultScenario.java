@@ -22,10 +22,7 @@ import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.Rule;
 import groove.util.Reporter;
-
-import java.util.Set;
 
 //requirements:
 //
@@ -67,46 +64,17 @@ import java.util.Set;
  * The two iterators combined should allow reaching the goals compatible with this Scenario.
  * 
  * @author Staijen
- * @param <T> The type of the result of this scenario.
  *
  */
-public class DefaultScenario<T> implements Scenario<T> {
-
-	/** The graph transition system on which the scenario works. */
-	private GTS gts;
-	/** The start state of the scenario. */
-	private GraphState atState;
-
-	/** The result of the scenario. Is responsible for collecting the result. */
-	private Result<T> prototype;
-	/** The acceptor of the scenario. */
-	private Acceptor<T> acceptor;
-	/** The strategy used by this scenario. */
-	private Strategy strategy;
-	
-	/** Sets the acceptor for this scenario.
-	 * @param acceptor the acceptor for this scenario.
-	 */
-	public <A extends Acceptor<T>> void setAcceptor(A acceptor) {
+public class DefaultScenario implements Scenario {
+	/** Creates a scenario with a given strategy and acceptor. */
+	public DefaultScenario(Strategy strategy, Acceptor acceptor) {
+		this.strategy = strategy;
 		this.acceptor = acceptor;
 	}
 	
-	/** Sets the result for this scenario.
-	 * @param prototype the result for this scenario.
-	 */
-	public void setResult(Result<T> prototype) {
-		this.prototype = prototype;
-	}
-	
-	/** Sets the strategy used by this scenario.
-	 * @param strategy the strategy used by this scenario.
-	 */
-	public void setStrategy(Strategy strategy) {
-		this.strategy = strategy;
-	}
-
-	public Result<T> play() throws InterruptedException {
-		assert prototype != null && acceptor != null && strategy != null : 
+	public Result play() throws InterruptedException {
+		assert acceptor != null && strategy != null : 
 			"The scenario is not correctly initialized with a result, a strategy and an acceptor.";
 		assert(gts != null) : "The GTS of the scenario has not been initialized.";
 		
@@ -116,13 +84,11 @@ public class DefaultScenario<T> implements Scenario<T> {
 
 		gts.addGraphListener(acceptor);
 		strategy.addGTSListener(acceptor);
-		
-		acceptor.setResult(prototype);
 
 		reporter.start(RUNNING);
 
 		// start working until done or nothing to do
-		while( !prototype.done() && strategy.next()) {
+		while( !getResult().done() && strategy.next()) {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException();
 			}
@@ -131,11 +97,16 @@ public class DefaultScenario<T> implements Scenario<T> {
 		reporter.stop();
 		
 		// return result
-		return prototype;
+		return getResult();
 	}
 	
-	public Result<T> getComputedResult () {
-		return this.prototype;
+	/**
+	 * Returns the result of this scenario.
+	 * The result is retrieved from the acceptor; it is an
+	 * error to call this method if no acceptor is set.
+	 */
+	public Result getResult () {
+		return this.acceptor.getResult();
 	}
 	
 	
@@ -143,10 +114,6 @@ public class DefaultScenario<T> implements Scenario<T> {
 		this.gts = gts;
 	}
 
-	public GTS getGTS() {
-		return gts;
-	}
-	
 	public void setState(GraphState state) {
 		this.atState = state;
 	}
@@ -156,19 +123,34 @@ public class DefaultScenario<T> implements Scenario<T> {
 	}
 
 	
+	/**
+	 * The graph transition system on which the scenario works. 
+	 */
+	private GTS gts;
+	/**
+	 * The start state of the scenario. 
+	 */
+	private GraphState atState;
+//	/**
+//	 * The result of the scenario. Is responsible for collecting the result. 
+//	 */
+//	private Result result;
+	/**
+	 * The acceptor of the scenario. 
+	 */
+	private final Acceptor acceptor;
+	/**
+	 * The strategy used by this scenario. 
+	 */
+	private final Strategy strategy;
+	
 	/** Reporter for profiling information; aliased to {@link GTS#reporter}. */
-    static public final Reporter reporter = Reporter.register(DefaultScenario.class);
-    /** Handle for profiling {@link #getApplications()}. */
-    static public final int GET_DERIVATIONS = reporter.newMethod("getDerivations(Graph)");
-    /** Handle for profiling {@link #collectApplications(Rule, Set)}. */
-//    static protected final int COLLECT_APPLICATIONS = reporter.newMethod("collectApplications(...)");
-    static protected final int RUNNING = reporter.newMethod("playScenario()");
-
-	public static long getTransformingTime() {
-		return reporter.getTotalTime(GET_DERIVATIONS);
-	}
+    static private final Reporter reporter = Reporter.register(DefaultScenario.class);
+    /** Handle for profiling {@link #play()}. */
+    static private final int RUNNING = reporter.newMethod("playScenario()");
+    
+    /** Returns the total running time of {@link #play()}. */
 	public static long getRunningTime() {
 		return reporter.getTotalTime(RUNNING);
 	}
 }
-
