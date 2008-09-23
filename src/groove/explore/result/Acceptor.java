@@ -51,8 +51,8 @@ public class Acceptor extends LTSAdapter {
 	 * Factory method to create a fresh instance of this acceptor,
 	 * with a fresh result instance.
 	 */
-	public Acceptor newAcceptor() {
-		return new Acceptor(result.newResult());
+	public Acceptor newInstance() {
+		return new Acceptor(result.newInstance());
 	}
 	
 	private Result result;

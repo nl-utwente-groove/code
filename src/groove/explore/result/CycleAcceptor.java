@@ -26,8 +26,8 @@ import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 
 /**
- * Acceptor that is notified on closing a buchi graph-state
- * in a {@link groove.lts.ProductGTS}. If the buchi graph-state
+ * Acceptor that is notified on closing a Büchi graph-state
+ * in a {@link groove.lts.ProductGTS}. If the Büchi graph-state
  * is accepting, a a cycle detection depth-first search is
  * started. If a counter-example is found, the graph-states
  * currently on the search-stack constitute the path representing
@@ -37,14 +37,16 @@ import groove.verify.ModelChecking;
  * @version $Revision: 1.4 $
  */
 public class CycleAcceptor extends Acceptor {
-	/** Creates a new acceptor with a default {@link Result}. */
-	public CycleAcceptor() {
-		this(null);
+	/** Creates a new acceptor with a 1-bounded {@link Result}. */
+	public CycleAcceptor(ModelCheckingStrategy strategy) {
+		this(new Result(1), strategy);
 	}
 	
 	/** Creates a new acceptor with a given {@link Result}. */
-	public CycleAcceptor(Result result) {
+	private CycleAcceptor(Result result, ModelCheckingStrategy strategy) {
 		super(result);
+		this.strategy = strategy;
+		this.strategy.setResult(result);
 	}
 	
 	@Override
@@ -68,7 +70,7 @@ public class CycleAcceptor extends Acceptor {
 	private int redDFS(ProductGTS gts, BuchiGraphState state) {
 		assert (gts instanceof ProductGTS) : "Expected a product GTS instead of " + gts.getClass();
 		for (ProductTransition nextTransition: ((ProductGTS) gts).outEdgeSet(state)) {
-			// allthough the outgoing transition in the gts might cross the boundary
+			// although the outgoing transition in the gts might cross the boundary
 			// we do not have to check for this since the target states themselves
 			// will not yet have outgoing transitions and will therefore never
 			// yield an accepting cycle
@@ -88,20 +90,14 @@ public class CycleAcceptor extends Acceptor {
 		}
 		return ModelChecking.OK;
 	}
-
-	/** Sets a new strategy for this acceptor. */
-	public void setStrategy(ModelCheckingStrategy strategy) {
-		this.strategy = strategy;
-	}
-
+	
 	/** 
 	 * This implementation returns a fresh {@link CycleAcceptor},
 	 * aliasing the strategy of this instance.
 	 */
 	@Override
-	public Acceptor newAcceptor() {
-		CycleAcceptor result = new CycleAcceptor(getResult().newResult());
-		result.setStrategy(strategy);
+	public Acceptor newInstance() {
+		CycleAcceptor result = new CycleAcceptor(getResult().newInstance(), strategy);
 		return result;
 	}
 

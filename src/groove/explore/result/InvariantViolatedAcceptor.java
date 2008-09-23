@@ -27,11 +27,6 @@ import groove.lts.GraphState;
  *
  */
 public class InvariantViolatedAcceptor<C> extends ConditionalAcceptor<C> {
-	/** Constructs a new instance with an as yet empty condition. */
-	public InvariantViolatedAcceptor() {
-		this(null);
-	}
-
 	/** 
 	 * Constructs a new instance with a given Result.
 	 */
@@ -60,7 +55,7 @@ public class InvariantViolatedAcceptor<C> extends ConditionalAcceptor<C> {
 
 	/** This implementation returns an {@link InvariantViolatedAcceptor}. */
 	@Override
-	public Acceptor newAcceptor() {
+	public Acceptor newInstance() {
 		return new InvariantViolatedAcceptor<C>(getCondition(), getResult());
 	}
 }

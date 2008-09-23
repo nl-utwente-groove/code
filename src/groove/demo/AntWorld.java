@@ -8,7 +8,6 @@ import groove.explore.result.Result;
 import groove.explore.strategy.AbstractStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.Strategy;
-import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.LTS;
@@ -27,11 +26,8 @@ import java.io.File;
  * application of the end_turn rule exporting the number of turns, number of circles and number of ants.
  * 
  * Also, the execution time is measured and printed.
- */
-
-/**
+ * 
  * @author Staijen
- *
  */
 public class AntWorld {
 	
@@ -45,6 +41,7 @@ public class AntWorld {
 	
 	private long time;
 	
+	/** Creates and runs the AntWorld scenario. */
 	public AntWorld() {
 		GraphGrammar grammar = null;
 
@@ -64,7 +61,7 @@ public class AntWorld {
 			AbstractStrategy strategy = new RandomLinearStrategy();
 			strategy.enableCloseExit();
 			DefaultGraphCalculator calc = new DefaultGraphCalculator(grammar);
-			Scenario sc = createScenario(calc.getGTS(), strategy, new AntworldAcceptor());
+			Scenario sc = createScenario(strategy, new AntworldAcceptor());
 
 			startTimer();
 			calc.getResult(sc);
@@ -73,9 +70,9 @@ public class AntWorld {
 		}
 	}
 
-    private Scenario createScenario(GTS gts, Strategy strategy, Acceptor acceptor) {
+    private Scenario createScenario(Strategy strategy, Acceptor acceptor) {
     	DefaultScenario scenario = new DefaultScenario(strategy, acceptor);
-    	scenario.setGTS(gts);
+//    	scenario.setGTS(gts);
     	return scenario;
     }
 	
@@ -120,19 +117,14 @@ public class AntWorld {
 
 		/** This implementation returns an {@link AntworldAcceptor}.*/
 		@Override
-		public Acceptor newAcceptor() {
+		public Acceptor newInstance() {
 			return new AntworldAcceptor();
 		}
 	}
 	
 	class PrintResult extends Result {
 		@Override
-		public boolean done() {
-			return false;
-		}
-
-		@Override
-		public Result newResult() {
+		public Result newInstance() {
 			return new PrintResult();
 		}
 		

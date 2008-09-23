@@ -17,6 +17,7 @@
 package groove.explore;
 
 import groove.explore.result.Result;
+import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 
@@ -33,19 +34,37 @@ import groove.lts.GraphState;
  * @author Tom Staijen
  */
 public interface Scenario {
-	/** Sets the  {@link groove.lts.GTS} on which this scenario works. 
-	 * @param gts the  {@link groove.lts.GTS} on which this scenario works. 
+	/** Returns the strategy this scenario uses. */
+	public Strategy getStrategy();
+//	/** Sets the  {@link groove.lts.GTS} on which this scenario works. 
+//	 * @param gts the  {@link groove.lts.GTS} on which this scenario works. 
+//	 */
+//	public void setGTS(GTS gts);
+//	/** Sets the start state for this scenario. 
+//	 * @param state the start state for this scenario. 
+//	 */
+//	public void setState(GraphState state);
+
+	/** 
+	 * Plays the scenario on a given GTS, yielding a result.
+	 * Convenience method for {@link #play(GTS, GraphState)} with the
+	 * GTS' initial state as start state for the scenario.
+	 * @see #play(GTS, GraphState)
 	 */
-	public void setGTS(GTS gts);
-	/** Sets the start state for this scenario. 
-	 * @param state the start state for this scenario. 
+	public Result play(GTS gts) ;
+
+	/** 
+	 * Plays the scenario on a given GTS and state, yielding a result.
+	 * The method returns when there are no more states to explore, or when the
+	 * result is done (according to {@link Result#done()}), or when the thread is interrupted.
+	 * @param gts the GTS to play the scenario on
+	 * @param state the start state for the scenario; must be in <code>gts</code>
+	 * @return the result of the scenario. This may be partial if the thread 
+	 * was interrupted.
+	 * @see Result#done()
+	 * @see #isInterrupted()
 	 */
-	public void setState(GraphState state);
-	
-	/** Plays the scenario, yielding a result.
-	 * @return the result of the scenario.
-	 */
-	public Result play() throws InterruptedException ;
+	public Result play(GTS gts, GraphState state) ;
 	
 	/**
 	 * Returns the result of this scenario.
@@ -53,4 +72,7 @@ public interface Scenario {
 	 * error to call this method if no acceptor is set.
 	 */
 	public Result getResult();
+	
+	/** Indicates whether the last invocation of {@link #play(GTS)} was interrupted. */
+	public boolean isInterrupted();
 }

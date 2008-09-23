@@ -51,7 +51,7 @@ public class FinalStateAcceptor extends Acceptor {
 
     /** This implementation returns a {@link FinalStateAcceptor}. */
 	@Override
-	public Acceptor newAcceptor() {
-		return new FinalStateAcceptor(getResult().newResult());
+	public Acceptor newInstance() {
+		return new FinalStateAcceptor(getResult().newInstance());
 	}
 }

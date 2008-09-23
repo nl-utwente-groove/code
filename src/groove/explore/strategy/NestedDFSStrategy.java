@@ -68,14 +68,12 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy {
         		for (GraphTransition nextTransition: getGTS().outEdgeSet(getAtBuchiState().getGraphState())) {
         			if (nextTransition.getEvent().getRule().isModifying()) {
         				finalState = false;
-        				
-//            			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), nextTransition, nextPropertyTransition.getTargetLocation());
             			Set<? extends ProductTransition> productTransitions = addProductTransition(nextTransition, nextPropertyTransition.getTargetLocation());
             			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
             			if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
             				// notify counter-example
             				for (BuchiGraphState state: searchStack()) {
-            					getValue().add(state.getGraphState());
+            					getResult().add(state.getGraphState());
             				}
             				return true;
             			}
@@ -83,9 +81,6 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy {
         		}
         		if (finalState) {
         			processFinalState(nextPropertyTransition);
-//        			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation());
-////        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
-//        			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
         		}
         	}
         	// if the transition of the property automaton is not enabled

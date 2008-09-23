@@ -36,6 +36,16 @@ import groove.lts.StateGenerator;
  */
 public interface Strategy {
 	/** 
+	 * Sets the graph transition system to be explored.
+	 * Also sets the exploration start state to the GTS start state. 
+	 */
+	public void setGTS(GTS gts);
+	
+	/** Sets the state where the strategy starts exploring. 
+	 */
+	public void setState(GraphState state);
+
+	/** 
 	 * Executes one step of the strategy. 
 	 * @return false if the strategy is completed, <code>true</code> otherwise.
 	 * @require The previous call of this method, if any, 
@@ -43,17 +53,13 @@ public interface Strategy {
 	 */
 	public boolean next();
 	
-	/** Sets the state where the strategy starts exploring.
-	 * @param state
-	 */
-	public void setState(GraphState state);
-	/** Sets the graph transition system to be explored.
-	 * @param gts
-	 */
-	public void setGTS(GTS gts);
-
 	/**
 	 * Adds an acceptor to the strategy.
 	 */
 	public void addGTSListener(Acceptor listener);
+
+	/**
+	 * Removes an acceptor from the strategy.
+	 */
+	public void removeGTSListener(Acceptor listener);
 }

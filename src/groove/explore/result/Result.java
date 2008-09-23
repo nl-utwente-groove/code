@@ -67,7 +67,7 @@ public class Result {
 	}
 	
 	/** Factory method for a new result of the same type as this one. */ 
-	public Result newResult() {
+	public Result newInstance() {
 		return new Result(bound);
 	}
 	

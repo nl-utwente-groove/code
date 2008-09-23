@@ -17,6 +17,7 @@
 package groove.explore;
 
 import groove.explore.result.Result;
+import groove.explore.strategy.ModelCheckingStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.ProductGTS;
@@ -68,5 +69,6 @@ public interface ScenarioHandler {
 	 */
 	public void setGTS (GTS gts);	
 
+	/** Retrieves the product GTS if the strategy was a {@link ModelCheckingStrategy}. */
 	public ProductGTS getProductGTS();
 }
