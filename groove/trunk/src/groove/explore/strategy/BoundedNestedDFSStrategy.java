@@ -355,7 +355,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	 */
 	public void constructCounterExample() {
 		for (BuchiGraphState state: searchStack()) {
-			getValue().add(state.getGraphState());
+			getResult().add(state.getGraphState());
 		}
 //		getResult().add(getAtState());
 	}

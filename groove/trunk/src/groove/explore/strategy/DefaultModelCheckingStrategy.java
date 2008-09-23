@@ -23,8 +23,7 @@ import groove.explore.util.RandomNewStateChooser;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
-import groove.gui.FormulaDialog;
-import groove.gui.Simulator;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.ProductGTS;
@@ -57,18 +56,24 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  * @version $Revision: 1.5 $
  */
 public abstract class DefaultModelCheckingStrategy extends AbstractStrategy implements ModelCheckingStrategy {
+	/** This implementation initialises the product automaton as well. */
+	@Override
+	public void setGTS(GTS gts) {
+		super.setGTS(gts);
+		setProductGTS(new ProductGTS(gts.getGrammar()));
+		setup();
+	}
 
-	public void setProductGTS(ProductGTS gts) {
+	private void setProductGTS(ProductGTS gts) {
 		this.productGTS = gts;
 		productGTS.addListener(this.collector);
-		setup();
 	}
 
 	public void setResult(Result result) {
 		this.result = result;
 	}
 
-	public Result getValue() {
+	public Result getResult() {
 		return result;
 	}
 
@@ -82,8 +87,7 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 	}
 
 	/**
-	 * Returns the start Buchi graph-state.
-	 * @return the start Buchi graph-state
+	 * Returns the start Büchi graph-state
 	 */
 	public final BuchiGraphState startBuchiState() {
 		return startBuchiState;
@@ -91,12 +95,14 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 
 	@Override
 	public void setState(GraphState state) {
-		super.setState(state);
+		if (state != getGTS().startState()) {
+			throw new IllegalArgumentException("Model checking should start at initial state");
+		}
 	}
 
 	/**
-	 * Closes Buchi graph-states.
-	 * @param state the Buchi graph-state to close
+	 * Closes Büchi graph-states.
+	 * @param state the Büchi graph-state to close
 	 */
 	public void setClosed(BuchiGraphState state) {
 		getProductGTS().setClosed(state);
@@ -151,6 +157,11 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 		productGTS.addListener(listener);
 	}
 
+	@Override
+	public void removeGTSListener(Acceptor listener) {
+		productGTS.removeListener(listener);
+	}
+
 	/** Returns a random open successor of a state, if any. 
 	 * Returns null otherwise. 
 	 */
@@ -181,10 +192,9 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 	}
 
     /**
-     * Initialize the necessary fields.
-     * @throws IllegalArgumentException
+     * Initialise the data structures used during exploration.
      */
-    public void setup() throws IllegalArgumentException {
+    public void setup() {
         state2node = new HashMap<IState,Node>();
 //    	currentPath = new Stack<GraphTransition>();
     	searchStack = new Stack<BuchiGraphState>();
@@ -316,13 +326,9 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
     }
 
     /**
-     * Initialize the property to be verified.
+     * Initialise the property to be verified.
      */
     private void initializeProperty() {
-    	if (property == null) {
-    		String property = getProperty();
-    		setProperty(property);
-    	}
     	assert (property != null) : "Property should have been set already.";
     	automaton = LTL2BA4J.formulaToBA("! " + property);
     	processAutomaton(automaton);
@@ -374,16 +380,10 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
     	this.atBuchiState = atState;
     }
 
-    /* (non-Javadoc)
-     * @see groove.explore.strategy.ModelCheckingStrategy#getAtBuchiLocation()
-     */
     public BuchiLocation getAtBuchiLocation() {
     	return getAtBuchiState().getBuchiLocation();
     }
 
-    /* (non-Javadoc)
-     * @see groove.explore.strategy.ModelCheckingStrategy#searchStack()
-     */
     public Stack<BuchiGraphState> searchStack() {
     	return searchStack;
     }
@@ -401,43 +401,18 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
     	assert (transitionStack().size() == (searchStack().size() - 1)) : "search stacks out of sync (" + transitionStack().size() + " vs " + searchStack().size() + ")";
     }
 
-    /* (non-Javadoc)
-     * @see groove.explore.strategy.ModelCheckingStrategy#setSimulator(groove.gui.Simulator)
-     */
-    public void setSimulator(Simulator simulator) {
-    	this.simulator = simulator;
-    }
-
-    /* (non-Javadoc)
-     * @see groove.explore.strategy.ModelCheckingStrategy#setProperty(java.lang.String)
-     */
     public void setProperty(String property) {
     	this.property = property;
     }
 
-    /* (non-Javadoc)
-	 * @see groove.explore.strategy.ModelCheckingStrategy#getProperty()
-	 */
-	public String getProperty() {
-			FormulaDialog dialog = simulator.getFormulaDialog();
-			dialog.showDialog(simulator.getFrame());
-			String property = dialog.getProperty();
-			if (property != null) {
-				return property;
-			}
-		return null;
-	}
-
 	/** The Buchi start graph-state of the system. */
 	private BuchiGraphState startBuchiState;
-	/** The synchronized product of the system and the property. */
+	/** The synchronised product of the system and the property. */
 	protected ProductGTS productGTS;
     /** The current Buchi graph-state the system is at. */
     protected BuchiGraphState atBuchiState;
     /** The transition by which the current Buchi graph-state is reached. */
     protected ProductTransition lastTransition;
-    /** The simulator instance that triggers this part. */
-    protected Simulator simulator;
     /** A mapping from {@link IState}s to {@link Node}s. */
     protected Map<IState, Node> state2node = new HashMap<IState,Node>();
 	/** State collector which randomly provides unexplored states. */

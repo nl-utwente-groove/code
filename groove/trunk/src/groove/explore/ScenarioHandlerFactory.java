@@ -18,15 +18,13 @@ package groove.explore;
 
 import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
-import groove.explore.result.CycleAcceptor;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.Result;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
-import groove.explore.strategy.DefaultModelCheckingStrategy;
+import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
 import groove.gui.BoundedModelCheckingDialog;
-import groove.gui.FormulaDialog;
 import groove.gui.Simulator;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -50,24 +48,18 @@ public class ScenarioHandlerFactory {
 	public static <T> ScenarioHandler getScenario(
 			final Strategy strategy, final Acceptor acceptor, final String description, 
 			final String name) {
-		return new AbstractScenarioHandler() {
+		return new AbstractScenarioHandler(description, name) {
 			@Override
-			public String getDescription() { return description; }
-
-			@Override
-			public String getName() { return name; }
-
-			@Override
-			public void playScenario() {
-				playScenario(new DefaultScenario(strategy, acceptor.newAcceptor()));
+			protected Scenario createScenario() {
+				return new DefaultScenario(strategy, acceptor.newInstance());
 			}
 		};
 	}
 
 	/** Retrieves a conditional scenario handler for a scenario constructed from its components. 
 	 * @param <C> Type of the condition.
-	 * @param str Strategy for the scenario.
-	 * @param acc Acceptor for the scenario.
+	 * @param strategy Strategy for the scenario.
+	 * @param acceptor Acceptor for the scenario.
 	 * @param description A one-sentence description of the scenario.
 	 * @param name A short (one or few words) description of the scenario. Is to be 
 	 * used in menus, or as identification (for instance in command-line options).
@@ -76,96 +68,41 @@ public class ScenarioHandlerFactory {
 	 * is taken into account in the name of the scenario.
 	 */
 	public static <C> ConditionalScenarioHandler<C> getConditionalScenario(
-			final Strategy str, final ConditionalAcceptor<C> acc, final String description, 
+			final Strategy strategy, final ConditionalAcceptor<C> acceptor, final String description, 
 			final String name, final boolean negated) {
-		return new AbstractConditionalScenarioHandler<C>() {
-
+		return new AbstractConditionalScenarioHandler<C>(description, name, null) {
 			@Override
-			public String getName() {
-				if (this.explCond == null) {
-					return name;
-				}
-				return name + 
-						(negated ? " !" : " ") +
-						"<" +
-						this.condName +
-						">";
+			protected Scenario createScenario() {
+				return new DefaultScenario(strategy, acceptor.newInstance());
 			}
 
 			@Override
-			public String getDescription() { return description; }
-
-			@Override
-			public void playScenario() {
-				DefaultScenario scenar = new DefaultScenario(str, acc.newAcceptor());
-				this.explCond.setNegated(negated);
-				acc.setCondition(this.explCond);
-				playScenario(scenar);
-			}
-
 			public void setCondition(ExploreCondition<C> explCond, String name) {
-				this.explCond = explCond;
-				this.condName = name;
+				super.setCondition(explCond, name);
+				explCond.setNegated(negated);
+				acceptor.setCondition(explCond);
 			}
-		
-			private ExploreCondition<C> explCond;
-			private String condName = "";
 
-			public Class<?> getConditionType() { return explCond.getConditionType(); }
-
-			public void setCondition(ExploreCondition<C> condition, String name, boolean negated) {
-				throw new UnsupportedOperationException();
-			}
+			@Override
+			public Class<?> getConditionType() { return getCondition().getConditionType(); }
 		};
 	}
 	
 	/** Retrieves a scenario handler for a scenario constructed from its components.
-	 * @param str Strategy for the scenario.
-	 * @param acc Acceptor for the scenario.
+	 * @param strategy Strategy for the scenario.
 	 * @param description A one-sentence description of the scenario.
 	 * @param name A short (one or few words) description of the scenario. Is to be 
 	 * used in menus, or as identification (for instance in command-line options).
 	 */
 	public static ScenarioHandler getModelCheckingScenario(
-			final DefaultModelCheckingStrategy str,
-			final Acceptor acc,
-			final String description, 
-			final String name,
+			final ModelCheckingStrategy strategy,
+			final String description,
+			final String name, 
 			final Simulator sim) {
-		return new AbstractScenarioHandler() {
-
+		return new ModelCheckingScenarioHandler(strategy, description, name, null, null) {
 			@Override
-			public String getDescription() { return description; }
-
-			@Override
-			public String getName() { return name; }
-
-			@Override
-			public void playScenario() {
-				DefaultScenario scenar = new DefaultScenario(str, acc.newAcceptor());
-
-				if (acc instanceof CycleAcceptor) {
-					((CycleAcceptor) acc).setStrategy(str);
-				}
-				str.setSimulator(sim);
-				str.setGTS(getGTS());
-				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
-				str.setResult(scenar.getResult());
-				
-				Runtime runtime = Runtime.getRuntime();
-				playScenario(scenar);
-				if (!getResult().getValue().isEmpty()) {
-//					sim.notifyCounterExample((Stack<GraphState>) res.getResult().iterator().next());
-				}
-	            System.runFinalization();
-	            System.gc();
-	            long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-	            
-	            System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
-			}
-
-			protected String getProperty(Simulator sim) {
-				FormulaDialog dialog = sim.getFormulaDialog();
+			protected String getProperty() {
+				groove.gui.FormulaDialog dialog = sim.getFormulaDialog();
 				dialog.showDialog(sim.getFrame());
 				return dialog.getProperty();
 			}
@@ -176,10 +113,8 @@ public class ScenarioHandlerFactory {
 	 * Retrieves a scenario handler for a scenario constructed from its
 	 * components.
 	 * 
-	 * @param str
+	 * @param strategy
 	 *            Strategy for the scenario.
-	 * @param acc
-	 *            Acceptor for the scenario.
 	 * @param description
 	 *            A one-sentence description of the scenario.
 	 * @param name
@@ -188,57 +123,20 @@ public class ScenarioHandlerFactory {
 	 *            command-line options).
 	 */
 	public static ScenarioHandler getBoundedModelCheckingScenario(
-			final BoundedModelCheckingStrategy str,
-			final Acceptor acc,
+			final BoundedModelCheckingStrategy strategy,
 			final String description,
 			final String name,
 			final Simulator sim) {
-		return new AbstractScenarioHandler() {
-
+		return new ModelCheckingScenarioHandler(strategy, description, name, null, null) {
 			@Override
-			public String getDescription() { return description; }
-
-			@Override
-			public String getName() { return name; }
-
-			@Override
-			public void playScenario() {
-				DefaultScenario scenar = new DefaultScenario(str, acc.newAcceptor());
-
-				if (acc instanceof CycleAcceptor) {
-					((CycleAcceptor) acc).setStrategy(str);
-				}
-
-				Boundary boundary2 = setBoundary();
-				str.setSimulator(sim);
-				str.setGTS(getGTS());
-				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
-				str.setResult(scenar.getResult());
-				str.setBoundary(boundary2);
-				
-				Runtime runtime = Runtime.getRuntime();
-				playScenario(scenar);
-				if (!getResult().getValue().isEmpty()) {
-//					sim.notifyCounterExample((Stack<GraphState>) res.getResult().iterator().next());
-				}
-	            System.runFinalization();
-	            System.gc();
-	            long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-	            
-	            System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
-			}
-
-			protected String getProperty(Simulator sim) {
-				FormulaDialog dialog = sim.getFormulaDialog();
+			protected String getProperty() {
+				groove.gui.FormulaDialog dialog = sim.getFormulaDialog();
 				dialog.showDialog(sim.getFrame());
-				String property = dialog.getProperty();
-				if (property != null) {
-					return property;
-				}
-				return null;
+				return dialog.getProperty();
 			}
 
-			protected Boundary setBoundary() {
+			@Override
+			protected Boundary getBoundary() {
 				BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
 				dialog.setGrammar(getGTS().getGrammar());
 				dialog.showDialog(sim.getFrame());
@@ -324,18 +222,22 @@ public class ScenarioHandlerFactory {
 	 * @author Iovka Boneva
 	 */
 	public static abstract class AbstractScenarioHandler implements ScenarioHandler {
-		// ---------------------------------------------------------
-		// ScenarioHandler methods
-		// ---------------------------------------------------------
-		public abstract String getDescription();
+		/** Constructs an instance with a given name and description. */
+		protected AbstractScenarioHandler(String description, String name) {
+			this.description = description;
+			this.name = name;
+		}
 		
-		public abstract String getName(); 
+		public String getDescription() { return description; }
 
-		public abstract void playScenario();
-		
-		// ---------------------------------------------------------
-		// FIELDS, ACCESSORS ETC.
-		// ---------------------------------------------------------
+		public String getName() { return name; }
+
+		public void playScenario() {
+			Scenario scenario = createScenario();
+			result = scenario.play(getGTS(), getState());
+			interrupted = scenario.isInterrupted();
+		}
+
 		public ProductGTS getProductGTS() { return null; }
 
 		public void setGTS (GTS gts) {
@@ -357,31 +259,21 @@ public class ScenarioHandlerFactory {
 		 */
 		protected GraphState getState () { return this.state; }
 		
-		/** Sets the result object to be used by the scenario handler. */
-		public void setResult(Result result) {
-			this.result = result;
-		}
-		
 		public Result getResult() {
 			return this.result;
 		}
 		
-		/** 
-		 * Sets the GTS and start state in the scenario, 
-		 * then calls {@link Scenario#play()}; finally,
-		 * puts the scenario result {@link #setResult(Result)}.
-		 */
-		protected void playScenario(Scenario scenario) {
-			scenario.setGTS(getGTS());
-			scenario.setState(getState());
-			try {
-				setResult(scenario.play());
-				interrupted = false;
-			} catch (InterruptedException e) {
-				setResult(scenario.getResult());
-				interrupted = true;
-			}
+		/** Prints a report on {@link System#err} on memory usage. */
+		protected void reportMemory() {
+			Runtime runtime = Runtime.getRuntime();
+			System.runFinalization();
+			System.gc();
+			long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+			System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
 		}
+
+		/** Callback factory method to create a scenario for this handler. */
+		abstract protected Scenario createScenario();
 		
 		public boolean isInterrupted() {
 			return interrupted;
@@ -403,10 +295,94 @@ public class ScenarioHandlerFactory {
 		 * was terminated by interruption.
 		 */
 		private boolean interrupted;
+
+		private final String description;
+		private final String name;
+	}
+	
+	static class ModelCheckingScenarioHandler extends AbstractScenarioHandler {
+		/**
+		 * Constructs a handler with a given description and name.
+		 */
+		public ModelCheckingScenarioHandler(ModelCheckingStrategy strategy, String description, String name, String property, Boundary boundary) {
+			super(description, name);
+			this.strategy = strategy;
+			this.property = property;
+			this.boundary = boundary;
+		}
+		
+		@Override
+		protected Scenario createScenario() {
+			return new ModelCheckingScenario(strategy);
+		}
+
+		@Override
+		public void playScenario() {
+			strategy.setProperty(getProperty());
+			if (strategy instanceof BoundedModelCheckingStrategy) {
+				((BoundedModelCheckingStrategy) strategy).setBoundary(getBoundary());
+			}
+			super.playScenario();
+			reportMemory();
+		}
+
+		/** Callback method to get a property for the scenario. */
+		protected String getProperty() {
+			return property;
+		}
+		
+		/** Callback method to get a boundary for the scenario. */
+		protected Boundary getBoundary() {
+			return boundary;
+		}
+		
+		@Override
+		public ProductGTS getProductGTS() {
+			return strategy.getProductGTS();
+		}
+
+		private final ModelCheckingStrategy strategy;
+		private final String property;
+		private final Boundary boundary;
 	}
 	
 	static abstract class AbstractConditionalScenarioHandler<C> 
 		extends AbstractScenarioHandler implements ConditionalScenarioHandler<C> {
-		/* empty */
+		/**
+		 * Constructs a conditional handler with a given description and name,
+		 * and a given condition type.
+		 */
+		public AbstractConditionalScenarioHandler(String description, String name, Class<?> type) {
+			super(description, name);
+			this.type = type;
+		}
+		
+		@Override
+		public String getName() {
+			if (this.condition == null) {
+				return super.getName();
+			}
+			return super.getName() + 
+					(condition.isNegated() ? " !" : " ") +
+					"<" +
+					this.condName +
+					">";
+		}
+
+		public void setCondition(ExploreCondition<C> explCond, String name) {
+			this.condition = explCond;
+			this.condName = name;
+		}
+
+		/** Returns the currently set exploration condition. */
+		protected ExploreCondition<C> getCondition() {
+			return condition;
+		}
+		
+		public Class<?> getConditionType() { return type; }
+
+		private ExploreCondition<C> condition;
+		private String condName = "";
+		private final Class<?> type;
 	}	
 }

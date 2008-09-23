@@ -72,15 +72,19 @@ public class DefaultScenario implements Scenario {
 		this.strategy = strategy;
 		this.acceptor = acceptor;
 	}
+
+	public Result play(GTS gts) {
+		return play(gts, gts.startState());
+	}
 	
-	public Result play() throws InterruptedException {
+	public Result play(GTS gts, GraphState state) {
 		assert acceptor != null && strategy != null : 
 			"The scenario is not correctly initialized with a result, a strategy and an acceptor.";
 		assert(gts != null) : "The GTS of the scenario has not been initialized.";
 		
 		// make sure strategy and acceptor are reset and up to date
-		strategy.setState(atState);
 		strategy.setGTS(gts);
+		strategy.setState(state);
 
 		gts.addGraphListener(acceptor);
 		strategy.addGTSListener(acceptor);
@@ -88,12 +92,12 @@ public class DefaultScenario implements Scenario {
 		reporter.start(RUNNING);
 
 		// start working until done or nothing to do
-		while( !getResult().done() && strategy.next()) {
-			if (Thread.currentThread().isInterrupted()) {
-				throw new InterruptedException();
-			}
+		while(!interrupted && !getResult().done() && strategy.next()) {
+			interrupted = Thread.currentThread().isInterrupted();
 		}
 		
+		gts.removeGraphListener(acceptor);
+		strategy.removeGTSListener(acceptor);
 		reporter.stop();
 		
 		// return result
@@ -108,33 +112,20 @@ public class DefaultScenario implements Scenario {
 	public Result getResult () {
 		return this.acceptor.getResult();
 	}
-	
-	
-	public void setGTS(GTS gts) {
-		this.gts = gts;
+
+	public boolean isInterrupted() {
+		return interrupted;
 	}
 
-	public void setState(GraphState state) {
-		this.atState = state;
-	}
-	@Override
-	public String toString() {
-		return (atState==null?"":" (from " + atState.toString() + ")");
+	public Strategy getStrategy() {
+		return strategy;
 	}
 
-	
 	/**
-	 * The graph transition system on which the scenario works. 
+	 * Flag indicating that the last invocation of {@link #play(GTS)} was interrupted.
 	 */
-	private GTS gts;
-	/**
-	 * The start state of the scenario. 
-	 */
-	private GraphState atState;
-//	/**
-//	 * The result of the scenario. Is responsible for collecting the result. 
-//	 */
-//	private Result result;
+	private boolean interrupted;
+
 	/**
 	 * The acceptor of the scenario. 
 	 */
@@ -146,10 +137,10 @@ public class DefaultScenario implements Scenario {
 	
 	/** Reporter for profiling information; aliased to {@link GTS#reporter}. */
     static private final Reporter reporter = Reporter.register(DefaultScenario.class);
-    /** Handle for profiling {@link #play()}. */
+    /** Handle for profiling {@link #play(GTS)}. */
     static private final int RUNNING = reporter.newMethod("playScenario()");
     
-    /** Returns the total running time of {@link #play()}. */
+    /** Returns the total running time of {@link #play(GTS)}. */
 	public static long getRunningTime() {
 		return reporter.getTotalTime(RUNNING);
 	}

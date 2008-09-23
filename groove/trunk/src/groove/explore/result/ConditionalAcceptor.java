@@ -57,7 +57,7 @@ public abstract class ConditionalAcceptor<C> extends Acceptor {
 	}
 	
 	@Override
-	public abstract Acceptor newAcceptor();
+	public abstract Acceptor newInstance();
 
 	/** The pre-set condition. */
 	protected ExploreCondition<C> getCondition() {

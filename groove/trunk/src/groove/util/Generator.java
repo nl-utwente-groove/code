@@ -20,6 +20,7 @@ import groove.explore.ConditionalScenarioHandler;
 import groove.explore.DefaultScenario;
 import groove.explore.GeneratorScenarioHandlerFactory;
 import groove.explore.ScenarioHandler;
+import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.EdgeBoundCondition;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.InvariantViolatedAcceptor;
@@ -29,6 +30,7 @@ import groove.explore.result.Result;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ConditionalBreadthFirstStrategy;
+import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
@@ -861,7 +863,7 @@ public class Generator extends CommandLineTool {
          * Returns the condition determined by parsing, in case the strategy is conditional. Returns
          * <tt>null</tt> if no condition was specified.
          * @see #parse(String)
-         * @see ConditionalExploreStrategy#setCondition(groove.trans.Condition)
+         * @see ConditionalAcceptor#setCondition(groove.trans.Condition)
          */
         public String getCondition() {
             return parsedCondition;
@@ -870,7 +872,7 @@ public class Generator extends CommandLineTool {
         /**
          * Indicates if the condition was negated, in case of a conditional strategy. Returns
          * <tt>false</tt> if no condition was specified.
-         * @see ConditionalExploreStrategy#setNegated(boolean)
+         * @see ConditionalAcceptor#setNegated(boolean)
          * @see #parse(String)
          * @see #getCondition()
          */

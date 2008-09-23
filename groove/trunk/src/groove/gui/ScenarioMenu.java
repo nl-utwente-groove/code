@@ -107,15 +107,14 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         
         handler = ScenarioHandlerFactory.getScenario(
         		new BreadthFirstStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (breadth-first).",
-        		"Fully explore state (breadth-first, aliasing)");
+        		"Full exploration (breadth-first, aliasing)");
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getScenario(
         		new ExploreRuleDFStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (depth-first).",
-        		"Fully explore state (depth-first, no aliasing)");
+        		"Full exploration (depth-first, no aliasing)");
         addScenarioHandler(handler);
 
-        
         handler = ScenarioHandlerFactory.getScenario(
         		new LinearStrategy(), new Acceptor(), "Explores one transition for each state until a final state or a loop is reached.", 
         		"Linear exploration");

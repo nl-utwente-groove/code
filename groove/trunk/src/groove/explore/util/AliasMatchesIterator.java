@@ -7,11 +7,11 @@ import groove.lts.GraphTransitionStub;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.trans.SPORule;
 import groove.trans.VirtualRuleMatch;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,35 +37,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 		this.priority = state.getEvent().getRule().getPriority();
 		firstRule();
 		goToNext();
-	}//
-//	//	@Override
-//    public boolean hasNext() {
-//        return aliasMatchIter == null ? super.hasNext() : aliasMatchIter.hasNext();
-//    }
-//
-//    @Override//	public RuleMatch next() {
-//		RuleMatch result;
-//        if (aliasMatchIter != null) {
-//            result = aliasMatchIter.next();
-//        } else {
-//            result = super.next();
-//        }
-//        return result;
-//	}//	
-//	@Override
-//	protected void firstRule() {
-//		super.firstRule();
-//		if (currentRule != null) {
-//			doAliasSelection();
-//		}//	}
-////	@Override
-//	protected boolean nextRule() {//		if (super.nextRule()) {
-//			doAliasSelection();
-//			return true;
-//		}
-//		return false; //	}
-//	
-//	
+	}
 	@Override
     protected Iterator<RuleMatch> createMatchIter(Rule rule) {
         Collection<RuleMatch> aliasedMatches = getAliasedMatches(rule);
@@ -75,12 +47,12 @@ public class AliasMatchesIterator extends MatchesIterator {
 //        if (currentRule.getPriority() > priority && !enabledRules.contains(currentRule)) {
 //            return new EmptyMatchIter();
 //        }
-        if (currentRule.getPriority() <= priority
-                && !((currentRule instanceof SPORule && ((SPORule) currentRule).hasSubRules()) || enabledRules
-                        .contains(currentRule))) {
-            // it didn't match in the previous state or no matches left after rematching
-            return new EmptyMatchIter();
-        }
+//        if (currentRule.getPriority() <= priority
+//                && !((currentRule instanceof SPORule && ((SPORule) currentRule).hasSubRules()) || enabledRules
+//                        .contains(currentRule))) {
+//            // it didn't match in the previous state or no matches left after rematching
+//            return new EmptyMatchIter();
+//        }
         return super.createMatchIter(rule);
     }
 //
@@ -129,10 +101,19 @@ public class AliasMatchesIterator extends MatchesIterator {
 	 * could not be computed on the basis of the previous state.
 	 */
 	private Collection<RuleMatch> getAliasedMatches(Rule rule) {
-        if (aliasedRuleMatches == null) {
-            aliasedRuleMatches = computeAliasedMatches();
-        }
-        return aliasedRuleMatches.get(rule);
+		Collection<RuleMatch> result = null;
+		AbstractGraphState parent = (AbstractGraphState) ((GraphNextState) state).source();
+		if (parent.isClosed() && isUseDependencies()) {
+			if (aliasedRuleMatches == null) {
+				aliasedRuleMatches = computeAliasedMatches();
+			}
+			result = aliasedRuleMatches.get(rule);
+			// rules that did not match at all are not included in the aliasedRuleMatches
+			if (result == null && !enabledRules.contains(rule)) {
+				result = Collections.emptyList();
+			}
+		}
+		return result;
 	}
 	
 	/**
@@ -145,18 +126,17 @@ public class AliasMatchesIterator extends MatchesIterator {
             Rule rule = event.getRule();
             // if a rule is enabled by the last rule application, then we have to look for all matches
             // so it is no good to reuse the matches of the previous state
-            if (isUseDependencies() && !enabledRules.contains(rule)) {
-                List<RuleMatch> matches = result.get(rule);
-                if (matches == null) {
-                    matches = new ArrayList<RuleMatch>();
-                    result.put(rule, matches);
-                }
-                if (isUseDependencies() && !disabledRules.contains(rule) || event.hasMatch(state.getGraph())) {
-                    matches.add(new VirtualRuleMatch(new DefaultAliasApplication(event,
-                            (GraphNextState) state, stub)));
-                }
-            }
-        }
+            if (!enabledRules.contains(rule)
+					&& (!disabledRules.contains(rule) || event.hasMatch(state.getGraph()))) {
+				List<RuleMatch> matches = result.get(rule);
+				if (matches == null) {
+					matches = new ArrayList<RuleMatch>();
+					result.put(rule, matches);
+				}
+				matches.add(new VirtualRuleMatch(new DefaultAliasApplication(event,
+						(GraphNextState) state, stub)));
+			}
+		}
         return result;
     }
 	
@@ -178,9 +158,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 	private Set<Rule> enabledRules;
 	/** The rules that may be disabled. */
 	private Set<Rule> disabledRules;
-//
-//	private Iterator<RuleMatch> aliasMatchIter;
-//	
+	
 	/** Is used as value for the matchIter when we know that it is empty. */
 	private class EmptyMatchIter implements Iterator<RuleMatch> {
 	    /** Always returns <code>false</code>. */

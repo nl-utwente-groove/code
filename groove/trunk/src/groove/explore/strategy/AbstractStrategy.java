@@ -195,6 +195,11 @@ public abstract class AbstractStrategy implements Strategy {
 	    // does nothing
 	}
 
+	/** Default implementation; does nothing. */
+	public void removeGTSListener(Acceptor listener) {
+		// does nothing
+	}
+
 	/** Enable closeExit, to close states when a strategy changes its atState.
 	 *  This can save memory when using linear strategies.
 	 */

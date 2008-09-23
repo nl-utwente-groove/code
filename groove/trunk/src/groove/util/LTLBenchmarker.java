@@ -598,7 +598,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		report();
         		initialBound += step;
         		total += endTime - startTime;
-        	} while (!finishedIterations() && getStrategy().getResult().getValue().isEmpty());
+        	} while (!finishedIterations() && getScenario().getResult().getValue().isEmpty());
     		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
@@ -743,7 +743,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		report();
         		initialBound += step;
         		total += endTime - startTime;
-        	} while (!finishedIterations() && getStrategy().getResult().getValue().isEmpty());
+        	} while (!finishedIterations() && getScenario().getResult().getValue().isEmpty());
     		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
@@ -817,11 +817,11 @@ public class LTLBenchmarker extends CommandLineTool {
     private void reset() {
     	System.gc();
     	gts = null;
-    	strategy = null;
+    	scenario = null;
     }
 
     private void resetStrategy() {
-    	strategy = null;
+    	scenario = null;
     }
 
     private void resetGTS() {
@@ -965,11 +965,11 @@ public class LTLBenchmarker extends CommandLineTool {
      * The strategy is lazily retrieved from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ScenarioHandler getStrategy() {
-        if (strategy == null) {
-            strategy = computeStrategy();
+    protected ScenarioHandler getScenario() {
+        if (scenario == null) {
+            scenario = computeScenario();
         }
-        return strategy;
+        return scenario;
     }
 
 
@@ -978,7 +978,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The strategy is computed from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ScenarioHandler computeStrategy() {
+    protected ScenarioHandler computeScenario() {
     	ScenarioHandler result;
 		if (strategyType.equals(STRATEGY_GRAPH_SIZE)) {
 			if (ModelChecking.MARK_POCKET_STATES) {
@@ -1010,7 +1010,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The initialization phase of state space generation.
      */
     protected void init() {
-        getStrategy().setGTS(getGTS());
+        getScenario().setGTS(getGTS());
     }
 
     /**
@@ -1026,15 +1026,15 @@ public class LTLBenchmarker extends CommandLineTool {
             System.out.print("Grammar: " + grammarLocation);
             System.out.println("; start graph: "
                     + (startStateName == null ? "default" : startStateName));
-            System.out.println("Exploration: " + getStrategy());
-            getGTS().addGraphListener(new GenerateProgressMonitor(getGTS(), getStrategy()));
+            System.out.println("Exploration: " + getScenario());
+            getGTS().addGraphListener(new GenerateProgressMonitor(getGTS(), getScenario()));
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
         	getProductGTS().addGraphListener(getStatisticsListener());
         }
         startTime = System.currentTimeMillis();
-        getStrategy().playScenario();
-        result = getStrategy().getResult().getValue();
+        getScenario().playScenario();
+        result = getScenario().getResult().getValue();
         endTime = System.currentTimeMillis();
         if (getVerbosity() > LOW_VERBOSITY) {
             System.out.println("");
@@ -1057,7 +1057,7 @@ public class LTLBenchmarker extends CommandLineTool {
         if (getVerbosity() > LOW_VERBOSITY) {
             println("Grammar:\t" + grammarLocation);
             println("Start graph:\t" + (startStateName == null ? "default" : startStateName));
-            println("Exploration:\t" + getStrategy().toString());
+            println("Exploration:\t" + getScenario().toString());
             println("Timestamp:\t" + invocationTime);
             final Runtime runTime = Runtime.getRuntime();
             // clear all caches to see all available memory
@@ -1121,8 +1121,8 @@ public class LTLBenchmarker extends CommandLineTool {
     private void reportLTS() {
 //        println("\tStates:\t" + getGTS().nodeCount());
 //        println("\tTransitions:\t" + getGTS().edgeCount());
-        println("\tStates:\t" + getStrategy().getProductGTS().nodeCount());
-        println("\tTransitions:\t" + getStrategy().getProductGTS().edgeCount());
+        println("\tStates:\t" + getScenario().getProductGTS().nodeCount());
+        println("\tTransitions:\t" + getScenario().getProductGTS().edgeCount());
     }
 
     /**
@@ -1266,7 +1266,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The finalization phase of state space generation.
      */
     protected void exit(long total) throws IOException, FormatException {
-    	if (getStrategy().getResult().getValue().size() > 0) {
+    	if (getScenario().getResult().getValue().size() > 0) {
     		System.out.println("Counter-example found.");
     	} else {
     		System.out.println("No counter-example found.");
@@ -1278,9 +1278,9 @@ public class LTLBenchmarker extends CommandLineTool {
     	BufferedWriter writer = new BufferedWriter(logFileWriter);
 
     	writer.newLine();
-        int stateCount = getStrategy().getProductGTS().nodeCount();
+        int stateCount = getScenario().getProductGTS().nodeCount();
         int stateCountSystem = getGTS().nodeCount();
-        int transitionCount = getStrategy().getProductGTS().edgeCount();
+        int transitionCount = getScenario().getProductGTS().edgeCount();
         int transitionCountSystem = getGTS().edgeCount();
 //        int pocketStates = getStrategy().getProductGTS().getPocketStates().size();
 //        int pocketStates2 = BuchiGraphState.pocketStates;
@@ -1422,7 +1422,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /**
      * The strategy to be used for the state space generation.
      */
-    private ScenarioHandler strategy;
+    private ScenarioHandler scenario;
     /** String describing the location where the grammar is to be found. */
     private static String grammarLocation;
     /** String describing the start graph within the grammar. */

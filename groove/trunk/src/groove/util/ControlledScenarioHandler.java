@@ -2,14 +2,14 @@ package groove.util;
 
 import groove.control.Location;
 import groove.explore.DefaultScenario;
+import groove.explore.Scenario;
 import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.AbstractStrategy;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchesIterator;
-import groove.graph.Edge;
+import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
-import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -29,11 +29,6 @@ import java.util.NoSuchElementException;
  * @version $Revision $
  */
 public class ControlledScenarioHandler extends AbstractScenarioHandler {
-
-	/** */
-	private String description;
-	/** */
-	private String name;
 	private ControlledStrategy str;
 
 	/** Creates a scenario handler from a name and a description.
@@ -41,19 +36,12 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	 * @param name
 	 */
 	public ControlledScenarioHandler(String description, String name) {
-		this.description = description;
-		this.name = name;
+		super(description, name);
 	}
-	
-	@Override
-	public String getDescription() { return this.description; }
 
 	@Override
-	public String getName() { return this.name; }
-
-	@Override
-	public void playScenario() {
-		playScenario(new DefaultScenario(str, new Acceptor()));
+	protected Scenario createScenario() {
+		return new DefaultScenario(str, new Acceptor());
 	}
 
 	/** Sets a program for the scenario.
@@ -120,8 +108,6 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 			toExplore.setQueue(nextList);
 		}	
 		
-		
-		/** */
 		List<Rule> program;
 		Iterator<Rule> pc;
 		boolean findAll;
@@ -134,25 +120,15 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 		/** Iterator over the matches of the current state. */
 		
 		/** A queue with states to be explored, used as a FIFO. */
-		protected class ToExploreListener implements GraphShapeListener {
+		protected class ToExploreListener extends GraphAdapter {
 			LinkedList<GraphState> queue;
 			void setQueue (LinkedList<GraphState> queue) {
 				this.queue = queue;
 			}
 			
+			@Override
 			public void addUpdate(GraphShape graph, Node node) {
 				queue.offer((GraphState) node);
-			}
-
-			public void addUpdate(GraphShape graph, Edge edge) { /* empty */ }
-
-			public void removeUpdate(GraphShape graph, Node node) { /* empty */ }
-
-			public void removeUpdate(GraphShape graph, Edge elem) { /* empty */ }
-
-			@Override
-			public boolean equals (Object o) {
-				return this == o;
 			}
 		}
 	}

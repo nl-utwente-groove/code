@@ -43,8 +43,8 @@ public class PropertyAcceptor extends Acceptor {
 
 	/** This implementation returns a {@link PropertyAcceptor}. */
 	@Override
-	public Acceptor newAcceptor() {
-		return new PropertyAcceptor(property, getResult().newResult());
+	public Acceptor newInstance() {
+		return new PropertyAcceptor(property, getResult().newInstance());
 	}
 
 	private final Property<GraphState> property;

@@ -17,8 +17,6 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Result;
-import groove.gui.Simulator;
-import groove.lts.GraphState;
 import groove.lts.ProductGTS;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -33,16 +31,8 @@ import java.util.List;
  * @version $Revision: 1.2 $
  */
 public interface ModelCheckingStrategy extends Strategy {
-
-	/**
-	 * Sets the product gts for the strategy.
-	 * @param gts the product gts
-	 */
-	public void setProductGTS(ProductGTS gts);
-
 	/**
 	 * Returns the product gts.
-	 * @return the product gts
 	 */
 	public ProductGTS getProductGTS();
 
@@ -56,29 +46,15 @@ public interface ModelCheckingStrategy extends Strategy {
 	 * Returns the result container.
 	 * @return the result container
 	 */
-	public Result getValue();
-
-	/**
-	 * Initializes the strategy.
-	 * @throws IllegalArgumentException
-	 */
-	public void setup() throws IllegalArgumentException;
+	public Result getResult();
 
     /**
-     * Returns the Buechi graph-state the strategy is currently at.
-     * @return the Buechi graph-state the strategy is currently at
+     * Returns the Büchi graph-state the strategy is currently at.
      */
     public BuchiGraphState getAtBuchiState();
 
     /**
-     * Sets the current Buechi graph-state of the strategy.
-     * @param atState the new current Buchi graph-state
-     */
-    public void setAtBuchiState(BuchiGraphState atState);
-
-    /**
-     * Returns the current Buechi location. 
-     * @return the current Buechi location
+     * Returns the current Büchi location.
      */
     public BuchiLocation getAtBuchiLocation();
 
@@ -89,20 +65,7 @@ public interface ModelCheckingStrategy extends Strategy {
     public void setProperty(String property);
 
     /**
-     * Returns the property to be verified.
-     * @return the property to be verified
-     */
-    public String getProperty();
-
-    /**
-     * Sets the triggering simulator-instance.
-     * @param simulator the triggering simulator-instance
-     */
-    public void setSimulator(Simulator simulator);
-
-    /**
      * Returns the current search-stack.
-     * @return the current search-stack
      */
     public List<BuchiGraphState> searchStack();
 }
