@@ -17,8 +17,8 @@
 package groove.util;
 
 import groove.explore.DefaultScenario;
-import groove.explore.GeneratorScenarioHandlerFactory;
-import groove.explore.ScenarioHandler;
+import groove.explore.GeneratorScenarioFactory;
+import groove.explore.ModelCheckingScenario;
 import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
@@ -965,7 +965,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The strategy is lazily retrieved from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ScenarioHandler getScenario() {
+    protected ModelCheckingScenario getScenario() {
         if (scenario == null) {
             scenario = computeScenario();
         }
@@ -978,26 +978,26 @@ public class LTLBenchmarker extends CommandLineTool {
      * The strategy is computed from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ScenarioHandler computeScenario() {
-    	ScenarioHandler result;
+    protected ModelCheckingScenario computeScenario() {
+        ModelCheckingScenario result;
 		if (strategyType.equals(STRATEGY_GRAPH_SIZE)) {
 			if (ModelChecking.MARK_POCKET_STATES) {
-				result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
+				result = GeneratorScenarioFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
 			} else {
-				result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
+				result = GeneratorScenarioFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
 			}
 		} else if (strategyType.equals(STRATEGY_RULE_SET)) {
 			if (ModelChecking.START_FROM_BORDER_STATES) {
 				if (ModelChecking.MARK_POCKET_STATES) {
-					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+					result = GeneratorScenarioFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
 				} else {
-					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+					result = GeneratorScenarioFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
 				}
 			} else {
 				if (ModelChecking.MARK_POCKET_STATES) {
-					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+					result = GeneratorScenarioFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
 				} else {
-					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+					result = GeneratorScenarioFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
 				}
 			}
 		} else {
@@ -1010,7 +1010,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The initialization phase of state space generation.
      */
     protected void init() {
-        getScenario().setGTS(getGTS());
+        getScenario().prepare(getGTS());
     }
 
     /**
@@ -1027,14 +1027,13 @@ public class LTLBenchmarker extends CommandLineTool {
             System.out.println("; start graph: "
                     + (startStateName == null ? "default" : startStateName));
             System.out.println("Exploration: " + getScenario());
-            getGTS().addGraphListener(new GenerateProgressMonitor(getGTS(), getScenario()));
+            getGTS().addGraphListener(new GenerateProgressMonitor());
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
         	getProductGTS().addGraphListener(getStatisticsListener());
         }
         startTime = System.currentTimeMillis();
-        getScenario().playScenario();
-        result = getScenario().getResult().getValue();
+        result = getScenario().play().getValue();
         endTime = System.currentTimeMillis();
         if (getVerbosity() > LOW_VERBOSITY) {
             System.out.println("");
@@ -1121,8 +1120,8 @@ public class LTLBenchmarker extends CommandLineTool {
     private void reportLTS() {
 //        println("\tStates:\t" + getGTS().nodeCount());
 //        println("\tTransitions:\t" + getGTS().edgeCount());
-        println("\tStates:\t" + getScenario().getProductGTS().nodeCount());
-        println("\tTransitions:\t" + getScenario().getProductGTS().edgeCount());
+        println("\tStates:\t" + getScenario().getStrategy().getProductGTS().nodeCount());
+        println("\tTransitions:\t" + getScenario().getStrategy().getProductGTS().edgeCount());
     }
 
     /**
@@ -1278,9 +1277,9 @@ public class LTLBenchmarker extends CommandLineTool {
     	BufferedWriter writer = new BufferedWriter(logFileWriter);
 
     	writer.newLine();
-        int stateCount = getScenario().getProductGTS().nodeCount();
+        int stateCount = getScenario().getStrategy().getProductGTS().nodeCount();
         int stateCountSystem = getGTS().nodeCount();
-        int transitionCount = getScenario().getProductGTS().edgeCount();
+        int transitionCount = getScenario().getStrategy().getProductGTS().edgeCount();
         int transitionCountSystem = getGTS().edgeCount();
 //        int pocketStates = getStrategy().getProductGTS().getPocketStates().size();
 //        int pocketStates2 = BuchiGraphState.pocketStates;
@@ -1422,7 +1421,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /**
      * The strategy to be used for the state space generation.
      */
-    private ScenarioHandler scenario;
+    private ModelCheckingScenario scenario;
     /** String describing the location where the grammar is to be found. */
     private static String grammarLocation;
     /** String describing the start graph within the grammar. */

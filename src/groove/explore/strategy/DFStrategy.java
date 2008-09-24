@@ -29,7 +29,7 @@ import groove.lts.LTS;
 import groove.lts.LTSListener;
 import groove.lts.State;
 
-/** As  {@link DepthFirstStrategy1}, makes a depth first exploration by
+/** Makes a depth first exploration by
  * closing each visited states. Maintains a stack for the order in which
  * states are to be explored (thus is less memory efficient). Is suitable
  * for conditional strategies.
@@ -68,11 +68,10 @@ public class DFStrategy extends AbstractStrategy {
 	}
 	
 	@Override
-	public void setGTS(GTS gts) {
-		super.setGTS(gts);
+	public void prepare(GTS gts, GraphState startState) {
+		super.prepare(gts, startState);
 		gts.addGraphListener(toExplore);
 	}	
-	
 	
 	/** Stack giving the order in which states are to be explored. */
 	protected StackToExplore toExplore = new StackToExplore();

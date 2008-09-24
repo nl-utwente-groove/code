@@ -91,8 +91,8 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 	}
 	
 	@Override
-	public void setGTS(GTS gts) {
-		super.setGTS(gts);
+	public void prepare(GTS gts, GraphState state) {
+		super.prepare(gts, state);
 		this.getGTS().addGraphListener(this.collector);
 	}
 	

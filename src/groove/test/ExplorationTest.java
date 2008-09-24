@@ -17,9 +17,9 @@
 
 package groove.test;
 
-import groove.explore.ConditionalScenarioHandler;
-import groove.explore.GeneratorScenarioHandlerFactory;
-import groove.explore.ScenarioHandler;
+import groove.explore.ConditionalScenario;
+import groove.explore.GeneratorScenarioFactory;
+import groove.explore.Scenario;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.strategy.BreadthFirstStrategy;
@@ -277,10 +277,10 @@ public class ExplorationTest extends TestCase {
         try {
         	GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
-            ScenarioHandler handler;
+            Scenario scenario;
             if (strategyDescr != null) {
             	parser.parse(strategyDescr);
-                handler = parser.getStrategy();
+                scenario = parser.getStrategy();
                 if (parser.getCondition() != null) {
                 	Rule conditionRule = gg.getRule(new RuleNameLabel(parser.getCondition()));
                 	assertNotNull(conditionRule);
@@ -288,14 +288,14 @@ public class ExplorationTest extends TestCase {
 					ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
 					explCond.setCondition(conditionRule);
 					explCond.setNegated(parser.isNegated());
-					((ConditionalScenarioHandler<Rule>) handler).setCondition(explCond, parser.getCondition());
+					((ConditionalScenario<Rule>) scenario).setCondition(explCond, parser.getCondition());
                 }
             } else {
-            	handler = GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
+            	scenario = GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
             }
-            handler.setGTS(lts);
-            handler.playScenario();
-            assertFalse(handler.isInterrupted());
+            scenario.prepare(lts);
+            scenario.play();
+            assertFalse(scenario.isInterrupted());
 
            	if (save) {
 				try {

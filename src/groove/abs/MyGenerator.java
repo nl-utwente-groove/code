@@ -17,8 +17,8 @@
 package groove.abs;
 
 import groove.abs.lts.AGTS;
-import groove.explore.ScenarioHandler;
-import groove.explore.ScenarioHandlerFactory;
+import groove.explore.Scenario;
+import groove.explore.ScenarioFactory;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.BranchingStrategy;
 import groove.io.AspectualViewGps;
@@ -71,18 +71,16 @@ public class MyGenerator {
 	
 	
 	private void exploreGrammar () {
-		
 		gts = new AGTS(grammar, parameters);
 		
-        ScenarioHandler handler = ScenarioHandlerFactory.getScenario(
+        Scenario scenario = ScenarioFactory.getScenario(
         		new BranchingStrategy(), new Acceptor(), "Explores the full state space.",
         		"Full exploration (branching, aliasing)");
-        handler.setGTS(gts);
-        
+        scenario.prepare(gts);
 		startTime = System.currentTimeMillis();
-		handler.playScenario();
+		scenario.play();
 		endTime = System.currentTimeMillis();
-		if (handler.isInterrupted()) {
+		if (scenario.isInterrupted()) {
 			new Exception().printStackTrace();
 		}
 	}

@@ -56,15 +56,18 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  * @version $Revision$
  */
 public abstract class DefaultModelCheckingStrategy extends AbstractStrategy implements ModelCheckingStrategy {
-	/** This implementation initialises the product automaton as well. */
+    /** This implementation initialises the product automaton as well. */
 	@Override
-	public void setGTS(GTS gts) {
-		super.setGTS(gts);
-		setProductGTS(new ProductGTS(gts.getGrammar()));
-		setup();
-	}
+    public void prepare(GTS gts, GraphState state) {
+    	if (state != gts.startState()) {
+    		throw new IllegalArgumentException("Model checking should start at initial state");
+    	}
+        super.prepare(gts, state);
+        setProductGTS(new ProductGTS(gts.getGrammar()));
+        setup();
+    }
 
-	private void setProductGTS(ProductGTS gts) {
+    private void setProductGTS(ProductGTS gts) {
 		this.productGTS = gts;
 		productGTS.addListener(this.collector);
 	}
@@ -91,13 +94,6 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 	 */
 	public final BuchiGraphState startBuchiState() {
 		return startBuchiState;
-	}
-
-	@Override
-	public void setState(GraphState state) {
-		if (state != getGTS().startState()) {
-			throw new IllegalArgumentException("Model checking should start at initial state");
-		}
 	}
 
 	/**

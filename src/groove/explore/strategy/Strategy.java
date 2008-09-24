@@ -26,24 +26,26 @@ import groove.lts.StateGenerator;
  * either according to some condition (see {@link ConditionalStrategy}),
  * or because of the nature of the strategy (see for instance {@link LinearStrategy}).
  * Most often, a strategy starts its exploration at some state, fixed by 
- * the {@link #setState(GraphState)} method.
+ * the {@link #prepare(GTS, GraphState)} method.
  * 
  * A strategy adds states and transitions to a graph transition system. However, 
  * it should use a {@link StateGenerator} and not manipulate the graph transition
  * system directly.
- * @author 
- *
  */
 public interface Strategy {
 	/** 
-	 * Sets the graph transition system to be explored.
-	 * Also sets the exploration start state to the GTS start state. 
+	 * Sets the GTS to be explored.
+	 * Also sets the exploration start state to the GTS start state.
+	 * Convenience method for <code>prepare(gts, gts.startState())</code>.
+	 * @see #prepare(GTS, GraphState)
 	 */
-	public void setGTS(GTS gts);
+	public void prepare(GTS gts);
 	
-	/** Sets the state where the strategy starts exploring. 
+	/** 
+	 * Sets the GTS and start state to be explored.
+	 * This is done in preparation to a call of {@link #next()}. 
 	 */
-	public void setState(GraphState state);
+	public void prepare(GTS gts, GraphState state);
 
 	/** 
 	 * Executes one step of the strategy. 

@@ -36,11 +36,17 @@ import java.util.Iterator;
  *
  */
 public abstract class AbstractStrategy implements Strategy {
-	public void setGTS(GTS gts) {
-		this.gts = gts;
-		this.generator = gts.getRecord().getStateGenerator(gts);
+	final public void prepare(GTS gts) {
+	    this.prepare(gts, gts.startState());
 	}
-	
+
+    public void prepare(GTS gts, GraphState state) {
+        this.gts = gts;
+        this.generator = gts.getRecord().getStateGenerator(gts);
+        this.startState = state;
+        this.atState = state;
+    }
+
 	/** The graph transition system explored by the strategy.
 	 * @return The graph transition system explored by the strategy.
 	 */
@@ -53,18 +59,12 @@ public abstract class AbstractStrategy implements Strategy {
 		return this.startState;
 	}
 
-	public void setState(GraphState state) {
-		this.startState = state;
-		this.atState = state;
-	}
-
 	/** The state generator used as interface with the GTS. 
 	 * Is initialised at the same time as the GTS.
 	 */
 	protected final StateGenerator getGenerator() {
 		return this.generator;
 	}
-	
 	
 	/** Sets atState to the next state to be explored, or <code>null</code>
 	 * if there are no more states to be explored.
@@ -184,20 +184,19 @@ public abstract class AbstractStrategy implements Strategy {
 	public void exploreState(GraphState state) {
 		Strategy explore = new ExploreStateStrategy();
 		if (getGTS().isOpen(state)) {
-			explore.setGTS(getGTS());
-			explore.setState(state);
+			explore.prepare(getGTS(), state);
 			explore.next();
 		}
 	}
 
 	/** Default implementation; does nothing. */
 	public void addGTSListener(Acceptor listener) {
-	    // does nothing
+	    getGTS().addGraphListener(listener);
 	}
 
 	/** Default implementation; does nothing. */
 	public void removeGTSListener(Acceptor listener) {
-		// does nothing
+        getGTS().removeGraphListener(listener);
 	}
 
 	/** Enable closeExit, to close states when a strategy changes its atState.

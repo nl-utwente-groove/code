@@ -16,9 +16,7 @@
  */
 package groove.explore;
 
-import groove.explore.ScenarioHandlerFactory.AbstractConditionalScenarioHandler;
-import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
-import groove.explore.ScenarioHandlerFactory.ModelCheckingScenarioHandler;
+import groove.explore.ScenarioFactory.AbstractConditionalScenario;
 import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.ExploreCondition;
@@ -40,36 +38,26 @@ import java.util.Set;
 
 
 /**
- * Offers factory methods for different {@link ScenarioHandler}s needed
+ * Offers factory methods for different {@link Scenario}s needed
  * by the {@link groove.util.Generator}. 
  * @author Iovka Boneva
  */
-public class GeneratorScenarioHandlerFactory {
+public class GeneratorScenarioFactory {
 	/**
 	 * Creates a scenario handler collecting all final states, 
 	 * and with the strategy given as parameter. 
 	 */
-	public static ScenarioHandler getScenarioHandler(final Strategy strategy, final String description, final String name) {
-		return new AbstractScenarioHandler(description, name) {
-			@Override
-			protected Scenario createScenario() {
-				return new DefaultScenario(strategy, new FinalStateAcceptor());
-			}
-		};
+	public static Scenario getScenarioHandler(final Strategy strategy, final String description, final String name) {
+		return new DefaultScenario(strategy, new FinalStateAcceptor(), name, description);
 	}
 
 	/**
 	 * Creates a scenario handler finding a single final state,
 	 * with the strategy given as parameter.
 	 */
-	public static ScenarioHandler getFinalStateScenarioHandler(final Strategy strategy, final String description, final String name) {
-		return new AbstractScenarioHandler(description, name) {
-			@Override
-			protected Scenario createScenario() {
-				Acceptor acceptor = new FinalStateAcceptor(new Result(1));
-				return new DefaultScenario(strategy, acceptor);
-			}
-		};	
+	public static Scenario getFinalStateScenarioHandler(final Strategy strategy, final String description, final String name) {
+	    Acceptor acceptor = new FinalStateAcceptor(new Result(1));
+	    return new DefaultScenario(strategy, acceptor, name, description);
 	}
 	
 	/** Retrieves a conditional scenario handler for a scenario
@@ -81,15 +69,10 @@ public class GeneratorScenarioHandlerFactory {
 	 * @param name A short (one or few words) description of the scenario. Is to be 
 	 * used in menus, or as identification (for instance in command-line options).
 	 */
-	public static <C> ConditionalScenarioHandler<C> getConditionalScenario(
+	public static <C> ConditionalScenario<C> getConditionalScenario(
 			final Strategy strategy, final Class<?> type, final ConditionalAcceptor<C> acceptor, 
 			final String description, final String name) {
-		return new AbstractConditionalScenarioHandler<C>(description, name, type) {
-			@Override
-			protected Scenario createScenario() {
-				return new DefaultScenario(strategy, acceptor);
-			}
-
+		return new AbstractConditionalScenario<C>(strategy, acceptor, name, description, type) {
 			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name) {
 				super.setCondition(explCond, name);
@@ -107,15 +90,10 @@ public class GeneratorScenarioHandlerFactory {
 	 * @param name A short name for the scenario. Is to be 
 	 * used in menus, or as identification (for instance in command-line options).
 	 */
-	public static <C> ConditionalScenarioHandler<C> getConditionalScenario(
+	public static <C> ConditionalScenario<C> getConditionalScenario(
 			final ConditionalStrategy strategy, final Class<?> type,
 			final String description, final String name) {
-		return new AbstractConditionalScenarioHandler<C>(description, name, type) {
-			@Override
-			protected Scenario createScenario() {
-				return new DefaultScenario(strategy, new FinalStateAcceptor());
-			}
-
+		return new AbstractConditionalScenario<C>(strategy, new FinalStateAcceptor(), name, description, type) {
 			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name) {
 				super.setCondition(explCond, name);
@@ -133,19 +111,11 @@ public class GeneratorScenarioHandlerFactory {
 	 * @param name A short (one or few words) description of the scenario. Is to be 
 	 * used in menus, or as identification (for instance in command-line options).
 	 */
-	public static ScenarioHandler getBoundedModelCheckingScenario(
+	public static ModelCheckingScenario getBoundedModelCheckingScenario(
 			final BoundedModelCheckingStrategy strategy,
 			final String description,
 			final String name) {
-		return new ModelCheckingScenarioHandler(strategy, description, name, null, new GraphNodeSizeBoundary(8,2)) {
-			@Override
-			public void playScenario() {
-				super.playScenario();
-				if (!getResult().getValue().isEmpty()) {
-					System.err.println("A counter-example of length " + getResult().getValue().size() + " has been found: " + getResult().getValue());
-				}
-			}
-
+		ModelCheckingScenario result = new ModelCheckingScenario(strategy, name, description) {
 			@Override
 			protected String getProperty() {
 				System.out.println("Enter the LTL formula to verify:");
@@ -153,6 +123,8 @@ public class GeneratorScenarioHandlerFactory {
 				return keyboard.nextLine();
 			}
 		};
+		result.setBoundary(new GraphNodeSizeBoundary(8,2));
+		return result;
 	}
 
 	/** 
@@ -166,14 +138,17 @@ public class GeneratorScenarioHandlerFactory {
 	 * @param stepSize step size for the boundary
 	 * @param property the property to be checked
 	 */
-	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
+	public static <T> ModelCheckingScenario getBoundedModelCheckingScenario(
 			final BoundedModelCheckingStrategy strategy,
 			final String description,
 			final String name,
 			final int initialBound,
 			final int stepSize,
 			final String property) {
-		return new ModelCheckingScenarioHandler(strategy, description, name, property, new GraphNodeSizeBoundary(initialBound,stepSize));
+	    ModelCheckingScenario result = new ModelCheckingScenario(strategy, name, description);
+	    result.setProperty(property);
+	    result.setBoundary(new GraphNodeSizeBoundary(initialBound,stepSize));
+	    return result;
 	}
 
 
@@ -187,13 +162,13 @@ public class GeneratorScenarioHandlerFactory {
 	 * @param ruleSet set of rules which take the state space to the next step
 	 * @param property the property to be checked
 	 */
-	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
+	public static <T> ModelCheckingScenario getBoundedModelCheckingScenario(
 			final BoundedModelCheckingStrategy strategy,
 			final String description,
 			final String name,
 			final Set<Rule> ruleSet,
 			final String property) {
-		return new ModelCheckingScenarioHandler(strategy, description, name, property, null) {
+	    ModelCheckingScenario result = new ModelCheckingScenario(strategy, name, description) {
 			@Override
 			protected Boundary getBoundary() {
 				Boundary result;
@@ -205,6 +180,8 @@ public class GeneratorScenarioHandlerFactory {
 				return result;
 			}
 		};
+		result.setProperty(property);
+		return result;
 	}
 
 	/** 
@@ -215,11 +192,13 @@ public class GeneratorScenarioHandlerFactory {
 	 * used in menus, or as identification (for instance in command-line options).
 	 * @param property the property to be checked
 	 */
-	public static ScenarioHandler getModelCheckingScenario(
+	public static ModelCheckingScenario getModelCheckingScenario(
 			final ModelCheckingStrategy strategy,
 			final String description,
 			final String name,
 			final String property) {
-		return new ModelCheckingScenarioHandler(strategy, description, name, property, null);
+	    ModelCheckingScenario result = new ModelCheckingScenario(strategy, name, description);
+	    result.setProperty(property);
+	    return result;
 	}
 }

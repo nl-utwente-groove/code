@@ -94,13 +94,15 @@ public class DefaultGraphCalculator implements GraphCalculator {
         	// try linear
         	Scenario sc = createScenario(new LinearStrategy(), new FinalStateAcceptor(new Result(1)));
 //        	sc.setState(getGTS().startState());
-        	Result scenarioResult = sc.play(getGTS());
+            sc.prepare(getGTS());
+            Result scenarioResult = sc.play();
         	if( scenarioResult.done() ) {
         		result = scenarioResult.getValue().iterator().next();
         	} else {
         		// try depth first
         		sc = createScenario(new ExploreStateDFStrategy(), new FinalStateAcceptor(new Result(1)));
-        		scenarioResult = sc.play(getGTS());
+                sc.prepare(getGTS());
+                scenarioResult = sc.play();
         		if( scenarioResult.done() ) {
         			result = scenarioResult.getValue().iterator().next();
         		}
@@ -124,7 +126,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
         	// try linear
         	Scenario scenatioResult = createScenario(strategy, new PropertyAcceptor(new MaximalStateProperty(), new Result(1)));
 //        	scenatioResult.setState(getGTS().startState());
-        	Result results = scenatioResult.play(getGTS());
+            scenatioResult.prepare(getGTS());
+            Result results = scenatioResult.play();
         	if( results.done() ) {
         		result = results.getValue().iterator().next();
         	}
@@ -156,7 +159,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
         testPrototype();
         Scenario scenario = createScenario(new BreadthFirstStrategy(), new FinalStateAcceptor());
 //        scenario.setState(getGTS().startState());
-        return scenario.play(getGTS()).getValue();
+        scenario.prepare(getGTS());
+        return scenario.play().getValue();
     }
 
     public Collection<GraphState> getAll(String conditionName) {
@@ -209,7 +213,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public Result getResult(Scenario scenario) {
         testPrototype();
 //        scenario.setState(getGTS().startState());
-        return scenario.play(getGTS());
+        scenario.prepare(getGTS());
+        return scenario.play();
     }
     
     public GraphCalculator newInstance(Graph start) throws IllegalArgumentException {

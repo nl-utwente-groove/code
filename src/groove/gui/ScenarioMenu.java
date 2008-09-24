@@ -16,9 +16,9 @@
  */
 package groove.gui;
 
-import groove.explore.ConditionalScenarioHandler;
-import groove.explore.ScenarioHandler;
-import groove.explore.ScenarioHandlerFactory;
+import groove.explore.ConditionalScenario;
+import groove.explore.Scenario;
+import groove.explore.ScenarioFactory;
 import groove.explore.result.Acceptor;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.FinalStateAcceptor;
@@ -98,52 +98,52 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
     /** Creates and adds the different menu items, corresponding to the different exploration scenarios. */
     protected void createAddMenuItems () {
  
-        ScenarioHandler handler;
+        Scenario scenario;
 
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new BranchingStrategy(), new Acceptor(), "Explores the full state space.",
         		"Full exploration (branching, aliasing)");
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
         
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new BreadthFirstStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (breadth-first).",
         		"Full exploration (breadth-first, aliasing)");
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
 
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new ExploreRuleDFStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (depth-first).",
         		"Full exploration (depth-first, no aliasing)");
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
 
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new LinearStrategy(), new Acceptor(), "Explores one transition for each state until a final state or a loop is reached.", 
         		"Linear exploration");
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
 
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new RandomLinearStrategy(), new Acceptor(), "Explores randomly (slower) one transition for each state until a final state or a loop is reached.", 
         		"Random Linear exploration");
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
         
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new BreadthFirstStrategy(), new FinalStateAcceptor(new Result(1)), "Looks for a final state starting from the current state (breadth-first)", 
         		"Find a final state (breadth-first)"	);
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
         
-        handler = ScenarioHandlerFactory.getScenario(
+        scenario = ScenarioFactory.getScenario(
         		new ExploreRuleDFStrategy(), new FinalStateAcceptor(new Result(1)), "Looks for a final state starting from the current state (depth-first).", 
         		"Find a final state (depth-first)"	);
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
         
-        handler = ScenarioHandlerFactory.getConditionalScenario(
+        scenario = ScenarioFactory.getConditionalScenario(
         		new BreadthFirstStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
         		"Check invariant", false);
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
 
-        handler = ScenarioHandlerFactory.getConditionalScenario(
+        scenario = ScenarioFactory.getConditionalScenario(
         		new BreadthFirstStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
         		"Check invariant", true);
-        addScenarioHandler(handler);
+        addScenarioHandler(scenario);
         
         // IOVKA items related to model-checking are in the MCMMenu class
         
@@ -152,14 +152,14 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
     /**
      * Adds an explication strategy action to the end of this menu.
-     * @param handler the new exploration strategy
+     * @param scenario the new exploration strategy
      */
-    public void addScenarioHandler(ScenarioHandler handler) {
-        Action generateAction = simulator.createLaunchScenarioAction(handler);
+    public void addScenarioHandler(Scenario scenario) {
+        Action generateAction = simulator.createLaunchScenarioAction(scenario);
         generateAction.setEnabled(false);
-        scenarioActionMap.put(handler, generateAction);
+        scenarioActionMap.put(scenario, generateAction);
         JMenuItem menuItem = add(generateAction);
-        menuItem.setToolTipText(handler.getDescription());
+        menuItem.setToolTipText(scenario.getDescription());
     }
 
     // ----------------------------- simulation listener methods -----------------------
@@ -178,21 +178,20 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 		// the lts's of the strategies in this menu are changed
 		// moreover, the conditions in condition strategies are reset
 		// furthermore, the enabling is (re)set
-		for (Map.Entry<ScenarioHandler, Action> entry : scenarioActionMap.entrySet()) {
-			ScenarioHandler handler = entry.getKey();
+		for (Map.Entry<Scenario, Action> entry : scenarioActionMap.entrySet()) {
+			Scenario scenario = entry.getKey();
 			Action generateAction = entry.getValue();
-			handler.setGTS(gts);
-			if (handler instanceof ConditionalScenarioHandler) {
+			if (scenario instanceof ConditionalScenario) {
 				if (simulator.getCurrentRule() != null) {
     				ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
     				String ruleName = simulator.getCurrentRule().getName();
     				explCond.setCondition(gts.getGrammar().getRule(ruleName));
-    				((ConditionalScenarioHandler<Rule>) handler).setCondition(explCond, ruleName);
-    				generateAction.putValue(Action.NAME, handler.getName());
+    				((ConditionalScenario<Rule>) scenario).setCondition(explCond, ruleName);
+    				generateAction.putValue(Action.NAME, scenario.getName());
 					generateAction.setEnabled(true);
 				} else {
-					((ConditionalScenarioHandler<?>) handler).setCondition(null, "");
-					generateAction.putValue(Action.NAME, handler.getName());
+					((ConditionalScenario<?>) scenario).setCondition(null, "");
+					generateAction.putValue(Action.NAME, scenario.getName());
 					generateAction.setEnabled(false);
 				}
 			} else {
@@ -203,25 +202,24 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 	}
 
 	public void setStateUpdate(GraphState state) {
-        for (Map.Entry<ScenarioHandler,Action> entry: scenarioActionMap.entrySet()) {
-            ScenarioHandler handler = entry.getKey();
+        for (Map.Entry<Scenario,Action> entry: scenarioActionMap.entrySet()) {
+            Scenario scenario = entry.getKey();
             Action generateAction = entry.getValue();
-            handler.setState(state);
-            generateAction.putValue(Action.NAME, handler.getName());
+            generateAction.putValue(Action.NAME, scenario.getName());
         }
     }
 
     public void setRuleUpdate(NameLabel name) {
     	GTS gts = simulator.getCurrentGTS();
     	if (gts != null) {
-    		for (Map.Entry<ScenarioHandler,Action> entry: scenarioActionMap.entrySet()) {
-    			ScenarioHandler handler = entry.getKey();
-    			if (handler instanceof ConditionalScenarioHandler) {
+    		for (Map.Entry<Scenario,Action> entry: scenarioActionMap.entrySet()) {
+    			Scenario scenario = entry.getKey();
+    			if (scenario instanceof ConditionalScenario) {
     				Action generateAction = entry.getValue();
     				ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
     				explCond.setCondition(gts.getGrammar().getRule(name));
-    				((ConditionalScenarioHandler<Rule>) handler).setCondition(explCond, name.name());
-    				generateAction.putValue(Action.NAME, handler.getName());
+    				((ConditionalScenario<Rule>) scenario).setCondition(explCond, name.name());
+    				generateAction.putValue(Action.NAME, scenario.getName());
     				generateAction.setEnabled(true);
     			}
     		}
@@ -252,11 +250,11 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
      */
     protected final Simulator simulator;
     /**
-     * Indicates if the menu should be disable after tha last LTS state has closed.
+     * Indicates if the menu should be disable after the last LTS state has closed.
      */
     protected final boolean disableOnFinish;
-    /** Mapping from exploratin strategies to {@link Action}s resulting in that strategy. */
-    private final Map<ScenarioHandler,Action> scenarioActionMap = new HashMap<ScenarioHandler,Action>();
+    /** Mapping from exploration strategies to {@link Action}s resulting in that strategy. */
+    private final Map<Scenario,Action> scenarioActionMap = new HashMap<Scenario,Action>();
     /** The (permanent) GTS listener associated with this menu. */
     private final GTSListener gtsListener = new GTSListener();
 

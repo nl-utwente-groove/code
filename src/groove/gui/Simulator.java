@@ -35,7 +35,7 @@ import groove.abs.Abstraction;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
-import groove.explore.ScenarioHandler;
+import groove.explore.Scenario;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -1040,8 +1040,7 @@ public class Simulator {
     
     
     public synchronized void exploreState (GraphState state) {
-    	getExploreState().setGTS(this.getCurrentGTS());
-    	getExploreState().setState(state);
+    	getExploreState().prepare(getCurrentGTS(), state);
     	getExploreState().next();
     	setState(state);
     }
@@ -2858,32 +2857,33 @@ public class Simulator {
     }
 
     /** Creates an action associated to a scenario handler. */
-    public LaunchScenarioAction createLaunchScenarioAction(ScenarioHandler handler) {
-    	return new LaunchScenarioAction(handler);
+    public LaunchScenarioAction createLaunchScenarioAction(Scenario scenario) {
+    	return new LaunchScenarioAction(scenario);
     }
     
     
     /** An action used for launching a scenario. */
     private class LaunchScenarioAction extends AbstractAction {
-       	LaunchScenarioAction(ScenarioHandler handler) {
-            super(handler.getName());
-            this.handler = handler;
+       	LaunchScenarioAction(Scenario scenario) {
+            super(scenario.getName());
+            this.scenario = scenario;
         }
        	
 		@Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            putValue(Action.NAME, handler.getName());
+            putValue(Action.NAME, scenario.getName());
         }
 
         public void actionPerformed(ActionEvent evt) {
-        	doGenerate(handler);
+        	doGenerate(scenario);
         }
      	
-		private final ScenarioHandler handler;
+		private final Scenario scenario;
     }
     
-	void doGenerate(ScenarioHandler handler) {
+	void doGenerate(Scenario scenario) {
+	    scenario.prepare(getCurrentGTS(), getCurrentState());
 	    GraphJModel ltsJModel = getLtsPanel().getJModel();
 	    synchronized (ltsJModel) {
 	        // unhook the lts' jmodel from the lts, for efficiency's sake
@@ -2892,7 +2892,7 @@ public class Simulator {
 	        boolean applyEnabled = getApplyTransitionAction().isEnabled();
 	        getApplyTransitionAction().setEnabled(false);
 	        // create a thread to do the work in the background
-	        Thread generateThread = new LaunchThread(handler);
+	        Thread generateThread = new LaunchThread(scenario);
 	        // go!
 	        generateThread.start();
 	        // get the lts' jmodel back on line and re-synchronize its state
@@ -2915,11 +2915,11 @@ public class Simulator {
 	private class LaunchThread extends CancellableThread {
 	    /**
 	     * Constructs a generate thread for a given exploration stragegy.
-	     * @param handler the scenario handler of this thread
+	     * @param scenario the scenario handler of this thread
 	     */
-	    LaunchThread(ScenarioHandler handler) {
+	    LaunchThread(Scenario scenario) {
 	    	super(getLtsPanel(), "Exploring state space");
-	        this.handler = handler;
+	        this.scenario = scenario;
 	        this.progressListener = createProgressListener();
 	    }
 
@@ -2928,7 +2928,7 @@ public class Simulator {
 			GTS gts = getCurrentGTS();
 			displayProgress(gts);
 			gts.addGraphListener(progressListener);
-			handler.playScenario();
+			scenario.play();
 			gts.removeGraphListener(progressListener);
 		}
 
@@ -2995,7 +2995,7 @@ public class Simulator {
 		}
 
 		private void showResult() {
-			Collection<? extends Object> result = handler.getResult().getValue();
+			Collection<? extends Object> result = scenario.getResult().getValue();
 			Collection<GraphState> states = new HashSet<GraphState>();
 			for (Object object: result) {
 				if (object instanceof GraphState) {
@@ -3005,7 +3005,7 @@ public class Simulator {
 			visualize = states;
 		}
 		/** LTS generation strategy of this thread. */
-		private final ScenarioHandler handler;
+		private final Scenario scenario;
 		/** Progress listener for the generate thread. */
 		private final GraphListener progressListener;
 		/** Label displaying the number of states generated so far. */

@@ -19,6 +19,8 @@ package groove.explore;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.ExploreCondition;
 import groove.explore.strategy.ConditionalStrategy;
+import groove.lts.GTS;
+import groove.lts.GraphState;
 
 /** A scenario handler that additionally allows to set a condition.
  * Typical usage would be with a scenario with a {@link ConditionalAcceptor}, and
@@ -27,10 +29,10 @@ import groove.explore.strategy.ConditionalStrategy;
  * @author Iovka Boneva
  * @param <C> Type of the condition.
  */
-public interface ConditionalScenarioHandler<C> extends ScenarioHandler {
+public interface ConditionalScenario<C> extends Scenario {
 	/** 
 	 * Sets the condition.
-	 * The condition should be set before a call of {@link #playScenario()}.
+	 * The condition should be set before a call of {@link #prepare(GTS,GraphState)}.
 	 * @param condition
 	 * @param name A short name for the condition, to be used for instance
 	 * the name of the scenario.
