@@ -24,7 +24,7 @@ import java.util.Collections;
 /**
  * Class to test the overhead of wrapping an object up.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class ObjectWrapSpeedTest {
     /** Constructs a version of the test. */

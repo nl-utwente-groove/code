@@ -71,7 +71,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.33 $
+ * @version $Revision$
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {

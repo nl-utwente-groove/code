@@ -25,7 +25,7 @@ import org.jgraph.graph.VertexView;
  * -objects. For this purpose, the graph on which the views are to be displayed is stored in the
  * factory.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class JCellViewFactory extends DefaultCellViewFactory {
     /**

@@ -34,7 +34,7 @@ import java.util.Properties;
  * followed by an <code>Integer</code> indicating the number of number of objects of this type,
  * followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision$
  */
 public class AspectualViewGps extends Observable implements GrammarViewXml<DefaultGrammarView> {
     /**

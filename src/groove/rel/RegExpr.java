@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision$
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 

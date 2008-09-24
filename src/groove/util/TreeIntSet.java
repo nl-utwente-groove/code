@@ -23,7 +23,7 @@ import java.util.Arrays;
  * tree representation of the integers in the set.
  * The tree uses the bit representation of the <code>int</code>s as the basis for branching.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 final public class TreeIntSet implements IntSet {
     /**

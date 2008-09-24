@@ -28,7 +28,7 @@ import java.util.Set;
  * boundary crossing if the rule is in the set.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class RuleSetBorderBoundary extends RuleSetBoundary {
 

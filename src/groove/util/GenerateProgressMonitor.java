@@ -28,7 +28,7 @@ import groove.lts.GTS;
  * The monitor should be added as a {@link groove.graph.GraphListener} to the GTS
  * in question.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class GenerateProgressMonitor extends GraphAdapter {
     /**

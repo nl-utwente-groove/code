@@ -21,7 +21,7 @@ import groove.graph.Node;
 /**
  * Interface of a state of a labelled transition system.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2008-01-30 09:32:18 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:18 $
  */
 public interface State extends Node {
     // ----------------------- OBJECT OVERRIDES ---------------------

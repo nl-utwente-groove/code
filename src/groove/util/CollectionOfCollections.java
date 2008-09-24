@@ -27,7 +27,7 @@ import java.util.Iterator;
  * which is expensive!
  * Equality is deferred to <tt>Object</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class CollectionOfCollections<T> extends AbstractCollection<T> {
     /**

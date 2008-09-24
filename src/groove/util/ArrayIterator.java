@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * Iterator over a given fragment of an array.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:14 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:14 $
  */
 public class ArrayIterator<T> implements Iterator<T> {
 

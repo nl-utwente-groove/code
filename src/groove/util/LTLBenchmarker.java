@@ -68,7 +68,7 @@ import java.util.Set;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Harmen Kastenberg
- * @version $Revision: 1.33 $
+ * @version $Revision$
  */
 public class LTLBenchmarker extends CommandLineTool {
     /**

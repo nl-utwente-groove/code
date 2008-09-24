@@ -32,7 +32,7 @@ import groove.trans.RuleMatch;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2008-03-05 16:50:10 $
+ * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,GraphState> implements GraphTransitionStub, GraphTransition {
     /**

@@ -42,7 +42,7 @@ import org.jgraph.graph.VertexView;
 /**
  * An abstract class for layout actions.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 abstract public class AbstractLayouter implements Layouter {
     /**

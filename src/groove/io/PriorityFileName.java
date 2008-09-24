@@ -23,7 +23,7 @@ import groove.trans.Rule;
 /**
  * Encoding of a rule name plus priority as a string
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class PriorityFileName {
     /** Default priority value, copied from {@link Rule#DEFAULT_PRIORITY}. */

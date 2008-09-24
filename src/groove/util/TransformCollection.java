@@ -27,7 +27,7 @@ import java.util.Iterator;
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
     /** Constructs a set transforming a given inner set. */

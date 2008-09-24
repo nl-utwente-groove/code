@@ -26,7 +26,7 @@ import java.util.Set;
  * Generic class defining the structure of all implemented algebras.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision$ $Date: 2007-07-21 20:07:43 $
  */
 public abstract class Algebra {
 	/**

@@ -23,7 +23,7 @@ package groove.util;
  * property properly.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
 public class GrooveModules {
 

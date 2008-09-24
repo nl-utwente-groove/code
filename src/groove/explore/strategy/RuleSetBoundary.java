@@ -28,7 +28,7 @@ import java.util.Set;
  * are said to cross the boundary.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public abstract class RuleSetBoundary extends AbstractBoundary {
 

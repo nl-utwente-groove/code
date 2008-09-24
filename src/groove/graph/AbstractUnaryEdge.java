@@ -20,7 +20,7 @@ package groove.graph;
 /**
  * Abstract implementation of an (immutable) unary graph edge, consisting of one source node only.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2008-01-30 09:32:57 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 abstract public class AbstractUnaryEdge<N extends Node, L extends Label> extends AbstractEdge<N,L> implements UnaryEdge {
     static {

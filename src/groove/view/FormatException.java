@@ -28,7 +28,7 @@ import java.util.List;
  * conversion between one model to another.
  * The class can build on prior exceptions, creating a list of error messages.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2008-01-30 09:33:26 $
+ * @version $Revision$ $Date: 2008-01-30 09:33:26 $
  */
 public class FormatException extends Exception {
 	/** Text used for an empty format exception message. */

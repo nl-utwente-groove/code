@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2008-01-30 09:32:53 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:53 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**

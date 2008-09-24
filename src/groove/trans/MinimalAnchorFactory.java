@@ -37,7 +37,7 @@ import groove.graph.algebra.ValueNode;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision$
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**

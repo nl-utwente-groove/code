@@ -24,7 +24,7 @@ import java.util.Iterator;
  * that satisfy a certain condition, to be provided through the abstract
  * method <tt>approve(Object)</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2008-01-30 09:32:14 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:14 $
  */
 public abstract class UnmodifiableCollectionView<T> extends CollectionView<T> {    
     /**

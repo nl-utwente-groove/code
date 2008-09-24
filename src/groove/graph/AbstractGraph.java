@@ -35,7 +35,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision$
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     public Morphism getIsomorphismTo(final Graph to) {

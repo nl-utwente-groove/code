@@ -19,7 +19,7 @@ package groove.graph;
 /**
  * Interface for classes that are to be notified of changes in a graph.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2008-01-30 09:32:53 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:53 $
  */
 public interface GraphListener extends GraphShapeListener {
     /**

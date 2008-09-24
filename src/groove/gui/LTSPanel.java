@@ -44,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.21 $ $Date: 2008-02-05 13:28:06 $
+ * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
 

@@ -31,7 +31,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision$
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**

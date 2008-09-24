@@ -72,7 +72,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.35 $
+ * @version $Revision$
  */
 public class AspectJModel extends GraphJModel {
 

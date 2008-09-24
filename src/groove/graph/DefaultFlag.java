@@ -20,7 +20,7 @@ package groove.graph;
  * Default implementation of an (immutable) unary graph edge, as a tuple consisting of
  * a source node and a label.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2008-01-30 09:32:52 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
 public class DefaultFlag extends AbstractUnaryEdge<Node,Label> {
 	/**

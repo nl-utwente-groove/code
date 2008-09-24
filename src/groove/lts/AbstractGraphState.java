@@ -38,7 +38,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2008-02-20 09:25:29 $
+ * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**

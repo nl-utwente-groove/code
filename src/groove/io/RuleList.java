@@ -31,7 +31,7 @@ import groove.trans.RuleSystem;
 /**
  * List of rules, obtained from a file containing rule names.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class RuleList extends ArrayList<String> {
     /**

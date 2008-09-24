@@ -23,7 +23,7 @@ import groove.view.FormatException;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author Tom Staijen
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class ParameterAspect extends AbstractAspect {
 

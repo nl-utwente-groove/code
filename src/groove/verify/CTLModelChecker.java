@@ -53,7 +53,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.14 $ $Date: 2008-03-28 07:03:03 $
+ * @version $Revision$ $Date: 2008-03-28 07:03:03 $
  */
 public class CTLModelChecker extends CommandLineTool {
 

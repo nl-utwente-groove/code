@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2008-01-30 09:32:28 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:28 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**

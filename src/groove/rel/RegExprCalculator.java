@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Visitor interface for regular expressions.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface RegExprCalculator<Result> {
     /**

@@ -32,7 +32,7 @@ import java.util.Set;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision$
  */
 public class GraphShapeCache implements GraphShapeListener {
     /**

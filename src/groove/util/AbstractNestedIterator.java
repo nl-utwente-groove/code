@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  * The resulting iterator supports removal of elements if the inner
  * iterators do so.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 abstract public class AbstractNestedIterator<T> implements Iterator<T> {
     public void remove() {

@@ -28,7 +28,7 @@ import groove.graph.Morphism;
  * (typically from the source or target graph) that, together with the source
  * graph, allow to reconstruct the derivation up to node and edge set equality.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public interface Derivation {
     /**

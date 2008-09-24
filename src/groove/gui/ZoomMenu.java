@@ -33,7 +33,7 @@ import javax.swing.JViewport;
 /**
  * Menu for zoomin in/out on a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class ZoomMenu extends JMenu {
 	/** The menu name. */

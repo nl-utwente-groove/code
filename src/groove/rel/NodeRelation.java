@@ -29,7 +29,7 @@ import java.util.Set;
  * one that performs the operation in-place. The former are called 
  * <tt>getOperation</tt> and the latter <tt>doOperation</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface NodeRelation {
     /**

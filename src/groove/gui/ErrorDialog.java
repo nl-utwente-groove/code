@@ -38,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * Implements a dialog with the ability to show details about the error.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ErrorDialog extends JDialog {
 	/** Dialog title. */

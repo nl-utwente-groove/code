@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision$
  */
 public class DefaultNode implements Node {
     /**

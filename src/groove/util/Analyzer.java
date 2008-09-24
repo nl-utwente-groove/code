@@ -42,7 +42,7 @@ import java.util.Set;
  * Class to analyze the efectiveness and efficientcy of bisimilarity checking.
  * Works upon a stream file of graphs.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class Analyzer extends CommandLineTool {
     static public final String USAGE_MESSAGE = "Usage: Analyzer <graph stream files>";

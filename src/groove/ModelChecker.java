@@ -20,7 +20,7 @@ package groove;
  * Wrapper class for the model checker.
  * @see groove.verify.CTLModelChecker
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision$ $Date: 2007-03-20 10:42:39 $
  */
 public class ModelChecker {
     /**

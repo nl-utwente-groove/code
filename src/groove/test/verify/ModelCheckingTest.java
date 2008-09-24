@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $
+ * @version $Revision$
  */
 public class ModelCheckingTest extends TestCase {
     @Override

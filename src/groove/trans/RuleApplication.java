@@ -28,7 +28,7 @@ import groove.graph.Node;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimised, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**

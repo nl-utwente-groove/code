@@ -25,7 +25,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2008-01-26 09:47:32 $
+ * @version $Revision$ $Date: 2008-01-26 09:47:32 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 	/**

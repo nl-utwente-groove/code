@@ -54,7 +54,7 @@ import javax.swing.JMenuItem;
  * 
  * @author Arend Rensink
  * @author Iovka Boneva
- * @version $Revision: 1.8 $
+ * @version $Revision$
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
 	

@@ -28,7 +28,7 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2008-02-05 13:43:21 $
+ * @version $Revision$ $Date: 2008-02-05 13:43:21 $
  * @deprecated use TreeHashSet instead
  */
 @Deprecated

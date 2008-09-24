@@ -19,7 +19,7 @@ package groove.graph;
 /**
  * Interface for edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2008-01-30 09:32:51 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
     /**

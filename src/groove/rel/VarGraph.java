@@ -25,7 +25,7 @@ import groove.graph.Graph;
  * Graph type with additional support for <i>variables</i>,
  * which are mapped to graph elements by the corresponding morphisms. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  * @deprecated use ordinary {@link Graph}s and the utilities in {@link VarSupport}.
  */
 @Deprecated

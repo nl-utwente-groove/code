@@ -23,7 +23,7 @@ import groove.view.FormatException;
 /**
  * Specific class for parsing LTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class LTLFormula extends CTLStarFormula {
     @Override

@@ -27,7 +27,7 @@ import java.util.Set;
  * Implementation of Graph based on a set of nodes and a 
  * mapping from nodes to sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2008-01-30 09:32:51 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
 public class DefaultGraph extends AbstractGraph<GraphCache> {
     /**

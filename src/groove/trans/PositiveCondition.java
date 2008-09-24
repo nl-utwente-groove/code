@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * Abstract superclass of conditions that test for the existence of a (sub)graph structure.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 abstract public class PositiveCondition<M extends Match> extends AbstractCondition<M> {
     /**

@@ -31,7 +31,7 @@ import java.util.Map;
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision$
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {

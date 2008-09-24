@@ -53,7 +53,7 @@ import org.jgraph.graph.DefaultPort;
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision$
  */
 public class ShowHideMenu extends JMenu {
     /**
@@ -669,7 +669,7 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on the currently emphasized cells. The action adds the selection to
      * the shown or hidden cells
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision$
      */
     static protected class EmphasizedAction extends ShowHideAction {
     	/** 

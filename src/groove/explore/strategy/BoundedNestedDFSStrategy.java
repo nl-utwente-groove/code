@@ -44,7 +44,7 @@ import java.util.Set;
  * method {@link BoundedModelCheckingStrategy#finished()}.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrategy<GraphState> {
 	/**

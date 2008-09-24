@@ -21,7 +21,7 @@ package groove.explore.strategy;
  * strategy, such as setting the boundary and collecting the boundary graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
 public abstract class DefaultBoundedModelCheckingStrategy<T> extends DefaultModelCheckingStrategy implements BoundedModelCheckingStrategy {
 

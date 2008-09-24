@@ -58,7 +58,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision$
  */
 public class DefaultGxl extends AbstractXml {
     /**

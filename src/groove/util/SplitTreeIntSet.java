@@ -21,7 +21,7 @@ package groove.util;
  * tree representation of the integers in the set.
  * The tree uses the bit representation of the <code>int</code>s as the basis for branching.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:11 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:11 $
  */
 final public class SplitTreeIntSet implements IntSet {
 	/**

@@ -29,7 +29,7 @@ import java.util.Map;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.13 $ $Date: 2008-01-30 09:32:57 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 public class GraphInfo {
 

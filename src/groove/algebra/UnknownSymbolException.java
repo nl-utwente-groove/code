@@ -21,7 +21,7 @@ package groove.algebra;
  * value from an algebra not knowing this symbol as neither one of its
  * operations nor as one of its constants.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision$ $Date: 2007-05-21 22:19:28 $
  */
 public class UnknownSymbolException extends Exception {
 	/** Constructs an exception with a given error message. */

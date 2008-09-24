@@ -26,7 +26,7 @@ import groove.graph.Label;
  * Label parser consisting of a collection of parser, which are consecutively applied.
  * Parsing only succeeds if all parsers agree on the result.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 @Deprecated
 public class ComposedLabelParser implements LabelParser {

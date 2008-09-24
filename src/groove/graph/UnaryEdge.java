@@ -19,7 +19,7 @@ package groove.graph;
 /**
  * This interface just serves as a parallel to {@link BinaryEdge}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface UnaryEdge extends Edge {	
 	/** End count of a unary edge. */

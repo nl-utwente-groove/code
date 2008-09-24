@@ -21,7 +21,7 @@ import groove.gui.jgraph.JGraph;
 /**
  * Interface for classes that can layout a <tt>JGraph</tt> in some fashion.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface Layouter {
     /**

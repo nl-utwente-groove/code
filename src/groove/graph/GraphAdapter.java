@@ -20,7 +20,7 @@ package groove.graph;
  * An abstract implementation of the <tt>GraphListener</tt> interface 
  * which does nothing at each method.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 abstract public class GraphAdapter implements GraphListener {
 	/** Provides an empty default implementation. */

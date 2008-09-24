@@ -33,7 +33,7 @@ import groove.view.aspect.AspectGraph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision$
  * @deprecated use rule constructors
  */
 @Deprecated

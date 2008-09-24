@@ -25,7 +25,7 @@ import org.jgraph.graph.DefaultPort;
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JCellContent}).
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**

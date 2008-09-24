@@ -60,7 +60,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class Exporter {
     /**

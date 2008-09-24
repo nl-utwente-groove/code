@@ -21,7 +21,7 @@ package groove.verify;
  * Exception thrown when someone wants to verify a property
  * that contains an atomic propositions that is not available.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision$ $Date: 2007-03-20 10:43:00 $
  */
 public class GraphPredicateNotFoundException extends Exception {
 

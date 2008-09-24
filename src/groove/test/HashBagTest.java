@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class HashBagTest extends TestCase {
 

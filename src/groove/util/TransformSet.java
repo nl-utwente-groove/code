@@ -27,7 +27,7 @@ import java.util.Set;
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U> {
     /** Constructs a set transforming a given inner set. */

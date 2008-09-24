@@ -22,7 +22,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface Bag<T> extends Collection<T> {
 	/** Encoding for the multiplicities of the bag elements. */

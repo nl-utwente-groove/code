@@ -37,7 +37,7 @@ import java.util.Iterator;
  * next state crosses the boundary, an other next state is selected.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
 

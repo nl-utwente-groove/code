@@ -29,7 +29,7 @@ import groove.trans.RuleSystem;
  * Class wrapping the outcome of a graph calculation.
  * @see groove.calc.GraphCalculator
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public interface GraphResult {
     /**

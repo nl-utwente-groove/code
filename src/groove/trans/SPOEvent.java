@@ -47,7 +47,7 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.55 $ $Date: 2008-03-04 11:01:33 $
+ * @version $Revision$ $Date: 2008-03-04 11:01:33 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
 //    /**

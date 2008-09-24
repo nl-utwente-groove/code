@@ -28,7 +28,7 @@ import java.util.Map;
  * Mapping from certificate values to sets of graph elements having those certificates.
  * For efficiency, images are stored as {@link SmallCollection}s
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class PartitionMap<E extends Element> {
 	/** Adds a pair of certificate and graph element to the partition map. */

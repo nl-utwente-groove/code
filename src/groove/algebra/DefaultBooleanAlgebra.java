@@ -24,7 +24,7 @@ import java.util.List;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2007-12-22 10:11:21 $
+ * @version $Revision$ $Date: 2007-12-22 10:11:21 $
  */
 public class DefaultBooleanAlgebra extends Algebra {
     /**

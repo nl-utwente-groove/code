@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Extends the automation interface with support for variables.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public interface VarAutomaton extends Automaton {//, VarSetSupport {
     /**

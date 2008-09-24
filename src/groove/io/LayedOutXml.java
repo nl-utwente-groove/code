@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision$
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 

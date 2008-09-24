@@ -41,7 +41,7 @@ import org.jgraph.graph.EdgeView;
  * Layout action for JGraphs that creates a top-to-bottom
  * forest layout.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class ForestLayouter extends AbstractLayouter {
 	/** Name of the layouter. */

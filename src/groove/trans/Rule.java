@@ -35,7 +35,7 @@ import java.util.Iterator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision$
  */
 public interface Rule extends Comparable<Rule>, Condition {
 	/** Returns the name of this rule. */

@@ -25,7 +25,7 @@ import java.util.Set;
  * abstract method {@link #toOuter(Object)}.
  * @see groove.util.TransformIterator
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Map<T,V> {
     public TransformMap(Map<T,U> inner) {

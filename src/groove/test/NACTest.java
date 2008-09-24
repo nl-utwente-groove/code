@@ -55,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.20 $
+ * @version $Revision$
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {

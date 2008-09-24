@@ -48,7 +48,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.28 $
+ * @version $Revision$
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */

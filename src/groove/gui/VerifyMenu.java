@@ -23,7 +23,7 @@ import javax.swing.JMenuItem;
 /**
  * Menu item for the simulator for starting the verification process.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class VerifyMenu extends JMenu {
     /**

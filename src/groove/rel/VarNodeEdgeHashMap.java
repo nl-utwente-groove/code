@@ -30,7 +30,7 @@ import java.util.Map;
  * Implementation of the {@link VarNodeEdgeMap} interface where
  * the variable mapping part is given by a separater instance variable.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements VarNodeEdgeMap {
     /**

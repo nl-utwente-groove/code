@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.11 $ $Date: 2008-02-28 05:58:22 $
+ * @version $Revision$ $Date: 2008-02-28 05:58:22 $
  */
 public class CTLStarFormula {
     /** 

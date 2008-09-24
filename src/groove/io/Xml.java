@@ -26,7 +26,7 @@ import java.io.IOException;
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 public interface Xml<G extends GraphShape> {
 	/**

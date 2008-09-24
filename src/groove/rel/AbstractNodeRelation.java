@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public abstract class AbstractNodeRelation implements NodeRelation {
     /**

@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
  * Wraps a <tt>Layouter</tt> into an action.
  * Invoking the action comes down to starting the layout.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class LayoutAction extends AbstractAction {
 	/** Constructs a layout action for a given layouter. */

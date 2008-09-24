@@ -27,7 +27,7 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 public interface Aspect {
 	/**

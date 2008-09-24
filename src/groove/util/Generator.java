@@ -85,7 +85,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.34 $
+ * @version $Revision$
  */
 public class Generator extends CommandLineTool {
     /**

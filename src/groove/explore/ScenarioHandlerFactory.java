@@ -34,7 +34,7 @@ import groove.lts.ProductGTS;
 /** A factory for creating scenario handlers by composing a scenario
  * from its strategy, result and acceptor.
  * @author Iovka Boneva
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ScenarioHandlerFactory {
 	/** Retrieves a scenario handler for a scenario constructed from its components.

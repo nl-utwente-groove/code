@@ -24,7 +24,7 @@ import groove.util.Groove;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class AbstractIntegerAlgebra extends Algebra {
 	/** representing the abstract integer value <tt>zero</tt> */

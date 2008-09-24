@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision$
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**

@@ -27,7 +27,7 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision$
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**

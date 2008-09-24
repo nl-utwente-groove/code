@@ -139,7 +139,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.92 $
+ * @version $Revision$
  */
 public class Simulator {
     /**

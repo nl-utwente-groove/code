@@ -23,7 +23,7 @@ import java.util.Collection;
  * avoid some of the consistency checks. Only for package
  * internal uses.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public interface InternalGraph extends Graph {
     /**

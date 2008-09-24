@@ -24,7 +24,7 @@ import java.util.List;
  * class {@link groove.algebra.DefaultOperation}. 
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-08-28 22:02:00 $
+ * @version $Revision$ $Date: 2007-08-28 22:02:00 $
  */
 abstract public class DefaultConstant extends DefaultOperation implements Constant {
 	/** Constructs a constant with a given algebra and string description. */

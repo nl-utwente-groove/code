@@ -35,7 +35,7 @@ import javax.swing.JTextField;
 /**
  * Dialog for entering temporal formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $
+ * @version $Revision$
  */
 public class FormulaDialog {
 

@@ -40,7 +40,7 @@ import java.util.List;
  * Visitor for a {@link RegExpr} that constructs a regular automaton.
  * The automaton is a graph with a distinguished start state and end node.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**

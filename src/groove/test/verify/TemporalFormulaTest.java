@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class TemporalFormulaTest extends TestCase {
     @Override

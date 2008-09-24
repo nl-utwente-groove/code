@@ -30,7 +30,7 @@ package groove.explore.strategy;
  * information, neither to know from where it backtracked. 
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface BoundedModelCheckingStrategy  extends ModelCheckingStrategy {
 

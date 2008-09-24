@@ -18,7 +18,7 @@ package groove.lts;
 
 /**
  * Interface of a transition in an {@link LTS}.
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:19 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:19 $
  */
 public interface Transition extends groove.graph.BinaryEdge {
     // the general interface adds no functionality

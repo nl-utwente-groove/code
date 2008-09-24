@@ -40,7 +40,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.20 $
+ * @version $Revision$
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**

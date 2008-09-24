@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Variation on the set view in which removal is not supported.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public abstract class UnmodifiableSetView<T> extends SetView<T> {    
     /**

@@ -26,7 +26,7 @@ import groove.graph.Node;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.5 $ $Date: 2008-01-30 09:33:08 $
+ * @version $Revision$ $Date: 2008-01-30 09:33:08 $
  */
 public class MorphismTest extends TestCase {
     public MorphismTest(String name) {

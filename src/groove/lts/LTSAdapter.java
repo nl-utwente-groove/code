@@ -21,7 +21,7 @@ import groove.graph.GraphAdapter;
 /**
  * Default implementation of an LTS listener that does nothing.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class LTSAdapter extends GraphAdapter implements LTSListener {
     /** Default implementation that does nothing. */

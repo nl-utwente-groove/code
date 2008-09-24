@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
  * the child.
  *
  * @author Angela Lozano and Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:37 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:37 $
  */
 public class RuleNameLabel extends NameLabel {
     /**

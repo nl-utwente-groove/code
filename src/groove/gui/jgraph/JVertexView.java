@@ -59,7 +59,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision$
  */
 public class JVertexView extends VertexView {
     /**

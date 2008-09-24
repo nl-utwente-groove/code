@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision$
  */
 public class AspectParser {
     /** 

@@ -20,7 +20,7 @@ package groove;
  * Wrapper class for the generator utility.
  * @see groove.util.Generator
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision$
  */
 public class Generator {
     /**

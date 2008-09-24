@@ -29,7 +29,7 @@ import java.util.List;
  * Edge enriched with aspect data.
  * Aspect edge labels are interpreted as {@link DefaultLabel}s.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,AspectNode> implements AspectElement {
 	/**

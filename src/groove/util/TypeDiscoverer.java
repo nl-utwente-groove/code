@@ -45,7 +45,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2008-02-05 13:28:24 $
+ * @version $Revision$ $Date: 2008-02-05 13:28:24 $
  */
 public class TypeDiscoverer {
     /**

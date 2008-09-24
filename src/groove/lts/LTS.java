@@ -24,7 +24,7 @@ import java.util.Set;
  * <tt>State</tt>s and the edges are <tt>Transition</tt>s.
  * The LTS is assumed to have a fixed associated rule production system.
  * Extends graph.Graph with a start (i.e., initial) initial state.
- * @version $Revision: 1.6 $ $Date: 2008-01-30 09:32:20 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:20 $
  */
 public interface LTS extends groove.graph.GraphShape {
     /** The text of the self-edge label that indicates a start state. */

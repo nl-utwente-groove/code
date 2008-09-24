@@ -29,7 +29,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision$
  */
 public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements DeltaApplier {
     /**

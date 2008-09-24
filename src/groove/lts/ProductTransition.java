@@ -24,7 +24,7 @@ import groove.verify.BuchiGraphState;
  * a graph-transition and a buchi-transition.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2008-02-22 13:02:44 $
+ * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
 public class ProductTransition { //extends DefaultGraphTransition {
 

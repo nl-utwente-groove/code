@@ -45,7 +45,7 @@ import java.util.Set;
  * Implements LTS and represents GTSs in which states are products of
  * graph-states and Buchi-locations.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ProductGTS implements LTS {
 

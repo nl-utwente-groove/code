@@ -24,7 +24,7 @@ import java.util.List;
  * HARMEN: I think it should. Let's include this when refactoring the
  * signature/algebra core.
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision$ $Date: 2007-07-21 20:07:43 $
  */
 public interface Operation {
 	/**

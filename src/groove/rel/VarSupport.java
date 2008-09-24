@@ -32,7 +32,7 @@ import java.util.Set;
  * Variables are <code>String</code>s, evaluated to <code>Label</code>s, used in
  * some types of regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class VarSupport {
     /** 

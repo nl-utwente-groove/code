@@ -22,7 +22,7 @@ import groove.graph.Element;
  * Interface offering the functionality to extract anchors from a given
  * graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface AnchorFactory {
     /**

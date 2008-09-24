@@ -25,7 +25,7 @@ import java.io.File;
 /**
  * Test class to test <tt>DeltaGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class DeltaGraphTest extends GraphTest {
     public DeltaGraphTest(String name) {

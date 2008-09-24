@@ -22,7 +22,7 @@ package groove.util;
  * The tree uses the bit representation of the <code>int</code>s as the basis for branching.
  * The representation tries to be clever by not branching on shared bits.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:01 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:01 $
  */
 final public class MinimizedTreeIntSet implements IntSet {
 	/**

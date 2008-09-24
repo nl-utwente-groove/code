@@ -95,7 +95,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.56 $ $Date: 2008-03-05 06:07:23 $
+ * @version $Revision$ $Date: 2008-03-05 06:07:23 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -1795,7 +1795,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.56 $
+     * @version $Revision$
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

@@ -19,7 +19,7 @@ package groove.util;
 /**
  * Interface for a set of <code>int</code> keys.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:10 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:10 $
  */
 public interface IntSet {
 	/**

@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * and adding a new element at the current position.
  * Resembles <tt>ListIterator</tt> in the back-and-forth browsing.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:15 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:15 $
  * @see java.util.ListIterator
  */
 public class History<T> {

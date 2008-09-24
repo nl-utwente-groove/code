@@ -37,7 +37,7 @@ import java.util.Set;
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision$
  */
 public class DefaultIsoChecker implements IsoChecker {
     /** Empty constructor, for the singleton in stance of this class. */

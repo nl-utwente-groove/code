@@ -26,7 +26,7 @@ import groove.view.FormatException;
 /**
  * Graph node implementation that supports aspects.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class AspectNode extends DefaultNode implements AspectElement {
 	/** Constructs an aspect node with a given number. */

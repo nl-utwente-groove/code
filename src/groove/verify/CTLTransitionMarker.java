@@ -36,7 +36,7 @@ import java.util.Iterator;
  * state). So, actually the LHS of the GTR is the property to check on.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2008-02-29 11:18:00 $
+ * @version $Revision$ $Date: 2008-02-29 11:18:00 $
  */
 public class CTLTransitionMarker extends CTLMatchingMarker {
     @Override

@@ -31,7 +31,7 @@ import java.util.Set;
  * Graph implementation based on a set of nodes and a map from labels to edges.
  * implementations
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
     /**

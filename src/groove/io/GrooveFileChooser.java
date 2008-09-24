@@ -28,7 +28,7 @@ import javax.swing.filechooser.FileView;
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of 
  * directories if these are selectable by the current file filter.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class GrooveFileChooser extends JFileChooser {
     /** File chooser with initial directory {@link Groove#WORKING_DIR}. */

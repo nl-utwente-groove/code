@@ -23,7 +23,7 @@ import groove.view.LabelParser;
 /**
  * Extension of {@link JCell} that recognises that cells have underlying edges.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 interface GraphJCell extends JCell {
     /** 

@@ -26,7 +26,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ 
+ * @version $Revision$ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**

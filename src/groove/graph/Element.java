@@ -22,7 +22,7 @@ package groove.graph;
  * {@link Edge}s are essentially labelled hyper-edges
  * consisting of a number of <i>end points</i> (at least one), which are {@link Node}s.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision$
  */
 public interface Element extends Comparable<Element>, java.io.Serializable {
 //    /**

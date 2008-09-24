@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision$
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
     /** 

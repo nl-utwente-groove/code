@@ -23,7 +23,7 @@ import groove.graph.Element;
 /**
  * Extension of the {@link Element} interface with support for {@link Aspect}s.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface AspectElement extends Element {
     /**

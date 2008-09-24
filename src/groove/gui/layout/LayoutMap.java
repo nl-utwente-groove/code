@@ -39,7 +39,7 @@ import org.jgraph.graph.VertexView;
  * The class is generic to enable use for different type os nodes and edges:
  * either GROOVE ones, or JGraph ones.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class LayoutMap<N,E> extends GenericNodeEdgeHashMap<N, JVertexLayout, E, JEdgeLayout>{
     /**

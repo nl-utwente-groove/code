@@ -27,7 +27,7 @@ import java.util.Set;
  * method <tt>approve(Object)</tt>.
  * The view allows removal but not addition of values.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public abstract class SetView<T> extends AbstractSet<T> {
     /**

@@ -45,7 +45,7 @@ import org.jgraph.graph.GraphLayoutCache;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision$
  */
 public class JAttr {
 	/** Creates a stroke with a given line width and dash pattern. */

@@ -50,7 +50,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision$
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */

@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * Iterator constructed by filtering elements from some existing iterator.
  * The <i>inner</i> iterator is passed in at construction.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public abstract class FilterIterator<T> implements Iterator<T> {
     /**

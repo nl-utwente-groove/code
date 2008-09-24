@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class Validator {
     /** Prefix for command line options. */

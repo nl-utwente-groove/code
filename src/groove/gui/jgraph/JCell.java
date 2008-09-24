@@ -27,7 +27,7 @@ import org.jgraph.graph.GraphCell;
  * on a set of strings, displayed in multiline format but edited in
  * single-line format.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public interface JCell extends GraphCell, Serializable {
 	/** 

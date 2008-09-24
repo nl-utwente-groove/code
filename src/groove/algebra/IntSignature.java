@@ -19,7 +19,7 @@ package groove.algebra;
 /**
  * Interface for integer algebras. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface IntSignature<T> {
     /** Addition of two integers. */

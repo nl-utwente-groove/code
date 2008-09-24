@@ -30,7 +30,7 @@ import java.util.Set;
  * considered in any further iteration.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 

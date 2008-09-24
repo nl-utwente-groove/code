@@ -19,7 +19,7 @@ package groove.util;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class LongCell {
     /**

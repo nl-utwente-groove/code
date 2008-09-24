@@ -22,7 +22,7 @@ import groove.graph.GraphShapeListener;
  * An extended graph listener, which is also notified of explore actions
  * on an LTS.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface LTSListener extends GraphShapeListener {
 	/** 

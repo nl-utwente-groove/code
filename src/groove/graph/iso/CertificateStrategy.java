@@ -31,7 +31,7 @@ import groove.graph.Node;
  * A certificate strategy is specialized to a graph upon which it works;
  * this is set at creation time.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public interface CertificateStrategy {
     /**

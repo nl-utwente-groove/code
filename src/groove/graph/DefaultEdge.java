@@ -22,7 +22,7 @@ import groove.util.TreeHashSet;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2008-02-12 15:15:31 $
+ * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
 final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
 //	/**

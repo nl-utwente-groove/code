@@ -33,7 +33,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision$
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**

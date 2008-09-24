@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * The implementation is based on a lower set, and sets of added and removed
  * elements with respect to this lower set.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class StackedSet<T> extends AbstractSet<T> {
 	/**

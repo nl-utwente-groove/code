@@ -29,7 +29,7 @@ import java.util.Iterator;
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2008-02-12 15:15:32 $
+ * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
 public class ValueNode extends ProductNode {
 	/**

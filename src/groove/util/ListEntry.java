@@ -20,7 +20,7 @@ package groove.util;
  * Node in a linked list. Used for space optimisations instead of arrays.
  * This saves out the array object itself (20 bytes).
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface ListEntry {
     /**

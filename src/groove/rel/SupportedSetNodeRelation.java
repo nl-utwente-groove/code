@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class SupportedSetNodeRelation extends AbstractNodeRelation implements SupportedNodeRelation {
     /**

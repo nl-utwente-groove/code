@@ -28,7 +28,7 @@ import java.util.Set;
  * other hand, <tt>edgeSet()</tt> and <tt>edgeIterator()</tt> pay a
  * heavy penalty. Also memory consumption may not be so good.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2008-01-30 09:32:50 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:50 $
  */
 public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
     /**

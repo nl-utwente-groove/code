@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision$
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**

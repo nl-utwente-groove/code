@@ -31,7 +31,7 @@ import java.util.List;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2008-01-30 09:32:36 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:36 $
  */
 public class GraphGrammar extends RuleSystem {   
     /**

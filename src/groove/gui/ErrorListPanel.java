@@ -33,7 +33,7 @@ import javax.swing.ScrollPaneConstants;
  * Panel showing a list of error messages.
  * The panel hides itself when the error list is empty.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ErrorListPanel extends JPanel {
 	/**

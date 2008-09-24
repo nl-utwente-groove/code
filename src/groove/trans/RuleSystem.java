@@ -26,7 +26,7 @@ import groove.util.CollectionOfCollections;import groove.view.FormatException;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2008-01-30 12:37:40 $
+ * @version $Revision$ $Date: 2008-01-30 12:37:40 $
  * @see NameLabel
  * @see SPORule
  */

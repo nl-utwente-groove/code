@@ -33,7 +33,7 @@ import java.util.Set;
  * closed state is accepting or not.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class NestedDFSStrategy extends DefaultModelCheckingStrategy {
 	/**

@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision$
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**

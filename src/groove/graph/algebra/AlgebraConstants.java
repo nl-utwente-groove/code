@@ -25,7 +25,7 @@ import groove.util.Groove;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.11 $ $Date: 2007/12/03 08:53:54 $
+ * @version $Revision$ $Date: 2007/12/03 08:53:54 $
  */
 public class AlgebraConstants {
 	/** Code for attributes of type integer. */
