@@ -21,7 +21,7 @@ import java.util.Iterator;
 /**
  * An iterator over a list of items implementing {@link ListEntry}.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 final public class ListEntryIterator implements Iterator<ListEntry> {
     /** Constructs an iterator over a list starting with a given {@link ListEntry}. */

@@ -26,7 +26,7 @@ import groove.trans.RuleEvent;
  * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
  * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**

@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision$
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 

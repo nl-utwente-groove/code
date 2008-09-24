@@ -26,7 +26,7 @@ import java.util.Set;
  * anything not explicitly set to a particular value defaults to identity.
  * This is actually not a proper node/edge map, in that the entries do not reflect the actual mapping.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision$
  */
 public class MergeMap extends NodeEdgeHashMap {
     /**

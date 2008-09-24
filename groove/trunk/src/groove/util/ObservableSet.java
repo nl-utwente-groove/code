@@ -14,7 +14,7 @@ import java.util.Set;
  * Provides a view upon a given set that sends notifications of
  * additions and removals.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ObservableSet<T> extends Observable implements Set<T> {
     /** 

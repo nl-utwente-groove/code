@@ -19,7 +19,7 @@ package groove.util;
 /**
  * An object of this class keeps an internal counter. 
  * @author J.H. Kuperus
- * @version 0.1 $Revision: 1.3 $ $Date: 2008-01-30 09:32:01 $
+ * @version 0.1 $Revision$ $Date: 2008-01-30 09:32:01 $
  */
 public class Counter {
 	private int count;

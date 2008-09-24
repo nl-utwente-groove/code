@@ -33,7 +33,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class GraphCreationTest extends TestCase {
     protected static int NR_NODES_TOTAL = 9;

@@ -87,7 +87,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.30 $ $Date: 2008-02-05 13:27:59 $
+ * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**

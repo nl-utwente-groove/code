@@ -23,7 +23,7 @@ import groove.graph.algebra.ValueNode;
  * for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision$ $Date: 2007-07-21 20:07:43 $
  * @deprecated Only used in {@link ValueNode}, but there <code>null</code> will do as well
  */
 @Deprecated

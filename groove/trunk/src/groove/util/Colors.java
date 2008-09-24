@@ -26,7 +26,7 @@ import java.util.TreeMap;
 /**
  * Helper class for accessing colors by name.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class Colors {
     /**

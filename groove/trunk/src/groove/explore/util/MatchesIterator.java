@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  * This implementation is suitable for iterators intended to iterate over 
  * several matches (and not for testing the existence of a match).
  * @author Iovka Boneva
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class MatchesIterator implements Iterator<RuleMatch> {
     // ---------------------------------------------------------------

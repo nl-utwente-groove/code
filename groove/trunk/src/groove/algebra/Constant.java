@@ -22,7 +22,7 @@ package groove.algebra;
  * without adding more functionality.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2008-02-29 11:02:18 $
+ * @version $Revision$ $Date: 2008-02-29 11:02:18 $
  */
 public interface Constant extends Operation {
     /** 

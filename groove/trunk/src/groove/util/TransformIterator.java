@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * The abstract <tt>transform(Object)</tt> method describes the transformation from the 
  * inner iterator's returned objects to this one's results.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 abstract public class TransformIterator<T,U> implements Iterator<U> {
     /**

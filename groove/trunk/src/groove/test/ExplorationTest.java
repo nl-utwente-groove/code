@@ -51,7 +51,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision$
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */

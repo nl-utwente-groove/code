@@ -24,7 +24,7 @@ import groove.trans.RuleNameLabel;
  * Currently the only implemented view is the {@link AspectualRuleView}, which provides
  * a monolithic view in which all the elements of the rule are part of one graph.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public interface RuleView extends View<Rule>, Comparable<RuleView> {
     /**

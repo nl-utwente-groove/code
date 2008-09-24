@@ -21,7 +21,7 @@ import groove.graph.AdjacencyMapGraph;
 /**
  * Test class to test <tt>DefaultGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class AdjacencyMapGraphTest extends GraphTest {
     public AdjacencyMapGraphTest(String name) {

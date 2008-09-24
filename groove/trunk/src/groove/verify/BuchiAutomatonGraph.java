@@ -32,7 +32,7 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  * Class implementing a graph representation of a Buchi automaton.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $ $Date: 2008-02-20 08:24:16 $
+ * @version $Revision$ $Date: 2008-02-20 08:24:16 $
  */
 public class BuchiAutomatonGraph extends DefaultGraph {
 

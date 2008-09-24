@@ -37,7 +37,7 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2008-01-30 09:33:14 $
+ * @version $Revision$ $Date: 2008-01-30 09:33:14 $
  */
 public class EditorMarqueeHandler extends BasicMarqueeHandler {
     static private final Color ADDING_EDGE_COLOR = Color.black;

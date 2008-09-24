@@ -22,7 +22,7 @@ package groove.graph;
  * the nodes and edges.
  * Labels are not translated.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class NodeEdgeHashMap extends GenericNodeEdgeHashMap<Node, Node, Edge, Edge> implements NodeEdgeMap {
 	/** Constructs a copy of another node-edge-map. */

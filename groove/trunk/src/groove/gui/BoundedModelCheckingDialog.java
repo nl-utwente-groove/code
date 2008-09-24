@@ -50,7 +50,7 @@ import com.jhlabs.awt.ParagraphLayout;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class BoundedModelCheckingDialog {
 

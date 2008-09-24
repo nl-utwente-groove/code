@@ -23,7 +23,7 @@ import java.util.Set;
  * A distinction is made between the variables occurring in an object and 
  * the variables bound by that object.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  * @deprecated Functionality no longer needed
  */
 @Deprecated

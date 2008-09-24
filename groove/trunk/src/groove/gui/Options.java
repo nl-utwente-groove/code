@@ -49,7 +49,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.38 $
+ * @version $Revision$
  */
 public class Options {
     /** 

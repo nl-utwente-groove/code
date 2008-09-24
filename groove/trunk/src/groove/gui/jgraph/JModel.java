@@ -60,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
  * </ul>
  * Instances of JModel are attribute stores.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision$
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -652,7 +652,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.22 $
+     * @version $Revision$
      */
     public class RefreshEdit extends GraphModelEdit {
         /**

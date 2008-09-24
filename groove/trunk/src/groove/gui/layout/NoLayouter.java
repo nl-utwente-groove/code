@@ -25,7 +25,7 @@ import groove.gui.jgraph.JModel;
 /**
  * A layouter that does nothing.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class NoLayouter implements Layouter {
 	/** Name of this layouter. */

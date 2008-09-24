@@ -26,7 +26,7 @@ import java.util.List;
  * Class to facilitate operations that have to be performed upon a 
  * set of graph files, such as validation or transformation.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class GraphFileHandler {
     /** Lowest verbosity setting. */

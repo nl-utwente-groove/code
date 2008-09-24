@@ -28,7 +28,7 @@ import groove.graph.DefaultLabel;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $
+ * @version $Revision$
  */
 // AREND I would call this OperatorEdge and unify it with ValueEdge
 public class ProductEdge extends AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {

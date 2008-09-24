@@ -21,7 +21,7 @@ import groove.graph.NodeSetEdgeSetGraph;
 /**
  * Test class to test <tt>DefaultGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class NodeSetEdgeSetGraphTest extends GraphTest {
     public NodeSetEdgeSetGraphTest(String name) {

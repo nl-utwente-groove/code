@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2008-02-06 17:04:38 $
+ * @version $Revision$ $Date: 2008-02-06 17:04:38 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**

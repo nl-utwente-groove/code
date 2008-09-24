@@ -25,7 +25,7 @@ import groove.graph.Node;
  * by early enforcement (while searching for matchings of the enclosing graph condition).
  * A merge embargo may itself not have negative conditions.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class MergeEmbargo extends NotCondition {
     /**

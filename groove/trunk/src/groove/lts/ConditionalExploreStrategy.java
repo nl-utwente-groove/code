@@ -25,7 +25,7 @@
 // * Extends the exploration strategy with the notion of condition
 // * that controls when to stop exploration.
 // * @author Arend Rensink
-// * @version $Revision: 1.3 $
+// * @version $Revision$
 // */
 //public interface ConditionalExploreStrategy extends ExploreStrategy {
 //    /**

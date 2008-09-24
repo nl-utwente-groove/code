@@ -32,7 +32,7 @@ import javax.swing.JMenuItem;
  * A menu to choose between layout actions,
  * and offering a menu item that displays the currently set action.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class SetLayoutMenu extends JMenu {
     /**

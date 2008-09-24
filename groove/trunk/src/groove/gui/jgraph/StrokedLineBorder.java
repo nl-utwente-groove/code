@@ -28,7 +28,7 @@ import javax.swing.border.LineBorder;
 /**
  * Border that uses a given dash pattern (more precisely, {@link Stroke}).
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class StrokedLineBorder extends LineBorder {
 	/** The default stroke for the border. */

@@ -30,7 +30,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 public class ExprParser {
 

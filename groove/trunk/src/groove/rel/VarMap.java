@@ -24,7 +24,7 @@ import groove.graph.Label;
  * Add-on interface that specifies
  * support for mapping variables (given by strings) to labels.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public interface VarMap {
     /**

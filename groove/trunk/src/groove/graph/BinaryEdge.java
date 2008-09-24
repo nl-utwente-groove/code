@@ -19,7 +19,7 @@ package groove.graph;
 /**
  * Interface of a directed graph edge, with source node, label and target node.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface BinaryEdge extends Edge { 
 	/** The number of ends of a binary edge. */

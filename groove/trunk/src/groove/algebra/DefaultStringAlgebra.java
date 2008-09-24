@@ -27,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.11 $ $Date: 2008-01-16 08:40:00 $
+ * @version $Revision$ $Date: 2008-01-16 08:40:00 $
  */
 public class DefaultStringAlgebra extends Algebra {	/**
 	 * Constructor.

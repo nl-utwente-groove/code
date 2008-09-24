@@ -30,7 +30,7 @@ import java.util.Set;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public interface Condition extends Fixable {
     /** 

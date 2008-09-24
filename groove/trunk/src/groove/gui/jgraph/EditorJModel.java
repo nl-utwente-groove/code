@@ -35,7 +35,7 @@ import org.jgraph.graph.GraphConstants;
  * Moreover, there is some control as to the possible source and target points
  * of new edges.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision$
  */
 public class EditorJModel extends JModel {
     /**

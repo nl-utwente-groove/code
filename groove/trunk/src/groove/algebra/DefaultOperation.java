@@ -20,7 +20,7 @@ package groove.algebra;
  * Class implementing the <tt>Operation</tt> interface.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision$ $Date: 2007-07-21 20:07:43 $
  */
 abstract public class DefaultOperation implements Operation {
     /**

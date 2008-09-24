@@ -20,7 +20,7 @@ package groove;
  * Wrapper class for the imager utility.
  * @see groove.io.Imager
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision$
  */
 public class Imager {
     /**

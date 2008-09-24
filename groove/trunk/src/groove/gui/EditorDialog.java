@@ -36,7 +36,7 @@ import javax.swing.JToolBar;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision$
  */
 abstract public class EditorDialog {
     /**

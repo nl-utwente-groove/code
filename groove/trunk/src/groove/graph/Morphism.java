@@ -23,7 +23,7 @@ import java.util.Iterator;
  * Interface of a partial graph morphism.
  * Extends <tt>NodeEdgeMap</tt> with a fixed source and target graph.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2008-01-30 09:32:52 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
 public interface Morphism extends NodeEdgeMap, GraphListener {
     /**

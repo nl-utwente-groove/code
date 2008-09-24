@@ -20,7 +20,7 @@ package groove.view.aspect;
  * Graph aspect dealing with graph tests.
  * Relevant information is: which nested subgraph an element is in.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 final public class TestAspect extends AbstractAspect {
     /**

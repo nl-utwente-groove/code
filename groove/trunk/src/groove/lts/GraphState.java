@@ -30,7 +30,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2008-02-22 13:02:44 $
+ * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */

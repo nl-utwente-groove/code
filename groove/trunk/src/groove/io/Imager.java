@@ -63,7 +63,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision$
  */
 public class Imager extends CommandLineTool {
     /**

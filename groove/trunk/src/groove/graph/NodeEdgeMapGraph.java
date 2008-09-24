@@ -28,7 +28,7 @@ import java.util.Set;
  * Implementation of {@link groove.graph.Graph} based on node-to-edge-set maps for
  * all node ends. This facilitates node removal, but is expensive in terms of space.
  * Arbitrary edge arities are supported.
- * @version $Revision: 1.6 $ $Date: 2008-01-30 09:32:50 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:50 $
  */
 public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
 	/**

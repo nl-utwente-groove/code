@@ -27,7 +27,7 @@ import java.util.TreeMap;
  * Class used to generate performance reports.
  * Performance reports concern number of calls made and time taken.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class Reporter {
     //     /** Constructor for a new instance. */

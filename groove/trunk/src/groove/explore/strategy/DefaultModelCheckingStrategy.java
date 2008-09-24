@@ -53,7 +53,7 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  * are required for strategies that perform model checking activities.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public abstract class DefaultModelCheckingStrategy extends AbstractStrategy implements ModelCheckingStrategy {
 	/** This implementation initialises the product automaton as well. */

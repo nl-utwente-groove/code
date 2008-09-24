@@ -21,7 +21,7 @@ package groove;
  * Wrapper class for the editor.
  * @see groove.gui.Editor
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision$
  */
 
 public class Editor {

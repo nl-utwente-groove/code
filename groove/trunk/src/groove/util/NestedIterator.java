@@ -25,7 +25,7 @@ import java.util.Iterator;
  * iterators are accessed one by one, whenever the previous is 
  * exhausted.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class NestedIterator<T> extends AbstractNestedIterator<T> {
     /**

@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * Abstract class as a generalization of LTL and CTL formulas.
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2008-03-05 16:52:10 $
+ * @version $Revision$ $Date: 2008-03-05 16:52:10 $
  */
 public abstract class TemporalFormula {
 

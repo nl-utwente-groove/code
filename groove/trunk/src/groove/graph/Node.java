@@ -20,7 +20,7 @@ package groove.graph;
  * Interface of a graph node.
  * A node is a graph element that is not a composite.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2008-01-30 09:32:58 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:58 $
  */
 public interface Node extends Element {
 //    /** 

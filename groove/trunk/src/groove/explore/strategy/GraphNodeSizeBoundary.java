@@ -26,7 +26,7 @@ import groove.verify.ModelChecking;
  * by the given transition.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-20 08:37:54 $
+ * @version $Revision$ $Date: 2008-02-20 08:37:54 $
  */
 public class GraphNodeSizeBoundary extends AbstractBoundary {
 

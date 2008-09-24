@@ -32,7 +32,7 @@ import javax.swing.JTextArea;
 /**
  * Dialog to display About information on the Groove tool.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class AboutBox extends JDialog {
 	/** The title of the dialog. */

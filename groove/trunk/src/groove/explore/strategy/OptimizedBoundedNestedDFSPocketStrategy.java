@@ -37,7 +37,7 @@ import java.util.Set;
  * the set of target states of boundary-crossing transitions.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class OptimizedBoundedNestedDFSPocketStrategy extends BoundedNestedDFSPocketStrategy {
 

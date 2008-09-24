@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Graph implementation based on a single set of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision$
  * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
 @Deprecated

@@ -23,7 +23,7 @@ import groove.graph.NodeSetEdgeSetGraph;
  * Conversion class to add some special-purpose edges to an LTS
  * before saving it as an ordinary graph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class LTSGraph extends NodeSetEdgeSetGraph {
 	/** Constructs a graph from a given LTS. */

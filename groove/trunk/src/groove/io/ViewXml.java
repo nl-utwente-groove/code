@@ -25,7 +25,7 @@ import java.io.IOException;
  * Interface for the conversion of views to and from XML documents.
  * To be implemented for particular XML formats.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface ViewXml<V extends View> {
 	/**

@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2008-03-04 10:51:27 $
+ * @version $Revision$ $Date: 2008-03-04 10:51:27 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */

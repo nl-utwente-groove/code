@@ -34,7 +34,7 @@ import javax.swing.Action;
 
 /**
  * Manager of the undo history.
- * @version $Revision: 1.8 $ $Date: 2008-01-30 09:33:36 $
+ * @version $Revision$ $Date: 2008-01-30 09:33:36 $
  * @author Arend Rensink
  */
 class UndoHistory implements SimulationListener {

@@ -25,7 +25,7 @@ import java.util.Iterator;
  * that satisfy a certain condition, to be provided through the abstract
  * method {@link #approves(Object)}.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public abstract class CollectionView<T> extends AbstractCollection<T> {
     /**

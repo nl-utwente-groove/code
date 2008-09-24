@@ -21,7 +21,7 @@ import groove.lts.GraphState;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision$ $Date: 2007-03-20 10:43:00 $
  * 
  * Class description.
  */

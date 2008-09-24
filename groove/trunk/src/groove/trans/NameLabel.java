@@ -23,7 +23,7 @@ import groove.graph.WrapperLabel;
  * The displayed version of the rule is between <tt>BEGIN_CHAR</tt> and
  * <tt>END_CHAR</tt>-characters.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2008-02-29 11:17:59 $
+ * @version $Revision$ $Date: 2008-02-29 11:17:59 $
  */
 public class NameLabel extends WrapperLabel<String> {
     /** The obligatory first character of a rule name. */

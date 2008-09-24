@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Specific class for parsing CTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $ $Date: 2008-01-28 12:21:05 $
+ * @version $Revision$ $Date: 2008-01-28 12:21:05 $
  */
 public class CTLFormula extends CTLStarFormula {
 

@@ -26,7 +26,7 @@ import java.util.Set;
  * This class keeps track of the properties satisfied for a particular state. A state
  * will thus be mapped on a set of properties it satisfies.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-28 05:59:23 $
+ * @version $Revision$ $Date: 2008-02-28 05:59:23 $
  */
 public class DefaultMarking extends HashMap<GraphState, Set<TemporalFormula>> implements Marking {
 

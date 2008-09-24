@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
  * Implements a set whose operations work on an underlying (lower) set, but store 
  * the elements added to and removed from that lower set.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2008-01-30 09:32:13 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:13 $
  */
 public class DeltaSet<T> extends AbstractSet<T> {
     /**

@@ -33,7 +33,7 @@ import java.util.Set;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.21 $ $Date: 2008-03-03 21:27:40 $
+ * @version $Revision$ $Date: 2008-03-03 21:27:40 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**

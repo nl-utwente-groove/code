@@ -20,7 +20,7 @@ package groove.graph;
  * Abstract implementation of a generic node-edge-map.
  * The underlying node and edge maps are left abstract.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public abstract class AbstractNodeEdgeMap<NS,NT,ES,ET> implements GenericNodeEdgeMap<NS, NT, ES, ET> {
 	public void clear() {

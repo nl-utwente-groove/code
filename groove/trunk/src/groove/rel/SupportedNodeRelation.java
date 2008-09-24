@@ -28,7 +28,7 @@ import java.util.Map;
  * which for each pair of related nodes contains a <i>support</i>, which
  * is a set of graph elements that justifies the relation. 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public interface SupportedNodeRelation extends NodeRelation {
     /**

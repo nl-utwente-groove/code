@@ -28,7 +28,7 @@ import java.util.List;
  * perform model checking.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface ModelCheckingStrategy extends Strategy {
 	/**

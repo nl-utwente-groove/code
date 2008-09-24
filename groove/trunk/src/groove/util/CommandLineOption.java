@@ -24,7 +24,7 @@
  * the corresponding option instance will be given the opportunity to exert
  * its effect, through a call of the <tt>{@link #parse}</tt> method.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface CommandLineOption {
     /** Returns the (one-word, often one-letter) name of this option. */

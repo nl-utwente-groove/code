@@ -45,7 +45,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  * In particular, provides a method to add and remove points
  * from edges.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision$
   */
 public class EditorJGraph extends JGraph {           
     /**

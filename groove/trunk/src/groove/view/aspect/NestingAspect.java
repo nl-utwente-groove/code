@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.16 $ $Date: 2008-02-29 11:02:22 $
+ * @version 0.1 $Revision$ $Date: 2008-02-29 11:02:22 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**

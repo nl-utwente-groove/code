@@ -21,7 +21,7 @@ package groove;
  * Wrapper class for the simulator
  * @see groove.gui.Simulator
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class Simulator {
     /**

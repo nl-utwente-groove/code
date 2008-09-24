@@ -30,7 +30,7 @@ import rwth.i2.ltl2ba4j.model.IGraphProposition;
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ModelChecking {
 

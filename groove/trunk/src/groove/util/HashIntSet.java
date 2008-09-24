@@ -25,7 +25,7 @@ import java.util.Set;
  * representation of the <code>int</code> keys.
  *
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:02 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:02 $
  */
 final public class HashIntSet implements IntSet {
 	/**

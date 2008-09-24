@@ -36,7 +36,7 @@ import org.jgraph.graph.PortView;
  * Action to set up the standard touchgraph layout algorithm on a given MyJGraph. Adapted from
  * <tt>jgraph.com.pad.Touch</tt>
  * @author Gaudenz Alder and Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class SpringLayouter extends AbstractLayouter {
     /** Constructs a template spring layouter. */

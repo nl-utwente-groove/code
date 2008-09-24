@@ -53,7 +53,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.53 $
+ * @version $Revision$
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**

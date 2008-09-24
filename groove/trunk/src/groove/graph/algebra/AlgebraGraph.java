@@ -31,7 +31,7 @@ import java.util.Map;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2008-02-22 13:02:47 $
+ * @version $Revision$ $Date: 2008-02-22 13:02:47 $
  */
 public class AlgebraGraph extends DefaultGraph {
 

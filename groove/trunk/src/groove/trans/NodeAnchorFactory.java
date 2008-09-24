@@ -32,7 +32,7 @@ import groove.rel.VarSupport;
  * array of node images, as well as the ability to reconstruct
  * itself out of such a  minimal representation.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class NodeAnchorFactory implements AnchorFactory {
     /**

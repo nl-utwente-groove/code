@@ -39,7 +39,7 @@ import java.util.Set;
  * Caches information of a state.
  * Cached are the graph, the set of outgoing transitions, and the delta with respect to the previous state.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision$
  */
 class StateCache {
     /**

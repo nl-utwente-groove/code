@@ -22,7 +22,7 @@ import groove.trans.RuleEvent;
 /**
  * Graph transition stub based on a true event renaming.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 class SymmetryTransitionStub extends AbstractGraphTransitionStub {
     /**

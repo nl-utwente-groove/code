@@ -45,7 +45,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.39 $
+ * @version $Revision$
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**

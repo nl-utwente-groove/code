@@ -25,7 +25,7 @@ import groove.util.Groove;
 /**
  * A specialised NAC that forbids the presence of a certain edge.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision$
  */
 public class EdgeEmbargo extends NotCondition {
     /**

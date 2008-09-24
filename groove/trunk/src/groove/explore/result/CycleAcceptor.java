@@ -34,7 +34,7 @@ import groove.verify.ModelChecking;
  * the counter-example.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class CycleAcceptor extends Acceptor {
 	/** Creates a new acceptor with a 1-bounded {@link Result}. */

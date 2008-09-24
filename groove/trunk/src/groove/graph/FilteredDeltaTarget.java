@@ -24,7 +24,7 @@ import static groove.graph.DeltaApplier.*;
  * application mode (which is typically one of {@link DeltaApplier#NODES_ONLY}
  * or {@link DeltaApplier#EDGES_ONLY}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class FilteredDeltaTarget implements DeltaTarget {
 	/**

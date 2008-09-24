@@ -19,7 +19,7 @@ package groove.graph;
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public abstract class AbstractEdge<N extends Node, L extends Label> implements Edge {
     /**

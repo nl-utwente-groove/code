@@ -39,7 +39,7 @@ import java.util.Map;
  * Each of these options can be enabled or disabled in subclasses by overwriting 
  * the respective <tt>supports...Option</tt> methods.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class CommandLineTool {
     /**

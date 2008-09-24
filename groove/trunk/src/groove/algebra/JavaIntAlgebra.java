@@ -19,7 +19,7 @@ package groove.algebra;
 /**
  * Integer algebra based on the java type {@link Integer}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class JavaIntAlgebra implements IntSignature<Integer> {
     /** This implementation applies the java operator <code>+</code> to the arguments. */

@@ -24,7 +24,7 @@ import groove.view.RuleView;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2008-01-30 09:32:36 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:36 $
  * @deprecated use rule constructors
  */
 @Deprecated

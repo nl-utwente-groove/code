@@ -24,7 +24,7 @@ import java.util.TreeSet;
  * be loaded from a {@link String}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 abstract public class JCellContent<T> extends TreeSet<T> {
     /**

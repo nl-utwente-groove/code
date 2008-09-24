@@ -28,7 +28,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.4 $ $Date: 2008-01-30 09:33:03 $
+ * @version $Revision$ $Date: 2008-01-30 09:33:03 $
  */
 public class BinaryEdgeTest extends TestCase {
     protected Node n1, n2;

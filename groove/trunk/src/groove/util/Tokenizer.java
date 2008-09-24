@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
  * The method <tt>countTokens()</tt> is invalidated.
  * Can handle dots inside quotes, even delimiter is a dot.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2008-01-30 09:32:02 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:02 $
  */
 public class Tokenizer extends StringTokenizer {
 

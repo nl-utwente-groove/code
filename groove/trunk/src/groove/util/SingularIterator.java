@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * Iterator over a single <i>inner</i> object.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class SingularIterator<T> implements Iterator<T> {
     /**

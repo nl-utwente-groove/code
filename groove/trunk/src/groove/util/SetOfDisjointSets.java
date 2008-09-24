@@ -28,7 +28,7 @@ import java.util.Set;
  * set equality. (It is implemented by iterating over the underlying collections,
  * which is expensive!)
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements Set<T> {
     /**

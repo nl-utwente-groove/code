@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Calculator yielding a {@link groove.rel.NodeRelation}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     /**

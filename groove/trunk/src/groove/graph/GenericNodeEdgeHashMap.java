@@ -23,7 +23,7 @@ import java.util.Map;
  * Default implementation of a generic node-edge-map.
  * The implementation is based on two internally stored hash maps.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class GenericNodeEdgeHashMap<NS,NT,ES,ET> extends AbstractNodeEdgeMap<NS, NT, ES, ET> implements Cloneable {
 	/**

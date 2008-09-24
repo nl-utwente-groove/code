@@ -26,7 +26,7 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public interface GrammarViewXml<GG extends GrammarView> extends ViewXml<GG> {
     /**

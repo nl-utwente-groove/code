@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Class providing functionality to generate new states in a GTS.
  * @author Arend Rensink
- * @version $Revision: 1.32 $
+ * @version $Revision$
  */
 public class StateGenerator {
 

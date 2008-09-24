@@ -24,7 +24,7 @@ import java.util.Set;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision$
  */
 public class RuleSetStartBoundary extends RuleSetBoundary {
 

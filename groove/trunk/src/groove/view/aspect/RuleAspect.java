@@ -33,7 +33,7 @@ import groove.view.RegExprLabelParser;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision$
  */
 public class RuleAspect extends AbstractAspect {
 

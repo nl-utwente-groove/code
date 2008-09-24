@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class Converter {
 	/** Main method to test this class. */

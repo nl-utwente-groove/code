@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class ReflectedAlgebra<T> extends Algebra {
     /**

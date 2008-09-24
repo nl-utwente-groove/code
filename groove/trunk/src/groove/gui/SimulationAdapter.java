@@ -26,7 +26,7 @@ import groove.view.DefaultGrammarView;
 /**
  * An adapter for the simulation listener, offering empty stub methods.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision$
  */
 public class SimulationAdapter implements SimulationListener {
 	/** Provides a default empty implementation. */

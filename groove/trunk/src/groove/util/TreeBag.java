@@ -27,7 +27,7 @@ import java.util.TreeMap;
 /**
  * A bag (= multiset) of elements, based on an underlying tree map.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**

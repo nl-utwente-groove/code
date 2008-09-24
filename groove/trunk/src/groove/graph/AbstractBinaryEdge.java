@@ -21,7 +21,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2008-01-30 09:32:57 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 abstract public class AbstractBinaryEdge<SN extends Node, L extends Label, TN extends Node> extends AbstractEdge<SN,L> implements BinaryEdge {
     /**

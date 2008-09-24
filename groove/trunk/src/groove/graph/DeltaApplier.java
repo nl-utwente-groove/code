@@ -21,7 +21,7 @@ package groove.graph;
  * its {@link DeltaTarget#addNode(Node)} and {@link DeltaTarget#removeNode(Node)}
  * and the corresponding <code>Edge</code> methods multiple times.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public interface DeltaApplier {
 	/**

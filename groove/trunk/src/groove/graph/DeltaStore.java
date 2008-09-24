@@ -22,7 +22,7 @@ import java.util.Set;
  * Delta target that collects the addition and removal information 
  * and can play it back later, in the role of delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget, DeltaApplier {
 	/**

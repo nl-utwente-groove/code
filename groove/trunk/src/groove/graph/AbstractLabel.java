@@ -20,7 +20,7 @@ package groove.graph;
  * Provides a partial implementation of the Label interface,
  * consisting only of a label text.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2008-01-30 09:32:57 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 public abstract class AbstractLabel implements Cloneable, Label {
     /** This implementation compares this label's {@link #text()} with that of <code>obj</code>. */

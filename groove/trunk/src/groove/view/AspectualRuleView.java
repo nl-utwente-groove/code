@@ -87,7 +87,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.40 $
+ * @version $Revision$
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**

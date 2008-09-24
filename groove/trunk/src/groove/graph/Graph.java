@@ -27,7 +27,7 @@ import java.util.Collection;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.11 $ $Date: 2008-01-30 09:32:52 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
 //    /**

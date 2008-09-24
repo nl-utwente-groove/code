@@ -23,7 +23,7 @@ import groove.view.FormatException;
  * Objects implementing this factory can create instances of
  * <tt>Graph</tt>, <tt>Morphism</tt> and <tt>InjectiveMorphism</tt>.   
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision$
  */
 public abstract class GraphFactory {
 	/** Morphism serving as prototype object in the default graph factory. */

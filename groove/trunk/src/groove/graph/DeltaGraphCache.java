@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision$
  */
 public class DeltaGraphCache extends GraphCache {
     /**

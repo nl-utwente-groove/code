@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision$
  */
 public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     /**

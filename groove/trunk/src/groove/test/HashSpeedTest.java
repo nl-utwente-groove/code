@@ -36,7 +36,7 @@ import groove.util.Reporter;
  * <li> Iterating over the keyset and getting the image versus iterating over the entry set.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision$
  */
 public class HashSpeedTest {
     static final int CREATE_TRY_COUNT = 500000;

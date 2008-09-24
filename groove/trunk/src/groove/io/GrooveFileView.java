@@ -25,7 +25,7 @@ import javax.swing.Icon;
 /**
  * Implements a file view that displays the correct icons and descriptions for
  * graph files, rules files and grammar directories.
- * @version $Date: 2008-01-30 09:33:42 $ $Revision: 1.4 $
+ * @version $Date: 2008-01-30 09:33:42 $ $Revision$
  * @author Arend Rensink
  */
 public class GrooveFileView extends javax.swing.filechooser.FileView {

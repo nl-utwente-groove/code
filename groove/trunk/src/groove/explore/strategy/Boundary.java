@@ -24,7 +24,7 @@ import groove.lts.ProductTransition;
  * crossing the boundary will not be taken into account (yet).
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface Boundary {
 	/**
