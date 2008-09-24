@@ -56,6 +56,6 @@ public class InvariantViolatedAcceptor<C> extends ConditionalAcceptor<C> {
 	/** This implementation returns an {@link InvariantViolatedAcceptor}. */
 	@Override
 	public Acceptor newInstance() {
-		return new InvariantViolatedAcceptor<C>(getCondition(), getResult());
+		return new InvariantViolatedAcceptor<C>(getCondition(), getResult().newInstance());
 	}
 }
