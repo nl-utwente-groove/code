@@ -127,6 +127,11 @@ public class DefaultScenario implements Scenario {
 		return strategy;
 	}
 
+	/** Returns the acceptor for this scenario. */
+	protected Acceptor getAcceptor() {
+	    return acceptor;
+	}
+	
 	public String getDescription() {
         return description;
     }
