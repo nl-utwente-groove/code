@@ -16,7 +16,6 @@
  */
 package groove.explore;
 
-import groove.explore.ScenarioFactory.AbstractConditionalScenario;
 import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.ExploreCondition;
@@ -30,6 +29,8 @@ import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.RuleSetBorderBoundary;
 import groove.explore.strategy.RuleSetStartBoundary;
 import groove.explore.strategy.Strategy;
+import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.trans.Rule;
 import groove.verify.ModelChecking;
 
@@ -72,12 +73,7 @@ public class GeneratorScenarioFactory {
 	public static <C> ConditionalScenario<C> getConditionalScenario(
 			final Strategy strategy, final Class<?> type, final ConditionalAcceptor<C> acceptor, 
 			final String description, final String name) {
-		return new AbstractConditionalScenario<C>(strategy, acceptor, name, description, type) {
-			@Override
-			public void setCondition(ExploreCondition<C> explCond, String name) {
-				super.setCondition(explCond, name);
-				acceptor.setCondition(explCond);
-			}
+		return new ConditionalScenario<C>(strategy, acceptor, name, description, type) {
 		};
 	}
 	
@@ -93,7 +89,7 @@ public class GeneratorScenarioFactory {
 	public static <C> ConditionalScenario<C> getConditionalScenario(
 			final ConditionalStrategy strategy, final Class<?> type,
 			final String description, final String name) {
-		return new AbstractConditionalScenario<C>(strategy, new FinalStateAcceptor(), name, description, type) {
+		return new ConditionalScenario<C>(strategy, new FinalStateAcceptor(), name, description, type) {
 			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name) {
 				super.setCondition(explCond, name);

@@ -25,8 +25,6 @@ import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
 import groove.gui.BoundedModelCheckingDialog;
 import groove.gui.Simulator;
-import groove.lts.GTS;
-import groove.lts.GraphState;
 
 
 /** A factory for creating scenario handlers by composing a scenario
@@ -63,15 +61,16 @@ public class ScenarioFactory {
 	public static <C> ConditionalScenario<C> getConditionalScenario(
 			final Strategy strategy, final ConditionalAcceptor<C> acceptor, final String description, 
 			final String name, final boolean negated) {
-		return new AbstractConditionalScenario<C>(strategy, acceptor, description, name, null) {
-		    @Override
-            public void prepare(GTS gts, GraphState state) {
-                super.prepare(gts, state);
-                getCondition().setNegated(negated);
-                acceptor.setCondition(getCondition());
+		return new ConditionalScenario<C>(strategy, acceptor, name, description, null) {
+			@Override
+            public void setCondition(ExploreCondition<C> condition, String name) {
+			    if (condition != null) {
+			        condition.setNegated(negated);
+			    }
+                super.setCondition(condition, name);
             }
 
-			@Override
+            @Override
 			public Class<?> getConditionType() { return getCondition().getConditionType(); }
 		};
 	}
@@ -131,44 +130,5 @@ public class ScenarioFactory {
 				return dialog.getBoundary();
 			}
 		};
-	}
-	
-	static abstract class AbstractConditionalScenario<C> extends DefaultScenario implements ConditionalScenario<C> {
-		/**
-		 * Constructs a conditional handler with a given description and name,
-		 * and a given condition type.
-		 */
-		public AbstractConditionalScenario(Strategy strategy, Acceptor acceptor, String name, String description, Class<?> type) {
-			super(strategy, acceptor, name, description);
-			this.type = type;
-		}
-		
-		@Override
-		public String getName() {
-			if (this.condition == null) {
-				return super.getName();
-			}
-			return super.getName() + 
-					(condition.isNegated() ? " !" : " ") +
-					"<" +
-					this.condName +
-					">";
-		}
-
-		public void setCondition(ExploreCondition<C> explCond, String name) {
-			this.condition = explCond;
-			this.condName = name;
-		}
-
-		/** Returns the currently set exploration condition. */
-		protected ExploreCondition<C> getCondition() {
-			return condition;
-		}
-		
-		public Class<?> getConditionType() { return type; }
-
-		private ExploreCondition<C> condition;
-		private String condName = "";
-		private final Class<?> type;
 	}	
 }
