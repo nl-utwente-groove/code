@@ -92,11 +92,13 @@ public class DefaultScenario implements Scenario {
 		this.acceptor = acceptor.newInstance();
 		// make sure strategy and acceptor are reset and up to date
 		strategy.prepare(gts, state);
-		strategy.addGTSListener(acceptor);
 	}
 	
 	public Result play() {
 		reporter.start(RUNNING);
+
+		strategy.addGTSListener(acceptor);
+		interrupted = false;
 
 		// start working until done or nothing to do
 		while(!interrupted && !getResult().done() && strategy.next()) {
@@ -140,7 +142,13 @@ public class DefaultScenario implements Scenario {
         return name;
     }
 
-    /** Returns the GTS for which this scenario was last prepared. */
+    /** Returns the scenario description. */
+    @Override
+	public String toString() {
+		return getDescription();
+	}
+
+	/** Returns the GTS for which this scenario was last prepared. */
     protected GTS getGTS() {
         return gts;
     }
