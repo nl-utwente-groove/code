@@ -2,8 +2,6 @@ package groove.util;
 
 import groove.control.Location;
 import groove.explore.DefaultScenario;
-import groove.explore.Scenario;
-import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.AbstractStrategy;
 import groove.explore.util.ExploreCache;
@@ -28,20 +26,12 @@ import java.util.NoSuchElementException;
  * @author Iovka Boneva
  * @version $Revision $
  */
-public class ControlledScenarioHandler extends AbstractScenarioHandler {
+public class ControlledScenario extends DefaultScenario {
 	private ControlledStrategy str;
 
-	/** Creates a scenario handler from a name and a description.
-	 * @param description
-	 * @param name
-	 */
-	public ControlledScenarioHandler(String description, String name) {
-		super(description, name);
-	}
-
-	@Override
-	protected Scenario createScenario() {
-		return new DefaultScenario(str, new Acceptor());
+	/** Creates a scenario handler from a name and a description. */
+	public ControlledScenario(ControlledStrategy strategy, String name, String description) {
+		super(strategy, new Acceptor(), name, description);
 	}
 
 	/** Sets a program for the scenario.
@@ -102,8 +92,8 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 		}
 		
 		@Override
-		public void setGTS(GTS gts) {
-			super.setGTS(gts);
+		public void prepare(GTS gts, GraphState state) {
+			super.prepare(gts, state);
 			gts.addGraphListener(toExplore);
 			toExplore.setQueue(nextList);
 		}	

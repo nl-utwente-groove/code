@@ -16,7 +16,6 @@
  */
 package groove.util;
 
-import groove.explore.ScenarioHandler;
 import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
@@ -32,19 +31,10 @@ import groove.lts.GTS;
  */
 public class GenerateProgressMonitor extends GraphAdapter {
     /**
-     * Creates a monitor that does not care which GTS is being monitored.
+     * Creates a monitor that reports on states and transitions generated.
      */
     public GenerateProgressMonitor() {
-        this.strategy = null;
-    }
-    
-    /**
-     * Creates a monitor for a given graph transformation system.
-     * The GTS is only used to determine how many nodes and edges already exist.
-     * @param gts the GTS being explored
-     */
-    public GenerateProgressMonitor(GTS gts, ScenarioHandler strategy) {
-        this.strategy = strategy;
+        // empty
     }
 
     @Override
@@ -70,10 +60,6 @@ public class GenerateProgressMonitor extends GraphAdapter {
             int nodeCount = gts.nodeCount();
             int edgeCount = gts.edgeCount();
             int explorableCount = gts.openStateCount();
-// FIXME            
-//            if (strategy instanceof BranchingStrategy) {
-//                explorableCount -= ((BranchingStrategy) strategy).getIgnoredCount();
-//            }
             System.out.println(" " + nodeCount + "s (" + explorableCount + "x) "
                     + edgeCount + "t ");
             printed = 0;
@@ -84,8 +70,6 @@ public class GenerateProgressMonitor extends GraphAdapter {
      * The number of indications printed on the current line.
      */
     private int printed = 0;
-    /** The exploration strategy for the GTS. */
-    private final ScenarioHandler strategy;
     /**
      * The number of additions after which an indication is printed to screen.
      */

@@ -67,28 +67,35 @@ import groove.util.Reporter;
  *
  */
 public class DefaultScenario implements Scenario {
-	/** Creates a scenario with a given strategy and acceptor. */
-	public DefaultScenario(Strategy strategy, Acceptor acceptor) {
-		this.strategy = strategy;
-		this.acceptor = acceptor;
-	}
+    /** Creates a scenario with a given strategy and acceptor. */
+    public DefaultScenario(Strategy strategy, Acceptor acceptor) {
+        this(strategy, acceptor, null, null);
+    }
 
-	public Result play(GTS gts) {
-		return play(gts, gts.startState());
+    /** Creates a named scenario with a given strategy and acceptor. */
+    public DefaultScenario(Strategy strategy, Acceptor acceptor, String name, String description) {
+        this.strategy = strategy;
+        this.acceptor = acceptor;
+        this.name = name;
+        this.description = description;
+    }
+
+	public void prepare(GTS gts) {
+		prepare(gts, gts.startState());
 	}
 	
-	public Result play(GTS gts, GraphState state) {
+	public void prepare(GTS gts, GraphState state) {
 		assert acceptor != null && strategy != null : 
 			"The scenario is not correctly initialized with a result, a strategy and an acceptor.";
 		assert(gts != null) : "The GTS of the scenario has not been initialized.";
-		
+		this.gts = gts;
+		this.acceptor = acceptor.newInstance();
 		// make sure strategy and acceptor are reset and up to date
-		strategy.setGTS(gts);
-		strategy.setState(state);
-
-		gts.addGraphListener(acceptor);
+		strategy.prepare(gts, state);
 		strategy.addGTSListener(acceptor);
-
+	}
+	
+	public Result play() {
 		reporter.start(RUNNING);
 
 		// start working until done or nothing to do
@@ -96,7 +103,6 @@ public class DefaultScenario implements Scenario {
 			interrupted = Thread.currentThread().isInterrupted();
 		}
 		
-		gts.removeGraphListener(acceptor);
 		strategy.removeGTSListener(acceptor);
 		reporter.stop();
 		
@@ -121,26 +127,45 @@ public class DefaultScenario implements Scenario {
 		return strategy;
 	}
 
-	/**
-	 * Flag indicating that the last invocation of {@link #play(GTS)} was interrupted.
+	public String getDescription() {
+        return description;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    /** Returns the GTS for which this scenario was last prepared. */
+    protected GTS getGTS() {
+        return gts;
+    }
+    
+    /** The GTS for which this scenario was last prepared. */
+    private GTS gts;
+    /**
+	 * Flag indicating that the last invocation of {@link #prepare(GTS)} was interrupted.
 	 */
 	private boolean interrupted;
 
 	/**
 	 * The acceptor of the scenario. 
 	 */
-	private final Acceptor acceptor;
+	private Acceptor acceptor;
 	/**
 	 * The strategy used by this scenario. 
 	 */
 	private final Strategy strategy;
+	/** Name of this scenario. */
+	private final String name;
+	/** One-line description of this scenario. */
+	private final String description;
 	
 	/** Reporter for profiling information; aliased to {@link GTS#reporter}. */
     static private final Reporter reporter = Reporter.register(DefaultScenario.class);
-    /** Handle for profiling {@link #play(GTS)}. */
+    /** Handle for profiling {@link #prepare(GTS)}. */
     static private final int RUNNING = reporter.newMethod("playScenario()");
     
-    /** Returns the total running time of {@link #play(GTS)}. */
+    /** Returns the total running time of {@link #prepare(GTS)}. */
 	public static long getRunningTime() {
 		return reporter.getTotalTime(RUNNING);
 	}

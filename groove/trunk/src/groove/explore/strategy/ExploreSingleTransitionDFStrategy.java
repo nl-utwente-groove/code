@@ -27,7 +27,7 @@ import groove.trans.RuleMatch;
 /** This depth-first search algorithm systematically generates a unique outgoing 
  * transition and continues with it. The difference with {@link LinearStrategy}
  * is that the strategy does not stop until a full exploration. The difference
- * with {@link DepthFirstStrategy1} and {@link DepthFirstStrategy2} is that this
+ * with {@link DFStrategy} is that this
  * strategy applies at most one matching yielding a new state at each step.
  * 
  * This strategy is quite space efficient in the sense that it does not
@@ -66,10 +66,6 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 		return true;
 	}
 	
-
-	/** Computes the new value for {@link #atState}. 
-	 * @param The iterator used to iterate on matches of atState.
-	 */
 	@Override
 	protected void updateAtState() {
 		this.backFrom = null;   // set to non null if backtracking
@@ -95,10 +91,7 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 	}
 
 	/** Determines whether a match corresponds to an outgoing transition of
-	 * a state, in the GTS constructed by this strategy
-	 * @param match
-	 * @param state
-	 * @return
+	 * a state, in the GTS constructed by this strategy.
 	 */
 	private boolean isExistingOutTransition(RuleMatch match, GraphState state) {
 		for (GraphTransition trans : getGTS().outEdgeSet(this.atState)) {
@@ -110,14 +103,12 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 	}
 	
 	@Override
-	public void setGTS(GTS gts) {
-		super.setGTS(gts);
+	public void prepare(GTS gts, GraphState state) {
+		super.prepare(gts, state);
 		this.getGTS().addGraphListener(this.collector);
 	}
 		
 	/** Creates a strategy with a given cache size. 
-	 * @param cacheSize the number of states to be stored in the cache. A smaller
-	 * value optimizes memory usage.
 	 */
 	public ExploreSingleTransitionDFStrategy () {
 		this.explCacheCache = new CacheMap<GraphState,ExploreCache>(cacheSize);
@@ -127,7 +118,7 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 	/** Used to register a state added to the GTS. 
 	 * Randomness plays a role in the case of abstract transformation,
 	 * when one matching may require adding several new states. */
-	private RandomNewStateChooser collector	= new RandomNewStateChooser(); ;
+	private RandomNewStateChooser collector	= new RandomNewStateChooser();
 	
 	
 }

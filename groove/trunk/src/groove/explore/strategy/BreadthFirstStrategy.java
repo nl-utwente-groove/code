@@ -54,8 +54,8 @@ public class BreadthFirstStrategy extends AbstractStrategy {
 	}
 	
 	@Override
-	public void setGTS(GTS gts) {
-		super.setGTS(gts);
+	public void prepare(GTS gts, GraphState startState) {
+		super.prepare(gts, startState);
 		gts.addGraphListener(toExplore);
 	}	
 	

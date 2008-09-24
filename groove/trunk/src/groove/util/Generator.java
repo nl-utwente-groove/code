@@ -16,10 +16,10 @@
  */
 package groove.util;
 
-import groove.explore.ConditionalScenarioHandler;
+import groove.explore.ConditionalScenario;
 import groove.explore.DefaultScenario;
-import groove.explore.GeneratorScenarioHandlerFactory;
-import groove.explore.ScenarioHandler;
+import groove.explore.GeneratorScenarioFactory;
+import groove.explore.Scenario;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.EdgeBoundCondition;
 import groove.explore.result.ExploreCondition;
@@ -30,7 +30,6 @@ import groove.explore.result.Result;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ConditionalBreadthFirstStrategy;
-import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
@@ -272,7 +271,7 @@ public class Generator extends CommandLineTool {
      * The strategy is lazily retrieved from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ScenarioHandler getStrategy() {
+    protected Scenario getStrategy() {
         if (strategy == null) {
             strategy = computeStrategy();
         }
@@ -285,16 +284,16 @@ public class Generator extends CommandLineTool {
      * The strategy is computed from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ScenarioHandler computeStrategy() {
-    	ScenarioHandler result;
+    protected Scenario computeStrategy() {
+    	Scenario result;
 		ExploreOption explore = getActiveOption(ExploreOption.class);
 		if (explore == null) {
-			result = GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
+			result = GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
 		} else {
 			ExploreStrategyParser exploreParser = explore.getParser();
 			result = exploreParser.getStrategy();
-			if (result instanceof ConditionalScenarioHandler) {
-				ConditionalScenarioHandler<?> condResult = (ConditionalScenarioHandler<?>) result;
+			if (result instanceof ConditionalScenario) {
+				ConditionalScenario<?> condResult = (ConditionalScenario<?>) result;
 				String conditionName = exploreParser.getCondition();
 				if (condResult.getConditionType().equals(Rule.class)) {
 					Rule condition = getGrammar().getRule(new NameLabel(conditionName));
@@ -304,11 +303,11 @@ public class Generator extends CommandLineTool {
 						ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
 						explCond.setCondition(condition);
 						explCond.setNegated(exploreParser.isNegated());
-						((ConditionalScenarioHandler<Rule>) result).setCondition(explCond, conditionName);
+						((ConditionalScenario<Rule>) result).setCondition(explCond, conditionName);
 					}
 				} 
-			} else if (result instanceof ControlledScenarioHandler) {
-				((ControlledScenarioHandler) result).setProgram(exploreParser.getProgram().getRules(getGrammar()), true);
+			} else if (result instanceof ControlledScenario) {
+				((ControlledScenario) result).setProgram(exploreParser.getProgram().getRules(getGrammar()), true);
 			}
 		}
 		return result;
@@ -325,10 +324,10 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * The initialization phase of state space generation. Called from <tt>{@link #start}</tt>.
+     * The initialisation phase of state space generation. Called from <tt>{@link #start}</tt>.
      */
     protected void init() {
-        getStrategy().setGTS(getGTS());
+        // empty
     }
 
     /**
@@ -345,15 +344,14 @@ public class Generator extends CommandLineTool {
             System.out.println("; start graph: "
                     + (startStateName == null ? "default" : startStateName));
             System.out.println("Exploration: " + getStrategy());
-            getGTS().addGraphListener(new GenerateProgressMonitor(getGTS(), getStrategy()));
+            getGTS().addGraphListener(new GenerateProgressMonitor());
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
         	getGTS().addGraphListener(getStatisticsListener());
         }
         startTime = System.currentTimeMillis();
-        getStrategy().setState(getGTS().startState());
-        getStrategy().playScenario();
-        result = getStrategy().getResult().getValue();
+        getStrategy().prepare(getGTS());
+        result = getStrategy().play().getValue();
         endTime = System.currentTimeMillis();
         if (getVerbosity() > LOW_VERBOSITY) {
             System.out.println("");
@@ -708,7 +706,7 @@ public class Generator extends CommandLineTool {
     /**
      * The strategy to be used for the state space generation.
      */
-    private ScenarioHandler strategy;
+    private Scenario strategy;
     /** String describing the location where the grammar is to be found. */
     private String grammarLocation;
     /** String describing the start graph within the grammar. */
@@ -838,24 +836,24 @@ public class Generator extends CommandLineTool {
         /** Constructs a parser that can recognise all implemented exploration strategies. 
          * @param closeFast TODO*/
         public ExploreStrategyParser(boolean closeFast) {
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
-           	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking exploration", "model-checking"));
-        	addStrategy(new ControlledScenarioHandler("Performs a depth-first search controlled by a sequence of rules.", "controlled"));
+        	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
+        	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
+           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
+           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
+           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
+        	addStrategy(GeneratorScenarioFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking exploration", "model-checking"));
+        	addStrategy(new ControlledScenario(null, "controlled", "Performs a depth-first search controlled by a sequence of rules."));
         }
     
         /**
          * Returns the exploration strategy determined by parsing.
          * @see #parse(String)
          */
-        public ScenarioHandler getStrategy() {
+        public Scenario getStrategy() {
             return parsedStrategy;
         }
     
@@ -893,11 +891,11 @@ public class Generator extends CommandLineTool {
          */
         public List<String> getStrategyDescriptions() {
             List<String> result = new ArrayList<String>();
-            for (Map.Entry<String,ScenarioHandler> strategyEntry: strategies.entrySet()) {
-                ScenarioHandler strategy = strategyEntry.getValue();
+            for (Map.Entry<String,Scenario> strategyEntry: strategies.entrySet()) {
+                Scenario strategy = strategyEntry.getValue();
                 String name = strategyEntry.getKey();
-                if (strategy instanceof ConditionalScenarioHandler) {
-                	ConditionalScenarioHandler<?> condStrategy = (ConditionalScenarioHandler<?>) strategy;
+                if (strategy instanceof ConditionalScenario) {
+                	ConditionalScenario<?> condStrategy = (ConditionalScenario<?>) strategy;
                 	if (condStrategy.getConditionType().equals(Integer.class)) {
                 		name += CONDITION_SEPARATOR + "<bound>";
                 	} else if (condStrategy.getConditionType().equals(Rule.class)) {
@@ -921,9 +919,9 @@ public class Generator extends CommandLineTool {
          */
         public void parse(String parameter) throws IllegalArgumentException {
             parsedStrategy = null;
-            Iterator<Map.Entry<String,ScenarioHandler>> strategyIter = strategies.entrySet().iterator();
+            Iterator<Map.Entry<String,Scenario>> strategyIter = strategies.entrySet().iterator();
             while (parsedStrategy == null && strategyIter.hasNext()) {
-                Map.Entry<String,ScenarioHandler> strategyEntry = strategyIter.next();
+                Map.Entry<String,Scenario> strategyEntry = strategyIter.next();
                 String strategyName = strategyEntry.getKey();
                 if (parameter.startsWith(strategyName)) {
                     parsedStrategy = strategyEntry.getValue();
@@ -932,14 +930,14 @@ public class Generator extends CommandLineTool {
                     } else {
                         parameter = "";
                     }
-                    if (parsedStrategy instanceof ConditionalScenarioHandler) {
-                    	ConditionalScenarioHandler<?> condStrategy = (ConditionalScenarioHandler<?>) parsedStrategy;
+                    if (parsedStrategy instanceof ConditionalScenario) {
+                    	ConditionalScenario<?> condStrategy = (ConditionalScenario<?>) parsedStrategy;
                     	if (condStrategy.getConditionType().equals(Integer.class)) {
                     		try {
                     			int bound = Integer.parseInt(parameter);
                     			ExploreCondition<Integer> explCond = new NodeBoundCondition();
                     			explCond.setCondition(bound);
-                    			((ConditionalScenarioHandler<Integer>) condStrategy).setCondition(explCond, ""+bound);
+                    			((ConditionalScenario<Integer>) condStrategy).setCondition(explCond, ""+bound);
                     		} catch (NumberFormatException exc) {
                     			throw new IllegalArgumentException(parameter
                     					+ " is not a valid node bound");
@@ -977,13 +975,13 @@ public class Generator extends CommandLineTool {
                             }
                             ExploreCondition<Map<Label,Integer>> explCond = new EdgeBoundCondition();
                             explCond.setCondition(conditions);
-                            ((ConditionalScenarioHandler<Map<Label,Integer>>) condStrategy).setCondition(explCond, "");
+                            ((ConditionalScenario<Map<Label,Integer>>) condStrategy).setCondition(explCond, "");
                     	} else {
                     		assert true : "Unknown condition type " + condStrategy.getConditionType();
                     	}
                     	
                     }
-                    else if (parsedStrategy instanceof ControlledScenarioHandler) {
+                    else if (parsedStrategy instanceof ControlledScenario) {
                     	try {
                     		parsedProgram = new RuleList(new File(parameter));
                     	} catch (IOException exc) {
@@ -999,14 +997,14 @@ public class Generator extends CommandLineTool {
         }
     
         /** Returns the strategy corresponding to a given strategy name. */
-        protected ScenarioHandler getStrategy(String name) {
+        protected Scenario getStrategy(String name) {
             return strategies.get(name);
         }
     
         /**
          * Adds a given strategy to the available strategies.
          */
-        protected void addStrategy(ScenarioHandler strategy) {
+        protected void addStrategy(Scenario strategy) {
             strategies.put(strategy.getName(), strategy);
             maxNameLength = Math.max(maxNameLength, strategy.getName().length());
         }
@@ -1015,10 +1013,10 @@ public class Generator extends CommandLineTool {
         private int maxNameLength = 0;
     
         /** A mapping from strategy names (as appearing in the options) to strategies. */
-        private final Map<String, ScenarioHandler> strategies = new TreeMap<String, ScenarioHandler>();
+        private final Map<String, Scenario> strategies = new TreeMap<String, Scenario>();
     
         /** The strategy determined by the parser. */
-        private ScenarioHandler parsedStrategy;
+        private Scenario parsedStrategy;
     
         /** String description of the condition for a conditional strategy. */
         private String parsedCondition;

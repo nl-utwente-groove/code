@@ -34,24 +34,22 @@ import groove.lts.GraphState;
  * @author Tom Staijen
  */
 public interface Scenario {
-	/** Returns the strategy this scenario uses. */
+    /** Returns then name of this scenario. */
+    public String getName();
+    
+    /** Returns a one-line description of this scenario. */
+    public String getDescription();
+
+    /** Returns the strategy this scenario uses. */
 	public Strategy getStrategy();
-//	/** Sets the  {@link groove.lts.GTS} on which this scenario works. 
-//	 * @param gts the  {@link groove.lts.GTS} on which this scenario works. 
-//	 */
-//	public void setGTS(GTS gts);
-//	/** Sets the start state for this scenario. 
-//	 * @param state the start state for this scenario. 
-//	 */
-//	public void setState(GraphState state);
 
 	/** 
 	 * Plays the scenario on a given GTS, yielding a result.
-	 * Convenience method for {@link #play(GTS, GraphState)} with the
+	 * Convenience method for {@link #prepare(GTS, GraphState)} with the
 	 * GTS' initial state as start state for the scenario.
-	 * @see #play(GTS, GraphState)
+	 * @see #prepare(GTS, GraphState)
 	 */
-	public Result play(GTS gts) ;
+	public void prepare(GTS gts) ;
 
 	/** 
 	 * Plays the scenario on a given GTS and state, yielding a result.
@@ -59,12 +57,22 @@ public interface Scenario {
 	 * result is done (according to {@link Result#done()}), or when the thread is interrupted.
 	 * @param gts the GTS to play the scenario on
 	 * @param state the start state for the scenario; must be in <code>gts</code>
-	 * @return the result of the scenario. This may be partial if the thread 
-	 * was interrupted.
 	 * @see Result#done()
 	 * @see #isInterrupted()
 	 */
-	public Result play(GTS gts, GraphState state) ;
+	public void prepare(GTS gts, GraphState state) ;
+	
+    /** 
+     * Plays the scenario on the GTS and state for which it was prepared with the
+     * last call to {@link #prepare(GTS)} or {@link #prepare(GTS, GraphState)}.
+     * The method returns when there are no more states to explore, or when the
+     * result is done (according to {@link Result#done()}), or when the thread is interrupted.
+     * @return the result of the scenario. This may be partial if the thread 
+     * was interrupted.
+     * @see Result#done()
+     * @see #isInterrupted()
+     */
+	public Result play();
 	
 	/**
 	 * Returns the result of this scenario.
@@ -73,6 +81,6 @@ public interface Scenario {
 	 */
 	public Result getResult();
 	
-	/** Indicates whether the last invocation of {@link #play(GTS)} was interrupted. */
+	/** Indicates whether the last invocation of {@link #prepare(GTS)} was interrupted. */
 	public boolean isInterrupted();
 }
