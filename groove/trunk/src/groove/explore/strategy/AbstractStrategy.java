@@ -28,6 +28,7 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
 import groove.lts.StateGenerator;
+import groove.trans.SystemRecord;
 
 import java.util.Iterator;
 
@@ -161,7 +162,7 @@ public abstract class AbstractStrategy implements Strategy {
 			GraphState parent = parentOf(getAtState());
 			if (aliasing && parent != null && parent.isClosed()) {
 				GraphNextState s = (GraphNextState) getAtState();
-				return new AliasMatchesIterator(s, cache, getGTS().getRecord().getEnabledRules(s.getEvent().getRule()), this.getGTS().getRecord().getDisabledRules(s.getEvent().getRule()));
+				return new AliasMatchesIterator(s, cache, getRecord().getEnabledRules(s.getEvent().getRule()), getRecord().getDisabledRules(s.getEvent().getRule()), getRecord());
 			}
 
 			// Second case : one of the successors is closed.
@@ -175,7 +176,7 @@ public abstract class AbstractStrategy implements Strategy {
 		}
 		
 		// in all other cases, return a "normal" matches iterator
-		return new MatchesIterator(getAtState(), cache);
+		return new MatchesIterator(getAtState(), cache, getRecord());
 	}
 
 	/**
@@ -210,6 +211,11 @@ public abstract class AbstractStrategy implements Strategy {
 	/** Return the current value of the "close on exit" setting */
 	public boolean closeExit() {
 		return closeExit;
+	}
+	
+	/** Convenience method to retrieve the GTS' system record. */
+	protected SystemRecord getRecord() {
+	    return getGTS().getRecord();
 	}
 	
 	/** The graph transition system explored by the strategy.*/

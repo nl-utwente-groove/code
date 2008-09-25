@@ -55,7 +55,7 @@ public class ControlledScenario extends DefaultScenario {
 				return false;
 			}
 			ExploreCache cache = new ControlledCache(this.currRule);
-			MatchesIterator matchIter = new MatchesIterator(atState, cache);
+			MatchesIterator matchIter = new MatchesIterator(atState, cache, getRecord());
 			
 			if (findAll) {
 				while (matchIter.hasNext()) {

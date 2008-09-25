@@ -103,11 +103,11 @@ public class SystemRecord implements NodeFactory {
 //	}
 	
 	/** Returns a rule application for a given rule and matching of that rule. */
-	public RuleApplication getApplication(RuleMatch match, Graph host) {
+	public RuleApplication getApplication(RuleEvent match, Graph host) {
 		if( match instanceof VirtualRuleMatch ) {
 			return ((VirtualRuleMatch)match).getApplication();
 		} else {
-			return getEvent(match).newApplication(host);
+			return match.newApplication(host);
 		}
 	}
 //

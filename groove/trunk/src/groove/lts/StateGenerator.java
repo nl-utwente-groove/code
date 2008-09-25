@@ -20,8 +20,8 @@ import groove.control.Location;
 import groove.explore.util.ExploreCache;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
+import groove.trans.VirtualRuleEvent;
 import groove.util.Reporter;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -92,7 +92,7 @@ public class StateGenerator {
 		return getGTS().getRecord();
 	}
 
-	/** To be called only by {@link #addTransition(GraphState, RuleMatch, ExploreCache)}.*/
+	/** To be called only by {@link #addTransition(GraphState, RuleEvent, ExploreCache)}.*/
     private Set<? extends GraphTransition> addTransition(GraphState source, RuleApplication appl, ExploreCache cache) {
         reporter.start(ADD_TRANSITION);
         
@@ -159,7 +159,7 @@ public class StateGenerator {
      * @param match the rule match defining the derivation
      * @return the set of actually added states
      */
-	public Set<? extends GraphState> addTransition(GraphState source, RuleMatch match, ExploreCache cache) {
+	public Set<? extends GraphState> addTransition(GraphState source, RuleEvent match, ExploreCache cache) {
 		
 		Set<? extends GraphTransition> gtrs = applyMatch(source, match, cache);
 		HashSet<GraphState> states = new HashSet<GraphState>();
@@ -172,8 +172,14 @@ public class StateGenerator {
 	/**
 	 * Applies a match and returns the resulting complete set of graph transitions.
 	 */
-	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleMatch match, ExploreCache cache) {
-		RuleApplication appl = getRecord().getApplication(match, source.getGraph());
+	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleEvent event, ExploreCache cache) {
+		RuleApplication appl;
+		if (event instanceof VirtualRuleEvent) {
+		    VirtualRuleEvent virtualEvent = (VirtualRuleEvent) event;
+		    appl = new DefaultAliasApplication(virtualEvent.getWrappedEvent(), (GraphNextState) source, virtualEvent.getStub());
+		} else {
+            appl = event.newApplication(source.getGraph());
+		}
 		return this.addTransition(source, appl, cache);
 	}
 	
