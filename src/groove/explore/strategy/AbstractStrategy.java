@@ -74,15 +74,16 @@ public abstract class AbstractStrategy implements Strategy {
 	 */
 	protected abstract void updateAtState();
 	
-	/** The state that is currently explored by the strategy. 
-	 * Is updated by {@link #updateAtState()}. */
+	/** 
+	 * Returns the state that will be explored next.
+	 * If <code>null</code>, there is nothing left to explore.
+	 * Is updated by {@link #updateAtState()}. 
+	 */
 	protected final GraphState getAtState() {
 		return this.atState;
 	}
 	
-	/** Closes a state.
-	 * @param state
-	 */
+	/** Closes a given state. */
 	protected void setClosed(GraphState state) {
 		getGTS().setClosed(state);
 	}
