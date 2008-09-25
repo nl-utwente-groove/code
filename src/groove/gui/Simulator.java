@@ -65,6 +65,7 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.StateGenerator;
 import groove.trans.NameLabel;
+import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
@@ -259,7 +260,7 @@ public class Simulator {
     	boolean result = currentGTS == gts;
     	currentGTS = gts;
         currentTransition = null;
-        currentMatch = null;
+        currentEvent = null;
     	currentState = gts == null ? null : gts.startState();
     	if (gts != null) {
     	    getGenerator().setGTS(gts);
@@ -285,7 +286,7 @@ public class Simulator {
     	boolean result = currentState != state;
     	currentState = state;
     	currentTransition = null;
-    	currentMatch = null;
+    	currentEvent = null;
     	return result;
     }
 
@@ -298,16 +299,16 @@ public class Simulator {
     }
 
     /** Returns the currently selected match */
-    public RuleMatch getCurrentMatch() {
-    	return currentMatch;
+    public RuleEvent getCurrentEvent() {
+    	return currentEvent;
     }
     
     /** 
      * Sets the currently selected match. 
      */
-    protected boolean setCurrentMatch(RuleMatch match) {
-    	boolean result = currentMatch != match;
-    	currentMatch = match;
+    protected boolean setCurrentEvent(RuleEvent event) {
+    	boolean result = currentEvent != event;
+    	currentEvent = event;
     	return result;
     }
     
@@ -323,7 +324,7 @@ public class Simulator {
     	currentTransition = transition;
     	if (transition != null) {
     		currentState = transition.source();
-            setCurrentMatch(transition.getMatch());
+            setCurrentEvent(transition.getEvent());
     	}
 		return result;
     }
@@ -1056,7 +1057,7 @@ public class Simulator {
     public synchronized void setRule(RuleNameLabel name) {
         setCurrentRule(getCurrentGrammar().getRule(name));
         setCurrentTransition(null);
-        setCurrentMatch(null);
+        setCurrentEvent(null);
         fireSetRule(name);
         refreshActions();
     }
@@ -1073,7 +1074,7 @@ public class Simulator {
             if (setCurrentTransition(transition)) {
                 RuleNameLabel ruleName = transition.getEvent().getRule().getName();
                 setCurrentRule(getCurrentGrammar().getRule(ruleName));
-                setCurrentMatch(transition.getMatch());
+                setCurrentEvent(transition.getEvent());
             }
             fireSetTransition(getCurrentTransition());
 //        } else {
@@ -1089,15 +1090,15 @@ public class Simulator {
     /** 
      * Activates a given match. Invokes
      * {@link #fireSetMatch(RuleMatch)} to notify all observers of the change.
-     * @param match the match to be activated.
+     * @param event the match to be activated.
      * @see #fireSetTransition(GraphTransition)
      */
-    public synchronized void setMatch(RuleMatch match) {
-        assert match != null : "The match and the transition cannot be both null.";
-        RuleNameLabel ruleName = match.getRule().getName();
+    public synchronized void setEvent(RuleEvent event) {
+        assert event != null : "The match and the transition cannot be both null.";
+        RuleNameLabel ruleName = event.getRule().getName();
         setCurrentRule(getCurrentGrammar().getRule(ruleName));
-        setCurrentMatch(match);
-        fireSetMatch(match);
+        setCurrentEvent(event);
+        fireSetMatch(event.getMatch(getCurrentState().getGraph()));
         // fireSetTransition(getCurrentTransition());
         refreshActions();
     }
@@ -1110,9 +1111,9 @@ public class Simulator {
      * @see #fireApplyTransition(GraphTransition)
      */
     public synchronized void applyMatch () {
-    	if (getCurrentMatch() != null) {
+    	if (getCurrentEvent() != null) {
     		ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
-    		Set<? extends GraphTransition> resultTransitions = getGenerator().applyMatch(getCurrentState(), getCurrentMatch(), cache);
+    		Set<? extends GraphTransition> resultTransitions = getGenerator().applyMatch(getCurrentState(), getCurrentEvent(), cache);
     		if (! resultTransitions.isEmpty()) {
     			// may be empty in the case of abstract transformation
     			GraphTransition trans = resultTransitions.iterator().next();
@@ -2111,7 +2112,7 @@ public class Simulator {
     /**
      * The currently selected match.
      */
-    private RuleMatch currentMatch;
+    private RuleEvent currentEvent;
     
     /**
      * The file or directory containing the last loaded or saved grammar, or <tt>null</tt> if no
@@ -2563,7 +2564,7 @@ public class Simulator {
 
 		public void refresh() {
 			//setEnabled(getCurrentTransition() != null);
-			setEnabled(getCurrentMatch() != null);
+			setEnabled(getCurrentEvent() != null);
 		}
     }
 

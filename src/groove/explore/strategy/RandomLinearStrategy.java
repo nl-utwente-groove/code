@@ -23,6 +23,7 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class RandomLinearStrategy extends AbstractStrategy {
 		this.collector.reset();
 		if (matchIter.hasNext()) {
 			// collect all matches
-			List<RuleMatch> matches = new ArrayList<RuleMatch>();
+			List<RuleEvent> matches = new ArrayList<RuleEvent>();
 			while (matchIter.hasNext()) {
 				matches.add(matchIter.next());
 			}

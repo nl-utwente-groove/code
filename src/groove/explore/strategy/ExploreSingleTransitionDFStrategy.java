@@ -22,7 +22,7 @@ import groove.explore.util.RandomNewStateChooser;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
+import groove.trans.RuleEvent;
 
 /** This depth-first search algorithm systematically generates a unique outgoing 
  * transition and continues with it. The difference with {@link LinearStrategy}
@@ -53,10 +53,10 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 		// Add transitions until a transition yielding a new state is added
 		this.collector.reset();
 		while (matchIter.hasNext() && this.collector.pickRandomNewState() == null) {
-			RuleMatch match = matchIter.next();
-			if (! isExistingOutTransition(match, getAtState())) {
+			RuleEvent event = matchIter.next();
+			if (! isExistingOutTransition(event, getAtState())) {
 				// add the transition corresponding to match, this may not result in a new state
-				getGenerator().addTransition(getAtState(), match, cache);
+				getGenerator().addTransition(getAtState(), event, cache);
 			}
 		}
 		if (! matchIter.hasNext()) {
@@ -93,9 +93,9 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 	/** Determines whether a match corresponds to an outgoing transition of
 	 * a state, in the GTS constructed by this strategy.
 	 */
-	private boolean isExistingOutTransition(RuleMatch match, GraphState state) {
+	private boolean isExistingOutTransition(RuleEvent event, GraphState state) {
 		for (GraphTransition trans : getGTS().outEdgeSet(this.atState)) {
-			if (match.equals(trans.getEvent().getMatch(this.atState.getGraph()))) {
+			if (event.equals(trans.getEvent())) {
 				return true;
 			}
 		}

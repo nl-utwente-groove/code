@@ -16,11 +16,6 @@
  */
 package groove.test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchesIterator;
 import groove.explore.util.PriorityCache;
@@ -32,11 +27,17 @@ import groove.lts.GraphState;
 import groove.lts.StartGraphState;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
-import groove.trans.RuleMatch;
+import groove.trans.Rule;
+import groove.trans.RuleEvent;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemRecord;
-import groove.trans.Rule;
 import groove.view.FormatException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import junit.framework.TestCase;
 
 /** Simple tests for the utility classes for strategies and for strategies.
@@ -77,15 +78,15 @@ public class StrategiesTest extends TestCase {
 			start[i] = grammars[i].getStartGraph();
 		}
 
-		ArrayList<Collection<RuleMatch>> theMatches = new ArrayList<Collection<RuleMatch>>();
+		ArrayList<Collection<RuleEvent>> theMatches = new ArrayList<Collection<RuleEvent>>();
 		MatchesIterator[] iter = new MatchesIterator[nb];
 		
 
 		for (int i = 0; i < nb; i++) {
 			// if (i != 2) { continue; }
 			GraphState state = new StartGraphState(records[i], start[i]);
-			iter[i] = new MatchesIterator(state, records[i].createCache(state, false, false));
-			theMatches.add(i, new ArrayList<RuleMatch>());
+			iter[i] = new MatchesIterator(state, records[i].createCache(state, false, false), records[i]);
+			theMatches.add(i, new ArrayList<RuleEvent>());
 			while (iter[i].hasNext()) {
 				theMatches.get(i).add(iter[i].next());
 			}
@@ -109,7 +110,7 @@ public class StrategiesTest extends TestCase {
 		ArrayList<ArrayList<RuleNameLabel>> computed = new ArrayList<ArrayList<RuleNameLabel>>();
 		for (int i = 0; i < nb; i++) {
 			computed.add(new ArrayList<RuleNameLabel>());
-			for (RuleMatch rm : theMatches.get(i)) {
+			for (RuleEvent rm : theMatches.get(i)) {
 				computed.get(i).add(rm.getRule().getName());
 			}
 		}
@@ -143,9 +144,9 @@ public class StrategiesTest extends TestCase {
 		
 		SystemRecord record = (new GTS(grammar).getRecord());
 		GraphState state = new StartGraphState(record, grammar.getStartGraph());
-		MatchesIterator iter = new MatchesIterator(state, record.createCache(state, false, false));
+		MatchesIterator iter = new MatchesIterator(state, record.createCache(state, false, false), record);
 		
-		RuleMatch match;  // for debugging purpose
+		RuleEvent match;  // for debugging purpose
 		assertFalse(iter.isEndRule());
 		match = iter.next(); // <g>
 		assertFalse(iter.isEndRule());
@@ -162,7 +163,7 @@ public class StrategiesTest extends TestCase {
 		match = iter.next(); // <i>
 		assertTrue(iter.isEndRule());	
 		
-		iter = new MatchesIterator(state, record.createCache(state, false, false));
+		iter = new MatchesIterator(state, record.createCache(state, false, false), record);
 		assertFalse(iter.isEndRule());
 		iter.hasNext();
 		assertFalse(iter.isEndRule());
@@ -199,9 +200,9 @@ public class StrategiesTest extends TestCase {
 		} 
 		
 		SystemRecord record = new GTS(grammar).getRecord();
-		Collection<RuleMatch> theMatches = new ArrayList<RuleMatch>();
+		Collection<RuleEvent> theMatches = new ArrayList<RuleEvent>();
 		GraphState state = new StartGraphState(record, grammar.getStartGraph());
-		MatchesIterator iter = new MatchesIterator(state, record.createCache(state, false, false));
+		MatchesIterator iter = new MatchesIterator(state, record.createCache(state, false, false), record);
 		while (iter.hasNext()) {
 				theMatches.add(iter.next());
 		}

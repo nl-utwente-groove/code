@@ -18,7 +18,10 @@ package groove.explore.util;
 
 import groove.lts.GraphState;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.SystemRecord;
+import groove.util.TransformIterator;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -30,28 +33,24 @@ import java.util.NoSuchElementException;
  * @author Iovka Boneva
  * @version $Revision$
  */
-public class MatchesIterator implements Iterator<RuleMatch> {
-    // ---------------------------------------------------------------
-    // CONSTRUCTOR, FIELDS ETC.
-    // ---------------------------------------------------------------
+public class MatchesIterator implements Iterator<RuleEvent> {
     /**
-     * Constructs a new matches iterator for a given state, updating the cache given as parameter. 
-     * @param state 
-     * @param rules 
+     * Constructs a new matches iterator for a given state, updating the cache given as parameter.
      */
-    public MatchesIterator (GraphState state, ExploreCache rules) {
-        this(state, rules, true);
+    public MatchesIterator (GraphState state, ExploreCache rules, SystemRecord record) {
+        this(state, rules, true, record);
         firstRule();
         goToNext();
         this.isEndRule = false; 
     }
 
     /** A minimal constructor, to be used by sub-classes.
-     * @param protect just for different signature */
-    protected MatchesIterator (GraphState state, ExploreCache rules, boolean protect) {
-        // minimal, for the use of sub-classes
+     * @param protect just for different signature 
+     * @param record TODO*/
+    protected MatchesIterator (GraphState state, ExploreCache rules, boolean protect, SystemRecord record) {
         this.state = state;
         this.rulesIter = rules;
+        this.record = record;
     }
     
 	public boolean hasNext() {
@@ -59,10 +58,10 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 		return matchIter != null && this.matchIter.hasNext();
 	}
 
-	public RuleMatch next() {
+	public RuleEvent next() {
 		goToNext();
 		if (this.matchIter == null) { throw new NoSuchElementException(); }
-		RuleMatch result = matchIter.next();
+		RuleEvent result = matchIter.next();
 		this.rulesIter.updateMatches(this.currentRule);
 		this.isEndRule = ! matchIter.hasNext();
 		return result;
@@ -155,8 +154,13 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 	}
 	
 	/** Callback method to create an iterator over the matches of a given rule. */
-	protected Iterator<RuleMatch> createMatchIter(Rule rule) {
-	   return rule.getMatchIter(this.state.getGraph(), null);
+	protected Iterator<RuleEvent> createMatchIter(Rule rule) {
+	   return new TransformIterator<RuleMatch,RuleEvent>(rule.getMatchIter(this.state.getGraph(), null)) {
+	       @Override
+	       protected RuleEvent toOuter(RuleMatch from) {
+	           return record.getEvent(from);
+	       }
+	   };
 	}
 //	
 //	
@@ -187,7 +191,8 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 	/** The state for which the matches iterator is computed. Set at construction time. */
 	protected final GraphState state;
 	/** After initialization, mathIter is null means that the iterator is consumed. */
-	protected Iterator<RuleMatch> matchIter;
+	protected Iterator<RuleEvent> matchIter;
 	/** Set to true when the last match for a given rule has been returned. */
 	protected boolean isEndRule;
+	private final SystemRecord record;
 }

@@ -173,6 +173,8 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
         	SPOEvent other = (SPOEvent) obj;
             result = equalsRule(other) && equalsAnchorImage(other);
             reporter.stop();
+        } else if (obj instanceof VirtualRuleEvent) {
+            return equals(((VirtualRuleEvent) obj).getWrappedEvent());
         } else {
             result = false;
         }

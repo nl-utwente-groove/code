@@ -16,10 +16,10 @@
  */
 package groove.explore.strategy;
 
-import java.util.Iterator;
-
 import groove.explore.util.ExploreCache;
-import groove.trans.RuleMatch;
+import groove.trans.RuleEvent;
+
+import java.util.Iterator;
 
 /** Explores all outgoing transitions of a given state.
  * @author Iovka Boneva
@@ -42,7 +42,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
 		}
 		// rule might have been interrupted 
 		ExploreCache cache = getCache(true, false);
-		Iterator<RuleMatch> matchesIter = getMatchesIterator(cache);
+		Iterator<RuleEvent> matchesIter = getMatchesIterator(cache);
 //		done when setClosed is called
 //		if (!matchesIter.hasNext()) {
 //			this.getGTS().setFinal(this.startState());

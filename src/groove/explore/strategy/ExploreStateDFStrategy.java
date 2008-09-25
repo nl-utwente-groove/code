@@ -18,13 +18,13 @@
 
 package groove.explore.strategy;
 
-import java.util.Iterator;
-
 import groove.explore.util.ExploreCache;
 import groove.explore.util.RandomNewStateChooser;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.RuleMatch;
+import groove.trans.RuleEvent;
+
+import java.util.Iterator;
 
 /** This depth-first search algorithm systematically generates all outgoing 
  * transitions of any visited state.
@@ -51,7 +51,7 @@ public class ExploreStateDFStrategy extends AbstractStrategy {
 			return false; 
 		}
 		ExploreCache cache = getCache(false, false);
-		Iterator<RuleMatch> matchIter = getMatchesIterator(cache);
+		Iterator<RuleEvent> matchIter = getMatchesIterator(cache);
 		this.collector.reset();
 		while (matchIter.hasNext()) {
 			getGenerator().addTransition(getAtState(), matchIter.next(), cache);

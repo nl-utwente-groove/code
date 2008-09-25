@@ -24,9 +24,8 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.Transition;
-import groove.trans.Match;
 import groove.trans.NameLabel;
+import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.util.CollectionOfCollections;
@@ -43,10 +42,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -282,8 +282,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     		if( getCurrentState().isClosed()) {
     			refreshMatchesClosed(getCurrentGTS().outEdgeSet(getCurrentState()));
     		} else {
-    			Set<RuleMatch> matches = new HashSet<RuleMatch>();
-    			MatchesIterator matchIter = new MatchesIterator(getCurrentState(), getCurrentGTS().getRecord().freshCache(getCurrentState(), false));
+    			Collection<RuleEvent> matches = new ArrayList<RuleEvent>();
+    			MatchesIterator matchIter = new MatchesIterator(getCurrentState(), getCurrentGTS().getRecord().freshCache(getCurrentState(), false), getCurrentGTS().getRecord());
     			while (matchIter.hasNext()) {
     			    matches.add(matchIter.next());
     			}
@@ -293,8 +293,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     	DefaultMutableTreeNode treeNode = null;
     	if (getCurrentTransition() != null) {
     		treeNode = matchNodeMap.get(getCurrentTransition().getMatch());
-    	} else if( getCurrentMatch() != null ) {
-    		treeNode = matchNodeMap.get(getCurrentMatch());
+    	} else if( getCurrentEvent() != null ) {
+    		treeNode = matchNodeMap.get(getCurrentEvent());
     	} else if (getCurrentRule() != null) {
     		treeNode = ruleNodeMap.get(getCurrentRule().getNameLabel());
     	}
@@ -310,7 +310,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Refreshes the match nodes, based on a given derivation edge set.
      * @param matches the set of derivation edges used to create match nodes
      */
-    private void refreshMatchesOpen(Set<? extends RuleMatch> matches) {
+    private void refreshMatchesOpen(Collection<RuleEvent> matches) {
         // remove current matches
     	for (MatchTreeNode matchNode: matchNodeMap.values()) {
             ruleDirectory.removeNodeFromParent(matchNode);
@@ -330,26 +330,22 @@ public class RuleJTree extends JTree implements SimulationListener {
             }
         }
         // recollect the derivations so that they are ordered according to the rule events
-        SortedSet<RuleMatch> orderedMatches = new TreeSet<RuleMatch>(new Comparator<RuleMatch>() {
-			public int compare(RuleMatch o1, RuleMatch o2) {
-				return getCurrentGTS().getRecord().getEvent(o1).compareTo(getCurrentGTS().getRecord().getEvent(o2));
-			}
-        });
-        orderedMatches.addAll(matches);
+        SortedSet<RuleEvent> orderedEvents = new TreeSet<RuleEvent>();
+        orderedEvents.addAll(matches);
         // insert new matches
-        for (RuleMatch match: orderedMatches) {
-            Label ruleName = match.getRule().getName();
+        for (RuleEvent event: orderedEvents) {
+            Label ruleName = event.getRule().getName();
             RuleTreeNode ruleNode = ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
-            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, match);
+            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, event);
             ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
             expandPath(new TreePath(ruleNode.getPath()));
-            matchNodeMap.put(match, matchNode);
+            matchNodeMap.put(event, matchNode);
         }
         
         for( GraphTransition trans : getCurrentGTS().outEdgeSet(getCurrentState())) {
-        	matchTransitionMap.put(trans.getMatch(), trans);
+        	matchTransitionMap.put(trans.getEvent(), trans);
         }
     }
 
@@ -390,11 +386,11 @@ public class RuleJTree extends JTree implements SimulationListener {
             RuleTreeNode ruleNode = ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
-            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge.getMatch());
+            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge);
             ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
             expandPath(new TreePath(ruleNode.getPath()));
-            matchNodeMap.put(edge.getMatch(), matchNode);
-            matchTransitionMap.put(edge.getMatch(), edge);
+            matchNodeMap.put(edge.getEvent(), matchNode);
+            matchTransitionMap.put(edge.getEvent(), edge);
         }
     }
     
@@ -409,8 +405,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Convenience method to retrieve the currently selected match from the state panel */
-    private RuleMatch getCurrentMatch() {
-    	return simulator.getCurrentMatch();
+    private RuleEvent getCurrentEvent() {
+    	return simulator.getCurrentEvent();
     }
     
     /** Convenience method to retrieve the currently selected state from the simulator. */
@@ -529,12 +525,12 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule directory
      */
-    protected final Map<RuleMatch, MatchTreeNode> matchNodeMap = new HashMap<RuleMatch, MatchTreeNode>();
+    protected final Map<RuleEvent, MatchTreeNode> matchNodeMap = new HashMap<RuleEvent, MatchTreeNode>();
     
     /**
      * Mapping from RuleMatches to transitions in the current LTS, for fast selecting
      */
-    protected final Map<RuleMatch, GraphTransition> matchTransitionMap = new HashMap<RuleMatch, GraphTransition>();
+    protected final Map<RuleEvent, GraphTransition> matchTransitionMap = new HashMap<RuleEvent, GraphTransition>();
     
     /**
      * Switch to determine whether changes in the tree selection model
@@ -595,12 +591,12 @@ public class RuleJTree extends JTree implements SimulationListener {
 	                simulator.setRule(((RuleTreeNode) selectedNode).getRule().getNameLabel());
 	            } else if (selectedNode instanceof MatchTreeNode) {
 	                // selected tree node is a match (level 2 node)
-	            	RuleMatch match = ((MatchTreeNode) selectedNode).edge();
-	            	GraphTransition trans = matchTransitionMap.get(match);
+	            	RuleEvent event = ((MatchTreeNode) selectedNode).event();
+	            	GraphTransition trans = matchTransitionMap.get(event);
 	            	if( trans != null ) {
 		            	simulator.setTransition(trans);	            		
 	            	} else {
-	            		simulator.setMatch(match);
+	            		simulator.setEvent(event);
 	            	}
 	            	
 	                if (simulator.getGraphPanel() == simulator.getRulePanel()) {
@@ -652,19 +648,19 @@ public class RuleJTree extends JTree implements SimulationListener {
     			return;
     		}
         	if (selectedNode instanceof MatchTreeNode) {
-        		RuleMatch match = ((MatchTreeNode) selectedNode).edge();
-        		GraphTransition trans = matchTransitionMap.get(match);
+        		RuleEvent event = ((MatchTreeNode) selectedNode).event();
+        		GraphTransition trans = matchTransitionMap.get(event);
         		if (trans == null) {
         			Iterator<GraphTransition> outTransitions = getCurrentState().getTransitionIter();
     				while (outTransitions.hasNext()) {
     					GraphTransition t = outTransitions.next();
-    					if (t.getMatch().equals(match)) {
+    					if (t.getMatch().equals(event)) {
     						trans = t;
-    						matchTransitionMap.put(match, trans);
+    						matchTransitionMap.put(event, trans);
     						break;
     					}
     				}
-                    simulator.setMatch(match);
+                    simulator.setEvent(event);
         		} else {
                     // if trans is not null, it has been added to the matchTransitionMap
                     simulator.setTransition(trans);
@@ -802,8 +798,8 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     * Creates a new match node on the basis of a given number and derivation edge.
 	     * The node cannot have children.
 	     */
-	    public MatchTreeNode(int nr, Transition edge) {
-	        super(edge, false);
+	    public MatchTreeNode(int nr, GraphTransition trans) {
+	        super(trans.getEvent(), false);
 	        this.nr = nr;
 	    }
 	
@@ -811,18 +807,18 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     * Creates a new match node on the basis of a given number and the RuleMatch.
 	     * The node cannot have children.
 	     * @param nr
-	     * @param edge
+	     * @param event
 	     */
-	    public MatchTreeNode(int nr, Match edge) {
-	    	super(edge, false);
+	    public MatchTreeNode(int nr, RuleEvent event) {
+	    	super(event, false);
 	    	this.nr = nr;
 	    }
 	    
 	    /**
 	     * Convenience method to return the underlying derivation edge.
 	     */
-	    public RuleMatch edge() {
-	        return (RuleMatch) getUserObject();
+	    public RuleEvent event() {
+	        return (RuleEvent) getUserObject();
 	    }
 	
 	    /**
@@ -839,7 +835,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     */
 	    @Override
 	    public String toString() {
-	    	return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? simulator.getCurrentGTS().getRecord().getEvent(edge()).getAnchorImageString(): "Match " + nr;
+	    	return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? event().getAnchorImageString(): "Match " + nr;
 	    }
 	
 	    /** The number of this match, used in <tt>toString()</tt> */

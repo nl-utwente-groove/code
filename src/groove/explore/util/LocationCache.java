@@ -85,7 +85,7 @@ public class LocationCache implements ExploreCache {
 	 * On demand test if a certain rule has matches, store the result, and return the answer.
 	 */
 	private boolean testMatch(Rule rule) {
-		boolean match = new MatchesIterator(this.state, new TestMatchExploreCache(rule)).hasNext();
+		boolean match = rule.hasMatch(this.state.getGraph());
 		if( match ) {
 			matched.add(rule);
 		} else {
@@ -183,41 +183,41 @@ public class LocationCache implements ExploreCache {
 		return this.failed;
 	}
 }
-
-class TestMatchExploreCache implements ExploreCache {
-	
-	Iterator<Rule> it;
-	
-	/** @param rule */
-	public TestMatchExploreCache(Rule rule) {
-		HashSet<Rule> hs = new HashSet<Rule>(); 
-		hs.add(rule);
-		it = hs.iterator();
-	}
-	
-	public void remove() {
-	}
-	
-	public Rule last() {
-		return null;
-	}
-	
-	public Rule next() {
-		return it.next();
-	}
-	
-	public boolean hasNext() {
-		return it.hasNext();
-	}
-	
-	public void updateExplored(Rule rule) {
-	}
-	
-	public void updateMatches(Rule rule) {
-	}
-	
-	public Location getTarget(Rule rule) {
-		return null;
-	}
-	
-}
+//
+//class TestMatchExploreCache implements ExploreCache {
+//	
+//	Iterator<Rule> it;
+//	
+//	/** @param rule */
+//	public TestMatchExploreCache(Rule rule) {
+//		HashSet<Rule> hs = new HashSet<Rule>(); 
+//		hs.add(rule);
+//		it = hs.iterator();
+//	}
+//	
+//	public void remove() {
+//	}
+//	
+//	public Rule last() {
+//		return null;
+//	}
+//	
+//	public Rule next() {
+//		return it.next();
+//	}
+//	
+//	public boolean hasNext() {
+//		return it.hasNext();
+//	}
+//	
+//	public void updateExplored(Rule rule) {
+//	}
+//	
+//	public void updateMatches(Rule rule) {
+//	}
+//	
+//	public Location getTarget(Rule rule) {
+//		return null;
+//	}
+//	
+//}

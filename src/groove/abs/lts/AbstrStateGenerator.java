@@ -16,23 +16,21 @@
  */
 package groove.abs.lts;
 
-import groove.abs.AbstrTransformer;
+import groove.abs.AbstrGraph;
 import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
 import groove.abs.Util;
-import groove.abs.AbstrGraph;
 import groove.explore.util.ExploreCache;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.StateGenerator;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 
 /** A version of a {@link StateGenerator} to be used with abstract exploration.
@@ -57,18 +55,16 @@ public class AbstrStateGenerator extends StateGenerator {
 		if (this.options == null) {	this.options = options; }
 	}
 	
-
 	@Override
 	/**
 	 * For abstract transformation, the application of a match may result in
 	 * several (or none) abstract graph states.
 	 */
-	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleMatch match, ExploreCache cache) {
-		
+	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleEvent event, ExploreCache cache) {
 		AbstrGraphState abstrSource = (AbstrGraphState) source;
 		Set<GraphTransition> result = new HashSet<GraphTransition>();
 		Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
-		RuleEvent event = AbstrTransformer.transform(((AbstrGraphState) abstrSource).getGraph(), match, getRecord(), this.options, transfResult);
+//		RuleEvent event = AbstrTransformer.transform(((AbstrGraphState) abstrSource).getGraph(), event, getRecord(), this.options, transfResult);
 		for (AbstrGraph transf : transfResult) {
 			GraphTransition trans;
 			if (transf != DefaultAbstrGraph.INVALID_AG) {

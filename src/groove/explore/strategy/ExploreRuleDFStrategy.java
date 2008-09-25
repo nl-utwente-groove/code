@@ -22,7 +22,7 @@ import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomNewStateChooser;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.RuleMatch;
+import groove.trans.RuleEvent;
 
 /** This depth-first search algorithm generates at one step all outgoing 
  * transitions for some rule.
@@ -48,7 +48,7 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 	
 		this.collector.reset();
 		while (currMatchIter.hasNext() && ! currMatchIter.isEndRule()) {
-			RuleMatch match = currMatchIter.next();
+			RuleEvent match = currMatchIter.next();
 			getGenerator().addTransition(getAtState(), match, cache);
 		}
 		if (! currMatchIter.hasNext()) {
