@@ -165,7 +165,9 @@ public class DefaultIsoChecker implements IsoChecker {
 		Set<Node> connectedNodes = new HashSet<Node>();
 		Map<Edge, Collection<Edge>> edgeImageMap = new HashMap<Edge, Collection<Edge>>();
 		Certificate<Edge>[] edgeCerts = dom.getCertifier().getEdgeCertificates();
-		for (Certificate<Edge> edgeCert: edgeCerts) {
+		int edgeCount = edgeCerts.length;
+		for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
+		    Certificate<Edge> edgeCert = edgeCerts[i];
 			SmallCollection<Edge> images = codPartitionMap.get(edgeCert);
 			if (images == null) {
 				return null;
@@ -179,7 +181,7 @@ public class DefaultIsoChecker implements IsoChecker {
 				}
 			} else {
 				edgeImageMap.put(edgeCert.getElement(), images);
-			}
+		    }
 		}
 		while (!edgeImageMap.isEmpty()) {
 			if (connectedNodes.isEmpty()) {
@@ -353,7 +355,7 @@ public class DefaultIsoChecker implements IsoChecker {
 //		}
 		// iterate over the dom edge certificates
 		int edgeCount = edgeCerts.length;
-		for (int i = 0; result && i < edgeCount; i++) {
+		for (int i = 0; result && i < edgeCount && edgeCerts[i] != null; i++) {
 			Certificate<Edge> domEdgeCert = edgeCerts[i];
 			SmallCollection<Edge> image = codPartitionMap.get(domEdgeCert);
 			result = image != null && image.isSingleton();

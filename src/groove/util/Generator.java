@@ -46,6 +46,7 @@ import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
 import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
+import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -59,7 +60,6 @@ import groove.trans.Rule;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
-import groove.trans.VirtualRuleMatch;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
@@ -458,7 +458,7 @@ public class Generator extends CommandLineTool {
      * Gives some statistics regarding the generated transitions. 
      */
     private void reportTransitionStatistics() {
-        printf("\tTransitions:\tAliased:\t%d%n", VirtualRuleMatch.getAliasCount());
+        printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
         printf("\t\tConfluent:\t%d%n", StateGenerator.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
