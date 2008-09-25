@@ -119,27 +119,11 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 		if (!this.rulesIter.hasNext()) { // this iterator is entirely consumed 
 			this.matchIter = null;
 			return false;
+		} else {
+		    this.currentRule = rulesIter.next();
+		    this.matchIter = createMatchIter(currentRule);
+		    return true;
 		}
-		this.currentRule = rulesIter.next();
-		this.matchIter = createMatchIter(currentRule);
-//		if (! currentRule.isModifying() && matchIter.hasNext()) {
-//			// in the case of non modifying rule, only one match will be returned
-//			final RuleMatch m = matchIter.next();
-//			this.matchIter = new Iterator<RuleMatch>() {
-//				boolean hasNext = true;
-//
-//				public boolean hasNext() { return this.hasNext; }
-//
-//				public RuleMatch next() {
-//					if (! this.hasNext) { throw new NoSuchElementException();} 
-//					this.hasNext = false;
-//					return m;
-//				}
-//
-//				public void remove() { 	}
-//			};
-//		}
-		return true;
 	}
 	
 	/** This method insures that matchIter is incremented until the next element to be returned,

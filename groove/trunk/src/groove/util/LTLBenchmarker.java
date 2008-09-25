@@ -31,6 +31,7 @@ import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.ProductGTS;
@@ -41,7 +42,6 @@ import groove.trans.Rule;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
-import groove.trans.VirtualRuleMatch;
 import groove.verify.ModelChecking;
 import groove.view.FormatException;
 
@@ -1138,7 +1138,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * Gives some statistics regarding the generated transitions. 
      */
     private void reportTransitionStatistics() {
-        printf("\tTransitions:\tAliased:\t%d%n", VirtualRuleMatch.getAliasCount());
+        printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
         printf("\t\tConfluent:\t%d%n", StateGenerator.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());

@@ -20,10 +20,9 @@ import groove.lts.ProductGTS;
 import groove.lts.StateGenerator;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
+import groove.util.TreeHashSet;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -101,15 +100,15 @@ public class SystemRecord implements NodeFactory {
 //	public Iterator<Set<Rule>> getRuleSetIter() {
 //		return getRuleSystem().getRuleSetIter();
 //	}
-	
-	/** Returns a rule application for a given rule and matching of that rule. */
-	public RuleApplication getApplication(RuleEvent match, Graph host) {
-		if( match instanceof VirtualRuleMatch ) {
-			return ((VirtualRuleMatch)match).getApplication();
-		} else {
-			return match.newApplication(host);
-		}
-	}
+//	
+//	/** Returns a rule application for a given rule and matching of that rule. */
+//	public RuleApplication getApplication(RuleEvent match, Graph host) {
+//		if( match instanceof VirtualRuleMatch ) {
+//			return ((VirtualRuleMatch)match).getApplication();
+//		} else {
+//			return match.newApplication(host);
+//		}
+//	}
 //
 //	/** 
 //	 * Returns an event for a given rule and matching of that rule.
@@ -154,12 +153,11 @@ public class SystemRecord implements NodeFactory {
     	RuleEvent result;
     	reporter.start(GET_EVENT);
         RuleEvent event = match.newEvent(this, isReuse());
-        if (isReuse()) {
-            result = eventMap.get(event);
+        if (isReuse() && event instanceof SPOEvent) {
+            result = eventMap.put((SPOEvent) event);
             if (result == null) {
-                // no, the event is new.
+                // the event is new.
                 result = event;
-                eventMap.put(event, result);
                 eventCount++;
             }
         } else {
@@ -243,7 +241,7 @@ public class SystemRecord implements NodeFactory {
      * new states are always added to the GTS, without comparing them to existing states.
      */
     public void setCollapse(boolean collapse) {
-        this.collapse = collapse;
+        this.collapseStates = collapse;
     }
 
     /** 
@@ -251,7 +249,7 @@ public class SystemRecord implements NodeFactory {
      * @see #setCollapse(boolean)
      */
     public boolean isCollapse() {
-        return collapse;
+        return collapseStates;
     }
 
     /** 
@@ -263,7 +261,7 @@ public class SystemRecord implements NodeFactory {
      * @param reuse if <code>true</code>, results are reused henceforth 
      */
     public void setReuse(boolean reuse) {
-        this.reuse = reuse;
+        this.reuseEvents = reuse;
     }
 
     /** 
@@ -271,7 +269,7 @@ public class SystemRecord implements NodeFactory {
      * @return if <code>true</code>, previously found results are reused
      */
     public boolean isReuse() {
-        return reuse;
+        return reuseEvents;
     }
     
     /** Constructs an appropriate fresh explore cache for the graph grammar.
@@ -352,7 +350,18 @@ public class SystemRecord implements NodeFactory {
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #isReuse()} is set.
      */
-    private final Map<RuleEvent, RuleEvent> eventMap = new HashMap<RuleEvent, RuleEvent>();
+    private final TreeHashSet<SPOEvent> eventMap = new TreeHashSet<SPOEvent>() {
+        @Override
+        protected boolean areEqual(SPOEvent newKey, SPOEvent oldKey) {
+            return newKey.equalsEvent(oldKey);
+        }
+
+        @Override
+        protected int getCode(SPOEvent key) {
+            return key.eventHashCode();
+        }
+    };
+    
     /** 
      * Flag indicating if states with isomorphic graph structure are to be considered equivalent.
      * If <code>true</code>, new states are compared with old ones modulo isomorphism;
@@ -366,12 +375,12 @@ public class SystemRecord implements NodeFactory {
      * and are added to the state set straight away.
      * Default value is <code>true</code>.
      */
-    private boolean collapse = true;
+    private boolean collapseStates = true;
     /** 
      * Flag indicating if previous result are reused.
      * Default value: <code>true</code>. 
      */
-    private boolean reuse = true;
+    private boolean reuseEvents = true;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");

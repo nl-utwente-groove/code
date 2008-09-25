@@ -125,19 +125,27 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
      */
 	@Override
     public int hashCode() {
-    	if (hashCode == 0) {
-    		hashCode = computeHashCode();
-    		if (hashCode == 0) {
-    			hashCode = 1;
-    		}
-    	}
-    	return hashCode;
+    	return reuse ? identityHashCode() : eventHashCode();
     }
     
     /**
-     * Callback method to compute the hash code.
+     * The event hash code is based on that of the rule and an initial fragment of the
+     * anchor images.
      */
-    private int computeHashCode() {
+	int eventHashCode() {
+        if (hashCode == 0) {
+            hashCode = computeEventHashCode();
+            if (hashCode == 0) {
+                hashCode = 1;
+            }
+        }
+        return hashCode;
+	}
+	
+    /**
+     * Callback method to compute the event hash code.
+     */
+    private int computeEventHashCode() {
     	reporter.start(HASHCODE);
         int result = getRule().hashCode();
         // we don't use getAnchorImage() because the events are often
@@ -170,11 +178,10 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     		result = true;
     	} else if (obj instanceof SPOEvent) {
         	reporter.start(EQUALS);
-        	SPOEvent other = (SPOEvent) obj;
-            result = equalsRule(other) && equalsAnchorImage(other);
+            result = !reuse && equalsEvent((SPOEvent) obj);
             reporter.stop();
         } else if (obj instanceof VirtualRuleEvent) {
-            return equals(((VirtualRuleEvent) obj).getWrappedEvent());
+            result = equals(((VirtualRuleEvent) obj).getWrappedEvent());
         } else {
             result = false;
         }
@@ -182,26 +189,12 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     }
     
     /**
-     * Tests if the rules of two rule applications coincide.
+     * Tests if the content of this event coincides with that of the other.
+     * The content consists of the rule and the anchor images.
      * Callback method from {@link #equals(Object)}.
      */
-    private boolean equalsRule(RuleEvent other) {
-        return getRule().equals(other.getRule());
-    }
-    
-    /**
-     * Tests if anchor images of two rule events coincide.
-     * Callback method from {@link #equals(Object)}.
-     */
-    private boolean equalsAnchorImage(SPOEvent other) {
-//        boolean result = true;
-//        Element[] anchorImage = getAnchorImage();
-//        Element[] otherAnchorImage = other.getAnchorImage();
-//        int anchorSize = anchorImage.length;
-//        for (int i = 0; result && i < anchorSize; i++) {
-//            result = anchorImage[i].equals(otherAnchorImage[i]);
-//        }
-        return Arrays.equals(getAnchorImage(), other.getAnchorImage());
+    boolean equalsEvent(SPOEvent other) {
+        return this == other || getRule().equals(other.getRule()) && Arrays.equals(getAnchorImage(), other.getAnchorImage());
     }
 
 	@Override

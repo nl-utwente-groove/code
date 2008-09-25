@@ -135,8 +135,8 @@ public class Bisimulator implements CertificateStrategy {
         reporter.start(GET_PARTITION_MAP);
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
-        for (Certificate<Edge> cert: edgeCerts) {
-            result.add(cert);
+        for (int i = 0; i < edge2CertCount; i++) {
+            result.add(edgeCerts[i]);
         }
         reporter.stop();
         return result;
@@ -248,10 +248,14 @@ public class Bisimulator implements CertificateStrategy {
 	                + otherNodeCertMap + "; so not in the node set " + graph.nodeSet() + " of "
 	                + graph;
     	if (edge instanceof UnaryEdge || source == edge.opposite()) {
-    		Edge1Certificate edge1Cert = new Edge1Certificate(edge, sourceCert);
-    		edgeCerts[edgeCerts.length - edge1CertCount - 1] = edge1Cert;
-    		edge1CertCount++;
-    		assert edge1CertCount + edge2CertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", edge1CertCount, edge2CertCount, edgeCerts.length);
+    	    if (USE_EDGE1_CERTIFICATES) {
+    	        Edge1Certificate edge1Cert = new Edge1Certificate(edge, sourceCert);
+    	        edgeCerts[edgeCerts.length - edge1CertCount - 1] = edge1Cert;
+    	        edge1CertCount++;
+    	        assert edge1CertCount + edge2CertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", edge1CertCount, edge2CertCount, edgeCerts.length);
+    	    } else {
+    	        sourceCert.addValue(edge.label().hashCode());
+    	    }
     	} else {
     		NodeCertificate targetCert = getNodeCert(edge.opposite());
     		assert targetCert != null : "Edge target of " + edge + " not found in "
@@ -316,7 +320,7 @@ public class Bisimulator implements CertificateStrategy {
             certificateValue = nodeCertCount;
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
-            for (int i = 0; i < edgeCerts.length; i++) {
+            for (int i = 0; i < edge2CertCount; i++) {
             	Certificate<Edge> edgeCert = edgeCerts[i];
             	certificateValue += edgeCert.setNewValue();
             }
@@ -343,11 +347,13 @@ public class Bisimulator implements CertificateStrategy {
         } while (goOn);
         this.nodePartitionCount = nodePartitionCount;
         this.graphCertificate = new Long(certificateValue);
+        if (USE_EDGE1_CERTIFICATES) {
         // so far we have done nothing with the flags, so 
         // give them a chance to get their hash code right
         int edgeCount = edgeCerts.length;
-        for (int i = edge2CertCount; i < edgeCount; i++) {
-            edgeCerts[i].setNewValue();
+            for (int i = edge2CertCount; i < edgeCount; i++) {
+                edgeCerts[i].setNewValue();
+            }
         }
         recordIterateCount(iterateCount);
     }
@@ -424,6 +430,7 @@ public class Bisimulator implements CertificateStrategy {
 	 * Store for node certificates, to count the number of partitions 
 	 */
 	static private final IntSet certStore = new TreeIntSet(TREE_RESOLUTION);
+	static private final boolean USE_EDGE1_CERTIFICATES = false;
 	/**
      * Array to record the number of iterations done in computing certificates. 
      */
@@ -645,7 +652,7 @@ public class Bisimulator implements CertificateStrategy {
         	super(edge);
             this.source = source;
             this.target = target;
-            this.labelIndex = ((DefaultLabel) edge.label()).getIndex();
+            this.labelIndex = ((DefaultLabel) edge.label()).hashCode();
             initValue();
             source.addValue(value);
             target.addValue(value << 1);
@@ -723,7 +730,7 @@ public class Bisimulator implements CertificateStrategy {
         public Edge1Certificate(Edge edge, NodeCertificate source) {
         	super(edge);
             this.source = source;
-            this.labelIndex = ((DefaultLabel) edge.label()).getIndex();
+            this.labelIndex = ((DefaultLabel) edge.label()).hashCode();
             initValue();
             source.addValue(value);
         }

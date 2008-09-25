@@ -62,11 +62,14 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
     @Override
     public boolean equals(Object obj) {
         boolean result = this == obj;
-        if (!(result || !(obj instanceof DefaultEdge) || !super.equals(obj))) {
-            assert false : String.format("Distinct edges with same appearance (%s)", toString());            
-        }
         assert result || !(obj instanceof DefaultEdge) || !super.equals(obj) : String.format("Distinct edges with same appearance (%s)", toString());
         return result;
+    }
+
+    /** For efficiency, this implementation uses the identity hash code of the object. */
+    @Override
+    protected int computeHashCode() {
+        return System.identityHashCode(this);
     }
 
     /** 
@@ -151,7 +154,7 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
 
     	@Override
     	final protected int getCode(DefaultEdge key) {
-			return key.hashCode();
+			return key.edgeHashCode();
 		}
 
     	@Override

@@ -186,18 +186,25 @@ abstract public class AbstractBinaryEdge<SN extends Node, L extends Label, TN ex
     protected String getLabelText() {
     	return label().text();
     }
-    
+
     /**
      * Slightly more efficient implementation returning the same value as the super method.
      */
     @Override
     protected int computeHashCode() {
-    	int labelCode = label().hashCode();
-    	int sourceCode = 3 * source.hashCode();
-    	int targetCode = (labelCode+2) * target.hashCode();
+        return edgeHashCode();
+    }
+
+    /**
+     * Slightly more efficient implementation returning the same value as the super method.
+     */
+    protected int edgeHashCode() {
+        int labelCode = label().hashCode();
+        int sourceCode = 3 * source.hashCode();
+        int targetCode = (labelCode+2) * target.hashCode();
         return labelCode //+ 3 * sourceCode - 2 * targetCode;
-				^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
-				+ ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
+                ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
+                + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
     }
 
     /** The target node of this edge. */
