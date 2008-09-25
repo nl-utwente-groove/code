@@ -15,16 +15,15 @@ import java.util.Set;
  *
  */
 public class LocationCache implements ExploreCache {
-
-	private Set<Rule> matched;
-	private Set<Rule> explored;
-	private Set<Rule> failed;
-	
-	private GraphState state;
-	
+	/** The set of rules that are known to match in this cache's state. */
+	private final Set<Rule> matched;
+	/** The set of rules that are known not to match in this cache's state. */
+	private final Set<Rule> failed;
+	/** The state on which this cache works. */
+	private final GraphState state;
 	private Iterator<Rule> iterator;
 	
-	private Location location;
+	private final Location location;
 	
 	
 	/** Creates a cache for given state with given location.
@@ -36,14 +35,12 @@ public class LocationCache implements ExploreCache {
 		this.state = state;
 		
 		this.matched = new HashSet<Rule>();
-		this.explored = new HashSet<Rule>();
 		this.failed = new HashSet<Rule>();
 		
-		this.iterator = createIterator(isRandomized);
+		this.iterator = createIterator(location, isRandomized);
 	}
 	
 	public void updateExplored(Rule rule) {
-//		System.out.println("*** Notifying of Exploration Complete for rule " + rule);
 		if( !matched.contains(rule)) {
 			 failed.add(rule);
 		}
@@ -58,38 +55,34 @@ public class LocationCache implements ExploreCache {
 	 * @return Those rules in the argument that did not match
 	 */
 	public Set<Rule> failed(Set<Rule> rules) {
-		Set<Rule> havefailed = new HashSet<Rule>();
+		Set<Rule> result = new HashSet<Rule>();
 		
 		for( Rule rule : rules) {
 			if( failed.contains(rule)) {
-				havefailed.add(rule);
+				result.add(rule);
 			} else if( matched.contains(rule)) {
 				// do nothing
 			} else if( !testMatch(rule)) {
-				havefailed.add(rule);
+				result.add(rule);
 			}
 		}
-		return havefailed;
+		return result;
 	}
-	
-	
-	/** TODO
-	 * @param rules
-	 * @return
-	 */
-	public boolean isFailAll(Set<Rule> rules) {
-		for( Rule rule : rules ) {
-			if( hasMatched(rule))
-				return false;
-		}
-		return true;
-	}
-	
+
+//	/** TODO
+//	 * @param rules
+//	 * @return
+//	 */
+//	public boolean isFailAll(Set<Rule> rules) {
+//		for( Rule rule : rules ) {
+//			if( hasMatched(rule))
+//				return false;
+//		}
+//		return true;
+//	}
+//	
 	/**
 	 * On demand test if a certain rule has matches, store the result, and return the answer.
-	 * 
-	 * @param rule
-	 * @return
 	 */
 	private boolean testMatch(Rule rule) {
 		boolean match = new MatchesIterator(this.state, new TestMatchExploreCache(rule)).hasNext();
@@ -100,19 +93,17 @@ public class LocationCache implements ExploreCache {
 		}
 		return match;
 	}
-	
-	
-
-	private boolean hasMatched(Rule rule) {
-		if( matched.contains(rule)) {
-			return true;
-		} else if ( failed.contains(rule)) {
-			return false;
-		} else {
-			// test if rule matches. value will also be stored, so this is only done once.
-			return testMatch(rule);
-		}
-	}
+//	
+//	private boolean hasMatched(Rule rule) {
+//		if( matched.contains(rule)) {
+//			return true;
+//		} else if ( failed.contains(rule)) {
+//			return false;
+//		} else {
+//			// test if rule matches. value will also be stored, so this is only done once.
+//			return testMatch(rule);
+//		}
+//	}
 
 	public boolean hasNext() {
 		if( iterator == null ) {
@@ -121,7 +112,7 @@ public class LocationCache implements ExploreCache {
 		else if( iterator.hasNext() ) {
 			return true;
 		} else {
-			iterator = createIterator(iterator instanceof RandomizedIterator);
+			iterator = createIterator(location, iterator instanceof RandomizedIterator);
 			if( iterator.hasNext() ) {
 				return true;
 			} else {
@@ -133,24 +124,22 @@ public class LocationCache implements ExploreCache {
 
 	public Rule next() {
 		// TODO: FIX THIS for interuptable
-//		this.last = null;
-		
 		if( iterator == null ) {
 			return null;
 		}
-		if( !iterator.hasNext())
-			iterator = createIterator(iterator instanceof RandomizedIterator);
-		if( !iterator.hasNext()) {
+		if (!iterator.hasNext()) {
+			iterator = createIterator(location, iterator instanceof RandomizedIterator);
+		}
+		if (!iterator.hasNext()) {
 			iterator = null;
 			return null;
-		}
-		else {
+		} else {
 			Rule last = iterator.next();
 			return last;
 		}
 	}
 
-	private Iterator<Rule> createIterator(boolean isRandomized) {
+	private Iterator<Rule> createIterator(Location location, boolean isRandomized) {
 		if (isRandomized) {
 			return new RandomizedIterator<Rule>(location.moreRules(this));
 		} else {

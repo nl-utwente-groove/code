@@ -24,14 +24,13 @@ import groove.lts.GraphState;
 import java.util.Iterator;
 
 /**
- * At each step, fully explores a randomly chosen open state.
+ * At each step, fully explores an open state.
  * The strategy is very memory-efficient.
  * This strategy ignores the start state.
  * @author Staijen
  *
  */
 public class BranchingStrategy extends AbstractStrategy {
-
 	/**
 	 * A step of this strategy completely explores one state.
 	 */
