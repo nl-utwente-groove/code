@@ -318,7 +318,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 * Debug flag for aliasing the node and edge set.
 	 * Aliasing the sets gives problems in matching. 
 	 */
-	static private final boolean ALIAS_SETS = false;
+	static private final boolean ALIAS_SETS = true;
 	/** Factory instance of this class. */
 	static private final NewDeltaGraph copyInstance = new NewDeltaGraph(null,null,true);
 	/** Factory instance of this class. */

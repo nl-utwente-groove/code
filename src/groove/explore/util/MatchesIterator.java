@@ -23,7 +23,9 @@ import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
 import groove.util.TransformIterator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /** Iterates over all matches of a collection of rules into a graph.
@@ -134,39 +136,25 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 		while (this.matchIter != null && !this.matchIter.hasNext() && nextRule()) {
 			// empty
 		}
-		
 	}
 	
 	/** Callback method to create an iterator over the matches of a given rule. */
 	protected Iterator<RuleEvent> createMatchIter(Rule rule) {
-	   return new TransformIterator<RuleMatch,RuleEvent>(rule.getMatchIter(this.state.getGraph(), null)) {
-	       @Override
-	       protected RuleEvent toOuter(RuleMatch from) {
-	           return record.getEvent(from);
-	       }
-	   };
+		if (COLLECT_ALL_MATCHES) {
+			List<RuleEvent> result = new ArrayList<RuleEvent>();
+			for (RuleMatch match: rule.getMatches(state.getGraph(), null)) {
+				result.add(record.getEvent(match));
+			}
+			return result.iterator();
+		} else {
+			return new TransformIterator<RuleMatch,RuleEvent>(rule.getMatchIter(state.getGraph(), null)) {
+				@Override
+				protected RuleEvent toOuter(RuleMatch from) {
+					return record.getEvent(from);
+				}
+			};
+		}
 	}
-//	
-//	
-//	/** Collects the remaining matches for the iterator. 
-//	 * @param matches 
-//	 * */
-//	public void collectMatches(Set<RuleMatch> matches) {
-//		while( this.hasNext()) {
-//			matches.add(this.next());
-//		}
-//	}
-//	
-//	/** True when the last call to {@link #next()} returned
-//	 * the last matching for a rule. False otherwise */
-//	protected final boolean getEndRule() {
-//		return this.isEndRule;
-//	}
-//	/** Set to true when the */
-//	protected final void setEndRule(boolean b) {
-//		this.isEndRule = b;
-//	}
-	
 	
 	/** The currently explored rule. */
 	protected Rule currentRule;
@@ -174,9 +162,13 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 	protected ExploreCache rulesIter;
 	/** The state for which the matches iterator is computed. Set at construction time. */
 	protected final GraphState state;
-	/** After initialization, mathIter is null means that the iterator is consumed. */
+	/** After initialisation, mathIter is null means that the iterator is consumed. */
 	protected Iterator<RuleEvent> matchIter;
 	/** Set to true when the last match for a given rule has been returned. */
 	protected boolean isEndRule;
+	/** System record to create {@link RuleEvent}s out of {@link RuleMatch}es. */
 	private final SystemRecord record;
+	
+	/** Flag to collect all matches at once, rather than doing a true iteration. */
+	private final boolean COLLECT_ALL_MATCHES = true;
 }

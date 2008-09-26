@@ -49,7 +49,7 @@ class StateCache {
         this.state = state;    
         this.record = state.getRecord();
         this.freezeGraphs = record.isCollapse();
-        this.graphFactory = NewDeltaGraph.getInstance(record.isReuse());
+        this.graphFactory = NewDeltaGraph.getInstance(false);//record.isReuse());
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
