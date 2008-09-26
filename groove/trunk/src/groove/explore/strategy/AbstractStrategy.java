@@ -162,7 +162,7 @@ public abstract class AbstractStrategy implements Strategy {
 			GraphState parent = parentOf(getAtState());
 			if (aliasing && parent != null && parent.isClosed()) {
 				GraphNextState s = (GraphNextState) getAtState();
-				return new AliasMatchesIterator(s, cache, getRecord().getEnabledRules(s.getEvent().getRule()), getRecord().getDisabledRules(s.getEvent().getRule()), getRecord());
+				return new AliasMatchesIterator(s, cache, getRecord());
 			}
 
 			// Second case : one of the successors is closed.

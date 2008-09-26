@@ -57,15 +57,15 @@ public class MatchesIterator implements Iterator<RuleEvent> {
     
 	public boolean hasNext() {
 		goToNext();
-		return matchIter != null && this.matchIter.hasNext();
+		return eventIter != null && this.eventIter.hasNext();
 	}
 
 	public RuleEvent next() {
 		goToNext();
-		if (this.matchIter == null) { throw new NoSuchElementException(); }
-		RuleEvent result = matchIter.next();
+		if (this.eventIter == null) { throw new NoSuchElementException(); }
+		RuleEvent result = eventIter.next();
 		this.rulesIter.updateMatches(this.currentRule);
-		this.isEndRule = ! matchIter.hasNext();
+		this.isEndRule = ! eventIter.hasNext();
 		return result;
 	}
 
@@ -94,7 +94,7 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 	}
 
 	/** Increments the rule iterator after the creation of this 
-     * matches iterator. Also initializes {@link #matchIter}, 
+     * matches iterator. Also initializes {@link #eventIter}, 
      * except if this iterator is consumed.
      * This is different from the general {@link #nextRule()}
      * as some additional treatment is performed for the first rule.
@@ -104,26 +104,26 @@ public class MatchesIterator implements Iterator<RuleEvent> {
     	if (this.currentRule == null) {
     		// this means that rulesIter is freshly created and has never been incremented before
     		if (!this.rulesIter.hasNext()) {  // this iterator is entirely consumed 
-    			this.matchIter = null;
+    			this.eventIter = null;
     			return;
     		}
     		this.currentRule = rulesIter.next();
     	}
-    	this.matchIter = createMatchIter(currentRule);
+    	this.eventIter = createEventIter(currentRule);
     }
 
     /** Increments the rule iterator.
-	 * Also initializes {@link #matchIter}, except if this iterator is consumed.
+	 * Also initialises {@link #eventIter}, except if this iterator is consumed.
 	 * @return <code>true</code> if the rules iterator is not consumed
 	 */
 	protected boolean nextRule() {
 		this.rulesIter.updateExplored(currentRule);
 		if (!this.rulesIter.hasNext()) { // this iterator is entirely consumed 
-			this.matchIter = null;
+			this.eventIter = null;
 			return false;
 		} else {
 		    this.currentRule = rulesIter.next();
-		    this.matchIter = createMatchIter(currentRule);
+		    this.eventIter = createEventIter(currentRule);
 		    return true;
 		}
 	}
@@ -133,13 +133,13 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 	 * The method is idempotent (several successive calls have the same effect as a unique call).
 	 */ 
 	protected void goToNext () {
-		while (this.matchIter != null && !this.matchIter.hasNext() && nextRule()) {
+		while (this.eventIter != null && !this.eventIter.hasNext() && nextRule()) {
 			// empty
 		}
 	}
 	
 	/** Callback method to create an iterator over the matches of a given rule. */
-	protected Iterator<RuleEvent> createMatchIter(Rule rule) {
+	protected Iterator<RuleEvent> createEventIter(Rule rule) {
 		if (COLLECT_ALL_MATCHES) {
 			List<RuleEvent> result = new ArrayList<RuleEvent>();
 			for (RuleMatch match: rule.getMatches(state.getGraph(), null)) {
@@ -163,7 +163,7 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 	/** The state for which the matches iterator is computed. Set at construction time. */
 	protected final GraphState state;
 	/** After initialisation, mathIter is null means that the iterator is consumed. */
-	protected Iterator<RuleEvent> matchIter;
+	protected Iterator<RuleEvent> eventIter;
 	/** Set to true when the last match for a given rule has been returned. */
 	protected boolean isEndRule;
 	/** System record to create {@link RuleEvent}s out of {@link RuleMatch}es. */
