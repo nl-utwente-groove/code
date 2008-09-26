@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -26,26 +25,24 @@ public class AliasMatchesIterator extends MatchesIterator {
 	 * Creates an aliased matches iterator for a state and a rule.
 	 * @param state
 	 * @param rules
-	 * @param enabledRules The rules that may be enabled by the rule event that created this state.
-	 * @param disabledRules The rules that may be disabled by the rule event that created this state.
 	 * @param record the event factory
 	 */
-	public AliasMatchesIterator (GraphNextState state, ExploreCache rules, Set<Rule> enabledRules, Set<Rule> disabledRules, SystemRecord record ) {
+	public AliasMatchesIterator (GraphNextState state, ExploreCache rules, SystemRecord record ) {
 		super(state, rules, true, record);
-		this.enabledRules = enabledRules;
-		this.disabledRules = disabledRules;
-//		this.priority = state.getEvent().getRule().getPriority();
+		Rule lastRule = state.getEvent().getRule();
+		this.enabledRules = record.getEnabledRules(lastRule);
+		this.disabledRules = record.getDisabledRules(lastRule);
 		firstRule();
 		goToNext();
 	}
 	
 	@Override
-    protected Iterator<RuleEvent> createMatchIter(Rule rule) {
+    protected Iterator<RuleEvent> createEventIter(Rule rule) {
         Collection<RuleEvent> aliasedMatches = getAliasedMatches(rule);
         if (aliasedMatches != null) {
         	if (enabledRules.contains(rule)) {
         		// the rule was possible enabled afresh, so we have to add the fresh matches
-        		Iterator<RuleEvent> freshMatches = super.createMatchIter(rule);
+        		Iterator<RuleEvent> freshMatches = super.createEventIter(rule);
         		while (freshMatches.hasNext()) {
         			aliasedMatches.add(freshMatches.next());
         		}
@@ -61,7 +58,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 //            // it didn't match in the previous state or no matches left after rematching
 //            return new EmptyMatchIter();
 //        }
-        return super.createMatchIter(rule);
+        return super.createEventIter(rule);
     }
 
 	/** 
@@ -130,15 +127,4 @@ public class AliasMatchesIterator extends MatchesIterator {
 	private Set<Rule> enabledRules;
 	/** The rules that may be disabled. */
 	private Set<Rule> disabledRules;
-	
-	/** Is used as value for the matchIter when we know that it is empty. */
-	private class EmptyMatchIter implements Iterator<RuleEvent> {
-	    /** Always returns <code>false</code>. */
-		public boolean hasNext() { return false; }
-		/** Always throws a {@link NoSuchElementException} . */
-		public RuleEvent next() { throw new NoSuchElementException(); }
-		/** Always throws an {@link UnsupportedOperationException}. */
-		public void remove() { throw new UnsupportedOperationException(); }
-		
-	}
 }
