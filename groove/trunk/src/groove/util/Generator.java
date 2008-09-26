@@ -840,7 +840,7 @@ public class Generator extends CommandLineTool {
         	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
            	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
            	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
-           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
+           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration (same as branching)", "full"));
         	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
         	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
         	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
