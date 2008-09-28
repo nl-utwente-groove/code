@@ -41,13 +41,13 @@ public class BreadthFirstStrategy extends AbstractStrategy {
 		MatchesIterator matchIter = getMatchesIterator(cache);
 		
 		while (matchIter.hasNext()) {
-			getGenerator().addTransition(getAtState(), matchIter.next(), cache);
+			getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
 		}
 		setClosed(getAtState());
 		updateAtState();
 		return true;
 	}
-	
+
 	@Override
 	public void updateAtState() {
 		this.atState = this.toExplore.poll();
@@ -56,9 +56,9 @@ public class BreadthFirstStrategy extends AbstractStrategy {
 	@Override
 	public void prepare(GTS gts, GraphState startState) {
 		super.prepare(gts, startState);
-		gts.addGraphListener(toExplore);
+		getGTS().addGraphListener(toExplore);
 	}	
-	
+
 	/** The states to be explored, in a FIFO order. */
 	protected ToExploreQueue toExplore = new ToExploreQueue();
 	/** Iterator over the matches of the current state. */

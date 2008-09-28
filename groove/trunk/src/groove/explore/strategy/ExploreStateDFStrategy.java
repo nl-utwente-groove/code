@@ -54,7 +54,7 @@ public class ExploreStateDFStrategy extends AbstractStrategy {
 		Iterator<RuleEvent> matchIter = getMatchesIterator(cache);
 		this.collector.reset();
 		while (matchIter.hasNext()) {
-			getGenerator().addTransition(getAtState(), matchIter.next(), cache);
+			getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
 		}
 		setClosed(getAtState());
 		updateAtState();

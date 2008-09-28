@@ -50,7 +50,7 @@ public class DFStrategy extends AbstractStrategy {
 		MatchesIterator matchIter = getMatchesIterator(cache);
 	
 		while (matchIter.hasNext()) {
-			getGenerator().addTransition(getAtState(), matchIter.next(), cache);
+			getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
 		}
 		setClosed(getAtState());
 		updateAtState();

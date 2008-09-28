@@ -73,7 +73,7 @@ public class RandomLinearStrategy extends AbstractStrategy {
 			int matchCount = matches.size();
 			int randomIndex = (int) (Math.random() * matchCount);
 			// add the random match
-			getGenerator().addTransition(getAtState(), matches.get(randomIndex), cache);
+			getGenerator().applyMatch(getAtState(), matches.get(randomIndex), cache);
 		} else {
 			setClosed(getAtState());
 		}

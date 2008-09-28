@@ -40,7 +40,7 @@ public class LinearStrategy extends AbstractStrategy {
 		MatchesIterator matchIter = getMatchesIterator(cache);
 		this.collector.reset();
 		if (matchIter.hasNext()) {
-			getGenerator().addTransition(getAtState(), matchIter.next(), cache);
+			getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
 		} else {
 			setClosed(getAtState());
 		}

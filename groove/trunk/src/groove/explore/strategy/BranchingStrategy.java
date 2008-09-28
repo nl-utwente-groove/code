@@ -40,7 +40,7 @@ public class BranchingStrategy extends AbstractStrategy {
 		MatchesIterator matchesIter = getMatchesIterator(cache);
 		
 		while( matchesIter.hasNext() ) {
-			getGenerator().addTransition(getAtState(), matchesIter.next(), cache);
+			getGenerator().applyMatch(getAtState(), matchesIter.next(), cache);
 		}
 		setClosed(getAtState());
 		updateAtState();

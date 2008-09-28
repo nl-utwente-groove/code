@@ -32,6 +32,7 @@ import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ConditionalBreadthFirstStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
+import groove.explore.strategy.BFStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
@@ -288,7 +289,7 @@ public class Generator extends CommandLineTool {
     	Scenario result;
 		ExploreOption explore = getActiveOption(ExploreOption.class);
 		if (explore == null) {
-			result = GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
+			result = GeneratorScenarioFactory.getScenarioHandler(new BFStrategy(), "Breadth first full exploration.", "full");
 		} else {
 			ExploreStrategyParser exploreParser = explore.getParser();
 			result = exploreParser.getStrategy();

@@ -21,134 +21,148 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Node;
-import groove.lts.DefaultAliasApplication;
-import groove.lts.GraphTransitionStub;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class VirtualRuleEvent implements RuleEvent {
-    public VirtualRuleEvent(RuleEvent event, GraphTransitionStub stub) {
-        this.stub = stub;
+/**
+ * Class wrapping an event together with additional information.
+ * All methods are delegated to the event.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class VirtualRuleEvent<C> implements RuleEvent {
+	/** Constructs an instance with a given event and content. */
+    public VirtualRuleEvent(RuleEvent event, C content) {
+        this.content = content;
         this.event = event;
     }
 
-    public GraphTransitionStub getStub() {
-        return stub;
+    /** Returns the content wrapped together with the event. */
+    public C getContent() {
+        return content;
     }
     
+    /** Returns the wrapped event. */
     public RuleEvent getWrappedEvent() {
         return event;
     }
     
     /**
-     * @param o
-     * @return
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public int compareTo(RuleEvent o) {
         return event.compareTo(o);
     }
+
     /**
-     * @param other
-     * @return
-     * @see groove.trans.RuleEvent#conflicts(groove.trans.RuleEvent)
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public boolean conflicts(RuleEvent other) {
         return event.conflicts(other);
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getAnchorImageString()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public String getAnchorImageString() {
         return event.getAnchorImageString();
     }
+
     /**
-     * @param createdNodes
-     * @return
-     * @see groove.trans.RuleEvent#getComplexCreatedEdges(java.util.Iterator)
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public Collection< ? extends Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
         return event.getComplexCreatedEdges(createdNodes);
     }
+
     /**
-     * @param hostNodes
-     * @return
-     * @see groove.trans.RuleEvent#getCreatedNodes(java.util.Set)
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public List< ? extends Node> getCreatedNodes(Set< ? extends Node> hostNodes) {
         return event.getCreatedNodes(hostNodes);
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getErasedNodes()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public Set<Node> getErasedNodes() {
         return event.getErasedNodes();
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getLabel()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public Label getLabel() {
         return event.getLabel();
     }
+
     /**
-     * @param source
-     * @return
-     * @see groove.trans.RuleEvent#getMatch(groove.graph.Graph)
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public RuleMatch getMatch(Graph source) {
         return event.getMatch(source);
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getMergeMap()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public MergeMap getMergeMap() {
         return event.getMergeMap();
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getRule()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public Rule getRule() {
         return event.getRule();
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getSimpleCreatedEdges()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public Set<Edge> getSimpleCreatedEdges() {
         return event.getSimpleCreatedEdges();
     }
+
     /**
-     * @return
-     * @see groove.trans.RuleEvent#getSimpleErasedEdges()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public Set<Edge> getSimpleErasedEdges() {
         return event.getSimpleErasedEdges();
     }
     
     /**
-     * @param source
-     * @return
-     * @see groove.trans.RuleEvent#hasMatch(groove.graph.Graph)
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public boolean hasMatch(Graph source) {
         return event.hasMatch(source);
     }
+    
     /**
-     * @return
-     * @see groove.trans.RuleEvent#identityHashCode()
+     * Delegated to the wrapped event.
+     * @see #getWrappedEvent()
      */
     public int identityHashCode() {
         return event.identityHashCode();
     }
     
+    @Override
     public int hashCode() {
         return event.hashCode();
     }
@@ -158,10 +172,15 @@ public class VirtualRuleEvent implements RuleEvent {
         return event.equals(obj);
     }
 
-    public RuleApplication newApplication(Graph source) {
+    @Override
+	public String toString() {
+		return "Virtual "+event.toString()+" with "+content;
+	}
+
+	public RuleApplication newApplication(Graph source) {
         throw new UnsupportedOperationException("Virtual events should give rise to DefaultAliasTranstions");
     }
 
-    private final GraphTransitionStub stub;
+    private final C content;
     private final RuleEvent event;
 }

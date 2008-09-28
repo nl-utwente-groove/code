@@ -49,7 +49,7 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 		this.collector.reset();
 		while (currMatchIter.hasNext() && ! currMatchIter.isEndRule()) {
 			RuleEvent match = currMatchIter.next();
-			getGenerator().addTransition(getAtState(), match, cache);
+			getGenerator().applyMatch(getAtState(), match, cache);
 		}
 		if (! currMatchIter.hasNext()) {
 			setClosed(getAtState());
