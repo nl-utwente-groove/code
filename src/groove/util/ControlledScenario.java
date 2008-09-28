@@ -59,11 +59,11 @@ public class ControlledScenario extends DefaultScenario {
 			
 			if (findAll) {
 				while (matchIter.hasNext()) {
-					getGenerator().addTransition(getAtState(), matchIter.next(), cache);
+					getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
 				}
 			} else {
 				if (matchIter.hasNext()) {
-					getGenerator().addTransition(getAtState(), matchIter.next(), cache);
+					getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
 				}
 			}
 			updateAtState();

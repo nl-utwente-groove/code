@@ -175,8 +175,8 @@ public class StateGenerator {
 	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleEvent event, ExploreCache cache) {
 		RuleApplication appl;
 		if (event instanceof VirtualRuleEvent) {
-		    VirtualRuleEvent virtualEvent = (VirtualRuleEvent) event;
-		    appl = new DefaultAliasApplication(virtualEvent.getWrappedEvent(), (GraphNextState) source, virtualEvent.getStub());
+		    VirtualRuleEvent<GraphTransitionStub> virtualEvent = (VirtualRuleEvent) event;
+		    appl = new DefaultAliasApplication(virtualEvent.getWrappedEvent(), (GraphNextState) source, virtualEvent.getContent());
 		} else {
             appl = event.newApplication(source.getGraph());
 		}

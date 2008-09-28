@@ -22,6 +22,7 @@ import groove.util.DefaultDispenser;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -271,6 +272,25 @@ public class SystemRecord implements NodeFactory {
     public boolean isReuse() {
         return reuseEvents;
     }
+
+    /** 
+     * Changes the behaviour of the copyGraphs property.
+     * @see #isCopyGraphs()
+     */
+    public void setCopyGraphs(boolean copy) {
+        this.copyGraphs = copy;
+    }
+
+    /** 
+     * Indicates if new graphs are obtained by copying the content of their parents.
+     * @return <code>true</code> if new graphs are obtained by copying; <code>false</code>
+     * if the parent's data structure is "borrowed".
+     * The latter runs the risk of {@link ConcurrentModificationException}s if
+     * iterators over the parent's data structures are still alive.
+     */
+    public boolean isCopyGraphs() {
+        return copyGraphs;
+    }
     
     /** Constructs an appropriate fresh explore cache for the graph grammar.
      * The constructed cache is fresh in the sense that next is not called on it yet.
@@ -316,24 +336,7 @@ public class SystemRecord implements NodeFactory {
 		}
 		return result;
     }
-//    
-//    /** A list of sets of rules, ordered by rules priority.
-//     * @return A list of sets of rules, ordered by rules priority.
-//     */
-//    public List<Set<Rule>> getRulesList() {
-//    	if( prioRulesList == null ) {
-//    		prioRulesList = new ArrayList<Set<Rule>>();
-//    		for (Set<Rule> rulesSet: ruleSystem.getRuleMap().values()) {
-//    		    prioRulesList.add(rulesSet);
-//    		}
-//    	}
-//    	return prioRulesList;
-//    }
-//  
-//
-//    /** caches the result of getRuleList **/
-//    private List<Set<Rule>> prioRulesList;
-//    
+
     /**
      * Rule dependencies of the rule system. 
      */
@@ -377,10 +380,18 @@ public class SystemRecord implements NodeFactory {
      */
     private boolean collapseStates = true;
     /** 
-     * Flag indicating if previous result are reused.
+     * Flag indicating if events are to be reused, meaning that there is
+     * a global store {@link #eventMap} of "normal" event representatives.
      * Default value: <code>true</code>. 
      */
     private boolean reuseEvents = true;
+    /**
+     * Flag indicating if new graphs are obtained by copying the content of their
+     * parents; if <code>false</code>, the parent's data structure is "borrowed".
+     * The latter runs the risk of {@link ConcurrentModificationException}s if
+     * iterators over the parent's data structures are still alive.
+     */
+    private boolean copyGraphs = true;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");

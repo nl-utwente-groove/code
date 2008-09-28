@@ -56,7 +56,7 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 			RuleEvent event = matchIter.next();
 			if (! isExistingOutTransition(event, getAtState())) {
 				// add the transition corresponding to match, this may not result in a new state
-				getGenerator().addTransition(getAtState(), event, cache);
+				getGenerator().applyMatch(getAtState(), event, cache);
 			}
 		}
 		if (! matchIter.hasNext()) {
