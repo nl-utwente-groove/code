@@ -22,7 +22,7 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
-import groove.trans.VirtualRuleEvent;
+import groove.trans.VirtualEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,7 +116,7 @@ public class MatchMapCollector {
 						}
 						result.put(rule, matches);
 					}
-					matches.add(new VirtualRuleEvent<GraphTransition>(event, parentTrans));
+					matches.add(new VirtualEvent<GraphTransition>(event, parentTrans));
 				}
 			}
 		}

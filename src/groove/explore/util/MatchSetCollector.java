@@ -18,12 +18,11 @@ package groove.explore.util;
 
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
-import groove.trans.VirtualRuleEvent;
+import groove.trans.VirtualEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,7 +45,7 @@ public class MatchSetCollector {
      * @param record factory to turn {@link RuleMatch}es in to {@link RuleEvent}s.
      * @param parentTransitions outgoing transitions from the parent state
      */
-    public MatchSetCollector(GraphState state, ExploreCache cache, SystemRecord record, Collection<GraphTransition> parentTransitions) {
+    public MatchSetCollector(GraphState state, ExploreCache cache, SystemRecord record, Collection<VirtualEvent.GraphState> parentTransitions) {
         this.state = state;
         this.cache = cache;
         this.record = record;
@@ -116,22 +115,39 @@ public class MatchSetCollector {
 	private Map<Rule, Collection<RuleEvent>> computeParentEventMap() {
         Map<Rule, Collection<RuleEvent>> result = new HashMap<Rule, Collection<RuleEvent>>();
         if (parentTransSet != null) {
-			for (GraphTransition parentTrans : parentTransSet) {
-				RuleEvent event = parentTrans.getEvent();
-				Rule rule = event.getRule();
-				if (!disabledRules.contains(rule) || event.hasMatch(state.getGraph())) {
+			for (VirtualEvent.GraphState parentTrans : parentTransSet) {
+				Rule rule = parentTrans.getRule();
+				if (!disabledRules.contains(rule) || parentTrans.hasMatch(state.getGraph())) {
 					Collection<RuleEvent> matches = result.get(rule);
 					if (matches == null) {
 						matches = new ArrayList<RuleEvent>();
 						result.put(rule, matches);
 					}
-					matches.add(new VirtualRuleEvent<GraphTransition>(event, parentTrans));
+					matches.add(parentTrans);
 				}
 			}
 		}
         return result;
     }
-
+//
+//	/** 
+//	 * Callback factory method to create an event aliasing an existing one.
+//	 * @param original the event to be aliased
+//	 * @param parentTrans the transition containing the original event
+//	 * @return if the new match is potentially part of a confluent diamond,
+//	 * returns a {@link VirtualRuleEvent} wrapping the parameters; otherwise,
+//	 * just returns <code>original</code>.
+//	 */
+//	private RuleEvent createVirtualEvent(RuleEvent original, GraphTransition parentTrans) {
+//		GraphState innerTarget;
+//		if (parentTrans.isSymmetry() || original.conflicts(((GraphNextState) state).getEvent())) {
+//			innerTarget = null;
+//		} else {
+//			innerTarget = parentTrans.target();
+//		}
+//		return new VirtualRuleEvent.GraphState(original, innerTarget, parentTrans.getAddedNodes());
+//	}
+	
     /**
 	 * Returns either the last previously returned rule from the
 	 * {@link ExploreCache}, or the first new rule if there is no last.
@@ -156,7 +172,7 @@ public class MatchSetCollector {
     private final GraphState state;
     private final ExploreCache cache;
     private final SystemRecord record;
-    private final Collection<GraphTransition> parentTransSet;
+    private final Collection<VirtualEvent.GraphState> parentTransSet;
     private Map<Rule,Collection<RuleEvent>> parentEventMap;
     /** The rules that may be enabled. */
     private Set<Rule> enabledRules;

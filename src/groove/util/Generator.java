@@ -460,7 +460,7 @@ public class Generator extends CommandLineTool {
      */
     private void reportTransitionStatistics() {
         printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
-        printf("\t\tConfluent:\t%d%n", StateGenerator.getConfluentDiamondCount());
+        printf("\t\tConfluent:\t%d%n", BFStrategy.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
     }

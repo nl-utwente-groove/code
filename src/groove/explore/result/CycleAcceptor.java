@@ -52,7 +52,7 @@ public class CycleAcceptor extends Acceptor {
 	@Override
 	public void closeUpdate(LTS gts, State state) {
 		if (state instanceof BuchiGraphState) {
-			if (((BuchiGraphState) state).getBuchiLocation().isSuccess(null)) {
+			if (((BuchiGraphState) state).getBuchiLocation().isAccepting()) {
 				assert (gts instanceof ProductGTS) : "Expected a GTS instead of an LTS.";
 				int event = redDFS((ProductGTS) gts, (BuchiGraphState) state);
 				if (event != ModelChecking.OK) {
