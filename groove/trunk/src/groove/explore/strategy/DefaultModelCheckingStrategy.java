@@ -115,7 +115,7 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
 	 */
 	public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
 		boolean result = (target.colour() == ModelChecking.cyan()) &&
-		(source.getBuchiLocation().isSuccess(null) || target.getBuchiLocation().isSuccess(null));
+		(source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
 		
 //		if (result) {
 //			System.out.println("Counter-example found");
@@ -369,9 +369,6 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
     	this.lastTransition = transition;
     }
 
-    /* (non-Javadoc)
-     * @see groove.explore.strategy.ModelCheckingStrategy#setAtBuchiState(groove.verify.BuchiGraphState)
-     */
     public void setAtBuchiState(BuchiGraphState atState) {
     	this.atBuchiState = atState;
     }

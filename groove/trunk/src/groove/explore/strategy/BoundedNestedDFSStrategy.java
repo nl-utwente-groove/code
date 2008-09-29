@@ -330,7 +330,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	 * then it must be coloured red, otherwise blue.
 	 */
 	protected void colourState() {
-		if (getAtBuchiState().getBuchiLocation().isSuccess(null)) {
+		if (getAtBuchiState().getBuchiLocation().isAccepting()) {
 			getAtBuchiState().setColour(ModelChecking.red());
 		} else {
 			getAtBuchiState().setColour(ModelChecking.blue());

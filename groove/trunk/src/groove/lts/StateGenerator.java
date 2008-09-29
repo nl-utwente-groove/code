@@ -21,7 +21,7 @@ import groove.explore.util.ExploreCache;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
-import groove.trans.VirtualRuleEvent;
+import groove.trans.VirtualEvent;
 import groove.util.Reporter;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -174,9 +174,9 @@ public class StateGenerator {
 	 */
 	public Set<? extends GraphTransition> applyMatch(GraphState source, RuleEvent event, ExploreCache cache) {
 		RuleApplication appl;
-		if (event instanceof VirtualRuleEvent) {
-		    VirtualRuleEvent<GraphTransitionStub> virtualEvent = (VirtualRuleEvent) event;
-		    appl = new DefaultAliasApplication(virtualEvent.getWrappedEvent(), (GraphNextState) source, virtualEvent.getContent());
+		if (event instanceof VirtualEvent) {
+		    VirtualEvent<GraphTransitionStub> virtualEvent = (VirtualEvent) event;
+		    appl = new DefaultAliasApplication(virtualEvent.getInnerEvent(), (GraphNextState) source, virtualEvent.getInnerTarget());
 		} else {
             appl = event.newApplication(source.getGraph());
 		}

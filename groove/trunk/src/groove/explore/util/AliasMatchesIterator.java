@@ -6,7 +6,7 @@ import groove.lts.GraphTransitionStub;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
-import groove.trans.VirtualRuleEvent;
+import groove.trans.VirtualEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,7 +103,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 					}
 					result.put(rule, matches);
 				}
-				matches.add(new VirtualRuleEvent(event, stub));
+				matches.add(new VirtualEvent(event, stub));
 			}
 		}
         return result;
