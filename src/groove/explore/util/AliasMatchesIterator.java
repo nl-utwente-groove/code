@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -29,11 +30,13 @@ public class AliasMatchesIterator extends MatchesIterator {
 	 */
 	public AliasMatchesIterator (GraphNextState state, ExploreCache rules, SystemRecord record ) {
 		super(state, rules, true, record);
+		reporter.start(CONSTRUCT);
 		Rule lastRule = state.getEvent().getRule();
 		this.enabledRules = record.getEnabledRules(lastRule);
 		this.disabledRules = record.getDisabledRules(lastRule);
 		firstRule();
 		goToNext();
+        reporter.stop();
 	}
 	
 	@Override
@@ -87,6 +90,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 	 * Computes a map with all matches from the previous state that still match in the current state.
 	 */
 	private Map<Rule, Collection<RuleEvent>> computeAliasedMatches() {
+	    reporter.start(COMPUTE_ALIAS_MAP);
         Map<Rule, Collection<RuleEvent>> result = new TreeMap<Rule, Collection<RuleEvent>>();
         for (GraphTransitionStub stub : ((AbstractGraphState) ((GraphNextState) state).source()).getStoredTransitionStubs()) {
             RuleEvent event = stub.getEvent(((GraphNextState) state).source());
@@ -97,7 +101,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 					// if the rule is enabled, we will also add the fresh matches
 					// so we need a set; otherwise, a list is more efficient
 					if (enabledRules.contains(rule)) {
-						matches = new HashSet<RuleEvent>();
+						matches = new LinkedHashSet<RuleEvent>();
 					} else {
 						matches = new ArrayList<RuleEvent>();
 					}
@@ -106,6 +110,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 				matches.add(new VirtualEvent(event, stub));
 			}
 		}
+        reporter.stop();
         return result;
     }
 	

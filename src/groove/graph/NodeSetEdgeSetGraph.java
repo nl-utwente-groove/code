@@ -18,8 +18,8 @@ package groove.graph;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -248,7 +248,7 @@ public class NodeSetEdgeSetGraph
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph
      * when elements are added or deleted
      */
-    abstract private class NotifySet<E extends Element> extends HashSet<E> {
+    abstract private class NotifySet<E extends Element> extends LinkedHashSet<E> {
         /**
          * An iterator over the underlying hash set that extends <tt>remove()</tt>
          * by invoking the graph listeners.

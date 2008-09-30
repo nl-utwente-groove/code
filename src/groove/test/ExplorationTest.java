@@ -22,7 +22,7 @@ import groove.explore.GeneratorScenarioFactory;
 import groove.explore.Scenario;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
-import groove.explore.strategy.BreadthFirstStrategy;
+import groove.explore.strategy.BFSStrategy;
 import groove.graph.Graph;
 import groove.io.AspectualViewGps;
 import groove.io.GrammarViewXml;
@@ -291,7 +291,7 @@ public class ExplorationTest extends TestCase {
 					((ConditionalScenario<Rule>) scenario).setCondition(explCond, parser.getCondition());
                 }
             } else {
-            	scenario = GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
+            	scenario = GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(), "Breadth first full exploration.", "full");
             }
             scenario.prepare(lts);
             scenario.play();

@@ -40,6 +40,7 @@ import groove.lts.State;
  * @author Iovka Boneva
  *
  */
+@Deprecated
 public class DFStrategy extends AbstractStrategy {
 	public boolean next() {
 		if (getAtState() == null) {

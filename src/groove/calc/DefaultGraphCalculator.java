@@ -22,7 +22,7 @@ import groove.explore.result.Acceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.PropertyAcceptor;
 import groove.explore.result.Result;
-import groove.explore.strategy.BreadthFirstStrategy;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.ExploreStateDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.Strategy;
@@ -157,7 +157,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
     public Collection<GraphState> getAllMax() {
         testPrototype();
-        Scenario scenario = createScenario(new BreadthFirstStrategy(), new FinalStateAcceptor());
+        Scenario scenario = createScenario(new BFSStrategy(), new FinalStateAcceptor());
 //        scenario.setState(getGTS().startState());
         scenario.prepare(getGTS());
         return scenario.play().getValue();

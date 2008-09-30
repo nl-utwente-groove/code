@@ -27,7 +27,7 @@ import groove.trans.RuleEvent;
 /** This depth-first search algorithm systematically generates a unique outgoing 
  * transition and continues with it. The difference with {@link LinearStrategy}
  * is that the strategy does not stop until a full exploration. The difference
- * with {@link DFStrategy} is that this
+ * with {@link DFSStrategy} is that this
  * strategy applies at most one matching yielding a new state at each step.
  * 
  * This strategy is quite space efficient in the sense that it does not

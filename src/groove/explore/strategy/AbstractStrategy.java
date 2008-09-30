@@ -21,6 +21,8 @@ import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.LocationCache;
+import groove.explore.util.MatchApplier;
+import groove.explore.util.MatchSetCollector;
 import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomChooserInSequence;
 import groove.lts.GTS;
@@ -46,6 +48,7 @@ public abstract class AbstractStrategy implements Strategy {
         this.generator = gts.getRecord().getStateGenerator(gts);
         this.startState = state;
         this.atState = state;
+        this.applier = new MatchApplier(gts);
     }
 
 	/** The graph transition system explored by the strategy.
@@ -179,6 +182,20 @@ public abstract class AbstractStrategy implements Strategy {
 		return new MatchesIterator(getAtState(), cache, getRecord());
 	}
 
+    /** 
+     * Returns a fresh match collector for this strategy, based on
+     * the current state and related information.
+     * @param cache the rule cache for the collector
+     */
+    protected MatchSetCollector createMatchCollector(ExploreCache cache) {
+        return new MatchSetCollector(getAtState(), cache, getRecord(), null);
+    }
+    
+    /** Returns the match applier of this strategy. */
+    protected MatchApplier getMatchApplier() {
+        return applier;
+    }
+
 	/**
 	 * Method for exploring a single state locally. The state will be closed afterwards.
 	 * @param state the state to be fully explored locally
@@ -218,6 +235,10 @@ public abstract class AbstractStrategy implements Strategy {
 	    return getGTS().getRecord();
 	}
 	
+	/**
+     * Match applier for the underlying GTS.
+     */
+    private MatchApplier applier;
 	/** The graph transition system explored by the strategy.*/
 	private GTS gts;
 	/** The state where the strategy starts exploring.*/

@@ -30,6 +30,7 @@ import java.util.LinkedList;
 /** A breadth-first exploration that uses its own queue of open states.
  * Guarantees a breadth-first exploration, but consumes lots of memory.
  */
+@Deprecated
 public class BreadthFirstStrategy extends AbstractStrategy {
 	
 	public boolean next() {

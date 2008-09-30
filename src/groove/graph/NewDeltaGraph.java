@@ -22,8 +22,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -182,7 +182,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		List<Map<Label,DefaultEdgeSet>> result = new ArrayList<Map<Label,DefaultEdgeSet>>();
 		result.add(null);
 		for (int i = 0; i <= AbstractEdge.getMaxEndCount(); i++) {
-			result.add(new HashMap<Label,DefaultEdgeSet>());
+			result.add(new LinkedHashMap<Label,DefaultEdgeSet>());
 		}
 		for (DefaultEdge edge: edgeSet()) {
 			Map<Label,DefaultEdgeSet> labelEdgeMap = result.get(edge.endCount());
@@ -239,7 +239,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             assert labelEdgeMaps == null;
             if (basis == null) {
                 edgeSet = createEdgeSet(null);
-        		nodeEdgeMap = new HashMap<Node,DefaultEdgeSet>();
+        		nodeEdgeMap = new LinkedHashMap<Node,DefaultEdgeSet>();
                 // apply the delta to fill the structures
                 delta.applyDelta(new SwingTarget());
             } else {
@@ -468,7 +468,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
         public CopyTarget() {
         	NewDeltaGraph graph = NewDeltaGraph.this;
         	edgeSet = createEdgeSet(graph.edgeSet);
-            nodeEdgeMap = new HashMap<Node,DefaultEdgeSet>(graph.nodeEdgeMap);
+            nodeEdgeMap = new LinkedHashMap<Node,DefaultEdgeSet>(graph.nodeEdgeMap);
             freshNodeKeys = createNodeSet(null);
             if (graph.labelEdgeMaps != null) {
                 labelEdgeMaps = new ArrayList<Map<Label, DefaultEdgeSet>>();
@@ -478,7 +478,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
                     	labelEdgeMaps.add(null);
                         freshLabelKeys.add(null);
                     } else {
-                    	labelEdgeMaps.add(new HashMap<Label, DefaultEdgeSet>(arityLabelEdgeMap));
+                    	labelEdgeMaps.add(new LinkedHashMap<Label, DefaultEdgeSet>(arityLabelEdgeMap));
                         freshLabelKeys.add(new HashSet<Label>());
                     }
                 }

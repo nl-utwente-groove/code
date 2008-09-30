@@ -16,32 +16,26 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.result.ExploreCondition;
+import java.util.LinkedList;
+import java.util.Queue;
 
-/** A conditional strategy based on a DepthFirstStrategy4. */
-@Deprecated
-public class ConditionalDepthFirstStrategy extends DFStrategy implements ConditionalStrategy {
-
-	
+/** A breadth-first exploration that uses its own queue of open states.
+ * Guarantees a breadth-first exploration, but consumes lots of memory.
+ */
+public class BFSStrategy extends ClosingStrategy {
 	@Override
-	protected void updateAtState() {
-		this.atState = null;
-		while (this.atState == null && !this.toExplore.isEmpty()) {
-			this.atState = this.toExplore.pop();
-			if (!getExplCond().isSatisfied(this.atState)) {
-				this.atState = null;
-			}
-		}
-	}
+    protected PoolElement getFromPool() {
+        return stateQueue.poll();
+    }
 
-	public void setExploreCondition(ExploreCondition<?> condition) {
-		this.explCond = condition;
-	}
+    @Override
+    protected void putInPool(PoolElement element) {
+        stateQueue.offer(element);   
+    }
 
-	private ExploreCondition<?> getExplCond () {
-		return this.explCond;
-	}
-	
-	private ExploreCondition<?> explCond;
-	
+	/** 
+	 * Queue of states to be explored.
+	 * The set of outgoing transitions of the parent state is included with each state.
+	 */
+	private final Queue<PoolElement> stateQueue = new LinkedList<PoolElement>();
 }
