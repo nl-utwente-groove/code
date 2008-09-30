@@ -26,6 +26,7 @@ import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -101,7 +102,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     protected GraphState createStartState(Graph startGraph) {
         // initialise the start state with a control location if necessary
     	if( this.ruleSystem.getControl() != null ) {
-    		return new StartGraphState(getRecord(), startGraph, new LocationAutomatonBuilder().startLocation(this.ruleSystem.getControl().startState()));
+    		return new StartGraphState(getRecord(), startGraph, new LocationAutomatonBuilder().getLocation(this.ruleSystem.getControl().startState()));
         } else {
         	return new StartGraphState(getRecord(), startGraph);
         }
@@ -211,7 +212,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	if (state.getLocation() == null) {
     		return ! state.getTransitionIter().hasNext(); // TODO this can probably be optimised, with e.g. an additional function for a GTS
     	} else {
-    		return state.getLocation().isSuccess(state);
+    		Set<Rule> rulesFound = new HashSet<Rule>();
+    		for (GraphTransition trans : state.getTransitionSet()) {
+    			rulesFound.add(trans.getEvent().getRule());
+    		}
+    		return state.getLocation().isSuccess(rulesFound);
     	}
     }
 

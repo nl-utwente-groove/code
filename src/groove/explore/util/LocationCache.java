@@ -15,17 +15,6 @@ import java.util.Set;
  *
  */
 public class LocationCache implements ExploreCache {
-	/** The set of rules that are known to match in this cache's state. */
-	private final Set<Rule> matched;
-	/** The set of rules that are known not to match in this cache's state. */
-	private final Set<Rule> failed;
-	/** The state on which this cache works. */
-	private final GraphState state;
-	private Iterator<Rule> iterator;
-	
-	private final Location location;
-	
-	
 	/** Creates a cache for given state with given location.
 	 * @param location
 	 * @param state
@@ -50,61 +39,6 @@ public class LocationCache implements ExploreCache {
 		matched.add(rule);
 	}
 	
-	/** Returns those rules in the argument that did not match. *
-	 * @param rules 
-	 * @return Those rules in the argument that did not match
-	 */
-	public Set<Rule> failed(Set<Rule> rules) {
-		Set<Rule> result = new HashSet<Rule>();
-		
-		for( Rule rule : rules) {
-			if( failed.contains(rule)) {
-				result.add(rule);
-			} else if( matched.contains(rule)) {
-				// do nothing
-			} else if( !testMatch(rule)) {
-				result.add(rule);
-			}
-		}
-		return result;
-	}
-
-//	/** TODO
-//	 * @param rules
-//	 * @return
-//	 */
-//	public boolean isFailAll(Set<Rule> rules) {
-//		for( Rule rule : rules ) {
-//			if( hasMatched(rule))
-//				return false;
-//		}
-//		return true;
-//	}
-//	
-	/**
-	 * On demand test if a certain rule has matches, store the result, and return the answer.
-	 */
-	private boolean testMatch(Rule rule) {
-		boolean match = rule.hasMatch(this.state.getGraph());
-		if( match ) {
-			matched.add(rule);
-		} else {
-			failed.add(rule);
-		}
-		return match;
-	}
-//	
-//	private boolean hasMatched(Rule rule) {
-//		if( matched.contains(rule)) {
-//			return true;
-//		} else if ( failed.contains(rule)) {
-//			return false;
-//		} else {
-//			// test if rule matches. value will also be stored, so this is only done once.
-//			return testMatch(rule);
-//		}
-//	}
-
 	public boolean hasNext() {
 		if( iterator == null ) {
 			return false;
@@ -140,84 +74,82 @@ public class LocationCache implements ExploreCache {
 	}
 
 	private Iterator<Rule> createIterator(Location location, boolean isRandomized) {
+		Set<Rule> enabledRules = location.getEnabledRules(getMatched(), getFailed());
 		if (isRandomized) {
-			return new RandomizedIterator<Rule>(location.moreRules(this));
+			return new RandomizedIterator<Rule>(enabledRules);
 		} else {
-			return location.moreRules(this).iterator();
+			return enabledRules.iterator();
 		}
 	}
 	
 	public void remove() {
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 
 	public Location getTarget(Rule rule) {
-		// TODO
-		return location.getTarget(rule, this);
+		return location.getTarget(rule, getFailedRules(rule));
 	}
 	
+	/** 
+	 * Returns the subset of the dependency of a given rule
+	 * consisting of those rules that do not match in this cache's state.
+	 */
+	private Set<Rule> getFailedRules(Rule applicableRule) {
+		Set<Rule> result = new HashSet<Rule>();
+		for( Rule rule : location.getDependency(applicableRule)) {
+			if( failed.contains(rule)) {
+				result.add(rule);
+			} else if( matched.contains(rule)) {
+				// do nothing
+			} else if( testMatch(rule)) {
+				matched.add(rule);
+			} else {
+				failed.add(rule);
+				result.add(rule);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * On demand test if a certain rule has matches, store the result, and return the answer.
+	 */
+	private boolean testMatch(Rule rule) {
+		boolean match = rule.hasMatch(this.state.getGraph());
+		if( match ) {
+			matched.add(rule);
+		} else {
+			failed.add(rule);
+		}
+		return match;
+	}
+
 	public Rule last() {
 		return this.last;
 	}
-	private Rule last;
-	
-	/** TODO
-	 * @return
-	 */
-//	public Set<Rule> getExplored() {
-//		return this.explored;
-//	}
-
-	
-	/** TODO
-	 * @return
+		
+	/** 
+	 * Returns the set of rules known to be applicable in this cache's state.
 	 */
 	public Set<Rule> getMatched() {
 		return this.matched;
 	}
 	
-	/** TODO
-	 * @return
+	/**
+	 * Returns the set of rules known to be inapplicable in this cache's state.
 	 */
 	public Set<Rule> getFailed() {
 		return this.failed;
 	}
+	
+	/** The set of rules that are known to match in this cache's state. */
+	private final Set<Rule> matched;
+	/** The set of rules that are known not to match in this cache's state. */
+	private final Set<Rule> failed;
+	/** The state on which this cache works. */
+	private final GraphState state;
+	private Iterator<Rule> iterator;
+	
+	private final Location location;
+	private Rule last;
 }
-//
-//class TestMatchExploreCache implements ExploreCache {
-//	
-//	Iterator<Rule> it;
-//	
-//	/** @param rule */
-//	public TestMatchExploreCache(Rule rule) {
-//		HashSet<Rule> hs = new HashSet<Rule>(); 
-//		hs.add(rule);
-//		it = hs.iterator();
-//	}
-//	
-//	public void remove() {
-//	}
-//	
-//	public Rule last() {
-//		return null;
-//	}
-//	
-//	public Rule next() {
-//		return it.next();
-//	}
-//	
-//	public boolean hasNext() {
-//		return it.hasNext();
-//	}
-//	
-//	public void updateExplored(Rule rule) {
-//	}
-//	
-//	public void updateMatches(Rule rule) {
-//	}
-//	
-//	public Location getTarget(Rule rule) {
-//		return null;
-//	}
-//	
-//}
