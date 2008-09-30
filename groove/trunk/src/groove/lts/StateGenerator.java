@@ -121,8 +121,8 @@ public class StateGenerator {
             if (confluentTarget == null || confluentTarget.getLocation() != targetLocation ) {
 	        	// can't have this as add_transition, it may be counted as matching 
 	        	GraphNextState freshTarget = createState(appl, source);
-	        	freshTarget.setLocation(cache.getTarget(appl.getRule()));
-	            	
+	        	freshTarget.setLocation(targetLocation);
+	        	
 	        	reporter.start(ADD_STATE);
 	        	GraphState isoTarget = getGTS().addState(freshTarget);
 	        	reporter.stop();
