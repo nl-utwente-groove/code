@@ -17,14 +17,13 @@
 package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
-import groove.explore.util.MatchesIterator;
+import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,33 +60,30 @@ public class RandomLinearStrategy extends AbstractStrategy {
 			return false;
 		}
 		ExploreCache cache = getCache(true, false);
-		MatchesIterator matchIter = getMatchesIterator(cache);
-		this.collector.reset();
-		if (matchIter.hasNext()) {
-			// collect all matches
-			List<RuleEvent> matches = new ArrayList<RuleEvent>();
-			while (matchIter.hasNext()) {
-				matches.add(matchIter.next());
-			}
-			// select a random match
-			int matchCount = matches.size();
-			int randomIndex = (int) (Math.random() * matchCount);
-			// add the random match
-			getGenerator().applyMatch(getAtState(), matches.get(randomIndex), cache);
-		} else {
-			setClosed(getAtState());
-		}
-		updateAtState();
-		
+		MatchSetCollector collector = createMatchCollector(cache);
+        // collect all matches
+        List<RuleEvent> matches = new ArrayList<RuleEvent>();
+        collector.collectMatchSet(matches);
+        // select a random match
+        int matchCount = matches.size();
+        if (matchCount == 0) {
+            setClosed(getAtState());
+        } else {
+            int randomIndex = (int) (Math.random() * matchCount);
+            // add the random match
+            getMatchApplier().addTransition(getAtState(), matches.get(randomIndex));
+            if( closeExit() ) {
+                setClosed(getAtState());
+            }
+        }
+        updateAtState();
 		return true;
 	}
 	
 	@Override
 	protected void updateAtState() {
-		if( closeExit() ) {
-			setClosed(getAtState());
-		}
 		this.atState = this.collector.getNewState();
+        this.collector.reset();
 	}
 	
 	@Override

@@ -25,8 +25,8 @@ import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.Result;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
-import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
@@ -106,7 +106,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(scenario);
         
         scenario = ScenarioFactory.getScenario(
-        		new BreadthFirstStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (breadth-first).",
+        		new BFSStrategy(), new Acceptor(), "Explores all the new states reachable from the current state (breadth-first).",
         		"Full exploration (breadth-first, aliasing)");
         addScenarioHandler(scenario);
 
@@ -126,7 +126,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(scenario);
         
         scenario = ScenarioFactory.getScenario(
-        		new BreadthFirstStrategy(), new FinalStateAcceptor(new Result(1)), "Looks for a final state starting from the current state (breadth-first)", 
+        		new BFSStrategy(), new FinalStateAcceptor(new Result(1)), "Looks for a final state starting from the current state (breadth-first)", 
         		"Find a final state (breadth-first)"	);
         addScenarioHandler(scenario);
         
@@ -136,12 +136,12 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(scenario);
         
         scenario = ScenarioFactory.getConditionalScenario(
-        		new BreadthFirstStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
+        		new BFSStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
         		"Check invariant", false);
         addScenarioHandler(scenario);
 
         scenario = ScenarioFactory.getConditionalScenario(
-        		new BreadthFirstStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
+        		new BFSStrategy(), new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all the new states reachable from the current state until the invariant is violated.", 
         		"Check invariant", true);
         addScenarioHandler(scenario);
         

@@ -22,20 +22,15 @@ import groove.explore.result.ExploreCondition;
  * @author Iovka Boneva
  *
  */
-public class ConditionalBreadthFirstStrategy extends BreadthFirstStrategy
-		implements ConditionalStrategy {
-
-	
-	@Override
-	public void updateAtState() {
-		this.atState = null;
-		while (! this.toExplore.isEmpty() && this.atState == null) {
-			this.atState = this.toExplore.poll();
-			if (!getExplCond().isSatisfied(this.atState)) {
-				this.atState = null;
-			}
-		}
-	}
+public class ConditionalBFSStrategy extends BFSStrategy implements ConditionalStrategy {
+    @Override
+    protected PoolElement getFromPool() {
+        PoolElement result = super.getFromPool();
+        while (result != null && !getExplCond().isSatisfied(result.first())) {
+            result = super.getFromPool();
+        }
+        return result;
+    }
 
 	public void setExploreCondition(ExploreCondition<?> condition) {
 		this.explCond = condition;

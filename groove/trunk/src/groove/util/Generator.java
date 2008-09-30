@@ -27,13 +27,14 @@ import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
 import groove.explore.result.Result;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
-import groove.explore.strategy.BreadthFirstStrategy;
-import groove.explore.strategy.ConditionalBreadthFirstStrategy;
+import groove.explore.strategy.ConditionalBFSStrategy;
+import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
-import groove.explore.strategy.BFStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
+import groove.explore.util.MatchApplier;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
 import groove.graph.Edge;
@@ -289,7 +290,7 @@ public class Generator extends CommandLineTool {
     	Scenario result;
 		ExploreOption explore = getActiveOption(ExploreOption.class);
 		if (explore == null) {
-			result = GeneratorScenarioFactory.getScenarioHandler(new BFStrategy(), "Breadth first full exploration.", "full");
+			result = GeneratorScenarioFactory.getScenarioHandler(new DFSStrategy(), "Breadth first full exploration.", "full");
 		} else {
 			ExploreStrategyParser exploreParser = explore.getParser();
 			result = exploreParser.getStrategy();
@@ -460,7 +461,7 @@ public class Generator extends CommandLineTool {
      */
     private void reportTransitionStatistics() {
         printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
-        printf("\t\tConfluent:\t%d%n", BFStrategy.getConfluentDiamondCount());
+        printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
     }
@@ -838,14 +839,14 @@ public class Generator extends CommandLineTool {
          * @param closeFast TODO*/
         public ExploreStrategyParser(boolean closeFast) {
         	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new ExploreRuleDFStrategy(), "Depth first full exploration.", "barbed"));
-        	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
+        	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(), "Breadth first full exploration.", "branching"));
            	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new LinearStrategy(), "Explores the first successor of each state until a final state or a loop is reached.", "linear"));
            	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new RandomLinearStrategy(true), "Explores a random successor of each state until a final state or a loop is reached.", "random"));
-           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration (same as branching)", "full"));
-        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
-        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
-        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
-        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
+           	addStrategy(GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(), "Breadth first full exploration (same as branching)", "full"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBFSStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBFSStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new ConditionalBFSStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
+        	addStrategy(GeneratorScenarioFactory.getConditionalScenario(new BFSStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(new Result(1)), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
         	addStrategy(GeneratorScenarioFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking exploration", "model-checking"));
         	addStrategy(new ControlledScenario(null, "controlled", "Performs a depth-first search controlled by a sequence of rules."));
         }

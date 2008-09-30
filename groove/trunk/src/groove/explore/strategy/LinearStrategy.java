@@ -17,12 +17,13 @@
 package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
-import groove.explore.util.MatchesIterator;
+import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.trans.RuleEvent;
 
 /** Explores a single path until reaching a final state or a loop.
  * In case of abstract simulation, this implementation will prefer
@@ -37,10 +38,13 @@ public class LinearStrategy extends AbstractStrategy {
 			return false;
 		}
 		ExploreCache cache = getCache(true, false);
-		MatchesIterator matchIter = getMatchesIterator(cache);
+		RuleEvent event = createMatchCollector(cache).getMatch();
 		this.collector.reset();
-		if (matchIter.hasNext()) {
-			getGenerator().applyMatch(getAtState(), matchIter.next(), cache);
+		if (event != null) {
+			getMatchApplier().addTransition(getAtState(), event);
+	        if (closeExit()) {
+                setClosed(getAtState());
+            }
 		} else {
 			setClosed(getAtState());
 		}
@@ -50,9 +54,6 @@ public class LinearStrategy extends AbstractStrategy {
 	
 	@Override
 	protected void updateAtState() {
-		if( closeExit() ) {
-			setClosed(getAtState());
-		}
 		this.atState = this.collector.getNewState();
 	}
 	

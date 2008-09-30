@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -143,10 +143,10 @@ public class GraphSearchPlanFactory {
          */
         PlanData(GraphShape graph) {
             // compute the set of remaining (unmatched) nodes
-            remainingNodes = new HashSet<Node>(graph.nodeSet());
+            remainingNodes = new LinkedHashSet<Node>(graph.nodeSet());
             // compute the set of remaining (unmatched) edges and variables
-            remainingEdges = new HashSet<Edge>(graph.edgeSet());
-            remainingVars = new HashSet<String>(VarSupport.getAllVars(graph));
+            remainingEdges = new LinkedHashSet<Edge>(graph.edgeSet());
+            remainingVars = new LinkedHashSet<String>(VarSupport.getAllVars(graph));
         }
 
         /**
@@ -183,8 +183,8 @@ public class GraphSearchPlanFactory {
          */
         Collection<SearchItem> computeSearchItems(Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
             Collection<SearchItem> result = new ArrayList<SearchItem>();
-            Set<Node> unmatchedNodes = new HashSet<Node>(remainingNodes);
-            Set<Edge> unmatchedEdges = new HashSet<Edge>(remainingEdges);
+            Set<Node> unmatchedNodes = new LinkedHashSet<Node>(remainingNodes);
+            Set<Edge> unmatchedEdges = new LinkedHashSet<Edge>(remainingEdges);
             // first a single search item for the pre-matched elements
             if (anchorNodes == null) {
                 anchorNodes = Collections.emptySet();

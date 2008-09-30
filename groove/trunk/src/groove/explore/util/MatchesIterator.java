@@ -21,6 +21,7 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
+import groove.util.Reporter;
 import groove.util.TransformIterator;
 
 import java.util.ArrayList;
@@ -56,16 +57,21 @@ public class MatchesIterator implements Iterator<RuleEvent> {
     }
     
 	public boolean hasNext() {
+	    reporter.start(HAS_NEXT);
 		goToNext();
-		return eventIter != null && this.eventIter.hasNext();
+		boolean result = eventIter != null && this.eventIter.hasNext();
+		reporter.stop();
+		return result;
 	}
 
 	public RuleEvent next() {
+        reporter.start(NEXT);
 		goToNext();
 		if (this.eventIter == null) { throw new NoSuchElementException(); }
 		RuleEvent result = eventIter.next();
 		this.rulesIter.updateMatches(this.currentRule);
 		this.isEndRule = ! eventIter.hasNext();
+        reporter.stop();
 		return result;
 	}
 
@@ -171,4 +177,9 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 	
 	/** Flag to collect all matches at once, rather than doing a true iteration. */
 	private final boolean COLLECT_ALL_MATCHES = true;
+    static final Reporter reporter = Reporter.register(MatchSetCollector.class);
+    static final int CONSTRUCT = reporter.newMethod("constructor");
+    private static final int HAS_NEXT = reporter.newMethod("hasNext");
+    private static final int NEXT = reporter.newMethod("next");
+    static final int COMPUTE_ALIAS_MAP = reporter.newMethod("computeAliasedMatches");
 }

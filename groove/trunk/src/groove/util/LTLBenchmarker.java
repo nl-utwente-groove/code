@@ -19,11 +19,11 @@ package groove.util;
 import groove.explore.DefaultScenario;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.ModelCheckingScenario;
-import groove.explore.strategy.BFStrategy;
 import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
+import groove.explore.util.MatchApplier;
 import groove.graph.DeltaGraph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
@@ -1140,7 +1140,7 @@ public class LTLBenchmarker extends CommandLineTool {
      */
     private void reportTransitionStatistics() {
         printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
-        printf("\t\tConfluent:\t%d%n", BFStrategy.getConfluentDiamondCount());
+        printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
     }
