@@ -274,7 +274,7 @@ public class SystemRecord implements NodeFactory {
     }
 
     /** 
-     * Changes the behaviour of the copyGraphs property.
+     * Changes the state of the copyGraphs property.
      * @see #isCopyGraphs()
      */
     public void setCopyGraphs(boolean copy) {
@@ -290,6 +290,24 @@ public class SystemRecord implements NodeFactory {
      */
     public boolean isCopyGraphs() {
         return copyGraphs;
+    }
+
+    /** 
+     * Changes the state of the storeTransitions property.
+     * @see #isCopyGraphs()
+     */
+    public void setStoreTransitions(boolean store) {
+        this.storeTransitions = store;
+    }
+
+    /** 
+     * Indicates transitions are stored in the GTS.
+     * @return <code>true</code> if all transitions are stored; <code>false</code>
+     * if no transitions, or only unmodifying transitions, are stored (this is up to
+     * the strategy).
+     */
+    public boolean isStoreTransitions() {
+        return storeTransitions;
     }
     
     /** Constructs an appropriate fresh explore cache for the graph grammar.
@@ -392,6 +410,11 @@ public class SystemRecord implements NodeFactory {
      * iterators over the parent's data structures are still alive.
      */
     private boolean copyGraphs = true;
+    /**
+     * Flag indicating if transitions are to be stored in the GTS.
+     * If <code>false</code>, only states (and possibly unmidofying transitions) are stored.
+     */
+    private boolean storeTransitions = true;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");

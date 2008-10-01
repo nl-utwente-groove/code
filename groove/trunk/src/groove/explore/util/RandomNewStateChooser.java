@@ -11,7 +11,8 @@ import groove.lts.GraphState;
  */
 public class RandomNewStateChooser extends GraphAdapter {
 	
-	/** Returns a randomly chosen state among those newly
+	/** 
+	 * Returns a randomly chosen state among those newly
 	 * added to the GTS it listens to since last {@link #reset()}
 	 * operation. Two successive calls will return the same
 	 * element.
@@ -23,6 +24,13 @@ public class RandomNewStateChooser extends GraphAdapter {
 	
 	/** Forgets all new states it has seen so far. */
 	public void reset () { rc.reset(); }
+	
+	/** 
+	 * Indicates if no new state was seen since the last {@link #reset()}.
+	 */
+	public boolean isEmpty() {
+		return rc.size() == 0;
+	}
 	
 	@Override
 	public void addUpdate(GraphShape shape, Node node) {
