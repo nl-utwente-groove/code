@@ -16,7 +16,6 @@
  */
 package groove.control.parse;
 
-import groove.trans.GraphGrammar;
 import groove.trans.RuleNameLabel;
 import groove.view.DefaultGrammarView;
 
@@ -38,11 +37,8 @@ import antlr.SemanticException;
  */
 public class Namespace {
 
-	private Set<String> ruleNames = new HashSet();
+	private Set<String> ruleNames = new HashSet<String>();
 	
-	private GraphGrammar grammar;
-	private DefaultGrammarView view;
-
 	private HashMap<String, CommonTree> procs = new HashMap<String, CommonTree>();
 
 	/**
@@ -55,11 +51,7 @@ public class Namespace {
 	}
 	
 	/**
-	 * Returns the AST for a procedure
-	 * @param name
-	 * @return AST
-	 * @throws SemanticException
-	 */
+	 * Returns the AST for a procedure.	 */
 	public CommonTree getProc(String name) throws RecognitionException {
 		// TODO: throw exception if no such function
 		return procs.get(name);
@@ -74,5 +66,4 @@ public class Namespace {
 			this.ruleNames.add(rule.text());
 		}
 	}
-	
 }

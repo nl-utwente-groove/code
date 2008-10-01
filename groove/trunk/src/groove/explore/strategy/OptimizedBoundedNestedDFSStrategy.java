@@ -40,7 +40,7 @@ import java.util.Iterator;
  * @version $Revision$
  */
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
-
+	@Override
 	protected void setNextStartState() {
 //		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null && ModelChecking.CURRENT_ITERATION < ModelChecking.MAX_ITERATIONS>) {
 			// increase the boundary
@@ -84,6 +84,7 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 	 * Process boundary-crossing transitions properly.
 	 * @param transition the boundary-crossing transition
 	 */
+	@Override
 	public BuchiGraphState processBoundaryCrossingTransition(ProductTransition transition) {
 		// if the number of boundary-crossing transition on the current path
 //		if (getBoundary().currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {

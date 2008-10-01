@@ -58,14 +58,17 @@ public class GraphNodeSizeBoundary extends AbstractBoundary {
 		this.graphSizeBoundary += this.step;
 	}
 
+	@Override
 	public void increaseDepth() {
 		// do nothing
 	}
 
+	@Override
 	public void decreaseDepth() {
 		// do nothing
 	}
 
+	@Override
 	public int currentDepth() {
 		// with graph-size boundaries, boundary-crossing
 		// transitions are never allowed

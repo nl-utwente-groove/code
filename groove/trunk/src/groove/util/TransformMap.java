@@ -28,6 +28,7 @@ import java.util.Set;
  * @version $Revision$
  */
 abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Map<T,V> {
+	/** Constructs a map from a given inner map. */
     public TransformMap(Map<T,U> inner) {
         this.inner = inner;
     }

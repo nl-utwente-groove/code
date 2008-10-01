@@ -30,8 +30,8 @@ import java.io.IOException;
 import java.util.Collection;
 
 /**
- * This class is meant to show an example of how the classes
- * {@link GraphCalculator} and {@link GraphResult} can be used.
+ * This class is meant to show an example of how the class
+ * {@link GraphCalculator} can be used.
  * @author Arend Rensink
  * @version $REVISION $
  */

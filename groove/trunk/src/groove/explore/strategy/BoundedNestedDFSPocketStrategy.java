@@ -33,44 +33,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
-
-//	protected void backtrack() {
-//		BuchiGraphState parent = null;
-//		BuchiGraphState s = null;
-//		do {
-//			// pop the current state from the search-stack
-//			searchStack().pop();
-//			// close the current state
-//			setClosed(getAtBuchiState());
-//			
-//			colourState();
-//
-//			// the parent is on top of the searchStack
-//			parent = peekSearchStack();
-//			if (parent != null) {
-//				this.atBuchiState = parent;
-//				s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
-//				// make sure that the next open successor is not yet explored
-//				if (s != null) {
-//					if (!unexplored(s)) {
-//						s = null;
-//					}
-//				}
-//			}
-//		} while (parent != null && s == null); //) && !getProductGTS().isOpen(getAtBuchiState()));
-//
-//		// identify the reason of exiting the loop
-//		if (parent == null) {
-//			// the start state is reached and does not have open successors
-//			this.atBuchiState = null;
-//			return;
-//		} else if (s != null) { // the current state has an open successor (is not really backtracking, a sibling state is fully explored)
-//			this.atBuchiState = s; 
-//			return;
-//		} 
-//		// else, atState is open, so we continue exploring it
-//	}
-
+	@Override
 	protected void processFinalState(BuchiTransition transition) {
 		Set<? extends ProductTransition> productTransitions = addProductTransition(null, transition.getTargetLocation()); 
 		assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
@@ -78,6 +41,7 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 		// the case by default
 	}
 
+	@Override
 	protected void colourState() {
 		checkPocket(getAtBuchiState());
 		// if this state is a pocket-state we actually do not
@@ -98,6 +62,7 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 	 * @param newState the state to be checked
 	 * @return <tt>true</tt> if the state is a non-pocket state or colour neither cyan, blue, nor red, <tt>false</tt> otherwise
 	 */
+	@Override
 	public boolean unexplored(BuchiGraphState newState) {
 		boolean result = (!newState.isPocket() || newState.colour() == ModelChecking.NO_COLOUR) &&
 							newState.colour() != ModelChecking.cyan() &&

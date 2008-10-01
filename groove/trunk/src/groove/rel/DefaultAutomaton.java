@@ -244,6 +244,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
      * automaton.
      * @throws IllegalStateException if the method is called before the graph is fixed
      */
+	@SuppressWarnings("unchecked")
     protected void initNodeLabelEdgeMaps() {
         if (! isFixed()) {
             throw new IllegalStateException("Maps cannot be calculated reliably before automaton is closed");

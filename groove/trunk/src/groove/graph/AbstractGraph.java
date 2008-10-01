@@ -336,6 +336,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      * @return the graph cache
      */
     @Override
+    @SuppressWarnings("all")
     protected C createCache() {
         return (C) new GraphCache(this);
     }
@@ -405,6 +406,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     // -------------------- REPORTER DEFINITIONS ------------------------
     
     /** Returns an empty graph. */
+    @SuppressWarnings("all")
     static public <C extends GraphCache> AbstractGraph<C> emptyGraph() {
     	return EMPTY_GRAPH;
     }
@@ -425,6 +427,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     /**
      * Fixed empty graph.
      */
+    @SuppressWarnings("all")
     static public final EmptyGraph EMPTY_GRAPH = new EmptyGraph();
 
     /**

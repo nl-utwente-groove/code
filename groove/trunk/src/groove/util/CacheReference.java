@@ -205,6 +205,7 @@ public class CacheReference<C> extends SoftReference<C> {
 	 * @param strong if <code>true</code> the reference instance is to be strong
 	 * @return a reference that is either strong or soft, depending on <code>strong</code>
 	 */
+	@SuppressWarnings("unchecked")
 	static public <C> CacheReference<C> newInstance(boolean strong) {
 		return strong ? strongInstance : softInstance;
 	}
@@ -268,8 +269,10 @@ public class CacheReference<C> extends SoftReference<C> {
 	static private List<Integer> frequencies = new ArrayList<Integer>();
 
 	/** The singleton null instance for strong references. */
+	@SuppressWarnings("unchecked")
 	static private final CacheReference strongInstance = new CacheReference(true, 0, null);
 	/** The singleton null instance for weak references. */
+	@SuppressWarnings("unchecked")
 	static private final CacheReference softInstance = new CacheReference(false, 0, null);
 	
 	/**

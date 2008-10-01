@@ -36,6 +36,7 @@ public class ASTFrame extends JFrame {
 		content.add(panel, BorderLayout.CENTER);
 
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				Frame f = (Frame) e.getSource();
 				f.setVisible(false);

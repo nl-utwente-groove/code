@@ -1039,7 +1039,7 @@ public class Simulator {
         refreshActions();
     }
     
-    
+    /** Fully explores a given state of the GTS. */
     public synchronized void exploreState (GraphState state) {
     	getExploreState().prepare(getCurrentGTS(), state);
     	getExploreState().next();
@@ -1449,10 +1449,9 @@ public class Simulator {
 	}
 
     private JMenu createOpenRecentMenu() {
-    	
-    	if( history == null )
+    	if( history == null ) {
     		 history = new History();
-    	
+    	}
     	return history.getOpenRecentMenu();
     }
 	
@@ -1692,6 +1691,7 @@ public class Simulator {
         return stateFileChooser;
 	}
 
+	/** Returns a dialog that will ask for a formula to be entered. */
 	public FormulaDialog getFormulaDialog() {
 		if (formulaDialog == null)
 			formulaDialog = new FormulaDialog();
@@ -1792,10 +1792,10 @@ public class Simulator {
      * Notifies all listeners of a newly selected match. As a result,
      * {@link SimulationListener#setMatchUpdate(RuleMatch)}is
      * invoked on all currently registered listeners. This method should not be
-     * called directly: use {@link #setMatch(GraphTransition, RuleMatch)} instead.
+     * called directly: use {@link #setEvent(RuleEvent)} instead.
      * 
      * @see SimulationListener#setTransitionUpdate(GraphTransition)
-     * @see #setMatch(GraphTransition, RuleMatch)
+     * @see #setEvent(RuleEvent)
      * TODO above "see" should be updated to setMatchAndTransition
      */
     protected synchronized void fireSetMatch(RuleMatch match) {
@@ -1898,6 +1898,10 @@ public class Simulator {
     	}
 	}
     
+    /**
+     * Emphasises the states in the GTS that constitute the counter-example, if found.
+     * @param counterExample the actual states representing the counter-example
+     */
     public synchronized void notifyCounterExample(Collection<GraphState> counterExample) {
     	// reset lts display visibility
     	setGraphPanel(getLtsPanel());
@@ -2505,7 +2509,7 @@ public class Simulator {
 		}
 
 		/** 
-		 * Returns a listener to this {@link GenerateThread} that 
+		 * Returns a listener to this {@link CancellableThread} that 
 		 * interrupts the thread and waits for it to rejoin this thread.
 		 */
 		private ActionListener createCancelListener() {
@@ -3461,18 +3465,19 @@ public class Simulator {
     	return this.exploreState;
     }
 
-    public static Collection<GraphState> visualize; // = new HashSet<GraphState>();
+    private static Collection<GraphState> visualize; // = new HashSet<GraphState>();
     
     
     
     private History history;
     
+    /** Class wrapping a menu of recently opened files. */
     private class History {
 
     	private JMenu menu;
     	private ArrayList<String> history = new ArrayList<String>();
     	
-    	
+    	/** Constructs a fresh history instance. */
     	public History() {
     		String[] sh = Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(",");
     		for( String p : sh) {
@@ -3497,7 +3502,6 @@ public class Simulator {
     	/**
     	 * This method is called when a grammar is loaded, to update the history of loaded grammars.
     	 * This class will deal with any updates that have to be made accordingly
-    	 * @param file
     	 */
     	public void updateLoadGrammar(File file) {
     		if( history.contains(file.getAbsolutePath())) {

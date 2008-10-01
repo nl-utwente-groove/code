@@ -30,7 +30,7 @@ public class ReflectedAlgebra<T> extends Algebra {
      * @param sig Signature of the algebra to be reflected
      * @param alg The algebra to be reflected.
      */
-    public <S extends IntSignature, A extends RealAlgebra<T>> ReflectedAlgebra(Class<S> sig, A alg) {
+    public <S extends IntSignature<?>, A extends RealAlgebra<T>> ReflectedAlgebra(Class<S> sig, A alg) {
         super(getName(sig), "Algebra generated from "+alg.getClass());
         for (Method method: sig.getMethods()) {
             addOperation(createOperation(method));
@@ -45,11 +45,12 @@ public class ReflectedAlgebra<T> extends Algebra {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public String getSymbol(Object value) {
-        return alg.getSymbol(value);
+        return alg.getSymbol((T) value);
     }
     
-    final RealAlgebra alg;
+    final RealAlgebra<T> alg;
 
     static private Operation createOperation(Method method) {
         final Class<?>[] parameterTypes = method.getParameterTypes();
@@ -99,7 +100,7 @@ public class ReflectedAlgebra<T> extends Algebra {
     }
     
     /** Retrieves the value of the static {@link #NAME_FIELD} field of a given class object. */
-    static private String getName(Class sig) {
+    static private String getName(Class<?> sig) {
         try {
             return (String) sig.getField(NAME_FIELD).get(null);
         } catch (SecurityException e) {

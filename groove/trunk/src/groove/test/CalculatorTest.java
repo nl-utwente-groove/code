@@ -26,9 +26,7 @@ public class CalculatorTest extends TestCase {
 
     	GraphCalculator calc = new DefaultGraphCalculator(gg);
     	GraphState result = calc.getMax();
-    	this.assertNull(result);
-    	int numMax = calc.getAllMax().size();
-    	
+    	assertNull(result);
     }
     
     private GrammarView<?,?> loadGrammar(String grammarName, String startGraphName) {

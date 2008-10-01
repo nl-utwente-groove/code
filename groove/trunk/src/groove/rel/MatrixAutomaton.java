@@ -341,13 +341,16 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * automaton.
      * @throws IllegalStateException if the method is called before the graph is fixed
      */
+	@SuppressWarnings("unchecked")
     protected void initNodeLabelEdgeMaps() {
         if (! isFixed()) {
             throw new IllegalStateException("Maps cannot be calculated reliably before automaton is closed");
         }
         Set<Label> initPosLabelSet = new HashSet<Label>();
         Set<Label> initInvLabelSet = new HashSet<Label>();
+    	@SuppressWarnings("unchecked")
         Map<Label,Set<Edge>>[][] nodeInvLabelEdgeMap = new Map[2][indexedNodeCount()];
+    	@SuppressWarnings("unchecked")
         Map<Label,Set<Edge>>[][] nodePosLabelEdgeMap = new Map[2][indexedNodeCount()];
         for (Edge edge: edgeSet()) {
             Label label = edge.label();
@@ -1218,7 +1221,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                     }
                 }
             }
-            this.graph = null;
             NodeRelation tmpResult = result;
             result = null;
             return tmpResult;
@@ -1363,6 +1365,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         	return new ValuationEdge(source, target, valuation);
         }
         
+        /** Cleans the array of auxiliary results. */
         protected void cleanOldMatches() {
             // just a security in case we're in pre-initialization phase
             if (auxResults != null) {
@@ -1456,6 +1459,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * {@link #isStoringIntermediates()} holds, a set of end images reachable from the
          * automaton key/graph image pairs.
          */
+    	@SuppressWarnings("unchecked")
         final Map<Node,MatchingComputation>[] auxResults = new Map[indexedNodeCount()];
     }
 }

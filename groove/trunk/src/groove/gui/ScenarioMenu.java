@@ -173,6 +173,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
     public void startSimulationUpdate(GTS gts) {
 		gtsListener.set(gts);
 		// the lts's of the strategies in this menu are changed
@@ -209,6 +210,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         }
     }
 
+	@SuppressWarnings("unchecked")
     public void setRuleUpdate(NameLabel name) {
     	GTS gts = simulator.getCurrentGTS();
     	if (gts != null) {

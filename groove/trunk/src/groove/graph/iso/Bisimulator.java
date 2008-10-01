@@ -193,6 +193,7 @@ public class Bisimulator implements CertificateStrategy {
      * Initialises the node and edge certificate arrays,
      * and the certificate map.
      */
+	@SuppressWarnings("unchecked")
     private void initCertificates() {
     	// the following two calls are not profiled, as it
     	// is likely that this results in the actual graph construction

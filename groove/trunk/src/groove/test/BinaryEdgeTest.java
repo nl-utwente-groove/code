@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 /**
  * @version $Revision$ $Date: 2008-01-30 09:33:03 $
  */
+@SuppressWarnings("all")
 public class BinaryEdgeTest extends TestCase {
     protected Node n1, n2;
     protected BinaryEdge e;

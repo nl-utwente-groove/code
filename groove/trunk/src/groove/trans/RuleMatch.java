@@ -89,6 +89,7 @@ public class RuleMatch extends CompositeMatch {
     }
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Collection<RuleMatch> addSubMatchChoice(Iterable<? extends Match> choices) {
 		return (Collection<RuleMatch>) super.addSubMatchChoice(choices);
 	}

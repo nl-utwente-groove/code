@@ -17,7 +17,6 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
-import static groove.view.aspect.AttributeAspect.getAttributeValueFor;
 import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Graph;

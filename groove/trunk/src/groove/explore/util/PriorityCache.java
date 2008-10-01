@@ -65,7 +65,7 @@ public class PriorityCache implements ExploreCache {
 	 * rules' order. 
 	 * For a priority cache, this is guaranteed only if the iterator
 	 * currently points to a rule with same priority as rule. This 
-	 * is always the case if {@link #updateMatches(rule)} was
+	 * is always the case if {@link #updateMatches(Rule)} was
 	 * called just before.] 
  
 	 */

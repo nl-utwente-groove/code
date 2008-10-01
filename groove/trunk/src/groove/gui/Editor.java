@@ -587,7 +587,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	}
 
     /**
-	 * Lazily creates and returns the action to save the current graph.
+	 * Lazily creates and returns the action to save the current graph under a different name.
 	 */
 	private Action getSaveGraphAsAction() {
 		if (saveAsAction == null) {

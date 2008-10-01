@@ -22,7 +22,6 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSet;
-import groove.graph.WrapperLabel;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 
@@ -92,6 +91,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     /**
      * Callback factory method to create a fresh, empty edge set.
      */
+	@SuppressWarnings("unchecked")
     protected Set<Edge> createEdgeSet() {
         return (Set) new DefaultEdgeSet();
     }
@@ -99,6 +99,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     /**
      * Callback factory method to create a fresh, empty edge set with a given initial capacity.
      */
+	@SuppressWarnings("unchecked")
     protected Set<Edge> createEdgeSet(int capacity) {
         return (Set) new DefaultEdgeSet(capacity);
     }

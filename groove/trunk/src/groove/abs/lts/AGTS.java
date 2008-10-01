@@ -16,14 +16,6 @@
  */
 package groove.abs.lts;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-
 import groove.abs.AbstrGraph;
 import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
@@ -31,24 +23,23 @@ import groove.abs.ExceptionIncompatibleWithMaxIncidence;
 import groove.abs.MyHashSet;
 import groove.abs.PatternFamily;
 import groove.abs.Util;
-import groove.control.Location;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
-import groove.io.AspectualViewGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
-import groove.view.FormatException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 /** An Abstract graph transition system.
  * @author Iovka Boneva

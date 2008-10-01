@@ -104,9 +104,9 @@ public class ControlledScenario extends DefaultScenario {
 		Rule currRule;
 		
 		/** The states to be explored, in a FIFO order. */
-		protected LinkedList<GraphState> currList = new LinkedList<GraphState>();
-		protected LinkedList<GraphState> nextList = new LinkedList<GraphState>();
-		protected ToExploreListener toExplore = new ToExploreListener();
+		private LinkedList<GraphState> currList = new LinkedList<GraphState>();
+		private LinkedList<GraphState> nextList = new LinkedList<GraphState>();
+		private ToExploreListener toExplore = new ToExploreListener();
 		/** Iterator over the matches of the current state. */
 		
 		/** A queue with states to be explored, used as a FIFO. */

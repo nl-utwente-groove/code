@@ -52,6 +52,7 @@ import junit.framework.TestCase;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
     static public final String MATCH_COD_NAME = "match-cod";

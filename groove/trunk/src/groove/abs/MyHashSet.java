@@ -69,6 +69,7 @@ public class MyHashSet<T> implements Iterable<T>, Set<T>{
 	 * @param o
 	 * @return true if the set contains an object equivalent to o, false otherwise
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean contains(Object o) {
 		try {
 			return this.get((T) o) != null;

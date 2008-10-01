@@ -101,7 +101,7 @@ public class ProductTransition { //extends DefaultGraphTransition {
     	return result;
     }
     /**
-     * This implementation delegates to <tt>{@link #equalsSource(GraphTransition)}</tt>.
+     * This implementation delegates to <tt>{@link #equalsSource(ProductTransition)}</tt>.
     */
 	@Override
     public boolean equals(Object obj) {

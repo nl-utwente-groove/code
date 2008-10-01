@@ -1,7 +1,6 @@
 package groove.demo;
 
 import groove.calc.DefaultGraphCalculator;
-import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;

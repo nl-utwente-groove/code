@@ -38,6 +38,7 @@ import groove.util.Reporter;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class HashSpeedTest {
     static final int CREATE_TRY_COUNT = 500000;
     static final int KEY_TRY_COUNT = 50000;

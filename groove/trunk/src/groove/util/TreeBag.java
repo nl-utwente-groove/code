@@ -248,6 +248,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      * @return the remaining multiplicity of <tt>elem</tt> atfter removing one instance;
      * <tt>-1</tt> if <tt>elem did not occur in the first place</tt>
      */
+	@SuppressWarnings("unchecked")
     public int removeGetCount(Object elem) {
         MyMultiplicity mult = bag.remove(elem);
         if (mult == null) {

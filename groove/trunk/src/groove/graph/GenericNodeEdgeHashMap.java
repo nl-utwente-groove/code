@@ -52,6 +52,7 @@ public class GenericNodeEdgeHashMap<NS,NT,ES,ET> extends AbstractNodeEdgeMap<NS,
     @Override
     public GenericNodeEdgeMap<NS,NT,ES,ET> clone() {
     	try {
+    	    @SuppressWarnings("unchecked")
     		GenericNodeEdgeHashMap<NS,NT,ES,ET> result = (GenericNodeEdgeHashMap) super.clone();
     		result.nodeMap = null;
     		result.edgeMap = null;

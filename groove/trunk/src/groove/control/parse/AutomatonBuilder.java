@@ -136,8 +136,7 @@ public class AutomatonBuilder extends Namespace {
 	}
 	
 	/**
-	 * Finished building the automaton of the program
-	 * @throws SemanticException
+	 * Finished building the automaton of the program.
 	 */
 	public void endProgram() throws RecognitionException {
 		closeScope();

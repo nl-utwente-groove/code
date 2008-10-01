@@ -92,9 +92,6 @@ public class TypeReconstructor {
 		} while (addedRule || typeGraph.nodeCount() != nodeCount);
 	}
 	
-	/**
-	 * @return
-	 */
 	public Graph getTypeGraph() {
 		return typeGraph;
 	}

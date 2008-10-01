@@ -77,6 +77,7 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public U get(Object key) {
         U result = delta.get(key);
         if (result == null) {

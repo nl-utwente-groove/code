@@ -41,7 +41,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1177,7 +1176,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 		}
 
 		/**
-		 * Taken from {@link com.jgraph.example.fastgraph.FastGraphUI}. Updates
+		 * Taken from <code>com.jgraph.example.fastgraph.FastGraphUI</code>. Updates
 		 * the <code>preferredSize</code> instance variable, which is returned
 		 * from <code>getPreferredSize()</code>. Ignores edges for
 		 * performance
@@ -1392,6 +1391,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     	}
     	
     	/** The method is called when a filtered set is changed. */
+    	@SuppressWarnings("unchecked")
 		public void update(Observable o, Object arg) {
 			Set<String> changedLabelSet = null;
 			if (arg instanceof ObservableSet.AddUpdate) {

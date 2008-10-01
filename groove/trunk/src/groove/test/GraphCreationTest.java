@@ -35,6 +35,7 @@ import junit.framework.TestCase;
 /**
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class GraphCreationTest extends TestCase {
     protected static int NR_NODES_TOTAL = 9;
     protected static int NR_NODES_IN_GRAPH = 5;

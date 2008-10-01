@@ -22,7 +22,6 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.abs.AbstrGraph;
-import groove.abs.lts.AbstrGraphState;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;

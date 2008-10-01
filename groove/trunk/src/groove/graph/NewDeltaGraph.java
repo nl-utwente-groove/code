@@ -52,6 +52,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		} else {
 			this.delta = new DeltaStore(delta) {
 				@Override
+		    	@SuppressWarnings("unchecked")
 				protected Set<Edge> createEdgeSet(Collection<? extends Edge> set) {
 				    Set result;
 				    if (set instanceof DefaultEdgeSet) {

@@ -45,6 +45,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@SuppressWarnings("all")
 public class StrategiesTest extends TestCase {
 
 	/** Where to find the grammars */
@@ -260,6 +261,7 @@ public class StrategiesTest extends TestCase {
 		{
 			cache = new SimpleCache(grammar.getRules(), false);
 			list = new ArrayList<RuleNameLabel>();
+	    	@SuppressWarnings("unchecked")
 			ArrayList<RuleNameLabel> expected = (ArrayList<RuleNameLabel>) allRules.clone();
 			expected.remove(b.getName());
 			expected.remove(a.getName());
@@ -297,6 +299,7 @@ public class StrategiesTest extends TestCase {
 		{
 			cache = new SimpleCache(grammar.getRules(), true);
 			list = new ArrayList<RuleNameLabel>();
+	    	@SuppressWarnings("unchecked")
 			ArrayList<RuleNameLabel> expected = (ArrayList<RuleNameLabel>) allRules.clone();
 			expected.remove(b.getName());
 			cache.updateExplored(b);

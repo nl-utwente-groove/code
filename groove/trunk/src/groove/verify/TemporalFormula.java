@@ -50,11 +50,9 @@ public abstract class TemporalFormula {
 	/**
 	 * Constructor.
 	 * @param operator the top-level operator of this formula  
-	 * @param symbol the symbol corresponding to the top-level operator
 	 */
-	public TemporalFormula(String operator, String symbol) {
+	public TemporalFormula(String operator) {
 		this.operator = operator;
-		this.symbol = symbol;
 	}
 
     /**
@@ -116,8 +114,6 @@ public abstract class TemporalFormula {
     static public CTLStarFormula FACTORY;
     /** The top-level operator of this formula. */
 	private String operator;
-	/** The string representation of the top-level operator. */
-	private String symbol;
 	/** The set of states that do not fulfil this formula. */
 	private Set<State> counterExamples;
 

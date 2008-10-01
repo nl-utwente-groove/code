@@ -96,9 +96,7 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 		this.getGTS().addGraphListener(this.collector);
 	}
 	
-	/** Creates a strategy with a given cache size. 
-	 * @param cacheSize the number of states to be stored in the cache. A smaller
-	 * value optimizes memory usage.
+	/** Creates a strategy with a given cache size.
 	 */
 	public ExploreRuleDFStrategy () {
 		this.explCacheCache = new CacheMap<GraphState,ExploreCache>(cacheSize);
@@ -110,7 +108,7 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 	/** Used to register a state added to the GTS. */
 	private RandomNewStateChooser collector = new RandomNewStateChooser();
 	/** The current matches iterator, associated to atState.
-	 * Is initialized by {@link #next()} and is used in
+	 * Is initialised by {@link #next()} and is used in
 	 * {@link #updateAtState()}.
 	 */
 	private MatchesIterator currMatchIter;

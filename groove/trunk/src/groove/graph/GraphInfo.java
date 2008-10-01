@@ -18,6 +18,7 @@ package groove.graph;
 
 import groove.gui.layout.LayoutMap;
 import groove.util.Groove;
+import groove.util.Version;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class GraphInfo {
 	 * @return an error list stored in the info object, or <code>null</code> 
 	 * @see #setErrors(List)
 	 */
+	@SuppressWarnings("unchecked")
 	public List<String> getErrors() {
 		return (List<String>) data.get(ERRORS_KEY);
 	}
@@ -117,6 +119,7 @@ public class GraphInfo {
 	 * Returns the layout map (with key {@link #LAYOUT_KEY}) in this info object, if any.
 	 * @see #setLayoutMap(LayoutMap) 
 	 */
+	@SuppressWarnings("unchecked")
 	public LayoutMap<Node,Edge> getLayoutMap() {
 	    return (LayoutMap<Node,Edge>) data.get(LAYOUT_KEY);
 	}
@@ -434,7 +437,7 @@ public class GraphInfo {
 
     /**
      * Convenience method to set the version of a graph.
-     * @see Version#GXL_VERSION.
+     * @see Version#GXL_VERSION
      */
     public static void setVersion(GraphShape graph, String version) {
         GraphProperties properties = getProperties(graph, version.length() != 0);
@@ -445,7 +448,7 @@ public class GraphInfo {
 
     /**
      * Convenience method to retrieve the version of a graph.
-     * @see Version#GXL_VERSION.
+     * @see Version#GXL_VERSION
      */
     public static String getVersion(GraphShape graph) {
         GraphProperties properties = getProperties(graph, false);

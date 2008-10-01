@@ -17,7 +17,6 @@
 package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
-import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;

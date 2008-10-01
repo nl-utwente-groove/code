@@ -194,6 +194,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      * present in the lower set, adds it to the removed set.
      */
     @Override
+	@SuppressWarnings("unchecked")
     public boolean remove(Object o) {
         if (added.remove(o)) {
             return true;

@@ -19,7 +19,6 @@ package groove.trans;
 import groove.control.ControlAutomaton;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.algebra.ValueNode;
 import groove.view.FormatException;
 
 import java.util.ArrayList;

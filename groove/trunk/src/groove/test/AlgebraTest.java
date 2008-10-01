@@ -31,6 +31,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+@SuppressWarnings("all")
 public class AlgebraTest extends TestCase {
 	
     AlgebraGraph algebraGraph;

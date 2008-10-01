@@ -217,6 +217,7 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
         return result;
     }
 
+	@SuppressWarnings("unchecked")
     private final Map<Node,Set<Edge>>[] nodeEdgeMaps = new Map[MAX_END_COUNT];
     {
     	for (int i = 0; i < nodeEdgeMaps.length; i++) {

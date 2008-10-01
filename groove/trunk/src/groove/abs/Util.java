@@ -113,7 +113,7 @@ public class Util {
 	public static boolean ea() {
 		if (! Abstraction.DEBUG) { return false; }
 		boolean r = false;
-		assert r = true;
+		assert r == true;
 		return r;
 	}
 

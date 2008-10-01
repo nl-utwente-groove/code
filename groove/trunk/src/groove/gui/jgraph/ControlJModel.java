@@ -122,11 +122,11 @@ public class ControlJModel extends GraphJModel {
     }
     
     /**
-     * Sets the active state to a new value, 
+     * Sets the active location to a new value, 
      * and returns the previous value.
-     * Both old and new states may be <tt>null</tt>.
-     * @param state the new active state
-     * @return the old active state
+     * Both old and new locations may be <tt>null</tt>.
+     * @param location the new active location
+     * @return the old active location
      */
     public Location setActiveLocation(Location location) {
         Location result = activeLocation;

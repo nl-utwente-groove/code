@@ -33,8 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jgraph.graph.GraphConstants;
-
 /**
  * Extends DefaultEdge to store a collection of graph Edges. The graph edges are stored as a Set in
  * the user object. In the latter case, toString() the user object is the empty string.
