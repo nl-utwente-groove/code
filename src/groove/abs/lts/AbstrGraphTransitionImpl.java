@@ -17,7 +17,6 @@
 package groove.abs.lts;
 
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;

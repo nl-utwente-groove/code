@@ -16,22 +16,17 @@
  */
 package groove.type;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-
 import groove.graph.AbstractNodeEdgeMap;
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.trans.Rule;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Frank van Es

@@ -56,6 +56,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@SuppressWarnings("all")
 public class TestingTransforming extends TestCase {
 	
 	//private final Abstraction.Parameters defaultOptions = new Abstraction.Parameters(false, LinkPrecision.HIGH, false);
@@ -600,7 +601,6 @@ public class TestingTransforming extends TestCase {
 		
 	}
 	
-	@SuppressWarnings("unqualified-field-access")
 	public void testTransformBinaryTree1 () throws ExceptionIncompatibleWithMaxIncidence {
 		
 		int precision = 1;
@@ -654,7 +654,6 @@ public class TestingTransforming extends TestCase {
 				
 	}
 
-	@SuppressWarnings("unqualified-field-access")
 	public void testTransformBinaryTree2 () throws ExceptionIncompatibleWithMaxIncidence {
 		
 		int precision = 1;

@@ -220,8 +220,6 @@ public class LTSJModel extends GraphJModel {
         AttributeMap result;
         GraphState state = (GraphState) node;
         
-        boolean hasControl = (state.getLocation() != null);
-        
         if (state.equals(getGraph().startState())) {
             result = LTS_START_NODE_ATTR.clone();
         } else if (!state.isClosed()) {

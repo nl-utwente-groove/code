@@ -280,6 +280,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
 	 * @return the graph cache
 	 */
     @Override
+	@SuppressWarnings("unchecked")
 	protected C createCache() {
 	    return (C) new GraphShapeCache(this);
 	}

@@ -50,6 +50,7 @@ public class ArrayIterator<T> implements Iterator<T> {
 
 	public T next() {
 		if (hasNext()) {
+			@SuppressWarnings("unchecked")
 			T result = (T) array[current];
 			current++;
 			return result;

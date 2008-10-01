@@ -245,7 +245,7 @@ public class ConcretePart {
 	 * @return the set of all possible extensions
 	 * @require morph domain is a subgraph of this.graph()
 	 * @require morph is a total injective morphism
-	 * @see #extension(Node, GraphPattern, PatternFamily)
+	 * @see #extension(Node, GraphPattern, NodeEdgeMap, PatternFamily, boolean, NodeFactory)
 	 */
 	private Collection<ConcretePart> extensionsByMorphism (NodeEdgeMap morph, Graph cod, Node node, PatternFamily family, NodeFactory nodeFactory) {
 		checkInvariants();

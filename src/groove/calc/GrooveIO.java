@@ -7,6 +7,8 @@ import groove.view.FormatException;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
+@SuppressWarnings("all")
 public class GrooveIO {
 
 	private String path;

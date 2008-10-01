@@ -433,7 +433,7 @@ public class JAttr {
     }
 
     
-    
+    /** Border consisting of a double line. */
     static public final Border DOUBLE_BORDER = new CompoundBorder(new LineBorder(Color.BLUE, 2), new LineBorder(Color.BLUE, 2));
     
     /** The default node attributes of the control automaton */

@@ -27,6 +27,7 @@ import junit.framework.TestCase;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class HashBagTest extends TestCase {
 
     /**
@@ -76,7 +77,8 @@ public class HashBagTest extends TestCase {
     }
 
     public void testClone() {
-        HashBag<Integer> bag122Clone = (HashBag) bag122.clone();
+    	@SuppressWarnings("unchecked")
+        HashBag<Integer> bag122Clone = (HashBag<Integer>) bag122.clone();
         assertEquals(1,bag122Clone.multiplicity(i1));        
         assertEquals(2,bag122Clone.multiplicity(i2));        
         assertEquals(0,bag122Clone.multiplicity(i3)); 

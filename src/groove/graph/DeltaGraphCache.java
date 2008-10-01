@@ -237,6 +237,7 @@ public class DeltaGraphCache extends GraphCache {
 		// otherwise, we can use the cache delta
 		reporter.start(COMPUTE_LABEL_EDGE_MAP);
 		DeltaApplier delta = getCacheDelta();
+    	@SuppressWarnings("unchecked")
 		final List<Map<Label, Set<Edge>>> basisMaps = (List) basis.getLabelEdgeMaps();
 		final List<Map<Label, Set<Edge>>> result = new ArrayList<Map<Label, Set<Edge>>>();// [basisMaps.length];
 		result.add(null);
@@ -288,6 +289,7 @@ public class DeltaGraphCache extends GraphCache {
         	return super.computeNodeEdgeMap();
     	} else {
 			reporter.start(COMPUTE_NODE_EDGE_MAP);
+	    	@SuppressWarnings("unchecked")
 			Map<Node, Set<Edge>> basisMap = (Map) basis.nodeEdgeMap();
 			Map<Node, Set<Edge>> result = new HashMap<Node, Set<Edge>>(basisMap);
 			DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);

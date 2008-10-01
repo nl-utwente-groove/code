@@ -84,6 +84,7 @@ public class SetSpeedTest {
 	/**
 	 * @param args
 	 */
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		new SetSpeedTest(new HashSet<Object>(SMALL_SAMPLE_SIZE)).start();
 //		new SetSpeedTest(new BitHashSet()).start();
@@ -107,7 +108,8 @@ public class SetSpeedTest {
 		double largeRandomSpace = test(LARGE_RANDOM_SAMPLE, LARGE_REPEAT_FACTOR, TEST_RANDOM_LARGE);
 		report(TEST_RANDOM_LARGE, largeRandomSpace);
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	private double test(Object[] sample, int repeatFactor, int[] measures) {
 		reporter.start(measures[OVERALL_INDEX]);
 		reporter.start(measures[FIRST_INDEX]);

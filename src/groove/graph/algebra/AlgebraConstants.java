@@ -73,17 +73,6 @@ public class AlgebraConstants {
     static private AlgebraGraph algebraGraph;
 
     /**
-     * @return the singleton {@link groove.graph.algebra.AlgebraGraph}-instance
-     * @deprecated use {@link AlgebraGraph#getInstance()} instead
-     */
-    @Deprecated
-    static private AlgebraGraph getAlgebraGraph() {
-    	if (algebraGraph == null)
-    		algebraGraph = AlgebraGraph.getInstance();
-    	return algebraGraph;
-    }
-
-    /**
      * Checks whether the label equals the attribute-prefix indicating that this
      * node represents an attribute.
      * @param label the label whose role is to be investigated

@@ -81,7 +81,7 @@ public class ObjectWrapSpeedTest {
             }
         }, new Action() {
             public Object start(Object object) {
-                return ((Collection) object).iterator().next();
+                return ((Collection<?>) object).iterator().next();
             }            
         }).start();
         new ObjectWrapSpeedTest("Array", new Action() {

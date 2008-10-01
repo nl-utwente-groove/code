@@ -58,11 +58,10 @@ public class Analyzer extends CommandLineTool {
      */
     static private final int LINE_UNIT = 100;
 
-    static protected final Reporter reporter = Reporter.register(Analyzer.class);
-    static protected final int EQUAL = reporter.newMethod("Equality check");
-    static protected final int ISO = reporter.newMethod("Full isomorphism check");
-    static protected final int CERT = reporter.newMethod("Certificate check");
-    static protected int[] certLevel;
+    static private final Reporter reporter = Reporter.register(Analyzer.class);
+    static private final int EQUAL = reporter.newMethod("Equality check");
+    static private final int ISO = reporter.newMethod("Full isomorphism check");
+    static private final int CERT = reporter.newMethod("Certificate check");
     static private final IsoChecker isoChecker = DefaultIsoChecker.getInstance();
 
     public static void main(String[] args) {
@@ -80,7 +79,9 @@ public class Analyzer extends CommandLineTool {
         boolean eof = false;
         while (!eof) {
             try {
+            	@SuppressWarnings("unchecked")
                 Collection<Node> nodeSet = (Collection<Node>) graphStream.readObject();
+            	@SuppressWarnings("unchecked")
                 Collection<Edge> edgeSet = (Collection<Edge>) graphStream.readObject();
                 Graph graph = new NodeSetEdgeSetGraph();
                 graph.addNodeSet(nodeSet);
@@ -121,15 +122,16 @@ public class Analyzer extends CommandLineTool {
         return false;
     }
 
-    /** The tool has not verbority level; this implementation always returns <tt>false</tt>. */
+    /** The tool has not verbosity level; this implementation always returns <tt>false</tt>. */
     @Override
     protected boolean supportsVerbosityOption() {
         return false;
     }
 
     /** 
-     * Initializes the objects necessary for the analysis.
+     * Initialises the objects necessary for the analysis.
      */
+	@SuppressWarnings("unchecked")
     protected void init() {
         startLog();
         println("Bisimulation analysis for " + graphStreamName);

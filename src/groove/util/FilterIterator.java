@@ -33,7 +33,8 @@ public abstract class FilterIterator<T> implements Iterator<T> {
     public FilterIterator(Iterator<?> inner) {
         this.inner = inner;
     }
-    
+
+	@SuppressWarnings("unchecked")
     public boolean hasNext() {
     	Object next = this.next;
     	Iterator<?> inner = this.inner;

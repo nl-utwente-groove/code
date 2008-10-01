@@ -271,7 +271,7 @@ public class Generator extends CommandLineTool {
     /** 
      * Returns the exploration strategy set for the generator.
      * The strategy is lazily retrieved from the command line options,
-     * or set to {@link FullStrategy} if no strategy was specified.
+     * or set to {@link DFSStrategy} if no strategy was specified.
      */
     protected Scenario getStrategy() {
         if (strategy == null) {
@@ -284,8 +284,9 @@ public class Generator extends CommandLineTool {
     /** 
      * Callback factory method to construct the exploration strategy.
      * The strategy is computed from the command line options,
-     * or set to {@link FullStrategy} if no strategy was specified.
+     * or set to {@link DFSStrategy} if no strategy was specified.
      */
+	@SuppressWarnings("unchecked")
     protected Scenario computeStrategy() {
     	Scenario result;
 		ExploreOption explore = getActiveOption(ExploreOption.class);
@@ -863,7 +864,7 @@ public class Generator extends CommandLineTool {
          * Returns the condition determined by parsing, in case the strategy is conditional. Returns
          * <tt>null</tt> if no condition was specified.
          * @see #parse(String)
-         * @see ConditionalAcceptor#setCondition(groove.trans.Condition)
+         * @see ConditionalAcceptor#setCondition(ExploreCondition)
          */
         public String getCondition() {
             return parsedCondition;
@@ -872,7 +873,6 @@ public class Generator extends CommandLineTool {
         /**
          * Indicates if the condition was negated, in case of a conditional strategy. Returns
          * <tt>false</tt> if no condition was specified.
-         * @see ConditionalAcceptor#setNegated(boolean)
          * @see #parse(String)
          * @see #getCondition()
          */
@@ -881,7 +881,7 @@ public class Generator extends CommandLineTool {
         }
         
         /**
-         * Returns a list of rule names in case the strategy is a {@link ControlledStrategy}.
+         * Returns a list of rule names in case the strategy is a {@link ControlledScenario}
          */
         public RuleList getProgram() {
             return parsedProgram;
@@ -919,6 +919,7 @@ public class Generator extends CommandLineTool {
          * @param parameter string from which the strategy is to be determined.
          * @throws IllegalArgumentException if <tt>parameter</tt> is not formatted correctly
          */
+        @SuppressWarnings("unchecked")
         public void parse(String parameter) throws IllegalArgumentException {
             parsedStrategy = null;
             Iterator<Map.Entry<String,Scenario>> strategyIter = strategies.entrySet().iterator();

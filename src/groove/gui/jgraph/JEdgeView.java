@@ -227,6 +227,7 @@ public class JEdgeView extends EdgeView {
     /**
      * Convenience method to return the points of the view as an instantiate list.
      */
+	@SuppressWarnings("unchecked")
     public final List<Object> getViewPoints() {
     	return points;
     }
@@ -457,6 +458,7 @@ public class JEdgeView extends EdgeView {
         @Override
         protected ConnectionSet createConnectionSet(EdgeView view, boolean verbose) {
             if (view.getTarget() == null) {
+            	@SuppressWarnings("unchecked")
                 List<Object> points = view.getPoints();
                 points.add(points.get(points.size()-1));
                 view.setTarget(view.getSource());

@@ -189,6 +189,7 @@ abstract public class JModel extends DefaultGraphModel {
      */
     public boolean freeze() {
         boolean result = false;
+    	@SuppressWarnings("unchecked")
         Iterator<DefaultGraphCell> rootsIter = roots.iterator();
         while (rootsIter.hasNext()) {
             DefaultGraphCell root = rootsIter.next();
@@ -254,6 +255,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Overrides the method so also incident edges of removed nodes are removed.
      */
     @Override
+	@SuppressWarnings("unchecked")
     public void remove(Object[] roots) {
         List<Object> removables = new LinkedList<Object>();
         for (int i = 0; i < roots.length; i++) {
@@ -296,6 +298,7 @@ abstract public class JModel extends DefaultGraphModel {
 	 * Notifies the listeners that something has changed in the model (or in the
 	 * view of the model).
 	 */
+	@SuppressWarnings("unchecked")
     public void refresh() {
     	refresh(getRoots());
     }
@@ -462,6 +465,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Invokes {@link JCellContent#clone()} to do the job.
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	protected Object cloneUserObject(Object userObject) {
         if (userObject == null) {
             return null;

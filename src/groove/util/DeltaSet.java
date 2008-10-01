@@ -162,6 +162,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
     public boolean remove(Object o) {
 		boolean result = lower.remove(o);
 		if (result && !added.remove(o)) {
+			@SuppressWarnings("unchecked")
 			boolean inner = removed.add((T)o);
 			assert inner : "Removed element "+o+" already in removed set"+removed;
 		}

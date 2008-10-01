@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 /**
  * @version $Revision$ $Date: 2008-01-30 09:33:08 $
  */
+@SuppressWarnings("all")
 public class MorphismTest extends TestCase {
     public MorphismTest(String name) {
         super(name);

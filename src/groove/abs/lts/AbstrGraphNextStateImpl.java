@@ -17,12 +17,9 @@
 package groove.abs.lts;
 
 import groove.abs.AbstrGraph;
-import groove.abs.DefaultAbstrGraph;
-import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;

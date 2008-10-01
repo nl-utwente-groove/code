@@ -148,6 +148,7 @@ public class CTLStarFormula {
     static public final String FALSE = "false";
 
     public interface TemporalOperator{
+    	// empty interface
     }
 
     /**
@@ -162,7 +163,7 @@ public class CTLStarFormula {
     	 * @param operand the single operand on which this operator will be applied
     	 */
     	public Prefix(String operator, String symbol, TemporalFormula operand) {
-            super(operator, symbol);
+            super(operator);
             this.operand = operand;
             this.operandList = Collections.singletonList(operand);
         }
@@ -218,7 +219,7 @@ public class CTLStarFormula {
     	 * @param operands the list of operands on which this operator will be applied
     	 */
     	public Infix(String operator, String symbol, List<TemporalFormula> operands) {
-            super(operator, symbol);
+            super(operator);
             this.operandList.addAll(operands);
         }
 
@@ -656,7 +657,7 @@ public class CTLStarFormula {
          * @param condition
          */
         public Atom(String condition) {
-            super("", ATOM_SYMBOLIC_NAME);
+            super("");
             this.predicateName = condition;
         }
 

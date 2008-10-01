@@ -19,6 +19,7 @@ package groove.util;
 import groove.explore.DefaultScenario;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.ModelCheckingScenario;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
@@ -124,7 +125,7 @@ public class LTLBenchmarker extends CommandLineTool {
 	private static String logFileName;
 
 	public LTLBenchmarker() {
-		super(Collections.EMPTY_LIST);
+		super(Collections.<String>emptyList());
 	}
 
 	/**
@@ -815,12 +816,6 @@ public class LTLBenchmarker extends CommandLineTool {
     	return ModelChecking.CURRENT_ITERATION > ModelChecking.MAX_ITERATIONS - 1;
     }
 
-    private void reset() {
-    	System.gc();
-    	gts = null;
-    	scenario = null;
-    }
-
     private void resetStrategy() {
     	scenario = null;
     }
@@ -831,7 +826,6 @@ public class LTLBenchmarker extends CommandLineTool {
     
     /**
      * Sets the grammar to be used for state space generation.
-     * @param grammarLocation the file name of the grammar (with or without file name extension)
      */
     public static void setGrammarLocation(List<String> arguments) {
         grammarLocation = ruleSystemFilter.addExtension(arguments.remove(0));
@@ -839,7 +833,6 @@ public class LTLBenchmarker extends CommandLineTool {
 
     /**
      * Sets the start graph to be used for state space generation.
-     * @param startGraphName the name of the start graph (without file name extension)
      */
     public static void setStartGraph(List<String> arguments) {
         startStateName = arguments.remove(0);
@@ -964,7 +957,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /** 
      * Returns the exploration strategy set for the generator.
      * The strategy is lazily retrieved from the command line options,
-     * or set to {@link FullStrategy} if no strategy was specified.
+     * or set to {@link BFSStrategy} if no strategy was specified.
      */
     protected ModelCheckingScenario getScenario() {
         if (scenario == null) {
@@ -977,7 +970,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /** 
      * Callback factory method to construct the exploration strategy.
      * The strategy is computed from the command line options,
-     * or set to {@link FullStrategy} if no strategy was specified.
+     * or set to {@link BFSStrategy} if no strategy was specified.
      */
     protected ModelCheckingScenario computeScenario() {
         ModelCheckingScenario result;
@@ -1015,7 +1008,7 @@ public class LTLBenchmarker extends CommandLineTool {
     }
 
     /**
-     * The processing phase of state space generation. Called from <tt>{@link #start}</tt>.
+     * The processing phase of state space generation.
      */
     protected Collection<? extends Object> generate() {
     	Collection<? extends Object> result;
@@ -1308,7 +1301,6 @@ public class LTLBenchmarker extends CommandLineTool {
 
     public static void log(String message) {
     	try {
-        	File logFile = new File(logFileName);
         	FileWriter logFileWriter = new FileWriter(logFileName, true);
         	BufferedWriter writer = new BufferedWriter(logFileWriter);
         	

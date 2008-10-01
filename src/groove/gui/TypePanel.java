@@ -197,10 +197,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         typeGraphPanel.setEnabled(true);
     }
     
-    public void saveGraph(Graph graph) {
-    	
-    }
-    
     /** The simulator to which this panel belongs. */
 	private final Simulator simulator;
 }

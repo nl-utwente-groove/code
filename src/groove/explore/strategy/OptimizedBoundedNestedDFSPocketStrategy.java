@@ -16,19 +16,11 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.result.CycleAcceptor;
-import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.ProductTransition;
-import groove.util.LTLBenchmarker;
 import groove.verify.BuchiGraphState;
-import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 /** 
  * This bounded version deviates from the default nested DFS in the
@@ -40,7 +32,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class OptimizedBoundedNestedDFSPocketStrategy extends BoundedNestedDFSPocketStrategy {
-
+	@Override
 	protected void setNextStartState() {
 		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null) {
 			// increase the boundary

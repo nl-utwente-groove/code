@@ -43,6 +43,7 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
      * @param iter1 the first inner iterator
      * @param iter2 the second inner iterator
      */
+	@SuppressWarnings("unchecked")
     public NestedIterator(Iterator<? extends T> iter1, Iterator<? extends T> iter2) {
         this(Arrays.asList(iter1, iter2));
     }

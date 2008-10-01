@@ -181,7 +181,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
             result = !reuse && equalsEvent((SPOEvent) obj);
             reporter.stop();
         } else if (obj instanceof VirtualEvent) {
-            result = equals(((VirtualEvent) obj).getInnerEvent());
+            result = equals(((VirtualEvent<?>) obj).getInnerEvent());
         } else {
             result = false;
         }

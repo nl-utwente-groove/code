@@ -52,6 +52,7 @@ public class ConditionalScenario<C> extends DefaultScenario {
 	}
 	
     @Override
+	@SuppressWarnings("unchecked")
     public void prepare(GTS gts, GraphState state) {
         super.prepare(gts, state);
         if (getAcceptor() instanceof ConditionalAcceptor) {

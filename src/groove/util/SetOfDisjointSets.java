@@ -52,6 +52,7 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements 
         if (! (other instanceof Set)) {
             return false;
         } else {
+        	@SuppressWarnings("unchecked")
             Set<?> otherCollection = (Set) other;
             for (T elem: this) {
                 if (! otherCollection.contains(elem)) {

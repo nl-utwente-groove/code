@@ -270,8 +270,8 @@ public class ExplorationTest extends TestCase {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
-
      */
+	@SuppressWarnings("unchecked")
     protected GTS testExploration(GrammarView<?,?> view, String strategyDescr, int nodeCount,
             int edgeCount, int openCount, boolean save) {
         try {

@@ -175,7 +175,8 @@ public class TupleIterator<Idx, Val> implements Iterator<Map<Idx,Val>> {
 				return result;
 			}
 			public int size() { return 3; }
-			
+
+			@Override
 			public String toString () {
 				return "(a1, a2) X (b1) X (c1, c2, c3)";
 			}

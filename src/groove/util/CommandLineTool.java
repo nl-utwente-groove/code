@@ -431,6 +431,7 @@ public class CommandLineTool {
 	 * @param optionClass the class type
 	 * @return the option of type <code>X</code>, if it was invoked; <code>null</code> otherwise.
 	 */
+	@SuppressWarnings("unchecked")
 	protected <X extends CommandLineOption> X getActiveOption(Class<X> optionClass) {
 	    return (X) activeOptions.get(optionClass);
 	}

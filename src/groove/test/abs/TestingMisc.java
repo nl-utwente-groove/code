@@ -16,10 +16,20 @@
  */
 package groove.test.abs;
 
-import groove.abs.*;
+import groove.abs.AbstrGraph;
+import groove.abs.Abstraction;
+import groove.abs.ConcretePart;
+import groove.abs.DefaultAbstrGraph;
+import groove.abs.ExceptionIncompatibleWithMaxIncidence;
+import groove.abs.ExceptionRemovalImpossible;
+import groove.abs.GraphPattern;
+import groove.abs.Multiplicity;
+import groove.abs.MultiplicityInformation;
+import groove.abs.PatternFamily;
+import groove.abs.SetMaterialisations;
+import groove.abs.Util;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -28,9 +38,6 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.gui.Options;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraph;
 import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
 import groove.rel.VarNodeEdgeHashMap;
@@ -44,13 +51,10 @@ import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-
-import javax.swing.JFrame;
 
 import junit.framework.TestCase;
 
@@ -59,6 +63,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@SuppressWarnings("all")
 public class TestingMisc  extends TestCase { 
 
 	// -----------------------------------------------------------------

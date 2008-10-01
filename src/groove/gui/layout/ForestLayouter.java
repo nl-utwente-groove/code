@@ -373,8 +373,7 @@ public class ForestLayouter extends AbstractLayouter {
     }
 
     /**
-     * The in-degree of all layoutables, as a mapping from
-     * {@link Layoutable} to {@link Integer}.
+     * The in-degree of all layoutables, as a mapping from {@link Layoutable} to {@link Integer}.
      */
     private final Map<Integer,Set<Layoutable>> inDegreeMap = new TreeMap<Integer,Set<Layoutable>>();
     /**

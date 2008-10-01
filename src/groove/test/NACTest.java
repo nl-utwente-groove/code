@@ -57,6 +57,7 @@ import junit.framework.TestCase;
  * </ul>
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class NACTest extends TestCase {
     public NACTest(String name) {
         super(name);

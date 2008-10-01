@@ -16,12 +16,8 @@
  */
 package groove.verify;
 
-import groove.explore.DefaultScenario;
-import groove.explore.strategy.DefaultBoundedModelCheckingStrategy;
 import groove.graph.Edge;
-import groove.lts.GTS;
 import groove.trans.Rule;
-import groove.util.Reporter;
 
 import java.util.Collection;
 

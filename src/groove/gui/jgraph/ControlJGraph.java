@@ -16,30 +16,14 @@
  */
 package groove.gui.jgraph;
 
-import groove.control.ControlShape;
-import groove.control.ControlTransition;
-import groove.gui.Simulator;
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import org.jgraph.graph.DefaultGraphCell;
 
 public class ControlJGraph extends JGraph {
-
-	private Simulator simulator;
-	
-    public ControlJGraph(Simulator simulator) {
+    public ControlJGraph() {
     	super(ControlJModel.EMPTY_CONTROL_JMODEL, true);
-        this.simulator = simulator;
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setEnabled(false);
         
         
-    }
-    
-    private Simulator getSimulator() {
-    	return this.simulator;
     }
     
     @Override

@@ -40,6 +40,7 @@ public class RuleSetBorderBoundary extends RuleSetBoundary {
 		super(ruleSetBoundary);
 	}
 
+	@Override
 	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
 //		if (transition.target().iteration() < ModelChecking.CURRENT_ITERATION) {
 //			return false;
@@ -58,10 +59,12 @@ public class RuleSetBorderBoundary extends RuleSetBoundary {
 //		}
 	}
 
+	@Override
 	public void decreaseDepth() {
 		throw new UnsupportedOperationException("When starting from border states, decreasing the depth is not allowed");
 	}
 
+	@Override
 	public void increase() {
 		// when starting the next iteration from border states
 		// increasing the bound means to increase the depth;

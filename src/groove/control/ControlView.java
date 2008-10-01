@@ -22,7 +22,6 @@ import groove.control.parse.GCLBuilder;
 import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
-import groove.graph.GraphFactory;
 import groove.trans.GraphGrammar;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
@@ -49,12 +48,8 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * Loads a control program into a given ControlAutomaton
  */
 public class ControlView {
-	
 	/** currently used file **/
 	private File controlFile;
-
-    private static GraphFactory factory = GraphFactory.getInstance();
-    
 	
 	private AutomatonBuilder builder = new AutomatonBuilder();
 	

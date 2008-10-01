@@ -73,6 +73,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @param resolution the resolution of the tree branches; should be at least <code>1</code>
      * @param rootResolution the resolution of the tree root; should be at least <code>1</code>
      */
+    @SuppressWarnings("unchecked")
     public TreeHashSet(int capacity, int resolution, int rootResolution) {
         this(capacity, resolution, rootResolution, DEFAULT_EQUATOR);
     }
@@ -181,6 +182,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	}
 
     @Override
+    @SuppressWarnings("unchecked")
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			public boolean hasNext() {
@@ -330,6 +332,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
 	public boolean remove(Object obj) {
     	boolean result;
 		if (size == 0) {
@@ -401,6 +404,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		if (size == 0) {
 			return false;
 		}
+	    @SuppressWarnings("unchecked")
 		T key = (T) obj;
 		int index = indexOf(getCode(key));
 		if (index < 0) {
@@ -492,6 +496,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @param keyIndex the index in {@link #keys} where to start looking for <code>key</code>
      * @return <code>true</code> if <code>key</code> is found
      */
+    @SuppressWarnings("unchecked")
     private boolean containsAt(T newKey, int keyIndex) {
     	Object[] keys = this.keys;
     	Object oldKey = keys[keyIndex];
@@ -688,6 +693,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @return <code>true</code> if no existing key was equal to <code>key</code>, according
      * to {@link #areEqual(Object, Object)}.
      */
+    @SuppressWarnings("unchecked")
     private T putEqualKey(int code, T newKey, int keyIndex) {
         if (allEqual()) {
             return (T) this.keys[keyIndex];
@@ -872,16 +878,19 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     private int modCount;
     
     /** Returns an equator which calls {@link #equals(Object)} to determine equality. */
+    @SuppressWarnings("unchecked")
     static public <E> Equator<E> equalsEquator() {
         return EQUALS_EQUATOR;
     }
     
     /** Returns an equator which only compares hash codes to determine equality. */
+    @SuppressWarnings("unchecked")
     static public <E> Equator<E> hashCodeEquator() {
         return HASHCODE_EQUATOR;
     }
     
     /** Returns an equator which uses object identity to determine equality. */
+    @SuppressWarnings("unchecked")
     static public <E> Equator<E> identityEquator() {
         return IDENTITY_EQUATOR;
     }
@@ -922,6 +931,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * Equator that calls {@link Object#hashCode()} in <code>Equator.getCode(Object)</code> and
      * {@link Object#equals(java.lang.Object)} in <code>Equator.areEqual(Object, Object)</code>.
      */
+    @SuppressWarnings("unchecked")
     static public final Equator EQUALS_EQUATOR = new Equator() {
         /**
          * @return <code>key.hashCode()</code>.
@@ -947,6 +957,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * Equator that calls {@link System#identityHashCode(Object)} in <code>Equator.getCode(Object)</code> and
      * object equality in <code>Equator.areEqual(Object, Object)</code>.
      */
+    @SuppressWarnings("unchecked")
     static public final Equator IDENTITY_EQUATOR = new Equator() {
         /**
          * @return <code>System.identityHashCode(key)</code> 
@@ -972,6 +983,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * Equator that calls {@link Object#hashCode()} in <code>Equator.getCode(Object)</code> and
      * always returns <code>true</code> in <code>Equator.areEqual(Object, Object)</code>.
      */
+    @SuppressWarnings("unchecked")
     static public final Equator HASHCODE_EQUATOR = new Equator() {
         /**
          * @return <code>key.hashCode()</code>
@@ -997,6 +1009,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The equator to be used if none is indicated explicitly.
      * Set to {@link #EQUALS_EQUATOR}.
      */
+    @SuppressWarnings("unchecked")
     static public final Equator DEFAULT_EQUATOR = EQUALS_EQUATOR;
     /**
      * Number of bytes in an <code>int</code>.

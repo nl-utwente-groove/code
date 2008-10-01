@@ -65,7 +65,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
 	                Label label = transitionIter.next().getEvent().getLabel();
 	                String transitionName = null;
 	                if (!(label instanceof NameLabel)) {
-	                	transitionName = ((WrapperLabel)label).text();
+	                	transitionName = ((WrapperLabel<?>)label).text();
 	                	if (transitionName.startsWith("[")) {
 	                		transitionName = transitionName.substring(1,transitionName.length()-1);
 	                	}

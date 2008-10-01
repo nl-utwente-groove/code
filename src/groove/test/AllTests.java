@@ -26,6 +26,7 @@ import junit.framework.TestSuite;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class AllTests {
 
     public static Test suite() {

@@ -104,6 +104,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     }
     
     @Override
+	@SuppressWarnings("unchecked")
     public JCellContent<?> getUserObject() {
     	if (! userObjectSet) {
     		userObjectSet = true;

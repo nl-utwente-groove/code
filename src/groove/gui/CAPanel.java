@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.control.ControlView;
-import groove.control.Location;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -241,7 +240,7 @@ class AutomatonPanel extends JGraphPanel<ControlJGraph>
 	 * @param simulator
 	 */
 	public AutomatonPanel(Simulator simulator){
-		super(new ControlJGraph(simulator), true , simulator.getOptions());
+		super(new ControlJGraph(), true , simulator.getOptions());
 		this.getJGraph().setConnectable(false);
 		this.getJGraph().setDisconnectable(false);
 		this.getJGraph().setEnabled(false);

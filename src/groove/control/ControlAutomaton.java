@@ -19,9 +19,6 @@ package groove.control;
 import groove.graph.AbstractGraphShape;
 import groove.graph.GraphCache;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 /** * Representation of a Control automaton that can be visualised in a JGraphPanel. * This class is loosely coupled to a top-level GraphShape, which contains the actual model.  * * Through active shapres, child scopes can be toggled either visible as an edge,  * or with it's node- and edge-content. *  * @author Tom Staijen */
 public class ControlAutomaton extends AbstractGraphShape<GraphCache> {

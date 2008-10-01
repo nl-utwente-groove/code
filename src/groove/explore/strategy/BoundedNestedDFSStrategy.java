@@ -194,7 +194,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 						// if the transition does not cross the boundary or its
 						// target-state is already explored in previous iterations
 						// the transition must be traversed
-						String ruleName = outTransition.graphTransition().getEvent().getRule().getName().name();
+						outTransition.graphTransition().getEvent().getRule().getName().name();
 //						if (ruleName.equals("del-process") || ruleName.equals("new-process")) {
 //							System.out.println("Boundary-crossing transition");
 //						}
@@ -374,29 +374,6 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.DefaultModelCheckingStrategy#getRandomOpenBuchiSuccessor(groove.verify.BuchiGraphState)
-	 */
-//	@Override
-//	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
-//		Iterator<ProductTransition> outTransitionIter = state.outTransitionIter();
-//		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
-//		while (outTransitionIter.hasNext()) {
-//			ProductTransition p = outTransitionIter.next();
-//			BuchiGraphState buchiState = (BuchiGraphState) p.target();
-//			if (unexplored(buchiState)) {
-//				if (!getBoundary().crossingBoundary(p, false)) {
-//					chooser.show(p.target());
-//				}
-//			}
-//		}
-//		return chooser.pickRandom();
-//	}
-
-	/**
-	 * @param state
-	 * @return
-	 */
 	protected ProductTransition getRandomOpenBuchiTransition(BuchiGraphState state) {
 		Iterator<ProductTransition> outTransitionIter = state.outTransitionIter();
 		RandomChooserInSequence<ProductTransition>  chooser = new RandomChooserInSequence<ProductTransition>();

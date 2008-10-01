@@ -27,6 +27,7 @@ import java.io.File;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class DeltaGraphTest extends GraphTest {
     public DeltaGraphTest(String name) {
         super(name);

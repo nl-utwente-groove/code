@@ -36,6 +36,7 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 		super(ruleSetBoundary);
 	}
 
+	@Override
 	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
 		boolean crossing = super.crossingBoundary(transition, false);
 
@@ -56,6 +57,7 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 		}
 	}
 
+	@Override
 	public void backtrackTransition(ProductTransition transition) {
 		if (transition.rule() == null) {
 			System.out.println("backtracking final transition");
@@ -64,6 +66,7 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 		}
 	}
 
+	@Override
 	public void increase() {
 		// do nothing
 	}

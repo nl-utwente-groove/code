@@ -84,7 +84,7 @@ public class CTLFormula extends CTLStarFormula {
 
     /**
 	 * Creates an exists-formula with a check for correct nesting of operators.
-	 * @param operand the operand of the formula
+	 * @param operands the operands of the formula
 	 * @return the freshly created formula
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
@@ -157,7 +157,7 @@ public class CTLFormula extends CTLStarFormula {
 
     /**
 	 * Creates an all-formula with a check for correct nesting of operators.
-	 * @param operand the operand of the formula
+	 * @param operands the operands of the formula
 	 * @return the freshly created formula
 	 * @throws FormatException if the formula is not formatted correctly
 	 */

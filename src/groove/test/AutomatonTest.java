@@ -52,6 +52,7 @@ import junit.framework.TestCase;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class AutomatonTest extends TestCase {
 	/** Directory with test files (relative to the project) */
     static public final String GRAPH_TEST_DIR = "junit/graphs";

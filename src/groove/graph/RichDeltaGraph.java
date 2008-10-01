@@ -466,6 +466,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 			if (labelEdgeMaps != null) {
 				Label label = elem.label();
 				Map<Label,Set<Edge>> arityLabelEdgeMap = labelEdgeMaps.get(arity);
+		    	@SuppressWarnings("unchecked")
 				EdgeSet<Edge> edgeSet = (EdgeSet) arityLabelEdgeMap.get(label);
 				if (edgeSet == null) {
 					arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(edgeSet));

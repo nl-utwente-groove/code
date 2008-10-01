@@ -47,6 +47,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 	 * If the other is also a {@link WrapperLabel}, attempts to compare the
 	 * contents; otherwise, compares the text of both labels.
 	 */
+	@SuppressWarnings("unchecked")
 	public int compareTo(Label other) {
 		if (other instanceof WrapperLabel) {
 			return getContent().compareTo(((WrapperLabel<Type>) other).getContent());

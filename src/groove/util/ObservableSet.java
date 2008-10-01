@@ -145,6 +145,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+	@SuppressWarnings("unchecked")
     public boolean remove(Object o) {
         if (set.remove(o)) {
             setChanged();
@@ -158,6 +159,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+	@SuppressWarnings("unchecked")
     public boolean removeAll(Collection< ? > c) {
         Set<T> removedElements = new HashSet<T>();
         boolean result = false;
