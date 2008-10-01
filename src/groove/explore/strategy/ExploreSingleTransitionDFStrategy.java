@@ -52,7 +52,7 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 				
 		// Add transitions until a transition yielding a new state is added
 		this.collector.reset();
-		while (matchIter.hasNext() && this.collector.pickRandomNewState() == null) {
+		while (matchIter.hasNext() && this.collector.isEmpty()) {
 			RuleEvent event = matchIter.next();
 			if (! isExistingOutTransition(event, getAtState())) {
 				// add the transition corresponding to match, this may not result in a new state
@@ -69,7 +69,7 @@ public class ExploreSingleTransitionDFStrategy extends AbstractBacktrackingStrat
 	@Override
 	protected void updateAtState() {
 		this.backFrom = null;   // set to non null if backtracking
-		if (this.collector.pickRandomNewState() != null) {
+		if (! this.collector.isEmpty()) {
 			this.atState = this.collector.pickRandomNewState();
 			return;
 		}

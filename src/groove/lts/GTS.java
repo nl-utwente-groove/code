@@ -72,16 +72,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(GraphGrammar grammar) {
-        this(grammar, true);
-    }
-
-    /**
-     * Constructs a GTS with an option to avoid storing transitions.
-     */
-    private GTS(GraphGrammar grammar, boolean storeTransitions) {
     	grammar.testFixed(true);
         this.ruleSystem = grammar;
-        this.storeTransitions = storeTransitions;
+//        this.storeTransitions = storeTransitions;
     }
 
     /**
@@ -324,11 +317,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /**
 	 * Indicates if transitions are to be stored in the GTS.
-	 * This is a property set at construction time.
-	 * If they are not stored, the transition set will yield the empty set.
+	 * If they are not stored, the transition set will only include
+	 * the spanning tree (consisting of the {@link GraphNextState}s).
 	 */
 	protected final boolean isStoreTransitions() {
-		return this.storeTransitions;
+		return getRecord().isStoreTransitions();
 	}
 
 	/**
@@ -382,8 +375,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The number of transitions in the GTS.
      */
     private int transitionCount = 0;
-    /** Flag to indicate whether transitions are to be stored in the GTS. */
-    private final boolean storeTransitions;
+//    /** Flag to indicate whether transitions are to be stored in the GTS. */
+//    private final boolean storeTransitions;
     
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<GraphState> {

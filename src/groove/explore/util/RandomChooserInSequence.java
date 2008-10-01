@@ -44,6 +44,14 @@ public class RandomChooserInSequence<E> {
 		return current;
 	}
 	
+	/** 
+	 * Returns the number of elements shown to the chooser
+	 * since the last reset.
+	 */
+	public int size() {
+		return nbSeen;
+	}
+	
 	/** Forgets all elements seen so far. */
 	public void reset () {
 		this.nbSeen = 0;
