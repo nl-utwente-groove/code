@@ -118,16 +118,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
 	/**
-	 * Returns the underlying Graph of this GraphModel.
-	 * @ensure result != null
-	 * @deprecated Use {@link #getGraph()} instead
-	 */
-    @Deprecated
-	public GraphShape graph() {
-		return getGraph();
-	}
-
-	/**
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */

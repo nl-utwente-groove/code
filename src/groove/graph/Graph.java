@@ -30,26 +30,6 @@ import java.util.Collection;
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
-//    /**
-//     * Returns the set of all matches (i.e., colourings) from this graph to another.
-//     * @param to the graph to which this one is to be matched
-//     * @return the set of all total morphisms from this graph to <tt>to</tt>
-//     * @require <tt>to != null</tt>
-//     * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
-//     */
-//    @Deprecated
-//    Collection<? extends Morphism> getMatchesTo(Graph to);
-//
-//    /**
-//     * Returns an iterator over the matches (i.e., colourings) from this graph to another.
-//     * The matches may be computed in a lazy fashion.
-//     * @param to the graph to which this one is to be matched
-//     * @return the set of all total morphisms from this graph to <tt>to</tt>
-//     * @require <tt>to != null</tt>
-//     * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
-//     */
-//    @Deprecated
-//    Iterator<? extends Morphism> getMatchesToIter(Graph to);
 
     /**
      * Returns an isomorphism from this graph to another, if one exists.
@@ -64,25 +44,6 @@ public interface Graph extends GraphShape, DeltaTarget {
      * The certificate strategy is used to decide isomorphism between graphs.
      */
     public CertificateStrategy getCertifier();
-//
-//    /**
-//     * Returns an isomorphism certificate for this graph, i.e., an object
-//     * optimistically predicting whether or not this graph could be isomorphic
-//     * to another. Two graphs are potentially isomorphic if their graph certificates
-//     * coincide according to {@link Object#equals(java.lang.Object)}). 
-//     * Yields the same result as <code>getCertificateStrategy().getCertificate()</code>.
-//     * @return an isomorphism certificate for this graph
-//     * @see #getCertifier()
-//     * @deprecated use {@link #getCertifier()} and {@link CertificateStrategy#getGraphCertificate()}
-//     */
-//    @Deprecated
-//    Object getCertificate();
-//    
-//    /**
-//     * Returns an unmodifiable view on the map from the nodes of this graph
-//     * to the set of its incident edges.
-//     */
-//    Map<Node, ? extends Set<? extends Edge>> nodeEdgeMap();
     
     // --------------------------------- Object overrides ----------------------------
     

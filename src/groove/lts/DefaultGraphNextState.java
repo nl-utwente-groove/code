@@ -276,12 +276,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     public int hashCode() {
         return source().getStateNumber() + getEvent().identityHashCode();
     }
-//
-//    @Override
-//    @Deprecated
-//	public NextState imageFor(GenericNodeEdgeMap elementMap) {
-//		throw new UnsupportedOperationException();
-//	}
     
     /**
 	 * This implementation returns <code>this</code> if the derivation's event

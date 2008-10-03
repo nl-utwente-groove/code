@@ -434,62 +434,6 @@ public class ExprParser {
     }
 
     /**
-     * Removes a given outermost bracket pair from a given expression, if the bracket pair is in
-     * fact there. Also trims whitespace outside the brackets. Returns the string unchanged if it
-     * was not bracketed in the first place. Does not test for well-formedness or proper bracket
-     * nesting.
-     * @param expr the expression to be trimmed
-     * @param open the opening bracket
-     * @param close the closing bracket
-     * @return the trimmed string
-     * @deprecated use {@link #toTrimmed(String, char, char)} instead
-     */
-    @Deprecated
-    static public String trim(String expr, char open, char close) {
-        expr = expr.trim();
-        if (matches(expr, open, close)) {
-            return expr.substring(expr.indexOf(open)+1, expr.lastIndexOf(close));
-        } else {
-            return expr;
-        }
-    }
-
-    /**
-     * Tests if a given expression has a given outermost bracket pair,
-     * possibly with surrounding whitespace.
-     * @param expr the expression to be tested 
-     * @param open the opening bracket
-     * @param close the closing bracket
-     * @return <tt>true</tt> if <tt>expr</tt> is has <tt>open</tt>-<tt>close</tt>
-     * as an outermost bracket pair, and the enclosed string has no (unescaped) 
-     * occurrence of <code>close</code>
-     */
-    @Deprecated
-    static public boolean matches(String expr, char open, char close) {
-        expr = expr.trim();
-        if (expr.indexOf(open) == 0) {
-            // count the difference between open and close characters
-            int opens = 1;
-            int i = 1;
-            while (opens > 0 && i < expr.length()) {
-                char c = expr.charAt(i);
-                if (c == ESCAPE_CHAR) {
-                    // the next char is escaped; it is certainly no match
-                    i ++;
-                } else if (c == close) {
-                    opens--;
-                } else if (c == open) {
-                    opens++;
-                }
-                i ++;
-            }
-            return opens == 0 && i == expr.length();
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * Converts an ordinary string to a regular expression that matches it, by
      * escaping all non-word characters.
      */

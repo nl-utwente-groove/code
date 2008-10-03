@@ -25,28 +25,7 @@ package groove.graph;
  * @version $Revision$
  */
 public interface Element extends Comparable<Element>, java.io.Serializable {
-//    /**
-//     * Computes the image of this element under a given element map.
-//     * The result is either the current image of this element under
-//     * the map, or, if the map does not contain this element as a
-//     * key and the element is an {@link Edge}, a new element 
-//     * constructed from the images of the end points.
-//     * If the end points also do not occur as map keys, the
-//     * method returns <tt>null</tt>
-//     * @param elementMap the element map used to determine the image
-//     * @return the image of this element according to <tt>elementMap</tt>,
-//     * constructed fresh if required and possible; or <tt>null</tt> if
-//     * the parts of this element are not in <tt>elementMap.keySet()</tt>
-//     * @require <tt>elementMap != null</tt>
-//     * @ensure <tt>result == null</tt> if 
-//     * <tt>! elementMap.keySet().containsAll(ends())</tt>; otherwise
-//     * <tt>result.end(i).equals(elementMap.get(end(i)))</tt> for all valid <tt>i</tt>. 
-//     * @deprecated use NodeEdgeMap#getNode(Node) or {@link NodeEdgeMap#mapEdge(Edge)}
-//     */
-//	@Deprecated
-//    public Element imageFor(GenericNodeEdgeMap elementMap);
-//
-    /**
+	/**
      * The rules for ordering {@link Element}s are as follows:
      * <ul>
      * <li> {@link Element}s are comparable to all other {@link Element}s,

@@ -33,13 +33,6 @@ interface GraphJCell extends JCell {
     StringBuilder getLine(Edge edge);
     
     /** 
-     * Returns the label of the edge as to be displayed in the label list.
-     * Callback method from {@link #getListLabels()}.
-     */
-    @Deprecated
-    String getListLabel(Edge edge);
-
-    /** 
      * Retrieves an edge label. 
      * Callback method from {@link #getLine(Edge)} and {@link #getPlainLabel(Edge)}.
      */
@@ -50,13 +43,6 @@ interface GraphJCell extends JCell {
      * Callback method from {@link #getPlainLabels()}.
      */
     String getPlainLabel(Edge edge);
-    
-    /** 
-     * Returns a label parser for this jnode.
-     * Callback method from {@link #getPlainLabel(Edge)}.
-     */
-    @Deprecated
-    LabelParser getLabelParser();
     
     /**
      * Specialises the return type.

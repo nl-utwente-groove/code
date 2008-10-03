@@ -100,12 +100,6 @@ public class RelationEdge<V> extends AbstractBinaryEdge<Node,Label,Node> {
 	protected boolean isValueEqual(RelationEdge<?> other) {
 		return type.equals(other.getType()) && (value == null ? other.value == null : value.equals(other.getValue()));
 	}
-//
-//	@Override
-//	@Deprecated
-//	public BinaryEdge newEdge(Node source, Label label, Node target) {
-//		throw new UnsupportedOperationException();
-//	}
 
 	/**
 	 * The type of relation of this edge.

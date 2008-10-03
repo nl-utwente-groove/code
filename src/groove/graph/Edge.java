@@ -112,8 +112,4 @@ public interface Edge extends Element {
      * @ensure <tt>result != null</tt>
      */
     public Label label();
-//    
-//    /** Specialises the return type to {@link Edge}. */
-//    @Deprecated
-//    public Edge imageFor(GenericNodeEdgeMap elementMap);
 }

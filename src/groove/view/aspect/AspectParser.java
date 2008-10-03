@@ -263,27 +263,7 @@ public class AspectParser {
 		result.append(labelText);
 		return result;
 	}
-//    
-//    /** Returns the label parsers induced by a set of aspect values. */
-//	@Deprecated
-//    static public LabelParser getLabelParser(Collection<AspectValue> values) {
-//        Collection<LabelParser> parsers = new LinkedHashSet<LabelParser>();
-//        for (AspectValue value: values) {
-//            LabelParser parser = value.getLabelParser();
-//            if (parser != null) {
-//                parsers.add(parser);
-//            }
-//        }
-//        // if none was induced, get the default parser
-//        if (parsers.isEmpty()) {
-//            parsers.add(DEFAULT_LABEL_PARSER);
-//        }
-//        return new groove.view.ComposedLabelParser(parsers);
-//    }
-//
-//    /** The default label parser for the proper label part of aspect labels. */
-//	@Deprecated
-//    private static final LabelParser DEFAULT_LABEL_PARSER = QuoteLabelParser.getInstance();
+
     /** Default parser instances. */
     private static final AspectParser[][] instances = new AspectParser[][] {
             new AspectParser[] { new AspectParser(false, false), new AspectParser(false, true) },

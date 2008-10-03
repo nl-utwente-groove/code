@@ -47,12 +47,6 @@ public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
         return filter;
     }
 
-    @Deprecated
-    public R getMatch(Graph host, NodeEdgeMap anchorMap) {
-        Iterator<R> iter = getMatchIter(host, anchorMap);
-        return iter.hasNext() ? iter.next(): null;
-    }
-
     public Iterable<R> getMatches(final Graph host, final NodeEdgeMap anchorMap) {
         return new Iterable<R>() {
             public Iterator<R> iterator() {

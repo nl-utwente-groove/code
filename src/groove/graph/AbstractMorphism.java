@@ -88,66 +88,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
 		return elementMap().mapEdge(key);
 	}
 
-	@Deprecated
-    public Element getElement(Element key) {
-    	if (key instanceof Node) {
-    		return getNode((Node) key);
-    	} else {
-    		return getEdge((Edge) key);
-    	}
-    }
-
-    @Deprecated
-	public Collection<Element> getElementSet(Collection<? extends Element> keySet) {
-        Collection<Element> result = new HashSet<Element>();
-        for (Element key: keySet) {
-            Element image = getElement(key);
-            if (image != null) {
-                result.add(image);
-            }
-        }
-        return result;
-    }
-
-    @Deprecated
-    public Collection<Element> getInverseElementSet(Collection<? extends Element> valueSet) {
-        Collection<Element> result = new HashSet<Element>();
-        // iterate over the element map
-        for (Map.Entry<Node,Node> entry: nodeMap().entrySet()) {
-            // add the key of this entry to the result if the value is in the value set
-            if (valueSet.contains(entry.getValue())) {
-                result.add(entry.getKey());
-            }
-        }
-        // iterate over the element map
-        for (Map.Entry<Edge,Edge> entry: edgeMap().entrySet()) {
-            // add the key of this entry to the result if the value is in the value set
-            if (valueSet.contains(entry.getValue())) {
-                result.add(entry.getKey());
-            }
-        }
-        return result;
-    }
-
-    @Deprecated
-    public Collection<Element> getInverseElementSet(Element elem) {
-        Collection<Element> result = new LinkedList<Element>();
-        // iterate over the element map
-        for (Map.Entry<Node,Node> entry: nodeMap().entrySet()) {
-            // add the key of this entry to the result if the value is the one we're looking for
-            if (elem.equals(entry.getValue())) {
-                result.add(entry.getKey());
-            }
-        }
-        for (Map.Entry<Edge,Edge> entry: edgeMap().entrySet()) {
-            // add the key of this entry to the result if the value is the one we're looking for
-            if (elem.equals(entry.getValue())) {
-                result.add(entry.getKey());
-            }
-        }
-        return result;
-    }
-
     /**
      * @require <tt>morph instanceof InternalMorphism</tt>
      */
@@ -205,74 +145,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         }
     }
 
-    @Deprecated
-    public boolean hasTotalExtensions() {
-        reporter.start(HAS_TOTAL_EXTENSIONS);
-        VarNodeEdgeMap match = createMatchStrategy().getMatch(cod(), elementMap());
-        boolean result = match != null;
-        reporter.stop();
-        return result;
-    }
-
-    @Deprecated
-    public Morphism getTotalExtension() {
-        VarNodeEdgeMap match = createMatchStrategy().getMatch(cod(), elementMap());
-        if (match == null) {
-            return null;
-        } else {
-            return createMorphism(match);
-        }
-    }
-
-    @Deprecated
-    public Collection<? extends Morphism> getTotalExtensions() {
-        reporter.start(GET_TOTAL_EXTENSIONS);
-        try {
-            MatchStrategy<VarNodeEdgeMap> matcher = createMatchStrategy();
-            // we choose a LinkedList because there will be removal
-            // a HashSet would be an option but then we need to take care of
-            // the equals method of the morphisms returned by createMorphism,
-            // also in subclasses, which is hard to maintain
-            Collection<Morphism> result = new LinkedList<Morphism>();
-            Iterator<? extends NodeEdgeMap> refinementIter = matcher.getMatchIter(cod(), elementMap());
-            while (refinementIter.hasNext()) {
-				NodeEdgeMap elementMap = refinementIter.next();
-				result.add(createMorphism(elementMap));
-			}
-            return result;
-        } finally {
-            reporter.stop();
-        }
-    }
-    
-    /**
-     * Callback method to create a fixed morphism from a simulation.
-     * The underlying element map of the morphism will be derived from the
-     * key-to-singular-image mapping of the simulation.  
-     * @param sim the simulation to underly the morphism
-     * @see #getTotalExtension()
-     * @see #getTotalExtensions()
-     * @see #getTotalExtensionsIter()
-     */
-    @Deprecated
-    abstract protected Morphism createMorphism(NodeEdgeMap sim);
-
-    @Deprecated
-    public Iterator<? extends Morphism> getTotalExtensionsIter() {
-        reporter.start(GET_TOTAL_EXTENSIONS);
-        try {
-            MatchStrategy<VarNodeEdgeMap> matcher = createMatchStrategy();
-            return new TransformIterator<NodeEdgeMap,Morphism>(matcher.getMatchIter(cod(), elementMap())) {
-            	@Override
-            	public Morphism toOuter(NodeEdgeMap obj) {
-                    return createMorphism(obj);
-                }
-            };
-        } finally {
-            reporter.stop();
-        }
-    }
-
     public boolean isSurjective() {
     	Set<Node> nodeValues = new HashSet<Node>(nodeMap().values());
         if (nodeValues.size() != cod().nodeCount()) {
@@ -307,14 +179,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     // ------------------------- OBJECT OVERRIDES -----------------------
 
     /**
-     * This implementation calls <code>{@link #createMorphism(Graph,Graph)}</code>.
-     */
-    @Deprecated
-    public Morphism newInstance(Graph dom, Graph cod) {
-        return createMorphism(dom, cod);
-    }
-
-    /**
      * This implementation invokes <tt>#equals(Morphism)</tt> for the actual comparison.
      */
 	@Override
@@ -322,14 +186,15 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         return other instanceof Morphism && equals((Morphism) other);
     }
 
-    /**
+	/**
      * Two morphisms are equal if they have equal domains, codomains and element maps.
      */
+	@Override
     @Deprecated
     public boolean equals(Morphism other) {
         return dom().equals(other.dom()) && cod().equals(other.cod()) && super.equals(other);
     }
-
+	
     /**
      * The hash code of a morphism is composed out of those for domain, codomain and element map.
      */
@@ -433,24 +298,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         }
     }
 
-    @Deprecated
-    public Element put(Element key, Element value) {
-    	if (key instanceof Node) {
-    		return putNode((Node) key, (Node) value);
-    	} else {
-    		return putEdge((Edge) key, (Edge) value);
-    	}
-    }
-
-    @Deprecated
-    public Element remove(Element key) {
-    	if (key instanceof Node) {
-    		return removeNode((Node) key);
-    	} else {
-    		return removeEdge((Edge) key);
-    	}
-    }
-
     /**
      * This implementation does not call <tt>{@link #remove(Element)}</tt> but works directly 
      * on the element map. Specializations beware!
@@ -485,7 +332,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         }
         return result;
     }
-
 
     /**
      * This implementation does not call <tt>{@link #remove(Element)}</tt> but works directly 

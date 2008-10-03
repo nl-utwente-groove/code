@@ -38,45 +38,8 @@ abstract public class AbstractUnaryEdge<N extends Node, L extends Label> extends
     protected AbstractUnaryEdge(N source, L label) {
     	super(source, label);
     }
-//
-//    // ----------------- Element methods ----------------------------
-//
-//    @Deprecated
-//    public UnaryEdge imageFor(GenericNodeEdgeMap elementMap) {
-//    	if( elementMap instanceof NodeEdgeMap ) {
-//    		return imageFor((NodeEdgeMap)elementMap);
-//    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
-//    		return imageFor((VarNodeEdgeMultiMap)elementMap);
-//    	} return null;
-//    }
-//    
-//    @Deprecated
-//    protected UnaryEdge imageFor(VarNodeEdgeMultiMap elementMap) {
-//        Node sourceImage = elementMap.getNode(source()).toArray(new Node[0])[0];
-//        if (sourceImage == null) {
-//            return null;
-//        }
-//        Label labelImage = elementMap.getLabel(label());
-//        if (source() == sourceImage && label() == labelImage) {
-//            return this;
-//        } else {
-//            return newEdge(sourceImage, labelImage);
-//        }
-//    }
-//    
-//    @Deprecated
-//    public UnaryEdge imageFor(NodeEdgeMap elementMap) {
-//        Node sourceImage = elementMap.getNode(source());
-//        if (sourceImage == null) {
-//            return null;
-//        }
-//        Label labelImage = elementMap.getLabel(label());
-//        if (source() == sourceImage && label() == labelImage) {
-//            return this;
-//        } else {
-//            return newEdge(sourceImage, labelImage);
-//        }
-//    }
+
+    // ----------------- Element methods ----------------------------
 
     final public Node[] ends() {
     	return new Node[] { source };
@@ -113,29 +76,6 @@ abstract public class AbstractUnaryEdge<N extends Node, L extends Label> extends
     final public int endCount() {
         return END_COUNT;
     }
-//
-//    /**
-//     * Factory method: constructs a new edge from given source and target nodes and label.
-//     * @param source source of the new edge
-//     * @param label label of the new edge
-//     * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
-//     *         <tt>result.target() == target</tt>
-//     * @deprecated use other factory methods
-//     */
-//    @Deprecated
-//    abstract public UnaryEdge newEdge(Node source, Label label);
-//
-//    /**
-//     * Factory method: constructs new edge between given nodes, with label taken from this one.
-//     * Convenience method for <tt>newEdge(source, label(), target)</tt>.
-//     * @param source source of the new edge
-//     * @see #newEdge(Node,Label)
-//     * @deprecated use other factory methods
-//     */
-//    @Deprecated
-//    public UnaryEdge newEdge(Node source) {
-//        return newEdge(source, this.label());
-//    }
 
     // -------------------- Object and related methods --------------------
 

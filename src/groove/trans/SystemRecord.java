@@ -96,55 +96,6 @@ public class SystemRecord implements NodeFactory {
 	public RuleSystem getRuleSystem() {
 		return ruleSystem;
 	}
-//
-//	/** Returns the RuleSetIterator for a certain State **/
-//	public Iterator<Set<Rule>> getRuleSetIter() {
-//		return getRuleSystem().getRuleSetIter();
-//	}
-//	
-//	/** Returns a rule application for a given rule and matching of that rule. */
-//	public RuleApplication getApplication(RuleEvent match, Graph host) {
-//		if( match instanceof VirtualRuleMatch ) {
-//			return ((VirtualRuleMatch)match).getApplication();
-//		} else {
-//			return match.newApplication(host);
-//		}
-//	}
-//
-//	/** 
-//	 * Returns an event for a given rule and matching of that rule.
-//	 * The events are stored internally; an event is reused if it has the
-//	 * correct rule and anchor map.
-//	 * @deprecated use {@link #getEvent(RuleMatch)} instead
-//	 */
-//	@Deprecated
-//    public RuleEvent getEvent(Rule rule, VarNodeEdgeMap elementMap) {
-//    	RuleEvent result;
-//    	reporter.start(GET_EVENT);
-//        if (rule.isModifying()) {
-//            RuleEvent event = rule.newEvent(elementMap, this, reuse);
-//            if (isReuse()) {
-//				result = normalEventMap.get(event);
-//				if (result == null) {
-//					// no, the event is new.
-//					result = event;
-//					normalEventMap.put(event, result);
-//					eventCount++;
-//				}
-//			} else {
-//				result = event;
-//            }
-//        } else {
-//        	result = unmodifyingEventMap.get(rule);
-//            // there can be at most one event
-//            if (result == null) {
-//                unmodifyingEventMap.put(rule, result = rule.newEvent(elementMap, this, reuse));
-//                eventCount++;
-//            }
-//        }
-//        reporter.stop();
-//        return result;
-//    }
 
 	/** 
 	 * Returns an event for a given rule match.

@@ -264,22 +264,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     	this.frozenGraph = frozenGraph;
     	frozenGraphCount++;
     }
-//    
-//    @Deprecated
-//    public State newState() {
-//		return new StartGraphState(getGraph());
-//	}
-//
-//    @Deprecated
-//	public Node newNode() {
-//		return newState();
-//	}
-//
-//    @Deprecated
-//    public Element imageFor(GenericNodeEdgeMap elementMap) {
-//        throw new UnsupportedOperationException(
-//                "Mappings between transition systems are currently not supported");
-//    }
 
     /**
      * This implementation compares state numbers.

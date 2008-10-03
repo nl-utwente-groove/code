@@ -110,20 +110,6 @@ public interface Rule extends Comparable<Rule>, Condition {
     public MatchStrategy<VarNodeEdgeMap> getEventMatcher();
 
 	/**
-	 * Factory method to create an event based on this rule.
-	 * @param anchorMap the anchor map of the new event; should map at least
-	 * the elements of the rule anchor to elements presumably in the host graph
-	 * @param nodeFactory an object queried for fresh node numbers; may be
-	 * <code>null</code>
-	 * @param reuse if <code>true</code>, the created event will store
-	 * data structures internally for reuse. This takes space, but saves space
-	 * if events are shared among transformations.
-	 * @deprecated use {@link #getMatches(GraphShape, NodeEdgeMap)} and {@link RuleMatch#newEvent(NodeFactory, boolean)}
-	 */
-    @Deprecated
-	public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
-	
-	/**
 	 * The lowest rule priority, which is also the default value if no
 	 * explicit priority is given.
 	 */
