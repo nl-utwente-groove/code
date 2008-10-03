@@ -42,5 +42,4 @@ public class CalculatorTest extends TestCase {
     * Grammar loader used in this test case.
     */
    protected GrammarViewXml<?> loader = new AspectualViewGps();
-   // <EZ> This is a test... :P
 }
