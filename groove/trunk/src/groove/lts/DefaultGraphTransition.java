@@ -141,17 +141,6 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,
         }
     }
 
-    // --------------------- Element methods -----------------------
-//
-//    /**
-//     * This implementation throws an {@link UnsupportedOperationException} always.
-//     */
-//	@Override
-//	@Deprecated
-//    public Transition imageFor(GenericNodeEdgeMap elementMap) {
-//        throw new UnsupportedOperationException("Transition images are currenty not supported");
-//    }
-
     // ----------------------- OBJECT OVERRIDES -----------------------
 
     /**
@@ -177,25 +166,6 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,
     public boolean equals(Object obj) {
         return obj instanceof GraphTransition && equalsSource((GraphTransition) obj) && equalsEvent((GraphTransition) obj);
     }
-//    
-//    /** This implementation specialises the return type to a {@link DefaultGraphState}. */
-//    @Override
-//    public AbstractGraphState source() {
-//    	return (AbstractGraphState) source;
-//    }
-//    
-//    /** This implementation specialises the return type to a {@link DefaultGraphState}. */
-//    @Override
-//    public AbstractGraphState target() {
-//    	return (AbstractGraphState) target;
-//    }
-//
-//    /** Always throws an <tt>UnsupportedOperationException</tt>. */
-//	@Override
-//	@Deprecated
-//    public BinaryEdge newEdge(Node source, Label label, Node target) {
-//        throw new UnsupportedOperationException();
-//    }
 
 	/**
      * This implementation combines the hash codes of the rule and the anchor images.

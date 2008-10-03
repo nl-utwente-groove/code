@@ -84,24 +84,6 @@ public class ProductEdge extends AbstractBinaryEdge<ProductNode,DefaultLabel,Val
         }
         return true;
     }
-//
-//    /** Specialises the return type. */
-//    @Override
-//	public ValueNode target() {
-//		return (ValueNode) target;
-//	}
-//
-//    /** Specialises the return type. */
-//	@Override
-//	public ProductNode source() {
-//		return (ProductNode) source;
-//	}
-//
-//	@Override
-//	@Deprecated
-//	public BinaryEdge newEdge(Node source, Label label, Node target) {
-//		throw new UnsupportedOperationException();
-//	}
 
 	/** The operation represented by this edge. */
 	private final Operation operation;

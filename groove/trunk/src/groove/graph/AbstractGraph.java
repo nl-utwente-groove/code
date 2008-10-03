@@ -61,16 +61,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         reporter.stop();
         return result;
     }
-//
-//    /** 
-//     * This implementation delegates the method to the {@link CertificateStrategy}.
-//     * @see #getCertifier()
-//     * @see CertificateStrategy#getGraphCertificate()
-//     */
-//    @Deprecated
-//    public Object getCertificate() {
-//        return getCertifier().getGraphCertificate();
-//    }
 
     /**
      * Factory method for nodes of this graph.
@@ -446,22 +436,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     static protected CertificateStrategy getCertificateFactory() {
         return certificateFactory;
     }
-//
-//    @Deprecated
-//    public Collection<? extends Morphism> getMatchesTo(Graph to) {
-//        reporter.start(GET_MATCHES_TO);
-//        Collection<? extends Morphism> res = createMorphism(this, to).getTotalExtensions();
-//        reporter.stop();
-//        return res;
-//    }
-//
-//    @Deprecated
-//    public Iterator<? extends Morphism> getMatchesToIter(Graph to) {
-//        reporter.start(GET_MATCHES_TO);
-//        Iterator<? extends Morphism> res = createMorphism(this, to).getTotalExtensionsIter();
-//        reporter.stop();
-//        return res;
-//    }
 
     /**
      * This implementation checks if the other is also an <tt>AbstractGraph</tt>; if so, it first

@@ -24,25 +24,7 @@ import groove.graph.Node;
  * @version $Revision$ $Date: 2008-01-30 09:32:18 $
  */
 public interface State extends Node {
-    // ----------------------- OBJECT OVERRIDES ---------------------
 
-    /**
-     * Returns a clone of this state.
-     * @return a clone of this state
-     * @ensure <tt>result != null</tt>
-     * @deprecated use clone() instead
-     */
-    //public State cloneState();
-    
-    /** Overrides the {@link Object#clone()} method so as to return a {@link State}. */
-    //public State clone();
-//    
-//    /**
-//     * Returns a new, empty state prototyped on this one.
-//     */
-//	@Deprecated
-//    public State newState();
-    
     /**
      * Tests if this state is fully explored, i.e., all outgoing transitions have been generated.
      */

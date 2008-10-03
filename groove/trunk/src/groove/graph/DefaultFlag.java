@@ -49,15 +49,6 @@ public class DefaultFlag extends AbstractUnaryEdge<Node,Label> {
     }
 
     // ----------------- Element methods ----------------------------
-//
-//    /**
-//     * This implementation returns a {@link UnaryEdge}.
-//     */
-//    @Override
-//    @Deprecated
-//    public UnaryEdge newEdge(Node source, Label label) {
-//        return new DefaultFlag(source, label);
-//    }
 
     /**
      * Factory method for a new label.

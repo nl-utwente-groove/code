@@ -173,22 +173,6 @@ public class DefaultMorphism extends AbstractMorphism {
     }
 
     /**
-     * This implementation returns a {@link DefaultMorphism}.
-     */
-	@Override
-	@Deprecated
-    protected Morphism createMorphism(final NodeEdgeMap sim) {
-        Morphism result = new DefaultMorphism(dom(), cod()) {
-        	@Override
-            protected NodeEdgeMap createElementMap() {
-                return sim;
-            }
-        };
-        result.setFixed();
-        return result;
-    }
-
-    /**
      * Factory method for match strategies.
      */
     @Override

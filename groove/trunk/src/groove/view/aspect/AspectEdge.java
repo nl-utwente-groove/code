@@ -98,29 +98,6 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,Aspec
 	public String getPlainText() {
 		return parseData.toString();
 	}
-//
-//	/**
-//	 * Has to be overridden to make {@link #imageFor(NodeEdgeMap)} work.
-//	 * This implementation returns an {@link AspectEdge}.
-//	 */
-//	@Override
-//	@Deprecated
-//	public BinaryEdge newEdge(Node source, Label label, Node target) {
-//		if (source instanceof AspectNode && target instanceof AspectNode) {
-//			// we certainly want an aspect edge
-//			try {
-//				AspectParseData declaredData = AspectParser.getInstance().getParseData(label.text());
-//				declaredData.addInferences(((AspectNode) source).getAspectMap(), ((AspectNode) target).getAspectMap());
-//				return new AspectEdge((AspectNode) source, (AspectNode) target, declaredData);
-//			} catch (FormatException exc) {
-//				// the edge aspects were incompatible with the node aspects
-//				// so the edge has no image
-//				return null;
-//			}
-//		} else {
-//			throw new IllegalArgumentException();
-//		}
-//	}
 
 	/**
      * Includes the hash code of the associated aspect values.

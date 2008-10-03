@@ -457,13 +457,6 @@ public class AspectJModel extends GraphJModel {
         @Override
         public Label getLabel(Edge edge) {
             return edge.label();
-//            return getView().unparse(edge.label());
-        }
-
-        @Override
-        @Deprecated
-        LabelParser createLabelParser() {
-            return RegExprLabelParser.getInstance();
         }
 
 		/** 
@@ -600,12 +593,6 @@ public class AspectJModel extends GraphJModel {
 			return AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString();
 		}
         
-		@Override
-		@Deprecated
-        LabelParser createLabelParser() {
-            return RegExprLabelParser.getInstance();
-        }
-
 		/** 
 		 * This implementation makes remark edges invisible as demanded 
 		 * by the {@link Options#SHOW_REMARKS_OPTION}.

@@ -23,6 +23,4 @@ package groove.lts;
  */
 public interface NextState extends State, Transition {
 	// this interface is just the union of its super-interfaces
-//	@Deprecated
-//	public NextState imageFor(GenericNodeEdgeMap elementMap);
 }

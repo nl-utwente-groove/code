@@ -33,19 +33,6 @@ import java.util.Iterator;
  * @version $Revision $
  */
 public interface MatchStrategy<Result> {
-    /** 
-     * Returns a single match to a given graph, extending a given partial match.
-     * The partial match should be defined precisely for the pre-matched elements indicated
-     * when constructing the match strategy.
-     * @param host the graph into which the matching is to go
-     * @param anchorMap a predefined mapping to the elements of <code>host</code> that 
-     * the solution should respect. May be <code>null</code> if there is no predefined mapping
-     * @return a mapping to the elements of <code>host</code> that augments <code>preMatch</code>
-     * and fulfils the requirements to be a total match
-     * @deprecated use {@link #getMatchIter(GraphShape, NodeEdgeMap)} instead
-     */
-    @Deprecated
-    public Result getMatch(Graph host, NodeEdgeMap anchorMap);
     
     /** 
      * Returns the collection of all matches to a given graph that extend a given partial match. 

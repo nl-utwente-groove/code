@@ -92,14 +92,6 @@ public class DefaultNode implements Node {
     public boolean equals(Object obj) {
         boolean result = (obj == this);        assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d: " + this + " & " + obj + ", " + obj.getClass().getName(), nodeNr);        return result;
     }
-//
-//    /**
-//     * Invokes the default constructor to create a fresh node.
-//     */
-//    @Deprecated
-//    public Node newNode() {
-//        return createNode();
-//    }
 
     /**
      * Returns a string consisting of the letter <tt>'n'</tt> and the node number.

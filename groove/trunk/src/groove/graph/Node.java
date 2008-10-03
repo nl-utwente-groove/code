@@ -23,10 +23,4 @@ package groove.graph;
  * @version $Revision$ $Date: 2008-01-30 09:32:58 $
  */
 public interface Node extends Element {
-//    /** 
-//     * Factory method, yielding a fresh Node.
-//     * @ensure <tt>result != null</tt>
-//     */
-//	@Deprecated
-//    public Node newNode();
 }

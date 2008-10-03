@@ -185,15 +185,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 		return result;
 	}
 
-	/** 
-	 * Returns the label of the edge as to be displayed in the label list.
-	 * Callback method from {@link #getListLabels()}.
-	 */
-	@Deprecated
-	public String getListLabel(Edge edge) {
-		return getLabelParser().unparse(getLabel(edge)).text();
-	}
-	
     /**
 	 * This implementation adds a constant identifier to the labels in
 	 * case the node is a non-variable ValueNode.
@@ -221,18 +212,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      */
     public String getPlainLabel(Edge edge) {
         return edge.label().text();
-    }
-    
-    /** 
-     * Returns a label parser for this jnode.
-     * The label parser is used to obtain the plain labels. 
-     */
-    @Deprecated
-    public LabelParser getLabelParser() {
-        if (labelParser == null) {
-            labelParser = createLabelParser();
-        }
-        return labelParser;
     }
     
     /** Callback factory method to create a label parser for this jnode. */

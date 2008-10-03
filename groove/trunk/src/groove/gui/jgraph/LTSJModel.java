@@ -128,63 +128,6 @@ public class LTSJModel extends GraphJModel {
 		}
     }
 
-    /**
-     * Sets the active transition to a new value, 
-     * and returns the previous value.
-     * Both old and new transitions may be <tt>null</tt>.
-     * @param trans the new active transition
-     * @return the old active transition
-     * @deprecated use {@link #setActive(State, Transition)} instead
-     */
-    @Deprecated
-    public Transition setActiveTransition(Transition trans) {
-        Transition result = activeTransition;
-        if (activeTransition != trans) {
-			activeTransition = trans;
-			Set<JCell> changedCells = new HashSet<JCell>();
-			if (trans != null) {
-				JCell jCell = getJCell(trans);
-				assert jCell != null : String.format("No image for %s in jModel",
-						trans);
-				changedCells.add(jCell);
-			}
-			if (result != null) {
-				JCell jCell = getJCell(result);
-				assert jCell != null : String.format("No image for %s in jModel",
-						result);
-				changedCells.add(jCell);
-			}
-			refresh(changedCells);
-		}
-        return result;
-    }
-
-    /**
-	 * Sets the active state to a new value, and returns the previous value.
-	 * Both old and new states may be <tt>null</tt>.
-	 * 
-	 * @param state
-	 *            the new active state
-	 * @return the old active state
-     * @deprecated use {@link #setActive(State, Transition)} instead
-	 */
-    @Deprecated
-    public State setActiveState(State state) {
-        State result = activeState;
-		if (state != activeState) {
-			activeState = state;
-			Set<JCell> changedCells = new HashSet<JCell>();
-			if (state != null) {
-				changedCells.add(getJCell(state));
-			}
-			if (result != null) {
-				changedCells.add(getJCell(result));
-			}
-			refresh(changedCells);
-		}
-        return result;
-    }
-
 	@Override
 	public boolean isShowNodeIdentities() {
 		return getOptionValue(Options.SHOW_STATE_IDS_OPTION);

@@ -41,22 +41,6 @@ public interface LTS extends groove.graph.GraphShape {
      */
     public State startState();
     
-//    /**
-//     * Sets the state exploration strategy.
-//     * @param strategy the new state exploration strategy
-//     * @deprecated decouple the strategy from the LTS
-//     */
-//    @Deprecated
-//    void setExploreStrategy(ExploreStrategy strategy);
-//
-//    /**
-//     * Returns the current state exploratin strategy.
-//     * @return the current state exploration strategy
-//     * @deprecated decouple the strategy from the LTS
-//     */
-//    @Deprecated
-//    ExploreStrategy getExploreStrategy();
-//    
     /**
      * Indicates whether we have found a final state during explodation.
      * Convenience method for <tt>! getFinalStates().isEmpty()</tt>.
@@ -80,31 +64,6 @@ public interface LTS extends groove.graph.GraphShape {
      */
     boolean isOpen(State state);
 
-//    /**
-//     * Explores this LTS from a given state, using the LTS's state space exploration strategy.
-//     * The exploration is halted when a previously generated state is reached,
-//     * or if the thread is interrupted.
-//     * @param state the state where the extension is to take place
-//     * @throws InterruptedException if the thread receives an interrupt
-//     * during the generation process.
-//     * @deprecated Set an exploration strategy instead
-//     */
-//    @Deprecated
-//    void explore(State state) throws InterruptedException;
-//
-//    /**
-//     * Explores this LTS from its start state, using the LTS's state space exploration strategy.
-//     * The exploration is halted when a previously generated state is reached,
-//     * or if the thread is interrupted.
-//     * Convenience method for <tt>explore(startState())</tt>
-//     * @throws InterruptedException if the thread receives an interrupt
-//     * during the generation process.
-//     * @see #explore(State)
-//     * @deprecated Set an exploration strategy instead
-//     */
-//    @Deprecated
-//    void explore() throws InterruptedException;
-//    
     /**
      * The return type is specialised so that the method is known to return {@link State}s.
      */

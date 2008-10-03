@@ -202,14 +202,6 @@ public class GraphJEdge extends JEdge implements GraphJCell {
 		return result;
 	}
 
-	/** 
-	 * This implementation returns the text of the label returned by {@link #getLabel(Edge)}.
-	 */
-	@Deprecated
-	public String getListLabel(Edge edge) {
-		return getLabelParser().unparse(getLabel(edge)).text();
-	}
-	
     /**
      * This implementation calls {@link #getPlainLabel(Edge)} on all edges in 
      * {@link #getUserObject()}.
@@ -227,24 +219,6 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     public String getPlainLabel(Edge edge) {
         return edge.label().text();
-    }
-
-    /** 
-     * Returns a label parser for this jnode.
-     * The label parser is used to obtain the plain labels. 
-     */
-    @Deprecated
-    public LabelParser getLabelParser() {
-        if (labelParser == null) {
-            labelParser = createLabelParser();
-        }
-        return labelParser;
-    }
-    
-    /** Callback factory method to create a label parser for this jnode. */
-    @Deprecated
-    LabelParser createLabelParser() {
-        return RegExprLabelParser.getInstance();
     }
 
 	/** Specialises the return type of the method. */

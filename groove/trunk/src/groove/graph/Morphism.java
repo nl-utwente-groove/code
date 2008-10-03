@@ -95,62 +95,6 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
     public boolean isTotal();
 
     /**
-     * Returns the set of values associated by this morphism to a given set
-     * of graph elements.
-     * @param keySet the set of elements whose images are requested
-     * @return the set of values associated with <tt>keySet</tt>
-     * @require <tt>keySet: 2^Element</tt>
-     * @ensure <tt>result: 2^Element</tt>
-     * @deprecated iterate over the elements yourself
-     */
-    @Deprecated
-    Collection<Element> getElementSet(Collection<? extends Element> keySet);
-
-    /**
-     * Returns the set of keys associated by this morphism to a given set
-     * of graph element images.
-     * @param imageSet the set of elements whose inverse images are requested
-     * @return the set of keys mapped to <tt>valueSet</tt>
-     * @require <tt>valueSet: 2^Element</tt>
-     * @ensure <tt>result: 2^Element</tt>
-     * @deprecated iterate over the elements yourself
-     */
-    @Deprecated
-    Collection<Element> getInverseElementSet(Collection<? extends Element> imageSet);
-    /**
-     * Indicates if this mapping has total extensions.
-     * Does not modify this mapping.
-     * @ensure <tt>result = ! getTotalExtensions.isEmpty()</tt>
-     */
-    @Deprecated
-    public boolean hasTotalExtensions();
-
-    /**
-     * Returns a total extension of this morphism,
-     * or <code>null</code> if there is none.
-     */
-    @Deprecated
-    public Morphism getTotalExtension();
-
-    /**
-     * Returns the set of all total extensions of this mapping.
-     * Does not modify this mapping.
-     * @ensure <tt>result = { m \in Morphism | m.isTotal(), m \supseteq this }</tt>
-     */
-    @Deprecated
-    public Collection<? extends Morphism> getTotalExtensions();
-
-    /**
-     * Returns an iterator over the total extensions of this mapping.
-     * The extensions may be computed in a lazy fashion.
-     * Does not modify this mapping.
-     * @see #getTotalExtensions
-     * @ensure <tt>result = { m \in Morphism | m.isTotal(), m \supseteq this }</tt>
-     */
-    @Deprecated
-    public Iterator<? extends Morphism> getTotalExtensionsIter();
-
-    /**
      * Indicates whether this mapping is modifiable.
      * If not, no <tt>put</tt>- and <tt>remove</tt>-commands
      * are allowed any more.
@@ -217,61 +161,12 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
     Edge getEdge(Edge key);
 
     /**
-     * Returns the value associated by this mapping to a given graph element.
-     * @param key the element whose image is requested
-     * @return the value associated with <tt>key</tt>, 
-     * or <tt>null</tt> if there is none such
-     * @ensure <tt>result.getClass() == key.getClass()</tt>
-     * @deprecated use {@link #getNode(Node)} or {@link #getEdge(Edge)} instead
-     */
-    @Deprecated
-    Element getElement(Element key);
-
-    /**
-     * Returns the set of keys associated by this mapping to a given graph element image.
-     * @param image the element whose inverse images are requested
-     * @return the set of keys mapped to <tt>image</tt>
-     * @ensure <tt>result: 2^Element</tt>
-     * @deprecated this method is too expensive; program it yourself
-     */
-    @Deprecated
-    Collection<Element> getInverseElementSet(Element image);
-
-    /**
      * Returns a modifiable view on the mapping's element map.
      * This sends source graph nodes to target graph nodes and source graph
      * edges to target graph edges.
      * @return the element map underlying this mapping.
      */
     NodeEdgeMap elementMap();
-
-    /**
-     * Factory method: returns a new mapping based on given domain and codomain graphs.
-     * @param dom the domain of the new mapping
-     * @param cod the codomain of the new mapping
-     * @return a fresh mapping between <tt>dom</tt> and <tt>cod</tt>
-     * @ensure <tt>result.dom() == dom && result.cod() == cod</tt>
-     * @deprecated use {@link #createMorphism(Graph, Graph)} instead
-     */
-    @Deprecated
-    Morphism newInstance(Graph dom, Graph cod);
-
-    /**
-     * Puts a (key,value)-pair into the element map, and returns the value
-     * previously stored at this key.
-     * This is only allowed if the key is in the source graph
-     * and the value is in the target graph;
-     * however, the method is <i>not</i> guaranteed to check this.
-     * @param key the key to be added to the element map
-     * @param value the value to be associated with <tt>key</tt>
-     * @return The value previously associated with <tt>key</tt>, if any
-     * @require <tt>! isFixed()</tt> and
-     * <tt>dom().contains(key) && cod().contains(value)</tt>
-     * @ensure <tt>get(key).equals(image)</tt>.
-  	 * @deprecated use {@link #putNode} or {@link #putEdge} instead
-     */
-    @Deprecated
-    Element put(Element key, Element value);
 
     /**
      * Convenience method for <tt>put(Element,Element)</tt> in case the
@@ -285,18 +180,6 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      */
     Edge putEdge(Edge key, Edge value);
     
-    /**
-     * Removes an element key from the element map, and returns the
-     * value that was stored at this key.
-     * @param key the key to be removed from the element map; possibly <tt>null</tt>
-     *  if the key was not in the morphism in the first place.
-     * @return The value previously associated with <tt>key</tt>, if any
-     * @ensure <tt>result == old.getElement(key) && ! containsKey(key)</tt>
-     * @deprecated use {@link #removeNode(Node)} or {@link #removeEdge(Edge)} instead
-     */
-    @Deprecated
-    Element remove(Element key);
-
     /**
      * Convenience method for <tt>remove(Element)</tt> in case the
      * type of the element is <tt>Edge</tt>.
