@@ -16,8 +16,6 @@
  */
 package groove.graph;
 
-import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Interface of a partial graph morphism.
@@ -250,15 +248,9 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      */
     public Morphism createMorphism(Graph dom, Graph cod);
 
-//    public void setRuleFactory(RuleFactory ruleFactory);
-
-//    public RuleFactory getRuleFactory();
-
     /**
      * Factory method: returns a new mapping based on the same domain and codomain
      * graphs as the current mapping.
-     * Convenience method: calls <code>newInstance(dom(),cod())</code>
-     * @see #newInstance(Graph,Graph)
      */
     Morphism clone();
 }

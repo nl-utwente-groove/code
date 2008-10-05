@@ -111,6 +111,7 @@ public class LayoutMap<N,E> extends GenericNodeEdgeHashMap<N, JVertexLayout, E, 
         return new Point(x, y);
     }
 
+    /** Main method to test the functionality of this class. */
     static public void main(String[] args) {
         List<Point> points = new LinkedList<Point>();
         Point relPosition1 = new Point(100, 900);

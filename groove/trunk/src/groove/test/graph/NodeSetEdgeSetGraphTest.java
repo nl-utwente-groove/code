@@ -23,6 +23,7 @@ import groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class NodeSetEdgeSetGraphTest extends GraphTest {
     public NodeSetEdgeSetGraphTest(String name) {
         super(name, new NodeSetEdgeSetGraph());

@@ -68,11 +68,6 @@ public class AlgebraConstants {
     static public final String[] TYPE_PREFIX = { INTEGER_PREFIX, STRING_PREFIX, BOOLEAN_PREFIX, ABSTRACT_INTEGER_PREFIX};
 
     /**
-     * The singleton {@link groove.graph.algebra.AlgebraGraph}-instance.
-     */
-    static private AlgebraGraph algebraGraph;
-
-    /**
      * Checks whether the label equals the attribute-prefix indicating that this
      * node represents an attribute.
      * @param label the label whose role is to be investigated
