@@ -112,9 +112,12 @@ public class Util {
 	/** Checks whether assertions are enabled. */
 	public static boolean ea() {
 		if (! Abstraction.DEBUG) { return false; }
-		boolean r = false;
-		assert r == true;
-		return r;
+		try {
+		    assert false;
+		    return false;
+		} catch (AssertionError err) {
+		    return true;
+		}
 	}
 
 	public static Morphism getTotalExtension(Morphism morph) {

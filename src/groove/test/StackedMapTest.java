@@ -25,6 +25,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+@SuppressWarnings("all")
 public class StackedMapTest extends TestCase {
     static final Integer EEN = new Integer(1);
     static final Integer EEN_ = new Integer(-1);

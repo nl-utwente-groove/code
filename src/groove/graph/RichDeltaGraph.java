@@ -211,11 +211,15 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 		return outEdgeMap.getCell(node);
 	}
 
+	/**
+	 * Returns the set of incoming edges of a given node.
+	 */
 	public Set<BinaryEdge> inEdgeSet(Node node) {
 		initData();
 		return inEdgeMap.getCell(node);
 	}
 
+	/** Returns the set of incident edges of a given node, with given arity and label. */
 	public Set<Edge> edgeSet(Node node, int arity, Label label) {
 		initData();
 		assert arity == 2;

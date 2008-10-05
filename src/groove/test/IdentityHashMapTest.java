@@ -28,6 +28,7 @@ import junit.framework.TestCase;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class IdentityHashMapTest extends TestCase {
     public void testIdentityHashMap() {
         for (int i = 0; i < 100000; i++) {

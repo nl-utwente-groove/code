@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
+@SuppressWarnings("all")
 public class CalculatorTest extends TestCase {
 	/** Location of the samples. */
     static public final String INPUT_DIR = "C:/files/work/groove_cvs/samples";

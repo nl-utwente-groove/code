@@ -27,6 +27,7 @@ import groove.util.TreeIntSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class IntSetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 500;
 	static private final int LARGE_SAMPLE_SIZE = 10000000;

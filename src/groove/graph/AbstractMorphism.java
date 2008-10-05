@@ -19,13 +19,10 @@ package groove.graph;
 import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
-import groove.util.TransformIterator;
 import groove.view.FormatException;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -189,7 +186,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
 	/**
      * Two morphisms are equal if they have equal domains, codomains and element maps.
      */
-	@Override
     @Deprecated
     public boolean equals(Morphism other) {
         return dom().equals(other.dom()) && cod().equals(other.cod()) && super.equals(other);
