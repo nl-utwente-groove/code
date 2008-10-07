@@ -31,16 +31,34 @@ import groove.trans.RuleEvent;
  *
  */
 public class LinearStrategy extends AbstractStrategy {
+    /** 
+     * Constructs a default instance of the strategy,
+     * in which states are only closed if they have been fully explored
+     */
+    public LinearStrategy() {
+        this(false);
+    }
+    
+    /** 
+     * Constructs an instance of the strategy with control over the closing of states.
+     * @param closeFast if <code>true</code>, close states immediately after a 
+     * single outgoing transition has been computed.
+     */
+    public LinearStrategy(boolean closeFast) {
+        if (closeFast) {
+            enableCloseExit();
+        }
+    }
+    
 	public boolean next() {
 		if (this.atState == null) { 
 			getGTS().removeGraphListener(this.collector);
 			return false;
 		}
 		ExploreCache cache = getCache(true, false);
-		RuleEvent event = createMatchCollector(cache).getMatch();
-		this.collector.reset();
+		RuleEvent event = getMatch(cache);
 		if (event != null) {
-			getMatchApplier().addTransition(getAtState(), event);
+			getMatchApplier().addTransition(getAtState(), event, cache.getTarget(event.getRule()));
 	        if (closeExit()) {
                 setClosed(getAtState());
             }
@@ -51,14 +69,22 @@ public class LinearStrategy extends AbstractStrategy {
 		return true;
 	}
 	
+	/** Callback method to return the single next match. */
+	protected RuleEvent getMatch(ExploreCache cache) {
+        return createMatchCollector(cache).getMatch();
+	}
+
 	@Override
 	protected void updateAtState() {
 		this.atState = this.collector.getNewState();
+        this.collector.reset();
 	}
 	
 	@Override
 	public void prepare(GTS gts, GraphState state) {
 		super.prepare(gts, state);
+        gts.getRecord().setCopyGraphs(false);
+        gts.getRecord().setReuseEvents(false);
 		gts.addGraphListener(collector);
 	}
 
@@ -69,8 +95,7 @@ public class LinearStrategy extends AbstractStrategy {
 	 * GTS it listens to.
 	 * Such an object should be added as listener only to a single GTS. 
 	 */
-	public class NewStateCollector extends GraphAdapter {
-
+	static private class NewStateCollector extends GraphAdapter {
 		NewStateCollector() { reset(); }
 		
 		/** Returns the collected new state,

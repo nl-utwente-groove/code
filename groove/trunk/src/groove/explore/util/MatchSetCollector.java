@@ -106,6 +106,7 @@ public class MatchSetCollector {
             if (hasMatches) {
                 cache.updateMatches(currentRule);
             }
+            cache.updateExplored(currentRule);
             currentRule = nextRule();
         }
         reporter.stop();

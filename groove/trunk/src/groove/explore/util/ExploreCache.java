@@ -18,9 +18,11 @@ import groove.trans.Rule;
  */
 public interface ExploreCache extends ResumableIterator<Rule> {
 	/** 
-	 * Inform the cache that a rule has been fully explored. 
+	 * Inform the cache that a rule has been fully explored.
 	 * This may prevent the iterator from returning the rule in the future,
 	 * even if it was not yet returned in the past.
+     * If the rule matches, then {@link #updateMatches(Rule)} should
+     * be invoked <i>before</i> this method.
 	 * @param rule A fully explored rule.
 	 */
 	public void updateExplored(Rule rule);

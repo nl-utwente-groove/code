@@ -99,13 +99,13 @@ public class SystemRecord implements NodeFactory {
 
 	/** 
 	 * Returns an event for a given rule match.
-	 * If {@link #isReuse()} is set, events are stored internally and reused.
+	 * If {@link #isReuseEvents()} is set, events are stored internally and reused.
 	 */
     public RuleEvent getEvent(RuleMatch match) {
     	RuleEvent result;
     	reporter.start(GET_EVENT);
-        RuleEvent event = match.newEvent(this, isReuse());
-        if (isReuse() && event instanceof SPOEvent) {
+        RuleEvent event = match.newEvent(this, isReuseEvents());
+        if (isReuseEvents() && event instanceof SPOEvent) {
             result = eventMap.put((SPOEvent) event);
             if (result == null) {
                 // the event is new.
@@ -205,14 +205,12 @@ public class SystemRecord implements NodeFactory {
     }
 
     /** 
-     * Changes the behaviour of the GTS in reusing previously explored states and rule events.
-     * If the reuse property is <code>false</code>, state graph equality is never detected,
-     * and backtracking is not supported.
+     * Changes the behaviour of the GTS in reusing previous rule events.
      * Unpredictable behaviour will ensue if this method is called while an existing GTS is being explored.
      * Initially the property is set to <code>true</code>
-     * @param reuse if <code>true</code>, results are reused henceforth 
+     * @param reuse if <code>true</code>, events are stored and reused 
      */
-    public void setReuse(boolean reuse) {
+    public void setReuseEvents(boolean reuse) {
         this.reuseEvents = reuse;
     }
 
@@ -220,7 +218,7 @@ public class SystemRecord implements NodeFactory {
      * Returns the current value of the reuse property.
      * @return if <code>true</code>, previously found results are reused
      */
-    public boolean isReuse() {
+    public boolean isReuseEvents() {
         return reuseEvents;
     }
 
@@ -320,7 +318,7 @@ public class SystemRecord implements NodeFactory {
     private final RuleSystem ruleSystem;
     /**
      * Identity map for events that have been encountered during exploration.
-     * Events are stored only if {@link #isReuse()} is set.
+     * Events are stored only if {@link #isReuseEvents()} is set.
      */
     private final TreeHashSet<SPOEvent> eventMap = new TreeHashSet<SPOEvent>() {
         @Override
