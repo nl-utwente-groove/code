@@ -50,19 +50,6 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-03-04 11:01:33 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
-//    /**
-//     * Constructs a new event on the basis of a given production rule and anchor map.
-//     * A further parameter determines whether information should be stored for reuse.
-//     * This constructor is only meant for rules without co-roots map.
-//     * @param rule the production rule involved
-//     * @param anchorMap the match of the rule's anchors to the host graph
-//     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
-//     * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
-//     */
-//    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
-//    	this(rule, anchorMap, nodeFactory, reuse);
-//    }
-//
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * A further parameter determines whether information should be stored for reuse.
@@ -75,22 +62,6 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     	super(reference, rule);
     	rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
-//        if (coContextMap == null) {
-//        	coRootImage = null;
-//        } else {
-//        	int coRootCount = getRule().getCoRootMap().size();
-//        	if (coRootCount == 0) {
-//        		coRootImage = EMPTY_ROOT_IMAGE;
-//        	} else {
-//				coRootImage = new Node[coRootCount];
-//				int coRootIx = 0;
-//				for (Node coRoot : getRule().getCoRootMap().nodeMap().keySet()) {
-//					coRootImage[coRootIx] = coContextMap.getNode(coRoot);
-//					assert coRootImage[coRootIx] != null : String.format("Co-context map %s does not contain image for co-root %s", coContextMap, coRoot);
-//					coRootIx++;
-//				}
-//			}
-//        }
     	this.nodeFactory = nodeFactory;
     	this.reuse = reuse;
     }
@@ -712,16 +683,6 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 
 	/** The derivation record that has created this event, if any. */
     private final NodeFactory nodeFactory;
-//    /**
-//     * Images for the RHS root elements in the target graph. 
-//     */
-//    final Node[] coRootImage;
-//    /**
-//     * The footprint of a derivation consists of the anchor images of the match
-//     * together with the images of the creator nodes.
-//     * This corresponds to is the information needed to (re)construct the derivation target.
-//     */
-//    private Element[] anchorImage;
     /**
      * The set of source elements that form the anchor image.
      */
@@ -779,8 +740,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	static private final Set<Node> EMPTY_NODE_SET = Collections.<Node>emptySet();
     /** Global empty list of nodes. */
     static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
-    /** Global empty list of nodes. */
-//    static private final Node[] EMPTY_ROOT_IMAGE = new Node[0];
+    /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference = CacheReference.<SPOEventCache>newInstance(false);
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");

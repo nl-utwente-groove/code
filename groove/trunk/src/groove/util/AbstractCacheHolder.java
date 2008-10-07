@@ -92,7 +92,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 	 * Callback method to provide the initial value of the cache reference.
 	 * Note that this method is called at construction time, so the <code>this</code>
 	 * object may not have been fully initialised.
-	 * either through {@link CacheReference#newNullReference()} called
+	 * @return either {@link CacheReference#newNullReference()} called
 	 * on <code>template</code>, or, if <code>template</code> is <code>null</code>,
 	 * through {@link CacheReference#newInstance()}. 
 	 */
