@@ -23,12 +23,8 @@ package groove.control.parse;
  * @version $Revision $
  */
 public class Counter {
-	
-	private static Counter INSTANCE = new Counter();
-
 	/**
 	 * Returns a unique integer which can be used as an ID.
-	 * @return int
 	 */
 	public static int inc() { 
 		return INSTANCE.increase();
@@ -40,9 +36,12 @@ public class Counter {
 		return retval;
 	}
 	
+	/** Resets the counter to zero. */
 	public static void reset() {
 		INSTANCE.current = 0;
 	}
 	
 	private int current = 0;
+	
+	private static Counter INSTANCE = new Counter();
 }

@@ -48,19 +48,17 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * Loads a control program into a given ControlAutomaton
  */
 public class ControlView {
-	/** currently used file **/
-	private File controlFile;
-	
-	private AutomatonBuilder builder = new AutomatonBuilder();
-	
-	private String controlProgram;
-	
-	private ControlShape programShape;
+	/** File where the control program is stored. **/
+	private final File controlFile;
+	/** Grammar view to which this control view belongs. */
+	private final DefaultGrammarView grammarView;
+	/** The control program, loaded from {@link #controlFile} at construction time. */
+	private final String controlProgram;
 	
 	private ControlAutomaton automaton;
 
 	/**
-	 * Constructor, needs a gramamrview and a filename to a controlprogram.
+	 * Constructor, needs a grammar view and a filename to a control program.
 	 * 
 	 * Afterwards, programShape and automaton should have a value.
 	 * 
@@ -69,131 +67,35 @@ public class ControlView {
 	 * @throws IOException
 	 */
 	public ControlView(DefaultGrammarView result, File controlProgramFile) throws IOException  {
-		this.initNamespace(result);
-		this.loadFile(controlProgramFile);
-
+		this.grammarView = result;
+		this.controlFile = controlProgramFile;
+		this.controlProgram = loadProgram(controlProgramFile);
 	}
-	
-	/**
-	 * load the program currently in controlProgram
-	 */
-	private void loadProgram() throws FormatException {
-		if( controlProgram == null ) {
-			throw new FormatException("Error in control:no program available ");
-		}
-		if( builder == null ) {
-			throw new FormatException("Error in control: trying to parse before the scope is initialized");
-		}
-		
-		this.automaton = null;
-		
-		GCLLexer lexer = new GCLLexer(new ANTLRStringStream(this.controlProgram));
-		GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
-
-		
-		GCLParser.program_return r = null;
-		// run the parser
-		try {
-			r = parser.program();
-		}
-		catch(RecognitionException re) {
-			throw new FormatException(re); 
-		}
-		// only continue without parsing errors
-		
-		List<String> errors = parser.getErrors();
-		
-		if( errors.size() != 0 ) {
-			errors.add(0, "Encountered parse errors in control program");
-			throw new FormatException(errors);
-			
-		} else {
-			// fetch the resulting tree
-			CommonTree t = (CommonTree)r.getTree();
-			CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
-			
-			// checker will store and remove functions
-			GCLChecker checker = new GCLChecker(nodes);
-			checker.setNamespace(this.builder);
-			GCLChecker.program_return c_r = null;
-			
-			try {
-				c_r = checker.program();
-			} catch(RecognitionException e) {
-				throw new FormatException(e);
-			}
-			// fetch checker tree (since it was edited)
-			t = (CommonTree) c_r.getTree();
-			nodes = new CommonTreeNodeStream(t);
-           
-			GCLBuilder gclb = new GCLBuilder(nodes);
-			gclb.setBuilder(this.builder);
-			// reset the counter for unique controlstate numbers to 0
-			Counter.reset();
-		
-			try {
-				this.programShape = gclb.program();
-			} catch(RecognitionException re) {
-				throw new FormatException(re);
-			}
-			builder.optimize();
-			this.automaton = new ControlAutomaton(this.programShape);
-		}
-	}
-
-	/** sets the program **/
-	public void setProgram(String program) {
-		this.controlProgram = program;
-		this.programShape = null;
-		this.automaton = null;
-	}
-	
-	/** loads the program from a File **/
-	public void loadFile(File controlFile) throws IOException, FileNotFoundException {
-		this.controlFile = controlFile;
-		
-		//System.out.println("Loading control from file: " + controlFile.getName());
-		
-		StringBuilder contents = new StringBuilder();
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(controlFile));
-			String line;
-			while( ((line = br.readLine()) != null) )
-			{
-				contents.append(line+ "\r\n"); 
-			}
-			//ca.setProgram(contents.toString());
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		setProgram(contents.toString());
-	}
-	
-	/**
-	 * Initialises the Control given the rulenames in the grammar
-	 * Can only be called once and must be called before any other method is used.
-	 * @param grammar
-	 */
-	public void initNamespace(DefaultGrammarView grammar)
-	{
-		
-		//System.out.println("Initializing Control NameSpace");
-		
-//		try
-//		{
-//			AspectualRuleView lambdaRV = new AspectualRuleView(ControlView.LAMBDA_RULE);
-//			AspectualRuleView elseRV = new AspectualRuleView(ControlView.ELSE_RULE);
-//			grammar.addRule(lambdaRV);
-//			grammar.addRule(elseRV);
-//			
-//		} catch(FormatException e) {
-//			// will not happen
-//		}
-		
-		this.builder = new AutomatonBuilder();
-		this.builder.setRuleNames(grammar);
-	}
+//	
+//	/**
+//	 * Initialises the Control given the rulenames in the grammar
+//	 * Can only be called once and must be called before any other method is used.
+//	 * @param grammar
+//	 */
+//	public void initNamespace(DefaultGrammarView grammar)
+//	{
+//		
+//		//System.out.println("Initializing Control NameSpace");
+//		
+////		try
+////		{
+////			AspectualRuleView lambdaRV = new AspectualRuleView(ControlView.LAMBDA_RULE);
+////			AspectualRuleView elseRV = new AspectualRuleView(ControlView.ELSE_RULE);
+////			grammar.addRule(lambdaRV);
+////			grammar.addRule(elseRV);
+////			
+////		} catch(FormatException e) {
+////			// will not happen
+////		}
+//		
+//		this.builder = new AutomatonBuilder();
+//		this.builder.setRuleNames(grammar);
+//	}
 	
 	/** returns the control automaton */
 	public ControlAutomaton getAutomaton() 
@@ -202,10 +104,27 @@ public class ControlView {
 	}
 	
 	/** returns the textual control program */
-	public String program() {
+	public String getProgram() {
 		return this.controlProgram;
 	}
 	
+	/** loads the program from a File **/
+	private String loadProgram(File controlFile) throws IOException, FileNotFoundException {
+		StringBuilder contents = new StringBuilder();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(controlFile));
+			String line;
+			while( ((line = br.readLine()) != null) )
+			{
+				contents.append(line+ "\r\n"); 
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return contents.toString();
+	}
+
 	/** returns the File containing the current control program */
 	public File getFile() {
 		return this.controlFile;
@@ -214,17 +133,65 @@ public class ControlView {
 	/**
 	 * This method should only be called from DefaultGrammarView.computeGrammar
 	 * Create the automaton once, then, use getAutomaton() to get the automaton.
-	 * @param grammar
-	 * @return ControlAutomaton
-	 * @throws FormatException
 	 */
-	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
-	{
-		this.loadProgram();
-		builder.finalize(grammar);
-		return this.getAutomaton();
+	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException {
+		if (automaton == null) {
+			automaton = computeAutomaton(grammar);
+		}
+		return automaton;
 	}
 	
+	/** 
+	 * Resets the pre-computed control automaton.
+	 * Called when the underlying grammar changes, so that the automaton has
+	 * to be computed anew.
+	 */
+	public void invalidateAutomaton() {
+		automaton = null;
+	}
+	
+	/**
+	 * load the program currently in controlProgram
+	 */
+	private ControlAutomaton computeAutomaton(GraphGrammar grammar) throws FormatException {
+		if( controlProgram == null ) {
+			throw new FormatException("Error in control:no program available ");
+		}
+		AutomatonBuilder builder = new AutomatonBuilder();
+		builder.setRuleNames(grammarView);
+		
+		try {
+			GCLLexer lexer = new GCLLexer(new ANTLRStringStream(getProgram()));
+			GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
+			GCLParser.program_return r = parser.program();
+			List<String> errors = parser.getErrors();
+			if( errors.size() != 0 ) {
+				errors.add(0, "Encountered parse errors in control program");
+				throw new FormatException(errors);
+			}
+			// fetch the resulting tree
+			CommonTreeNodeStream nodes = new CommonTreeNodeStream((CommonTree)r.getTree());
+			
+			// checker will store and remove functions
+			GCLChecker checker = new GCLChecker(nodes);
+			checker.setNamespace(builder);
+			GCLChecker.program_return c_r = checker.program();
+			// fetch checker tree (since it was edited)
+			nodes = new CommonTreeNodeStream((CommonTree) c_r.getTree());
+		       
+			GCLBuilder gclb = new GCLBuilder(nodes);
+			gclb.setBuilder(builder);
+			// reset the counter for unique controlstate numbers to 0
+			Counter.reset();
+			ControlShape programShape = gclb.program();
+			builder.optimize();
+			builder.finalize(grammar);
+			return new ControlAutomaton(programShape);
+		} catch(RecognitionException re) {
+			throw new FormatException(re); 
+		}
+	}
+
 	/**
 	 * Saves the program to the given file.
 	 * 

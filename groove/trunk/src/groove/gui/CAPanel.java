@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
@@ -28,6 +29,7 @@ import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
+import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -118,27 +120,23 @@ public class CAPanel extends JPanel implements SimulationListener {
 		autPanel.setEnabled(false);
 		textPanel.setText("");
 
-		if( grammar.getControl() != null )
-		{
-			ControlView cv = grammar.getControl();
-			textPanel.setText(cv.program());
-			
-			autPanel.setEnabled(true);
-			JGraph jGraph = autPanel.getJGraph();
-			jGraph.setEnabled(true);
-			jGraph.setToolTipEnabled(true);
-			
-			//GraphJModel model = GraphJModel.newInstance(cv.getAutomaton(), autPanel.getOptions());
-			
-			if( cv.getAutomaton() == null ) {
-				//System.err.println("Failed to build Automaton.");
-				return;
-			}
-			
-			GraphJModel model = new ControlJModel(cv.getAutomaton(), autPanel.getOptions());
-			jGraph.setModel(model);
+		if( grammar.getControl() != null ) {
+			try {
+				ControlView cv = grammar.getControl();
+				ControlAutomaton automaton = cv.toAutomaton(grammar.toGrammar());
+				GraphJModel model = new ControlJModel(automaton, autPanel.getOptions());
+				autPanel.setEnabled(true);
+				autPanel.refreshStatus();
 
-			autPanel.refreshStatus();
+				JGraph jGraph = autPanel.getJGraph();
+				jGraph.setModel(model);
+				jGraph.setEnabled(true);
+				jGraph.setToolTipEnabled(true);
+
+				textPanel.setText(cv.getProgram());				
+			} catch (FormatException exc) {
+				// do nothing
+			}
 		}
 	}
 
@@ -190,7 +188,7 @@ public class CAPanel extends JPanel implements SimulationListener {
 			ControlView cv = CAPanel.this.grammar.getControl();
 			
 			String program = CAPanel.this.textPanel.getText();
-			if( program == null ) {
+			if( program == null || program.length() == 0) {
 				return;
 			} 
 			if( cv == null ) {
@@ -202,13 +200,13 @@ public class CAPanel extends JPanel implements SimulationListener {
 			CAPanel.this.simulator.handleSaveControl(program);
 			CAPanel.this.simulator.doRefreshGrammar();
 			
-			if( CAPanel.this.grammar.getControl().getAutomaton() != null ) {
+//			if( CAPanel.this.grammar.getControl().toAutomaton() != null ) {
 				CAPanel.this.textPanel.setEditable(false);
 				CAPanel.this.textPanel.setEnabled(false);
 				CAPanel.this.editButton.setEnabled(true);
 				CAPanel.this.doneButton.setEnabled(false);
 //				CAPanel.this.saveButton.setEnabled(true);
-			}
+//			}
 		}
 	}
 

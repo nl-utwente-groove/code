@@ -96,22 +96,22 @@ public class RuleSystem {
     }
 
     /**
-     * 
+     * Returns all rules with a structured rule name that
+     * have a given parent rule name.
      */
     public Set<Rule> getChildRules(String parent) {
     	Set<Rule> result = new HashSet<Rule>();
-    	
-    	//TODO: optimize
-    	
     	for( Rule rule : this.getRules() ) {
     		RuleNameLabel label = rule.getName().parent();
     		while( label != null ) {
-    			if( label.name().compareTo(parent) == 0 )
+    			if( label.name().compareTo(parent) == 0 ) {
     				result.add(rule);
-    			label = label.parent();
+    				break;
+    			} else {
+    				label = label.parent();
+    			}
     		}
     	}
-    	
     	return result;
     }
     

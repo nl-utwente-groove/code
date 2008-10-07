@@ -161,13 +161,16 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
 
 	/** setter method for the control view **/
 	public void setControl(ControlView control) {
-		this.control = control;
+		this.controlView = control;
 		invalidateGrammar();
 	}
 	
 	/** getter method for control view **/
 	public ControlView getControl() {
-		return this.control;
+    	if (errors == null) {
+    		initGrammar();
+    	}
+		return this.controlView;
 	}
 	
 	/** Delegates to {@link #toGrammar()}. */
@@ -219,10 +222,10 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     		}
     	}
     	
-    	if( control != null ) {
+    	if( controlView != null ) {
     		try
     		{
-    			ControlAutomaton ca = control.toAutomaton(result);
+    			ControlAutomaton ca = controlView.toAutomaton(result);
     			result.setControl(ca);
     		}
     		catch(FormatException e)
@@ -263,6 +266,9 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     private void invalidateGrammar() {
     	grammar = null;
     	errors = null;
+    	if (controlView != null) {
+    		controlView.invalidateAutomaton();
+    	}
     }
     
     /** Mapping from rule names to views on the corresponding rules. */
@@ -272,7 +278,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     /** The name of this grammar view. */
     private String name;
     /** The control automaton **/
-    private ControlView control;
+    private ControlView controlView;
     /** The start gramg of the grammar. */
     private AspectualGraphView startGraph;
     /** The rule system properties of this grammar view. */
