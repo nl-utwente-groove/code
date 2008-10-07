@@ -100,7 +100,8 @@ public class LTLBenchmarker extends CommandLineTool {
     static public final String GRAMMAR_NAME_VAR = "@";
     /** Separator between grammar name and start state name in reporting. */
     static public final char START_STATE_SEPARATOR = '@';
-
+    /** Sub-directory where the samples reside. */
+    static public final String SUB_DIR = "F://Groove/svn-samples/";
     /** Number of bytes in a kilobyte */
     static private final int BYTES_PER_KB = 1024;
 
@@ -144,9 +145,10 @@ public class LTLBenchmarker extends CommandLineTool {
         int experiment = Integer.parseInt(arguments.remove(0));
         int flag = Integer.parseInt(arguments.remove(0));
 
+        grammarLocation = SUB_DIR;
         if (experiment == 4) {
     		logFileName = "experiment-mutex.txt";
-        	grammarLocation = "./samples/mutex.gps";
+        	grammarLocation += "mutex.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
         	if (flag == 0)
@@ -155,7 +157,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentMutex(true);
         } else if (experiment == 5) {
         	System.out.println("Starting...");
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
         	strategyType = "S";
@@ -171,7 +173,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBGraph(false);
         	}
         } else if (experiment == 51) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	strategyType = "S";
         	initialBound = 5;
@@ -196,7 +198,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBGraph(true, true);
         	}
         } else if (experiment == 521) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
         	int border = flag;
@@ -218,7 +220,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBRule(true, true);
         	}
         } else if (experiment == 52) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
         	int border = flag;
@@ -240,7 +242,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBRule(true, true);
         	}
         } else if (experiment == 53) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	strategyType = "S";
         	initialBound = 5;
@@ -265,7 +267,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBGraph(true, true);
         	}
         } else if (experiment == 54) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	strategyType = "S";
         	initialBound = 5;
@@ -290,7 +292,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBGraph(true, true);
         	}
         } else if (experiment == 55) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	strategyType = "S";
         	initialBound = 10;
@@ -315,7 +317,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBGraph(true, true);
         	}
         } else if (experiment == 56) {
-        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	grammarLocation += "circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	strategyType = "S";
         	initialBound = 10;
@@ -340,7 +342,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentCEBGraph(true, true);
         	}
         } else if (experiment == 61) {
-        	grammarLocation = "./samples/leader-election.gps";
+        	grammarLocation += "leader-election.gps";
         	startStateName = "start-2";
         	ModelChecking.MAX_ITERATIONS = 4;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
@@ -364,7 +366,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentLEP(true, true);
         	}
         } else if (experiment == 62) {
-        	grammarLocation = "./samples/leader-election.gps";
+        	grammarLocation += "leader-election.gps";
         	startStateName = "start-2";
         	ModelChecking.MAX_ITERATIONS = 4;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
@@ -388,7 +390,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentLEP(true, true);
         	}
         } else if (experiment == 63) {
-        	grammarLocation = "./samples/leader-election-faulty-5.gps";
+        	grammarLocation += "leader-election-faulty-5.gps";
         	startStateName = "start-2";
         	ModelChecking.MAX_ITERATIONS = 10;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
@@ -412,7 +414,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentLEP(true,true);
         	}
         } else if (experiment == 64) {
-        	grammarLocation = "./samples/leader-election-faulty-6.gps";
+        	grammarLocation += "leader-election-faulty-6.gps";
         	startStateName = "start-2";
         	ModelChecking.MAX_ITERATIONS = 10;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
@@ -436,7 +438,7 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentLEP(true,true);
         	}
         } else if (experiment == 65) {
-        	grammarLocation = "./samples/leader-election-faulty-7.gps";
+        	grammarLocation += "leader-election-faulty-7.gps";
         	startStateName = "start-2";
         	ModelChecking.MAX_ITERATIONS = 10;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
@@ -618,7 +620,6 @@ public class LTLBenchmarker extends CommandLineTool {
      * - max iterations
      */
     public void experimentMutex(boolean pocket) {
-    	grammarLocation = "C:\\local\\groove\\samples\\mutex.gps";
     	startStateName = "start";
     	property = "[]!<> shared";
     	RESTART = false;
@@ -655,7 +656,6 @@ public class LTLBenchmarker extends CommandLineTool {
      * - max iterations
      */
     public void experimentCEBRule(boolean border, boolean pocket) {
-//    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](put -> <> get)";
 //    	logFileName = "results.txt";
@@ -689,7 +689,6 @@ public class LTLBenchmarker extends CommandLineTool {
      * - max iterations
      */
     public void experimentCEBGraph(boolean border, boolean pocket) {
-    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](put -> <> get)";
 //    	logFileName = "results.txt";
@@ -722,7 +721,6 @@ public class LTLBenchmarker extends CommandLineTool {
      * - max iterations
      */
     public void experimentCEBGraph(boolean restart) {
-//    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](put -> <> get)";
 //    	logFileName = "results.txt";

@@ -16,20 +16,24 @@
  */
 package groove.lts;
 
-import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
 import groove.util.TreeHashSet;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
 
+/**
+ * Product of a Büchi automaton and a GTS.
+ * The states stored are {@link BuchiGraphState}s, and the transitions are {@link PTransition}s
+ * @author Arend Rensink
+ * @version $Revision $
+ */
 public class PGTS extends GTS {
-
+	/** Constructs a new instance for a given GTS. */
     public PGTS(GraphGrammar grammar) {
         super(grammar);
-        // TODO Auto-generated constructor stub
     }
     
+    @Override
     public void setClosed(State state) {
         if (((GraphState) state).setClosed()) {
             openStates.add((BuchiGraphState) state);
@@ -42,8 +46,7 @@ public class PGTS extends GTS {
 
     @Override
     protected TreeHashSet<GraphState> createStateSet() {
-        // TODO Auto-generated method stub
-        return super.createStateSet();
+        return new TreeHashStateSet();
     }
 
     private TreeHashSet<GraphState> openStates = new TreeHashStateSet();
@@ -69,8 +72,5 @@ public class PGTS extends GTS {
         protected int getCode(GraphState stateKey) {
             return super.getCode(stateKey) + ((BuchiGraphState) stateKey).getLocation().hashCode();
         }
-        
-        /** The isomorphism checker of the state set. */
-        private IsoChecker checker = DefaultIsoChecker.getInstance();
     }
 }
