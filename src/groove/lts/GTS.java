@@ -65,7 +65,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Returns an estimate of the number of bytes used to store each state.
      */
     public double getBytesPerState() {
-    	return stateSet.getBytesPerElement();
+    	return getStateSet().getBytesPerElement();
     }
     
     /**
@@ -156,7 +156,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * @see #getOpenStateIter()
      */
     public Collection<GraphState> getOpenStates() {
-        return new CollectionView<GraphState>(stateSet) {
+        return new CollectionView<GraphState>(getStateSet()) {
         	@Override
             public boolean approves(Object obj) {
                 return !((State) obj).isClosed();
@@ -193,9 +193,14 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         	if (determineIsFinal(graphState)) {
         		setFinal(graphState);
         	}
-            closedCount++;
+            incClosedCount();
             notifyLTSListenersOfClose(state);
         }
+    }
+    
+    /** Increases the count of closed states by one. */
+    protected void incClosedCount() {
+        closedCount++;
     }
     
     // a state is final if 
@@ -220,7 +225,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
 	@Override
     public int nodeCount() {
-        return stateSet.size();
+        return getStateSet().size();
     }
 
 	@Override
@@ -249,6 +254,19 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         } else {
             return new NextStateSet();
         }   	
+    }
+    
+    /** Get method for the state set. Lazily creates the set first. */
+    protected TreeHashSet<GraphState> getStateSet() {
+        if (stateSet == null) {
+            stateSet = createStateSet();
+        }
+        return stateSet;
+    }
+    
+    /** Callback factory method for a state set. */
+    protected TreeHashSet<GraphState> createStateSet() {
+        return new TreeHashStateSet();
     }
     
 	@Override
@@ -307,7 +325,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
         ((AbstractGraphState) newState).setStateNumber(nodeCount());
-        GraphState result = stateSet.put(newState);
+        GraphState result = getStateSet().put(newState);
         if (result == null) {
             fireAddNode(newState);
         }
@@ -357,7 +375,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     private final GraphGrammar ruleSystem;
     /** The set of states of the GTS. */
-    private final TreeHashSet<GraphState> stateSet = new TreeHashStateSet();
+    private TreeHashSet<GraphState> stateSet;
     
     /**
      * Set of states that have not yet been extended.
@@ -379,7 +397,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 //    private final boolean storeTransitions;
     
     /** Specialised set implementation for storing states. */
-    private class TreeHashStateSet extends TreeHashSet<GraphState> {
+    protected class TreeHashStateSet extends TreeHashSet<GraphState> {
     	/** Constructs a new, empty state set. */
         TreeHashStateSet() {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION);
@@ -393,9 +411,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
 			if (getRecord().isCollapse()) {
 			    // distinct control locations means distinct states
-			    Location control = stateKey.getLocation();
-			    if (control != null && ! control.equals(otherStateKey.getLocation())) {
-			        return false;
+			    if (isDistinctLocations(stateKey, otherStateKey)) {
+                    return false;
 			    }
                 Graph one = stateKey.getGraph();
                 Graph two = otherStateKey.getGraph();
@@ -410,6 +427,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                 return stateKey == otherStateKey;
 			}
 		}
+    	
+    	/** Callback method to test if two graph states have different associated locations. */
+    	protected boolean isDistinctLocations(GraphState stateKey, GraphState otherStateKey) {
+            Location control = stateKey.getLocation();
+            return control != null && ! control.equals(otherStateKey.getLocation());
+    	}
 
         /**
 		 * Returns the hash code of the state, modified by the control location (if any).

@@ -50,6 +50,7 @@ import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
+import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTSGraph;
@@ -384,6 +385,9 @@ public class Generator extends CommandLineTool {
             for (GraphState state: getGTS().nodeSet()) {
                 if (state instanceof AbstractCacheHolder) {
                     ((AbstractCacheHolder<?>) state).clearCache();
+                }
+                if (state instanceof GraphNextState) {
+                    ((AbstractCacheHolder<?>) ((GraphNextState) state).getEvent()).clearCache();
                 }
             }
             // the following is to make sure that the graph reference queue gets flushed
