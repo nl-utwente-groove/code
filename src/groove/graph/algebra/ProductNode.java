@@ -128,41 +128,6 @@ public class ProductNode extends DefaultNode {
         return getOperands().get(index);
     }
 
-//    @Override
-//    public boolean equals(Object object) {
-//    	return object instanceof ProductNode && arguments.equals(((ProductNode) object).arguments);
-//        // the given object may not be NULL and must be of this class
-//        if (!(object instanceof ProductNode))
-//            return false;
-//
-//        ProductNode other = (ProductNode) object;
-//
-//        // check whether the arities of the two are equal
-//        if (this.arity() != other.arity())
-//            return false;
-//
-//        // check whether the operands of the two are equal, given that
-//        // the arities are equal
-//        for (int i = 0; i < arity(); i++) {
-//            Constant constant = getOperand(i);
-//            Constant compareConstant = other.getOperand(i);
-//            if (!(constant.equals(compareConstant)))
-//            	return false;
-//        }
-//
-//        if (!super.equals(object))
-//            return false;
-//
-//        // if we reach this point, both objects are equal
-//        return true;
-//    }
-//
-//    /** This implementation returns the hash code of the arguments.
-//	@Override
-//	protected int computeHashCode() {
-//		return arguments.hashCode();
-//	}
-
 	/**
      * Returns the arity of this <code>ProductNode</code>
      * @return the arity of this <code>ProductNode</code>

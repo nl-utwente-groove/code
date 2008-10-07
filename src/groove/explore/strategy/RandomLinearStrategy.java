@@ -46,32 +46,6 @@ public class RandomLinearStrategy extends LinearStrategy {
     public RandomLinearStrategy(boolean closeFast) {
         super(closeFast);
     }
-//    
-//	public boolean next() {
-//		if (this.atState == null) { 
-//			getGTS().removeGraphListener(this.collector);
-//			return false;
-//		}
-//		ExploreCache cache = getCache(true, false);
-//		MatchSetCollector collector = createMatchCollector(cache);
-//        // collect all matches
-//        List<RuleEvent> matches = new ArrayList<RuleEvent>();
-//        collector.collectMatchSet(matches);
-//        // select a random match
-//        int matchCount = matches.size();
-//        if (matchCount == 0) {
-//            setClosed(getAtState());
-//        } else {
-//            int randomIndex = (int) (Math.random() * matchCount);
-//            // add the random match
-//            getMatchApplier().addTransition(getAtState(), matches.get(randomIndex), cache);
-//            if( closeExit() ) {
-//                setClosed(getAtState());
-//            }
-//        }
-//        updateAtState();
-//		return true;
-//	}
 	
     /** This implementation returns a random element from the set of all matches. */
     @Override
@@ -90,45 +64,4 @@ public class RandomLinearStrategy extends LinearStrategy {
             return matches.get(randomIndex);
         }
 	}
-//	
-//	@Override
-//	protected void updateAtState() {
-//		this.atState = this.collector.getNewState();
-//        this.collector.reset();
-//	}
-//	
-//	@Override
-//	public void prepare(GTS gts, GraphState state) {
-//		super.prepare(gts, state);
-//        gts.getRecord().setCopyGraphs(false);
-//        gts.getRecord().setReuseEvents(false);
-//		gts.addGraphListener(collector);
-//	}
-//
-//	/** Collects states newly added to the GTS. */
-//	private final NewStateCollector collector = new NewStateCollector();
-//	
-//	/** 
-//	 * Registers the first new state added to the GTS it listens to.
-//	 * Such an object should be added as listener only to a single GTS. 
-//	 */
-//	public class NewStateCollector extends GraphAdapter {
-//		/** Returns the collected new state,
-//		 * or null if no new state was registered.
-//		 * @return the collected new state,
-//		 * or null if no new state was registered since last reset operation
-//		 */
-//		GraphState getNewState() { return this.newState; }
-//		
-//		/** Forgets collected new state. */
-//		void reset () { this.newState = null; }
-//		
-//		@Override
-//		public void addUpdate(GraphShape shape, Node node) {
-//			if (newState == null) {
-//				newState = (GraphState) node;
-//			}
-//		}
-//		private GraphState newState;
-//	}
 }

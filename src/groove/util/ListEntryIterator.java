@@ -54,13 +54,6 @@ final public class ListEntryIterator implements Iterator<ListEntry> {
     public void remove() {
         throw new UnsupportedOperationException();
     }
-//
-//    /**
-//     * Returns the entire current {@link ListEntry}.
-//     */
-//    protected ListEntry getCurrent() {
-//        return current;
-//    }
 
     /**
      * The next list entry to return by {@link #next()}. 

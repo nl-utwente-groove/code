@@ -51,30 +51,6 @@ public class ValueNode extends ProductNode {
 	public ValueNode() {
 		this(null,null);
 	}
-//
-//    /**
-//     * Creates a graph node {@link groove.graph.algebra.ValueNode} for a given {@link groove.algebra.Variable}.
-//     * @param variable the variable to create a graph node for
-//     */
-//    public ValueNode(Variable variable) {
-//		super(0);
-//        this.constant = variable;
-//    }
-//
-//    /**
-//     * Creates a graph node from a given {@link groove.algebra.Algebra} and string representing the value.
-//	 * @param algebra the algebra in which to look for the value
-//	 * @param symbol the symbol representing the value to look for
-//	 */
-//	public ValueNode(Algebra algebra, String symbol) throws UnknownSymbolException {
-//		this((Constant) algebra.getOperation(symbol));
-//        try {
-//            this.algebra = algebra;
-//    		this.constant = (Constant) algebra.getOperation(symbol);
-//        } catch (UnknownSymbolException use) {
-//            use.printStackTrace();
-//        }
-//	}
 
 	/**
 	 * Method returning the algebra to which the attribute node belongs.
@@ -83,14 +59,6 @@ public class ValueNode extends ProductNode {
 	public Algebra getAlgebra() {
 		return algebra;
 	}
-//
-//	/**
-//	 * Method returning the operand of the attribute node.
-//	 * @return the operand of the attribute node
-//	 */
-//	public Constant getOperation() {
-//		return constant;
-//	}
 
     /**
      * Returns the <code>Constant</code> this <code>ValueNode</code> is representing.
@@ -120,14 +88,6 @@ public class ValueNode extends ProductNode {
     public boolean hasValue() {
     	return value != null;
     }
-//    
-//    /**
-//     * Sets the <code>constant</code>-field of this <code>ValueNode</code>
-//     * @param constant the new value for the <code>constant</code>-field
-//     */
-//    public void setConstant(Constant constant) {
-//        this.constant = constant;
-//    }
 
 	/**
 	 * This methods returns an indication of the variable if there is

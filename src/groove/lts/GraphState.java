@@ -102,10 +102,4 @@ public interface GraphState extends State {
      * @see #isClosed()
      */
     public boolean setClosed();
-//    
-//    /**
-//     * Conveys the information that the state will not be used in the LTS.
-//     * This may give reason to do some cleanup.
-//     */
-//    public void dispose();
 }

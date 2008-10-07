@@ -96,19 +96,4 @@ public interface GenericNodeEdgeMap<NS, NT, ES, ET> {
 	 * Removes an edge key-value pair from this map.
 	 */
 	public abstract ET removeEdge(ES key);
-//
-//	/**
-//	 * Returns a new map constructed by composing another node-edge map
-//	 * in front of this one.
-//	 */
-//	public abstract <OtherNS, OtherES> GenericNodeEdgeMap<OtherNS, NT, OtherES, ET> after(
-//			GenericNodeEdgeMap<OtherNS, NS, OtherES, ES> other);
-//
-//	/**
-//	 * Returns a new map constructed by composing the inverse of another 
-//	 * node-edge-map in front of this one.
-//	 */
-//	public abstract <OtherNT, OtherET> GenericNodeEdgeMap<OtherNT, NT, OtherET, ET> afterInverse(
-//			GenericNodeEdgeMap<NS, OtherNT, ES, OtherET> other);
-//
 }

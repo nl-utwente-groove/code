@@ -507,32 +507,6 @@ abstract public class JModel extends DefaultGraphModel {
     protected AttributeMap getGrayedOutAttr() {
         return JAttr.GRAYED_OUT_ATTR;
     }
-//
-//    /**
-//     * Returns the map of attribute changes needed to hide a jcell. 
-//     * This implementation returns {@link JAttr#INVISIBLE_ATTR}. 
-//     */
-//    protected AttributeMap getInvisibleAttr() {
-//        return JAttr.INVISIBLE_ATTR;
-//    }
-//
-//    /**
-//     * Collects the labels of a given j-vertex.
-//     * Callback method from {@link #toPlainGraph()}.
-//     * This implementation just returns the label set.
-//     */
-//    protected Collection<String> getLabels(JVertex jCell) {
-//        return jCell.getPlainLabels();
-//    }
-//
-//    /**
-//     * Collects the labels of a given j-edge.
-//     * Callback method from {@link #toPlainGraph()}.
-//     * This implementation just returns the label set.
-//     */
-//    protected Collection<String> getLabels(JEdge jEdge) {
-//        return jEdge.getPlainLabels();
-//    }
 
     @Override
 	public AttributeMap getAttributes(Object node) {

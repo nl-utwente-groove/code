@@ -411,19 +411,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      * @see #version2LabelVector(List,boolean)
      */
     static private final Point2D DEFAULT_EDGE_VECTOR = new Point2D.Double(50,0);
-//    
-//    /** 
-//     * Calculates the relative position of a label from version 1 label position info.
-//     * The info is that both x and y of the label are given as permilles of the vector.
-//     * @param label the version 1 label position info 
-//     * @param edge the edge vector; should not be <code>(0,0)</code>
-//     */
-//    private Point2D version1RelativePos(Point2D label, Point2D edge) {
-//    	double x = edge.getX() * label.getX() / GraphConstants.PERMILLE;
-//    	double y = edge.getY() * label.getY() / GraphConstants.PERMILLE;
-//    	return new Point2D.Double(x, y);
-//    }
-//    
+
     /** 
      * Calculates the version 2 label position values from the relative
      * position of the label.

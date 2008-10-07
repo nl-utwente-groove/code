@@ -288,28 +288,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     public CertificateStrategy getCertifier() {
         return getCache().getCertificateStrategy();
     }
-//    
-//    /**
-//     * Returns the isomorphism checking strategy used by this graph.
-//     * This implementation returns a statically set {@link DefaultIsoChecker}.
-//     * @return the isomorphism checking strategy used by this graph
-//     * @see #getIsomorphismTo(Graph)
-//     */
-//    protected IsoChecker getIsoChecker() {
-//    	return isoChecker;
-//    }
-//
-//    /**
-//     * Returns a graph cache for this graph.
-//     * The graph cache is newly created, using {@link #createCache()}, if no
-//     * cache is currently set. A reference to the cache is created using
-//     * {@link #createCacheReference(GraphCache)}.
-//     * @return a graph cache for this graph
-//     */
-//    @Override
-//    public GraphCache getCache() {
-//        return (GraphCache) super.getCache();
-//    }
 
     /**
      * Factory method for a morphism.

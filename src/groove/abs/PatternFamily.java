@@ -64,7 +64,6 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	 * @require max_incidence should be positie (>=1)
 	 */
 	public PatternFamily(final int radius, final int max_incidence) {
-//		if (true) throw new UnsupportedOperationException();
 		assert radius > 0 && max_incidence > 0: "A radius and max_incidence should be positive." ;
 		this.RADIUS = radius;
 		this.MAX_INCIDENCE = max_incidence;
@@ -81,17 +80,6 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	 * @return the radius of patterns in this family
 	 */
 	public int getRadius() { return this.RADIUS; }
-	
-//	/** Initialises this pattern family with all the patterns present in a graph.
-//	 * @param graph
-//	 * @throws ExceptionIncompatibleWithMaxIncidence when the graph is not compatible with this family
-//	 */
-//	public void initalise (Graph graph) throws ExceptionIncompatibleWithMaxIncidence {
-//		Set<? extends Node> nodeSet = graph.nodeSet();
-//		for (Node n : nodeSet) {
-//			this.computeAddPattern(graph, n);
-//		}
-//	}
 	
 	/** Iterator over the patterns of the family.
 	 * @return Iterator over the patterns of the family.
@@ -276,17 +264,6 @@ public class PatternFamily implements Iterable<GraphPattern> {
 		/** */
 		private ArrayList<NodeEdgeMap> selfIsomorphisms;
 
-// Unused
-//		/** Creates a fixed GraphPattern from its pattern graph and central node.
-//		 * @param pattern the pattern graph
-//		 * @param central the central node
-//		 * @require pattern is a connected graph, central is a node in pattern
-//		 */
-//		protected DefaultGraphPattern (Graph pattern, Node central) {			
-//			this(pattern.edgeSet(), central);
-//			super.setFixed();
-//		}
-
 		/** Creates a non fixed GraphPattern from its set of edges and its central node 
 		 * @param edges
 		 * @param central
@@ -361,14 +338,6 @@ public class PatternFamily implements Iterable<GraphPattern> {
 				}
 			}
 		}
-		
-//		private boolean isInjective(NodeEdgeMap map) {
-//			Set<Node> images = new HashSet<Node>(map.size());
-//			for (Map.Entry<Node,Node> entry : map.nodeMap().entrySet()) {
-//				if (! images.add(entry.getValue())) { return false; }
-//			}
-//			return true;
-//		}
 		
 		public Collection<VarNodeEdgeMap> possibleTypings(Graph g, Node center, boolean symmetryReduction) {
 			NodeEdgeMap centerMap = new NodeEdgeHashMap();

@@ -92,7 +92,7 @@ public interface AbstrGraph extends Graph {
 	
 	/** Tests equality of abstract graphs.
 	 * Two abstract graphs are equal if they have isomorphic structure 
-	 * preserving types and multiplicies, are constructed over the same family and
+	 * preserving types and multiplicities, are constructed over the same family and
 	 * with the same precision constraint.
 	 * @param o
 	 * @return <code>true</code> if o is an abstract graph and is equal to this abstract graph
@@ -117,7 +117,7 @@ public interface AbstrGraph extends Graph {
 	public Abstraction.AbstrGraphsRelation compare (AbstrGraph other, boolean belongsIsSub);
 	
 	/** Returns true when the abstract graph does not have concretisations.
-	 * If this method returns false, this does not meen that the abstract
+	 * If this method returns false, this does not mean that the abstract
 	 * graph admits concretisations.
 	 * @return true if it can be determined that the abstract graph does not admit concretisations,
 	 * false if this cannot be determined

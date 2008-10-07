@@ -188,13 +188,6 @@ public class Converter {
 		}
 		return result;
 	}
-//
-//    /** Creates a font colour tag for a given colour. */
-//    static public HTMLTag createColorTag(Color color) {
-//        String colorString =
-//            toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue()) ;
-//        return new HTMLTag("font", "color", colorString);
-//    }
 
     /** Converts the first letter of a given string to upper- or lowercase. */
     static public String toUppercase(String text, boolean upper) {

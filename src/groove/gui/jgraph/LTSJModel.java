@@ -242,30 +242,6 @@ public class LTSJModel extends GraphJModel {
 	    return specialLabels != null && specialLabels.contains(label);
 	}
 
-//	/**
-//     * This implementation adds a label to the set if
-//     * the j-vertex is the start state, an open state or a final state.
-//     * @see LTS#START_LABEL_TEXT
-//     * @see LTS#OPEN_LABEL_TEXT
-//     * @see LTS#FINAL_LABEL_TEXT
-//     */
-//    @Override
-//    protected Collection<String> getLabels(JVertex jCell) {
-//        LTS lts = getGraph();
-//        State state = (GraphState) ((GraphJVertex) jCell).getNode();
-//        Set<String> result = new HashSet<String>();
-//        if (lts.startState().equals(state)) {
-//            result.add(LTS.START_LABEL_TEXT);
-//        } 
-//        if (!state.isClosed()) {
-//            result.add(LTS.OPEN_LABEL_TEXT);
-//        }
-//        if (lts.isFinal(state)) {
-//            result.add(LTS.FINAL_LABEL_TEXT);
-//        }
-//        return result;
-//    }
-
     /**
      * The active state of the LTS.
      * Is null if there is no active state.

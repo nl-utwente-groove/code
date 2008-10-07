@@ -158,33 +158,6 @@ public class GraphInfo {
             data.put(NAME_KEY, name);
         }
     }
-//
-//    /** Tests if this info object has a value for the {@link #VERSION_KEY}. */
-//    public boolean hasVersion() {
-//        return data.get(NAME_KEY) != null;
-//    }
-//    
-//    /** 
-//     * Returns the name associated with the graph, if any.
-//     * @return a name stored in the info object, or <code>null</code> 
-//     * @see #setVersion(String)
-//     */
-//    public String getVersion() {
-//        return (String) data.get(VERSION_KEY);
-//    }
-//    
-//    /**
-//     * Sets the version (key {@link #VERSION_KEY}) in this info object to a certain value.
-//     * If the value is <code>null</code>, the key is removed altogether.
-//     * @see #getVersion()
-//     */
-//    public void setVersion(String version) {
-//        if (version == null) {
-//            data.remove(VERSION_KEY);
-//        } else {
-//            data.put(VERSION_KEY, version);
-//        }
-//    }
 
     /** Tests if this info object has a value for the {@link #PROPERTIES_KEY}. */
     public boolean hasProperties() {
@@ -545,22 +518,6 @@ public class GraphInfo {
             }
         }
     }
-//    
-//    /** 
-//     * Tests if a given key encodes a graph info key rather than a user-defined property key, and if so,
-//     * returns the encoded key.
-//     * A key is considered to encode an info key if it starts with {@link #INFO_KEY_START}.
-//     * @param key the key to be tested
-//     * @return the substring of <code>key</code> from the second character onwards, if <code>key</code>
-//     * starts with {@link #INFO_KEY_START}; <code>null</code> otherwise.
-//     */
-//    static public String getInfoKey(String key) {
-//        if (key == null || key.length() == 0 || key.charAt(0) != INFO_KEY_START) {
-//            return null;
-//        } else {
-//            return key.substring(1);
-//        }
-//    }
     
     /**
 	 * Key for error list.

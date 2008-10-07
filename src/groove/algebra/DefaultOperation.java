@@ -46,30 +46,6 @@ abstract public class DefaultOperation implements Operation {
         this.resultType = resultType;
         assert algebra != null;
     }
-//
-//	/**
-//	 * Constructor.
-//	 * @param symbol the symbol of this operation
-//	 * @param arity the arity of this operation
-//	 */
-//	protected DefaultOperation(String symbol, int arity) {
-//		this(null, symbol, arity);
-//	}
-//
-//	/**
-//	 * Method setting the different fields.
-//	 * @param algebra the new algebra
-//	 * @param symbol the new symbol
-//	 * @param arity the new arity
-//	 */
-//	public void set(Algebra algebra, String symbol, int arity) {
-//		if (algebra != null)
-//			this.algebra = algebra;
-//		if (symbol != null)
-//			this.symbol = symbol;
-//		if (arity != -1)
-//			this.arity = arity;
-//	}
 
 	public Algebra algebra() {
 		return algebra;

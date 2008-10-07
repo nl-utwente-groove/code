@@ -247,18 +247,6 @@ public class CTLModelChecker extends CommandLineTool {
         }
         return result;
     }
-//
-//	private void listPredicates() {
-//		Set<String> potentialPredicates = getPotentialPredicates();
-//        System.out.println("Available atomic propositions:");
-//        Iterator<String> predicateIter = potentialPredicates.iterator();
-//        while (predicateIter.hasNext()) { 
-//            String nextPredicate = predicateIter.next();
-//            System.out.println("-> " + nextPredicate.toString());
-//        }
-//        System.out.println("-> " + SPECIAL_STATE_PREFIX + GTS.OPEN_LABEL_TEXT + " (to denote unexplored states)");
-//        System.out.println("-> " + SPECIAL_STATE_PREFIX + GTS.FINAL_LABEL_TEXT + " (to denote final states)");
-//	}
 
     /**
      * Sets the new marker.
@@ -336,25 +324,6 @@ public class CTLModelChecker extends CommandLineTool {
     		System.err.println("Grammar-location and start-state unspecified.");
     	}
     }
-    /**
-     * The initialization phase of state space generation.
-     */
-//    protected void init() {
-//        gts = grammar.gts();
-//        if (strategy == null) {
-//        	strategy = new FullStrategy();
-//        } else if (strategy instanceof ConditionalExploreStrategy) {
-//                Rule condition = grammar.getRule(new NameLabel(strategyConditionName));
-//                if (condition == null) {
-//                    printError("Error in exploration strategy: unknown condition "
-//                            + strategyConditionName);
-//                } else {
-//                    ((ConditionalExploreStrategy) strategy).setCondition(condition);
-//                    ((ConditionalExploreStrategy) strategy).setNegated(strategyConditionNegated);
-//                }
-//            }
-//        strategy.setLTS(gts);
-//    }
 
     /**
      * Prints the collection of counter-example states.

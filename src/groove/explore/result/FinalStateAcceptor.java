@@ -36,12 +36,6 @@ public class FinalStateAcceptor extends Acceptor {
 		super(result);
 	}
 	
-//    @Override
-//    public void addUpdate(GraphShape gts, Node state) {
-//        if (((GTS) gts).isFinal((GraphState) state)) {
-//            this.getResult().add((GraphState) state);
-//        }
-//    }
     @Override
     public void closeUpdate(LTS gts, State state) {
         if (gts.isFinal(state)) {

@@ -210,18 +210,6 @@ public class JAttr {
      * The standard jgraph attributes used for graying out nodes and edges.
      */
     static public final AttributeMap GRAYED_OUT_ATTR;
-//
-//    /** The color used for invisible cells. */
-//    static public final Color INVISIBLE_COLOR = Colors.findColor("255 255 255 0");
-//    /** The border used for invisible cells. */
-//    static public final Border INVISIBLE_BORDER =
-//        JAttr.createNodeBorder(new LineBorder(JAttr.INVISIBLE_COLOR, JAttr.DEFAULT_LINE_WIDTH), false);
-//
-//    /**
-//     * The standard jgraph attributes used for nodes and edges that are 
-//     * completely invisible (i.e., hidden).
-//     */
-//    static public final AttributeMap INVISIBLE_ATTR;
 
     /**
      * The standard jgraph attributes used for representing nodes.

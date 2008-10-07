@@ -79,24 +79,6 @@ public class AspectualGraphView extends AspectualView<Graph> {
         this.errors = errors;
 	}
 	
-//	IOVKA : using this method throws a null pointer exception  
-//	/** 
-//	 * Constructs an instance from a given graph model.
-//	 * It is required that the model has a name.
-//	 * @see GraphInfo#getName(groove.graph.GraphShape)  
-//	 */
-//	public AspectualGraphView(Graph model) {
-//		this.model = model;
-//		this.name = GraphInfo.getName(model);
-//		if (name == null) {
-//			throw new IllegalArgumentException("Model has no name.");
-//		}
-//		Pair<AspectGraph,NodeEdgeMap> viewPlusMap = computeView(model);
-//		this.view = viewPlusMap.first();
-//		this.viewToModelMap = viewPlusMap.second();
-//		this.errors = Collections.emptyList();
-//	}
-	
 	public String getName() {
 		return name;
 	}
@@ -257,57 +239,6 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	private boolean isVirtualValue(AspectValue value) {
 		return RuleAspect.REMARK.equals(value);
 	}
-	
-// IOVKA : never used
-//	/**
-//	 * Constructs an aspect graph from a possibly attributed graph,
-//	 * together with a mapping from that aspect graph to the original graph.
-//	 * @param model the graph to be converted (which may be attributed, i.e.,
-//	 * contains 
-//	 * @return a pair of aspect graph plus a mapping from that aspect graph
-//	 * to <code>model</code>
-//	 */
-//	private Pair<AspectGraph, NodeEdgeMap> computeView(Graph model) {
-//		AspectGraph view = new AspectGraph();
-//		// we need to record the view-to-model node map for the return value
-//		Map<AspectNode,Node> viewToModelMap = new HashMap<AspectNode,Node>();
-//		// we need to record the model-to-view node map for mapping the edges
-//		Map<Node,AspectNode> modelToViewMap = new HashMap<Node,AspectNode>();
-//		// we need to record the model-to-view element map for graph info transfer
-//		NodeEdgeMap elementMap = new NodeEdgeHashMap();
-//		try {
-//			// create the nodes of the view
-//			for (Node node: model.nodeSet()) {
-//				AspectNode nodeImage = view.createNode();
-//				AspectValue value = getAttributeValueFor(node);
-//				if (value != null) {
-//					nodeImage.setDeclaredValue(value);
-//				}
-//				view.addNode(nodeImage);
-//				viewToModelMap.put(nodeImage, node);
-//				modelToViewMap.put(node, nodeImage);
-//			}
-//			// update the model-to-view element map
-//			elementMap.nodeMap().putAll(modelToViewMap);
-//			// create the edges of the view
-//			for (Edge edge: model.edgeSet()) {
-//				List<AspectNode> endImages = new ArrayList<AspectNode>();
-//				for (int i = 0; i < edge.endCount(); i++) {
-//					endImages.add(modelToViewMap.get(edge.end(i)));
-//				}
-//				AspectEdge edgeImage = new AspectEdge(endImages, unparse(edge), AttributeAspect.getAttributeValueFor(edge));
-//				view.addEdge(edgeImage);
-//				// update the model-to-view element map
-//				elementMap.edgeMap().put(edge, edgeImage);
-//			}
-//			view.setFixed();
-//		} catch (FormatException exc) {
-//			throw new IllegalStateException("Exception should not occur: "+exc);
-//		}
-//		// transfer graph information such as layout from model to view
-//		GraphInfo.transfer(model, view, elementMap);
-//		return new Pair<AspectGraph,NodeEdgeMap>(view, elementMap);
-//	}
 	
 	/**
      * Returns the graph factory used to construct the model.

@@ -80,14 +80,6 @@ public class AspectValue {
     public String getName() {
         return name;
     }
-//
-//    /** 
-//     * Indicates if labels under this aspect value can be freely formatted.
-//     * If <code>false</code>, labels are parsed as regular expressions. 
-//     */
-//    public final boolean isFreeText() {
-//		return freeText;
-//	}
 
 	/**
      * Returns the prefix of the aspect value.

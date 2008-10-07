@@ -93,14 +93,6 @@ public class JEdgeView extends EdgeView {
 	public JEdge getCell() {
 		return (JEdge) super.getCell();
 	}
-//
-//    @Override
-//	public Rectangle2D getBounds() {
-//    	if (bounds == null) {
-//    		bounds = super.getBounds();
-//    	}
-//		return bounds;
-//	}
 
 	/**
      * Does some routing of self-edges and overlapping edges.
@@ -115,14 +107,6 @@ public class JEdgeView extends EdgeView {
         	routeParallelEdge(mapper);
         }
     }
-//    
-//    
-//    /** In addition to calling the super methods, invalidates the pre-computed edge bounds. */
-//	@Override
-//	public void update() {
-//		bounds = null;
-//		super.update();
-//	}
 
 	/**
      * Adds a point between the first and second points of the underlying j-edge. The point is

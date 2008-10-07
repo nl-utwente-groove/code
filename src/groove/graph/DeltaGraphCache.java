@@ -123,13 +123,6 @@ public class DeltaGraphCache extends GraphCache {
 	protected boolean isCacheInit() {
 		return cacheDelta != null;
 	}
-//
-//	/**
-//	 * Returns the number of times the delta has been computed for this cache.
-//	 */
-//	protected int getDeltaComputeCount() {
-//		return deltaComputeCount;
-//	}
 
 	/**
 	 * Initializes the delta store the cache. This is done by taking
@@ -587,68 +580,6 @@ public class DeltaGraphCache extends GraphCache {
 			return cache.getNodeSet();
 		}
 	}
-//
-//	/**
-//	 * Looks up the label-edge-map array of a given graph, creating it if required.
-//	 * @param graph the graph of which we want the map array
-//	 * @param create flag to indicate if the map array should be 
-//	 * created if not already present
-//	 * @return the label-edge map array from <code>graph</code>, or <code>null</code>
-//	 * if the map was not there and not created
-//	 */
-//	protected Map[] getLabelEdgeMaps(Graph graph, boolean create) {
-//		DeltaGraphCache cache = getDeltaCache(graph, create);
-//		if (create && cache == null) {
-//			if (graph instanceof AbstractGraph) {
-//				return ((AbstractGraph) graph).getLabelEdgeMaps();
-//			} else {
-//				return createLabelEdgeMaps();
-//			}
-//		} else if (create || cache.isLabelEdgeMapsSet()) {
-//			return cache.getLabelEdgeMaps();
-//		} 
-//		return null;
-//	}
-//
-//
-//	/**
-//	 * Looks up the node/edge map of a given graph, creating it if required.
-//	 * @param graph the graph of which we want the map
-//	 * @param create flag to indicate if the map should be 
-//	 * created if not already present
-//	 * @return the node/edge map array from <code>graph</code>, or <code>null</code>
-//	 * if the map was not there and not created
-//	 */
-//	protected Map getNodeEdgeMap(Graph graph, boolean create) {
-//		DeltaGraphCache cache = getDeltaCache(graph, create);
-//		if (create && cache == null) {
-//			if (graph != null) {
-//				return graph.nodeEdgeMap();
-//			} else {
-//				
-//			}
-//		} else if (create || cache.isNodeEdgeMapSet()) {
-//			return cache.getNodeEdgeMap();
-//		} 
-//		return null;
-//	}
-//
-//	/**
-//	 * Retrives the delta cache of a given graph, if the graph is a 
-//	 * {@link DeltaGraph}. A parameter controls if the cache is to be created
-//	 * in case it is currently cleared. If the graph is not a {@link DeltaGraph}
-//	 * or the cache is not created, the method returns <code>null</code>.
-//	 * @param graph the graph of which we want to retrieve the cache
-//	 * @param create if <code>true</code>, the cache should be created if it
-//	 * is currently cleared
-//	 */
-//	protected DeltaGraphCache getDeltaCache(Graph graph, boolean create) {
-//		if (graph instanceof DeltaGraph && (create || !((DeltaGraph) graph).isCacheCleared())) {
-//			return ((DeltaGraph) graph).getDeltaCache();
-//		} else {
-//			return null;
-//		}
-//	}
 	
 	/**
 	 * Retrieves the delta cache of a given graph, if the graph is a 
@@ -688,18 +619,7 @@ public class DeltaGraphCache extends GraphCache {
      * graph is frozen).
      */
     private AbstractGraph<? extends GraphCache> cacheBasis;
-//    /**
-//     * Count of the number of times this cache delta has been computed.
-//     */
-//    private int deltaComputeCount;
-//    /**
-//     * Flag to indicate that the {@link #cacheDelta} is the difference with the basis rather than the origin.
-//     */
-//    protected boolean cacheDeltaIsGraphDelta; 
-//    /**
-//     * The cache of the basis graph, if any.
-//     */
-//    private Graph origin;
+
     /**
      * The distance between the checkpoint and the underlying graph of this cache.
      * If <code>distance == 0</code>, the underlying graph is itself a checkpoint.

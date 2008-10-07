@@ -107,18 +107,6 @@ public interface GraphShape extends java.io.Serializable {
      * @ensure <tt>result == labelEdgeMap(arity).get(Label).get(arity)</tt>
      */
     Set<? extends Edge> labelEdgeSet(int arity, Label label);
-//
-//    /**
-//     * Returns a map from the labels in this graph of a given arity to non-empty sets
-//     * (actually, <tt>Collection</tt>s guaranteed to contain distinct
-//     * elements) of all edges with that label and arity in this graph.
-//     * @param arity the number of endpoints of the required edges
-//     * @return <tt>result: Label -> Collection^*</tt> such that
-//     * <tt>result.get(label).get(arity).contains(edge)</tt> iff 
-//     * <tt>contains(edge) && edge.label().equals(label) && edge.partsCount() == arity</tt> 
-//     * @require <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
-//     */
-//    Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int arity);
     
     /**
      * Returns the total number of elements (nodes plus edges) in this graph.
@@ -168,25 +156,6 @@ public interface GraphShape extends java.io.Serializable {
      * @see #isFixed()
      */
     void setFixed();
-//    
-//    // ------------------------------ Object overrides ---------------------------
-//
-//    /** 
-//     * Tests whether this Object is equal as a graph to another.
-//     * @param obj the Object to be compared with this one
-//     * @return true if <tt>other instanceof Graph && this.equals((Graph) other)</tt>
-//     * @see #equals(GraphShape)
-//     */
-//    boolean equals(Object obj);
-//
-//    /** 
-//     * Tests whether this Graph equals another.
-//     * @param other the Object to be compared with this one
-//     * @return true if <tt>other.nodeSet().equals(nodeSet())
-//     *              && other.edgeSet().equals(edgeSet())</tt>
-//     * @see #equals(Object)
-//     */
-//    boolean equals(GraphShape other);
 
     // ------------------------ graph listener methods ----------------------------
     /**
@@ -220,25 +189,4 @@ public interface GraphShape extends java.io.Serializable {
      * @return a shallow copy of <code>info</code>, or <code>null</code> if <code>info</code> was <code>null</code>
      */
     GraphInfo setInfo(GraphInfo info);
-//    
-//    /**
-//     * Stores specific data for the given key.
-//     * @param key the key for storing the data
-//     * @param data the data to be stored
-//     */
-//    void storeSpecificData(String key, Object data);
-//
-//    /**
-//     * Returns the specific data for the given key.
-//     * @param key the key for getting the data
-//     * @return the specific data stored for the given key
-//     */
-//    Object getSpecificData(String key);
-//
-//    /**
-//     * Checks whether the current instance has data stored for the given key.
-//     * @param key the key for the data to be checked for existence
-//     * @return <tt>true</tt> if for the given key data has been stored, <tt>false</tt> otherwise 
-//     */
-//    boolean hasSpecificData(String key);
 }

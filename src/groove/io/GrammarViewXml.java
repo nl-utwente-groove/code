@@ -76,10 +76,4 @@ public interface GrammarViewXml<GG extends GrammarView> extends ViewXml<GG> {
      * @throws IOException if an error occurs during file input
      */
     public GG unmarshal(File file, String startStateName) throws FormatException, IOException;
-//
-//    /**
-//     * Returns the {@link groove.trans.RuleFactory} needed for instantiating classes for performing transformations.
-//     * @return the current <code>ruleFactory</code>
-//     */
-//    public RuleFactory getRuleFactory();
 }

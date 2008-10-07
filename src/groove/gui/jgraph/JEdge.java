@@ -47,29 +47,6 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     	}
     	return result.toString();
     }
-//
-//    /** 
-//	 * Callback method to return the individual lines for the display text.
-//	 * These are constructed by calling #getLine(String) on the labels.
-//	 * @see #getText()
-//	 */
-//	public Collection<String> getLines() {
-//		List<String> result = new ArrayList<String>();
-//		for (Object label: getUserObject()) {
-//			result.add(getLine(label));
-//		}
-//		return result;
-//	}
-//
-//	/** 
-//	 * Callback method to get the text that is to be printed in the 
-//	 * j-vertex for a given object in the label set.
-//	 * @param object an object from the user object (hence of the type
-//	 * of the user object's elements)
-//	 */
-//	public String getLine(Object object) {
-//		return object.toString();
-//	}
 
 	/** Returns the j-vertex that is the parent of the source port of this j-edge. */
     public JVertex getSourceVertex() {

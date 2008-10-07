@@ -25,22 +25,8 @@ import groove.util.TreeHashSet;
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
 final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
-//	/**
-//     * Constructs a new edge on the basis of a given source, label text and target.
-//     * The label created will be a {@link DefaultLabel}.
-//     * @param source source node of the new edge
-//     * @param text label text of the new edge
-//     * @param target target node of the new edge
-//     * @require <tt>source != null && text != null && target != null</tt>
-//     * @ensure <tt>source()==source</tt>,
-//     *         <tt>label().text().equals(text)</tt>,
-//     *         <tt>target()==target </tt>
-//     */
-//    private DefaultEdge(Node source, String text, Node target) {
-//        this(source,DefaultLabel.createLabel(text),target);
-//    }
-//
-    /**
+
+	/**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge
      * @param label label of the new edge
@@ -137,11 +123,6 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
         edgeSet.clear();
     }
     
-//    /**
-//     * An identity map, mapping previously created instances of {@link DefaultEdge}
-//     * to themselves. Used to ensure that edge objects are reused.
-//     */
-//    static private final Map<DefaultEdge,DefaultEdge> edgeMap = new HashMap<DefaultEdge,DefaultEdge>();
     /**
      * A identity map, mapping previously created instances of {@link DefaultEdge}
      * to themselves. Used to ensure that edge objects are reused.

@@ -219,9 +219,6 @@ public class ConcretePart {
 		for (NodeEdgeMap m : typeN.possibleTypings(neighN, baseMatch, symmetryReduction)) {
 			result.addAll(this.extensionsByMorphism(m, typeN, n, family, nodeFactory));
 		}		
-//		for (NodeEdgeMap m : Util.getInjMatchesIter(neighN, typeN, baseMatch)) {
-//			result.addAll(this.extensionsByMorphism(m, typeN, n, family));
-//		}
 		 
 		result.trimToSize();
 		

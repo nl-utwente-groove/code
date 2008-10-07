@@ -65,13 +65,6 @@ public class JCellViewFactory extends DefaultCellViewFactory {
         }
     }
 
-//    /**
-//     * This implementation returns a {@link JPortView}.
-//     */
-//    protected PortView createPortView(Object port) {
-//        return new JPortView(port);
-//    }
-//    
     /**
      * The underlying graph on which all views are to be displayed.
      */

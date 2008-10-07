@@ -211,43 +211,6 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,
     private Morphism morphism;
     /** Flag indicating that the underlying morphism is a partial identity. */
     private final boolean symmetry;
-//    /**
-//     * Sets the transition labelling policy.
-//     * If <code>true</code>, transition labels are based on rule names only.
-//     * If <code>false</code>, event information is also included.
-//     * The standard value is <code>true</code>.
-//     * @see #isRuleLabelled()
-//     * @see #label()
-//     */
-//    static public void setRuleLabelled(boolean ruleLabelled) {
-//        DefaultGraphTransition.ruleLabelled = ruleLabelled;
-//    }
-//    
-//    /**
-//     * Returns  the current transition labelling policy.
-//     * If <code>true</code>, transition labels are based on rule names only.
-//     * If <code>false</code>, event information is also included.
-//     * The standard value is <code>true</code>.
-//     * @see #setRuleLabelled(boolean)
-//     */
-//    static public boolean isRuleLabelled() {
-//        return ruleLabelled;
-//    }
-//    
-//    /**
-//     * Retrieves the label from a rule event.
-//     * The label is either the event label or the rule name, depending
-//     * on the labelling policy as determined by {@link #isRuleLabelled()}.
-//     * @see RuleEvent#getLabel()
-//     * @see Rule#getName()
-//     */
-//    static public Label getLabel(RuleEvent event) {
-//        if (isRuleLabelled()) {
-//            return event.getRule().getName();
-//        } else {
-//            return event.getLabel();
-//        }
-//    }
 
     /** Returns the total number of anchor images created. */
     static public int getAnchorImageCount() {
@@ -255,9 +218,4 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,
     }
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
-//    
-//    /**
-//     * Flag to indicate whether transitions should be labelled by rule name only.
-//     */
-//    static private boolean ruleLabelled = false;
 }

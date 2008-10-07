@@ -177,12 +177,6 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	    }
 	    return result.toString();
 	}
-//	
-//	@Override
-//	public Label getLabel() {
-//		boolean brackets = this.getRule().getProperties().isShowTransitionBrackets();
-//		return new NameLabel(this.toString(), brackets);
-//	}
 
 	/**
 	 * Returns the string of actual parameter values of this event.

@@ -124,11 +124,6 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements DeltaA
         }
         return result;
     }
-//    
-//    @Override
-//	public boolean isFixed() {
-//		return isDeltaArraySet();
-//	}
 
 	/**
      * Sets the delta using {@link #computeFixedDeltaArray()}. In either case the super implementation

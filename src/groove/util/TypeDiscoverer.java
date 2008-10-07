@@ -154,13 +154,6 @@ public class TypeDiscoverer {
     protected Graph createGraph() {
         return GraphFactory.getInstance().newGraph();
     }
-//
-//    /**
-//     * Factory method for a {@link VarGraph} copy of a given graph.
-//     */
-//    protected Graph createVarGraph(Graph graph) {
-//        return graph.newGraph();
-//    }
     
     /**
      * Factory method for a fresh label.
@@ -168,13 +161,6 @@ public class TypeDiscoverer {
     protected Label createFreshLabel() {
         return DefaultLabel.createFreshLabel();
     }
-//    
-//    /**
-//     * Factory method to create a graph to be used as the LHS or RHS of an {@link SPORule}.
-//     */
-//    protected Graph createGraph() {
-//        return new RegExprGraph();
-//    }
     
     /** Callback factory method to create a rule. */
     protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name, RuleSystem ruleSystem) throws FormatException {

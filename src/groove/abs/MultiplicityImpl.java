@@ -108,7 +108,7 @@ public class MultiplicityImpl implements Multiplicity {
 	private MultSetImpl[] sets;
 	/** Makes correspond to each MultiplicityInformation ins containing set.*/
 	Map<MultiplicityInformation,MultSetImpl> setOf;
-	/** Set to true when first initialised. */
+	/** Set to true when first initialized. */
 	private static boolean singleton = false;
 	
 	// //////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ public class MultiplicityImpl implements Multiplicity {
 		 */
 		private MultiplicityInformation[] iValues;
 		
-		/** Initialises all the elements of this set.
+		/** Initializes all the elements of this set.
 		 * @param precision
 		 */
 		MultSetImpl(int precision) {
@@ -238,7 +238,7 @@ public class MultiplicityImpl implements Multiplicity {
 		
 		/**  
 		 * @param element
-		 * @return true if element is precise, no guarantee of the bahaviour if element is not an element of this set
+		 * @return true if element is precise, no guarantee of the behaviour if element is not an element of this set
 		 * @require element is an element of this multiplicity set
 		 */
 		boolean isPrecise (MultiplicityInformation element) {
@@ -383,8 +383,6 @@ public class MultiplicityImpl implements Multiplicity {
 			MultSetImpl mult = impl.getSetFor(this);
 			String result = mult.toString(this);
 			return result;
-			
-			// return ((MultiplicityImpl_) Abstraction.MULTIPLICITY).getSetFor(this).toString(this);
 		}
 	}
 

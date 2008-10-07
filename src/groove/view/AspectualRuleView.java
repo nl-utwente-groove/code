@@ -952,23 +952,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	Node target = ends[Edge.TARGET_INDEX];
     	return DefaultEdge.createEdge(source, label, target);
     }
-//
-//    /** 
-//     * Turns a label of the aspect graph into a rule label.
-//     * This especially involves recognising regular expressions on the label. 
-//     * @param label the original label; should not be <code>null</code>
-//     * @return the converted label; not <code>null</code>
-//     * @throws FormatException if the label text is not a well-formed regular expression
-//     */
-//    private Label createRuleLabel(Label label) throws FormatException {
-//        String text = label.text();
-//        RegExpr expr = RegExpr.parse(text);
-//        if (expr.isAtom()) {
-//            return DefaultLabel.createLabel(expr.getAtomText());
-//        } else {
-//            return expr.toLabel();
-//        }
-//    }
     
     /** 
      * Indicates if an edge with a given label has a concrete image in
@@ -1164,30 +1147,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     		return null;
     	}
     }
-//    
-//    /**
-//	 * Creates an injection edge based on a given merge embargo.
-//	 * The embargo is interpreted under a certain node mapping.
-//	 * A role parameter controls whether it is a level 1 injection (READER) or level 2 (EMBARGO)
-//	 */
-//	private AspectEdge createInjectionEdge(MergeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
-//	    return computeAspectEdge(images(nodeMap, embargo.getNodes()), NEGATIVE_MERGE_LABEL, role, null);
-//	}
-//
-//	/**
-//	 * Creates a negation edge based on a given edge embargo.
-//	 * The embargo is interpreted under a certain node mapping.
-//	 * A role parameter controls whether it is a level 1 negation (READER) or level 2 (EMBARGO)
-//	 */
-//	private AspectEdge createNegationEdge(EdgeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
-//	    Edge embargoEdge = embargo.getEmbargoEdge();
-//	    Label label = embargoEdge.label();
-//	    // we have to add a negation to the label, which may mean we first have
-//	    // to turn it into a regular expression
-//	    RegExpr labelExpr = label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : RegExpr.atom(label.text());
-//	    List<AspectNode> endImages = images(nodeMap, embargoEdge.ends());
-//	    return computeAspectEdge(endImages, labelExpr.neg().toLabel(), role, null);
-//	}
 
 	/**
      * Tests if a given morphism is injective; throws a {@link IllegalArgumentException} if it is not.

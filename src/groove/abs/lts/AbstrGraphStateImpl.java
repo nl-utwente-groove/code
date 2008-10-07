@@ -133,7 +133,6 @@ public class AbstrGraphStateImpl implements AbstrGraphState {
 	private AbstrGraph graph;
 	private boolean closed; 
 	private MyHashSet<GraphTransition> transitions = new MyHashSet<GraphTransition>(new TransitionHasher()); 
-	//private Set<GraphTransition> transitions;
 	/** The number of the actual state. */
 	protected int nr;
 	

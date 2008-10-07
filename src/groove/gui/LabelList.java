@@ -383,27 +383,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     	}
     	return result;
     }
-//    
-//    /** 
-//     * Extracts the labels from a j-cell.
-//     * This method should always be used instead of invoking {@link JCell#getListLabels()}
-//     * directly, so as to allow some processing in between.
-//     */
-//    private Set<String> getLabelSet(JCell cell) {
-//    	Set<String> result = new HashSet<String>();
-//		if (cell.isVisible()) {
-//			for (String label : cell.getListLabels()) {
-//				try {
-//					String[] fragments = ExprParser.splitExpr(label, " ");
-//					result.addAll(Arrays.asList(fragments));
-//				} catch (FormatException exc) {
-//					result.add(label);
-//				}
-//			}
-//		}
-//    	return result;
-//    }
-//    
+
     /**
      * The list model used for the JList.
      * @require <tt>listModel == listComponent.getModel()</tt>

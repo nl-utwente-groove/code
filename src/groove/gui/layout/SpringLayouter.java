@@ -43,21 +43,6 @@ public class SpringLayouter extends AbstractLayouter {
     public SpringLayouter() {
         super(ACTION_NAME);
     }
-//
-//    public SpringLayouter(int duration) {
-//        this(ACTION_NAME, duration);
-//    }
-//
-//    /** Construct a layouter with a given name. */
-//    public SpringLayouter(String name) {
-//        this(name, DEFAULT_DURATION);
-//    }
-//
-//    public SpringLayouter(String name, int duration) {
-//        super(name);
-//        setName(duration);
-//        setDuration(duration);
-//    }
 
     /**
      * Constructs a new, named layout action on a given graph, with given layout rigidity.
@@ -78,27 +63,6 @@ public class SpringLayouter extends AbstractLayouter {
     public Layouter newInstance(JGraph jgraph) {
         return new SpringLayouter(name, jgraph, rigidity);
     }
-//
-//    /**
-//     * Sets the duration of the temporary layout action, in milliseconds. A value of 0 means to
-//     * layout until stable.
-//     * @param duration the duration of the temporary layout action, in milliseconds
-//     * @require <tt>duration >= 0</tt>
-//     */
-//    public void setDuration(int duration) {
-//        if (duration >= 0) {
-//            this.duration = duration;
-//        }
-//    }
-//
-//    /**
-//     * Returns the duration of the temporary layout action, in milliseconds.
-//     * @return the duration of the temporary layout action, in milliseconds
-//     * @ensure <tt>result >= 0</tt>
-//     */
-//    public int getDuration() {
-//        return duration;
-//    }
 
     /**
      * @require rigidity > 0
@@ -108,10 +72,6 @@ public class SpringLayouter extends AbstractLayouter {
             this.rigidity = rigidity;
         }
     }
-//
-//    public float getRigidity() {
-//        return rigidity;
-//    }
 
     /**
      * Starts layouting in a parallel thread; or stops the current layouter thread if one is
@@ -187,19 +147,6 @@ public class SpringLayouter extends AbstractLayouter {
     private boolean isRunning() {
         return relaxer != null && relaxer.isAlive();
     }
-//
-//    protected int getLineStyle(EdgeView edgeView) {
-//        // the number of extra points, besides start and end
-//        int extraPointCount = edgeView.getPoints().size() - 2;
-//        switch (extraPointCount) {
-//        case 0:
-//            return GraphConstants.STYLE_ORTHOGONAL;
-//        case 2:
-//            return GraphConstants.STYLE_BEZIER;
-//        default:
-//            return GraphConstants.STYLE_SPLINE;
-//        }
-//    }
 
     /**
      * Sets the action name to reflect the duration.
@@ -497,13 +444,6 @@ public class SpringLayouter extends AbstractLayouter {
      * @invariant rigidity > 0
      */
     private float rigidity = DEFAULT_RIGIDITY;
-//
-//    /**
-//     * The currently set duration of the temporary layout action. A value of 0 means to layout untol
-//     * stable.
-//     * @invariant duration >= 0
-//     */
-//    private int duration;
 
     /**
      * Timer task for ending the current layout process. If null, no such task is scheduled.
@@ -525,11 +465,6 @@ public class SpringLayouter extends AbstractLayouter {
      * Default time interval for this layout action (in ms).
      */
     public static final int DEFAULT_DURATION = 2000;
-//
-//    /**
-//     * The timer that schedules the stopping of layout processes.
-//     */
-//    private static final java.util.Timer layoutTimer = new java.util.Timer(true);
 
     /**
      * An epsilon float value, used as border case to decide whether a value is "almost zero".

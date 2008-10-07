@@ -97,14 +97,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
 		setEnabled(true);
 		refreshStatus();
 	}
-//
-//	/**
-//	 * Callback method to create a fresh JModel for a given lts. If the lts is
-//	 * <code>null</code>, returns {@link #EMPTY_JMODEL}.
-//	 */
-//	protected LTSJModel createJModel(LTS lts) {
-//		return lts == null ? EMPTY_JMODEL : LTSJModel.newInstance(lts, getOptions());
-//	}
 
     /**
      * Sets the LTS emphasis attributes for the LTS node corresponding to the

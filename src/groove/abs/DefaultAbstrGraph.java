@@ -437,21 +437,6 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	/** The hash code. Is computed on construct time. */
 	private int hashCode;
 
-
-	
-//	/** Constructor to be used by the extending classes.
-//	 * Clones the type map.
-//	 * @param sg
-//	 */
-//	protected DefaultAbstractGraph (DefaultAbstractGraph sg) {
-//		super(sg);
-//		this.family = sg.family;
-//		this.precision = sg.precision;
-//		this.type = new HashMap<Node, NodeType>(sg.type);
-//	}
-	
-
-
 	@Override
 	public String toString () {
 		String result = super.toString();
@@ -704,8 +689,4 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		
 	}
 	
-	
-	
-
-
 }

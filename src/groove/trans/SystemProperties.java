@@ -27,27 +27,9 @@ public class SystemProperties extends java.util.Properties {
 	public void setFixed() {
 		fixed = true;
 	}
-//	
-//    /** 
-//     * Indicates if the rule system is attributed, according to the
-//     * properties. 
-//     * @see #ATTRIBUTES_KEY
-//     * @see #ATTRIBUTES_YES
-//     */
-//    public boolean isAttributed() {
-//    	String attributed = getProperty(SystemProperties.ATTRIBUTES_KEY);
-//    	return attributed != null && attributed.equals(SystemProperties.ATTRIBUTES_YES);
-//    }////        /**     * Indicates if the LTS labels should contain transition parameters.
+    /**     * Indicates if the LTS labels should contain transition parameters.
      * Default value: <code>false</code>.     */    public boolean isUseParameters() {    	String params = getProperty(SystemProperties.PARAMETERS_KEY);    	return params != null && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));    }
-        /**     * Indicates if the LTS labels should be surrounded by angular brackets.     * Default value: <code>false</code>.     */    public boolean isShowTransitionBrackets() {    	String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);    	return property != null && (new Boolean(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));    }            /** Sets the {@link #PARAMETERS_KEY} property to the given value **/    public void setUseParameters(boolean useParameters) {    	setProperty(PARAMETERS_KEY, ""+useParameters);    }//    //    
-//    /**
-//     * Sets the attributed property to a given value.
-//     * @param attributed <code>true</code> if the rules have attributes
-//     */
-//    public void setAttributed(boolean attributed) {
-//    	setProperty(ATTRIBUTES_KEY, attributed ? ATTRIBUTES_YES : ATTRIBUTES_NO);
-//    }
-
+        /**     * Indicates if the LTS labels should be surrounded by angular brackets.     * Default value: <code>false</code>.     */    public boolean isShowTransitionBrackets() {    	String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);    	return property != null && (new Boolean(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));    }            /** Sets the {@link #PARAMETERS_KEY} property to the given value **/    public void setUseParameters(boolean useParameters) {    	setProperty(PARAMETERS_KEY, ""+useParameters);    }
     /** 
      * Returns a list of control labels, according to the {@link #CONTROL_LABELS_KEY}
      * property of the rule system.
@@ -182,29 +164,6 @@ public class SystemProperties extends java.util.Properties {
     	String result = getProperty(RHS_AS_NAC_KEY);
     	return result != null && new Boolean(result);
     }
-    
-//
-//    /** 
-//     * Returns a list of graph property names, according to the {@link #GRAPH_PROPERTIES}
-//     * property of the rule system.
-//     * @see #GRAPH_PROPERTIES
-//     */
-//    public List<String> getGraphProperties() {
-//    	String graphProperties = getProperty(GRAPH_PROPERTIES);
-//    	if (graphProperties == null) {
-//    		return Collections.emptyList();
-//    	} else {
-//    		return Arrays.asList(graphProperties.split("\\s"));
-//    	}
-//    }
-//
-//    /** 
-//     * Sets the graph properties property.
-//     * @see #GRAPH_PROPERTIES
-//     */
-//    public void setGraphProperties(List<String> graphProperties) {
-//    	setProperty(GRAPH_PROPERTIES, Groove.toString(graphProperties.toArray(), "", "", " "));
-//    }
 
 	/** 
 	 * Before calling the super method, tests if the properties are fixed
@@ -345,19 +304,7 @@ public class SystemProperties extends java.util.Properties {
      * for optimal performance, presumably because they occur frequently.
 	 */
 	static public final String COMMON_LABELS_KEY = "commonLabels";
-//	/** 
-//	 * Property that determines if the graph grammar uses attributes.
-//	 * @see #ATTRIBUTES_YES
-//	 */
-//	static public final String ATTRIBUTES_KEY = "attributeSupport";
-//	/**
-//	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are used.
-//	 */
-//	static public final String ATTRIBUTES_YES = "1";
-//	/**
-//	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are not used.
-//	 */
-//	static public final String ATTRIBUTES_NO = "0";
+
 	/** (User) Property that holds the grammar history (max 10 separated by ',') **/ 
 	static public final String HISTORY_KEY = "open_history";		/** Property that determines if transition parameters are included	 *  in the LTS transition labels	 */	static public final String PARAMETERS_KEY="transitionParameters";		/** Value of {@link #PARAMETERS_KEY} that means parameters are used **/	static public final String PARAMETERS_YES = "1";		/** Value of {@link #PARAMETERS_KEY} that means parameters are not used **/	static public final String PARAMETERS_NO = "0";		/** Property that determines if transition parameters are included	 *  in the LTS transition labels	 */	static public final String TRANSITION_BRACKETS_KEY="transitionBrackets";		/** Value of {@link #TRANSITION_BRACKETS_KEY} that means transition brackets are included **/	static public final String TRANSITION_BRACKETS_YES = "1";		/** Value of {@link #TRANSITION_BRACKETS_KEY} that means transition brackets are not included **/	static public final String TRANSITION_BRACKETS_NO = "0";				
 	/** 

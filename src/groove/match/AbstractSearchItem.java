@@ -150,19 +150,6 @@ abstract class AbstractSearchItem implements SearchItem {
             this.search = search;
             this.host = search.getHost();
         }
-//
-//        /** Returns the search associated with this record. */
-//        final Search getSearch() {
-//            return search;
-//        }
-//        
-//        /** 
-//         * Returns the (partial) result of the search associated with this record.
-//         * Convenience method for <code>getSearch().getResult()</code>.
-//         */
-//        final Graph getTarget() {
-//            return target;
-//        }
         
         /** The underlying search for this record. */
         final Search search;

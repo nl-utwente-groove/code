@@ -1052,13 +1052,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         SPORule.anchorFactory = anchorFactory;
     }
 
-//    /**
-//     * Returns the total time doing transformation-related computations.
-//     */
-//    static public long getTransformingTime() {
-//        return DefaultScenario.reporter.getTotalTime(DefaultScenario.GET_DERIVATIONS) - getMatchingTime();
-//    }
-    
     /**
      * Returns the total time doing matching-related computations.
      * This includes time spent in certificate calculation.

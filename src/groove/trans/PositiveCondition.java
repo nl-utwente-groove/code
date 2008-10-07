@@ -157,23 +157,6 @@ abstract public class PositiveCondition<M extends Match> extends AbstractConditi
             addComplexSubCondition((AbstractCondition<?>) condition);
         }
     }
-//    
-//    /** Adds a negative edge, i.e., an edge embargo, to this condition. */
-//    protected void addNegation(Edge negativeEdge) {
-//        if (negations == null) {
-//            negations = new HashSet<Edge>();
-//        }
-//        negations.add(negativeEdge);
-//    }
-//
-//    /** Adds an injection constraint, i.e., a merge embargo, to this condition. */
-//    protected void addInjection(Set<? extends Node> injection) {
-//    	assert injection.size() == 2 : String.format("Injection %s should have size 2", injection);
-//        if (injections == null) {
-//            injections = new HashSet<Set<? extends Node>>();
-//        }
-//        injections.add(injection);
-//    }
 
     /** 
 	 * Adds a graph condition to the complex sub-conditions, which are
@@ -201,35 +184,10 @@ abstract public class PositiveCondition<M extends Match> extends AbstractConditi
      * @return a match constructed on the basis of <code>map</code>
      */
     abstract M createMatch(VarNodeEdgeMap matchMap);
-//    
-//	/**
-//     * Returns the map from nodes to sets of injectively matchable nodes.
-//     */
-//    public Set<Set<? extends Node>> getInjections() {
-//        return injections;
-//    }
-//
-//    /**
-//     * Returns the map from lhs nodes to incident negative edges.
-//     */
-//    public Set<Edge> getNegations() {
-//        return negations;
-//    }
     
     /** 
      * The sub-conditions that are not edge or merge embargoes.
      */
     private Collection<AbstractCondition<?>> complexSubConditions;
-//
-//    /**
-//     * Mapping from codomain nodes to sets of other codomain nodes with which
-//     * they must be matched injectively.
-//     */
-//    private Set<Set<? extends Node>> injections;
-//    
-//    /**
-//     * Mapping from codomain nodes to single or sets of incident codomain edges
-//     * that must be absent in the matching.
-//     */
-//    private Set<Edge> negations;
+
 }

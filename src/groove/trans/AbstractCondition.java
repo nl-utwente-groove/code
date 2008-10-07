@@ -86,14 +86,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	public SystemProperties getProperties() {
 		return properties;
 	}
-//
-//	/** Sets the root map of this condition. */
-//	void setRootMap(NodeEdgeMap rootMap) {
-//		testFixed(false);
-//		assert rootMap != null : String.format("Root map already set to %s",
-//				rootMap);
-//		this.rootMap = rootMap;
-//	}
 
 	public NodeEdgeMap getRootMap() {
 		return rootMap;

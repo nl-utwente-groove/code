@@ -93,38 +93,4 @@ public class RandomizedIterator<T> implements Iterator<T> {
 	 * you want all explorations of a strategy to be the same.
 	 */
 	private static final Random random = new Random();
-	
-// TESTING METHOD	
-//	public static void main (String[] args) {
-//		
-//		ArrayList<Integer> list = new ArrayList<Integer>(5);
-//		for (int i = 0; i < 5; i++) {
-//			list.add(i);
-//		}
-//		
-//		for (int i = 0; i < 10; i++) {
-//			RandomizedIterator<Integer> it = new RandomizedIterator<Integer>(list);
-//			String s = new String();
-//			while (it.hasNext()) {
-//				s += it.next().toString() + " ";
-//			}
-//			System.out.println(s + "\n");
-//		}
-//		
-//		System.out.println("\n-------------------------------\n");
-//		for (int i = 0; i < 5; i++) {
-//			String s = new String();
-//			RandomizedIterator<Integer> iter = new RandomizedIterator<Integer>(list);
-//			s += iter.next().toString() + " ";
-//			s += iter.next().toString() + " ";
-//			iter.removeFromIterator(list.get(2));
-//			s += iter.next().toString() + " ";
-//			s += iter.next().toString() + " ";
-//			if (iter.hasNext()) {
-//				s += iter.next().toString() + " ";
-//			}
-//			System.out.println(s + "\n");	
-//		}
-//		
-//	}
 }

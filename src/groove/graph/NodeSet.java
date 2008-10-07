@@ -74,22 +74,4 @@ final public class NodeSet extends TreeHashSet<Node> {
 
 	/** The resolution of the tree for a node set. */
     static private final int NODE_RESOLUTION = 4;
-//    /** The equator for nodes, which looks at the node number. */
-//	static private final Equator<Node> NODE_EQUATOR = new Equator<Node>() {
-//        public boolean allEqual() {
-//            return true;
-//        }
-//
-//        public boolean areEqual(Node newKey, Node oldKey) {
-//            return true;
-//        }
-//
-//        public int getCode(Node key) {
-//            if (key instanceof DefaultNode) {
-//                return ((DefaultNode) key).getNumber();
-//            } else {
-//                return key.hashCode();
-//            }
-//        }	    
-//	};
 }

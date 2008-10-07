@@ -62,7 +62,6 @@ public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
 			return super.getCache(ruleInterrupted, isRandomized);
 		}
 		ExploreCache result = this.explCacheCache.get(getAtState());
-		//ExploreCache result = null;
 		if (result == null) {
 			result = super.getCache(ruleInterrupted, isRandomized);
 			this.explCacheCache.put(getAtState(), result);

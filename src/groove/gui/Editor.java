@@ -1538,28 +1538,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             new AboutBox(getFrame());
         }
     }
-//
-//    /**
-//     * An action to close the editor, used if the editor is invoked in the
-//     * context of some other frame.
-//     */
-//    private class CloseEditorAction extends AbstractAction {
-//        /** Constructs an instance of the action. */
-//        public CloseEditorAction() {
-//            super(Options.CLOSE_ACTION_NAME);
-//        }
-//        
-//        /** 
-//         * Calls up a preview if the edited graph has syntax errors, then
-//         * hides and disposes the frame.
-//         */
-//        public void actionPerformed(ActionEvent e) {
-//        	if (! createAspectGraph().hasErrors() || handlePreview(null)) {
-//    			getRootComponent().setVisible(false);
-//    			getFrame().dispose();
-//        	}
-//		}
-//    }
 
     private class EditPropertiesAction extends AbstractAction {
         /** Constructs an instance of the action. */
@@ -1851,29 +1829,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 			lastSaveFilter = getFileFilter();
 			return result;
 		}
-//
-//		/**
-//		 * Returns the name of the file to be saved. This is derived from the
-//		 * model name.
-//		 */
-//		private File getSaveFile() {
-////            String graphName = getModelName();
-////			return graphName == null ? null : new File(graphName);
-//			return currentFile;
-//		}
-//
-//		@Override
-//		public void setFileFilter(FileFilter filter) {
-//			super.setFileFilter(filter);
-////			setSelectedFile(getSaveFile());
-//			if (listenToFilterChanges) {
-//				if (isRuleFilter(filter)) {
-//					setRole(Groove.RULE_ROLE);
-//				} else if (isStateFilter(filter)) {
-//					setRole(Groove.GRAPH_ROLE);
-//				}
-//			}
-//		}
 
 		/**
          * Sets the file filters to either those that accept graphs, or rules.
@@ -1900,12 +1855,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         private boolean isRuleFilter(FileFilter filter) {
             return filter == getRuleFilter();
         }
-//
-//        /** Retrieves the directory file from the #currentFile */
-//        private File getCurrentDir() {
-//            return getCurrentFile() == null ? new File(Groove.WORKING_DIR) : getCurrentFile().getAbsoluteFile().getParentFile();
-//        }
-//        
+
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getStateFilter() {
         	if (stateFilter == null) {

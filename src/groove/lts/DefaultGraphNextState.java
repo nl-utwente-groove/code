@@ -292,22 +292,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 			return super.createInTransitionStub(source, event, addedNodes);
 		}
 	}
-//    
-//	/**
-//	 * Applies the underlying rule of this derived state to a given target.
-//	 */
-//	protected void applyRule(DeltaTarget target) {
-//		// if the basis graph cache is cleared before rule application, 
-//		// clear it again afterwards
-//		boolean sourceCacheCleared = source.isCacheCleared();
-//		// do the actual rule application
-//		getDelta().applyDelta(target);
-//	    // clear the basis cache
-//	    if (sourceCacheCleared) {
-//	    	source.clearCache();
-//	    }
-//	}
-//	
+
 	/**
 	 * The rule of the incoming transition with which this state was created.
 	 */

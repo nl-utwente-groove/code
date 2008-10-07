@@ -203,18 +203,7 @@ class StateCache {
     	}
     	return result;
     }
-//    
-//    /**
-//     * Converts a frozen graph representation into a delta applier.
-//     * It is assumed that the frozen graph representation contains all nodes
-//     * and edges of the graph in a single array.
-//     * @param elements the frozen graph representation; non-<code>null</code>
-//     * @return a delta applier based on <code>elements</code>
-//     */
-//    private DeltaApplier computeFrozenDelta(final Element[] elements) {
-//		return new FrozenDeltaApplier(elements);
-//    }
-//    
+
     /**
 	 * Lazily creates and returns a mapping from the events to the target states
 	 * of the currently stored outgoing transitions of this state.

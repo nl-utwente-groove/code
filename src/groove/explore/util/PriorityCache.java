@@ -167,13 +167,6 @@ public class PriorityCache implements ExploreCache {
 		//this.lastPriority = true;
 	}
 	
-	
-	
-//	/** Set to a negative value when no more need to iterate over priorities. */
-//	private int currPriority;
-//	/** Set to true when a match is found in the current priority. */
-//	private boolean lastPriority = false;
-	
 	/** Encodes the current priority and whether a match is found for the current priority. 
 	 * A positive value N codes priority N-1 and no match found.
 	 * A negative value -N codes priority N-1 and match found.
