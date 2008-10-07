@@ -106,18 +106,6 @@ public class EditorJModel extends JModel {
         setProperties(jModel.getProperties());
         setName(jModel.getName());
     }
-//
-//    /**
-//     * Creates a new editor model as a copy of a given jmodel, with a given name. 
-//     * The name may be <tt>null</tt> if the graph is to be anonymous.
-//     * @param name the name of the new j-model.
-//     * @param jModel the model to be copied.
-//     * @ensure <tt>getName().equals(name)</tt>
-//     */
-//    public EditorJModel(String name, GraphJModel jModel) {
-//        this(jModel);
-//        setName(name);
-//    }
 
     /**
 	 * Replaces the content of this model by that of another.

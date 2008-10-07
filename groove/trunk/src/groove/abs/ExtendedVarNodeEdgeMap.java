@@ -25,7 +25,7 @@ import java.util.Map;
 
 // Contains an origin map (VarNodeEdgeMap) together with a pre-processed information on the number of pre-images of all nodes in the codomain
 
-/** Extends a VarNodeEdgeMap with a the possibility to retriev the number of pre-images for nodes
+/** Extends a VarNodeEdgeMap with a the possibility to retrieve the number of pre-images for nodes
  * 
  * @author Iovka Boneva
  * @version $Revision $

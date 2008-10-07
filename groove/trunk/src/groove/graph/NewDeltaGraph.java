@@ -212,24 +212,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		DefaultEdgeSet result = nodeEdgeMap().get(node);
 		return (ALIAS_SETS || copyData) && result != null ? result : createEdgeSet(result);
 	}
-//
-//	/** 
-//	 * Computes the node-to-edgeset map from the node and edge sets.
-//	 * This method is only used if the map could not be obtained from the basis.
-//	 */
-//	private Map<Node, Set<Edge>> computeNodeEdgeMap() {
-//		Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
-//		for (Node node: nodeSet()) {
-//			result.put(node, createEdgeSet(null));
-//		}
-//		for (Edge edge: edgeSet()) {
-//			for (int i = 0; i < edge.endCount(); i++) {
-//				result.get(edge.end(i)).add(edge);
-//			}
-//		}
-//		return result;
-//	}
-//	
+	
 	/** 
 	 * Initialises all the data structures, if this has not yet been done.
 	 */

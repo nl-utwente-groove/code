@@ -185,19 +185,6 @@ final public class SplitTreeIntSet implements IntSet {
     private boolean isEmpty(boolean keySign) {
     	return keySign ? posStoreSize == 0 : negStoreSize == 0;
     }
-//    
-//    /**
-//     * Inserts a new keys at the appropriate place in the {@link #keys} array,
-//     * and returns the index of the new key.
-//     * The index is always positive.
-//     * @param key the key to be inserted
-//     * @return the index in {@link #keys} where <code>key</code> is stored
-//     */
-//    private int newKey(int key) {
-//    	size++;
-//    	keys[size] = key;
-//    	return size;
-//    }
     
     /**
      * The currently reserved number of positions in {@link #posStore}.
@@ -211,10 +198,6 @@ final public class SplitTreeIntSet implements IntSet {
      * The current size of the entire set.
      */
     private int size;
-//    /**
-//     * The actual keys.
-//     */
-//    private int[] keys;
     /**
      * Array holding the tree structure fo the positive keys
      */

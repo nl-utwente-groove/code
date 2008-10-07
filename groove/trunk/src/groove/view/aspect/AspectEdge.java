@@ -59,18 +59,6 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,Aspec
     	this.parseData = parseData;
 		testLabel();
     }
-//    
-//    /** Specialises the return type. */
-//	@Override
-//	public AspectNode target() {
-//		return (AspectNode) super.target();
-//	}
-//
-//    /** Specialises the return type. */
-//	@Override
-//	public AspectNode source() {
-//		return (AspectNode) super.source();
-//	}
 
 	public AspectValue getValue(Aspect aspect) {
     	AspectValue result = getAspectMap().get(aspect);
@@ -161,51 +149,8 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,Aspec
 			aspect.testLabel(label(), declaredAspectValue, inferredValue);
 		}
 	}
-//	
-//	/**
-//     * Computes an inferred aspect map by combining the explicitly declared edge
-//     * values with the aspect values inferred from the source and target nodes.
-//     * @param parseData explicitly declared aspect data
-//     */
-//    final protected AspectMap computeInferredAspectMap(AspectParseData parseData) throws FormatException {
-//    	AspectMap result = new AspectMap();
-//    	AspectMap edgeMap = parseData.getAspectMap();
-//    	AspectMap sourceMap = source().getAspectMap();
-//    	AspectMap targetMap = target().getAspectMap();
-//    	for (Aspect aspect: Aspect.allAspects) {
-//    		AspectValue inferredValue = getInferredValue(aspect, edgeMap, sourceMap, targetMap);
-//    		if (inferredValue != null) {
-//				result.add(inferredValue);
-//			}
-//    	}
-//    	return result;
-//    }
-//
-//    /**
-//     * Returns an inferred edge aspect value.
-//     * @param aspect the aspect for which we want the inferred value
-//     * @param edgeMap the map of explicitly declared aspect values
-//     * @param sourceMap map of aspect values for the source node
-//     * @param targetMap map of aspect values for the target node
-//     * @return the maximum aspect value for <code>aspect</code>, 
-//     * according to {@link Aspect#getMax(AspectValue[])}.
-//     * @throws FormatException if the explicitly declared aspect value is overruled
-//     */
-//    private AspectValue getInferredValue(Aspect aspect, AspectMap edgeMap, AspectMap sourceMap, AspectMap targetMap) throws FormatException {
-//		AspectValue result;
-//		AspectValue edgeValue = edgeMap.get(aspect);
-//		AspectValue sourceValue = sourceMap.get(aspect);
-//		AspectValue sourceInference = sourceValue == null ? null : sourceValue.sourceToEdge();
-//		AspectValue targetValue = targetMap.get(aspect);
-//		AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
-//		result = aspect.getMax(edgeValue, sourceInference, targetInference);
-//		if (edgeValue != null && edgeValue != result) {
-//			throw new FormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
-//		}
-//		return result;
-//    }
-//    
-    /** Callback factory method. */
+
+	/** Callback factory method. */
     AspectParseData createParseData(Label label, AspectValue[] values) throws FormatException {
     	AspectParseData result = new AspectParseData(computeDeclaredAspectMap(values), label);
     	result.addInferences(source().getAspectMap(), target().getAspectMap());
@@ -232,9 +177,4 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,Aspec
      * The aspect information of the label, set at construction time.
      */
     private final AspectParseData parseData;
-//    /**
-//     * The aspect map inferred from the aspect label and the source
-//     * and target node aspects.
-//     */
-//    private final AspectMap aspectMap;
 }

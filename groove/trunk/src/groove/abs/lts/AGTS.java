@@ -190,7 +190,6 @@ public class AGTS extends GTS {
 
 		InvalidState () {
 			super(DefaultAbstrGraph.INVALID_AG);
-			//super.setStateNumber();
 		}
 		
 		void removeStateNumber() {

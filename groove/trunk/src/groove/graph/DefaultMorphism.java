@@ -134,26 +134,6 @@ public class DefaultMorphism extends AbstractMorphism {
         testNotFixed();
         return super.removeEdge(key);
     }
-//    
-//    /**
-//     * Callback method to create a fixed morphism from a simulation.
-//     * The underlying element map of the morphism will be derived from the
-//     * key-to-singular-image mapping of the simulation.  
-//     * @param sim the simulation to underly the morphism
-//     * @see #getTotalExtension()
-//     * @see #getTotalExtensions()
-//     * @see #getTotalExtensionsIter()
-//     */
-//    protected Morphism createMorphism(final Simulation sim) {
-//        Morphism result = new DefaultMorphism(sim.dom(), sim.cod()) {
-//        	@Override
-//            protected NodeEdgeMap createElementMap() {
-//                return sim.getSingularMap();
-//            }
-//        };
-//        result.setFixed();
-//        return result;
-//    }
 
 	/**
      * This implementation returns a new <tt>DefaultMorphism</tt>,

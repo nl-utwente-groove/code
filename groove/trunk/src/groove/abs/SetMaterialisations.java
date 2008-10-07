@@ -110,25 +110,6 @@ public class SetMaterialisations {
 			}
 			data.putAll(addToData);
 			
-			
-//			// For all couple (cn,an) in origin and such that cn is not in the central nodes,
-//			// compute the corresponding type if it was not yet computed
-//			for (Map.Entry<Node, Graph> entry : this.concrPart.neigh().entrySet()) {
-//				Node n = entry.getKey();
-//				if (! this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) {
-//					Graph neigh = entry.getValue();
-//					GraphPattern type = this.abstrPart.typeOf(originMap.getNode(n));
-//					ArrayList<MapPattern> theTypes = new ArrayList<MapPattern>();
-//					this.data.put(CNN.cnn(n, originMap.getNode(n)), theTypes);
-//					for (VarNodeEdgeMap m : type.possibleTypings(neigh, n, this.options.SYMMETRY_REDUCTION)) {
-//						theTypes.add(new MapPattern(m));
-//					}
-//					// if no types were found, then this origin mapping is not possible
-//					if (theTypes.size() == 0) {
-//						throw new UnsupportedOperationException();
-//					}
-//				}
-//			}
 		}
 	}
 	
@@ -258,7 +239,7 @@ public class SetMaterialisations {
 						res.addEdgeBetweenPatterns(e.source(), e.label(), nodeTypes.typeOf(e.target()));
 					}
 					
-					// o Add the computed abstract graph, whenever it is not eleminated because without concretisations
+					// o Add the computed abstract graph, whenever it is not eliminated because without concretisations
 					if (! res.isWithoutConcretisation()) { result.add(res); }
 				}
 			}
@@ -291,168 +272,6 @@ public class SetMaterialisations {
 			ag.addEdgeBetweenPatterns(typing.typeOf(e.source()), e.label(), typing.typeOf(e.target()));
 		}
 	}
-	
-	
-//	/** Computes the set of abstract graphs result of the transformation.
-//	 * @require {@link #computeSet()} and {@link #transformAux(RuleApplication)} have been called previously.
-//	 * @return The set of abstract graphs result of the transformation.
-//	 */
-//	private Collection<AbstrGraph> transfResults (NodeFactory nodeFactory) {
-//		// for all possible origin
-//		//    for all possible combination of typings
-//		// 		  construct the new abstract part by updating multiplicities
-//		//        construct links (several link configurations per combination of typings are possible)
-//		// 	      merge the new abstract part with the new concrete part 
-//		//             - add the new types in the abstr part
-//		//             - add the edges structure
-//		Collection<AbstrGraph> result = new ArrayList<AbstrGraph>();
-//		
-//		// common used later on
-//		Collection<Node> dist1Nodes = this.concrPart.nodesAtDist(1);
-//		
-//		for (final ExtendedVarNodeEdgeMap origin : this.origins) {
-//		
-//			// Collects nodes that have 0 multiplicity at some time, and thus have to be removed at a later point 
-//			Collection<Node> collectZeroMult = new ArrayList<Node>();
-//			
-//			
-//			DefaultAbstrGraph newAbstrPart = newAbstractPart(origin);
-//			// enrich the new abstract part with new summary nodes for added and read nodes
-//			for (Map.Entry<Node, GraphPattern> entry : this.centerType.entrySet()) {
-//				GraphPattern pat = entry.getValue();
-//				if (newAbstrPart.addTo(pat, 1)) {
-//					// a node of type patN existed with 0 multiplicity
-//					collectZeroMult.add(newAbstrPart.nodeFor(pat));
-//				}
-//				//newAbstrPart.addTo(entry.getValue(), 1);
-//			}
-//			
-//			// enumerate combinations of typing morphisms for the neighbourhoods of the non central nodes
-//			TupleIterator.Mapping<Node, MapPattern> mappingIt = new TupleIterator.Mapping<Node, MapPattern>() {
-//				public Iterator<MapPattern> itFor(Node n) {
-//					return SetMaterialisations.this.data.get(CNN.cnn(n, origin.getNode(n))).iterator();
-//				}
-//				public Collection<Node> keySet() { return SetMaterialisations.this.concrPart.neigh().keySet(); }
-//				public int size() { return keySet().size(); }
-//			};
-//			TupleIterator<Node, MapPattern> it = new TupleIterator<Node, MapPattern>(mappingIt);
-//			
-//			while (it.hasNext()) {
-//				transformResultForTyping(it.next(), origin, newAbstrPart, collectZeroMult, dist1Nodes, result, nodeFactory);
-//			}
-//		}
-//		return result;
-//	}
-	
-//	/** Auxiliary method for {@link #transfResults(NodeFactory)}. 
-//	 * @param mapPat The typing
-//	 * @param origin The origin map from the concrete part into the abstr part
-//	 * @param newAbstrPart The partially constructed new abstract part
-//	 * @param collectZeroMult The nodes that have zero multiplicity and have to be removed at a letter point
-//	 * @param dist1Nodes The nodes in the concrete part at distance one from the center
-//	 * @param accuResult Accumulates the constructed abstract graphs
-//	 * @param nodeFactory A factory for new nodes.
-//	 * */
-//	private void transformResultForTyping (final Map<Node,MapPattern> mapPat, 
-//											final ExtendedVarNodeEdgeMap origin,
-//											DefaultAbstrGraph newAbstrPart,
-//											Collection<Node> collectZeroMult,
-//											Collection<Node> dist1Nodes,
-//											Collection<AbstrGraph> accuResult,
-//											NodeFactory nodeFactory) {
-//		// 		  construct the new abstract part by updating multiplicities
-//		//        construct links (several link configurations per combination of typings are possible)
-//		//        update the new abstract part, by adding the new summary nodes
-//		//        construct new abstract graph
-//		
-//		// Collects nodes that have 0 multiplicity at some time, and thus have to be removed at a later point 
-//		Collection<Node> collectZeroMultLocal = new ArrayList<Node>();
-//		collectZeroMultLocal.addAll(collectZeroMult);
-//		
-//		
-//		// Update the abstract part w.r.t. the new types coming from non center nodes
-//		// This is independent on the variation due to different possible links
-//		DefaultAbstrGraph abstrPartBase = new DefaultAbstrGraph(newAbstrPart);
-//		for (Node n : mapPat.keySet()) {
-//			GraphPattern patN = mapPat.get(n).getPattern();
-//			if (abstrPartBase.addTo(patN, 1)) {
-//				// a node of type patN existed with 0 multiplicity
-//				collectZeroMultLocal.add(abstrPartBase.nodeFor(patN));
-//			}
-//			// abstrPartBase.addTo(mapPat.get(n).getPattern(), 1);
-//		}
-//		
-//		// Compute the possible links. 
-//		ArrayList<Set<Edge>> possibleSrcLinks = new ArrayList<Set<Edge>>();
-//		ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
-//		ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
-//		ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-//		possibleLinks(origin, mapPat, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
-//		
-//		// Now 0 multiplicity nodes can be removed from the abstract part
-//		
-//		// IOVKA It seems that the 0 multiplicity nodes can be simply removed, without bothering about adjacent edges
-//		// It can be shown that all "possible" adjacent edges have been added as links.
-//		// (An edge is not "possible" means that it does not comply to the typing defined by the origin map and the subtypings.)
-//		// Let N be a 0 multiplicity node. The proof is based on the distance of concrete nodes mapped into N to the center of the concrete part, and the fact that the center and the distance 1 nodes have had their neighbourhood computed
-//
-//		ArrayList<Node> toRemove = new ArrayList<Node>();
-//		Iterator<? extends Node> nodeIt = this.abstrPart.nodeSet().iterator();  // only old nodes may have 0 multiplicity
-//		while (nodeIt.hasNext()) {
-//			Node n = nodeIt.next();
-//			if (Abstraction.MULTIPLICITY.isZero(abstrPartBase.multiplicityOf(n))) {
-//				toRemove.add(n);
-//				//abstrPartBase.removeNode(n);
-//				//nodeIt.remove();
-//			}
-//		}
-//		for (Node n : toRemove) { abstrPartBase.removeNode(n); }
-//		
-//		// remove the edges adjacent to the the nodes that had 0 mult at some moment
-//		ArrayList<Edge> eToRemove = new ArrayList<Edge>();
-//		for (Node n : collectZeroMultLocal) {
-//			eToRemove.addAll(abstrPartBase.edgeSet(n));
-//		}
-//		for (Edge e : eToRemove) {
-//			abstrPartBase.removeEdge(e);
-//		}
-//		
-//		
-//		// Update the abstract part w.r.t. the concrete part
-//		ConcretePart.Typing nodeTypes = new ConcretePart.Typing () {
-//			public GraphPattern typeOf(Node n) {
-//				MapPattern t = mapPat.get(n);
-//				return t != null ? t.getPattern() : SetMaterialisations.this.centerType.get(n);
-//			}
-//		};
-//	
-//		Collection<Edge> notToRemove = new ArrayList<Edge>();
-//		addConcrToAbstr (abstrPartBase, this.newConcrPart, this.concrPart.neigh().keySet(), nodeTypes, notToRemove);
-//		
-//		// Enrich the base abstract part with links, in all possible ways
-//		for (int i = 0; i < possibleSrcLinks.size(); i++) {
-//			// Construct the abstract graph
-//			DefaultAbstrGraph finalAbstrGraph = new DefaultAbstrGraph(abstrPartBase);
-//			
-//			// Remove the edges in the abstract part that are now links
-//			for (Edge e : linkConsumedEdges.get(i)) {
-//				if (! notToRemove.contains(e)) { finalAbstrGraph.removeEdge(e); }
-//			}
-//
-//			for (Edge ee : possibleSrcLinks.get(i)) {
-//				DefaultEdge e = (DefaultEdge) ee;
-//				finalAbstrGraph.addEdge(DefaultEdge.createEdge(finalAbstrGraph.nodeFor(nodeTypes.typeOf(e.source())), e.label(), e.target()));
-//			}
-//			for (Edge ee : possibleTgtLinks.get(i)) {
-//				DefaultEdge e = (DefaultEdge) ee;
-//				finalAbstrGraph.addEdge(DefaultEdge.createEdge(e.source(), e.label(), finalAbstrGraph.nodeFor(nodeTypes.typeOf(e.target()))));
-//			}
-//			
-//			// Add it to result
-//			assert finalAbstrGraph.nodeSet().size() == abstrPartBase.nodeSet().size() : "Something get wrong, a new node was added.";
-//			accuResult.add(finalAbstrGraph);
-//		}
-//	}
 	
 	// --------------------------------------------------------------------------------------
 	// AUXILIARY ALGORITHMS
@@ -640,9 +459,6 @@ public class SetMaterialisations {
 		for (int i = 0; i < linkableNodes.size(); i++) {
 			Node node = linkableNodes.get(i);
 			Node imageN = images.get(i);
-//			if (zeroMultNodes.contains(imageN)) {
-//				continue;
-//			}
 			
 			// the srcLinks
 			for (Edge ee : this.abstrPart.edgeSet(imageN, Edge.SOURCE_INDEX)) {
@@ -865,10 +681,6 @@ public class SetMaterialisations {
 		void setPattern(GraphPattern pattern) { this.pattern = pattern; }
 		@Override
 		public String toString() {
-//			if (! SetMaterialisations.this.transformed) {
-//				return getMap().toString();
-//			}
-//			return "(* " + getMap().toString() + ", * ," +  getPattern().toString() +" *)" ;
 			return SetMaterialisations.this.transformed 
 					 ? "(* " + getMap().toString() + ", * ," +  getPattern().toString() +" *)"
 				     : getMap().toString();

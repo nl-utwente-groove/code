@@ -237,13 +237,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         }
         return result;
     }
-//
-//    /**
-//     * Returns an unmodifiable view upon the mapping from graph elements to j-graph cells.
-//     */
-//    public Map getJCellMap() {
-//        return Collections.unmodifiableMap(toJCellMap);
-//    }
 
     /**
      * Returns the set of {@link JCell}s associated with a given set of graph elements.
@@ -617,16 +610,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 		} 
         return result;
 	}
-//
-//	/** Returns an empty map if the cell is not visible. */
-//	@Override
-//	protected AttributeMap createTransientJAttr(JCell jCell) {
-//		if (jCell.isVisible()) {
-//			return super.createTransientJAttr(jCell);
-//		} else {
-//			return JAttr.INVISIBLE_ATTR;
-//		}
-//	}
 
 	/**
      * Sets the transient variables (cells, attributes and connections) to fresh (empty) initial
@@ -660,13 +643,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	boolean isShowNodeIdentities() {
 		return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
 	}
-//
-//	/**
-//	 * Changes the value of the show-aspects property.
-//	 */
-//	public final void setShowNodeIdentities(boolean showNodeIdentities) {
-//		this.showNodeIdentities = showNodeIdentities;
-//	}
 
     /**
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
@@ -674,14 +650,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	final boolean isShowAspects() {
 		return getOptionValue(Options.SHOW_ASPECTS_OPTION);
 	}
-//
-//	/**
-//	 * Changes the value of the show-aspects property.
-//	 */
-//	private final void setLocalOptions(boolean show) {
-//		this.showLocalAspects = show;
-//		this.showLocalValueNodes = show;
-//	}
 
 	/**
 	 * Indicates whether vertices can have their own labels. If false, j-vertex
@@ -719,17 +687,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
     private final List<JCell> addedJCells = new LinkedList<JCell>();
-//
-//	/** 
-//	 * Flag indicating that aspect prefixes should be included for nodes and edges.
-//	 * This overrides the value of {@link Options#SHOW_ASPECTS_OPTION}.
-//	 */
-//    private boolean showLocalAspects;
-//	/** 
-//	 * Flag indicating that value nodes should be included in the graph. 
-//	 * This overrides the value of {@link Options#SHOW_VALUE_NODES_OPTION}.
-//	 */
-//    private boolean showLocalValueNodes;
 
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.

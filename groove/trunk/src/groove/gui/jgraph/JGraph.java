@@ -392,17 +392,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         getLabelList().setEnabled(enabled);
         super.setEnabled(enabled);
     }
-//    
-//    /** Lazily creates the graph layout cache. */
-//    @Override
-//	public GraphLayoutCache getGraphLayoutCache() {
-//    	GraphLayoutCache result = super.getGraphLayoutCache();
-//    	if (result == null) {
-//    		result = createGraphLayoutCache();
-//    		setGraphLayoutCache(result);
-//    	}
-//    	return result;
-//	}
 
 	/**
 	 * Sets a graph UI that speeds up preferred size checking

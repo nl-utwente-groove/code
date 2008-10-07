@@ -58,19 +58,7 @@ public interface NodeRelation {
      * @ensure <tt>isRelated(edge.pre(), edge.post())</tt>.
      */
     boolean addRelated(Edge edge);
-//
-//    /**
-//     * Adds a pair of nodes to the relation.
-//     * The return value indicates if the pair was actually added 
-//     * or was already in the relation.
-//     * @param pre the pre-image of the pair to be added
-//     * @param post the post-image of the pair to be added
-//     * @return <tt>true</tt> if the pair was actually added, 
-//     * <tt>false</tt> if it was already in the relation.
-//     * @ensure <tt>isRelated(pre, post)</tt>.
-//     */
-//    boolean addRelated(Node pre, Node post);
-//    
+
     /**
      * Adds a set of pairs to the relation.
      * The return value indicates if any pair was actually added,
@@ -94,59 +82,6 @@ public interface NodeRelation {
      * @return <tt>true</tt> if the relation was changed as a result of this operation
      */
     boolean addSelfRelated(Collection<? extends Node> nodeSet);
-//    
-//    /**
-//     * Returns the collection of post-images to a given set of pre-images.
-//     * @see #getAllPostImages()
-//     * @see #getAllPreImages(Collection)
-//     */
-//    Set getAllPostImages(Collection preSet);
-//    
-//    /**
-//     * Returns the collection of all post-images in the relation.
-//     * @see #getAllPostImages(Collection)
-//     * @see #getAllPreImages()
-//     */
-//    Set getAllPostImages();
-//    
-//    /**
-//     * Returns the collection of pre-images to a given set of post-images.
-//     * @see #getAllPreImages()
-//     * @see #getAllPostImages(Collection)
-//     */
-//    Set getAllPreImages(Collection postSet);
-//    
-//    /**
-//     * Returns the collection of all pre-images in the relation.
-//     * @see #getAllPreImages(Collection)
-//     * @see #getAllPostImages()
-//     */
-//    Set getAllPreImages();
-//    
-//    /**
-//     * Returns the set of post-images to a given pre-image.
-//     * @see #getAllPostImages(Collection)
-//     */
-//    Set getPostImages(Node pre);
-//
-//    /**
-//     * Returns the set of pre-images to a given post-image.
-//     */
-//    Set getPreImages(Node post);
-//    
-//    /**
-//     * Indicates if this relation is injective, i.e., if every post-image is
-//     * related to at most one pre-image.
-//     * @see #isFunctional()
-//     */
-//    boolean isInjective();
-//    
-//    /**
-//     * Indicates if this relation is functional, i.e., if every pre-image is
-//     * related to at most one post-image.
-//     * @see #isInjective()
-//     */
-//    boolean isFunctional();
     
     /**
      * Indicates if there are no related elements in the relation.
@@ -209,27 +144,6 @@ public interface NodeRelation {
      */
     NodeRelation getAfter(NodeRelation other);
     
-//    /**
-//     * Has the effect of <tt>getAfter(EdgeBasedRelation)</tt>, but  modifies <tt>this</tt>.
-//     * @return <tt>this</tt>
-//     * @see #getAfter(EdgeBasedRelation)
-//     */
-//    EdgeBasedRelation doAfter(EdgeBasedRelation other);
-//    
-//    /**
-//     * Returns the conjunction of this relation with another.
-//     * Has no side-effects upon this relation itself.
-//     */
-//    NodeRelation getAnd(NodeRelation other);
-//    
-//    /**
-//     * Has the effect of <tt>getAnd(EdgeBasedRelation)</tt>, but  modifies <tt>this</tt>.
-//     * Returns <tt>true</tt> if this relation was changed as a result of the operation.
-//     * @return <tt>true</tt> if this relation was changed as a result of the operation
-//     * @see #getAnd(NodeRelation)
-//     */
-//    boolean doAnd(NodeRelation other);
-//    
     /**
      * Returns the disjunction of this relation with another.
      * Has no side-effects upon this relation itself.
@@ -278,11 +192,4 @@ public interface NodeRelation {
      * which <code>(post,pre)</code> is in this relation.
      */
     NodeRelation getInverse();
-//    
-//    /**
-//     * Returns the relation that is the negation of this one.
-//     * The new relation consists of all <code>(pre,post)</code> pairs 
-//     * that are not in this one.
-//     */
-//    NodeRelation getNegation();
 }

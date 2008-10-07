@@ -51,10 +51,6 @@ public class ProductTransition { //extends DefaultGraphTransition {
     	return graphTransition;
     }
 
-//    public BuchiTransition buchiTransition() {
-//    	return buchiTransition;
-//    }
-
     public BuchiGraphState source() {
     	return source;
     }
@@ -66,11 +62,6 @@ public class ProductTransition { //extends DefaultGraphTransition {
     public Rule rule() {
     	return graphTransition().getEvent().getRule();
     }
-
-//    public void setRule(Rule rule) {
-//    	this.rule = rule;
-//    	assert (rule.equals(graphTransition.getEvent().getRule())) : "Should be the same rule.";
-//    }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
 
@@ -112,11 +103,4 @@ public class ProductTransition { //extends DefaultGraphTransition {
 	public String toString() {
 		return source().toString() + "-->" + target.toString();
 	}
-	/**
-     * This implementation combines the hash codes of the rule and the anchor images.
-     */
-//	@Override
-//    protected int computeHashCode() {
-//        return System.identityHashCode(source) + System.identityHashCode(event);
-//    }
 }

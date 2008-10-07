@@ -79,15 +79,6 @@ public class BuchiGraphState extends AbstractGraphState {
 	}
 
 	/**
-	 * Returns the Buchi graph-state that is the parent of
-	 * this Buchi graph-state in the spanning tree of the exploration.
-	 * @return the spanning tree parent
-	 */
-//	public BuchiGraphState parent() {
-//		return parent;
-//	}
-
-	/**
 	 * Returns the graph-state component of the Buchi graph-state.
 	 * @return the graph-state component of the Buchi graph-state
 	 */
@@ -173,14 +164,6 @@ public class BuchiGraphState extends AbstractGraphState {
 		pocket = true;
 //		pocketStates++;
 	}
-
-	/**
-	 * Mark this state as a non-pocket state.
-	 */
-//	public void setNonPocket() {
-//		assert (pocket == 0) : "Can only set state to non-pocket once";
-//		pocket = ModelChecking.NO_POCKET;
-//	}
 
 	/**
 	 * Returns the iteration in which this state has been reached.
@@ -312,5 +295,4 @@ public class BuchiGraphState extends AbstractGraphState {
 		}
 	}
 
-//    public static int pocketStates = 0;
 }

@@ -84,25 +84,6 @@ public class GraphProperties extends Properties {
 		}
 		return result;
 	}
-//	
-//	/**
-//	 * Returns the name stored in this properties object, if any.
-//	 * The name is stored under key {@link #NAME_KEY}.
-//	 * @return The stored name, or <code>null</code> if there is none
-//	 */
-//	public String getName() {
-//		return getProperty(NAME_KEY);
-//	}
-//	
-//	/**
-//	 * Sets a name in this property object.
-//	 * The name is stored under key {@link #NAME_KEY}.
-//	 * @param name the name to be stored; non-<code>null</code>
-//	 * @return the previously stored name, or <code>null</code> if there was none
-//	 */
-//	public String setName(String name) {
-//		return (String) setProperty(NAME_KEY, name);
-//	}
 	
 	/**
 	 * Returns the priority stored in this properties object, if any.
@@ -219,61 +200,8 @@ public class GraphProperties extends Properties {
         }
         return oldVersion;
     }
-//
-//    /**
-//     * Retrieves the {@link #REG_EXPR_KEY} value in this properties object.
-//     * @return the current value for {@link #REG_EXPR_KEY}; if there is no value,
-//     * the method returns {@link #REG_EXPR_NONE}
-//     * @see #REG_EXPR_NONE
-//     * @see #REG_EXPR_BRACKETS
-//     */
-//    public int getRegExprVersion() {
-//        Object value = getProperty(REG_EXPR_KEY);
-//        if (value == null) {
-//            return 0;
-//        } else {
-//            return Integer.parseInt((String) value);
-//        }
-//    }
-//    
-//    /** 
-//     * Sets the {@link #REG_EXPR_KEY} property to a given value.
-//     * @param version the new remark; should be one of {@link #REG_EXPR_NONE} or
-//     * {@link #REG_EXPR_BRACKETS}
-//     * @return the previous value {@link #REG_EXPR_KEY}; if there is no value,
-//     * the method returns {@link #REG_EXPR_NONE}
-//     * @see #REG_EXPR_NONE
-//     * @see #REG_EXPR_BRACKETS
-//     */
-//    public int setRegExprVersion(int version) {
-//        if (!(version == REG_EXPR_NONE || version == REG_EXPR_BRACKETS)) {
-//            throw new IllegalArgumentException(String.format("Illegal version number %d", version));
-//        }  
-//        Object oldValue = setProperty(REG_EXPR_KEY, ""+version);
-//        if (oldValue == null) {
-//            return 0;
-//        } else {
-//            return Integer.parseInt((String) oldValue);
-//        }
-//    }
-//
-//    /**
-//     * Key for rule priorities. 
-//     * The corresponding value should be an integer.
-//     */
-//    static public final String REG_EXPR_KEY = "regexpr";
-//    /** 
-//     * Default value for the regular expression property, indicating there is no
-//     * explicit property stored. This implies the old-style encoding for regular expressions,
-//     * meaning any unquoted expression is parsed as a regular expression.
-//     */
-//    static public final int REG_EXPR_NONE = 0;
-//    /**
-//     * Value for the regular expression property indicating that bracketed strings
-//     * are parsed as regular expressions.
-//     */
-//    static public final int REG_EXPR_BRACKETS = 1;
-	/** 
+
+    /** 
 	 * Returns the priority property from a given graph.
 	 * The property is stored under {@link #PRIORITY_KEY}.
 	 * Yields {@link Rule#DEFAULT_PRIORITY} if the graph has no properties,
@@ -319,21 +247,6 @@ public class GraphProperties extends Properties {
             return properties.getRemark();
         }
     }
-//
-//    /** 
-//     * Returns the curly brackets property from a given graph.
-//     * The property is stored under {@link #VERSION_KEY}.
-//     * Yields <code>false</code> if the graph has no properties.
-//     * @see #getVersion()
-//     */
-//    static public boolean isCurly(GraphShape graph) {
-//        GraphProperties properties = GraphInfo.getProperties(graph, false);
-//        if (properties == null) {
-//            return false;
-//        } else {
-//            return properties.getVersion();
-//        }
-//    }
 
     /** 
      * Tests if a given object is a valid user-defined property key.

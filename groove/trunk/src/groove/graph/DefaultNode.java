@@ -42,23 +42,6 @@ public class DefaultNode implements Node {
     }
     
     /**     * FIXME: added this method as a temporary solution     * as there is no viable constructor (super()) while subclassing DefaultNode     * except by having your own node counter.       *      * See also: new DefaultEdge()     */    protected DefaultNode() {    	this.nodeNr = DefaultNode.nextExtNodeNr();    	this.hashCode = computeHashCode();    }
-////    // ---------------- Element and related methods ----------------------
-//
-//    public Node imageFor(GenericNodeEdgeMap elementMap) {
-//    	if( elementMap instanceof NodeEdgeMap ) {
-//    		return imageFor((NodeEdgeMap)elementMap);
-//    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
-//    		return imageFor((VarNodeEdgeMultiMap)elementMap);
-//    	} return null;
-//    }
-//    
-//    private Node imageFor(VarNodeEdgeMultiMap elementMap) {
-//        return elementMap.getNode(this).toArray(new Node[0])[0];
-//    }
-//
-//    private Node imageFor(NodeEdgeMap elementMap) {
-//        return elementMap.getNode(this);
-//    }
 
     // ----------------------------- OBJECT OVERRIDES -----------------------------
 

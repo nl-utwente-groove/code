@@ -76,7 +76,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
     private Scenario createScenario(Strategy strategy, Acceptor acceptor) {
     	DefaultScenario scenario = new DefaultScenario(strategy, acceptor);
-//    	scenario.setGTS(getGTS());
     	return scenario;
     }
     
@@ -93,7 +92,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         } else {
         	// try linear
         	Scenario sc = createScenario(new LinearStrategy(), new FinalStateAcceptor(new Result(1)));
-//        	sc.setState(getGTS().startState());
             sc.prepare(getGTS());
             Result scenarioResult = sc.play();
         	if( scenarioResult.done() ) {
@@ -125,7 +123,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         } else {
         	// try linear
         	Scenario scenatioResult = createScenario(strategy, new PropertyAcceptor(new MaximalStateProperty(), new Result(1)));
-//        	scenatioResult.setState(getGTS().startState());
             scenatioResult.prepare(getGTS());
             Result results = scenatioResult.play();
         	if( results.done() ) {
@@ -135,36 +132,14 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return result;
     }
     
-    /**
-	 * Returns the first "maximal" graph, i.e., that cannot evolve further,
-	 * where <i>first</i> means that it has the shortest path from the original
-	 * graph (as given by {@link #getBasis()}). The method will fail to
-	 * terminate if there is no graph meeting the requirements.
-	 * 
-	 * @return A result wrapping a state whose only outgoing transitions are to
-	 *         itself, or <code>null</code> if there is no such state. The
-	 *         resulting state is guaranteed to be the one closest to the
-	 *         original graph.
-	 * @see #getMax()
-	 * @see #getAllMax()
-	 * @throws IllegalStateException
-	 *             if the basis has not been initialised
-	 */
-//	public GraphState getFirstMax() {
-//        testPrototype();
-//        return getGenerator().get(isMaximal, toResult);
-//    }
-
     public Collection<GraphState> getAllMax() {
         testPrototype();
         Scenario scenario = createScenario(new BFSStrategy(), new FinalStateAcceptor());
-//        scenario.setState(getGTS().startState());
         scenario.prepare(getGTS());
         return scenario.play().getValue();
     }
 
     public Collection<GraphState> getAll(String conditionName) {
-        //return getAll(getRule(conditionName));
     	return null;
     }
 
@@ -192,10 +167,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
     public Collection<GraphState> getAll(final Condition condition) {
         testPrototype();
-        
-        
-//        return getGenerator().getAll(getMatcher(condition), toResult);
-//        return new Result<GraphState>().getResult();
         return null;
     }
 
@@ -212,7 +183,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
      */
     public Result getResult(Scenario scenario) {
         testPrototype();
-//        scenario.setState(getGTS().startState());
         scenario.prepare(getGTS());
         return scenario.play();
     }
@@ -236,12 +206,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
     }
 
     /**
-     * Tests if a certain state is maximal in the LTS,
-     * in the sense that there are no outgoing transitions to any other state except itself.
-     */
-    
-
-    /**
      * Indicates if this calculator is a prototype.
      * If <code>true</code>, then it is only to be used to create new instances.
      */
@@ -260,6 +224,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
             throw new IllegalStateException();
         }
     }
+
     /** 
      * The grammar underlying this calculator.
      */

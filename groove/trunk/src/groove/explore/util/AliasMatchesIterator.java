@@ -119,9 +119,6 @@ public class AliasMatchesIterator extends MatchesIterator {
 	private boolean isUseDependencies() {
 		return true;
 	}
-//	
-//	/** The matched priority in the preceding state */
-//	private int priority = 0;
 	
 	/** Set with matched rules and the corresponding matches **/
 	// TODO which exactly matches are there ?

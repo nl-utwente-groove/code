@@ -109,14 +109,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	    return transition.source().equals(this) && getCachedTransitionStubs().contains(createTransitionStub(transition.getEvent(), transition.getAddedNodes(), transition.target()));
 	}
 
-	//    
-	//    /**
-	//     * Callback method to retrieve the event from an outgoing transition.
-	//     */
-	//    protected RuleEvent getEvent(GraphOutTransition trans) {
-	//    	return trans.getEvent();
-	//    }
-	//    
 	// ----------------------- commands -----------------------------
 
 	/**

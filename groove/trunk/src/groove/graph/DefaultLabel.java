@@ -97,30 +97,6 @@ public final class DefaultLabel extends AbstractLabel {
     /** The hash code of this label. */
     private final int hashCode;
 
-    // /**
-    // * Constructs a label from a given string.
-    // * @param text the string to be parsed
-    // * @require <tt>text != null</tt>
-    // * @ensure <tt>result.text().equals(text)</tt>
-    // * @throws FormatException if the quotes in <tt>text</tt> are not
-    // * balanced properly, or an empty label ensues
-    // */
-    // public static Label parseLabel(String text) throws FormatException {
-    // Label res;
-    // if (text.indexOf('\"') == 0) {
-    // if (text.indexOf('\"', 1) == text.length() - 1)
-    // res = getLabel(newLabelIndex(text));
-    // else
-    // throw new FormatException("Improper quotes in label text: " + text);
-    // } else if (text.length() == 0) {
-    // throw new FormatException("Empty label text");
-    // } else {
-    // res = createLabel(text);
-    // }
-    // return res;
-    // }
-    // 
-    
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given string. The string is
      * used as-is, and is guaranteed to equal the text of the resulting label.

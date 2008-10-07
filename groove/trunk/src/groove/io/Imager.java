@@ -186,18 +186,6 @@ public class Imager extends CommandLineTool {
         }
         return null;
     }
-//
-//    /**
-//     * Logs a line of text, either to the standard output
-//     * or (if the invocation is gui-based) to the {@link ImagerFrame}.
-//     */
-//    public void log(String text) {
-//        if (imagerFrame == null) {
-//            System.out.println(text);
-//        } else {
-//            imagerFrame.println(text);
-//        }
-//    }
 
     /** Returns the location of the file(s) to be imaged. */
     public File getInFile() {

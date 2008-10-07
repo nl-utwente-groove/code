@@ -679,13 +679,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         }
         return endNodeIndex;
     }
-//
-//    /** Returns a node with a number that is guaranteed to be fresh every time. */
-//    @Override
-//    public Node createNode() {
-//        return DefaultNode.createNode();
-//    }
-//    
+
     private Map<Label, int[]> toIntArrayMap(Map<Label, ? extends Collection<? extends Element>> labelSetMap) {
         if (labelSetMap != null) {
             Map<Label,int[]> result = new HashMap<Label,int[]>();
@@ -729,12 +723,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * Initialized using  {@link #initNodeLabelEdgeMaps()}.
      */
     private Map<Label,int[]>[][] nodePosLabelEdgeIndicesMap;
-//
-//    /**
-//     * Mapping from target nodes in this automaton to maps from labels to corresponding sets of edges.
-//     * Initialized using  {@link #initNodeLabelEdgeMaps()}.
-//     */
-//    private Map posTargetLabelEdgeMap;
+
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps from labels 
      * to sets of edges where the label occurs in the context of a {@link RegExpr.Inv}. 
@@ -1225,19 +1214,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             result = null;
             return tmpResult;
         }
-//
-//        /**
-//         * Indicats if a match can be found between two nodes of a graph.
-//         * @param graph the graph in which we are trying to find matches
-//         * @param startImage the required image of the start node
-//         * @param endImage the required image of the end node
-//         */
-//        public boolean hasMatch(Graph graph, Node startImage, Node endImage) {
-//            this.graph = graph;
-//            this.result = createRelation(graph);
-//            computeEndImages(startImage);
-//            return remainingImageCount == 0;
-//        }
 
         /**
          * Callback factory method. Creates a relation over a given graph. This implementation

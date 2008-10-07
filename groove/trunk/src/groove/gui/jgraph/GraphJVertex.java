@@ -236,15 +236,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 		}
 		return result;
 	}
-//	
-//	/** 
-//	 * Tests if a given data edge (i.e., an edge with a value node as target)
-//	 * is allowed as node label.
-//	 * This implementation returns <code>true</code> always.
-//	 */
-//	boolean isAllowedNodeLabel(Edge dataEdge) {
-//		return !jModel.isShowValueNodes();
-//	}
 
 	/**
 	 * This implementation forwards the query to the underlying graph node.

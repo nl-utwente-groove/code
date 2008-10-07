@@ -262,16 +262,6 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 		}
 		return location.delete();
 	}
-//
-//	/**
-//	 * Saves a rule in a given location.
-//	 * The rule is given as a rule view; if it is an {@link AspectualRuleView}
-//	 * then use it directly, otherwise construct an {@link AspectualRuleView}
-//	 * from the underlying rule.
-//	 */
-//	private void saveRule(AspectualRuleView ruleView, File location) throws IOException {
-//		graphMarshaller.marshalGraph(ruleView.getAspectGraph(), getFile(location, ruleView.getNameLabel()));
-//	}
 
 	/**
 	 * Saves a graph as start graph (using the default name) in

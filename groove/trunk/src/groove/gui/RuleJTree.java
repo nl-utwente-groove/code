@@ -431,18 +431,6 @@ public class RuleJTree extends JTree implements SimulationListener {
     	return result;
     }
 
-//    /** 
-//     * Sets the {@link #displayedGrammar} field to a given value, and
-//     * returns an indication whether the new value differs from the old.
-//     * @param grammar the new value of the displayed grammar
-//     * @return <code>true</code> if the new value differs from the old
-//     */
-//    private boolean setDisplayedGrammar(GrammarView grammar) {
-//    	boolean result = grammar != displayedGrammar;
-//    	displayedGrammar = grammar;
-//    	return result;
-//    }
-
     /**
      * Creates the selection listener to be used to
      * react on selections in this rule directory.

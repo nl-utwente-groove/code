@@ -86,5 +86,4 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 		return;
 	}
 
-//	public static int pocketStates = 0;
 }

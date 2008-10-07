@@ -507,18 +507,6 @@ public class JVertexView extends VertexView {
     	return String.format("Vertex view for %s", getCell());
     }
 	
-//    /**
-//     * In addition to calling the super method, calls {@link JGraph#updateAutoSize(CellView)}
-//     * for this view.
-//	 */
-//	@Override
-//	public Map<?,?> changeAttributes(Map change) {
-//		Map<?,?> result = super.changeAttributes(change);
-//		text = computeText();
-//		jGraph.updateAutoSize(this);
-//		return result;
-//	}
-
 	/**
      * The following is a rather awful hack to ensure the same kind of vertex
      * emphasis throughout editing.

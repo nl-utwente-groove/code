@@ -68,17 +68,4 @@ public class RandomChooserInSequence<E> {
 	 */
 	private static final Random rgen = new Random();
 	
-//	public static void main (String[] args) {
-//		RandomChooserInSequence<Integer> rc = new RandomChooserInSequence<Integer>();
-//		for (int k = 0; k < 5; k++) {
-//			System.out.println("---------------------------");
-//			for (int i = 0; i < 10; i++) {
-//				rc.reset();
-//				for (int j = 0; j <= i; j++) {
-//					rc.show(j);
-//				}
-//				System.out.println("Random in [0, " + i + "] : " + rc.pickRandom());
-//			}
-//		}
-//	}
 }

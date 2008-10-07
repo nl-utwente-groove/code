@@ -32,7 +32,7 @@ public class Abstraction {
 		/** {@value #QUASI}(G1,G2) if there exists an isomorphism between G1 and G2 that preserves typing.
 		 * This is a symmetric relation. */
 		QUASI,
-		/** {@value #SUPER}(G1,G2) if {@value #QUASI}(G1,G2) with isomorhism h, 
+		/** {@value #SUPER}(G1,G2) if {@value #QUASI}(G1,G2) with isomorphism h, 
 		 * and for all node n in G1 it holds MultInfoRelation.M_CONTAINS(G1.multiplicityOf(n), G2.multiplicityOf(h(n))) 
 		 */
 		SUPER,

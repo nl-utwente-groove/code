@@ -59,16 +59,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 			return False.getInstance();
 		}
 	}
-//
-//	private Operation operTrue;
-//
-//	private Operation operFalse;
-//
-//	private Operation operAnd;
-//
-//	private Operation operOr;
-//
-//	private Operation operNot;
+
 	/**
 	 * Method facilitating the singleton-pattern.
 	 * @return the single <tt>BooleanAlgebra</tt>-instance.
@@ -77,9 +68,6 @@ public class DefaultBooleanAlgebra extends Algebra {
 	    return instance;
 	}
 
-	//
-//    /** separator between prefix and rest */
-//    public final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
     /** Name of the boolean signature. */
     public static final String NAME = Groove.getXMLProperty("label.boolean.prefix");
     /** Description of the default boolean algebra. */

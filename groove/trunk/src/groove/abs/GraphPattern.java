@@ -42,7 +42,7 @@ public interface GraphPattern extends Graph {
 	 */
 	public Node central ();
 	
-	// OPTIM make it an iterator as a further optimisation
+	// OPTIM make it an iterator as a further optimization
 	/** Computes the set of possible typings of a small graph by this pattern.
 	 * @param preMatched the nodes already matched
 	 */

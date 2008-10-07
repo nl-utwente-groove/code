@@ -634,30 +634,6 @@ public class Simulator {
     	
     	return selectedFile;
     }
-//    
-//    /**
-//     * Creates and displays a modal dialog wrapping an editor.
-//     * @param graph the input graph for the editor
-//     * @return the dialog object, which can be queried as to the result of editing
-//     */
-//    EditorDialog showEditorDialog(Graph graph) {
-//        final EditorDialog result = new EditorDialog(getFrame(), getOptions(), graph);
-//        result.setVisible(true);
-////        new Thread() {
-////            @Override
-////            public void run() {
-////                result.setVisible(true);
-////            }
-////        }.start();
-////        synchronized(getFrame()) {
-////            try {
-////                getFrame().wait();
-////            } catch (InterruptedException e) {
-////                // empty
-////            }
-////        }
-//        return result;
-//    }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
     void doEnableRule() {
@@ -2106,12 +2082,6 @@ public class Simulator {
      *            currentTransition.rule().equals(currentRule)
      */
     private GraphTransition currentTransition;
-//
-//    /**
-//     * The name of the current start state.
-//     * May be a file name or the name of a graph within the current grammar or <code>null</code>.
-//     */
-//    private String currentStartStateName;
 
     /**
      * The currently selected match.
@@ -2170,11 +2140,6 @@ public class Simulator {
      * Graph exporter.
      */
     private final Exporter exporter = new Exporter();
-
-//    /**
-//     * File chooser for state and LTS export actions.
-//     */
-//    private final JFileChooser formulaProvider = new GrooveFileChooser();
 
     /**
      * Extension filter for state files.

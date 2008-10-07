@@ -58,12 +58,6 @@ public class DefaultStringAlgebra extends Algebra {	/**
 		return new StringConstant(value);
 	}
 
-//
-//    /** The concatenation operation. */
-//    private Operation operConcat;
-//    /** The equals operation. */
-//    private Operation operEquals;
-    
     /**
      * Method facilitating the singleton-pattern.
      * @return the single <tt>StringAlgebra</tt>-instance.
@@ -154,10 +148,6 @@ public class DefaultStringAlgebra extends Algebra {	/**
     };
     
     static {
-//		operConcat = ConcatOperation.getInstance();
-//		operEquals = EqualsOperation.getInstance();
-//		operConcat.set(this, null, -1);
-//		operEquals.set(this, null, -1);
 		instance.addOperation(ConcatOperation.getInstance());
         instance.addOperation(LT_OPERATION);
         instance.addOperation(LE_OPERATION);
@@ -212,29 +202,6 @@ public class DefaultStringAlgebra extends Algebra {	/**
 		/** The (unquoted) string value of this constant. */
 		private final String value;
 	}
-//
-//	protected static class EmptyString extends DefaultConstant {
-//	    /** Singleton instance. */
-//	    private static Constant instance = null;
-//
-//	    private EmptyString() {
-//	        set(algebra, EMPTY_STRING, 0);
-//	    }
-//
-//	    /**
-//	     * @return the singleton instance
-//	     */
-//	    public static Constant getInstance() {
-//	        if (instance == null)
-//	            instance = new EmptyString();
-//	        return instance;
-//	    }
-//
-//		@Override
-//	    public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-//	        return getInstance();
-//	    }
-//	}
 
 	/** Class implementing the string concatantion operation. */
 	protected static class ConcatOperation extends DefaultOperation {
@@ -264,28 +231,4 @@ public class DefaultStringAlgebra extends Algebra {	/**
             }
 		}
 	}
-//
-//	/** Class implementing the string equality operation. */
-//	protected static class EqualsOperation extends StringString2BoolOperation {
-//		private EqualsOperation() {
-//			super(EQ_SYMBOL);
-//		}
-//
-//		/**
-//		 * @return the singleton instance
-//		 */
-//		public static Operation getInstance() {
-//			if (operation == null)
-//				operation = new EqualsOperation();
-//			return operation;
-//		}
-//
-//		@Override
-//		public boolean apply(String arg0, String arg1) throws IllegalArgumentException {
-//		    return arg0.equals(arg1);
-//		}
-//		
-//        /** Singleton instance. */
-//        private static EqualsOperation operation = null;
-//	}
 }

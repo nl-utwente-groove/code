@@ -57,16 +57,6 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
 		return result.toString();
 	}
 
-//
-//    /** In this implementation, the lines are converted from the user object. */
-//    public Collection<String> getLines() {
-//    	List<String> result = new ArrayList<String>();
-//    	for (Object object: getUserObject()) {
-//    		result.add(getLine(object));
-//    	}
-//    	return getListLabels();
-//    }
-    
     /** 
      * This implementation always returns <code>true</code>.
      */
@@ -85,25 +75,6 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     public String toString() {
         return "JVertex with labels "+getListLabels();
     }
-//
-//	/**
-//     * Returns the collection of elements of the user object, converted to strings
-//     * using {@link #getLine(Object)}
-//     */
-//    public Collection<String> getListLabels() {
-//        return getUserObject().getLabelSet();
-//    }
-//
-//    /** 
-//     * Callback method to get the text that is to be printed in the 
-//     * j-vertex for a given object in the label set.
-//     * @param object an object from the user object (hence of the type
-//     * of the user object's elements)
-//     * @return a HTML-formatted string
-//     */
-//    public String getLine(Object object) {
-//    	return object.toString();
-//    }
 
     @Override
     public JCellContent<?> getUserObject() {

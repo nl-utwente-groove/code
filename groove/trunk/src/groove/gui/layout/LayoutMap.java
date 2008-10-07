@@ -151,50 +151,6 @@ public class LayoutMap<N,E> extends GenericNodeEdgeHashMap<N, JVertexLayout, E, 
     public LayoutMap() {
         // explicit empty constructor
     }
-//
-//    /**
-//     * Constructs a layout map from an attribute map.
-//     * @param jAttrMap mapping from <tt>DefaultGraphCell</tt>s to 
-//     * jgraph attributes (which are themselves maps)
-//     */
-//    public LayoutMap(Map<? extends Object, AttributeMap> jAttrMap) {
-//    	for (Map.Entry<? extends Object, AttributeMap> jAttrEntry: jAttrMap.entrySet()) {
-//            Object key = jAttrEntry.getKey();
-//            AttributeMap jAttr = jAttrEntry.getValue();
-//            put(key, jAttr);
-//        }
-//    }
-//
-//    /**
-//     * Constructs a layout map from an array of graph cells.
-//     * The layout information is obtained from the cell attributes.
-//     * @param jCells array of graph cells
-//     */
-//    public LayoutMap(Object[] jCells) {
-//        for (int i = 0; i < jCells.length; i++) {
-//            Object key = jCells[i];
-//            if (key instanceof JCell) {
-//                AttributeMap jAttr = ((JCell) key).getAttributes();
-//                put(key, jAttr);
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Constructs a layout map from a list of graph cells.
-//     * The layout information is obtained from the cell attributes.
-//     * @param jCells array of graph cells
-//     */
-//    public LayoutMap(List jCells) {
-//        Iterator jCellIter = jCells.iterator();
-//        while (jCellIter.hasNext()) {
-//            Object key = jCellIter.next();
-//            if (key instanceof JCell) {
-//                AttributeMap jAttr = ((JCell) key).getAttributes();
-//                put(key, jAttr);
-//            }
-//        }
-//    }
 
     /**
      * Turns this groove layout map into a jgraph attributes map.

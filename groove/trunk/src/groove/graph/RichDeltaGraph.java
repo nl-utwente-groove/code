@@ -170,17 +170,6 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 		}
 		return result;
 	}
-//	
-//	@Override
-//	public Map<Node, Set<Edge>> nodeEdgeMap() {
-//		if (nodeEdgeMap == null) {
-//		    initData();
-//			if (nodeEdgeMap == null) { 
-//				nodeEdgeMap = computeNodeEdgeMap();
-//			}
-//		}
-//		return nodeEdgeMap;
-//	}
 		
 	@Override
 	public Set<? extends Edge> edgeSet(Node node) {

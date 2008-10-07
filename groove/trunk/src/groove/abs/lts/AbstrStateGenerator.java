@@ -64,7 +64,7 @@ public class AbstrStateGenerator extends StateGenerator {
 		AbstrGraphState abstrSource = (AbstrGraphState) source;
 		Set<GraphTransition> result = new HashSet<GraphTransition>();
 		Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
-//		RuleEvent event = AbstrTransformer.transform(((AbstrGraphState) abstrSource).getGraph(), event, getRecord(), this.options, transfResult);
+
 		for (AbstrGraph transf : transfResult) {
 			GraphTransition trans;
 			if (transf != DefaultAbstrGraph.INVALID_AG) {

@@ -577,19 +577,7 @@ public class ShowHideMenu extends JMenu {
             KeyPartition<String,Edge> getTextEdgeMap() {
             	return textEdgeMap;
             }
-//            
-//            /**
-//             * Returns the set associated with a given string from the {@link #textEdgeMap}.
-//             * Creates the set if necessary; the return value is never <code>null</code>.
-//             */
-//            private Set<Edge> getTextEdgeSet(String text) {
-//                Set<Edge> result = textEdgeMap.get(text);
-//                if (result == null) {
-//                    textEdgeMap.put(text, result = new HashSet<Edge>());
-//                }
-//                return result;
-//            }
-//            
+ 
             /** Mapping from label text to edges. */
             private KeyPartition<String,Edge> textEdgeMap;
             /** Graph listener to keep the {@link #textEdgeMap} up-to-date. */
