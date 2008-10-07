@@ -64,7 +64,7 @@ statement
 
 
 conditionliteral
-	: 'true' | rule ;
+	: TRUE | rule ;
 
 expression	
 	: expression2 (OR^ expression)?
@@ -77,6 +77,7 @@ expression2
 
 expression_atom
 	: rule
+	| OTHER
 	| '('! expression ')'!
 	| call
 	; 
@@ -96,8 +97,10 @@ IF		:	'if';
 ELSE	:	'else';
 CHOICE	:	'choice';
 CH_OR 	:	'or';
-TRY	:	'try';
+TRY		:	'try';
 FUNCTION:	'function';
+TRUE	:	'true';
+OTHER	:	'other';
 
 
 IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_')*;

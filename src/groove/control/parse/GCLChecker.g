@@ -54,12 +54,13 @@ expression
 	| ^(SHARP expression)
 	| ^(CALL IDENTIFIER)
 	| rule
+	| OTHER
 	; 
 
 condition
   : ^(OR condition condition)
   | rule
-  | 'true'
+  | TRUE
   ;
 
 rule

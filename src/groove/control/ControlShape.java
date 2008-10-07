@@ -21,7 +21,7 @@ import java.util.Set;
 
 /**
  * The ControlShape class is an ControlAutomaton element that can hold a sub-automaton
- * but also represents a ControlTransition. Typically used for transations or procedures.
+ * but also represents a ControlTransition. Typically used for transactions or procedures.
  * If the ControlShape is active in a ControlAutomaton, all states and transitions of the ControlShape
  * become nodes and edges of the ControlAutomaton. The ControlShape itself will not be visible as an edge.
  * @author Tom Staijen

@@ -99,12 +99,12 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 		
 		
 		if( controlProgramFile.exists() ) {
-			try
-			{				ControlView cv = new ControlView(result, controlProgramFile);				result.setControl(cv);			}
-			catch(IOException e) {
-				System.err.println("Error: unable to open control program " + controlProgramFile.getName());
-				System.err.println("Proceeding without control.");
-			}
+//			try
+//			{				ControlView cv = new ControlView(result, controlProgramFile);				result.setControl(cv);//			}
+//			catch(IOException e) {
+//				System.err.println("Error: unable to open control program " + controlProgramFile.getName());
+//				System.err.println("Proceeding without control.");
+//			}
 		}
 	}
 	

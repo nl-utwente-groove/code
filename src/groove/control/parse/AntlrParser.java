@@ -18,14 +18,12 @@ package groove.control.parse;
 
 /**
  * Static function to parse the grammar files. 
- * @author Arend Rensink
+ * @author Tom Staijen
  * @version $Revision $
  */
 public class AntlrParser {
-
 	/**
 	 * Parse the grammar files. 
-	 * @param args
 	 */
 	public static void main(String[] args) {
 //		System.err.println("Lexer/Parser");
@@ -35,5 +33,4 @@ public class AntlrParser {
 		System.err.println("Builder");
 		org.antlr.Tool.main(new String[]{"GCLBuilder.g"});
 	}
-
 }

@@ -23,7 +23,9 @@ import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.view.FormatException;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.antlr.runtime.RecognitionException;
@@ -42,8 +44,11 @@ import antlr.SemanticException;
  */
 public class AutomatonBuilder extends Namespace {
 
-	/** label used to identify delta in init result **/
+	/** label used to identify delta in init result. */
 	public static final String _DELTA_ = "/%/__DELTA__/%/";
+
+	/** label used to identify other in transition label. */
+	public static final String _OTHER_ = "/%/__OTHER__/%/";
 	
 	private HashSet<ControlTransition> mergeCandidates = new HashSet<ControlTransition>();
 	
@@ -63,22 +68,21 @@ public class AutomatonBuilder extends Namespace {
 	/** Holds the active end state, a local endstate for the next parsed block */
 	private ControlState currentEnd;
 	
-	/*
-	 * Returns the current ControlState.
-	 * @return ControlState
+	/**
+	 * Returns the current start state.
 	 */
 	public ControlState getStart() {
 		return currentStart;
 	}
 	
 	/**
-	 * Returns the current ControlState.
-	 * @return ControlState
+	 * Returns the current end state.
 	 */
 	public ControlState getEnd() {
 		return currentEnd;
 	}
 	
+	/** Sets the current start and end states to a given pair of states. */
 	public void restore(ControlState start, ControlState end) {
 		this.currentStart = start;
 		this.currentEnd = end;
@@ -103,8 +107,7 @@ public class AutomatonBuilder extends Namespace {
 		this.current = current.getParent();
 		if( this.current != null ) {
 			currentName = this.current.getText();
-		}
-		else {
+		} else {
 			currentName = null;
 		}
 	}
@@ -125,12 +128,13 @@ public class AutomatonBuilder extends Namespace {
 		
 		currentEnd.setSuccess();
 		current.setStart(currentStart);
-		currentName = "program";
+		currentName = current.getLabel();
 
 		current.addState(currentStart);
 		current.addState(currentEnd);
 	}
 	
+	/** Returns the control shape currently being built. */
 	public ControlShape currentShape() {
 		return this.current;
 	}
@@ -142,14 +146,12 @@ public class AutomatonBuilder extends Namespace {
 		closeScope();
 	}
 	
-
 	/**
-	 * A newly created transition between the current start and end is added to the current shape and the source node;
-	 * @param label
+	 * Adds a new labelled transition between the current start and end states.
+	 * @param label the label of the new transition
 	 */
 	public void addTransition(String label) {
 		ControlTransition ct = new ControlTransition(currentStart, currentEnd, label);
-		
 		// basic init stuff: if an outgoing transitions is added, the init of the state gets the label added
 		currentStart.addInit(label);
 		
@@ -158,6 +160,24 @@ public class AutomatonBuilder extends Namespace {
 		storeTransition(ct);
 	}
 	
+	/**
+	 * Adds a new labelled transition between the current start and end states.
+	 * @param label the label of the new transition
+	 */
+	public void addOther() {
+		ControlTransition ct = new ControlTransition(currentStart, currentEnd, _OTHER_);
+		
+		// basic init stuff: if an outgoing transitions is added, the init of the state gets the label added
+		currentStart.addInit(_OTHER_);
+		
+		debug("addOther: " + ct);
+		
+		storeTransition(ct);
+	}
+	
+	/**
+	 * Adds a new lambda-transition between the current start and end states.
+	 */
 	public void addLambda() {
 		ControlTransition ct = new ControlTransition(currentStart, currentEnd);
 		
@@ -228,7 +248,7 @@ public class AutomatonBuilder extends Namespace {
 	public void rmTransition(ControlTransition ct) {
 		debug("rmTransition: removed transition " + ct);
 		this.transitions.remove(ct);
-		// in case it is a mergecandidate
+		// in case it is a merge candidate
 		this.mergeCandidates.remove(ct);
 		ct.getParent().removeTransition(ct);
 	}
@@ -354,58 +374,82 @@ public class AutomatonBuilder extends Namespace {
 	 * @param grammar
 	 */
 	public void finalize(GraphGrammar grammar) throws FormatException {
-
-
-		for( ControlTransition transition : this.transitions )
-		{
+		Set<Rule> otherRules = new HashSet<Rule>(grammar.getRules());
+		for( ControlTransition transition : this.transitions ) {
 			if( transition instanceof ControlShape ) {
 				// don't process these
-			}
-			else if( transition.hasLabel() ) {
-				
+			} else if (transition.hasLabel() && transition.getLabel().equals(_OTHER_)) {
+				// don't process these just yet
+			} else if( transition.hasLabel() ) {
 				Rule rule = grammar.getRule(transition.getLabel());
-				if( rule != null ) {
+				if (rule != null) {
 					transition.setRule(rule);
 					transition.source().add(transition);
-				}
-				else
-				{
+					otherRules.remove(rule);
+				} else {
 					// if the rulename is a group, this will add all child rules.
 					Set<Rule> rules = grammar.getChildRules(transition.getText());
 					if( !rules.isEmpty() ) {
 						ControlTransition childTrans;
 						for( Rule childRule : rules) {
-							//automaton.removeTransition(transition);
 							childTrans = new ControlTransition(transition.source(), transition.target(), childRule.getName().name());
 							childTrans.setRule(childRule);
 							transition.source().add(childTrans);
+							otherRules.remove(childRule);
 							// this is for viewing purposes only
 							childTrans.setVisibleParent(transition);
 						}
 						// remove the original transition;
+						//automaton.removeTransition(transition);
 					} else {
 						throw new FormatException("Control: Unknown rule reference: " + transition.getText());
 					}
 				}
-			}
-			else {
+			} else {
 				// must be either lambda or else..
 				transition.source().add(transition);
 			}
 		}
 
+		// now process the OTHER-transitions
+		Set<ControlTransition> otherTransitions = new HashSet<ControlTransition>();
+		Iterator<ControlTransition> transitionIter = this.transitions.iterator();
+		while (transitionIter.hasNext()) {
+			ControlTransition transition = transitionIter.next();
+			if (transition.hasLabel() && transition.getLabel().equals(_OTHER_)) {
+				transitionIter.remove();
+				transition.getParent().removeTransition(transition);
+				for (Rule rule: otherRules) {
+					// create a corresponding transition for each of the other rules
+					ControlTransition otherTrans = new ControlTransition(transition.source(), transition.target(), rule.getName().name());
+					otherTrans.setRule(rule);
+					otherTrans.setParent(transition.getParent());
+					transition.source().add(otherTrans);
+					otherTransitions.add(otherTrans);
+					transition.getParent().addTransition(otherTrans);
+				}
+			}
+		}
+		this.transitions.addAll(otherTransitions);
+		// collect the names of the other rules
+		Set<String> otherRuleNames = new HashSet<String>();
+		for (Rule rule: otherRules) {
+			otherRuleNames.add(rule.getName().name());
+		}
 		// update the failure sets of else-transitions
 		// this assumes that there are no outgoing lambda's from states that have else-transitions
 		for( ControlTransition transition : this.transitions ) {
-			if( transition.hasFailures() ) {
-				Set<Rule> failures = new HashSet<Rule>();
-				
-				for( String s : transition.getFailures() ) {
-					failures.add(grammar.getRule(s));
-				}
-				transition.setFailureSet(failures);
+			Set<String> failureNames = transition.getFailures();
+			if (failureNames.remove(_OTHER_)) {
+				failureNames.addAll(otherRuleNames);
 			}
+			Set<Rule> failures = new HashSet<Rule>();
+			for (String s: failureNames) {
+				failures.add(grammar.getRule(s));
+			}
+			transition.setFailureSet(failures);
 		}
+		return;
     }
 	
 	public void testMerge(ControlTransition ct) {

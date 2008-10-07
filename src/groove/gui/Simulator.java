@@ -870,10 +870,13 @@ public class Simulator {
             	if (startGraph != null && currentStateFile == null) {
             		setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile, startGraph.getName()));
             	} else {
-                    setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile));
+            		DefaultGrammarView grammar = currentGrammarLoader.unmarshal(currentGrammarFile);
                     if (currentStateFile != null) {
-                    	doLoadStartGraph(currentStateFile);
+                    	AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(currentStateFile);
+                    	startGraph = new AspectualGraphView(aspectStartGraph);
+                    	grammar.setStartGraph(startGraph);
                     }
+                    setGrammar(grammar);
             	}
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from " + currentGrammarFile, exc);

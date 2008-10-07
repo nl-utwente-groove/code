@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCL.g 2008-07-14 13:51:12
+// $ANTLR 3.1b1 GCL.g 2008-10-07 22:33:42
 
 package groove.control.parse;
 import groove.control.*;
@@ -10,39 +10,39 @@ import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
 
-@SuppressWarnings("all")
 public class GCLLexer extends Lexer {
-    public static final int FUNCTION=7;
-    public static final int T__29=29;
-    public static final int STAR=21;
-    public static final int T__28=28;
-    public static final int SHARP=22;
-    public static final int FUNCTIONS=6;
-    public static final int WHILE=12;
-    public static final int ELSE=16;
+    public static final int COMMA=26;
     public static final int DO=13;
-    public static final int NOT=26;
-    public static final int ALAP=11;
-    public static final int AND=23;
-    public static final int EOF=-1;
-    public static final int TRY=15;
-    public static final int IF=17;
-    public static final int T__30=30;
-    public static final int T__31=31;
-    public static final int T__32=32;
-    public static final int T__33=33;
-    public static final int WS=27;
-    public static final int COMMA=24;
-    public static final int UNTIL=14;
-    public static final int IDENTIFIER=9;
-    public static final int BLOCK=5;
-    public static final int OR=10;
-    public static final int CH_OR=19;
-    public static final int PROGRAM=4;
-    public static final int PLUS=20;
-    public static final int CALL=8;
-    public static final int DOT=25;
+    public static final int SHARP=23;
+    public static final int WHILE=12;
+    public static final int WS=29;
     public static final int CHOICE=18;
+    public static final int CH_OR=19;
+    public static final int T__33=33;
+    public static final int OR=10;
+    public static final int OTHER=24;
+    public static final int PROGRAM=4;
+    public static final int DOT=27;
+    public static final int BLOCK=5;
+    public static final int FUNCTIONS=6;
+    public static final int AND=25;
+    public static final int T__30=30;
+    public static final int FUNCTION=7;
+    public static final int ELSE=16;
+    public static final int T__31=31;
+    public static final int IF=17;
+    public static final int EOF=-1;
+    public static final int T__32=32;
+    public static final int UNTIL=14;
+    public static final int CALL=8;
+    public static final int ALAP=11;
+    public static final int PLUS=21;
+    public static final int IDENTIFIER=9;
+    public static final int STAR=22;
+    public static final int T__34=34;
+    public static final int TRY=15;
+    public static final int NOT=28;
+    public static final int TRUE=20;
 
     // delegates
     // delegators
@@ -57,55 +57,15 @@ public class GCLLexer extends Lexer {
     }
     public String getGrammarFileName() { return "GCL.g"; }
 
-    // $ANTLR start T__28
-    public final void mT__28() throws RecognitionException {
-        try {
-            int _type = T__28;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:9:7: ( '{' )
-            // GCL.g:9:9: '{'
-            {
-            match('{'); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end T__28
-
-    // $ANTLR start T__29
-    public final void mT__29() throws RecognitionException {
-        try {
-            int _type = T__29;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:10:7: ( '}' )
-            // GCL.g:10:9: '}'
-            {
-            match('}'); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end T__29
-
     // $ANTLR start T__30
     public final void mT__30() throws RecognitionException {
         try {
             int _type = T__30;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:11:7: ( '(' )
-            // GCL.g:11:9: '('
+            // GCL.g:9:7: ( '{' )
+            // GCL.g:9:9: '{'
             {
-            match('('); 
+            match('{'); 
 
             }
 
@@ -122,10 +82,10 @@ public class GCLLexer extends Lexer {
         try {
             int _type = T__31;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:12:7: ( ')' )
-            // GCL.g:12:9: ')'
+            // GCL.g:10:7: ( '}' )
+            // GCL.g:10:9: '}'
             {
-            match(')'); 
+            match('}'); 
 
             }
 
@@ -142,10 +102,10 @@ public class GCLLexer extends Lexer {
         try {
             int _type = T__32;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:13:7: ( ';' )
-            // GCL.g:13:9: ';'
+            // GCL.g:11:7: ( '(' )
+            // GCL.g:11:9: '('
             {
-            match(';'); 
+            match('('); 
 
             }
 
@@ -162,11 +122,10 @@ public class GCLLexer extends Lexer {
         try {
             int _type = T__33;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:14:7: ( 'true' )
-            // GCL.g:14:9: 'true'
+            // GCL.g:12:7: ( ')' )
+            // GCL.g:12:9: ')'
             {
-            match("true"); 
-
+            match(')'); 
 
             }
 
@@ -178,13 +137,33 @@ public class GCLLexer extends Lexer {
     }
     // $ANTLR end T__33
 
+    // $ANTLR start T__34
+    public final void mT__34() throws RecognitionException {
+        try {
+            int _type = T__34;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:13:7: ( ';' )
+            // GCL.g:13:9: ';'
+            {
+            match(';'); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end T__34
+
     // $ANTLR start ALAP
     public final void mALAP() throws RecognitionException {
         try {
             int _type = ALAP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:91:7: ( 'alap' )
-            // GCL.g:91:9: 'alap'
+            // GCL.g:92:7: ( 'alap' )
+            // GCL.g:92:9: 'alap'
             {
             match("alap"); 
 
@@ -204,8 +183,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = WHILE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:92:7: ( 'while' )
-            // GCL.g:92:9: 'while'
+            // GCL.g:93:7: ( 'while' )
+            // GCL.g:93:9: 'while'
             {
             match("while"); 
 
@@ -225,8 +204,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = DO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:93:5: ( 'do' )
-            // GCL.g:93:7: 'do'
+            // GCL.g:94:5: ( 'do' )
+            // GCL.g:94:7: 'do'
             {
             match("do"); 
 
@@ -246,8 +225,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = UNTIL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:94:9: ( 'until' )
-            // GCL.g:94:11: 'until'
+            // GCL.g:95:9: ( 'until' )
+            // GCL.g:95:11: 'until'
             {
             match("until"); 
 
@@ -267,8 +246,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = IF;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:95:5: ( 'if' )
-            // GCL.g:95:7: 'if'
+            // GCL.g:96:5: ( 'if' )
+            // GCL.g:96:7: 'if'
             {
             match("if"); 
 
@@ -288,8 +267,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:96:6: ( 'else' )
-            // GCL.g:96:8: 'else'
+            // GCL.g:97:6: ( 'else' )
+            // GCL.g:97:8: 'else'
             {
             match("else"); 
 
@@ -309,8 +288,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = CHOICE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:97:8: ( 'choice' )
-            // GCL.g:97:10: 'choice'
+            // GCL.g:98:8: ( 'choice' )
+            // GCL.g:98:10: 'choice'
             {
             match("choice"); 
 
@@ -330,8 +309,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = CH_OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:98:8: ( 'or' )
-            // GCL.g:98:10: 'or'
+            // GCL.g:99:8: ( 'or' )
+            // GCL.g:99:10: 'or'
             {
             match("or"); 
 
@@ -351,8 +330,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = TRY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:99:5: ( 'try' )
-            // GCL.g:99:7: 'try'
+            // GCL.g:100:6: ( 'try' )
+            // GCL.g:100:8: 'try'
             {
             match("try"); 
 
@@ -372,8 +351,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = FUNCTION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:100:9: ( 'function' )
-            // GCL.g:100:11: 'function'
+            // GCL.g:101:9: ( 'function' )
+            // GCL.g:101:11: 'function'
             {
             match("function"); 
 
@@ -388,13 +367,55 @@ public class GCLLexer extends Lexer {
     }
     // $ANTLR end FUNCTION
 
+    // $ANTLR start TRUE
+    public final void mTRUE() throws RecognitionException {
+        try {
+            int _type = TRUE;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:102:6: ( 'true' )
+            // GCL.g:102:8: 'true'
+            {
+            match("true"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end TRUE
+
+    // $ANTLR start OTHER
+    public final void mOTHER() throws RecognitionException {
+        try {
+            int _type = OTHER;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // GCL.g:103:7: ( 'other' )
+            // GCL.g:103:9: 'other'
+            {
+            match("other"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end OTHER
+
     // $ANTLR start IDENTIFIER
     public final void mIDENTIFIER() throws RecognitionException {
         try {
             int _type = IDENTIFIER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:103:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )* )
-            // GCL.g:103:15: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
+            // GCL.g:106:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )* )
+            // GCL.g:106:15: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
@@ -405,7 +426,7 @@ public class GCLLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // GCL.g:103:35: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
+            // GCL.g:106:35: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' )*
             loop1:
             do {
                 int alt1=2;
@@ -454,8 +475,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:105:6: ( '&' )
-            // GCL.g:105:9: '&'
+            // GCL.g:108:6: ( '&' )
+            // GCL.g:108:9: '&'
             {
             match('&'); 
 
@@ -474,8 +495,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:106:8: ( ',' )
-            // GCL.g:106:11: ','
+            // GCL.g:109:8: ( ',' )
+            // GCL.g:109:11: ','
             {
             match(','); 
 
@@ -494,8 +515,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:107:6: ( '.' )
-            // GCL.g:107:9: '.'
+            // GCL.g:110:6: ( '.' )
+            // GCL.g:110:9: '.'
             {
             match('.'); 
 
@@ -514,8 +535,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:108:6: ( '!' )
-            // GCL.g:108:9: '!'
+            // GCL.g:111:6: ( '!' )
+            // GCL.g:111:9: '!'
             {
             match('!'); 
 
@@ -534,8 +555,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:109:5: ( '|' )
-            // GCL.g:109:8: '|'
+            // GCL.g:112:5: ( '|' )
+            // GCL.g:112:8: '|'
             {
             match('|'); 
 
@@ -554,8 +575,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = SHARP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:110:8: ( '#' )
-            // GCL.g:110:11: '#'
+            // GCL.g:113:8: ( '#' )
+            // GCL.g:113:11: '#'
             {
             match('#'); 
 
@@ -574,8 +595,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:111:7: ( '+' )
-            // GCL.g:111:10: '+'
+            // GCL.g:114:7: ( '+' )
+            // GCL.g:114:10: '+'
             {
             match('+'); 
 
@@ -594,8 +615,8 @@ public class GCLLexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:112:7: ( '*' )
-            // GCL.g:112:10: '*'
+            // GCL.g:115:7: ( '*' )
+            // GCL.g:115:10: '*'
             {
             match('*'); 
 
@@ -614,10 +635,10 @@ public class GCLLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCL.g:114:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // GCL.g:114:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCL.g:117:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // GCL.g:117:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // GCL.g:114:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCL.g:117:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt2=0;
             loop2:
             do {
@@ -668,187 +689,194 @@ public class GCLLexer extends Lexer {
     // $ANTLR end WS
 
     public void mTokens() throws RecognitionException {
-        // GCL.g:1:8: ( T__28 | T__29 | T__30 | T__31 | T__32 | T__33 | ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS )
-        int alt3=26;
+        // GCL.g:1:8: ( T__30 | T__31 | T__32 | T__33 | T__34 | ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | TRUE | OTHER | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS )
+        int alt3=27;
         alt3 = dfa3.predict(input);
         switch (alt3) {
             case 1 :
-                // GCL.g:1:10: T__28
-                {
-                mT__28(); 
-
-                }
-                break;
-            case 2 :
-                // GCL.g:1:16: T__29
-                {
-                mT__29(); 
-
-                }
-                break;
-            case 3 :
-                // GCL.g:1:22: T__30
+                // GCL.g:1:10: T__30
                 {
                 mT__30(); 
 
                 }
                 break;
-            case 4 :
-                // GCL.g:1:28: T__31
+            case 2 :
+                // GCL.g:1:16: T__31
                 {
                 mT__31(); 
 
                 }
                 break;
-            case 5 :
-                // GCL.g:1:34: T__32
+            case 3 :
+                // GCL.g:1:22: T__32
                 {
                 mT__32(); 
 
                 }
                 break;
-            case 6 :
-                // GCL.g:1:40: T__33
+            case 4 :
+                // GCL.g:1:28: T__33
                 {
                 mT__33(); 
 
                 }
                 break;
-            case 7 :
-                // GCL.g:1:46: ALAP
+            case 5 :
+                // GCL.g:1:34: T__34
+                {
+                mT__34(); 
+
+                }
+                break;
+            case 6 :
+                // GCL.g:1:40: ALAP
                 {
                 mALAP(); 
 
                 }
                 break;
-            case 8 :
-                // GCL.g:1:51: WHILE
+            case 7 :
+                // GCL.g:1:45: WHILE
                 {
                 mWHILE(); 
 
                 }
                 break;
-            case 9 :
-                // GCL.g:1:57: DO
+            case 8 :
+                // GCL.g:1:51: DO
                 {
                 mDO(); 
 
                 }
                 break;
-            case 10 :
-                // GCL.g:1:60: UNTIL
+            case 9 :
+                // GCL.g:1:54: UNTIL
                 {
                 mUNTIL(); 
 
                 }
                 break;
-            case 11 :
-                // GCL.g:1:66: IF
+            case 10 :
+                // GCL.g:1:60: IF
                 {
                 mIF(); 
 
                 }
                 break;
-            case 12 :
-                // GCL.g:1:69: ELSE
+            case 11 :
+                // GCL.g:1:63: ELSE
                 {
                 mELSE(); 
 
                 }
                 break;
-            case 13 :
-                // GCL.g:1:74: CHOICE
+            case 12 :
+                // GCL.g:1:68: CHOICE
                 {
                 mCHOICE(); 
 
                 }
                 break;
-            case 14 :
-                // GCL.g:1:81: CH_OR
+            case 13 :
+                // GCL.g:1:75: CH_OR
                 {
                 mCH_OR(); 
 
                 }
                 break;
-            case 15 :
-                // GCL.g:1:87: TRY
+            case 14 :
+                // GCL.g:1:81: TRY
                 {
                 mTRY(); 
 
                 }
                 break;
-            case 16 :
-                // GCL.g:1:91: FUNCTION
+            case 15 :
+                // GCL.g:1:85: FUNCTION
                 {
                 mFUNCTION(); 
 
                 }
                 break;
+            case 16 :
+                // GCL.g:1:94: TRUE
+                {
+                mTRUE(); 
+
+                }
+                break;
             case 17 :
-                // GCL.g:1:100: IDENTIFIER
+                // GCL.g:1:99: OTHER
+                {
+                mOTHER(); 
+
+                }
+                break;
+            case 18 :
+                // GCL.g:1:105: IDENTIFIER
                 {
                 mIDENTIFIER(); 
 
                 }
                 break;
-            case 18 :
-                // GCL.g:1:111: AND
+            case 19 :
+                // GCL.g:1:116: AND
                 {
                 mAND(); 
 
                 }
                 break;
-            case 19 :
-                // GCL.g:1:115: COMMA
+            case 20 :
+                // GCL.g:1:120: COMMA
                 {
                 mCOMMA(); 
 
                 }
                 break;
-            case 20 :
-                // GCL.g:1:121: DOT
+            case 21 :
+                // GCL.g:1:126: DOT
                 {
                 mDOT(); 
 
                 }
                 break;
-            case 21 :
-                // GCL.g:1:125: NOT
+            case 22 :
+                // GCL.g:1:130: NOT
                 {
                 mNOT(); 
 
                 }
                 break;
-            case 22 :
-                // GCL.g:1:129: OR
+            case 23 :
+                // GCL.g:1:134: OR
                 {
                 mOR(); 
 
                 }
                 break;
-            case 23 :
-                // GCL.g:1:132: SHARP
+            case 24 :
+                // GCL.g:1:137: SHARP
                 {
                 mSHARP(); 
 
                 }
                 break;
-            case 24 :
-                // GCL.g:1:138: PLUS
+            case 25 :
+                // GCL.g:1:143: PLUS
                 {
                 mPLUS(); 
 
                 }
                 break;
-            case 25 :
-                // GCL.g:1:143: STAR
+            case 26 :
+                // GCL.g:1:148: STAR
                 {
                 mSTAR(); 
 
                 }
                 break;
-            case 26 :
-                // GCL.g:1:148: WS
+            case 27 :
+                // GCL.g:1:153: WS
                 {
                 mWS(); 
 
@@ -862,38 +890,38 @@ public class GCLLexer extends Lexer {
 
     protected DFA3 dfa3 = new DFA3(this);
     static final String DFA3_eotS =
-        "\6\uffff\12\20\12\uffff\3\20\1\50\1\20\1\52\2\20\1\55\2\20\1\60"+
-        "\2\20\1\uffff\1\20\1\uffff\2\20\1\uffff\1\20\1\67\1\uffff\1\70\2"+
-        "\20\1\73\2\20\2\uffff\1\76\1\77\1\uffff\2\20\2\uffff\1\102\1\20"+
-        "\1\uffff\1\20\1\105\1\uffff";
+        "\6\uffff\12\20\12\uffff\2\20\1\47\1\20\1\51\2\20\1\54\5\20\1\uffff"+
+        "\1\20\1\uffff\2\20\1\uffff\1\20\1\67\2\20\1\72\2\20\1\75\2\20\1"+
+        "\uffff\1\100\1\20\1\uffff\1\102\1\103\1\uffff\1\20\1\105\1\uffff"+
+        "\1\20\2\uffff\1\107\1\uffff\1\20\1\uffff\1\20\1\112\1\uffff";
     static final String DFA3_eofS =
-        "\106\uffff";
+        "\113\uffff";
     static final String DFA3_minS =
-        "\1\11\5\uffff\1\162\1\154\1\150\1\157\1\156\1\146\1\154\1\150\1"+
-        "\162\1\165\12\uffff\1\165\1\141\1\151\1\55\1\164\1\55\1\163\1\157"+
-        "\1\55\1\156\1\145\1\55\1\160\1\154\1\uffff\1\151\1\uffff\1\145\1"+
-        "\151\1\uffff\1\143\1\55\1\uffff\1\55\1\145\1\154\1\55\1\143\1\164"+
-        "\2\uffff\2\55\1\uffff\1\145\1\151\2\uffff\1\55\1\157\1\uffff\1\156"+
-        "\1\55\1\uffff";
+        "\1\11\5\uffff\1\154\1\150\1\157\1\156\1\146\1\154\1\150\2\162\1"+
+        "\165\12\uffff\1\141\1\151\1\55\1\164\1\55\1\163\1\157\1\55\1\150"+
+        "\1\165\1\156\1\160\1\154\1\uffff\1\151\1\uffff\1\145\1\151\1\uffff"+
+        "\1\145\1\55\1\145\1\143\1\55\1\145\1\154\1\55\1\143\1\162\1\uffff"+
+        "\1\55\1\164\1\uffff\2\55\1\uffff\1\145\1\55\1\uffff\1\151\2\uffff"+
+        "\1\55\1\uffff\1\157\1\uffff\1\156\1\55\1\uffff";
     static final String DFA3_maxS =
-        "\1\175\5\uffff\1\162\1\154\1\150\1\157\1\156\1\146\1\154\1\150\1"+
-        "\162\1\165\12\uffff\1\171\1\141\1\151\1\172\1\164\1\172\1\163\1"+
-        "\157\1\172\1\156\1\145\1\172\1\160\1\154\1\uffff\1\151\1\uffff\1"+
-        "\145\1\151\1\uffff\1\143\1\172\1\uffff\1\172\1\145\1\154\1\172\1"+
-        "\143\1\164\2\uffff\2\172\1\uffff\1\145\1\151\2\uffff\1\172\1\157"+
-        "\1\uffff\1\156\1\172\1\uffff";
+        "\1\175\5\uffff\1\154\1\150\1\157\1\156\1\146\1\154\1\150\1\164\1"+
+        "\162\1\165\12\uffff\1\141\1\151\1\172\1\164\1\172\1\163\1\157\1"+
+        "\172\1\150\1\171\1\156\1\160\1\154\1\uffff\1\151\1\uffff\1\145\1"+
+        "\151\1\uffff\1\145\1\172\1\145\1\143\1\172\1\145\1\154\1\172\1\143"+
+        "\1\162\1\uffff\1\172\1\164\1\uffff\2\172\1\uffff\1\145\1\172\1\uffff"+
+        "\1\151\2\uffff\1\172\1\uffff\1\157\1\uffff\1\156\1\172\1\uffff";
     static final String DFA3_acceptS =
-        "\1\uffff\1\1\1\2\1\3\1\4\1\5\12\uffff\1\21\1\22\1\23\1\24\1\25\1"+
-        "\26\1\27\1\30\1\31\1\32\16\uffff\1\11\1\uffff\1\13\2\uffff\1\16"+
-        "\2\uffff\1\17\6\uffff\1\6\1\7\2\uffff\1\14\2\uffff\1\10\1\12\2\uffff"+
-        "\1\15\2\uffff\1\20";
+        "\1\uffff\1\1\1\2\1\3\1\4\1\5\12\uffff\1\22\1\23\1\24\1\25\1\26\1"+
+        "\27\1\30\1\31\1\32\1\33\15\uffff\1\10\1\uffff\1\12\2\uffff\1\15"+
+        "\12\uffff\1\16\2\uffff\1\6\2\uffff\1\13\2\uffff\1\20\1\uffff\1\7"+
+        "\1\11\1\uffff\1\21\1\uffff\1\14\2\uffff\1\17";
     static final String DFA3_specialS =
-        "\106\uffff}>";
+        "\113\uffff}>";
     static final String[] DFA3_transitionS = {
             "\2\31\2\uffff\1\31\22\uffff\1\31\1\24\1\uffff\1\26\2\uffff\1"+
             "\21\1\uffff\1\3\1\4\1\30\1\27\1\22\1\uffff\1\23\14\uffff\1\5"+
-            "\5\uffff\32\20\6\uffff\1\7\1\20\1\15\1\11\1\14\1\17\2\20\1\13"+
-            "\5\20\1\16\4\20\1\6\1\12\1\20\1\10\3\20\1\1\1\25\1\2",
+            "\5\uffff\32\20\6\uffff\1\6\1\20\1\14\1\10\1\13\1\17\2\20\1\12"+
+            "\5\20\1\15\4\20\1\16\1\11\1\20\1\7\3\20\1\1\1\25\1\2",
             "",
             "",
             "",
@@ -906,9 +934,9 @@ public class GCLLexer extends Lexer {
             "\1\36",
             "\1\37",
             "\1\40",
-            "\1\41",
-            "\1\42",
+            "\1\41\1\uffff\1\42",
             "\1\43",
+            "\1\44",
             "",
             "",
             "",
@@ -919,18 +947,17 @@ public class GCLLexer extends Lexer {
             "",
             "",
             "",
-            "\1\44\3\uffff\1\45",
+            "\1\45",
             "\1\46",
-            "\1\47",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
-            "\1\51",
+            "\1\50",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "\1\52",
             "\1\53",
-            "\1\54",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
-            "\1\56",
-            "\1\57",
-            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "\1\55",
+            "\1\57\3\uffff\1\56",
+            "\1\60",
             "\1\61",
             "\1\62",
             "",
@@ -941,26 +968,32 @@ public class GCLLexer extends Lexer {
             "",
             "\1\66",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
-            "",
-            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "\1\70",
             "\1\71",
-            "\1\72",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "\1\73",
             "\1\74",
-            "\1\75",
-            "",
+            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "\1\76",
+            "\1\77",
             "",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
-            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
-            "",
-            "\1\100",
             "\1\101",
             "",
-            "",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
-            "\1\103",
+            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
             "",
             "\1\104",
+            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "",
+            "\1\106",
+            "",
+            "",
+            "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
+            "",
+            "\1\110",
+            "",
+            "\1\111",
             "\1\20\2\uffff\12\20\7\uffff\32\20\4\uffff\1\20\1\uffff\32\20",
             ""
     };
@@ -995,7 +1028,7 @@ public class GCLLexer extends Lexer {
             this.transition = DFA3_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__28 | T__29 | T__30 | T__31 | T__32 | T__33 | ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS );";
+            return "1:1: Tokens : ( T__30 | T__31 | T__32 | T__33 | T__34 | ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | CH_OR | TRY | FUNCTION | TRUE | OTHER | IDENTIFIER | AND | COMMA | DOT | NOT | OR | SHARP | PLUS | STAR | WS );";
         }
     }
  
