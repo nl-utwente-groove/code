@@ -292,7 +292,7 @@ public class Generator extends CommandLineTool {
     	Scenario result;
 		ExploreOption explore = getActiveOption(ExploreOption.class);
 		if (explore == null) {
-			result = GeneratorScenarioFactory.getScenarioHandler(new DFSStrategy(), "Breadth first full exploration.", "full");
+			result = GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(), "Breadth first full exploration.", "full");
 		} else {
 			ExploreStrategyParser exploreParser = explore.getParser();
 			result = exploreParser.getStrategy();
