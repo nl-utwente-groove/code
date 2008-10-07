@@ -21,45 +21,18 @@ public class LocationAutomatonBuilder {
 	private ControlLocation computeLocation(Set<ControlState> states) {
 		Map<ControlState,Set<Set<Rule>>> stateFailuresMap = new HashMap<ControlState,Set<Set<Rule>>>();
 		collectStateFailures(states, EMPTYSET, stateFailuresMap);
+		for (Set<Set<Rule>> failureSet: stateFailuresMap.values()) {
+		    normaliseFailures(failureSet);
+		}
 		return new ControlLocation(stateFailuresMap, this);
 	}
-//
-//	/**
-//	 * Collect all Pairs of states and enablingFailures.
-//	 * 
-//	 * @param states
-//	 *            the lambdaMaximized set of states for the given failure set
-//	 * @param failure
-//	 *            the failure set for all ControlStates in states
-//	 * @param result
-//	 *            the container for all the pairs found
-//	 */
-//	private void collectStatePairs(Set<ControlState> states, Set<Rule> failure, Set<Pair<ControlState, Set<Rule>>> result) {
-//		for( ControlState state : states ) {
-//			Pair<ControlState,Set<Rule>> p = new Pair<ControlState,Set<Rule>>(state, failure);
-//			if( result.add(p) ) {
-//				for( ControlTransition trans : state.elseTransitions() ) {
-//					// concat the failure
-//					Set<Rule> elseFailure = new HashSet<Rule>();
-//					elseFailure.addAll(failure);
-//					elseFailure.addAll(trans.getFailureSet());
-//					Set<ControlState> elseStates = new HashSet<ControlState>();
-//					elseStates.add(trans.target());
-//					collectStatePairs(lambdaMaximize(elseStates), elseFailure, result);
-//				}
-//			}
-//		}
-//	}
 
 	/**
-	 * Collect all Pairs of states and enablingFailures.
-	 * 
-	 * @param states
-	 *            the lambdaMaximized set of states for the given failure set
-	 * @param failure
-	 *            the failure set for all ControlStates in states
-	 * @param result
-	 *            the container for all the pairs found
+	 * Recursively collects a map from failure-reachable states to the sets of failures 
+	 * under which they are reachable.
+	 * @param states set of states to be added to the map
+	 * @param failure failure under which all elements of <code>states</code> are reachable
+	 * @param result container for all the pairs found
 	 */
 	private void collectStateFailures(Set<ControlState> states, Set<Rule> failure, Map<ControlState,Set<Set<Rule>>> result) {
 		for( ControlState state : states ) {
@@ -79,7 +52,22 @@ public class LocationAutomatonBuilder {
 			}
 		}
 	}
-	/**
+
+    /** Removes failures that are proper supersets of others. */
+    private void normaliseFailures(Set<Set<Rule>> failuresSet) {
+        Iterator<Set<Rule>> failuresIter = failuresSet.iterator();
+        while (failuresIter.hasNext()) {
+            Set<Rule> failure = failuresIter.next();
+            for (Set<Rule> otherFailure: new ArrayList<Set<Rule>>(failuresSet)) {
+                if (failure.size() > otherFailure.size() && failure.containsAll(otherFailure)) {
+                    // failure is a proper superset of otherFailure
+                    failuresIter.remove();
+                    break;
+                }
+            }
+        }
+    }
+    	/**
 	 * Extends a set of states with all states reachable by lambda-transitions.
 	 */
 	private Set<ControlState> lambdaMaximize(Set<ControlState> states) {

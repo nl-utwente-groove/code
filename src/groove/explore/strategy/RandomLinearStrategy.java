@@ -18,11 +18,6 @@ package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchSetCollector;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
-import groove.lts.GTS;
-import groove.lts.GraphState;
 import groove.trans.RuleEvent;
 
 import java.util.ArrayList;
@@ -34,13 +29,13 @@ import java.util.List;
  * @author Iovka Boneva
  *
  */
-public class RandomLinearStrategy extends AbstractStrategy {
+public class RandomLinearStrategy extends LinearStrategy {
     /** 
      * Constructs a default instance of the strategy,
      * in which states are only closed if they have been fully explored
      */
     public RandomLinearStrategy() {
-        // empty
+        this(false);
     }
     
     /** 
@@ -49,73 +44,91 @@ public class RandomLinearStrategy extends AbstractStrategy {
      * single outgoing transition has been computed.
      */
     public RandomLinearStrategy(boolean closeFast) {
-        if (closeFast) {
-            enableCloseExit();
-        }
+        super(closeFast);
     }
-    
-	public boolean next() {
-		if (this.atState == null) { 
-			getGTS().removeGraphListener(this.collector);
-			return false;
-		}
-		ExploreCache cache = getCache(true, false);
-		MatchSetCollector collector = createMatchCollector(cache);
+//    
+//	public boolean next() {
+//		if (this.atState == null) { 
+//			getGTS().removeGraphListener(this.collector);
+//			return false;
+//		}
+//		ExploreCache cache = getCache(true, false);
+//		MatchSetCollector collector = createMatchCollector(cache);
+//        // collect all matches
+//        List<RuleEvent> matches = new ArrayList<RuleEvent>();
+//        collector.collectMatchSet(matches);
+//        // select a random match
+//        int matchCount = matches.size();
+//        if (matchCount == 0) {
+//            setClosed(getAtState());
+//        } else {
+//            int randomIndex = (int) (Math.random() * matchCount);
+//            // add the random match
+//            getMatchApplier().addTransition(getAtState(), matches.get(randomIndex), cache);
+//            if( closeExit() ) {
+//                setClosed(getAtState());
+//            }
+//        }
+//        updateAtState();
+//		return true;
+//	}
+	
+    /** This implementation returns a random element from the set of all matches. */
+    @Override
+	protected RuleEvent getMatch(ExploreCache cache) {
+        MatchSetCollector collector = createMatchCollector(cache);
         // collect all matches
         List<RuleEvent> matches = new ArrayList<RuleEvent>();
         collector.collectMatchSet(matches);
         // select a random match
         int matchCount = matches.size();
         if (matchCount == 0) {
-            setClosed(getAtState());
+            return null;
         } else {
             int randomIndex = (int) (Math.random() * matchCount);
             // add the random match
-            getMatchApplier().addTransition(getAtState(), matches.get(randomIndex));
-            if( closeExit() ) {
-                setClosed(getAtState());
-            }
+            return matches.get(randomIndex);
         }
-        updateAtState();
-		return true;
 	}
-	
-	@Override
-	protected void updateAtState() {
-		this.atState = this.collector.getNewState();
-        this.collector.reset();
-	}
-	
-	@Override
-	public void prepare(GTS gts, GraphState state) {
-		super.prepare(gts, state);
-		gts.addGraphListener(collector);
-	}
-
-	/** Collects states newly added to the GTS. */
-	private final NewStateCollector collector = new NewStateCollector();
-	
-	/** 
-	 * Registers the first new state added to the GTS it listens to.
-	 * Such an object should be added as listener only to a single GTS. 
-	 */
-	public class NewStateCollector extends GraphAdapter {
-		/** Returns the collected new state,
-		 * or null if no new state was registered.
-		 * @return the collected new state,
-		 * or null if no new state was registered since last reset operation
-		 */
-		GraphState getNewState() { return this.newState; }
-		
-		/** Forgets collected new state. */
-		void reset () { this.newState = null; }
-		
-		@Override
-		public void addUpdate(GraphShape shape, Node node) {
-			if (newState == null) {
-				newState = (GraphState) node;
-			}
-		}
-		private GraphState newState;
-	}
+//	
+//	@Override
+//	protected void updateAtState() {
+//		this.atState = this.collector.getNewState();
+//        this.collector.reset();
+//	}
+//	
+//	@Override
+//	public void prepare(GTS gts, GraphState state) {
+//		super.prepare(gts, state);
+//        gts.getRecord().setCopyGraphs(false);
+//        gts.getRecord().setReuseEvents(false);
+//		gts.addGraphListener(collector);
+//	}
+//
+//	/** Collects states newly added to the GTS. */
+//	private final NewStateCollector collector = new NewStateCollector();
+//	
+//	/** 
+//	 * Registers the first new state added to the GTS it listens to.
+//	 * Such an object should be added as listener only to a single GTS. 
+//	 */
+//	public class NewStateCollector extends GraphAdapter {
+//		/** Returns the collected new state,
+//		 * or null if no new state was registered.
+//		 * @return the collected new state,
+//		 * or null if no new state was registered since last reset operation
+//		 */
+//		GraphState getNewState() { return this.newState; }
+//		
+//		/** Forgets collected new state. */
+//		void reset () { this.newState = null; }
+//		
+//		@Override
+//		public void addUpdate(GraphShape shape, Node node) {
+//			if (newState == null) {
+//				newState = (GraphState) node;
+//			}
+//		}
+//		private GraphState newState;
+//	}
 }

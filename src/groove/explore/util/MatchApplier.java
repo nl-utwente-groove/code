@@ -16,6 +16,7 @@
  */
 package groove.explore.util;
 
+import groove.control.Location;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.AbstractGraphState;
@@ -55,12 +56,12 @@ public class MatchApplier {
 	 * The event is assumed not to have been explored yet.
 	 * @return the added (new) transition
 	 */
-    public GraphTransition addTransition(GraphState source, RuleEvent event) {
+    public GraphTransition addTransition(GraphState source, RuleEvent event, Location targetLocation) {
         reporter.start(ADD_TRANSITION);
         GraphTransition transition = null;
-        if (!event.getRule().isModifying() ) {
+        if (source.getLocation() == targetLocation && !event.getRule().isModifying() ) {
             transition = createTransition(event, source, source, false);
-        } else if (event instanceof VirtualEvent) {
+        } else if (targetLocation == null && event instanceof VirtualEvent) {
             assert source instanceof GraphNextState;
             VirtualEvent.GraphState virtual = (VirtualEvent.GraphState) event;
             GraphState target = virtual.getConfluentTarget(((GraphNextState) source).getEvent());
@@ -70,7 +71,7 @@ public class MatchApplier {
             }
         }
         if (transition == null) {
-            GraphNextState freshTarget = createState(event, source);
+            GraphNextState freshTarget = createState(event, source, targetLocation);
             reporter.start(ADD_STATE);
             GraphState isoTarget = getGTS().addState(freshTarget);
             reporter.stop();
@@ -89,7 +90,7 @@ public class MatchApplier {
     /**
      * Creates a fresh graph state, based on a given rule application and source state.
      */
-    private GraphNextState createState(RuleEvent event, GraphState source) {
+    private GraphNextState createState(RuleEvent event, GraphState source, Location target) {
         Node[] addedNodes;
         if (event instanceof VirtualEvent.GraphState) {
             VirtualEvent.GraphState virtual = (VirtualEvent.GraphState) event;
@@ -98,7 +99,7 @@ public class MatchApplier {
         } else {
             addedNodes = getCreatedNodes(event, source.getGraph());
         }
-        return new DefaultGraphNextState((AbstractGraphState) source, event, addedNodes, null);
+        return new DefaultGraphNextState((AbstractGraphState) source, event, addedNodes, target);
     }
 
 
