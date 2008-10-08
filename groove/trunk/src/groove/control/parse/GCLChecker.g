@@ -54,6 +54,7 @@ expression
 	| ^(SHARP expression)
 	| ^(CALL IDENTIFIER)
 	| rule
+	| ANY
 	| OTHER
 	; 
 

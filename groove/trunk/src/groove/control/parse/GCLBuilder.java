@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLBuilder.g 2008-10-07 22:36:12
+// $ANTLR 3.1b1 GCLBuilder.g 2008-10-08 09:36:49
 
 package groove.control.parse;
 import groove.control.*;
@@ -11,40 +11,41 @@ import java.util.ArrayList;
 
 public class GCLBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
-    public static final int COMMA=26;
-    public static final int DO=13;
-    public static final int SHARP=23;
-    public static final int WHILE=12;
-    public static final int WS=29;
-    public static final int CHOICE=18;
-    public static final int CH_OR=19;
-    public static final int T__33=33;
-    public static final int OR=10;
-    public static final int OTHER=24;
-    public static final int PROGRAM=4;
-    public static final int DOT=27;
-    public static final int BLOCK=5;
-    public static final int FUNCTIONS=6;
-    public static final int AND=25;
-    public static final int T__30=30;
     public static final int FUNCTION=7;
-    public static final int ELSE=16;
-    public static final int T__31=31;
-    public static final int IF=17;
-    public static final int EOF=-1;
-    public static final int T__32=32;
-    public static final int UNTIL=14;
-    public static final int CALL=8;
-    public static final int ALAP=11;
-    public static final int PLUS=21;
-    public static final int IDENTIFIER=9;
     public static final int STAR=22;
-    public static final int T__34=34;
-    public static final int TRY=15;
-    public static final int NOT=28;
+    public static final int SHARP=23;
+    public static final int OTHER=25;
+    public static final int FUNCTIONS=6;
+    public static final int WHILE=12;
+    public static final int ELSE=16;
+    public static final int DO=13;
+    public static final int NOT=29;
+    public static final int ALAP=11;
+    public static final int AND=26;
+    public static final int EOF=-1;
     public static final int TRUE=20;
+    public static final int TRY=15;
+    public static final int IF=17;
+    public static final int T__31=31;
+    public static final int T__32=32;
+    public static final int T__33=33;
+    public static final int ANY=24;
+    public static final int WS=30;
+    public static final int T__34=34;
+    public static final int T__35=35;
+    public static final int COMMA=27;
+    public static final int UNTIL=14;
+    public static final int IDENTIFIER=9;
+    public static final int BLOCK=5;
+    public static final int OR=10;
+    public static final int CH_OR=19;
+    public static final int PROGRAM=4;
+    public static final int PLUS=21;
+    public static final int CALL=8;
+    public static final int DOT=28;
+    public static final int CHOICE=18;
 
     // delegates
     // delegators
@@ -352,6 +353,7 @@ public class GCLBuilder extends TreeParser {
             case PLUS:
             case STAR:
             case SHARP:
+            case ANY:
             case OTHER:
                 {
                 alt6=8;
@@ -717,7 +719,7 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start expression
-    // GCLBuilder.g:184:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | TRUE | OTHER | rule );
+    // GCLBuilder.g:184:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | TRUE | OTHER | ANY | rule );
     public final void expression() throws RecognitionException {
         CommonTree IDENTIFIER1=null;
 
@@ -728,8 +730,8 @@ public class GCLBuilder extends TreeParser {
         	ControlTransition fail;
 
         try {
-            // GCLBuilder.g:190:3: ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | TRUE | OTHER | rule )
-            int alt7=8;
+            // GCLBuilder.g:190:3: ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | TRUE | OTHER | ANY | rule )
+            int alt7=9;
             switch ( input.LA(1) ) {
             case OR:
                 {
@@ -766,9 +768,14 @@ public class GCLBuilder extends TreeParser {
                 alt7=7;
                 }
                 break;
-            case IDENTIFIER:
+            case ANY:
                 {
                 alt7=8;
+                }
+                break;
+            case IDENTIFIER:
+                {
+                alt7=9;
                 }
                 break;
             default:
@@ -916,9 +923,19 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLBuilder.g:222:5: rule
+                    // GCLBuilder.g:222:5: ANY
                     {
-                    pushFollow(FOLLOW_rule_in_expression375);
+                    match(input,ANY,FOLLOW_ANY_in_expression375); 
+                     
+                      		builder.addAny(); 
+                      	
+
+                    }
+                    break;
+                case 9 :
+                    // GCLBuilder.g:225:5: rule
+                    {
+                    pushFollow(FOLLOW_rule_in_expression383);
                     rule();
 
                     state._fsp--;
@@ -941,13 +958,13 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start condition
-    // GCLBuilder.g:225:1: condition : expression ;
+    // GCLBuilder.g:228:1: condition : expression ;
     public final void condition() throws RecognitionException {
         try {
-            // GCLBuilder.g:226:3: ( expression )
-            // GCLBuilder.g:226:5: expression
+            // GCLBuilder.g:229:3: ( expression )
+            // GCLBuilder.g:229:5: expression
             {
-            pushFollow(FOLLOW_expression_in_condition389);
+            pushFollow(FOLLOW_expression_in_condition397);
             expression();
 
             state._fsp--;
@@ -968,15 +985,15 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start rule
-    // GCLBuilder.g:229:1: rule : IDENTIFIER ;
+    // GCLBuilder.g:232:1: rule : IDENTIFIER ;
     public final void rule() throws RecognitionException {
         CommonTree IDENTIFIER2=null;
 
         try {
-            // GCLBuilder.g:230:3: ( IDENTIFIER )
-            // GCLBuilder.g:230:5: IDENTIFIER
+            // GCLBuilder.g:233:3: ( IDENTIFIER )
+            // GCLBuilder.g:233:5: IDENTIFIER
             {
-            IDENTIFIER2=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule402); 
+            IDENTIFIER2=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule410); 
              builder.addTransition((IDENTIFIER2!=null?IDENTIFIER2.getText():null)); 
 
             }
@@ -1005,14 +1022,14 @@ public class GCLBuilder extends TreeParser {
     public static final BitSet FOLLOW_FUNCTION_in_function91 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_IDENTIFIER_in_function93 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_BLOCK_in_block109 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_statement_in_block112 = new BitSet(new long[]{0x0000000001F6FF08L});
+    public static final BitSet FOLLOW_statement_in_block112 = new BitSet(new long[]{0x0000000003F6FF08L});
     public static final BitSet FOLLOW_ALAP_in_statement141 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_block_in_statement149 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_WHILE_in_statement158 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_condition_in_statement162 = new BitSet(new long[]{0x0000000000000020L});
     public static final BitSet FOLLOW_block_in_statement166 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_DO_in_statement175 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement179 = new BitSet(new long[]{0x0000000001F6FF08L});
+    public static final BitSet FOLLOW_block_in_statement179 = new BitSet(new long[]{0x0000000003F6FF08L});
     public static final BitSet FOLLOW_condition_in_statement183 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_UNTIL_in_statement192 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_condition_in_statement196 = new BitSet(new long[]{0x0000000000000020L});
@@ -1028,10 +1045,10 @@ public class GCLBuilder extends TreeParser {
     public static final BitSet FOLLOW_block_in_statement271 = new BitSet(new long[]{0x0000000000000028L});
     public static final BitSet FOLLOW_expression_in_statement281 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_OR_in_expression295 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression297 = new BitSet(new long[]{0x0000000001F6FF08L});
+    public static final BitSet FOLLOW_expression_in_expression297 = new BitSet(new long[]{0x0000000003F6FF08L});
     public static final BitSet FOLLOW_expression_in_expression301 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PLUS_in_expression309 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression311 = new BitSet(new long[]{0x0000000001F6FF08L});
+    public static final BitSet FOLLOW_expression_in_expression311 = new BitSet(new long[]{0x0000000003F6FF08L});
     public static final BitSet FOLLOW_expression_in_expression315 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_STAR_in_expression322 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_expression_in_expression326 = new BitSet(new long[]{0x0000000000000008L});
@@ -1041,8 +1058,9 @@ public class GCLBuilder extends TreeParser {
     public static final BitSet FOLLOW_IDENTIFIER_in_expression350 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_TRUE_in_expression359 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_OTHER_in_expression367 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_rule_in_expression375 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_expression_in_condition389 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_rule402 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ANY_in_expression375 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_rule_in_expression383 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_expression_in_condition397 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule410 = new BitSet(new long[]{0x0000000000000002L});
 
 }
