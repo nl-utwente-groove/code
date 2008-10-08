@@ -121,8 +121,10 @@ public class CAPanel extends JPanel implements SimulationListener {
 		textPanel.setText("");
 
 		if( grammar.getControl() != null ) {
+            ControlView cv = grammar.getControl();
+            // in any case display the program
+            textPanel.setText(cv.getProgram());             
 			try {
-				ControlView cv = grammar.getControl();
 				ControlAutomaton automaton = cv.toAutomaton(grammar.toGrammar());
 				GraphJModel model = new ControlJModel(automaton, autPanel.getOptions());
 				autPanel.setEnabled(true);
@@ -133,7 +135,6 @@ public class CAPanel extends JPanel implements SimulationListener {
 				jGraph.setEnabled(true);
 				jGraph.setToolTipEnabled(true);
 
-				textPanel.setText(cv.getProgram());				
 			} catch (FormatException exc) {
 				// do nothing
 			}
@@ -145,27 +146,7 @@ public class CAPanel extends JPanel implements SimulationListener {
 	}
 
 	public void setStateUpdate(GraphState state) {
-//		if( state.getLocation() != null ) {
-//			
-//			// thus, there is control
-//			
-//			// disable the active transition
-//			// autPanel.getJModel().setActiveTransition(null);
-//			
-//			// set the active Location (set of control states)
-//
-//			// emphasize state if it isn't already done
-//			autPanel.getJModel().setActiveLocation((Location)state.getLocation());
-//			// we do layouting here because it's too expensive to do it
-//			// every time a new state is added
-//			if (autPanel.getJGraph().getLayouter() != null) {
-//				autPanel.getJModel().freeze();
-//				autPanel.getJGraph().getLayouter().start(false);
-//			}
-//			// addUpdate(lts, state);
-//			//autPanel.getJGraph().scrollTo(state);
-//
-//		}
+	    // TODO: displaying the currently activated control states
 	}
 
 	public void setMatchUpdate(RuleMatch match) {

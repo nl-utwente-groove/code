@@ -77,6 +77,7 @@ expression2
 
 expression_atom
 	: rule
+	| ANY
 	| OTHER
 	| '('! expression ')'!
 	| call
@@ -101,6 +102,7 @@ TRY		:	'try';
 FUNCTION:	'function';
 TRUE	:	'true';
 OTHER	:	'other';
+ANY		:	'any';
 
 
 IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_')*;

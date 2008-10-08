@@ -47,9 +47,12 @@ public class AutomatonBuilder extends Namespace {
 	/** label used to identify delta in init result. */
 	public static final String _DELTA_ = "/%/__DELTA__/%/";
 
-	/** label used to identify other in transition label. */
-	public static final String _OTHER_ = "/%/__OTHER__/%/";
-	
+    /** label used to identify other keyword in transition label. */
+    public static final String _OTHER_ = "/%/__OTHER__/%/";
+
+    /** label used to identify any keyword in transition label. */
+    public static final String _ANY_ = "/%/__ANY__/%/";
+    
 	private HashSet<ControlTransition> mergeCandidates = new HashSet<ControlTransition>();
 	
 	private HashSet<String> openScopes = new HashSet<String>();
@@ -159,22 +162,35 @@ public class AutomatonBuilder extends Namespace {
 		
 		storeTransition(ct);
 	}
-	
-	/**
-	 * Adds a new labelled transition between the current start and end states.
-	 * @param label the label of the new transition
-	 */
-	public void addOther() {
-		ControlTransition ct = new ControlTransition(currentStart, currentEnd, _OTHER_);
-		
-		// basic init stuff: if an outgoing transitions is added, the init of the state gets the label added
-		currentStart.addInit(_OTHER_);
-		
-		debug("addOther: " + ct);
-		
-		storeTransition(ct);
-	}
-	
+
+    /**
+     * Adds an "other" transition between the current start and end states.
+     */
+    public void addOther() {
+        ControlTransition ct = new ControlTransition(currentStart, currentEnd, _OTHER_);
+        
+        // basic init stuff: if an outgoing transitions is added, the init of the state gets the label added
+        currentStart.addInit(_OTHER_);
+        
+        debug("addOther: " + ct);
+        
+        storeTransition(ct);
+    }
+
+    /**
+     * Adds an "any" transition between the current start and end states.
+     */
+    public void addAny() {
+        ControlTransition ct = new ControlTransition(currentStart, currentEnd, _ANY_);
+        
+        // basic init stuff: if an outgoing transitions is added, the init of the state gets the label added
+        currentStart.addInit(_ANY_);
+        
+        debug("addOther: " + ct);
+        
+        storeTransition(ct);
+    }
+    
 	/**
 	 * Adds a new lambda-transition between the current start and end states.
 	 */
@@ -378,7 +394,7 @@ public class AutomatonBuilder extends Namespace {
 		for( ControlTransition transition : this.transitions ) {
 			if( transition instanceof ControlShape ) {
 				// don't process these
-			} else if (transition.hasLabel() && transition.getLabel().equals(_OTHER_)) {
+			} else if (hasSpecialLabel(transition)) {
 				// don't process these just yet
 			} else if( transition.hasLabel() ) {
 				Rule rule = grammar.getRule(transition.getLabel());
@@ -413,20 +429,21 @@ public class AutomatonBuilder extends Namespace {
 
 		// now process the OTHER-transitions
 		Set<ControlTransition> otherTransitions = new HashSet<ControlTransition>();
-		Iterator<ControlTransition> transitionIter = this.transitions.iterator();
-		while (transitionIter.hasNext()) {
-			ControlTransition transition = transitionIter.next();
-			if (transition.hasLabel() && transition.getLabel().equals(_OTHER_)) {
-				transitionIter.remove();
-				transition.getParent().removeTransition(transition);
-				for (Rule rule: otherRules) {
+		Iterator<ControlTransition> transIter = this.transitions.iterator();
+		while (transIter.hasNext()) {
+			ControlTransition trans = transIter.next();
+			if (hasSpecialLabel(trans)) {
+				transIter.remove();
+				trans.getParent().removeTransition(trans);
+				java.util.Collection<Rule> addedRules = trans.getLabel().equals(_OTHER_) ? otherRules : grammar.getRules();
+				for (Rule rule: addedRules) {
 					// create a corresponding transition for each of the other rules
-					ControlTransition otherTrans = new ControlTransition(transition.source(), transition.target(), rule.getName().name());
+					ControlTransition otherTrans = new ControlTransition(trans.source(), trans.target(), rule.getName().name());
 					otherTrans.setRule(rule);
-					otherTrans.setParent(transition.getParent());
-					transition.source().add(otherTrans);
+					otherTrans.setParent(trans.getParent());
+					trans.source().add(otherTrans);
 					otherTransitions.add(otherTrans);
-					transition.getParent().addTransition(otherTrans);
+					trans.getParent().addTransition(otherTrans);
 				}
 			}
 		}
@@ -440,9 +457,12 @@ public class AutomatonBuilder extends Namespace {
 		// this assumes that there are no outgoing lambda's from states that have else-transitions
 		for( ControlTransition transition : this.transitions ) {
 			Set<String> failureNames = transition.getFailures();
-			if (failureNames.remove(_OTHER_)) {
-				failureNames.addAll(otherRuleNames);
-			}
+            if (failureNames.remove(_OTHER_)) {
+                failureNames.addAll(otherRuleNames);
+            }
+            if (failureNames.remove(_ANY_)) {
+                failureNames.addAll(getRuleNames());
+            }
 			Set<Rule> failures = new HashSet<Rule>();
 			for (String s: failureNames) {
 				failures.add(grammar.getRule(s));
@@ -451,6 +471,11 @@ public class AutomatonBuilder extends Namespace {
 		}
 		return;
     }
+	
+	/** Tests if the transition label is special, such as {@link #_ANY_} or {@link #_OTHER_}.*/
+	private boolean hasSpecialLabel(ControlTransition trans) {
+	    return trans.hasLabel() && (trans.getLabel().equals(_OTHER_) || trans.getLabel().equals(_ANY_));
+	}
 	
 	public void testMerge(ControlTransition ct) {
 		mergeCandidates.add(ct);

@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2008-10-07 22:35:20
+// $ANTLR 3.1b1 GCLChecker.g 2008-10-08 09:36:39
 
 package groove.control.parse;
 import groove.control.*;
@@ -12,40 +12,41 @@ import java.util.ArrayList;
 
 public class GCLChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
-    public static final int COMMA=26;
-    public static final int DO=13;
-    public static final int SHARP=23;
-    public static final int WHILE=12;
-    public static final int WS=29;
-    public static final int CHOICE=18;
-    public static final int CH_OR=19;
-    public static final int T__33=33;
-    public static final int OR=10;
-    public static final int OTHER=24;
-    public static final int PROGRAM=4;
-    public static final int DOT=27;
-    public static final int BLOCK=5;
-    public static final int FUNCTIONS=6;
-    public static final int AND=25;
-    public static final int T__30=30;
     public static final int FUNCTION=7;
-    public static final int ELSE=16;
-    public static final int T__31=31;
-    public static final int IF=17;
-    public static final int EOF=-1;
-    public static final int T__32=32;
-    public static final int UNTIL=14;
-    public static final int CALL=8;
-    public static final int ALAP=11;
-    public static final int PLUS=21;
-    public static final int IDENTIFIER=9;
     public static final int STAR=22;
-    public static final int T__34=34;
-    public static final int TRY=15;
-    public static final int NOT=28;
+    public static final int SHARP=23;
+    public static final int OTHER=25;
+    public static final int FUNCTIONS=6;
+    public static final int WHILE=12;
+    public static final int ELSE=16;
+    public static final int DO=13;
+    public static final int NOT=29;
+    public static final int ALAP=11;
+    public static final int AND=26;
+    public static final int EOF=-1;
     public static final int TRUE=20;
+    public static final int TRY=15;
+    public static final int IF=17;
+    public static final int T__31=31;
+    public static final int T__32=32;
+    public static final int T__33=33;
+    public static final int ANY=24;
+    public static final int WS=30;
+    public static final int T__34=34;
+    public static final int T__35=35;
+    public static final int COMMA=27;
+    public static final int UNTIL=14;
+    public static final int IDENTIFIER=9;
+    public static final int BLOCK=5;
+    public static final int OR=10;
+    public static final int CH_OR=19;
+    public static final int PROGRAM=4;
+    public static final int PLUS=21;
+    public static final int CALL=8;
+    public static final int DOT=28;
+    public static final int CHOICE=18;
 
     // delegates
     // delegators
@@ -547,6 +548,7 @@ public class GCLChecker extends TreeParser {
             case PLUS:
             case STAR:
             case SHARP:
+            case ANY:
             case OTHER:
                 {
                 alt6=8;
@@ -933,7 +935,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start expression
-    // GCLChecker.g:50:1: expression : ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule | OTHER );
+    // GCLChecker.g:50:1: expression : ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule | ANY | OTHER );
     public final GCLChecker.expression_return expression() throws RecognitionException {
         GCLChecker.expression_return retval = new GCLChecker.expression_return();
         retval.start = input.LT(1);
@@ -949,7 +951,8 @@ public class GCLChecker extends TreeParser {
         CommonTree SHARP38=null;
         CommonTree CALL40=null;
         CommonTree IDENTIFIER41=null;
-        CommonTree OTHER43=null;
+        CommonTree ANY43=null;
+        CommonTree OTHER44=null;
         GCLChecker.expression_return e1 = null;
 
         GCLChecker.expression_return expression33 = null;
@@ -969,12 +972,13 @@ public class GCLChecker extends TreeParser {
         CommonTree SHARP38_tree=null;
         CommonTree CALL40_tree=null;
         CommonTree IDENTIFIER41_tree=null;
-        CommonTree OTHER43_tree=null;
+        CommonTree ANY43_tree=null;
+        CommonTree OTHER44_tree=null;
         RewriteRuleNodeStream stream_PLUS=new RewriteRuleNodeStream(adaptor,"token PLUS");
         RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
         try {
-            // GCLChecker.g:51:2: ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule | OTHER )
-            int alt7=7;
+            // GCLChecker.g:51:2: ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ) | rule | ANY | OTHER )
+            int alt7=8;
             switch ( input.LA(1) ) {
             case OR:
                 {
@@ -1006,9 +1010,14 @@ public class GCLChecker extends TreeParser {
                 alt7=6;
                 }
                 break;
-            case OTHER:
+            case ANY:
                 {
                 alt7=7;
+                }
+                break;
+            case OTHER:
+                {
+                alt7=8;
                 }
                 break;
             default:
@@ -1085,14 +1094,14 @@ public class GCLChecker extends TreeParser {
 
 
                     // AST REWRITE
-                    // elements: e1, e1, PLUS
+                    // elements: e1, PLUS, e1
                     // token labels: 
-                    // rule labels: e1, retval
+                    // rule labels: retval, e1
                     // token list labels: 
                     // rule list labels: 
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_e1=new RewriteRuleSubtreeStream(adaptor,"token e1",e1!=null?e1.tree:null);
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_e1=new RewriteRuleSubtreeStream(adaptor,"token e1",e1!=null?e1.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
                     // 52:26: -> ^( PLUS $e1 $e1)
@@ -1224,12 +1233,25 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLChecker.g:57:4: OTHER
+                    // GCLChecker.g:57:4: ANY
                     {
                     _last = (CommonTree)input.LT(1);
-                    OTHER43=(CommonTree)match(input,OTHER,FOLLOW_OTHER_in_expression312); 
+                    ANY43=(CommonTree)match(input,ANY,FOLLOW_ANY_in_expression312); 
                      
-                    if ( _first_0==null ) _first_0 = OTHER43;
+                    if ( _first_0==null ) _first_0 = ANY43;
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 8 :
+                    // GCLChecker.g:58:4: OTHER
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    OTHER44=(CommonTree)match(input,OTHER,FOLLOW_OTHER_in_expression317); 
+                     
+                    if ( _first_0==null ) _first_0 = OTHER44;
 
                     retval.tree = (CommonTree)_first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -1255,7 +1277,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start condition
-    // GCLChecker.g:60:1: condition : ( ^( OR condition condition ) | rule | TRUE );
+    // GCLChecker.g:61:1: condition : ( ^( OR condition condition ) | rule | TRUE );
     public final GCLChecker.condition_return condition() throws RecognitionException {
         GCLChecker.condition_return retval = new GCLChecker.condition_return();
         retval.start = input.LT(1);
@@ -1265,20 +1287,20 @@ public class GCLChecker extends TreeParser {
         CommonTree _first_0 = null;
         CommonTree _last = null;
 
-        CommonTree OR44=null;
-        CommonTree TRUE48=null;
-        GCLChecker.condition_return condition45 = null;
-
+        CommonTree OR45=null;
+        CommonTree TRUE49=null;
         GCLChecker.condition_return condition46 = null;
 
-        GCLChecker.rule_return rule47 = null;
+        GCLChecker.condition_return condition47 = null;
+
+        GCLChecker.rule_return rule48 = null;
 
 
-        CommonTree OR44_tree=null;
-        CommonTree TRUE48_tree=null;
+        CommonTree OR45_tree=null;
+        CommonTree TRUE49_tree=null;
 
         try {
-            // GCLChecker.g:61:3: ( ^( OR condition condition ) | rule | TRUE )
+            // GCLChecker.g:62:3: ( ^( OR condition condition ) | rule | TRUE )
             int alt8=3;
             switch ( input.LA(1) ) {
             case OR:
@@ -1305,34 +1327,34 @@ public class GCLChecker extends TreeParser {
 
             switch (alt8) {
                 case 1 :
-                    // GCLChecker.g:61:5: ^( OR condition condition )
+                    // GCLChecker.g:62:5: ^( OR condition condition )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     _last = (CommonTree)input.LT(1);
-                    OR44=(CommonTree)match(input,OR,FOLLOW_OR_in_condition326); 
+                    OR45=(CommonTree)match(input,OR,FOLLOW_OR_in_condition331); 
 
 
-                    if ( _first_0==null ) _first_0 = OR44;
+                    if ( _first_0==null ) _first_0 = OR45;
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_condition_in_condition328);
-                    condition45=condition();
-
-                    state._fsp--;
-
-                     
-                    if ( _first_1==null ) _first_1 = condition45.tree;
-                    _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_condition_in_condition330);
+                    pushFollow(FOLLOW_condition_in_condition333);
                     condition46=condition();
 
                     state._fsp--;
 
                      
                     if ( _first_1==null ) _first_1 = condition46.tree;
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_condition_in_condition335);
+                    condition47=condition();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = condition47.tree;
 
                     match(input, Token.UP, null); _last = _save_last_1;
                     }
@@ -1344,16 +1366,16 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:62:5: rule
+                    // GCLChecker.g:63:5: rule
                     {
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_rule_in_condition337);
-                    rule47=rule();
+                    pushFollow(FOLLOW_rule_in_condition342);
+                    rule48=rule();
 
                     state._fsp--;
 
                      
-                    if ( _first_0==null ) _first_0 = rule47.tree;
+                    if ( _first_0==null ) _first_0 = rule48.tree;
 
                     retval.tree = (CommonTree)_first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -1361,12 +1383,12 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:63:5: TRUE
+                    // GCLChecker.g:64:5: TRUE
                     {
                     _last = (CommonTree)input.LT(1);
-                    TRUE48=(CommonTree)match(input,TRUE,FOLLOW_TRUE_in_condition343); 
+                    TRUE49=(CommonTree)match(input,TRUE,FOLLOW_TRUE_in_condition348); 
                      
-                    if ( _first_0==null ) _first_0 = TRUE48;
+                    if ( _first_0==null ) _first_0 = TRUE49;
 
                     retval.tree = (CommonTree)_first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -1392,7 +1414,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start rule
-    // GCLChecker.g:66:1: rule : IDENTIFIER ;
+    // GCLChecker.g:67:1: rule : IDENTIFIER ;
     public final GCLChecker.rule_return rule() throws RecognitionException {
         GCLChecker.rule_return retval = new GCLChecker.rule_return();
         retval.start = input.LT(1);
@@ -1402,18 +1424,18 @@ public class GCLChecker extends TreeParser {
         CommonTree _first_0 = null;
         CommonTree _last = null;
 
-        CommonTree IDENTIFIER49=null;
+        CommonTree IDENTIFIER50=null;
 
-        CommonTree IDENTIFIER49_tree=null;
+        CommonTree IDENTIFIER50_tree=null;
 
         try {
-            // GCLChecker.g:67:3: ( IDENTIFIER )
-            // GCLChecker.g:67:5: IDENTIFIER
+            // GCLChecker.g:68:3: ( IDENTIFIER )
+            // GCLChecker.g:68:5: IDENTIFIER
             {
             _last = (CommonTree)input.LT(1);
-            IDENTIFIER49=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule356); 
+            IDENTIFIER50=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule361); 
              
-            if ( _first_0==null ) _first_0 = IDENTIFIER49;
+            if ( _first_0==null ) _first_0 = IDENTIFIER50;
 
             retval.tree = (CommonTree)_first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -1445,7 +1467,7 @@ public class GCLChecker extends TreeParser {
     public static final BitSet FOLLOW_IDENTIFIER_in_function97 = new BitSet(new long[]{0x0000000000000020L});
     public static final BitSet FOLLOW_block_in_function99 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_BLOCK_in_block125 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_statement_in_block128 = new BitSet(new long[]{0x0000000001E6FF08L});
+    public static final BitSet FOLLOW_statement_in_block128 = new BitSet(new long[]{0x0000000003E6FF08L});
     public static final BitSet FOLLOW_ALAP_in_statement145 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_block_in_statement147 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_WHILE_in_statement155 = new BitSet(new long[]{0x0000000000000004L});
@@ -1468,7 +1490,7 @@ public class GCLChecker extends TreeParser {
     public static final BitSet FOLLOW_block_in_statement225 = new BitSet(new long[]{0x0000000000000028L});
     public static final BitSet FOLLOW_expression_in_statement233 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_OR_in_expression247 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression249 = new BitSet(new long[]{0x0000000001E6FF08L});
+    public static final BitSet FOLLOW_expression_in_expression249 = new BitSet(new long[]{0x0000000003E6FF08L});
     public static final BitSet FOLLOW_expression_in_expression251 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PLUS_in_expression258 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_expression_in_expression262 = new BitSet(new long[]{0x0000000000000008L});
@@ -1479,12 +1501,13 @@ public class GCLChecker extends TreeParser {
     public static final BitSet FOLLOW_CALL_in_expression299 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_IDENTIFIER_in_expression301 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_rule_in_expression307 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OTHER_in_expression312 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_condition326 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_condition328 = new BitSet(new long[]{0x0000000000100600L});
-    public static final BitSet FOLLOW_condition_in_condition330 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_rule_in_condition337 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRUE_in_condition343 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_rule356 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ANY_in_expression312 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OTHER_in_expression317 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_condition331 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_condition333 = new BitSet(new long[]{0x0000000000100600L});
+    public static final BitSet FOLLOW_condition_in_condition335 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_condition342 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRUE_in_condition348 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule361 = new BitSet(new long[]{0x0000000000000002L});
 
 }

@@ -36,34 +36,47 @@ import antlr.SemanticException;
  * @version $Revision $
  */
 public class Namespace {
-
-	private Set<String> ruleNames = new HashSet<String>();
-	
-	private HashMap<String, CommonTree> procs = new HashMap<String, CommonTree>();
-
 	/**
-	 * Stores the AST of a procedure.
-	 * @param name
-	 * @param ast
+	 * Stores the AST of a function.
 	 */
 	public void store(String name, CommonTree ast) {
 		this.procs.put(name, ast);
 	}
 	
 	/**
-	 * Returns the AST for a procedure.	 */
+	 * Returns the AST for a function.
+	 */
 	public CommonTree getProc(String name) throws RecognitionException {
-		// TODO: throw exception if no such function
-		return procs.get(name);
+		CommonTree result = procs.get(name);
+//		if (result == null) {
+//	        // There is no such function
+//		    throw new RecognitionException();
+//		}
+		return result;
 	}
 	
+	/** Tests if there is a rule with a given name. */
 	public boolean ruleExists(String name) throws SemanticException {
 		 return ruleNames.contains(name);
 	}
 	
+	/** Initialises the rule names of this name space from a given grammar view. */
 	public void setRuleNames(DefaultGrammarView grammarView) {
 		for( RuleNameLabel rule : grammarView.getRuleMap().keySet() ) {
 			this.ruleNames.add(rule.text());
 		}
 	}
+
+	/** 
+	 * Returns the set of rule names associated with this name space. 
+	 * Only returns a value different from <code>null</code> if the
+	 * rule names have been initialised using {@link #setRuleNames(DefaultGrammarView)}.
+	 */
+	public Set<String> getRuleNames() {
+	    return ruleNames;
+	}
+	
+    private Set<String> ruleNames = new HashSet<String>();
+    
+    private HashMap<String, CommonTree> procs = new HashMap<String, CommonTree>();
 }
