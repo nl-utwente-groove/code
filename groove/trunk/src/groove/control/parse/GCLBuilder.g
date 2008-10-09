@@ -210,7 +210,11 @@ expression
 		builder.fail(start,fail); 
 	}
 ) | ^(CALL IDENTIFIER) {
-		proc(builder.getProc($IDENTIFIER.text)); 
+		if (builder.hasProc($IDENTIFIER.text)) {
+			proc(builder.getProc($IDENTIFIER.text)); 
+		} else {
+			builder.addTransition($IDENTIFIER.text);
+		}
 	}
   | TRUE { 
   		builder.addLambda();
