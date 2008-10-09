@@ -42,21 +42,27 @@ public class Namespace {
 	public void store(String name, CommonTree ast) {
 		this.procs.put(name, ast);
 	}
-	
-	/**
-	 * Returns the AST for a function.
+
+    /**
+     * Returns the AST for a function.
+     */
+    public CommonTree getProc(String name) throws RecognitionException {
+        CommonTree result = procs.get(name);
+        return result;
+    }
+
+    /**
+     * Tests if a function with a given name exists.
+     */
+    public boolean hasProc(String name) {
+        CommonTree result = procs.get(name);
+        return result != null;
+    }
+    
+	/** 
+	 * Tests if there is a rule with a given name.
 	 */
-	public CommonTree getProc(String name) throws RecognitionException {
-		CommonTree result = procs.get(name);
-//		if (result == null) {
-//	        // There is no such function
-//		    throw new RecognitionException();
-//		}
-		return result;
-	}
-	
-	/** Tests if there is a rule with a given name. */
-	public boolean ruleExists(String name) throws SemanticException {
+	public boolean hasRule(String name) {
 		 return ruleNames.contains(name);
 	}
 	

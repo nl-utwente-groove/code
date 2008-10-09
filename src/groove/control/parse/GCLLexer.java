@@ -10,6 +10,7 @@ import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
 
+@SuppressWarnings("all")
 public class GCLLexer extends Lexer {
     public static final int FUNCTION=7;
     public static final int STAR=22;

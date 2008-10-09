@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLBuilder.g 2008-10-08 09:36:49
+// $ANTLR 3.1b1 GCLBuilder.g 2008-10-09 10:29:59
 
 package groove.control.parse;
 import groove.control.*;
@@ -896,13 +896,17 @@ public class GCLBuilder extends TreeParser {
 
                     match(input, Token.UP, null); 
                     
-                    		proc(builder.getProc((IDENTIFIER1!=null?IDENTIFIER1.getText():null))); 
+                    		if (builder.hasProc((IDENTIFIER1!=null?IDENTIFIER1.getText():null))) {
+                    			proc(builder.getProc((IDENTIFIER1!=null?IDENTIFIER1.getText():null))); 
+                    		} else {
+                    			builder.addTransition((IDENTIFIER1!=null?IDENTIFIER1.getText():null));
+                    		}
                     	
 
                     }
                     break;
                 case 6 :
-                    // GCLBuilder.g:215:5: TRUE
+                    // GCLBuilder.g:219:5: TRUE
                     {
                     match(input,TRUE,FOLLOW_TRUE_in_expression359); 
                      
@@ -913,7 +917,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLBuilder.g:219:5: OTHER
+                    // GCLBuilder.g:223:5: OTHER
                     {
                     match(input,OTHER,FOLLOW_OTHER_in_expression367); 
                      
@@ -923,7 +927,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLBuilder.g:222:5: ANY
+                    // GCLBuilder.g:226:5: ANY
                     {
                     match(input,ANY,FOLLOW_ANY_in_expression375); 
                      
@@ -933,7 +937,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 9 :
-                    // GCLBuilder.g:225:5: rule
+                    // GCLBuilder.g:229:5: rule
                     {
                     pushFollow(FOLLOW_rule_in_expression383);
                     rule();
@@ -958,11 +962,11 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start condition
-    // GCLBuilder.g:228:1: condition : expression ;
+    // GCLBuilder.g:232:1: condition : expression ;
     public final void condition() throws RecognitionException {
         try {
-            // GCLBuilder.g:229:3: ( expression )
-            // GCLBuilder.g:229:5: expression
+            // GCLBuilder.g:233:3: ( expression )
+            // GCLBuilder.g:233:5: expression
             {
             pushFollow(FOLLOW_expression_in_condition397);
             expression();
@@ -985,13 +989,13 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start rule
-    // GCLBuilder.g:232:1: rule : IDENTIFIER ;
+    // GCLBuilder.g:236:1: rule : IDENTIFIER ;
     public final void rule() throws RecognitionException {
         CommonTree IDENTIFIER2=null;
 
         try {
-            // GCLBuilder.g:233:3: ( IDENTIFIER )
-            // GCLBuilder.g:233:5: IDENTIFIER
+            // GCLBuilder.g:237:3: ( IDENTIFIER )
+            // GCLBuilder.g:237:5: IDENTIFIER
             {
             IDENTIFIER2=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule410); 
              builder.addTransition((IDENTIFIER2!=null?IDENTIFIER2.getText():null)); 

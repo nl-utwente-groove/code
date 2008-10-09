@@ -26,11 +26,34 @@ public class AntlrParser {
 	 * Parse the grammar files. 
 	 */
 	public static void main(String[] args) {
-//		System.err.println("Lexer/Parser");
-//		org.antlr.Tool.main(new String[]{"GCL.g"});
-//		System.err.println("Checker");
-//		org.antlr.Tool.main(new String[]{"GCLChecker.g"});
-		System.err.println("Builder");
-		org.antlr.Tool.main(new String[]{"GCLBuilder.g"});
+	    try {
+	        switch (Integer.parseInt(args[0])) {
+	        case 0: 
+	            System.out.println("Lexer/Parser");
+	            org.antlr.Tool.main(new String[]{"GCL.g"});
+	            break;
+	        case 1: 
+	            System.out.println("Checker");
+	            org.antlr.Tool.main(new String[]{"GCLChecker.g"});
+	            break;
+	        case 2:
+	            System.out.println("Builder");
+	            org.antlr.Tool.main(new String[]{"GCLBuilder.g"});
+	            break;
+	        default: 
+	            printUsageMessage();
+	        }
+	    } catch (NumberFormatException exc) {
+	        printUsageMessage();
+        } catch (ArrayIndexOutOfBoundsException exc) {
+            printUsageMessage();
+	    }
+	}
+	
+	static private void printUsageMessage() {
+        System.out.printf("Usage: AntlrParser <option>%n");
+        System.out.printf("Option values: 0 for lexer/parser generation");
+        System.out.printf("               1 for checker generation");
+        System.out.printf("               2 for builder generation");
 	}
 }

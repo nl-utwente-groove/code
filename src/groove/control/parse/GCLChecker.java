@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2008-10-08 09:36:39
+// $ANTLR 3.1b1 GCLChecker.g 2008-10-09 10:15:24
 
 package groove.control.parse;
 import groove.control.*;
@@ -1094,7 +1094,7 @@ public class GCLChecker extends TreeParser {
 
 
                     // AST REWRITE
-                    // elements: e1, PLUS, e1
+                    // elements: e1, e1, PLUS
                     // token labels: 
                     // rule labels: retval, e1
                     // token list labels: 
