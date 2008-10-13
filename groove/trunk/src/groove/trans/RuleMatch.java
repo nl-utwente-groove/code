@@ -56,7 +56,7 @@ public class RuleMatch extends CompositeMatch {
     	if (eventSet.size() == 1 && !getRule().hasSubRules()) {
     		return eventSet.iterator().next();
     	} else {
-    		return new CompositeEvent(rule, eventSet);
+    		return new CompositeEvent(rule, eventSet, reuse);
     	}
     }
     

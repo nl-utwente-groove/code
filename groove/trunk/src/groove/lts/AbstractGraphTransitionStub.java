@@ -93,7 +93,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
 	 */
     @Override
     public int hashCode() {
-        return getEvent().identityHashCode() + target().hashCode();
+        return getEvent().hashCode() + target().hashCode();
     }
 	
     /**
