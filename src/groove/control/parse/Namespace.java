@@ -26,8 +26,6 @@ import java.util.Set;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 
-import antlr.SemanticException;
-
 /**
  * Namespace class for the AutomatonBuilder (for checking).
  * Can be used to store names with an optional referenced Object.
