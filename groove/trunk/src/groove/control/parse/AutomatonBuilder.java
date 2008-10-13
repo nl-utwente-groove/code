@@ -297,6 +297,16 @@ public class AutomatonBuilder extends Namespace {
 			currentEnd.setSuccess();
 		}
 		
+        if ( currentStart.getParent().getStart() == currentStart) {
+            currentStart.getParent().setStart(currentEnd);
+        }
+        if ( currentStart.getParent().source() == currentStart) {
+            currentStart.getParent().setSource(currentEnd);
+        }
+        if ( currentStart.getParent().target() == currentStart) {
+            currentStart.getParent().setTarget(currentEnd);
+        }
+		
 		// copy any init values, since the states are considered only seperated by a lambda, 
 		// the target init is reachable from the source also
 		currentEnd.addInit(currentStart);
@@ -334,12 +344,12 @@ public class AutomatonBuilder extends Namespace {
 			
 			// there is only a problem if the target has any incoming transitions other then ct
 			for( ControlTransition t : transitions ) {
-				if( t != ct && t.target() == ct.target() ) {
+				if( t != ct && t.target() == ct.target()) {
 					targetProblem = true;
 				}
 			}
 			
-			if( !targetProblem && !sourceProblem ) {
+			if( !targetProblem || !sourceProblem ) {
 				merge.add(ct);	
 			}
 			
@@ -373,7 +383,7 @@ public class AutomatonBuilder extends Namespace {
 		for( ControlState t : checkOrphan ) {
 			boolean delete = true;
 			for( ControlTransition ct : transitions ) {
-				if( ct.target() == checkOrphan ) {
+				if( ct.target() == t ) {
 					delete = false;
 				}
 			}
