@@ -30,7 +30,6 @@ import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.CacheReference;
 import groove.util.Groove;
-import groove.util.Reporter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,11 +58,10 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
      * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
      */
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
-    	super(reference, rule);
+    	super(reference, rule, reuse);
     	rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
     	this.nodeFactory = nodeFactory;
-    	this.reuse = reuse;
     }
 
     /** 
@@ -91,32 +89,10 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     }
     
     /**
-     * The hash code is based on that of the rule and an initial fragment of the
-     * anchor images.
-     */
-	@Override
-    public int hashCode() {
-    	return reuse ? identityHashCode() : eventHashCode();
-    }
-    
-    /**
-     * The event hash code is based on that of the rule and an initial fragment of the
-     * anchor images.
-     */
-	int eventHashCode() {
-        if (hashCode == 0) {
-            hashCode = computeEventHashCode();
-            if (hashCode == 0) {
-                hashCode = 1;
-            }
-        }
-        return hashCode;
-	}
-	
-    /**
      * Callback method to compute the event hash code.
      */
-    private int computeEventHashCode() {
+	@Override
+    int computeEventHashCode() {
     	reporter.start(HASHCODE);
         int result = getRule().hashCode();
         // we don't use getAnchorImage() because the events are often
@@ -137,35 +113,36 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     	reporter.stop();
         return result;
     }
-    
-    /**
-     * Two rule applications are equal if they have the same rule and anchor images.
-     * Note that the source is not tested; do not collect rule applications for different sources!
-     */
-	@Override
-    public boolean equals(Object obj) {
-    	boolean result;
-    	if (obj == this) {
-    		result = true;
-    	} else if (obj instanceof SPOEvent) {
-        	reporter.start(EQUALS);
-            result = !reuse && equalsEvent((SPOEvent) obj);
-            reporter.stop();
-        } else if (obj instanceof VirtualEvent) {
-            result = equals(((VirtualEvent<?>) obj).getInnerEvent());
-        } else {
-            result = false;
-        }
-        return result;
-    }
+//    
+//    /**
+//     * Two rule applications are equal if they have the same rule and anchor images.
+//     * Note that the source is not tested; do not collect rule applications for different sources!
+//     */
+//	@Override
+//    public boolean equals(Object obj) {
+//    	boolean result;
+//    	if (obj == this) {
+//    		result = true;
+//    	} else if (obj instanceof SPOEvent) {
+//        	reporter.start(EQUALS);
+//            result = !reuse && equalsEvent((SPOEvent) obj);
+//            reporter.stop();
+//        } else if (obj instanceof VirtualEvent) {
+//            result = equals(((VirtualEvent<?>) obj).getInnerEvent());
+//        } else {
+//            result = false;
+//        }
+//        return result;
+//    }
     
     /**
      * Tests if the content of this event coincides with that of the other.
      * The content consists of the rule and the anchor images.
      * Callback method from {@link #equals(Object)}.
      */
-    boolean equalsEvent(SPOEvent other) {
-        return this == other || getRule().equals(other.getRule()) && Arrays.equals(getAnchorImage(), other.getAnchorImage());
+	@Override
+    boolean equalsEvent(RuleEvent other) {
+        return this == other || other instanceof SPOEvent && getRule().equals(other.getRule()) && Arrays.equals(getAnchorImage(), ((SPOEvent) other).getAnchorImage());
     }
 
 	@Override
@@ -375,7 +352,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	 */
 	@Override
     public Set<Node> getErasedNodes() {
-		if (reuse) {
+		if (isReuse()) {
 			return getCache().getErasedNodes();
 		} else {
 			return computeErasedNodes();
@@ -417,7 +394,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	 * eraser edges.
 	 */
     public Set<Edge> getSimpleErasedEdges() {
-    	if (reuse) {
+    	if (isReuse()) {
     		return getCache().getSimpleErasedEdges();
     	} else {
     		return computeSimpleErasedEdges();
@@ -451,7 +428,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     }
 
     public Set<Edge> getSimpleCreatedEdges() {
-    	if (reuse) {
+    	if (isReuse()) {
     		return getCache().getSimpleCreatedEdges();
     	} else {
     		return computeSimpleCreatedEdges();
@@ -559,7 +536,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     
     public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
 		List<Node> result = computeCreatedNodes(hostNodes);
-		if (reuse) {
+		if (isReuse()) {
 		    if (coanchorImageMap == null) {
 		        coanchorImageMap = new HashMap<List<Node>, List<Node>>();
 		    }
@@ -660,7 +637,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	 * Returns <code>null</code> if the reuse policy is set to <code>false</code>.
 	 */
     private List<Node> getFreshNodes(int creatorIndex) {
-        if (reuse) {
+        if (isReuse()) {
             if (freshNodeList == null) {
                 freshNodeList = createFreshNodeList();
             }
@@ -685,18 +662,12 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
      * The array of source elements that form the anchor image.
      */
     private final Element[] anchorImage;
-    /**
-	 * The precomputed hash code.
-	 */
-	private int hashCode;
 	/**
 	 * The list of nodes created by {@link #createNode()}.
 	 */
 	private List<List<Node>> freshNodeList;
 	/** Store of previously used coanchor images. */
 	private Map<List<Node>, List<Node>> coanchorImageMap;
-	/** Flag indicating if sets should be stored for reuse. */
-	private final boolean reuse;
 	/** 
 	 * Reports the number of times a stored coanchor image has been recomputed 
 	 * for a new rule application.
@@ -736,9 +707,8 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference = CacheReference.<SPOEventCache>newInstance(false);
-	static private Reporter reporter = Reporter.register(RuleEvent.class);
+
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
-	static private int EQUALS = reporter.newMethod("equals()");
 	static private int GET_PARTIAL_MATCH = reporter.newMethod("getPartialMatch()");
 	static private int GET_ANCHOR_IMAGE = reporter.newMethod("getAnchorImage()");
 	

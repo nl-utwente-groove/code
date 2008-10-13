@@ -48,8 +48,8 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
      * dependency tree of the events, meaning the the first element is
      * the event corresponding to the top level of <code>rule</code>.
      */
-    public CompositeEvent(Rule rule, Collection<SPOEvent> eventSet) {
-    	super(reference, rule);
+    public CompositeEvent(Rule rule, Collection<SPOEvent> eventSet, boolean reuse) {
+    	super(reference, rule, reuse);
     	this.eventArray = new SPOEvent[eventSet.size()];
         eventSet.toArray(this.eventArray);
     }
@@ -193,22 +193,8 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
     	return getCache().getEventSet();
     }
     
-    /**
-     * The hash code is based on that of the rule and an initial fragment of the
-     * anchor images.
-     */
-	@Override
-    public int hashCode() {
-		if (hashCode == 0) {
-			hashCode = computeHashCode();
-			if (hashCode == 0) {
-				hashCode = 1;
-			}
-		}
-		return hashCode;
-    }
-	
-	private int computeHashCode() {
+    @Override
+	int computeEventHashCode() {
 		return Arrays.hashCode(eventArray);
 	}
     
@@ -216,7 +202,7 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
      * Two composite events are equal if they contain the same primitive events.
      */
 	@Override
-    public boolean equals(Object obj) {
+    boolean equalsEvent(RuleEvent obj) {
     	if (this == obj) {
     		return true;
     	}
@@ -237,10 +223,17 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
 		return new CompositeEventCache();
 	}
 
+    /** Also clears the caches of the constituent events. */
+	@Override
+	public void clearCache() {
+		super.clearCache();
+		for (SPOEvent event: eventArray) {
+			event.clearCache();
+		}
+	}
+
 	/** The (non-empty) array of sub-events constituting this event. */
     final SPOEvent[] eventArray;
-    /** The hash code of this event. */
-    private int hashCode;
     /** Cache reference instance for initialisation. */
     static private final CacheReference<CompositeEventCache> reference = CacheReference.<CompositeEventCache>newInstance(false);
     

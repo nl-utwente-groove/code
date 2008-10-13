@@ -24,6 +24,7 @@ import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
+import groove.util.Reporter;
 
 import java.util.Set;
 
@@ -34,11 +35,16 @@ import java.util.Set;
  */
 public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.AbstractEventCache> extends AbstractCacheHolder<C> implements RuleEvent {
 	/** Constructs an event for a given rule. */
-	protected AbstractEvent(CacheReference<C> template, R rule) {
+	protected AbstractEvent(CacheReference<C> template, R rule, boolean reuse) {
 		super(template);
 		this.rule = rule;
+		this.reuse = reuse;
 	}
 
+	boolean isReuse() {
+		return reuse;
+	}
+	
 	public Label getLabel() {
 		boolean brackets = this.getRule().getProperties().isShowTransitionBrackets();
 		return new NameLabel(this.toString(), brackets);
@@ -73,15 +79,72 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     /** Computes and returns the set of erased nodes. */
     abstract Set<Node> computeErasedNodes();
-
+        
     /**
-     * Callback factory method to create a fresh, empty node set.
+     * The hash code is based on that of the rule and an initial fragment of the
+     * anchor images.
      */
-    protected Set<Node> createNodeSet() {
-        return new NodeSet();
+	@Override
+    public int hashCode() {
+    	return isReuse() ? identityHashCode() : eventHashCode();
     }
 
     /**
+     * Two rule applications are equal if they have the same rule and anchor images.
+     * Note that the source is not tested; do not collect rule applications for different sources!
+     */
+	@Override
+    public boolean equals(Object obj) {
+    	boolean result;
+    	if (obj == this) {
+    		result = true;
+    	} else if (obj instanceof RuleEvent) {
+        	reporter.start(EQUALS);
+            result = !reuse && equalsEvent((RuleEvent) obj);
+            reporter.stop();
+        } else if (obj instanceof VirtualEvent) {
+            result = equals(((VirtualEvent<?>) obj).getInnerEvent());
+        } else {
+            result = false;
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Tests if the content of this event coincides with that of the other.
+     * The content consists of the rule and the anchor images.
+     * Callback method from {@link #equals(Object)}.
+     */
+    abstract boolean equalsEvent(RuleEvent other);
+
+    /**
+     * The event hash code is based on that of the rule and an initial fragment of the
+     * anchor images.
+     */
+	int eventHashCode() {
+        if (hashCode == 0) {
+            hashCode = computeEventHashCode();
+            if (hashCode == 0) {
+                hashCode = 1;
+            }
+        }
+        return hashCode;
+	}
+	
+    /**
+     * Callback method to compute the event hash code.
+     */
+    abstract int computeEventHashCode();
+    
+    /**
+	 * Callback factory method to create a fresh, empty node set.
+	 */
+	protected Set<Node> createNodeSet() {
+	    return new NodeSet();
+	}
+
+	/**
      * Callback factory method to create a fresh, empty node set with a given initial capacity.
      */
     protected Set<Node> createNodeSet(int capacity) {
@@ -106,9 +169,17 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     
     /** The rule for which this is an event. */
     private final R rule;
+	/** Flag indicating if sets should be stored for reuse. */
+	private final boolean reuse;
+    /**
+	 * The precomputed hash code.
+	 */
+	private int hashCode;
     /** The pre-computed identity hash code for this object. */
     private int identityHashCode;
-    
+	static Reporter reporter = Reporter.register(RuleEvent.class);
+	static private int EQUALS = reporter.newMethod("equals()");
+
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {
         /** Returns the cached set of nodes erased by the event. */

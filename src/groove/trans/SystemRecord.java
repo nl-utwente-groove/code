@@ -105,8 +105,8 @@ public class SystemRecord implements NodeFactory {
     	RuleEvent result;
     	reporter.start(GET_EVENT);
         RuleEvent event = match.newEvent(this, isReuseEvents());
-        if (isReuseEvents() && event instanceof SPOEvent) {
-            result = eventMap.put((SPOEvent) event);
+        if (isReuseEvents() && event instanceof AbstractEvent) {
+            result = eventMap.put((AbstractEvent<?,?>) event);
             if (result == null) {
                 // the event is new.
                 result = event;
@@ -320,14 +320,14 @@ public class SystemRecord implements NodeFactory {
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #isReuseEvents()} is set.
      */
-    private final TreeHashSet<SPOEvent> eventMap = new TreeHashSet<SPOEvent>() {
+    private final TreeHashSet<AbstractEvent<?,?>> eventMap = new TreeHashSet<AbstractEvent<?,?>>() {
         @Override
-        protected boolean areEqual(SPOEvent newKey, SPOEvent oldKey) {
+        protected boolean areEqual(AbstractEvent<?,?> newKey, AbstractEvent<?,?> oldKey) {
             return newKey.equalsEvent(oldKey);
         }
 
         @Override
-        protected int getCode(SPOEvent key) {
+        protected int getCode(AbstractEvent<?,?> key) {
             return key.eventHashCode();
         }
     };
