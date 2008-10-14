@@ -39,7 +39,8 @@ public class PropertyAcceptor extends Acceptor {
 	}
 	
 	@Override
-	public void closeUpdate(LTS graph, State explored) {		if( property.isSatisfied((GraphState) explored)) {			getResult().add((GraphState) explored);		}	}
+	public void closeUpdate(LTS graph, State explored) {		
+		if( property.isSatisfied((GraphState) explored)) {			getResult().add((GraphState) explored);		}	}
 
 	/** This implementation returns a {@link PropertyAcceptor}. */
 	@Override
