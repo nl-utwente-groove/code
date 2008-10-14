@@ -76,7 +76,10 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 	private void loadProperties(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
 		// search for a properties file
         
-		File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
+		File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
+		if( !propertiesFile.exists()) {
+			propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
+		}
 		Properties grammarProperties = null;
         if (propertiesFile.exists()) {
             grammarProperties = new Properties();
