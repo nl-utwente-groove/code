@@ -449,6 +449,15 @@ public class Simulator {
         return loadStartGraphAction;
     }
 
+    /** Returns the start graph load action permanently associated with this simulator. */
+    public LoadControlFileAction getLoadControlFileAction() {
+    	// lazily create the action
+    	if (loadControlFileAction == null) {
+    		loadControlFileAction = new LoadControlFileAction();
+    	}
+        return loadControlFileAction;
+    }
+    
     /** Returns the grammar load action permanently associated with this simulator. */
     public Action getLoadGrammarAction() {
     	// lazily create the action
@@ -694,6 +703,9 @@ public class Simulator {
                         File startFile = new File(grammarFile, grammar.getStartGraph().getName());
                         getStateFileChooser().setSelectedFile(startFile);
                     }
+                    if( grammar.getControl() != null ) {
+                    	getControlFileChooser().setSelectedFile(grammar.getControl().getFile());
+                    }
                     getGrammarFileChooser().setSelectedFile(grammarFile);
                 } catch (final IOException exc) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -749,6 +761,24 @@ public class Simulator {
             setGrammar(getCurrentGrammar());
         } catch (IOException exc) {
             showErrorDialog("Could not load start graph from " + file.getName(), exc);
+        }
+    }
+
+	/**
+     * Sets the contents of a given file as start state. This results in a reset of the LTS.
+     */
+    void doLoadControlFile(File file) {
+    	try {
+//            ControlView cv = getCurrentGrammar().getControl();
+//            if( cv == null ) {
+            	ControlView cv = new ControlView(getCurrentGrammar(), file);
+            	getCurrentGrammar().setControl(cv);
+//            } else {
+//            	cv.loadProgram(file);
+//            }
+            setGrammar(getCurrentGrammar());
+        } catch (IOException exc) {
+            showErrorDialog("Could not load control program from " + file.getName(), exc);
         }
     }
     
@@ -866,8 +896,9 @@ public class Simulator {
         if (currentGrammarFile != null) {
         	AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
             try {
+            	File currentControlFile = getControlFileChooser().getSelectedFile();
             	File currentStateFile = getStateFileChooser().getSelectedFile();
-            	if (startGraph != null && currentStateFile == null) {
+            	if (startGraph != null && currentStateFile == null && currentControlFile == null ) {
             		setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile, startGraph.getName()));
             	} else {
             		DefaultGrammarView grammar = currentGrammarLoader.unmarshal(currentGrammarFile);
@@ -876,6 +907,11 @@ public class Simulator {
                     	startGraph = new AspectualGraphView(aspectStartGraph);
                     	grammar.setStartGraph(startGraph);
                     }
+                    if( currentControlFile != null ) {
+                    	ControlView cv = new ControlView(grammar, currentControlFile);
+                    	grammar.setControl(cv);
+                    }
+                    
                     setGrammar(grammar);
             	}
             } catch (IOException exc) {
@@ -1413,6 +1449,7 @@ public class Simulator {
 	    result.add(createNewMenu());
 	    result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
+        result.add(new JMenuItem(getLoadControlFileAction()));
         result.add(new JMenuItem(getRefreshGrammarAction()));
         result.add(createOpenRecentMenu());
 	    result.addSeparator();
@@ -1668,6 +1705,19 @@ public class Simulator {
 			stateFileChooser.setFileFilter(stateFilter);
 		}
         return stateFileChooser;
+	}
+	
+	/**
+	 * Returns the file chooser for control (GCP) files, lazily creating it first.
+	 */
+	JFileChooser getControlFileChooser() {
+		if (controlFileChooser == null) {
+			controlFileChooser = new GrooveFileChooser();
+			controlFileChooser.addChoosableFileFilter(controlFilter);
+//			controlFileChooser.addChoosableFileFilter(gxlFilter);
+			controlFileChooser.setFileFilter(controlFilter);
+		}
+        return controlFileChooser;
 	}
 
 	/** Returns a dialog that will ask for a formula to be entered. */
@@ -2135,6 +2185,11 @@ public class Simulator {
     private JFileChooser stateFileChooser;
 
     /**
+     * File chooser for control files.
+     */
+    private JFileChooser controlFileChooser;
+    
+    /**
      * Dialog for entering temporal formulae.
      */
     private FormulaDialog formulaDialog;
@@ -2149,6 +2204,11 @@ public class Simulator {
      */
     private final ExtensionFilter stateFilter = Groove.createStateFilter();
 
+    /**
+     * Extension filter for control files.
+     */
+    private final ExtensionFilter controlFilter = Groove.createControlFilter();
+    
     /**
      * Extension filter used for exporting the LTS in jpeg format.
      */
@@ -2253,6 +2313,9 @@ public class Simulator {
 	 */
 	private GotoStartStateAction gotoStartStateAction;
 
+	/** The control file load action permanently associated with this simulator. */
+    private LoadControlFileAction loadControlFileAction;
+	
 	/** The start state load action permanently associated with this simulator. */
     private LoadStartGraphAction loadStartGraphAction;
 
@@ -3059,6 +3122,35 @@ public class Simulator {
         }
     }
 
+    /**
+     * Action for loading and setting a different control program.
+     * @see Simulator#doLoadControlFile(File)
+     */
+    private class LoadControlFileAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+    	LoadControlFileAction() {
+            super(Options.LOAD_CONTROL_FILE_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+//            stateFileChooser.setSelectedFile(currentStartStateFile);
+            JFileChooser fc = getControlFileChooser();
+        	
+        	int result = getControlFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+                doLoadControlFile(getControlFileChooser().getSelectedFile());
+            }
+        }
+        
+        /** Sets the enabling status of this action, depending on whether a grammar is currently loaded. */ 
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
+    }
+    
+    
     /**
      * Action for loading a new rule system.
      * @see Simulator#doLoadGrammar(AspectualViewGps, File, String)

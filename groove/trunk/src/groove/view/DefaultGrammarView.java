@@ -223,15 +223,20 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     	}
     	
     	if( controlView != null ) {
-    		try
-    		{
-    			ControlAutomaton ca = controlView.toAutomaton(result);
-    			result.setControl(ca);
+    		
+    		if( result.hasMultiplePriorities() ) {
+    			errors.add("Unable to combine rule priorities and a control program, please disable either.");
+    		} else {
+        		try {
+        			ControlAutomaton ca = controlView.toAutomaton(result);
+        			result.setControl(ca);
+        		}
+        		catch(FormatException e) {
+        			errors.addAll(e.getErrors());
+        		}
+    			
     		}
-    		catch(FormatException e)
-    		{
-    			errors.addAll(e.getErrors());
-    		}
+    		
     	}
     	
     	result.setProperties(getProperties());

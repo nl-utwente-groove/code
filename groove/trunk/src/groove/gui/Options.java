@@ -187,6 +187,8 @@ public class Options {
     public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
 	/** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME = "List Atom. Prop.";
+    /** Load control file action name */
+    public static final String LOAD_CONTROL_FILE_ACTION_NAME = "Load Control ...";
     /** Load start state action name */
     public static final String LOAD_START_STATE_ACTION_NAME = "Load Start State ...";
     /** Load grammar action name */
