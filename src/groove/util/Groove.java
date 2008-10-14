@@ -99,6 +99,8 @@ public class Groove {
     /** Extension for Graph Layout files. */
     public static final String LAYOUT_EXTENSION = ".gl";
     /** Extension for property files. */
+    public static final String CONTROL_EXTENSION = ".gcp";
+    /** Extension for property files. */
     public static final String PROPERTY_EXTENSION = ".properties";
     /** File name for GUI properties. */
     public static final String GUI_PROPERTIES_FILE = "groove.gui"+PROPERTY_EXTENSION;
@@ -224,6 +226,14 @@ public class Groove {
         return createStateFilter(true);
     }
 
+    /**
+     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>.
+     * By default, the filter accepts directories.
+     */
+    public static ExtensionFilter createControlFilter() {
+    	return new ExtensionFilter("Groove control files", CONTROL_EXTENSION);
+    }
+    
     /**
      * Returns a fresh extension filter for <tt>PROPERTIES_EXTENSION</tt>.
      * By default, the filter accepts directories.

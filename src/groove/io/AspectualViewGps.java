@@ -63,7 +63,11 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
         return unmarshal(location, null);
     }
     
-    public DefaultGrammarView unmarshal(File location, String startGraphName) throws IOException {        if (!location.exists()) {            throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location.getAbsolutePath()                    + "\" does not exist");        }        if (!location.isDirectory()) {            throw new IOException(LOAD_ERROR + ": rule system location \"" + location                    + "\" is not a directory");        }        String grammarName = getExtensionFilter().stripExtension(location.getName());        DefaultGrammarView result = createGrammar(grammarName);        loadProperties(result, location);        loadRules(result, location);        loadStartGraph(result, startGraphName, location);        loadControl(result, location);        return result;    }
+    public DefaultGrammarView unmarshal(File location, String startGraphName) throws IOException {
+    	return unmarshal(location, startGraphName, null);
+    }
+    
+    public DefaultGrammarView unmarshal(File location, String startGraphName, String controlName) throws IOException {        if (!location.exists()) {            throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location.getAbsolutePath()                    + "\" does not exist");        }        if (!location.isDirectory()) {            throw new IOException(LOAD_ERROR + ": rule system location \"" + location                    + "\" is not a directory");        }        String grammarName = getExtensionFilter().stripExtension(location.getName());        DefaultGrammarView result = createGrammar(grammarName);        loadProperties(result, location);        loadRules(result, location);        loadStartGraph(result, startGraphName, location);        loadControl(result, location, controlName);        return result;    }
 
 	/**
 	 * Loads the properties file for a given graph grammar
@@ -88,16 +92,21 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
-	private void loadControl(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
+	private void loadControl(DefaultGrammarView result, File location, String controlName) throws IOException, FileNotFoundException {
 //		String controlFileName = result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
 //		if( controlFileName == null)
 //			return;
 //		File controlProgramFile = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
 		//System.out.println(controlProgram.getAbsolutePath());
 		
-		File controlProgramFile = new File( location, result.getName() + ".gcp");
-		
-		
+		if( controlName == null ) {
+			controlName = "control";
+		}
+		File controlProgramFile = new File( location, controlName + Groove.CONTROL_EXTENSION);
+		// backwards compatibilty, trying <grammarname>.gcp also
+		if( !controlProgramFile.exists()) {
+			controlProgramFile = new File( location, result.getName() + Groove.CONTROL_EXTENSION);
+		}
 		if( controlProgramFile.exists() ) {
 //			try
 //			{				ControlView cv = new ControlView(result, controlProgramFile);				result.setControl(cv);//			}
