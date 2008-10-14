@@ -100,6 +100,10 @@ public class Groove {
     public static final String LAYOUT_EXTENSION = ".gl";
     /** Extension for property files. */
     public static final String CONTROL_EXTENSION = ".gcp";
+    
+    /** Default name for property files. */
+    public static final String PROPERTY_NAME = "grammar";
+    
     /** Extension for property files. */
     public static final String PROPERTY_EXTENSION = ".properties";
     /** File name for GUI properties. */
