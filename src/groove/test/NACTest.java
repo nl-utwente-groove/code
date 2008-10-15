@@ -258,7 +258,7 @@ public class NACTest extends TestCase {
     private Collection<RuleApplication> getDerivations(SPORule rule, Graph graph) {
     	Collection<RuleApplication> result = new ArrayList<RuleApplication>();
     	for (RuleMatch match: ((Rule) rule).getMatches(graph, null)) {
-			result.add(match.newEvent(null, true).newApplication(graph));
+			result.add(match.newEvent(null).newApplication(graph));
 		}
     	return result;
     }

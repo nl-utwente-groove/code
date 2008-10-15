@@ -155,10 +155,13 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
 	/** 
 	 * Checks if the sub-events have matches in the given graph.
 	 * This is <code>not</code> sufficient to make sure that the event as a whole matches!
+	 * TODO has to be adapted now that the anchor no longer includes the root map images
 	 */
 	boolean hasSubMatches(Graph source) {
         for (RuleEvent event: eventArray) {
-            if (!event.hasMatch(source)) {
+            // the isGround test is necessary as long as we are not able to include the
+            // match of a parent event to provide images for the roots
+            if (event.getRule().isGround() && !event.hasMatch(source)) {
                 return false;
             }
         }

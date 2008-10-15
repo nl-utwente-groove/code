@@ -271,8 +271,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 
 	/** Reporter instance to profile matcher methods. */
     static public final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
-    /** Handle for profiling {@link #getMatch(Graph, NodeEdgeMap)} */
-    static final int GET_MATCH = reporter.newMethod("getMatch()");
     /** Handle for profiling {@link #getMatchSet(Graph, NodeEdgeMap)} */
     static final int GET_MATCH_SET = reporter.newMethod("getMatchSet()");
     /** Handle for profiling {@link #getMatchIter(GraphShape, NodeEdgeMap)} */

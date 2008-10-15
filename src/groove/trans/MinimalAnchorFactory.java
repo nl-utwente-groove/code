@@ -16,13 +16,6 @@
  */
 package groove.trans;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
@@ -30,6 +23,13 @@ import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * In this implementation, the anchors are the minimal set of nodes and edges 
@@ -63,18 +63,14 @@ public class MinimalAnchorFactory implements AnchorFactory {
      */
     public Element[] newAnchors(Rule generalRule) {
         SPORule rule = (SPORule) generalRule;
-        Set<Element> anchors = new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));        if( rule.getParameterNodeMap() != null )        	anchors.addAll(rule.getParameterNodeMap().values());        //      System.err.println("Added parameter nodes to anchor of rule " + generalRule.getName().name());        
+        Set<Element> anchors = new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));        if( rule.getParameterNodeMap() != null )        	anchors.addAll(rule.getParameterNodeMap().values());        
         Set<? extends Node> creatorNodes = rule.getCreatorGraph().nodeSet();
         for (Map.Entry<Node,Node> ruleMorphNodeEntry: rule.getMorphism().nodeMap().entrySet()) {
         	if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
         		anchors.add(ruleMorphNodeEntry.getKey());
         	}
         }
-        for (Node rootImage: rule.getRootMap().nodeMap().values()) {
-            if (isAnchorable(rootImage)) {
-                anchors.add(rootImage);
-            }
-        }
+        addRootImageNodes(rule, anchors);
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
         for (Edge lhsVarEdge: rule.getSimpleVarEdges()) {
@@ -90,19 +86,39 @@ public class MinimalAnchorFactory implements AnchorFactory {
                 removableEnds.addAll(eraserEdgeEnds);
             }
         }
-        for (Edge rootEdge: rule.getRootMap().edgeMap().values()) {
-            if (isAnchorable(rootEdge)) {
-                Collection<Node> rootEdgeEnds = Arrays.asList(rootEdge.ends());
-                if (!anchors.containsAll(rootEdgeEnds)) {
-                    anchors.add(rootEdge);
-                    // if we have the edge in the anchors, its end nodes need not be there
-                    removableEnds.addAll(rootEdgeEnds);
-                }
-            }
-        }
+        addRootImageEdges(rule, anchors, removableEnds);
         anchors.addAll(rule.getMergeMap().keySet());
         anchors.removeAll(removableEnds);
         return anchors.toArray(new Element[0]);
+    }
+
+    /** Adds the node images of the root map to the anchors. */
+    private void addRootImageNodes(SPORule rule, Set<Element> anchors) {
+        // why do we need the root images, if this rule doesn't do anything with them?
+        if (false) {
+            for (Node rootImage : rule.getRootMap().nodeMap().values()) {
+                if (isAnchorable(rootImage)) {
+                    anchors.add(rootImage);
+                }
+            }
+        }
+    }
+
+    /** Adds the edge images of the root map to the anchors. */
+    private void addRootImageEdges(SPORule rule, Set<Element> anchors, Set<Node> removableEnds) {
+        // why do we need the root images, if this rule doesn't do anything with them?
+        if (false) {
+            for (Edge rootEdge : rule.getRootMap().edgeMap().values()) {
+                if (isAnchorable(rootEdge)) {
+                    Collection<Node> rootEdgeEnds = Arrays.asList(rootEdge.ends());
+                    if (!anchors.containsAll(rootEdgeEnds)) {
+                        anchors.add(rootEdge);
+                        // if we have the edge in the anchors, its end nodes need not be there
+                        removableEnds.addAll(rootEdgeEnds);
+                    }
+                }
+            }
+        }
     }
     
     /** 
