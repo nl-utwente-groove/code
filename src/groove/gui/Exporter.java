@@ -21,6 +21,7 @@ import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -53,6 +54,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+
+import org.jgraph.graph.GraphModel;
 
 import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
@@ -608,7 +611,13 @@ public class Exporter {
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            export(jGraph.getModel().toPlainGraph(), file);
+        	GraphShape graph;
+        	if (jGraph.getModel() instanceof GraphJModel) {
+        		graph = ((GraphJModel) jGraph.getModel()).getGraph();
+        	} else {
+        		graph = jGraph.getModel().toPlainGraph();
+        	}
+            export(graph, file);
         }
 
         /**

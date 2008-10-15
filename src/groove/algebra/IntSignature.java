@@ -21,10 +21,13 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface IntSignature<T> {
+public interface IntSignature<T> extends Signature {
     /** Addition of two integers. */
     T add(T arg1, T arg2);
 
     /** Name of this signature. */
     static final String NAME = "int";
+    
+    /** The default implementation of this signature. */
+    static final Class<? extends IntSignature<?>> DEFAULT = JavaIntAlgebra.class;
 }

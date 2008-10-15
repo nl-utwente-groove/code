@@ -66,7 +66,11 @@ public class CompositeEvent extends
     }
 
     public String getAnchorImageString() {
-        return Arrays.toString(this.eventArray);
+    	List<String> eventLabels = new ArrayList<String>();
+    	for (SPOEvent event: eventArray) {
+    		eventLabels.add(event.getRule().getName().name()+event.getAnchorImageString());
+    	}
+        return Arrays.toString(eventLabels.toArray());
     }
 
     public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
@@ -87,6 +91,7 @@ public class CompositeEvent extends
     }
 
     public RuleMatch getMatch(Graph source) {
+    	if (false) {
         // the events are ordered according to rule level
         // so we can build a stack of corresponding matches
         Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
@@ -113,6 +118,16 @@ public class CompositeEvent extends
             matchStack.push(match);
         }
         return matchStack.get(0);
+    	} else {
+    		for (RuleMatch result: getRule().getMatches(source, null)) {
+    			if (result.newEvent(null).equals(this)) {
+    				return result;
+    			}
+    		}
+    		// if we're here, we failed to reconstruct this event from 
+    		// any of the matches.
+    		throw new IllegalArgumentException(String.format("Can't find match for event %s", this));
+    	}
     }
 
     public MergeMap getMergeMap() {

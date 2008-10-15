@@ -306,7 +306,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         }
         DefaultMutableTreeNode treeNode = null;
         if (getCurrentTransition() != null) {
-            treeNode = this.matchNodeMap.get(getCurrentTransition().getMatch());
+            treeNode = this.matchNodeMap.get(getCurrentTransition().getEvent());
         } else if (getCurrentEvent() != null) {
             treeNode = this.matchNodeMap.get(getCurrentEvent());
         } else if (getCurrentRule() != null) {
@@ -687,7 +687,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                         getCurrentState().getTransitionIter();
                     while (outTransitions.hasNext()) {
                         GraphTransition t = outTransitions.next();
-                        if (t.getMatch().equals(event)) {
+                        if (t.getEvent().equals(event)) {
                             trans = t;
                             RuleJTree.this.matchTransitionMap.put(event, trans);
                             break;

@@ -35,7 +35,7 @@ public class CompositeMatch implements Match, Cloneable {
     /** Constructs a match wrapping a given element map. */
     public CompositeMatch(VarNodeEdgeMap elementMap) {
         this.elementMap = elementMap;
-        this.subMatches = new HashSet<Match>();
+        this.subMatches = new java.util.LinkedHashSet<Match>();
     }
 
     /** Constructs a match for a given {@link SPORule}. */
@@ -131,7 +131,7 @@ public class CompositeMatch implements Match, Cloneable {
 
     /** Callback factory method for a cloned match. */
     protected CompositeMatch createMatch() {
-        return new CompositeMatch();
+        return new CompositeMatch(getElementMap());
     }
 
     /** Computes a value for the hash code. */

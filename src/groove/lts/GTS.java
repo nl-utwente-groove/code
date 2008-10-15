@@ -239,6 +239,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     @Override
     public int edgeCount() {
+    	assert this.transitionCount == edgeSet().size();
         return this.transitionCount;
     }
 

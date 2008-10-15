@@ -237,7 +237,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     @Override
     protected void updateClosed() {
-        clearCache();
+//        clearCache();
     }
 
     /**
