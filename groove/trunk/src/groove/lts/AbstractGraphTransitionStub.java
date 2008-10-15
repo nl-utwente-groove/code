@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import java.util.Arrays;
+
 import groove.graph.Element;
 import groove.graph.Node;
 import groove.trans.RuleEvent;
@@ -80,7 +82,9 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
      * from {@link #equals(Object)}.
      */
     protected boolean equalsStub(AbstractGraphTransitionStub other) {
-        return target() == other.target() && getEvent() == other.getEvent();
+        boolean result = target() == other.target() && getEvent() == other.getEvent() && isSymmetry() == other.isSymmetry();
+        assert !result || Arrays.equals(addedNodes, other.addedNodes);
+        return result;
     }
 
     /**

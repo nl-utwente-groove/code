@@ -509,6 +509,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     String ruleNameSuffix = Groove.toString(level.toArray());
                     if (levelName != null) {
                         ruleNameSuffix = levelName + ruleNameSuffix;
+                    } else {
+                    	ruleNameSuffix = this.name+ruleNameSuffix;
                     }
                     condition.setName(new RuleNameLabel(ruleNameSuffix));
                     levelRuleMap.get(parentLevel).addSubCondition(condition);

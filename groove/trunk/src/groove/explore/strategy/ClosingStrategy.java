@@ -28,6 +28,8 @@ import groove.trans.RuleEvent;
 import groove.trans.VirtualEvent;
 import groove.util.Pair;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -55,6 +57,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
             GraphTransition trans =
                 getMatchApplier().addTransition(getAtState(), nextEvent,
                     cache.getTarget(nextEvent.getRule()));
+//            out.printf("%s%n",trans);
             outTransitions.add(new VirtualEvent.GraphState(trans));
         }
         addToPool(outTransitions);
@@ -119,7 +122,15 @@ abstract public class ClosingStrategy extends AbstractStrategy {
             ClosingStrategy.this.newStates.add((GraphState) node);
         }
     }
-
+//
+//    private static PrintWriter out;
+//    static {
+//    	try {
+//			out = new PrintWriter("out5-2.txt");
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
+//    }
     /** Element type of the pool of explorable elements. */
     protected static class PoolElement extends
             Pair<GraphState,Collection<VirtualEvent.GraphState>> {
