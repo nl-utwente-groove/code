@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: HashBagTest.java,v 1.3 2008-01-30 09:33:08 iovka Exp $
@@ -41,62 +41,62 @@ public class HashBagTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        bag122 = new HashBag<Integer>();
-        bag122.add(i1);
-        bag122.add(i2);
-        bag122.add(i2);
-        bag233444 = new HashBag<Integer>();
-        bag233444.add(i2);
-        bag233444.add(i3);
-        bag233444.add(i3);
-        bag233444.add(i4);
-        bag233444.add(i4);
-        bag233444.add(i4);
+        this.bag122 = new HashBag<Integer>();
+        this.bag122.add(this.i1);
+        this.bag122.add(this.i2);
+        this.bag122.add(this.i2);
+        this.bag233444 = new HashBag<Integer>();
+        this.bag233444.add(this.i2);
+        this.bag233444.add(this.i3);
+        this.bag233444.add(this.i3);
+        this.bag233444.add(this.i4);
+        this.bag233444.add(this.i4);
+        this.bag233444.add(this.i4);
     }
 
     public void testSize() {
-        assertEquals(3,bag122.size());
-        bag122.remove(i3); // [1,2,2]
-        assertEquals(3,bag122.size());
-        bag122.remove(i1); // [2,2]
-        assertEquals(2,bag122.size());
-        bag122.remove(i1); // [2,2]
-        assertEquals(2,bag122.size());
-        bag122.remove(i2); // [2]
-        assertEquals(1,bag122.size());
-        bag122.remove(i2); // []
-        assertEquals(0,bag122.size());
-        assertEquals(6,bag233444.size());
+        assertEquals(3, this.bag122.size());
+        this.bag122.remove(this.i3); // [1,2,2]
+        assertEquals(3, this.bag122.size());
+        this.bag122.remove(this.i1); // [2,2]
+        assertEquals(2, this.bag122.size());
+        this.bag122.remove(this.i1); // [2,2]
+        assertEquals(2, this.bag122.size());
+        this.bag122.remove(this.i2); // [2]
+        assertEquals(1, this.bag122.size());
+        this.bag122.remove(this.i2); // []
+        assertEquals(0, this.bag122.size());
+        assertEquals(6, this.bag233444.size());
     }
 
     public void testClear() {
-        bag122.clear();
-        assertTrue(bag122.isEmpty());
-        bag233444.clear();
-        assertTrue(bag233444.isEmpty());
+        this.bag122.clear();
+        assertTrue(this.bag122.isEmpty());
+        this.bag233444.clear();
+        assertTrue(this.bag233444.isEmpty());
     }
 
     public void testClone() {
-    	@SuppressWarnings("unchecked")
-        HashBag<Integer> bag122Clone = (HashBag<Integer>) bag122.clone();
-        assertEquals(1,bag122Clone.multiplicity(i1));        
-        assertEquals(2,bag122Clone.multiplicity(i2));        
-        assertEquals(0,bag122Clone.multiplicity(i3)); 
+        @SuppressWarnings("unchecked")
+        HashBag<Integer> bag122Clone = (HashBag<Integer>) this.bag122.clone();
+        assertEquals(1, bag122Clone.multiplicity(this.i1));
+        assertEquals(2, bag122Clone.multiplicity(this.i2));
+        assertEquals(0, bag122Clone.multiplicity(this.i3));
         bag122Clone.remove(new Integer(2));
-        assertEquals(1,bag122Clone.multiplicity(i2));        
-        assertEquals(2,bag122.multiplicity(i2));        
-        bag122.remove(new Integer(2));
-        assertEquals(1,bag122Clone.multiplicity(i2));        
-        assertEquals(1,bag122.multiplicity(i2));        
+        assertEquals(1, bag122Clone.multiplicity(this.i2));
+        assertEquals(2, this.bag122.multiplicity(this.i2));
+        this.bag122.remove(new Integer(2));
+        assertEquals(1, bag122Clone.multiplicity(this.i2));
+        assertEquals(1, this.bag122.multiplicity(this.i2));
     }
-    
+
     public void testContainsObject() {
-        assertTrue(bag122.contains(new Integer(1)));
-        assertTrue(!bag122.contains(new Integer(3)));
-        bag122.remove(new Integer(2));
-        assertTrue(bag122.contains(new Integer(2)));
-        bag122.remove(new Integer(2));
-        assertTrue(!bag122.contains(new Integer(2)));
+        assertTrue(this.bag122.contains(new Integer(1)));
+        assertTrue(!this.bag122.contains(new Integer(3)));
+        this.bag122.remove(new Integer(2));
+        assertTrue(this.bag122.contains(new Integer(2)));
+        this.bag122.remove(new Integer(2));
+        assertTrue(!this.bag122.contains(new Integer(2)));
     }
 
     /*
@@ -104,34 +104,34 @@ public class HashBagTest extends TestCase {
      */
     public void testIterator() {
         Set<Integer> set122 = new HashSet<Integer>();
-        Iterator<Integer> iter = bag122.iterator();
+        Iterator<Integer> iter = this.bag122.iterator();
         while (iter.hasNext()) {
             set122.add(iter.next());
         }
-        assertEquals(bag122.elementSet(),set122);
-        iter = bag122.iterator();
+        assertEquals(this.bag122.elementSet(), set122);
+        iter = this.bag122.iterator();
         while (iter.hasNext()) {
             Object next = iter.next();
-            if (next.equals(i1)) {
+            if (next.equals(this.i1)) {
                 iter.remove();
             }
         }
-        assertEquals(2, bag122.multiplicity(i2));
+        assertEquals(2, this.bag122.multiplicity(this.i2));
         HashBag<Integer> bag22 = new HashBag<Integer>();
         bag22.add(new Integer(2));
-        bag22.add(i2);
-        assertEquals(bag22,bag122);
-        iter = bag122.iterator();
+        bag22.add(this.i2);
+        assertEquals(bag22, this.bag122);
+        iter = this.bag122.iterator();
         boolean removed2 = false;
         while (!removed2 && iter.hasNext()) {
             Object next = iter.next();
-            if (next.equals(i2)) {
+            if (next.equals(this.i2)) {
                 iter.remove();
                 removed2 = true;
             }
         }
-        bag22.remove(i2);
-        assertEquals(bag22,bag122);
+        bag22.remove(this.i2);
+        assertEquals(bag22, this.bag122);
     }
 
     /*

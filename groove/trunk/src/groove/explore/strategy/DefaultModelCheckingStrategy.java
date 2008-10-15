@@ -1,18 +1,19 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
- * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008/03/05 08:41:17 kastenberg Exp $
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
+ * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008/03/05 08:41:17 kastenberg
+ * Exp $
  */
 package groove.explore.strategy;
 
@@ -49,159 +50,172 @@ import rwth.i2.ltl2ba4j.model.IState;
 import rwth.i2.ltl2ba4j.model.ITransition;
 
 /**
- * This class provides some default implementations for the methods that
- * are required for strategies that perform model checking activities.
+ * This class provides some default implementations for the methods that are
+ * required for strategies that perform model checking activities.
  * 
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public abstract class DefaultModelCheckingStrategy extends AbstractStrategy implements ModelCheckingStrategy {
+public abstract class DefaultModelCheckingStrategy extends AbstractStrategy
+        implements ModelCheckingStrategy {
     /** This implementation initialises the product automaton as well. */
-	@Override
+    @Override
     public void prepare(GTS gts, GraphState state) {
-    	if (state != gts.startState()) {
-    		throw new IllegalArgumentException("Model checking should start at initial state");
-    	}
+        if (state != gts.startState()) {
+            throw new IllegalArgumentException(
+                "Model checking should start at initial state");
+        }
         super.prepare(gts, state);
         setProductGTS(new ProductGTS(gts.getGrammar()));
         setup();
     }
 
     private void setProductGTS(ProductGTS gts) {
-		this.productGTS = gts;
-		productGTS.addListener(this.collector);
-	}
+        this.productGTS = gts;
+        this.productGTS.addListener(this.collector);
+    }
 
-	public void setResult(Result result) {
-		this.result = result;
-	}
+    public void setResult(Result result) {
+        this.result = result;
+    }
 
-	public Result getResult() {
-		return result;
-	}
+    public Result getResult() {
+        return this.result;
+    }
 
-	/**
-	 * Set the start Buchi graph-state.
-	 * @param startState the start Buchi graph-state
-	 */
-	public void setStartBuchiState(BuchiGraphState startState) {
-		this.startBuchiState = startState;
-		this.atBuchiState = startState;
-	}
+    /**
+     * Set the start Buchi graph-state.
+     * @param startState the start Buchi graph-state
+     */
+    public void setStartBuchiState(BuchiGraphState startState) {
+        this.startBuchiState = startState;
+        this.atBuchiState = startState;
+    }
 
-	/**
-	 * Returns the start Büchi graph-state
-	 */
-	public final BuchiGraphState startBuchiState() {
-		return startBuchiState;
-	}
+    /**
+     * Returns the start Büchi graph-state
+     */
+    public final BuchiGraphState startBuchiState() {
+        return this.startBuchiState;
+    }
 
-	/**
-	 * Closes Büchi graph-states.
-	 * @param state the Büchi graph-state to close
-	 */
-	public void setClosed(BuchiGraphState state) {
-		getProductGTS().setClosed(state);
-	}
+    /**
+     * Closes Büchi graph-states.
+     * @param state the Büchi graph-state to close
+     */
+    public void setClosed(BuchiGraphState state) {
+        getProductGTS().setClosed(state);
+    }
 
-	/**
-	 * Identifies special cases of counter-examples.
-	 * @param source the source Buchi graph-state
-	 * @param target the target Buchi graph-state
-	 * @return <tt>true</tt> if the target Buchi graph-state has colour
-	 * {@link ModelChecking#CYAN} and the buchi location of either the
-	 * <tt>source</tt> or <tt>target</tt> is accepting, <tt>false</tt>
-	 * otherwise.
-	 */
-	public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
-		boolean result = (target.colour() == ModelChecking.cyan()) &&
-		(source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
-		
-//		if (result) {
-//			System.out.println("Counter-example found");
-//		}
-		
-		return result;
-	}
+    /**
+     * Identifies special cases of counter-examples.
+     * @param source the source Buchi graph-state
+     * @param target the target Buchi graph-state
+     * @return <tt>true</tt> if the target Buchi graph-state has colour
+     *         {@link ModelChecking#CYAN} and the buchi location of either the
+     *         <tt>source</tt> or <tt>target</tt> is accepting,
+     *         <tt>false</tt> otherwise.
+     */
+    public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
+        boolean result =
+            (target.colour() == ModelChecking.cyan())
+                && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
 
-	/**
-	 * Pops the top element from the search-stack
-	 * @return the top element from the search-stack
-	 */
-	protected BuchiGraphState popSearchStack() {
-		if (searchStack().isEmpty()) {
-			return null;
-		} else {
-			return searchStack().pop();
-		}
-	}
+        // if (result) {
+        // System.out.println("Counter-example found");
+        // }
 
-	/**
-	 * Returns the top element from the search-stack.
-	 * @return the top element from the search-stack
-	 */
-	protected BuchiGraphState peekSearchStack() {
-		if (searchStack().isEmpty()) {
-			return null;
-		} else {
-			return searchStack().peek();
-		}
-	}
+        return result;
+    }
 
-	@Override
-	public void addGTSListener(Acceptor listener) {
-		productGTS.addListener(listener);
-	}
+    /**
+     * Pops the top element from the search-stack
+     * @return the top element from the search-stack
+     */
+    protected BuchiGraphState popSearchStack() {
+        if (searchStack().isEmpty()) {
+            return null;
+        } else {
+            return searchStack().pop();
+        }
+    }
 
-	@Override
-	public void removeGTSListener(Acceptor listener) {
-		productGTS.removeListener(listener);
-	}
+    /**
+     * Returns the top element from the search-stack.
+     * @return the top element from the search-stack
+     */
+    protected BuchiGraphState peekSearchStack() {
+        if (searchStack().isEmpty()) {
+            return null;
+        } else {
+            return searchStack().peek();
+        }
+    }
 
-	/** Returns a random open successor of a state, if any. 
-	 * Returns null otherwise. 
-	 */
-	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
-		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
-		while (sucIter.hasNext()) {
-			GraphState s = sucIter.next();
-			assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a " + s.getClass();
-			if (getProductGTS().getOpenStates().contains(s)) {
-				chooser.show(s);
-			}
-		}
-		return chooser.pickRandom();
-	}
+    @Override
+    public void addGTSListener(Acceptor listener) {
+        this.productGTS.addListener(listener);
+    }
 
-	/** Returns the first open successor of a state, if any. Returns null otherwise. */
-	protected final GraphState getFirstOpenBuchiSuccessor(BuchiGraphState state) {
-		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-		while (sucIter.hasNext()) {
-			GraphState s = sucIter.next();
-			assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a " + s.getClass();
-			if (getProductGTS().getOpenStates().contains(s)) {
-				return s;
-			}
-		}
-		return null;
-	}
+    @Override
+    public void removeGTSListener(Acceptor listener) {
+        this.productGTS.removeListener(listener);
+    }
+
+    /**
+     * Returns a random open successor of a state, if any. Returns null
+     * otherwise.
+     */
+    protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
+        Iterator<? extends GraphState> sucIter = state.getNextStateIter();
+        RandomChooserInSequence<GraphState> chooser =
+            new RandomChooserInSequence<GraphState>();
+        while (sucIter.hasNext()) {
+            GraphState s = sucIter.next();
+            assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a "
+                + s.getClass();
+            if (getProductGTS().getOpenStates().contains(s)) {
+                chooser.show(s);
+            }
+        }
+        return chooser.pickRandom();
+    }
+
+    /**
+     * Returns the first open successor of a state, if any. Returns null
+     * otherwise.
+     */
+    protected final GraphState getFirstOpenBuchiSuccessor(BuchiGraphState state) {
+        Iterator<? extends GraphState> sucIter = state.getNextStateIter();
+        while (sucIter.hasNext()) {
+            GraphState s = sucIter.next();
+            assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a "
+                + s.getClass();
+            if (getProductGTS().getOpenStates().contains(s)) {
+                return s;
+            }
+        }
+        return null;
+    }
 
     /**
      * Initialise the data structures used during exploration.
      */
     public void setup() {
-        state2node = new HashMap<IState,Node>();
-//    	currentPath = new Stack<GraphTransition>();
-    	searchStack = new Stack<BuchiGraphState>();
-    	transitionStack = new Stack<ProductTransition>();
+        this.state2node = new HashMap<IState,Node>();
+        // currentPath = new Stack<GraphTransition>();
+        this.searchStack = new Stack<BuchiGraphState>();
+        this.transitionStack = new Stack<ProductTransition>();
 
-    	initializeProperty();
-    	assert (initialLocation != null) : "The property automaton should have an initial state";
-    	BuchiGraphState startState = new BuchiGraphState(productGTS.getRecord(), getGTS().startState(), initialLocation, null);
-    	setStartBuchiState(startState);
-    	productGTS.setStartState(startState);
-    	this.productGenerator = productGTS.getRecord().getStateGenerator(productGTS);
+        initializeProperty();
+        assert (this.initialLocation != null) : "The property automaton should have an initial state";
+        BuchiGraphState startState =
+            new BuchiGraphState(this.productGTS.getRecord(),
+                getGTS().startState(), this.initialLocation, null);
+        setStartBuchiState(startState);
+        this.productGTS.setStartState(startState);
+        this.productGenerator =
+            this.productGTS.getRecord().getStateGenerator(this.productGTS);
     }
 
     /**
@@ -210,27 +224,29 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
      * @param transition the transition to be checked for enabledness
      * @param applicableRules the set of applicable rules
      * @return <tt>true</tt> if the label on the transition evaluates to
-     * <tt>true</tt> provided the set of applicable rules, <tt>false</tt>
-     * otherwise
+     *         <tt>true</tt> provided the set of applicable rules,
+     *         <tt>false</tt> otherwise
      */
-    protected boolean isEnabled(BuchiTransition transition, Set<String> applicableRules) {
-    	boolean result = true;
-    	for (IGraphProposition gp: transition.getLabels()) {
-    		if (gp.getFullLabel().equals(ModelChecking.SIGMA)) {
-    			continue;
-    		}
-    		boolean applicable = false;
-    		// only take the label of the proposition - negation will be checked afterwards
-    		String prop = gp.getLabel();
-    		for (String ruleName: applicableRules) {
-    			if (prop.equals(ruleName)) {
-    				applicable = true;
-    			}
-    		}
-    		boolean match = (gp.isNegated() ^ applicable);
-    		result = result && match;
-    	}
-    	return result;
+    protected boolean isEnabled(BuchiTransition transition,
+            Set<String> applicableRules) {
+        boolean result = true;
+        for (IGraphProposition gp : transition.getLabels()) {
+            if (gp.getFullLabel().equals(ModelChecking.SIGMA)) {
+                continue;
+            }
+            boolean applicable = false;
+            // only take the label of the proposition - negation will be checked
+            // afterwards
+            String prop = gp.getLabel();
+            for (String ruleName : applicableRules) {
+                if (prop.equals(ruleName)) {
+                    applicable = true;
+                }
+            }
+            boolean match = (gp.isNegated() ^ applicable);
+            result = result && match;
+        }
+        return result;
     }
 
     /**
@@ -238,96 +254,109 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
      * @param automaton the collection of {@link ITransition}s
      */
     protected void processAutomaton(Collection<ITransition> automaton) {
-    	Graph prototype = GraphFactory.getInstance(BuchiAutomatonGraph.getPrototype()).newGraph();
-    	assert (prototype instanceof BuchiAutomatonGraph): "Resulting graph wrongly instantiated.";
-        Map<IState,BuchiLocation> state2location = new HashMap<IState,BuchiLocation>();
-//    	BuchiAutomatonGraph result = (BuchiAutomatonGraph) prototype;
+        Graph prototype =
+            GraphFactory.getInstance(BuchiAutomatonGraph.getPrototype()).newGraph();
+        assert (prototype instanceof BuchiAutomatonGraph) : "Resulting graph wrongly instantiated.";
+        Map<IState,BuchiLocation> state2location =
+            new HashMap<IState,BuchiLocation>();
+        // BuchiAutomatonGraph result = (BuchiAutomatonGraph) prototype;
 
-    	for (ITransition t: automaton) {
-    		IState sourceState = t.getSourceState();
-    		BuchiLocation sourceLocation;
-    		IState targetState = t.getTargetState();
-    		BuchiLocation targetLocation;
+        for (ITransition t : automaton) {
+            IState sourceState = t.getSourceState();
+            BuchiLocation sourceLocation;
+            IState targetState = t.getTargetState();
+            BuchiLocation targetLocation;
 
-    		if (state2location.containsKey(sourceState)) {
-    			sourceLocation = state2location.get(sourceState);
-    		} else {
-    			sourceLocation = new BuchiLocation();
-    			state2location.put(sourceState, sourceLocation);
-    		}
+            if (state2location.containsKey(sourceState)) {
+                sourceLocation = state2location.get(sourceState);
+            } else {
+                sourceLocation = new BuchiLocation();
+                state2location.put(sourceState, sourceLocation);
+            }
 
-    		if (state2location.containsKey(targetState)) {
-    			targetLocation = state2location.get(targetState);
-    		} else {
-    			targetLocation = new BuchiLocation();
-    			state2location.put(targetState, targetLocation);
-    		}
-    		BuchiTransition transition = new BuchiTransition(targetLocation, t.getLabels());
-    		sourceLocation.addTransition(transition);
+            if (state2location.containsKey(targetState)) {
+                targetLocation = state2location.get(targetState);
+            } else {
+                targetLocation = new BuchiLocation();
+                state2location.put(targetState, targetLocation);
+            }
+            BuchiTransition transition =
+                new BuchiTransition(targetLocation, t.getLabels());
+            sourceLocation.addTransition(transition);
 
-    		// register the initial and final states
-    		if (sourceState.isInitial()) {
-    			initialLocation = sourceLocation;
-			}
-			if (sourceState.isFinal()) {
-				sourceLocation.setAccepting();
-			}
-    		if (targetState.isFinal()) {
-				targetLocation.setAccepting();
-			}
-    	}
+            // register the initial and final states
+            if (sourceState.isInitial()) {
+                this.initialLocation = sourceLocation;
+            }
+            if (sourceState.isFinal()) {
+                sourceLocation.setAccepting();
+            }
+            if (targetState.isFinal()) {
+                targetLocation.setAccepting();
+            }
+        }
     }
 
     /**
      * Constructs the set of rule names for which the iterator contains a match.
      * @param graphTransitions a set of {@link groove.lts.GraphTransition}s
-     * @return the set of rule names contained in the given <code>iterator</code>
+     * @return the set of rule names contained in the given
+     *         <code>iterator</code>
      */
     protected Set<String> filterRuleNames(Set<GraphTransition> graphTransitions) {
-    	Set<String> result = new HashSet<String>();
-    	for (GraphTransition nextTransition: graphTransitions) {
-    		result.add(nextTransition.getEvent().getRule().getName().name());
-    	}
-    	return result;
+        Set<String> result = new HashSet<String>();
+        for (GraphTransition nextTransition : graphTransitions) {
+            result.add(nextTransition.getEvent().getRule().getName().name());
+        }
+        return result;
     }
 
     /**
-     * Adds a product transition to the product gts. If the current state
-     * is already explored we do not have to add anything. In that case,
-     * we return the corresponding transition.
-     * @param transition the graph-transition component for the product-transition
+     * Adds a product transition to the product gts. If the current state is
+     * already explored we do not have to add anything. In that case, we return
+     * the corresponding transition.
+     * @param transition the graph-transition component for the
+     *        product-transition
      * @param location the location of the target Buechi graph-state
-     * @return @see {@link ProductGTS#addTransition(ProductTransition)}
+     * @see ProductGTS#addTransition(ProductTransition)
      */
-    public Set<ProductTransition> addProductTransition(GraphTransition transition, BuchiLocation location) {
-    	Set<ProductTransition> result = null; // new HashSet<ProductTransition>();
-    	// if the current source state is already closed
-    	// the product-gts contains all transitions and
-    	// we do not have to add new transitions.
-    	if (getProductGTS().isOpen(getAtBuchiState())) {
-        	result = getProductGenerator().addTransition(getAtBuchiState(), transition, location);
-			assert(result.size() == 1) : "Expected the result to be of size 1 instead of " + result.size();
-    	} else {
-    		result = new HashSet<ProductTransition>();
-    		for (ProductTransition nextTransition: getProductGTS().outEdgeSet(getAtBuchiState())) {
-    			if (nextTransition.graphTransition().equals(transition) &&
-    					nextTransition.target().getBuchiLocation().equals(location)) {
-    				result.add(nextTransition);
-    			}
-    		}
-			assert(result.size() == 1) : "Expected the result to be of size 1 instead of " + result.size();
-			return result;
-    	}
-    	return result;
+    public Set<ProductTransition> addProductTransition(
+            GraphTransition transition, BuchiLocation location) {
+        Set<ProductTransition> result = null; // new
+                                                // HashSet<ProductTransition>();
+        // if the current source state is already closed
+        // the product-gts contains all transitions and
+        // we do not have to add new transitions.
+        if (getProductGTS().isOpen(getAtBuchiState())) {
+            result =
+                getProductGenerator().addTransition(getAtBuchiState(),
+                    transition, location);
+            assert (result.size() == 1) : "Expected the result to be of size 1 instead of "
+                + result.size();
+        } else {
+            result = new HashSet<ProductTransition>();
+            for (ProductTransition nextTransition : getProductGTS().outEdgeSet(
+                getAtBuchiState())) {
+                if (nextTransition.graphTransition().equals(transition)
+                    && nextTransition.target().getBuchiLocation().equals(
+                        location)) {
+                    result.add(nextTransition);
+                }
+            }
+            assert (result.size() == 1) : "Expected the result to be of size 1 instead of "
+                + result.size();
+            return result;
+        }
+        return result;
     }
 
     /**
      * Initialise the property to be verified.
      */
     private void initializeProperty() {
-    	assert (property != null) : "Property should have been set already.";
-    	automaton = LTL2BA4J.formulaToBA("! " + property);
-    	processAutomaton(automaton);
+        assert (this.property != null) : "Property should have been set already.";
+        this.automaton = LTL2BA4J.formulaToBA("! " + this.property);
+        processAutomaton(this.automaton);
     }
 
     /**
@@ -335,7 +364,7 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
      * @return the product GTS
      */
     public ProductGTS getProductGTS() {
-    	return productGTS;
+        return this.productGTS;
     }
 
     /**
@@ -343,14 +372,15 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
      * @return the current state-generator
      */
     public StateGenerator getProductGenerator() {
-    	return this.productGenerator;
+        return this.productGenerator;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see groove.explore.strategy.ModelCheckingStrategy#getAtBuchiState()
      */
     public BuchiGraphState getAtBuchiState() {
-    	return atBuchiState;
+        return this.atBuchiState;
     }
 
     /**
@@ -358,7 +388,7 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
      * @return the value of <code>lastTransition</code>
      */
     public ProductTransition getLastTransition() {
-    	return lastTransition;
+        return this.lastTransition;
     }
 
     /**
@@ -366,50 +396,51 @@ public abstract class DefaultModelCheckingStrategy extends AbstractStrategy impl
      * @param transition the value for <code>lastTransition</code>
      */
     public void setLastTransition(ProductTransition transition) {
-    	this.lastTransition = transition;
+        this.lastTransition = transition;
     }
 
     public void setAtBuchiState(BuchiGraphState atState) {
-    	this.atBuchiState = atState;
+        this.atBuchiState = atState;
     }
 
     public BuchiLocation getAtBuchiLocation() {
-    	return getAtBuchiState().getBuchiLocation();
+        return getAtBuchiState().getBuchiLocation();
     }
 
     public Stack<BuchiGraphState> searchStack() {
-    	return searchStack;
+        return this.searchStack;
     }
 
     public void pushState(BuchiGraphState state) {
-    	searchStack().push(state);
+        searchStack().push(state);
     }
 
     public Stack<ProductTransition> transitionStack() {
-    	return transitionStack;
+        return this.transitionStack;
     }
 
     public void pushTransition(ProductTransition transition) {
-    	transitionStack().push(transition);
-    	assert (transitionStack().size() == (searchStack().size() - 1)) : "search stacks out of sync (" + transitionStack().size() + " vs " + searchStack().size() + ")";
+        transitionStack().push(transition);
+        assert (transitionStack().size() == (searchStack().size() - 1)) : "search stacks out of sync ("
+            + transitionStack().size() + " vs " + searchStack().size() + ")";
     }
 
     public void setProperty(String property) {
-    	this.property = property;
+        this.property = property;
     }
 
-	/** The Buchi start graph-state of the system. */
-	private BuchiGraphState startBuchiState;
-	/** The synchronised product of the system and the property. */
-	protected ProductGTS productGTS;
+    /** The Buchi start graph-state of the system. */
+    private BuchiGraphState startBuchiState;
+    /** The synchronised product of the system and the property. */
+    protected ProductGTS productGTS;
     /** The current Buchi graph-state the system is at. */
     protected BuchiGraphState atBuchiState;
     /** The transition by which the current Buchi graph-state is reached. */
     protected ProductTransition lastTransition;
     /** A mapping from {@link IState}s to {@link Node}s. */
-    protected Map<IState, Node> state2node = new HashMap<IState,Node>();
-	/** State collector which randomly provides unexplored states. */
-	protected RandomNewStateChooser collector = new RandomNewStateChooser();
+    protected Map<IState,Node> state2node = new HashMap<IState,Node>();
+    /** State collector which randomly provides unexplored states. */
+    protected RandomNewStateChooser collector = new RandomNewStateChooser();
 
     private StateGenerator productGenerator;
     private String property;

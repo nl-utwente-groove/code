@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: RelationCalculator.java,v 1.3 2008-01-30 09:32:25 iovka Exp $
  */
 package groove.rel;
@@ -33,29 +33,29 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     public RelationCalculator(NodeRelation factory) {
         this.factory = factory;
     }
-    
+
     /**
-     * Creates a relation calculator based on a given graph.
-     * The relation factory will be set to a {@link SetNodeRelation} over that graph.
+     * Creates a relation calculator based on a given graph. The relation
+     * factory will be set to a {@link SetNodeRelation} over that graph.
      */
     public RelationCalculator(GraphShape graph) {
         this(new SetNodeRelation(graph));
     }
 
     /**
-     * Copies the relation associated with the atom in <code>expr</code>
-     * and stores it in the underlying mapping.
+     * Copies the relation associated with the atom in <code>expr</code> and
+     * stores it in the underlying mapping.
      */
     public NodeRelation computeAtom(RegExpr.Atom expr) {
-        return factory.newInstance(expr.text());
+        return this.factory.newInstance(expr.text());
     }
-    
+
     /**
-     * Computes the union of the
-     * relations associated with the operands of <code>expr</code>,
-     * and stores it in the underlying mapping.
+     * Computes the union of the relations associated with the operands of
+     * <code>expr</code>, and stores it in the underlying mapping.
      */
-    public NodeRelation computeChoice(RegExpr.Choice expr, List<NodeRelation> args) {
+    public NodeRelation computeChoice(RegExpr.Choice expr,
+            List<NodeRelation> args) {
         Iterator<NodeRelation> argsIter = args.iterator();
         NodeRelation result = argsIter.next();
         while (argsIter.hasNext()) {
@@ -66,16 +66,15 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     }
 
     /**
-     * Computes the identity relation
-     * and stores it in the underlying mapping.
+     * Computes the identity relation and stores it in the underlying mapping.
      */
     public NodeRelation computeEmpty(RegExpr.Empty expr) {
-        return factory.createIdentityRelation();
+        return this.factory.createIdentityRelation();
     }
 
     /**
-     * Computes the inverse of the relation associated with the operand of <code>expr</code>
-     * and stores it in the underlying mapping.
+     * Computes the inverse of the relation associated with the operand of
+     * <code>expr</code> and stores it in the underlying mapping.
      */
     public NodeRelation computeInv(RegExpr.Inv expr, NodeRelation arg) {
         return arg.getInverse();
@@ -90,9 +89,8 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     }
 
     /**
-     * Computes the transitive closure over the
-     * relation associated with the operand of <code>expr</code>,
-     * and stores it in the underlying mapping.
+     * Computes the transitive closure over the relation associated with the
+     * operand of <code>expr</code>, and stores it in the underlying mapping.
      */
     public NodeRelation computePlus(RegExpr.Plus expr, NodeRelation arg) {
         arg.doTransitiveClosure();
@@ -100,9 +98,9 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     }
 
     /**
-     * Computes the sequential composition of the
-     * relations associated with the operands of <code>expr</code>,
-     * and stores it in the underlying mapping.
+     * Computes the sequential composition of the relations associated with the
+     * operands of <code>expr</code>, and stores it in the underlying
+     * mapping.
      */
     public NodeRelation computeSeq(RegExpr.Seq expr, List<NodeRelation> argList) {
         Iterator<NodeRelation> argsIter = argList.iterator();
@@ -115,9 +113,9 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     }
 
     /**
-     * Computes the transitive and reflexive closure over the
-     * relation associated with the operand of <code>expr</code>,
-     * and stores it in the underlying mapping.
+     * Computes the transitive and reflexive closure over the relation
+     * associated with the operand of <code>expr</code>, and stores it in the
+     * underlying mapping.
      */
     public NodeRelation computeStar(RegExpr.Star expr, NodeRelation arg) {
         arg.doTransitiveClosure();
@@ -129,14 +127,14 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
      * Creates a fresh relation on the basis of the set of all pairs.
      */
     public NodeRelation computeWildcard(RegExpr.Wildcard expr) {
-        return factory.createMaximalRelation();
+        return this.factory.createMaximalRelation();
     }
-    
+
     /**
      * Returns the current relation factory.
      */
     public NodeRelation getFactory() {
-        return factory;
+        return this.factory;
     }
 
     /** Factory for creating relations. */

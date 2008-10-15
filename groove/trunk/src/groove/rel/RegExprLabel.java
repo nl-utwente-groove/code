@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: RegExprLabel.java,v 1.14 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.rel;
@@ -29,13 +29,16 @@ import java.util.List;
  */
 public class RegExprLabel extends AbstractLabel {
     /**
-     * Constructs a regular expression label on the basis of a regular expression.
-     * Local constructor; should be called only from {@link RegExpr#toLabel()}.
-     * @param regExpr the underlying regular expression; may not be <tt>null</tt>
+     * Constructs a regular expression label on the basis of a regular
+     * expression. Local constructor; should be called only from
+     * {@link RegExpr#toLabel()}.
+     * @param regExpr the underlying regular expression; may not be
+     *        <tt>null</tt>
      */
     RegExprLabel(RegExpr regExpr) {
         if (regExpr == null) {
-            throw new IllegalArgumentException("Can't create regular expression label from null expression");
+            throw new IllegalArgumentException(
+                "Can't create regular expression label from null expression");
         }
         this.regExpr = regExpr;
     }
@@ -44,24 +47,24 @@ public class RegExprLabel extends AbstractLabel {
      * Returns the textual description of the underlying regular expression.
      */
     public String text() {
-        return regExpr.toString();
+        return this.regExpr.toString();
     }
-    
-	/**
+
+    /**
      * Returns the underlying regular expression.
      */
     public RegExpr getRegExpr() {
-        return regExpr;
+        return this.regExpr;
     }
-    
+
     /** Returns the regular automaton for this label. */
     public Automaton getAutomaton() {
-        if (automaton == null) {
-        	// we create a new automaton calculator to ensure 
-        	// node numbers at the low end
-            automaton = calculator.compute(getRegExpr());
+        if (this.automaton == null) {
+            // we create a new automaton calculator to ensure
+            // node numbers at the low end
+            this.automaton = calculator.compute(getRegExpr());
         }
-        return automaton;
+        return this.automaton;
     }
 
     @Override
@@ -78,49 +81,61 @@ public class RegExprLabel extends AbstractLabel {
         return getRegExpr().hashCode();
     }
 
-
     /** The underlying regular expression. */
     private final RegExpr regExpr;
     /** An automaton constructed lazily for the regular expression. */
     private Automaton automaton;
-    
-	/**
-	 * Returns the regular expression on the label if it is a {@link RegExprLabel},
-	 * <code>null</code> otherwise.
-	 */
-	public static RegExpr getRegExpr(Label label) {
-		return label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : null;
-	}
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Atom}. */
+
+    /**
+     * Returns the regular expression on the label if it is a
+     * {@link RegExprLabel}, <code>null</code> otherwise.
+     */
+    public static RegExpr getRegExpr(Label label) {
+        return label instanceof RegExprLabel
+                ? ((RegExprLabel) label).getRegExpr() : null;
+    }
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Atom}.
+     */
     public static boolean isAtom(Label label) {
         return getAtomText(label) != null;
     }
-    
-    /** 
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Atom},
-     * returns the text of the atom.
-     * Returns <code>null</code> in all other cases.
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Atom}, returns the text of the atom. Returns
+     * <code>null</code> in all other cases.
      */
     public static String getAtomText(Label label) {
         RegExpr expr = getRegExpr(label);
-        return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text() : null;
+        return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text()
+                : null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Empty}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Empty}.
+     */
     public static boolean isEmpty(Label label) {
-        return (label instanceof RegExprLabel) && ((RegExprLabel) label).getRegExpr() instanceof RegExpr.Empty;
+        return (label instanceof RegExprLabel)
+            && ((RegExprLabel) label).getRegExpr() instanceof RegExpr.Empty;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Wildcard}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Wildcard}.
+     */
     public static boolean isWildcard(Label label) {
-        return (label instanceof RegExprLabel) && ((RegExprLabel) label).getRegExpr() instanceof RegExpr.Wildcard;
+        return (label instanceof RegExprLabel)
+            && ((RegExprLabel) label).getRegExpr() instanceof RegExpr.Wildcard;
     }
-    
-    /** 
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Wildcard},
-     * returns the identifier of the wildcard, if any.
-     * Returns <code>null</code> in all other cases.
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Wildcard}, returns the identifier of the wildcard, if
+     * any. Returns <code>null</code> in all other cases.
      */
     public static String getWildcardId(Label label) {
         if (label instanceof RegExprLabel) {
@@ -131,11 +146,11 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** 
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Wildcard},
-     * returns the constraint of the wildcard, if any.
-     * Returns <code>null</code> in all other cases.
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Wildcard}, returns the constraint of the wildcard, if
+     * any. Returns <code>null</code> in all other cases.
      */
     public static Property<String> getWildcardGuard(Label label) {
         if (label instanceof RegExprLabel) {
@@ -143,16 +158,19 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Choice}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Choice}.
+     */
     public static boolean isChoice(Label label) {
         return getChoiceOperands(label) != null;
     }
-    
-    /** 
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Choice},
-     * returns the list of operands of the regular expression.
-     * Returns <code>null</code> in all other cases.
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Choice}, returns the list of operands of the regular
+     * expression. Returns <code>null</code> in all other cases.
      */
     public static List<RegExpr> getChoiceOperands(Label label) {
         if (label instanceof RegExprLabel) {
@@ -163,16 +181,19 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Seq}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Seq}.
+     */
     public static boolean isSeq(Label label) {
         return getSeqOperands(label) != null;
     }
-    
-    /** 
+
+    /**
      * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Seq},
-     * returns the list of operands of the regular expression.
-     * Returns <code>null</code> in all other cases.
+     * returns the list of operands of the regular expression. Returns
+     * <code>null</code> in all other cases.
      */
     public static List<RegExpr> getSeqOperands(Label label) {
         if (label instanceof RegExprLabel) {
@@ -183,15 +204,18 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Star}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Star}.
+     */
     public static boolean isStar(Label label) {
         return getStarOperand(label) != null;
     }
-    
-    /** 
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Star},
-     * returns the operand of the regular expression.
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Star}, returns the operand of the regular expression.
      * Returns <code>null</code> in all other cases.
      */
     public static RegExpr getStarOperand(Label label) {
@@ -203,15 +227,18 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Plus}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Plus}.
+     */
     public static boolean isPlus(Label label) {
         return getPlusOperand(label) != null;
     }
-    
-    /** 
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Plus},
-     * returns the operand of the regular expression.
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Plus}, returns the operand of the regular expression.
      * Returns <code>null</code> in all other cases.
      */
     public static RegExpr getPlusOperand(Label label) {
@@ -223,16 +250,19 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Inv}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Inv}.
+     */
     public static boolean isInv(Label label) {
         return getInvOperand(label) != null;
     }
-    
-    /** 
+
+    /**
      * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Inv},
-     * returns the operand of the regular expression.
-     * Returns <code>null</code> in all other cases.
+     * returns the operand of the regular expression. Returns <code>null</code>
+     * in all other cases.
      */
     public static RegExpr getInvOperand(Label label) {
         if (label instanceof RegExprLabel) {
@@ -243,16 +273,19 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
-    /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Neg}. */
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Neg}.
+     */
     public static boolean isNeg(Label label) {
         return getNegOperand(label) != null;
     }
-    
-    /** 
+
+    /**
      * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Neg},
-     * returns the operand of the regular expression.
-     * Returns <code>null</code> in all other cases.
+     * returns the operand of the regular expression. Returns <code>null</code>
+     * in all other cases.
      */
     public static RegExpr getNegOperand(Label label) {
         if (label instanceof RegExprLabel) {
@@ -263,7 +296,8 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-    
+
     /** Calculator used to construct all the automata. */
-    static private final AutomatonCalculator calculator = new AutomatonCalculator();
+    static private final AutomatonCalculator calculator =
+        new AutomatonCalculator();
 }

@@ -26,28 +26,28 @@ import java.util.Set;
  * @version $Revision $
  */
 class RegExprEdgeSearchItem extends Edge2SearchItem {
-	/** 
-	 * Constructs a new search item. The item will match 
-	 * according to the regular expression on the edge label.
-	 */
-	public RegExprEdgeSearchItem(BinaryEdge edge) {
-		super(edge);
+    /**
+     * Constructs a new search item. The item will match according to the
+     * regular expression on the edge label.
+     */
+    public RegExprEdgeSearchItem(BinaryEdge edge) {
+        super(edge);
         RegExprLabel label = (RegExprLabel) edge.label();
-		this.labelAutomaton = label.getAutomaton();
+        this.labelAutomaton = label.getAutomaton();
         this.edgeExpr = label.getRegExpr();
         this.boundVars = label.getRegExpr().boundVarSet();
         this.allVars = label.getRegExpr().allVarSet();
-        this.neededVars = new HashSet<String>(allVars);
-        this.neededVars.removeAll(boundVars); 
-	}
+        this.neededVars = new HashSet<String>(this.allVars);
+        this.neededVars.removeAll(this.boundVars);
+    }
 
-	
     /**
-     * Returns the set of variables used but not bound in the regular expression.
+     * Returns the set of variables used but not bound in the regular
+     * expression.
      */
     @Override
     public Collection<String> needsVars() {
-        return neededVars;
+        return this.neededVars;
     }
 
     /**
@@ -55,69 +55,73 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
      */
     @Override
     public Collection<String> bindsVars() {
-        return boundVars;
+        return this.boundVars;
     }
 
     /** Returns the regular expression on the edge. */
     public RegExpr getEdgeExpr() {
-        return edgeExpr;
+        return this.edgeExpr;
     }
-    
+
     /** This implementation returns the empty set. */
     @Override
-	public Collection<? extends Edge> bindsEdges() {
-		return Collections.emptySet();
-	}
+    public Collection<? extends Edge> bindsEdges() {
+        return Collections.emptySet();
+    }
 
-	@Override
+    @Override
     public void activate(SearchPlanStrategy strategy) {
         super.activate(strategy);
         this.allVarsFound = true;
         this.varIxMap = new HashMap<String,Integer>();
-        for (String var: allVars) {
-        	allVarsFound &= strategy.isVarFound(var);
-            varIxMap.put(var, strategy.getVarIx(var));
+        for (String var : this.allVars) {
+            this.allVarsFound &= strategy.isVarFound(var);
+            this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }
 
-	/** This implementation returns <code>false</code>. */
-	@Override
-	boolean isPreMatched(Search search) {
-		return false;
-	}
-	
-	@Override
-	boolean isSingular(Search search) {
-		return super.isSingular(search) && allVarsFound;
-	}
-	
-	@Override
-	SingularRecord createSingularRecord(Search search) {
-		return new RegExprEdgeSingularRecord(search);
-	}
-	
-	@Override
-	MultipleRecord<Edge> createMultipleRecord(Search search) {
-		return new RegExprEdgeMultipleRecord(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
-	}
-	
+    /** This implementation returns <code>false</code>. */
+    @Override
+    boolean isPreMatched(Search search) {
+        return false;
+    }
+
+    @Override
+    boolean isSingular(Search search) {
+        return super.isSingular(search) && this.allVarsFound;
+    }
+
+    @Override
+    SingularRecord createSingularRecord(Search search) {
+        return new RegExprEdgeSingularRecord(search);
+    }
+
+    @Override
+    MultipleRecord<Edge> createMultipleRecord(Search search) {
+        return new RegExprEdgeMultipleRecord(search, this.edgeIx,
+            this.sourceIx, this.targetIx, this.sourceFound, this.targetFound);
+    }
+
     /**
-	 * The automaton that computes the matches for the underlying edge.
-	 */
-	final Automaton labelAutomaton;
+     * The automaton that computes the matches for the underlying edge.
+     */
+    final Automaton labelAutomaton;
     /** The regular expression on the edge. */
     final RegExpr edgeExpr;
     /** Collection of all variables occurring in the regular expression. */
     final Set<String> allVars;
     /** Collection of variables bound by the regular expression. */
     final Set<String> boundVars;
-    /** Collection of variables used in the regular expression but not bound by it. */
+    /**
+     * Collection of variables used in the regular expression but not bound by
+     * it.
+     */
     final Set<String> neededVars;
     /** Mapping from variables to the corresponding indices in the result. */
     Map<String,Integer> varIxMap;
-    /** 
-     * Mapping indicating is all variables in the regular expression have
-     * been found before the search item is invoked.
+    /**
+     * Mapping indicating is all variables in the regular expression have been
+     * found before the search item is invoked.
      */
     private boolean allVarsFound;
 
@@ -125,110 +129,135 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeSingularRecord(Search search) {
             super(search);
-            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
-            this.targetPreMatch = search.getNodeAnchor(targetIx);
-            assert varIxMap.keySet().containsAll(needsVars());
+            this.sourcePreMatch =
+                search.getNodeAnchor(RegExprEdgeSearchItem.this.sourceIx);
+            this.targetPreMatch =
+                search.getNodeAnchor(RegExprEdgeSearchItem.this.targetIx);
+            assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
+                needsVars());
         }
 
         @Override
         boolean set() {
             Map<String,Label> valuation = new HashMap<String,Label>();
-            for (String var: allVars) {
-                Label image = search.getVar(varIxMap.get(var));
+            for (String var : RegExprEdgeSearchItem.this.allVars) {
+                Label image =
+                    this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 valuation.put(var, image);
             }
             return !computeRelation(valuation).isEmpty();
         }
 
-        /** 
-         * Computes the image set by querying the automaton derived
-         * for the edge label.
+        /**
+         * Computes the image set by querying the automaton derived for the edge
+         * label.
          */
         private NodeRelation computeRelation(Map<String,Label> valuation) {
             NodeRelation result;
-        	Node sourceFind = sourcePreMatch;
-        	if (sourceFind == null && sourceFound) {
-        		sourceFind = search.getNode(sourceIx);
-        	}
+            Node sourceFind = this.sourcePreMatch;
+            if (sourceFind == null && RegExprEdgeSearchItem.this.sourceFound) {
+                sourceFind =
+                    this.search.getNode(RegExprEdgeSearchItem.this.sourceIx);
+            }
             Set<Node> imageSourceSet = Collections.singleton(sourceFind);
-        	Node targetFind = targetPreMatch;
-        	if (targetFind == null && targetFound) {
-        		targetFind = search.getNode(targetIx);
-        	}
+            Node targetFind = this.targetPreMatch;
+            if (targetFind == null && RegExprEdgeSearchItem.this.targetFound) {
+                targetFind =
+                    this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
+            }
             Set<Node> imageTargetSet = Collections.singleton(targetFind);
-            if (labelAutomaton instanceof VarAutomaton) {
-                result = ((VarAutomaton) labelAutomaton).getMatches(host, imageSourceSet, imageTargetSet, valuation);            
+            if (RegExprEdgeSearchItem.this.labelAutomaton instanceof VarAutomaton) {
+                result =
+                    ((VarAutomaton) RegExprEdgeSearchItem.this.labelAutomaton).getMatches(
+                        this.host, imageSourceSet, imageTargetSet, valuation);
             } else {
-                result = labelAutomaton.getMatches(host, imageSourceSet, imageTargetSet);
+                result =
+                    RegExprEdgeSearchItem.this.labelAutomaton.getMatches(
+                        this.host, imageSourceSet, imageTargetSet);
             }
             return result;
         }
-        
+
         /** Pre-matched source image, if any. */
         private final Node sourcePreMatch;
         /** Pre-matched target image, if any. */
         private final Node targetPreMatch;
     }
-    
+
     class RegExprEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        RegExprEdgeMultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx, boolean sourceFound, boolean targetFound) {
+        RegExprEdgeMultipleRecord(Search search, int edgeIx, int sourceIx,
+                int targetIx, boolean sourceFound, boolean targetFound) {
             super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
-            assert varIxMap.keySet().containsAll(neededVars);
-            freshVars = new HashSet<String>();
-            for (String var: boundVars) {
-                if (search.getVar(varIxMap.get(var)) == null) {
-                    freshVars.add(var);
+            assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
+                RegExprEdgeSearchItem.this.neededVars);
+            this.freshVars = new HashSet<String>();
+            for (String var : RegExprEdgeSearchItem.this.boundVars) {
+                if (search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var)) == null) {
+                    this.freshVars.add(var);
                 }
             }
         }
 
-        /** 
-         * Computes the image set by querying the automaton derived
-         * for the edge label.
+        /**
+         * Computes the image set by querying the automaton derived for the edge
+         * label.
          */
         @Override
         void initImages() {
-            Set<Node> imageSourceSet = sourceFind == null ? null : Collections.singleton(sourceFind);
-            Set<Node> imageTargetSet = targetFind == null ? null : Collections.singleton(targetFind);
+            Set<Node> imageSourceSet =
+                this.sourceFind == null ? null
+                        : Collections.singleton(this.sourceFind);
+            Set<Node> imageTargetSet =
+                this.targetFind == null ? null
+                        : Collections.singleton(this.targetFind);
             NodeRelation matches;
-            if (labelAutomaton instanceof VarAutomaton) {
+            if (RegExprEdgeSearchItem.this.labelAutomaton instanceof VarAutomaton) {
                 Map<String,Label> valuation = new HashMap<String,Label>();
-                for (String var: allVars) {
-                    if (! freshVars.contains(var)) {
-                        valuation.put(var, search.getVar(varIxMap.get(var)));
+                for (String var : RegExprEdgeSearchItem.this.allVars) {
+                    if (!this.freshVars.contains(var)) {
+                        valuation.put(
+                            var,
+                            this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var)));
                     }
                 }
-                matches = ((VarAutomaton) labelAutomaton).getMatches(host, imageSourceSet, imageTargetSet, valuation);            
+                matches =
+                    ((VarAutomaton) RegExprEdgeSearchItem.this.labelAutomaton).getMatches(
+                        this.host, imageSourceSet, imageTargetSet, valuation);
             } else {
-                matches = labelAutomaton.getMatches(host, imageSourceSet, imageTargetSet);
+                matches =
+                    RegExprEdgeSearchItem.this.labelAutomaton.getMatches(
+                        this.host, imageSourceSet, imageTargetSet);
             }
             initImages(matches.getAllRelated(), false, false, false, false);
         }
-        
-        @Override
-		boolean setImage(Edge image) {
-			boolean result = super.setImage(image);
-			if (result && ! freshVars.isEmpty()) {
-			    Map<String,Label> valuation = ((ValuationEdge) image).getValue();
-	            for (String var: freshVars) {
-	            	search.putVar(varIxMap.get(var), valuation.get(var));
-	            }
-			}
-			return result;
-		}
 
-        
+        @Override
+        boolean setImage(Edge image) {
+            boolean result = super.setImage(image);
+            if (result && !this.freshVars.isEmpty()) {
+                Map<String,Label> valuation =
+                    ((ValuationEdge) image).getValue();
+                for (String var : this.freshVars) {
+                    this.search.putVar(
+                        RegExprEdgeSearchItem.this.varIxMap.get(var),
+                        valuation.get(var));
+                }
+            }
+            return result;
+        }
+
         @Override
         public void reset() {
             super.reset();
-            for (String var: freshVars) {
-                search.putVar(varIxMap.get(var), null);
+            for (String var : this.freshVars) {
+                this.search.putVar(
+                    RegExprEdgeSearchItem.this.varIxMap.get(var), null);
             }
         }
 
         /** The set of bound variables that are not yet pre-matched. */
-        private Set<String> freshVars;
+        private final Set<String> freshVars;
     }
 }

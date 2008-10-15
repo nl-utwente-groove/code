@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: GraphFactory.java,v 1.7 2008-01-30 09:32:58 iovka Exp $
  */
 package groove.graph;
@@ -19,14 +19,14 @@ package groove.graph;
 import groove.view.FormatException;
 
 /**
- * Abstract Factory interface for graph-related classes.
- * Objects implementing this factory can create instances of
- * <tt>Graph</tt>, <tt>Morphism</tt> and <tt>InjectiveMorphism</tt>.   
+ * Abstract Factory interface for graph-related classes. Objects implementing
+ * this factory can create instances of <tt>Graph</tt>, <tt>Morphism</tt>
+ * and <tt>InjectiveMorphism</tt>.
  * @author Arend Rensink
  * @version $Revision$
  */
 public abstract class GraphFactory {
-	/** Morphism serving as prototype object in the default graph factory. */
+    /** Morphism serving as prototype object in the default graph factory. */
     static private final Morphism PROTOTYPE_MORPHISM =
         DefaultMorphism.prototype;
     /** Graph serving as prototype in the default graph factory. */
@@ -35,39 +35,36 @@ public abstract class GraphFactory {
 
     /**
      * Returns a graph factory based on <tt>defaultPrototypeGraph</tt>,
-     * <tt>defaultMorphism</tt> and <tt>defaultInjectiveMorphism</tt>
-     * for morphisms.
+     * <tt>defaultMorphism</tt> and <tt>defaultInjectiveMorphism</tt> for
+     * morphisms.
      * @see #PROTOTYPE_GRAPH
      * @see #PROTOTYPE_MORPHISM
      * @see #newGraph()
      */
     static public GraphFactory getInstance() {
-        return getInstance(
-            PROTOTYPE_GRAPH,
-            PROTOTYPE_MORPHISM);
+        return getInstance(PROTOTYPE_GRAPH, PROTOTYPE_MORPHISM);
     }
 
     /**
-     * Returns a graph factory based on a given prototype graph,
-     * prototype morphism and prototype injective morphism.
+     * Returns a graph factory based on a given prototype graph, prototype
+     * morphism and prototype injective morphism.
      * @param prototypeGraph the source of new graphs in this factory
      * @param prototypeMorphism the source of new morphisms in this factory
      */
-    static public GraphFactory getInstance(
-        final Graph prototypeGraph,
-        final Morphism prototypeMorphism) {
+    static public GraphFactory getInstance(final Graph prototypeGraph,
+            final Morphism prototypeMorphism) {
         assert prototypeMorphism != null;
         return new GraphFactory() {
-        	@Override
+            @Override
             public Graph newGraph() {
                 return prototypeGraph.newGraph();
             }
 
-        	@Override
+            @Override
             public Graph newGraph(Graph graph) {
                 Graph result = null;
                 try {
-                	result = prototypeGraph.newGraph(graph);
+                    result = prototypeGraph.newGraph(graph);
                 } catch (FormatException gfe) {
                     result = prototypeGraph.newGraph();
                     gfe.printStackTrace();
@@ -75,7 +72,7 @@ public abstract class GraphFactory {
                 return result;
             }
 
-        	@Override
+            @Override
             public Morphism newMorphism(Graph dom, Graph cod) {
                 return prototypeMorphism.createMorphism(dom, cod);
             }
@@ -83,8 +80,8 @@ public abstract class GraphFactory {
     }
 
     /**
-     * Returns a graph factory based on a given prototype graph,
-     * using <tt>defaultPrototypeMorphism</tt> and 
+     * Returns a graph factory based on a given prototype graph, using
+     * <tt>defaultPrototypeMorphism</tt> and
      * <tt>defaultInjectivePrototypeMorphism</tt> for morphisms.
      * @param prototypeGraph the source of new graphs in this factory
      */
@@ -101,13 +98,14 @@ public abstract class GraphFactory {
     public abstract Graph newGraph(Graph graph);
 
     /**
-     * Creates a new, empty <tt>Morphism</tt> between two given <tt>Graph</tt> instances.
-     * The method returns <tt>null</tt> if the <tt>Graph</tt> instances are of incorrect
-     * type (for the factory instance).
+     * Creates a new, empty <tt>Morphism</tt> between two given <tt>Graph</tt>
+     * instances. The method returns <tt>null</tt> if the <tt>Graph</tt>
+     * instances are of incorrect type (for the factory instance).
      * @param dom the source graph of the new morphism
      * @param cod the target graph of the new morphism
-     * @return a new, empty morphism from <tt>dom</tt> to <tt>cod</tt>,
-     *          or <tt>null</tt> if <tt>dom</tt> or <tt>cod</tt> are incorrectly typed.
+     * @return a new, empty morphism from <tt>dom</tt> to <tt>cod</tt>, or
+     *         <tt>null</tt> if <tt>dom</tt> or <tt>cod</tt> are
+     *         incorrectly typed.
      */
     public abstract Morphism newMorphism(Graph dom, Graph cod);
 }

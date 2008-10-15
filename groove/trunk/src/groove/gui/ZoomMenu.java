@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: ZoomMenu.java,v 1.6 2008-01-30 09:33:37 iovka Exp $
  */
 package groove.gui;
@@ -36,7 +36,7 @@ import javax.swing.JViewport;
  * @version $Revision$
  */
 public class ZoomMenu extends JMenu {
-	/** The menu name. */
+    /** The menu name. */
     static public final String ZOOM_MENU_NAME = "Zoom";
 
     /**
@@ -45,10 +45,10 @@ public class ZoomMenu extends JMenu {
      */
     public ZoomMenu(JGraph jgraph) {
         this(jgraph, ZOOM_MENU_NAME);
-        add(zoomToFitAction);
-        add(zoomInAction);
-        add(zoomOutAction);
-        add(resetZoomAction);
+        add(this.zoomToFitAction);
+        add(this.zoomInAction);
+        add(this.zoomOutAction);
+        add(this.resetZoomAction);
         setMnemonic(MENU_MNEMONIC);
         reset();
     }
@@ -62,7 +62,8 @@ public class ZoomMenu extends JMenu {
     }
 
     /**
-     * Passes the invocation on to <tt>super</tt> and then calls {@link #reset()}.
+     * Passes the invocation on to <tt>super</tt> and then calls
+     * {@link #reset()}.
      */
     @Override
     public void menuSelectionChanged(boolean isIncluded) {
@@ -71,7 +72,7 @@ public class ZoomMenu extends JMenu {
             reset();
         }
     }
-    
+
     /** Resets the menu actions. */
     public void reset() {
         setActionsEnabled();
@@ -79,7 +80,7 @@ public class ZoomMenu extends JMenu {
 
     /** Enables the menu actions according to the current scaling. */
     protected void setActionsEnabled() {
-//        zoomInAction.setEnabled(jgraph.getScale() < 1);
+        // zoomInAction.setEnabled(jgraph.getScale() < 1);
     }
 
     /**
@@ -88,20 +89,19 @@ public class ZoomMenu extends JMenu {
      */
     protected final Action zoomToFitAction = new AbstractAction("Zoom to fit") {
         public void actionPerformed(ActionEvent evt) {
-            Component component = jgraph.getParent();
+            Component component = ZoomMenu.this.jgraph.getParent();
             while (component != null && !(component instanceof JViewport)) {
                 component = component.getParent();
             }
             if (component != null) {
                 final JViewport viewport = (JViewport) component;
-                Rectangle2D graphBounds = jgraph.getGraphBounds();
+                Rectangle2D graphBounds = ZoomMenu.this.jgraph.getGraphBounds();
                 Dimension viewportBounds = viewport.getExtentSize();
                 double scale =
-                    Math.min(
-                        viewportBounds.width / graphBounds.getWidth(),
+                    Math.min(viewportBounds.width / graphBounds.getWidth(),
                         viewportBounds.height / graphBounds.getHeight());
-                jgraph.setScale(Math.min(scale, 1.0));
-                jgraph.scrollRectToVisible(Groove.toRectangle(graphBounds));
+                ZoomMenu.this.jgraph.setScale(Math.min(scale, 1.0));
+                ZoomMenu.this.jgraph.scrollRectToVisible(Groove.toRectangle(graphBounds));
                 setActionsEnabled();
             }
         }
@@ -110,9 +110,9 @@ public class ZoomMenu extends JMenu {
     /** Action for zooming in, i.e., enlarging the figure. */
     protected final Action zoomInAction = new AbstractAction("Zoom in") {
         public void actionPerformed(ActionEvent evt) {
-            double scale = jgraph.getScale() * 2;
-//            jgraph.setScale(Math.min(1, scale));
-            jgraph.setScale(scale);
+            double scale = ZoomMenu.this.jgraph.getScale() * 2;
+            // jgraph.setScale(Math.min(1, scale));
+            ZoomMenu.this.jgraph.setScale(scale);
             setActionsEnabled();
         }
     };
@@ -120,7 +120,7 @@ public class ZoomMenu extends JMenu {
     /** Action for zooming out, i.e., making the figure smaller. */
     protected final Action zoomOutAction = new AbstractAction("Zoom out") {
         public void actionPerformed(ActionEvent evt) {
-            jgraph.setScale(jgraph.getScale() / 2);
+            ZoomMenu.this.jgraph.setScale(ZoomMenu.this.jgraph.getScale() / 2);
             setActionsEnabled();
         }
     };
@@ -128,14 +128,14 @@ public class ZoomMenu extends JMenu {
     /** Action for resetting the zoom factor to the original (1.0). */
     protected final Action resetZoomAction = new AbstractAction("Reset zoom") {
         public void actionPerformed(ActionEvent evt) {
-            jgraph.setScale(1.0);
+            ZoomMenu.this.jgraph.setScale(1.0);
             setActionsEnabled();
         }
     };
 
     /** The component for which zooming is to be done. */
     final JGraph jgraph;
-    
+
     /** Mnemonic key for the menu. */
     private static int MENU_MNEMONIC = KeyEvent.VK_Z;
 }

@@ -1,23 +1,25 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: SetLayoutMenu.java,v 1.5 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 
-import groove.gui.jgraph.*;
-import groove.gui.layout.*;
+import groove.gui.jgraph.JGraph;
+import groove.gui.layout.ForestLayouter;
+import groove.gui.layout.Layouter;
+import groove.gui.layout.SpringLayouter;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -29,8 +31,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * A menu to choose between layout actions,
- * and offering a menu item that displays the currently set action.
+ * A menu to choose between layout actions, and offering a menu item that
+ * displays the currently set action.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -48,7 +50,8 @@ public class SetLayoutMenu extends JMenu {
     }
 
     /**
-     * Constructs a layout menu with <tt>SpringLayout</tt> and <tt>ForestLayout</tt>.
+     * Constructs a layout menu with <tt>SpringLayout</tt> and
+     * <tt>ForestLayout</tt>.
      * @param jgraph the jgraph upon which the actions in this menu should work
      */
     public SetLayoutMenu(JGraph jgraph) {
@@ -58,12 +61,12 @@ public class SetLayoutMenu extends JMenu {
 
     /** Returns the layout item describing the currently selected layout action. */
     public JMenuItem getCurrentLayoutItem() {
-        return layoutItem;
+        return this.layoutItem;
     }
 
     /**
-     * Creates a new menu item for setting a given layout action,
-     * and adds it to the menu. Also returns the item as a result.
+     * Creates a new menu item for setting a given layout action, and adds it to
+     * the menu. Also returns the item as a result.
      * @param prototypeLayout the layout action for the new menu item
      * @return the new menu item
      */
@@ -76,23 +79,24 @@ public class SetLayoutMenu extends JMenu {
     }
 
     /**
-     * Sets a given layouter for the jgraph and returns the corresponding layout action.
-     * Also notifies the underlying jgraph.
+     * Sets a given layouter for the jgraph and returns the corresponding layout
+     * action. Also notifies the underlying jgraph.
      * @param prototypeLayout the new layout action
      */
     public LayoutAction selectLayoutAction(Layouter prototypeLayout) {
-        jgraph.setLayouter(prototypeLayout);
-        LayoutAction result = new LayoutAction(jgraph.getLayouter());
-        layoutItem.setAction(result);
+        this.jgraph.setLayouter(prototypeLayout);
+        LayoutAction result = new LayoutAction(this.jgraph.getLayouter());
+        this.layoutItem.setAction(result);
         for (int i = 0; i < getMenuComponentCount(); i++) {
             Component item = getMenuComponent(i);
             if (item instanceof LayoutItem) {
                 LayoutItem layoutItem = (LayoutItem) item;
-                layoutItem.setSelected(layoutItem.layouter.getName().equals(prototypeLayout.getName()));
+                layoutItem.setSelected(layoutItem.layouter.getName().equals(
+                    prototypeLayout.getName()));
             }
         }
         return result;
-//        jgraph.doLayout();
+        // jgraph.doLayout();
     }
 
     /**
@@ -104,7 +108,7 @@ public class SetLayoutMenu extends JMenu {
 
     /** The j-graph to be laid out. */
     private final JGraph jgraph;
-    
+
     /** Menu item whose label reflects the currently selected layouter. */
     private final JMenuItem layoutItem = new JMenuItem() {
         @Override
@@ -122,12 +126,13 @@ public class SetLayoutMenu extends JMenu {
      * Menu item class to select a layouter.
      */
     private class LayoutItem extends JCheckBoxMenuItem {
-    	/** Constructs a new instance with a given layouter. */
+        /** Constructs a new instance with a given layouter. */
         LayoutItem(Layouter layouter) {
             this.layouter = layouter;
             setAction(new AbstractAction(layouter.getName()) {
                 public void actionPerformed(ActionEvent evt) {
-                    selectLayoutAction(LayoutItem.this.layouter).actionPerformed(null);
+                    selectLayoutAction(LayoutItem.this.layouter).actionPerformed(
+                        null);
                 }
             });
         }

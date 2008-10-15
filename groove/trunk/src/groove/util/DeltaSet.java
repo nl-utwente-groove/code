@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: DeltaSet.java,v 1.4 2008-01-30 09:32:13 iovka Exp $
@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * Implements a set whose operations work on an underlying (lower) set, but store 
- * the elements added to and removed from that lower set.
+ * Implements a set whose operations work on an underlying (lower) set, but
+ * store the elements added to and removed from that lower set.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:13 $
  */
@@ -39,8 +39,8 @@ public class DeltaSet<T> extends AbstractSet<T> {
 
     /**
      * Constructs a delta set, on top of a given lower set.
-     * @param lower the lower set on which this one should be built.
-     * Should not be <code>null</code>.
+     * @param lower the lower set on which this one should be built. Should not
+     *        be <code>null</code>.
      */
     public DeltaSet(Set<T> lower) {
         assert lower != null : "Lower set of deltaset should not be null";
@@ -50,10 +50,10 @@ public class DeltaSet<T> extends AbstractSet<T> {
     }
 
     /**
-     * Constructs a delta set, on top of a given lower set, and
-     * using given sets for the added and removed elements.
-     * @param lower the lower set on which this one should be built.
-     * Should not be <code>null</code>.
+     * Constructs a delta set, on top of a given lower set, and using given sets
+     * for the added and removed elements.
+     * @param lower the lower set on which this one should be built. Should not
+     *        be <code>null</code>.
      */
     public DeltaSet(Set<T> lower, Set<T> added, Set<T> removed) {
         assert lower != null : "Lower set of deltaset should not be null";
@@ -63,11 +63,12 @@ public class DeltaSet<T> extends AbstractSet<T> {
     }
 
     /**
-     * Computed as the size of this set, minus the removed elements, plus the added elements.
+     * Computed as the size of this set, minus the removed elements, plus the
+     * added elements.
      */
     @Override
     public int size() {
-        return lower.size();
+        return this.lower.size();
     }
 
     /**
@@ -76,24 +77,24 @@ public class DeltaSet<T> extends AbstractSet<T> {
     @Override
     public Iterator<T> iterator() {
         // the following is eqivalent to a nested iterator consisting of an
-        // iterator over the added set followed by a filtered iterator over 
+        // iterator over the added set followed by a filtered iterator over
         // the lower set. Presumably it is more efficient this way?
         return new Iterator<T>() {
             public void remove() {
-                iter.remove();
-				if (!added.remove(latestNext)) {
-					removed.add(latestNext);
-				}
+                this.iter.remove();
+                if (!this.added.remove(this.latestNext)) {
+                    this.removed.add(this.latestNext);
+                }
             }
 
             public boolean hasNext() {
-                return iter.hasNext();
+                return this.iter.hasNext();
             }
 
             public T next() {
                 if (hasNext()) {
-                	latestNext = iter.next();
-                	return latestNext;
+                    this.latestNext = this.iter.next();
+                    return this.latestNext;
                 } else {
                     throw new NoSuchElementException();
                 }
@@ -112,95 +113,97 @@ public class DeltaSet<T> extends AbstractSet<T> {
              */
             private final Iterator<T> iter = lower().iterator();
             /**
-             * Latest element returned by <code>next()</code>.
-             * This is the element removed by {@link #remove()}.
+             * Latest element returned by <code>next()</code>. This is the
+             * element removed by {@link #remove()}.
              */
             private T latestNext = null;
         };
     }
-    
+
     /**
-     * Either removes the element from the removed set, or, if it is not
-     * already in the lower set, adds it to the added set.
+     * Either removes the element from the removed set, or, if it is not already
+     * in the lower set, adds it to the added set.
      */
     @Override
     public boolean add(T o) {
-    	boolean result = lower.add(o);
-    	if (result && !removed.remove(o)) {
-    		boolean inner = added.add(o);
-			assert inner : "Added element "+o+" already in added set"+added;
-    	}
-    	return result;
+        boolean result = this.lower.add(o);
+        if (result && !this.removed.remove(o)) {
+            boolean inner = this.added.add(o);
+            assert inner : "Added element " + o + " already in added set"
+                + this.added;
+        }
+        return result;
     }
 
     /**
-     * This implementation clears the added set, and copies the lower set
-     * into the removed set.
+     * This implementation clears the added set, and copies the lower set into
+     * the removed set.
      */
     @Override
     public void clear() {
-        removed.addAll(lower);
-        removed.removeAll(added);
-        added.clear();
-        lower.clear();
+        this.removed.addAll(this.lower);
+        this.removed.removeAll(this.added);
+        this.added.clear();
+        this.lower.clear();
     }
 
     /**
-     * Returns <tt>true</tt> if the element is in the added set,
-     * or in the lower but not the removed set.
+     * Returns <tt>true</tt> if the element is in the added set, or in the
+     * lower but not the removed set.
      */
     @Override
     public boolean contains(Object o) {
-        return lower.contains(o);
+        return this.lower.contains(o);
     }
 
     /**
-     * Either removes the element from the added set, or, if it is 
-     * present in the lower set, adds it to the removed set.
+     * Either removes the element from the added set, or, if it is present in
+     * the lower set, adds it to the removed set.
      */
     @Override
     public boolean remove(Object o) {
-		boolean result = lower.remove(o);
-		if (result && !added.remove(o)) {
-			@SuppressWarnings("unchecked")
-			boolean inner = removed.add((T)o);
-			assert inner : "Removed element "+o+" already in removed set"+removed;
-		}
-		return result;
-	}
+        boolean result = this.lower.remove(o);
+        if (result && !this.added.remove(o)) {
+            @SuppressWarnings("unchecked")
+            boolean inner = this.removed.add((T) o);
+            assert inner : "Removed element " + o + " already in removed set"
+                + this.removed;
+        }
+        return result;
+    }
 
     /**
-	 * Returns an alias of the added elements of this deltaset.
-	 */
+     * Returns an alias of the added elements of this deltaset.
+     */
     public Set<T> added() {
-        return added;
+        return this.added;
     }
 
     /**
      * Returns an alias of the removed elements of this deltaset.
      */
     public Set<T> removed() {
-        return removed;
+        return this.removed;
     }
 
     /**
      * Returns an alias of the lower set.
      */
     public Set<T> lower() {
-        return lower;
+        return this.lower;
     }
 
     /**
-     * Constructor method for the set of added elements.
-     * This implementation returns a {@link HashSet}.
+     * Constructor method for the set of added elements. This implementation
+     * returns a {@link HashSet}.
      */
     protected Set<T> createAddedSet() {
         return new HashSet<T>();
     }
 
     /**
-     * Constructor method for the set of added elements.
-     * This implementation returns a {@link HashSet}.
+     * Constructor method for the set of added elements. This implementation
+     * returns a {@link HashSet}.
      */
     protected Set<T> createRemovedSet() {
         return new HashSet<T>();

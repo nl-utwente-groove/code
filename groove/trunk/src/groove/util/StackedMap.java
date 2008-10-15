@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: StackedMap.java,v 1.5 2008-01-30 09:32:14 iovka Exp $
@@ -24,9 +24,9 @@ import java.util.Set;
 
 /**
  * Defines a stacked map, consisting of a lower map (which is not modified by
- * any of the operations) and a delta map.
- * The stacked map does not support <tt>null</tt> values, and
- * currently also does not support removal of elements.
+ * any of the operations) and a delta map. The stacked map does not support
+ * <tt>null</tt> values, and currently also does not support removal of
+ * elements.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -39,8 +39,8 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     }
 
     /**
-     * Creates a stacked map on top of a given map,
-     * which will serve as the lower map.
+     * Creates a stacked map on top of a given map, which will serve as the
+     * lower map.
      */
     public StackedMap(Map<T,U> lower) {
         this.lower = lower;
@@ -56,18 +56,18 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     }
 
     /**
-     * Returns a {@link StackedSet} consisting of a {@link SetView} on
-     * the lower map's entry set, where the entries are filtered out that 
-     * are redefined in the delta map, with the delta map's entry set added.
+     * Returns a {@link StackedSet} consisting of a {@link SetView} on the lower
+     * map's entry set, where the entries are filtered out that are redefined in
+     * the delta map, with the delta map's entry set added.
      */
     @Override
     public Set<Map.Entry<T,U>> entrySet() {
-    	if (entrySet == null) {
-    		entrySet = createEntrySet();
-    	}
-        return entrySet;
+        if (this.entrySet == null) {
+            this.entrySet = createEntrySet();
+        }
+        return this.entrySet;
     }
-    
+
     /**
      * Clearing a stacked map is currently not supported.
      */
@@ -77,13 +77,13 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     }
 
     @Override
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public U get(Object key) {
-        U result = delta.get(key);
+        U result = this.delta.get(key);
         if (result == null) {
-            result = lower.get(key);
+            result = this.lower.get(key);
             if (result != null) {
-            	delta.put((T) key, result);
+                this.delta.put((T) key, result);
             }
         }
         return result;
@@ -98,9 +98,9 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
         if (value == null) {
             throw new IllegalArgumentException();
         }
-        U result = delta.put(key, value);
+        U result = this.delta.put(key, value);
         if (result == null) {
-            return lower.get(key);
+            return this.lower.get(key);
         } else {
             return result;
         }
@@ -115,51 +115,53 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     }
 
     /**
-     * Factory method for the delta map.
-     * This implementation returns a {@link HashMap}.
+     * Factory method for the delta map. This implementation returns a
+     * {@link HashMap}.
      */
     private Map<T,U> createDeltaMap() {
         return new HashMap<T,U>();
     }
-    
+
     /** Factory method for the entry set of the map. */
     private Set<Map.Entry<T,U>> createEntrySet() {
-    	return new StackedSet<Map.Entry<T,U>>(new UnmodifiableSetView<Map.Entry<T,U>>(lower.entrySet()) {
-    	    @Override
-            public boolean approves(Object obj) {
-                return !getDelta().containsKey(((Map.Entry<?,?>) obj).getKey());
-            }
-        }) {
-    	    @Override
+        return new StackedSet<Map.Entry<T,U>>(
+            new UnmodifiableSetView<Map.Entry<T,U>>(this.lower.entrySet()) {
+                @Override
+                public boolean approves(Object obj) {
+                    return !getDelta().containsKey(
+                        ((Map.Entry<?,?>) obj).getKey());
+                }
+            }) {
+            @Override
             protected Set<Map.Entry<T,U>> createAddedSet() {
                 return getDelta().entrySet();
             }
         };
     }
-    
+
     /**
      * Returns the delta map.
      */
     public Map<T,U> getDelta() {
-        return delta;
+        return this.delta;
     }
-    
+
     /**
      * Returns the lower map.
      */
     public Map<T,U> getLower() {
-        return Collections.unmodifiableMap(lower);
+        return Collections.unmodifiableMap(this.lower);
     }
 
     /**
-     * The delta map, storing the difference between {@link #lower} and
-     * the implemented map.
+     * The delta map, storing the difference between {@link #lower} and the
+     * implemented map.
      */
     private final Map<T,U> delta;
     /**
      * The lower map.
      */
-    private final Map<T,U> lower; 
+    private final Map<T,U> lower;
     /**
      * Auxiliary variable storing a view on the entry set.
      */

@@ -1,17 +1,17 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
-/* 
+/*
  * $Id: Groove.java,v 1.27 2008-03-13 14:52:56 rensink Exp $
  */
 package groove.util;
@@ -53,30 +53,32 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision $ 
+ * @version $Revision $
  * @version Arend Rensink
  */
 public class Groove {
-	/** The working directory of the application. */
+    /** The working directory of the application. */
     public static final String WORKING_DIR = System.getProperty("user.dir");
-	/** The user's home directory. */
+    /** The user's home directory. */
     public static final String HOME = System.getProperty("user.home");
     /** The system's file separator. */
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    public static final String FILE_SEPARATOR =
+        System.getProperty("file.separator");
     /** Lower case letter pi. */
     public static final char LC_PI = '\u03C0';
     /** The default sample directory. */
-    public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR + "samples";
-	/** 
-	 * Role value indicating that a graph represents an ordinary graph.
-	 * @see GraphInfo#getRole() 
-	 */
-	static public final String GRAPH_ROLE = "graph";
-	/** 
-	 * Role value indicating that a graph represents a rule. 
-	 * @see GraphInfo#getRole() 
-	 */
-	static public final String RULE_ROLE = "rule";
+    public static final String SAMPLE_DIR =
+        WORKING_DIR + FILE_SEPARATOR + "samples";
+    /**
+     * Role value indicating that a graph represents an ordinary graph.
+     * @see GraphInfo#getRole()
+     */
+    static public final String GRAPH_ROLE = "graph";
+    /**
+     * Role value indicating that a graph represents a rule.
+     * @see GraphInfo#getRole()
+     */
+    static public final String RULE_ROLE = "rule";
 
     /** Extension for GXL (Graph eXchange Language) files. */
     public static final String GXL_EXTENSION = ".gxl";
@@ -100,64 +102,83 @@ public class Groove {
     public static final String LAYOUT_EXTENSION = ".gl";
     /** Extension for property files. */
     public static final String CONTROL_EXTENSION = ".gcp";
-    
+
     /** Default name for property files. */
     public static final String PROPERTY_NAME = "grammar";
-    
+
     /** Extension for property files. */
     public static final String PROPERTY_EXTENSION = ".properties";
     /** File name for GUI properties. */
-    public static final String GUI_PROPERTIES_FILE = "groove.gui"+PROPERTY_EXTENSION;
+    public static final String GUI_PROPERTIES_FILE =
+        "groove.gui" + PROPERTY_EXTENSION;
     /** File name for XML properties. */
-    public static final String XML_PROPERTIES_FILE = "groove.xml"+PROPERTY_EXTENSION;
+    public static final String XML_PROPERTIES_FILE =
+        "groove.xml" + PROPERTY_EXTENSION;
     /** Extension for TGR (Type GRaph) files. */
     public static final String TGR_EXTENSION = ".tgr";
     /** File name for Type Graph files */
     public static final String TGR_NAME = "typegraph";
     /** Icon for GPS folders. */
-    public static final ImageIcon GPS_FOLDER_ICON = new ImageIcon(getResource("gps.gif"));
+    public static final ImageIcon GPS_FOLDER_ICON =
+        new ImageIcon(getResource("gps.gif"));
     /** Graph editing mode icon. */
-    public static final ImageIcon GRAPH_MODE_ICON = new ImageIcon(getResource("graph-mode.gif"));
+    public static final ImageIcon GRAPH_MODE_ICON =
+        new ImageIcon(getResource("graph-mode.gif"));
     /** Rule editing mode icon. */
-    public static final ImageIcon RULE_MODE_ICON = new ImageIcon(getResource("rule-mode.gif"));
+    public static final ImageIcon RULE_MODE_ICON =
+        new ImageIcon(getResource("rule-mode.gif"));
     /** Icon for graphs. */
-    public static final ImageIcon GRAPH_ICON = new ImageIcon(getResource("graph.gif"));
+    public static final ImageIcon GRAPH_ICON =
+        new ImageIcon(getResource("graph.gif"));
     /** Icon for graph (GXL or GST) files. */
-    public static final ImageIcon GRAPH_FILE_ICON = new ImageIcon(getResource("graph-file.gif"));
+    public static final ImageIcon GRAPH_FILE_ICON =
+        new ImageIcon(getResource("graph-file.gif"));
     /** Icon for the state panel of the simulator. */
-    public static final ImageIcon GRAPH_FRAME_ICON = new ImageIcon(getResource("graph-frame.gif"));
+    public static final ImageIcon GRAPH_FRAME_ICON =
+        new ImageIcon(getResource("graph-frame.gif"));
     /** Icon for graph with emphasised match. */
-    public static final ImageIcon GRAPH_MATCH_ICON = new ImageIcon(getResource("graph-match.gif"));
+    public static final ImageIcon GRAPH_MATCH_ICON =
+        new ImageIcon(getResource("graph-match.gif"));
     /** Small icon for production rules. */
-    public static final ImageIcon RULE_SMALL_ICON = new ImageIcon(getResource("rule-small.gif"));
+    public static final ImageIcon RULE_SMALL_ICON =
+        new ImageIcon(getResource("rule-small.gif"));
     /** Icon for production rules. */
-    public static final ImageIcon RULE_ICON = new ImageIcon(getResource("rule.gif"));
+    public static final ImageIcon RULE_ICON =
+        new ImageIcon(getResource("rule.gif"));
     /** Icon for rule (GPR) files. */
-    public static final ImageIcon RULE_FILE_ICON = new ImageIcon(getResource("rule-file.gif"));
+    public static final ImageIcon RULE_FILE_ICON =
+        new ImageIcon(getResource("rule-file.gif"));
     /** Icon for the rule panel of the simulator. */
-    public static final ImageIcon RULE_FRAME_ICON = new ImageIcon(getResource("rule-frame.gif"));
+    public static final ImageIcon RULE_FRAME_ICON =
+        new ImageIcon(getResource("rule-frame.gif"));
     /** Icon for the LTS panel of the simulator. */
-    public static final ImageIcon LTS_FRAME_ICON = new ImageIcon(getResource("lts-frame.gif"));
+    public static final ImageIcon LTS_FRAME_ICON =
+        new ImageIcon(getResource("lts-frame.gif"));
     /** Icon for Control Panel. */
-    public static final ImageIcon CTRL_FRAME_ICON = new ImageIcon(getResource("cp-frame.gif"));
+    public static final ImageIcon CTRL_FRAME_ICON =
+        new ImageIcon(getResource("cp-frame.gif"));
     /** Icon for Type Panel. */
-    public static final ImageIcon TYPE_FRAME_ICON = new ImageIcon(getResource("type-frame.gif"));
+    public static final ImageIcon TYPE_FRAME_ICON =
+        new ImageIcon(getResource("type-frame.gif"));
     /** GROOVE project icon in 16x16 format. */
-    public static final ImageIcon GROOVE_ICON_16x16 = new ImageIcon(getResource("groove-g-16x16.gif"));
+    public static final ImageIcon GROOVE_ICON_16x16 =
+        new ImageIcon(getResource("groove-g-16x16.gif"));
     /** GROOVE project icon in 32x32 format. */
-    public static final ImageIcon GROOVE_ICON_32x32 = new ImageIcon(getResource("groove-g-32x32.gif"));
+    public static final ImageIcon GROOVE_ICON_32x32 =
+        new ImageIcon(getResource("groove-g-32x32.gif"));
     /** GROOVE project icon in blue colour - 32x32 format. */
-    public static final ImageIcon GROOVE_BLUE_ICON_32x32 = new ImageIcon(getResource("groove-blue-g-32x32.gif"));
+    public static final ImageIcon GROOVE_BLUE_ICON_32x32 =
+        new ImageIcon(getResource("groove-blue-g-32x32.gif"));
 
     /**
-     * Flag to indicate if variaous types of statistics should be computed.
-     * This flag is intended to be used globally.
+     * Flag to indicate if variaous types of statistics should be computed. This
+     * flag is intended to be used globally.
      */
     static public final boolean GATHER_STATISTICS = true;
 
     /**
-     * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      * @see #GXL_EXTENSION
      */
     public static ExtensionFilter createGxlFilter() {
@@ -165,8 +186,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh an extension filter for <tt>GXL_EXTENSION</tt>.
-     * A switch controls whether the filter accepts directories.
+     * Returns a fresh an extension filter for <tt>GXL_EXTENSION</tt>. A
+     * switch controls whether the filter accepts directories.
      * @param acceptDirectories if true, the filter accepts directries.
      * @see #GXL_EXTENSION
      */
@@ -175,8 +196,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for <tt>RULE_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>RULE_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      * @see #RULE_EXTENSION
      */
     public static ExtensionFilter createRuleFilter() {
@@ -184,13 +205,14 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh an extension filter for <tt>RULE_EXTENSION</tt>.
-     * A switch controls whether the filter accepts directories.
+     * Returns a fresh an extension filter for <tt>RULE_EXTENSION</tt>. A
+     * switch controls whether the filter accepts directories.
      * @param acceptDirectories if true, the filter accepts directries.
      * @see #RULE_EXTENSION
      */
     public static ExtensionFilter createRuleFilter(boolean acceptDirectories) {
-        return getFilter("Groove production rules", RULE_EXTENSION, acceptDirectories);
+        return getFilter("Groove production rules", RULE_EXTENSION,
+            acceptDirectories);
     }
 
     /**
@@ -208,13 +230,15 @@ public class Groove {
      * @param acceptDirectories if true, the filter accepts directries.
      * @see #RULE_SYSTEM_EXTENSION
      */
-    public static ExtensionFilter createRuleSystemFilter(boolean acceptDirectories) {
-        return getFilter("Groove production systems", RULE_SYSTEM_EXTENSION, acceptDirectories);
+    public static ExtensionFilter createRuleSystemFilter(
+            boolean acceptDirectories) {
+        return getFilter("Groove production systems", RULE_SYSTEM_EXTENSION,
+            acceptDirectories);
     }
 
     /**
-     * Returns a fresh extension filter for <tt>FSM_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>FSM_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      * @see #FSM_EXTENSION
      */
     public static ExtensionFilter createFsmFilter() {
@@ -222,8 +246,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for <tt>STATE_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>STATE_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      * @see #STATE_EXTENSION
      */
     public static ExtensionFilter createStateFilter() {
@@ -231,16 +255,16 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      */
     public static ExtensionFilter createControlFilter() {
-    	return new ExtensionFilter("Groove control files", CONTROL_EXTENSION);
+        return new ExtensionFilter("Groove control files", CONTROL_EXTENSION);
     }
-    
+
     /**
-     * Returns a fresh extension filter for <tt>PROPERTIES_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>PROPERTIES_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      * @see #STATE_EXTENSION
      */
     public static ExtensionFilter createPropertyFilter() {
@@ -248,37 +272,44 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh an extension filter for <tt>STATE_EXTENSION</tt>.
-     * A switch controls whether the filter accepts directories.
+     * Returns a fresh an extension filter for <tt>STATE_EXTENSION</tt>. A
+     * switch controls whether the filter accepts directories.
      * @param acceptDirectories if true, the filter accepts directries.
      * @see #STATE_EXTENSION
      */
     public static ExtensionFilter createStateFilter(boolean acceptDirectories) {
-        return getFilter("Groove state graphs", STATE_EXTENSION, acceptDirectories);
+        return getFilter("Groove state graphs", STATE_EXTENSION,
+            acceptDirectories);
     }
 
     /**
      * Returns an extension filter with the required properties.
      * @param description general description of the filter
      * @param extension the extension to be filtered
-     * @param acceptDirectories flag controlling whether directories should be accepted by the filter.
+     * @param acceptDirectories flag controlling whether directories should be
+     *        accepted by the filter.
      * @return a filter with the required properties
      */
-    public static ExtensionFilter getFilter(String description, String extension, boolean acceptDirectories) {
-    	Pair<ExtensionFilter,ExtensionFilter> result = extensionFilterMap.get(extension);
-    	if (result == null) {
-        	ExtensionFilter first = new ExtensionFilter(description, extension, false);
-        	ExtensionFilter second = new ExtensionFilter(description, extension, true);
-        	result = new Pair<ExtensionFilter,ExtensionFilter>(first, second);
-        	extensionFilterMap.put(extension, result);
-    	}
-    	return acceptDirectories ? result.second() : result.first();
+    public static ExtensionFilter getFilter(String description,
+            String extension, boolean acceptDirectories) {
+        Pair<ExtensionFilter,ExtensionFilter> result =
+            extensionFilterMap.get(extension);
+        if (result == null) {
+            ExtensionFilter first =
+                new ExtensionFilter(description, extension, false);
+            ExtensionFilter second =
+                new ExtensionFilter(description, extension, true);
+            result = new Pair<ExtensionFilter,ExtensionFilter>(first, second);
+            extensionFilterMap.put(extension, result);
+        }
+        return acceptDirectories ? result.second() : result.first();
     }
-    
+
     /**
      * Retrieves a property from the gui properties file
      * @param key the property description
-     * @return the value associated with <tt>key</tt> in the gui properties file
+     * @return the value associated with <tt>key</tt> in the gui properties
+     *         file
      */
     static public String getGUIProperty(String key) {
         return guiProperties.getProperty(key);
@@ -287,21 +318,24 @@ public class Groove {
     /**
      * Retrieves a property from the xml properties file
      * @param key the property description
-     * @return the value associated with <tt>key</tt> in the xml properties file
+     * @return the value associated with <tt>key</tt> in the xml properties
+     *         file
      */
     static public String getXMLProperty(String key) {
         return xmlProperties.getProperty(key);
     }
 
     /**
-     * Attempts to load in a graph from a given <tt>.gst</tt> file and return it.
-     * Tries out the <tt>.gxl</tt> and <tt>.gst</tt> extensions if the filename has no extension.
+     * Attempts to load in a graph from a given <tt>.gst</tt> file and return
+     * it. Tries out the <tt>.gxl</tt> and <tt>.gst</tt> extensions if the
+     * filename has no extension.
      * @param filename the name of the file to lod the graph from
-     * @return the graph contained in <code>filename</code>, or <code>null</code> if
-     * no file with this name can be found
-     * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
+     * @return the graph contained in <code>filename</code>, or
+     *         <code>null</code> if no file with this name can be found
+     * @throws IOException if <code>filename</code> does not exist or is
+     *         wrongly formatted
      */
-    static public Graph loadGraph(String filename) throws IOException, FormatException {
+    static public Graph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
         File file = new File(createGxlFilter().addExtension(filename));
         if (!file.exists()) {
@@ -313,42 +347,44 @@ public class Groove {
     /**
      * Attempts to load in a graph from a file.
      * @param file file to load the graph from
-     * @return the graph contained in <code>file</code>, or <code>null</code> if
-     * the file does not exist
+     * @return the graph contained in <code>file</code>, or <code>null</code>
+     *         if the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
-    static public Graph loadGraph(File file) throws IOException, FormatException {
+    static public Graph loadGraph(File file) throws IOException {
         if (file.exists()) {
             Graph result = graphLoader.unmarshalGraph(file);
             return result;
         } else {
-        	return null;
+            return null;
         }
-    }
-    
-    /**
-     * Indicates if a given file is a rule file as recognized by the GROOVE system.
-     */
-    static public boolean isRuleFile(File file) {
-    	return createRuleFilter().accept(file);
-    }
-    
-    /**
-     * Indicates if a given file is a state file as recognized by the GROOVE system.
-     */
-    static public boolean isStateFile(File file) {
-    	return createStateFilter().accept(file);
     }
 
     /**
-     * Attempts to save a graph to a file with a given name.
-     * Adds the <tt>.gxl</tt> extension if the file has no extension.
+     * Indicates if a given file is a rule file as recognized by the GROOVE
+     * system.
+     */
+    static public boolean isRuleFile(File file) {
+        return createRuleFilter().accept(file);
+    }
+
+    /**
+     * Indicates if a given file is a state file as recognized by the GROOVE
+     * system.
+     */
+    static public boolean isStateFile(File file) {
+        return createStateFilter().accept(file);
+    }
+
+    /**
+     * Attempts to save a graph to a file with a given name. Adds the
+     * <tt>.gxl</tt> extension if the file has no extension.
      * @param graph the graph to be saved
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
-     * @throws FormatException if an XML format error occurred
      */
-    static public void saveGraph(Graph graph, String filename) throws IOException, FormatException {
+    static public void saveGraph(Graph graph, String filename)
+        throws IOException {
         if (!createStateFilter().hasExtension(filename)) {
             filename = createGxlFilter().addExtension(filename);
         }
@@ -358,16 +394,17 @@ public class Groove {
     }
 
     /**
-     * Attempts to export a graph to a file with a given name.
-     * The export format is determined by the file extension. 
-     * Returns a flag indicating if the file could be exported.
+     * Attempts to export a graph to a file with a given name. The export format
+     * is determined by the file extension. Returns a flag indicating if the
+     * file could be exported.
      * @param graph the graph to be saved
      * @param filename the intended filename
      * @return <code>true</code> if the format was known
      * @throws IOException if saving ran into problems
      */
-    static public boolean exportGraph(GraphShape graph, String filename) throws IOException {
-        for (StructuralFormat exportFormat: new Exporter().getStructuralFormats()) {
+    static public boolean exportGraph(GraphShape graph, String filename)
+        throws IOException {
+        for (StructuralFormat exportFormat : new Exporter().getStructuralFormats()) {
             if (exportFormat.getFilter().hasExtension(filename)) {
                 exportFormat.export(graph, new File(filename));
                 return true;
@@ -377,63 +414,86 @@ public class Groove {
     }
 
     /**
-     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and return it.
-     * Adds the <tt>.gpr</tt> extension if the filename has no extension.
+     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and
+     * return it. Adds the <tt>.gpr</tt> extension if the filename has no
+     * extension.
      * @param filename the name of the file to load the rule graph from
      * @return the rule graph contained in <code>filename</code>
-     * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
+     * @throws IOException if <code>filename</code> does not exist or is
+     *         wrongly formatted
      */
-    static public AspectualRuleView loadRuleGraph(String filename) throws IOException {
+    static public AspectualRuleView loadRuleGraph(String filename)
+        throws IOException {
         return loadRuleGraph(filename, SystemProperties.DEFAULT_PROPERTIES);
     }
 
     /**
-     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and return it.
-     * Adds the <tt>.gpr</tt> extension if the filename has no extension.
+     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and
+     * return it. Adds the <tt>.gpr</tt> extension if the filename has no
+     * extension.
      * @param filename the name of the file to load the rule graph from
      * @return the rule graph contained in <code>filename</code>
-     * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
+     * @throws IOException if <code>filename</code> does not exist or is
+     *         wrongly formatted
      */
-    static public AspectualRuleView loadRuleGraph(String filename, SystemProperties properties) throws IOException {
+    static public AspectualRuleView loadRuleGraph(String filename,
+            SystemProperties properties) throws IOException {
         File file = new File(createRuleFilter().addExtension(filename));
         return gpsLoader.unmarshalRule(file, properties);
     }
-    
+
     /**
-     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory and return it.
-     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
+     * Attempts to load in a graph grammar from a given <tt>.gps</tt>
+     * directory and return it. Adds the <tt>.gps</tt> extension if the
+     * directory name has no extension.
      * @param dirname the name of the directory to load the graph grammar from
      * @return the rule system contained in <code>dirname</code>
-     * @throws IOException if <code>dirname</code> does not exist or is wrongly formatted
+     * @throws IOException if <code>dirname</code> does not exist or is
+     *         wrongly formatted
      */
-    static public GrammarView<?,?> loadGrammar(String dirname) throws IOException, FormatException {
+    static public GrammarView<?,?> loadGrammar(String dirname)
+        throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshal(dir);
-    }    /**     * Loads a Grammar from a Resource     * FIXME: implement this!     */    static public GrammarView<?,?> loadGrammar(URL directory) throws IOException, FormatException {//    	return gpsLoader.unmarshal(new File(directory));    	return null;    }
+    }
+
+    /**
+     * Loads a Grammar from a Resource FIXME: implement this!
+     */
+    static public GrammarView<?,?> loadGrammar(URL directory) {
+        // return gpsLoader.unmarshal(new File(directory));
+        return null;
+    }
 
     /**
      * Creates and returns a calculator on the basis of a graph grammar given by
      * a filename.
      * @param filename the name of the file where the grammar is located
-     * @return A graph calculator based on the graph grammar found at <code>filename</code>
+     * @return A graph calculator based on the graph grammar found at
+     *         <code>filename</code>
      * @throws IOException if no grammar can be found at <code>filename</code>
      */
-    static public GraphCalculator createCalculator(String filename) throws IOException, FormatException {
+    static public GraphCalculator createCalculator(String filename)
+        throws IOException, FormatException {
         return createCalculator(loadGrammar(filename).toGrammar());
     }
-    
+
     /**
-     * Creates and returns a calculator on the basis of a graph grammar and start graph given by
-     * filenames.
+     * Creates and returns a calculator on the basis of a graph grammar and
+     * start graph given by filenames.
      * @param grammarFilename the name of the file where the grammar is located
-     * @param startfilename the name of the start graph, interpreted relative to <code>grammarFilename</code>
-     * @return A graph calculator based on the graph grammar found at <code>grammarFilename</code> and <code>startFilename</code>
-     * @throws IOException if no grammar can be found at <code>grammarFilename</code>
+     * @param startfilename the name of the start graph, interpreted relative to
+     *        <code>grammarFilename</code>
+     * @return A graph calculator based on the graph grammar found at
+     *         <code>grammarFilename</code> and <code>startFilename</code>
+     * @throws IOException if no grammar can be found at
+     *         <code>grammarFilename</code>
      */
-    static public GraphCalculator createCalculator(String grammarFilename, String startfilename) throws IOException, FormatException {
+    static public GraphCalculator createCalculator(String grammarFilename,
+            String startfilename) throws IOException, FormatException {
         return createCalculator(loadGrammar(grammarFilename, startfilename).toGrammar());
     }
-    
+
     /**
      * Creates a new graph calculator based on a given graph grammar.
      * @param grammar the graph grammar to be used as the basis
@@ -442,64 +502,78 @@ public class Groove {
     static public GraphCalculator createCalculator(GraphGrammar grammar) {
         return new DefaultGraphCalculator(grammar);
     }
-    
+
     /**
-     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
-     * with an explicitly given start graph name, and return it.
-     * Adds the <tt>.gps</tt> extension if the file has no extension.
+     * Attempts to load in a graph grammar from a given <tt>.gps</tt>
+     * directory, with an explicitly given start graph name, and return it. Adds
+     * the <tt>.gps</tt> extension if the file has no extension.
      * @param dirname the name of the directory to load the graph grammar from
      * @param startfilename the name of the start graph
-     * @return the graph grammar made up by <code>dirname</code> and <code>startfilename</code>
-     * @throws IOException if <code>dirname</code> or <code>startfilename</code> do not exist or are wrongly formatted
+     * @return the graph grammar made up by <code>dirname</code> and
+     *         <code>startfilename</code>
+     * @throws IOException if <code>dirname</code> or
+     *         <code>startfilename</code> do not exist or are wrongly
+     *         formatted
      */
-    static public DefaultGrammarView loadGrammar(String dirname, String startfilename) throws IOException, FormatException {
+    static public DefaultGrammarView loadGrammar(String dirname,
+            String startfilename) throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshal(dir, startfilename);
     }
-    
+
     /**
-     * Returns an iterator over all (non-injective) embeddings of one graph into another.
-     * The source graph may contain regular expression edges, as well as variable edges.
+     * Returns an iterator over all (non-injective) embeddings of one graph into
+     * another. The source graph may contain regular expression edges, as well
+     * as variable edges.
      * @param source the graph to be embedded
      * @param target the graph into which it is to be embedded
      * @return an iterator over maps from the source to the target graph.
      * @see #getEmbeddings(GraphShape, GraphShape)
      */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source, GraphShape target) {
+    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+            GraphShape target) {
         return getEmbeddings(source, target, false);
     }
 
     /**
-     * Returns an iterator over all (injective or non-injective) embeddings of one graph into another.
-     * The source graph may contain regular expression edges, as well as variable edges.
+     * Returns an iterator over all (injective or non-injective) embeddings of
+     * one graph into another. The source graph may contain regular expression
+     * edges, as well as variable edges.
      * @param source the graph to be embedded
      * @param target the graph into which it is to be embedded
-     * @param injective flag to indicate whether the embeddings should be injective
+     * @param injective flag to indicate whether the embeddings should be
+     *        injective
      * @return an iterator over maps from the source to the target graph.
      */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source, GraphShape target, boolean injective) {
-        return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(source, null, null).getMatchIter(target, null);
+    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+            GraphShape target, boolean injective) {
+        return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(
+            source, null, null).getMatchIter(target, null);
     }
 
     /**
-     * Constructs an isomorphism between two graphs, in the form of a mapping between their nodes and edges.
+     * Constructs an isomorphism between two graphs, in the form of a mapping
+     * between their nodes and edges.
      * @param source the first graph to be compared
      * @param target the second graph to be compared
-     * @return an isomorphism from <code>source</code> to <code>target</code>, or <code>null</code> if 
-     * {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
+     * @return an isomorphism from <code>source</code> to <code>target</code>,
+     *         or <code>null</code> if
+     *         {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
     static public NodeEdgeMap getIsomorphism(Graph source, Graph target) {
         return DefaultIsoChecker.getInstance().getIsomorphism(source, target);
     }
 
     /**
-     * Gives the current time as a number-formatted string with given parameters.
-     * @param lossfactor the multiple of milliseconds by which time should be measured;
-     * i.e. a value of 10 means measure by centiseconds, 100 means by deciseconds
-     * @param modulo the multiple of the measured time unit (after taking loss into 
-     * account) above which time should be cut off
-     * @param fraction the fraction of the measured time that should appear 
-     * after the decimal point
+     * Gives the current time as a number-formatted string with given
+     * parameters.
+     * @param lossfactor the multiple of milliseconds by which time should be
+     *        measured; i.e. a value of 10 means measure by centiseconds, 100
+     *        means by deciseconds
+     * @param modulo the multiple of the measured time unit (after taking loss
+     *        into account) above which time should be cut off
+     * @param fraction the fraction of the measured time that should appear
+     *        after the decimal point
      */
     public static String currentTime(int lossfactor, int modulo, int fraction) {
         long time = (System.currentTimeMillis() / lossfactor);
@@ -508,8 +582,9 @@ public class Groove {
             res.insert(0, time > 0 ? "" + time % 10 : "");
             time /= 10;
             fraction /= 10;
-            if (fraction == 1)
+            if (fraction == 1) {
                 res.insert(0, ".");
+            }
             modulo /= 10;
         }
         return res.toString();
@@ -531,7 +606,8 @@ public class Groove {
     }
 
     /**
-     * Prints a timestamped message regarding the time of starting a given method.
+     * Prints a timestamped message regarding the time of starting a given
+     * method.
      */
     public static void startMessage(String method) {
         message("Starting " + method);
@@ -543,6 +619,7 @@ public class Groove {
     public static void endMessage(String method) {
         message("Ending " + method);
     }
+
     /**
      * Returns a URL for a given resource name using the class loader.
      */
@@ -551,10 +628,10 @@ public class Groove {
     }
 
     /**
-     * Creates a comparator that corresponds to the alphabetical order
-     * of the object's descriptions (according to <tt>toString()</tt>).
+     * Creates a comparator that corresponds to the alphabetical order of the
+     * object's descriptions (according to <tt>toString()</tt>).
      */
-    public static <T >java.util.Comparator<T> createAlphaComparator() {
+    public static <T> java.util.Comparator<T> createAlphaComparator() {
         return new java.util.Comparator<T>() {
             public int compare(T o1, T o2) {
                 return o1.toString().compareTo(o2.toString());
@@ -564,8 +641,9 @@ public class Groove {
 
     /**
      * Converts a space-separated string value to an <tt>int</tt> array.
-     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not decompose into 
-     * space-separated sub-strings, or does not convert to <tt>int</tt> values.
+     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not
+     * decompose into space-separated sub-strings, or does not convert to
+     * <tt>int</tt> values.
      */
     static public int[] toIntArray(String text) {
         if (text == null) {
@@ -588,8 +666,9 @@ public class Groove {
 
     /**
      * Converts a space-separated string value to a <tt>float</tt> array.
-     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not decompose into 
-     * space-separated sub-strings, or does not convert to <tt>float</tt> values.
+     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not
+     * decompose into space-separated sub-strings, or does not convert to
+     * <tt>float</tt> values.
      */
     static public float[] toFloatArray(String text) {
         if (text == null) {
@@ -611,12 +690,14 @@ public class Groove {
     }
 
     /**
-     * Fills out a string to a given length by padding it with white space on the left or right.
-     * Has no effect if the string is already longer than the desired length.
+     * Fills out a string to a given length by padding it with white space on
+     * the left or right. Has no effect if the string is already longer than the
+     * desired length.
      * @param text the string to be padded
      * @param length the desired length
      * @param right <tt>true</tt> if the space should be added on the right
-     * @return A new string, consisting of <tt>text</tt> preceded or followed by spaces, up to minimum length <tt>length</tt>
+     * @return A new string, consisting of <tt>text</tt> preceded or followed
+     *         by spaces, up to minimum length <tt>length</tt>
      */
     static public String pad(String text, int length, boolean right) {
         StringBuffer result = new StringBuffer(text);
@@ -631,94 +712,105 @@ public class Groove {
     }
 
     /**
-     * Fills out a string to a given length by padding it with white space on the right.
-     * Has no effect if the string is already longer than the desired length.
+     * Fills out a string to a given length by padding it with white space on
+     * the right. Has no effect if the string is already longer than the desired
+     * length.
      * @param text the string to be padded
      * @param length the desired length
-     * @return A new string, with <tt>text</tt> as prefix, followed by spaces, up to minimum length <tt>length</tt>
+     * @return A new string, with <tt>text</tt> as prefix, followed by spaces,
+     *         up to minimum length <tt>length</tt>
      */
     static public String pad(String text, int length) {
         return pad(text, length, true);
     }
-    
+
     /**
      * Converts a {@link Rectangle2D} to a {@link Rectangle}.
      */
     static public Rectangle toRectangle(Rectangle2D r) {
-    	if (r != null)
-    		return new Rectangle((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight());
-    	return null;
+        if (r != null) {
+            return new Rectangle((int) r.getX(), (int) r.getY(),
+                (int) r.getWidth(), (int) r.getHeight());
+        }
+        return null;
     }
-    
-    /** 
+
+    /**
      * Start symbol for the string representation of an array.
      * @see #toString(Object[], String, String, String)
      */
     static public final String ARRAY_START = "[";
-    /** 
+    /**
      * End symbol for the string representation of an array.
      * @see #toString(Object[], String, String, String)
      */
     static public final String ARRAY_END = "]";
-    /** 
+    /**
      * Separator symbol for the string representation of an array.
      * @see #toString(Object[], String, String, String)
      */
     static public final String ARRAY_SEPARATOR = ",";
-    
-    /** Converts an array of <code>int</code>s to an array of <code>Integer</code>s. */
-    static public Integer[] toArray(int[] array) {
-    	Integer[] result = new Integer[array.length];
-    	for (int i = 0; i < array.length; i++) {
-    		result[i] = array[i];
-    	}
-    	return result;
-    }
-    
+
     /**
-     * Returns a string representation of a given array, starting
-     * with {@value #ARRAY_START}, ending with {@value #ARRAY_END} and
-     * with elements separated by {@value #ARRAY_SEPARATOR}.
+     * Converts an array of <code>int</code>s to an array of
+     * <code>Integer</code>s.
      */
-    static public <T> String toString(T[] array) {
-    	return toString(array, ARRAY_START, ARRAY_END, ARRAY_SEPARATOR);
+    static public Integer[] toArray(int[] array) {
+        Integer[] result = new Integer[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i];
+        }
+        return result;
     }
 
     /**
-     * Returns a string representation of a given array. The representation
-     * is parameterised by start, end, and separator symbols.
-     * @param array the array to be converted
-     * @param start the start symbol of the resulting text representation
-     * @param end the end symbol of the resulting text representation
-     * @param separator the symbol separating the elements in the resulting text representation
+     * Returns a string representation of a given array, starting with
+     * {@value #ARRAY_START}, ending with {@value #ARRAY_END} and with elements
+     * separated by {@value #ARRAY_SEPARATOR}.
      */
-    static public <T> String toString(T[] array, String start, String end, String separator) {
-    	return toString(array, start, end, separator, separator);
+    static public <T> String toString(T[] array) {
+        return toString(array, ARRAY_START, ARRAY_END, ARRAY_SEPARATOR);
     }
-    
+
     /**
-     * Returns a string representation of a given array. The representation
-     * is parameterised by start, end, and separator symbols, one for the
-     * standard separation, and one separating the penultimate and ultimate elements.
+     * Returns a string representation of a given array. The representation is
+     * parameterised by start, end, and separator symbols.
      * @param array the array to be converted
      * @param start the start symbol of the resulting text representation
      * @param end the end symbol of the resulting text representation
-     * @param separator the symbol separating the elements in the resulting text representation,
-     * except for the last two
-     * @param finalSeparator the symbol separating the last two elements in the resulting text representation
+     * @param separator the symbol separating the elements in the resulting text
+     *        representation
      */
-    static public String toString(Object[] array, String start, String end, String separator, String finalSeparator) {
-    	StringBuffer result = new StringBuffer(start);
-    	for (int i = 0; i < array.length; i++) {
-    		result.append(array[i]);
-    		if (i < array.length - 2) {
-    			result.append(separator);
-    		} else if (i == array.length - 2) {
-    			result.append(finalSeparator);
-    		}
-    	}
-    	result.append(end);
-    	return result.toString();
+    static public <T> String toString(T[] array, String start, String end,
+            String separator) {
+        return toString(array, start, end, separator, separator);
+    }
+
+    /**
+     * Returns a string representation of a given array. The representation is
+     * parameterised by start, end, and separator symbols, one for the standard
+     * separation, and one separating the penultimate and ultimate elements.
+     * @param array the array to be converted
+     * @param start the start symbol of the resulting text representation
+     * @param end the end symbol of the resulting text representation
+     * @param separator the symbol separating the elements in the resulting text
+     *        representation, except for the last two
+     * @param finalSeparator the symbol separating the last two elements in the
+     *        resulting text representation
+     */
+    static public String toString(Object[] array, String start, String end,
+            String separator, String finalSeparator) {
+        StringBuffer result = new StringBuffer(start);
+        for (int i = 0; i < array.length; i++) {
+            result.append(array[i]);
+            if (i < array.length - 2) {
+                result.append(separator);
+            } else if (i == array.length - 2) {
+                result.append(finalSeparator);
+            }
+        }
+        result.append(end);
+        return result.toString();
     }
 
     /** Properties object for the GUI properties. */
@@ -727,12 +819,14 @@ public class Groove {
     static public final Properties xmlProperties = new Properties();
 
     /** Loads a properties object fomr a URL given as a string. */
-    static private void loadProperties(Properties properties, String propertiesName) {
+    static private void loadProperties(Properties properties,
+            String propertiesName) {
         try {
             URL propertiesURL = getResource(propertiesName);
             properties.load(propertiesURL.openStream());
         } catch (IOException e) {
-            System.err.println("Could not open properties file: " + propertiesName);
+            System.err.println("Could not open properties file: "
+                + propertiesName);
         }
     }
 
@@ -740,11 +834,13 @@ public class Groove {
         loadProperties(guiProperties, GUI_PROPERTIES_FILE);
         loadProperties(xmlProperties, XML_PROPERTIES_FILE);
     }
-    
+
     /**
-     * Mapping from extensions to pairs of filters recognising/not recognising directories.
+     * Mapping from extensions to pairs of filters recognising/not recognising
+     * directories.
      */
-    static private final Map<String,Pair<ExtensionFilter,ExtensionFilter>> extensionFilterMap = new HashMap<String,Pair<ExtensionFilter,ExtensionFilter>>();
+    static private final Map<String,Pair<ExtensionFilter,ExtensionFilter>> extensionFilterMap =
+        new HashMap<String,Pair<ExtensionFilter,ExtensionFilter>>();
     /**
      * The fixed graph loader.
      */

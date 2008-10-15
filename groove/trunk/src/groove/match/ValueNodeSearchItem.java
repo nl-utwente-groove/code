@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: ValueNodeSearchItem.java,v 1.14 2008-01-30 09:33:30 iovka Exp $
  */
 package groove.match;
@@ -29,27 +29,28 @@ import groove.match.SearchPlanStrategy.Search;
  * @version $Revision $
  */
 class ValueNodeSearchItem extends AbstractSearchItem {
-	/**
-	 * Creates a search item for a value node.
-	 * The image is always the node itself.
-	 * @param node the node to be matched
-	 */
-	public ValueNodeSearchItem(ValueNode node) {
-	    if (! node.hasValue()) {
-	        throw new IllegalArgumentException(String.format("Cannot search for variable node %s", node));
-	    }
-		this.node = node;
+    /**
+     * Creates a search item for a value node. The image is always the node
+     * itself.
+     * @param node the node to be matched
+     */
+    public ValueNodeSearchItem(ValueNode node) {
+        if (!node.hasValue()) {
+            throw new IllegalArgumentException(String.format(
+                "Cannot search for variable node %s", node));
+        }
+        this.node = node;
         this.boundNodes = Collections.<Node>singleton(node);
-	}
-	
-	public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
-		return new ValueNodeRecord(matcher);
-	}
+    }
+
+    public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
+        return new ValueNodeRecord(matcher);
+    }
 
     /**
-     * Since the order in which value nodes are matched does not make 
-     * a difference to the outcome, and the effort is also the same,
-     * no natural ordering is imposed.
+     * Since the order in which value nodes are matched does not make a
+     * difference to the outcome, and the effort is also the same, no natural
+     * ordering is imposed.
      * @return <code>0</code> always
      */
     @Override
@@ -63,32 +64,30 @@ class ValueNodeSearchItem extends AbstractSearchItem {
      */
     @Override
     public Collection<? extends Node> bindsNodes() {
-        return boundNodes;
+        return this.boundNodes;
     }
 
     @Override
-	public String toString() {
-		return String.format("Value %s", node); 
-	}
-
-	/** Returns the value node we are looking up. */
-	public ValueNode getNode() {
-		return node;
-	}
-	
-	
-	public void activate(SearchPlanStrategy strategy) {
-        nodeIx = strategy.getNodeIx(node);
+    public String toString() {
+        return String.format("Value %s", this.node);
     }
 
+    /** Returns the value node we are looking up. */
+    public ValueNode getNode() {
+        return this.node;
+    }
+
+    public void activate(SearchPlanStrategy strategy) {
+        this.nodeIx = strategy.getNodeIx(this.node);
+    }
 
     /** Singleton set consisting of <code>node</code>. */
     private final Collection<Node> boundNodes;
     /** The value node to be matched. */
-	final ValueNode node;
+    final ValueNode node;
     /** The index of the value node (in the result. */
     int nodeIx;
-    
+
     /**
      * Record of a value node search item.
      * @author Arend Rensink
@@ -103,17 +102,18 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         }
 
         /**
-         * The first call puts #node to itself;
-         * the next call returns <code>false</code>.
+         * The first call puts #node to itself; the next call returns
+         * <code>false</code>.
          */
         @Override
         boolean set() {
-            return search.putNode(nodeIx, node);
+            return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
+                ValueNodeSearchItem.this.node);
         }
-        
+
         @Override
         public void reset() {
-        	search.putNode(nodeIx, null);
+            this.search.putNode(ValueNodeSearchItem.this.nodeIx, null);
         }
 
         @Override

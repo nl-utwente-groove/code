@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: NoLayouter.java,v 1.3 2008-01-30 09:33:01 iovka Exp $
  */
 package groove.gui.layout;
@@ -28,17 +28,17 @@ import groove.gui.jgraph.JModel;
  * @version $Revision$
  */
 public class NoLayouter implements Layouter {
-	/** Name of this layouter. */
+    /** Name of this layouter. */
     static public final String ACTION_NAME = "No layout";
 
     /**
-     * Constructor to create a dummy, prototype layout action.
-     * Proper layout actions are created using <tt>newInstance(MyJGraph)</tt>
+     * Constructor to create a dummy, prototype layout action. Proper layout
+     * actions are created using <tt>newInstance(MyJGraph)</tt>
      * @see #newInstance(JGraph)
      */
     public NoLayouter() {
         // constructor for prototype layouter
-        jGraph = null;
+        this.jGraph = null;
     }
 
     /**
@@ -59,7 +59,7 @@ public class NoLayouter implements Layouter {
     public String getName() {
         return ACTION_NAME;
     }
-    
+
     public String getText() {
         return ACTION_NAME;
     }
@@ -68,7 +68,7 @@ public class NoLayouter implements Layouter {
      * This implementation does nothing except unfreezing the cells.
      */
     public void start(boolean complete) {
-        JModel jModel = jGraph.getModel();
+        JModel jModel = this.jGraph.getModel();
         for (int i = 0; i < jModel.getRootCount(); i++) {
             JCell jCell = (JCell) jModel.getRootAt(i);
             GraphConstants.setMoveable(jCell.getAttributes(), true);
@@ -81,7 +81,7 @@ public class NoLayouter implements Layouter {
     public void stop() {
         // does nothing
     }
-    
+
     /** The j-graph instance that this layouter is working on. */
     protected final JGraph jGraph;
 }

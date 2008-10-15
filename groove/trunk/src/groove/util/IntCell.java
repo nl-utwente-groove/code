@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: IntCell.java,v 1.3 2008-01-30 09:32:15 iovka Exp $
@@ -26,23 +26,23 @@ public class IntCell implements Cloneable {
      * Returns the current value of this cell.
      */
     public int getValue() {
-        return value;
+        return this.value;
     }
 
     /**
      * Increments the value in this cell and returns the incremented value.
      */
     public int inc() {
-        value++;
-        return value;
+        this.value++;
+        return this.value;
     }
 
     /**
      * Decrements the value in this cell and returns the decremented value.
      */
     public int dec() {
-        value--;
-        return value;
+        this.value--;
+        return this.value;
     }
 
     /**
@@ -52,49 +52,49 @@ public class IntCell implements Cloneable {
      * @return the changed value
      */
     public int xor(int i) {
-        return value ^= i;
+        return this.value ^= i;
     }
 
     /**
-     * Adds an increment to the value of this cell.
-     * Both stores and resturns the resulting value.
+     * Adds an increment to the value of this cell. Both stores and resturns the
+     * resulting value.
      * @param i the increment to be added to the value of this cell
      * @return the incremented value
      */
     public int add(int i) {
-        return value += i;
+        return this.value += i;
     }
 
     /**
-     * Multiplies the value of this cell fwith a given factor.
-     * Both stores and resturns the resulting value.
+     * Multiplies the value of this cell fwith a given factor. Both stores and
+     * resturns the resulting value.
      * @param i the factor to be multiplied with the value of this cell
      * @return the multiplied value
      */
     public int mult(int i) {
-        return value *= i;
+        return this.value *= i;
     }
-    
+
     /**
      * Chences the value of this cell.
      * @param i the new value
      */
     public void setValue(int i) {
-        value = i;
+        this.value = i;
     }
 
     // --------------------------- Object overrides -----------------------
-    
+
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof IntCell && ((IntCell) obj).value == value);
+        return (obj instanceof IntCell && ((IntCell) obj).value == this.value);
     }
 
     @Override
     public int hashCode() {
-        return value;
+        return this.value;
     }
-    
+
     @Override
     public Object clone() {
         try {
@@ -106,8 +106,8 @@ public class IntCell implements Cloneable {
 
     @Override
     public String toString() {
-        return ""+value;
+        return "" + this.value;
     }
-    
+
     private int value;
 }

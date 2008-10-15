@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: StateCache.java,v 1.23 2008-02-05 13:43:28 rensink Exp $
@@ -34,10 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
- * Caches information of a state.
- * Cached are the graph, the set of outgoing transitions, and the delta with respect to the previous state.
+ * Caches information of a state. Cached are the graph, the set of outgoing
+ * transitions, and the delta with respect to the previous state.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -46,244 +45,259 @@ class StateCache {
      * Constructs a cache for a given state.
      */
     StateCache(AbstractGraphState state) {
-        this.state = state;    
+        this.state = state;
         this.record = state.getRecord();
-        this.freezeGraphs = record.isCollapse();
-        this.graphFactory = NewDeltaGraph.getInstance(record.isCopyGraphs());
+        this.freezeGraphs = this.record.isCollapse();
+        this.graphFactory =
+            NewDeltaGraph.getInstance(this.record.isCopyGraphs());
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
     boolean addTransitionStub(GraphTransitionStub stub) {
-    	boolean result = getStubSet().add(stub);
-    	if (result && transitionMap != null) {
-    		GraphState oldState = transitionMap.put(stub.getEvent(state), stub.target());
-    		assert oldState == null;
-    	}
-    	return result;
+        boolean result = getStubSet().add(stub);
+        if (result && this.transitionMap != null) {
+            GraphState oldState =
+                this.transitionMap.put(stub.getEvent(this.state), stub.target());
+            assert oldState == null;
+        }
+        return result;
     }
-    
+
     AbstractGraphState getState() {
-    	return state;
+        return this.state;
     }
-    
-    /** 
-     * Lazily creates and returns the graph of the underlying state.
-     * This is only supported if the state is a {@link GraphNextState}
-     * @throws IllegalStateException if the underlying state is not a {@link GraphNextState}
+
+    /**
+     * Lazily creates and returns the graph of the underlying state. This is
+     * only supported if the state is a {@link GraphNextState}
+     * @throws IllegalStateException if the underlying state is not a
+     *         {@link GraphNextState}
      */
     Graph getGraph() {
-    	if (graph == null) {
-    		graph = computeGraph();
-    	}
-    	return graph;
+        if (this.graph == null) {
+            this.graph = computeGraph();
+        }
+        return this.graph;
     }
-    
+
     /** Indicates if this cache currently stores a graph. */
     boolean hasGraph() {
-        return graph != null;
+        return this.graph != null;
     }
-    
+
     DeltaApplier getDelta() {
-        if (delta == null) {
-            Element[] frozenGraph = state.getFrozenGraph();
+        if (this.delta == null) {
+            Element[] frozenGraph = this.state.getFrozenGraph();
             if (frozenGraph != null) {
-                delta = new FrozenDeltaApplier(frozenGraph);
+                this.delta = new FrozenDeltaApplier(frozenGraph);
             } else {
-                delta = ((DefaultGraphNextState) state).getDelta();
+                this.delta = ((DefaultGraphNextState) this.state).getDelta();
             }
         }
-        return delta;
+        return this.delta;
     }
-    
+
     void setDelta(DeltaApplier delta) {
         this.delta = delta;
     }
-    
-    /** 
-     * Compute the graph from the information in the state.
-     * The state is assumed to be a {@link DefaultGraphNextState}.
+
+    /**
+     * Compute the graph from the information in the state. The state is assumed
+     * to be a {@link DefaultGraphNextState}.
      */
     @SuppressWarnings("unchecked")
     private Graph computeGraph() {
-		Element[] frozenGraph = state.getFrozenGraph();
-    	Graph result;
-		if (frozenGraph != null) {
-			result = graphFactory.newGraph(null, getDelta());
-		} else if (!(state instanceof GraphNextState)) {
-			throw new IllegalStateException("Underlying state does not have information to reconstruct the graph");
-		} else {
-		    DefaultGraphNextState state = (DefaultGraphNextState) this.state;
-		    // make sure states get reconstructed sequentially rather than recursively
-			if (state.source().isCacheCleared()) {
-			    // go back along the chain of states until the first one
-			    // that is frozen or still in cache
-			    AbstractGraphState backward = state.source();
-			    List<AbstractGraphState> stateChain = new LinkedList<AbstractGraphState>();
-			    while (backward instanceof GraphNextState && backward.isCacheCleared() && backward.getFrozenGraph() == null) {
-	                stateChain.add(0, backward);
-			        backward = ((DefaultGraphNextState) backward).source();
-			    }
-			    // now let all states along the chain reconstruct their graphs, from ancestor to this one
-			    for (AbstractGraphState forward: stateChain) {
-			        forward.getGraph();
-			    }
-			}
-			result = graphFactory.newGraph(state.source().getGraph(), getDelta());
-			// If the state is closed, then we are reconstructing the graph
-			// for the second time at least; see if we should freeze it
+        Element[] frozenGraph = this.state.getFrozenGraph();
+        Graph result;
+        if (frozenGraph != null) {
+            result = this.graphFactory.newGraph(null, getDelta());
+        } else if (!(this.state instanceof GraphNextState)) {
+            throw new IllegalStateException(
+                "Underlying state does not have information to reconstruct the graph");
+        } else {
+            DefaultGraphNextState state = (DefaultGraphNextState) this.state;
+            // make sure states get reconstructed sequentially rather than
+            // recursively
+            if (state.source().isCacheCleared()) {
+                // go back along the chain of states until the first one
+                // that is frozen or still in cache
+                AbstractGraphState backward = state.source();
+                List<AbstractGraphState> stateChain =
+                    new LinkedList<AbstractGraphState>();
+                while (backward instanceof GraphNextState
+                    && backward.isCacheCleared()
+                    && backward.getFrozenGraph() == null) {
+                    stateChain.add(0, backward);
+                    backward = ((DefaultGraphNextState) backward).source();
+                }
+                // now let all states along the chain reconstruct their graphs,
+                // from ancestor to this one
+                for (AbstractGraphState forward : stateChain) {
+                    forward.getGraph();
+                }
+            }
+            result =
+                this.graphFactory.newGraph(state.source().getGraph(),
+                    getDelta());
+            // If the state is closed, then we are reconstructing the graph
+            // for the second time at least; see if we should freeze it
             if (getState().isClosed() && isFreezeGraph()) {
-//			if (isFreezeGraph()) {
-				state.setFrozenGraph(computeFrozenGraph(result));
-			}
-		}
-		return result;
+                // if (isFreezeGraph()) {
+                state.setFrozenGraph(computeFrozenGraph(result));
+            }
+        }
+        return result;
     }
 
     /**
-     * Decides whether the underlying graph should be frozen.
-     * The decision is taken on the basis of the <i>freeze count</i>, as
-     * computed by {@link #getFreezeCount()}; the graph is frozen if the freeze
-     * count exceeds {@link #FREEZE_BOUND}.
+     * Decides whether the underlying graph should be frozen. The decision is
+     * taken on the basis of the <i>freeze count</i>, as computed by
+     * {@link #getFreezeCount()}; the graph is frozen if the freeze count
+     * exceeds {@link #FREEZE_BOUND}.
      * @return <code>true</code> if the graph should be frozen
      */
     private boolean isFreezeGraph() {
-    	return freezeGraphs && getFreezeCount() > FREEZE_BOUND;
+        return this.freezeGraphs && getFreezeCount() > FREEZE_BOUND;
     }
 
-    /** 
-     * Computes a number expressing the urgency of freezing the underlying graph.
-     * The current measure is based on the number of steps from the previous
-     * frozen graph.
+    /**
+     * Computes a number expressing the urgency of freezing the underlying
+     * graph. The current measure is based on the number of steps from the
+     * previous frozen graph.
      * @return the freeze count of the underlying state
      */
     private int getFreezeCount() {
-    	if (state instanceof DefaultGraphNextState) {
-    		return getFreezeCount((DefaultGraphNextState) state);
-    	} else {
-    		return 0;
-    	}
+        if (this.state instanceof DefaultGraphNextState) {
+            return getFreezeCount((DefaultGraphNextState) this.state);
+        } else {
+            return 0;
+        }
     }
-    
+
     /**
      * Computes a number expressing the urgency of freezing the graph of a given
+     * state. The current measure is based on the number of steps from the
+     * previous frozen graph, following the chain of parents from the given
      * state.
-     * The current measure is based on the number of steps from the previous
-     * frozen graph, following the chain of parents from the given state.
      * @return the freeze count of a given state
      */
     private int getFreezeCount(DefaultGraphNextState state) {
-    	// determine the freeze count of the state's parent state
-    	int parentCount;
-    	AbstractGraphState parent = state.source();
-    	if (parent.getFrozenGraph() != null || !(parent instanceof DefaultGraphNextState)) {
-    		parentCount = 0;
-    	} else if (parent.isCacheCleared()) {
-    		parentCount = getFreezeCount((DefaultGraphNextState) parent);
-    	} else {
-    		parentCount = parent.getCache().getFreezeCount();
-    	}
-    	return parentCount + 1;
+        // determine the freeze count of the state's parent state
+        int parentCount;
+        AbstractGraphState parent = state.source();
+        if (parent.getFrozenGraph() != null
+            || !(parent instanceof DefaultGraphNextState)) {
+            parentCount = 0;
+        } else if (parent.isCacheCleared()) {
+            parentCount = getFreezeCount((DefaultGraphNextState) parent);
+        } else {
+            parentCount = parent.getCache().getFreezeCount();
+        }
+        return parentCount + 1;
     }
-    
-    /** 
-     * Computes a frozen graph representation from a given graph.
-     * The frozen graph representation consists of all nodes and edges of the
-     * graph in a single array. 
+
+    /**
+     * Computes a frozen graph representation from a given graph. The frozen
+     * graph representation consists of all nodes and edges of the graph in a
+     * single array.
      */
     Element[] computeFrozenGraph(Graph graph) {
-    	Element[] result = new Element[graph.size()];
-    	int index = 0;
-    	for (Node node: graph.nodeSet()) {
-    		result[index] = node;
-    		index++;
-    	}
-    	for (Edge edge: graph.edgeSet()) {
-    		result[index] = edge;
-    		index++;
-    	}
-    	return result;
+        Element[] result = new Element[graph.size()];
+        int index = 0;
+        for (Node node : graph.nodeSet()) {
+            result[index] = node;
+            index++;
+        }
+        for (Edge edge : graph.edgeSet()) {
+            result[index] = edge;
+            index++;
+        }
+        return result;
     }
 
     /**
-	 * Lazily creates and returns a mapping from the events to the target states
-	 * of the currently stored outgoing transitions of this state.
-	 */
-    Map<RuleEvent,GraphState> getTransitionMap() {
-    	if (transitionMap == null) {
-    		transitionMap = computeTransitionMap();
-    	}
-    	return transitionMap;
-    }
-    
-    /** 
-     * Computes a mapping from the events to the target states 
+     * Lazily creates and returns a mapping from the events to the target states
      * of the currently stored outgoing transitions of this state.
      */
-    private Map<RuleEvent,GraphState> computeTransitionMap() {
-    	Map<RuleEvent,GraphState> result = createTransitionMap();
-    	for (GraphTransitionStub stub: getStubSet()) {
-    		result.put(stub.getEvent(state), stub.target());
-    	}
-    	return result;
-    }
-    
-    /** Callback factory method to create the transition map object. */
-    private Map<RuleEvent,GraphState> createTransitionMap() {
-    	return new IdentityHashMap<RuleEvent,GraphState>();
+    Map<RuleEvent,GraphState> getTransitionMap() {
+        if (this.transitionMap == null) {
+            this.transitionMap = computeTransitionMap();
+        }
+        return this.transitionMap;
     }
 
     /**
-     * Returns the cached set of {@link GraphTransitionStub}s.
-     * The set is constructed lazily if the state is closed,
-     * using {@link #computeStubSet()}; if the state is not closed,
-     * an empty set is initialized.
+     * Computes a mapping from the events to the target states of the currently
+     * stored outgoing transitions of this state.
+     */
+    private Map<RuleEvent,GraphState> computeTransitionMap() {
+        Map<RuleEvent,GraphState> result = createTransitionMap();
+        for (GraphTransitionStub stub : getStubSet()) {
+            result.put(stub.getEvent(this.state), stub.target());
+        }
+        return result;
+    }
+
+    /** Callback factory method to create the transition map object. */
+    private Map<RuleEvent,GraphState> createTransitionMap() {
+        return new IdentityHashMap<RuleEvent,GraphState>();
+    }
+
+    /**
+     * Returns the cached set of {@link GraphTransitionStub}s. The set is
+     * constructed lazily if the state is closed, using
+     * {@link #computeStubSet()}; if the state is not closed, an empty set is
+     * initialized.
      */
     Set<GraphTransitionStub> getStubSet() {
-        if (stubSet == null) {
-        	stubSet = computeStubSet();
+        if (this.stubSet == null) {
+            this.stubSet = computeStubSet();
         }
-        return stubSet;
+        return this.stubSet;
     }
-    
+
     /**
-     * Clears the cached set, so it does not occupy memory.
-     * This is typically done at the moment the state is closed.
+     * Clears the cached set, so it does not occupy memory. This is typically
+     * done at the moment the state is closed.
      */
     void clearStubSet() {
-    	stubSet = null;
+        this.stubSet = null;
     }
-    
+
     /**
-     * Reconstructs the set of {@link groove.lts.GraphTransitionStub}s from the corresponding
-     * array in the underlying graph state.
-     * It is assumed that <code>getState().isClosed()</code>.
+     * Reconstructs the set of {@link groove.lts.GraphTransitionStub}s from the
+     * corresponding array in the underlying graph state. It is assumed that
+     * <code>getState().isClosed()</code>.
      */
     private Set<GraphTransitionStub> computeStubSet() {
         Set<GraphTransitionStub> result = createStubSet();
-        result.addAll(state.getStoredTransitionStubs());
+        result.addAll(this.state.getStoredTransitionStubs());
         return result;
     }
-    
+
     /**
      * Factory method for the outgoing transition set.
      */
     private Set<GraphTransitionStub> createStubSet() {
-    	return new TreeHashSet<GraphTransitionStub>() {
-			@Override
-			protected boolean areEqual(GraphTransitionStub key, GraphTransitionStub otherKey) {
-                return key.getEvent(getState()).equals(otherKey.getEvent(getState()));
-//                return key.getEvent(getState()) == otherKey.getEvent(getState());
-			}
+        return new TreeHashSet<GraphTransitionStub>() {
+            @Override
+            protected boolean areEqual(GraphTransitionStub key,
+                    GraphTransitionStub otherKey) {
+                return key.getEvent(getState()).equals(
+                    otherKey.getEvent(getState()));
+                // return key.getEvent(getState()) ==
+                // otherKey.getEvent(getState());
+            }
 
-			@Override
-			protected int getCode(GraphTransitionStub key) {
-				RuleEvent keyEvent = key.getEvent(getState());
-//                return keyEvent == null ? 0 : keyEvent.identityHashCode();
+            @Override
+            protected int getCode(GraphTransitionStub key) {
+                RuleEvent keyEvent = key.getEvent(getState());
+                // return keyEvent == null ? 0 : keyEvent.identityHashCode();
                 return keyEvent == null ? 0 : keyEvent.hashCode();
-			}
-    	};
+            }
+        };
     }
-    
+
     /**
      * The set of outgoing transitions computed for the underlying graph.
      */
@@ -297,15 +311,15 @@ class StateCache {
     /** Cached graph for this state. */
     private Graph graph;
     private groove.graph.DeltaApplier delta;
-    /** 
+    /**
      * Flag indicating if (a fraction of the) state graphs should be frozen.
-     * This is set to <code>true</code> if states in the GTS are collapsed. 
+     * This is set to <code>true</code> if states in the GTS are collapsed.
      */
     private final boolean freezeGraphs;
     /** Factory used to create the state graphs. */
     @SuppressWarnings("unchecked")
     private final DeltaGraphFactory graphFactory;
-    /** 
+    /**
      * The depth of the graph above which the underlying graph will be frozen.
      */
     static private final int FREEZE_BOUND = 10;

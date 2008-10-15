@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: JGraph.java,v 1.30 2008-02-05 13:27:59 rensink Exp $
  */
 package groove.gui.jgraph;
@@ -82,23 +82,22 @@ import org.jgraph.graph.GraphSelectionModel;
 import org.jgraph.graph.PortView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
-
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
-	/**
-     * Constructs a JGraph on the basis of a given j-model. 
+    /**
+     * Constructs a JGraph on the basis of a given j-model.
      * @param model the JModel for which to create a JGraph
      * @param hasFilters indicates if this JGraph is to use label filtering.
      */
     public JGraph(JModel model, boolean hasFilters) {
         super((JModel) null);
         if (hasFilters) {
-        	this.filteredLabels = new ObservableSet<String>();
-        	this.filteredLabels.addObserver(refreshListener);
+            this.filteredLabels = new ObservableSet<String>();
+            this.filteredLabels.addObserver(this.refreshListener);
         } else {
             this.filteredLabels = null;
         }
@@ -112,33 +111,34 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         // Save edits to a cell whenever something else happens
         setInvokesStopCellEditing(true);
         // Turn off double buffering for speed
-         setDoubleBuffered(false);
+        setDoubleBuffered(false);
         addMouseListener(new MyMouseListener());
     }
 
     /**
-	 * Returns the (possibly <code>null</code>) set of filtered labels of 
-	 * this {@link JGraph}.
-	 */
-	public final ObservableSet<String> getFilteredLabels() {
-		return this.filteredLabels;
-	}
+     * Returns the (possibly <code>null</code>) set of filtered labels of
+     * this {@link JGraph}.
+     */
+    public final ObservableSet<String> getFilteredLabels() {
+        return this.filteredLabels;
+    }
 
     /**
-     * Overrides the method to call {@link JCell#getText()} whenever <code>object</code>
-     * is recognised as a {@link JVertexView}, {@link JEdgeView} or {@link JCell}.
+     * Overrides the method to call {@link JCell#getText()} whenever
+     * <code>object</code> is recognised as a {@link JVertexView},
+     * {@link JEdgeView} or {@link JCell}.
      */
     @Override
     public String convertValueToString(Object value) {
-    	if (value instanceof JVertexView) {
-    		return ((JVertexView) value).getCell().getText();
-    	} else if (value instanceof JEdgeView) {
-    		return ((JEdgeView) value).getCell().getText();
-    	} else if (value instanceof JCell) {
-    		return ((JCell) value).getText();
-    	} else {
-    		return value.toString();
-    	}
+        if (value instanceof JVertexView) {
+            return ((JVertexView) value).getCell().getText();
+        } else if (value instanceof JEdgeView) {
+            return ((JEdgeView) value).getCell().getText();
+        } else if (value instanceof JCell) {
+            return ((JCell) value).getText();
+        } else {
+            return value.toString();
+        }
     }
 
     /**
@@ -151,8 +151,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Tests whether a given object is a j-node according to the criteria of this j-graph.
-     * This implementation tests whether the object is an instance of {@link JVertex}.
+     * Tests whether a given object is a j-node according to the criteria of
+     * this j-graph. This implementation tests whether the object is an instance
+     * of {@link JVertex}.
      * @param jCell the object to be tested
      * @return true if <tt>cell instanceof JVertex</tt>
      */
@@ -161,8 +162,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Tests whether a given object is a j-edge according to the criteria of this j-graph.
-     * This implementation tests whether the object is an instance of {@link JEdge}.
+     * Tests whether a given object is a j-edge according to the criteria of
+     * this j-graph. This implementation tests whether the object is an instance
+     * of {@link JEdge}.
      * @param jCell the object to be tested
      * @return true if <tt>cell instanceof JEdge</tt>
      */
@@ -190,25 +192,26 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * Overrides the super method to make sure hidden cells ae never editable.
-     * If the specified cell is hidden (according to the underlying model), returns false;
-     * otherwise, passes on the query to super.
+     * If the specified cell is hidden (according to the underlying model),
+     * returns false; otherwise, passes on the query to super.
      * @see JModel#isGrayedOut(JCell)
      */
     @Override
     public boolean isCellEditable(Object cell) {
-        return !(cell instanceof JCell && getModel().isGrayedOut((JCell) cell)) && super.isCellEditable(cell);
+        return !(cell instanceof JCell && getModel().isGrayedOut((JCell) cell))
+            && super.isCellEditable(cell);
     }
-    
+
     /**
      * Overwrites the method from JGraph for efficiency.
      */
     @Override
     public Object[] getDescendants(Object[] cells) {
         List<Object> res = new LinkedList<Object>();
-        for (int i = 0; i < cells.length; i++) {
-            res.add(cells[i]);
-            if (isVertex(cells[i])) {
-                res.add(((JVertex) cells[i]).getChildAt(0));
+        for (Object element : cells) {
+            res.add(element);
+            if (isVertex(element)) {
+                res.add(((JVertex) element).getChildAt(0));
             }
         }
         return res.toArray();
@@ -222,33 +225,38 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Propagates some types of changes from model to view. Reacts in particular to
-     * {@link JModel.RefreshEdit}-events: every refreshed cell with an empty attribute set gets its
-     * view attributes refreshed by a call to {@link JModel#createTransientJAttr(JCell)}; moreover, hidden cells
-     * are deselected. by a call to {@link JModel#createTransientJAttr(JCell)}.
+     * Propagates some types of changes from model to view. Reacts in particular
+     * to {@link JModel.RefreshEdit}-events: every refreshed cell with an empty
+     * attribute set gets its view attributes refreshed by a call to
+     * {@link JModel#createTransientJAttr(JCell)}; moreover, hidden cells are
+     * deselected. by a call to {@link JModel#createTransientJAttr(JCell)}.
      * @see JModel.RefreshEdit#getRefreshedJCells()
      */
     public void graphChanged(GraphModelEvent evt) {
-        if (evt.getSource() == getModel() && evt.getChange() instanceof JModel.RefreshEdit) {
-            Collection<JCell> refreshedJCells = ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells();
+        if (evt.getSource() == getModel()
+            && evt.getChange() instanceof JModel.RefreshEdit) {
+            Collection<JCell> refreshedJCells =
+                ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells();
             Collection<JCell> visibleCells = new ArrayList<JCell>();
             Collection<JCell> invisibleCells = new ArrayList<JCell>();
             Set<JCell> emphElems = new HashSet<JCell>();
-            for (JCell jCell: refreshedJCells) {
-            	AttributeMap transientAttributes = getModel().createTransientJAttr(jCell);
+            for (JCell jCell : refreshedJCells) {
+                AttributeMap transientAttributes =
+                    getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
                 if (jView != null) {
-                	if (!jCell.isVisible()) {
-                	    invisibleCells.add(jCell);
+                    if (!jCell.isVisible()) {
+                        invisibleCells.add(jCell);
                         getSelectionModel().removeSelectionCell(jCell);
-                	} else {
-                	    visibleCells.add(jCell);
+                    } else {
+                        visibleCells.add(jCell);
                     }
-                    jView.changeAttributes(getGraphLayoutCache(),transientAttributes);
+                    jView.changeAttributes(getGraphLayoutCache(),
+                        transientAttributes);
                 } else {
-                	if (jCell.isVisible()) {
-                		visibleCells.add(jCell);
-                	}
+                    if (jCell.isVisible()) {
+                        visibleCells.add(jCell);
+                    }
                 }
                 if (getModel().isGrayedOut(jCell)) {
                     getSelectionModel().removeSelectionCell(jCell);
@@ -257,9 +265,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     emphElems.add(jCell);
                 }
             }
-        	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
+            getGraphLayoutCache().setVisible(visibleCells.toArray(),
+                invisibleCells.toArray());
             if (!emphElems.isEmpty()) {
-                Rectangle scope = Groove.toRectangle(getCellBounds(emphElems.toArray()));
+                Rectangle scope =
+                    Groove.toRectangle(getCellBounds(emphElems.toArray()));
                 if (scope != null) {
                     scrollRectToVisible(scope);
                 }
@@ -267,32 +277,31 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
     }
 
-    /** 
+    /**
      * Helper method for {@link #getFirstCellForLocation(double, double)} and
-     * {@link #getPortViewAt(double, double)}.
-     * Returns the topmost visible cell at a given point.
-     * A flag controls if we want only vertices.
+     * {@link #getPortViewAt(double, double)}. Returns the topmost visible cell
+     * at a given point. A flag controls if we want only vertices.
      * @param x x-coordinate of the location we want to find a cell at
      * @param y y-coordinate of the location we want to find a cell at
      * @param vertex <tt>true</tt> if we are not interested in edges
      * @return the topmost visible cell at a given point
      */
     protected Object getFirstCellForLocation(double x, double y, boolean vertex) {
-        x /= scale;
-        y /= scale;
+        x /= this.scale;
+        y /= this.scale;
         Object result = null;
         JModel jModel = getModel();
-        Rectangle xyArea = new Rectangle((int) (x-.5), (int) (y-.5), 1, 1);
+        Rectangle xyArea = new Rectangle((int) (x - .5), (int) (y - .5), 1, 1);
         // iterate over the roots and query the visible ones
-        CellView[] viewRoots = graphLayoutCache.getRoots();
+        CellView[] viewRoots = this.graphLayoutCache.getRoots();
         for (int i = viewRoots.length - 1; result == null && i >= 0; i--) {
             CellView jCellView = viewRoots[i];
             Object jCell = jCellView.getCell();
-            boolean typeCorrect = vertex ? jCell instanceof JVertex : jCell instanceof JCell;
+            boolean typeCorrect =
+                vertex ? jCell instanceof JVertex : jCell instanceof JCell;
             if (typeCorrect && !jModel.isGrayedOut((JCell) jCell)) {
                 // now see if this jCell is sufficiently close to the point
-//                CellView jCellView = graphLayoutCache.getMapping(jCell, false);
-                if (jCellView != null && jCellView.intersects(this, xyArea)) {
+                if (jCellView.intersects(this, xyArea)) {
                     result = jCell;
                 }
             }
@@ -300,23 +309,24 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         return result;
     }
 
-    /** 
-     * Overrides the super method for greater efficiency.
-     * Only returns visible cells.
+    /**
+     * Overrides the super method for greater efficiency. Only returns visible
+     * cells.
      */
     @Override
     public Object getFirstCellForLocation(double x, double y) {
         return getFirstCellForLocation(x, y, false);
     }
-    
+
     /**
      * This method rturns the port of the topmost vertex.
      */
     @Override
     public PortView getPortViewAt(double x, double y) {
-        JVertex vertex = (JVertex) getFirstCellForLocation(x,y, true);
+        JVertex vertex = (JVertex) getFirstCellForLocation(x, y, true);
         if (vertex != null) {
-            return (PortView) getGraphLayoutCache().getMapping(vertex.getPort(), false);
+            return (PortView) getGraphLayoutCache().getMapping(
+                vertex.getPort(), false);
         } else {
             return null;
         }
@@ -333,87 +343,89 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     @Override
     public void setModel(GraphModel model) {
-    	if (model instanceof JModel) {
-			JModel jModel = (JModel) model;
-			if (getModel() != null) {
-				clearSelection();
-				if (layouter != null) {
-					layouter.stop();
-				}
-				getModel().removeGraphModelListener(this);
-			}
-			super.setModel(jModel);
-			jModel.setFilteredLabels(getFilteredLabels());
-			getLabelList().updateModel();
-			jModel.addGraphModelListener(this);
-//			jModel.refresh();
-			if (initialized) {
-				if (layouter != null && !jModel.isLayedOut()) {
-					if (jModel.freeze()) {
-//					    SwingUtilities.invokeLater(new Runnable() {
-//					        public void run() {
-		                        layouter.start(false);
-		                        new Timer().schedule(new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        layouter.stop();
-                                    }
-		                        }, MAX_LAYOUT_DURATION);
-					        }
-//					    });
-//					}
-				}
-				setEnabled(true);
-			}
-		}
+        if (model instanceof JModel) {
+            JModel jModel = (JModel) model;
+            if (getModel() != null) {
+                clearSelection();
+                if (this.layouter != null) {
+                    this.layouter.stop();
+                }
+                getModel().removeGraphModelListener(this);
+            }
+            super.setModel(jModel);
+            jModel.setFilteredLabels(getFilteredLabels());
+            getLabelList().updateModel();
+            jModel.addGraphModelListener(this);
+            // jModel.refresh();
+            if (this.initialized) {
+                if (this.layouter != null && !jModel.isLayedOut()) {
+                    if (jModel.freeze()) {
+                        // SwingUtilities.invokeLater(new Runnable() {
+                        // public void run() {
+                        this.layouter.start(false);
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                JGraph.this.layouter.stop();
+                            }
+                        }, MAX_LAYOUT_DURATION);
+                    }
+                    // });
+                    // }
+                }
+                setEnabled(true);
+            }
+        }
     }
-    
+
     /** Specialises the return type to a {@link JModel}. */
     @Override
-	public JModel getModel() {
-    	return (JModel) graphModel;
-	}
+    public JModel getModel() {
+        return (JModel) this.graphModel;
+    }
 
-	/**
-     * In addition to delegating the method to the label list and to <tt>super</tt>, 
-     * sets the background color to
-     * <tt>null</tt> when disabled and back to the default when enabled.
+    /**
+     * In addition to delegating the method to the label list and to
+     * <tt>super</tt>, sets the background color to <tt>null</tt> when
+     * disabled and back to the default when enabled.
      */
     @Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
             if (!enabled) {
-                enabledBackground = getBackground();
+                this.enabledBackground = getBackground();
                 setBackground(null);
-            } else if (enabledBackground != null) {
-                setBackground(enabledBackground);
+            } else if (this.enabledBackground != null) {
+                setBackground(this.enabledBackground);
             }
         }
         getLabelList().setEnabled(enabled);
         super.setEnabled(enabled);
     }
 
-	/**
-	 * Sets a graph UI that speeds up preferred size checking
-	 * by caching previous values.
-	 */
-	@Override
-	public void updateUI() {
-		setUI(createGraphUI());
-		invalidate();
-	}
+    /**
+     * Sets a graph UI that speeds up preferred size checking by caching
+     * previous values.
+     */
+    @Override
+    public void updateUI() {
+        setUI(createGraphUI());
+        invalidate();
+    }
 
-	/**
-	 * Creates a graph UI that speeds up preferred size checking
-	 * by caching previously computed values.
-	 */
-	protected BasicGraphUI createGraphUI() {
-		return new MyGraphUI();
-	}
+    /**
+     * Creates a graph UI that speeds up preferred size checking by caching
+     * previously computed values.
+     */
+    protected BasicGraphUI createGraphUI() {
+        return new MyGraphUI();
+    }
 
-	/**
-     * Creates and returns an image of the jgraph, or <tt>null</tt> if the jgraph is empty.
-     * @return an image object of the jgraph; <tt>null</tt> if this jgraph is empty.
+    /**
+     * Creates and returns an image of the jgraph, or <tt>null</tt> if the
+     * jgraph is empty.
+     * @return an image object of the jgraph; <tt>null</tt> if this jgraph is
+     *         empty.
      */
     public BufferedImage toImage() {
         Rectangle2D bounds = getGraphBounds();
@@ -422,8 +434,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             toScreen(bounds);
 
             // Create a Buffered Image
-            BufferedImage img = new BufferedImage((int) bounds.getWidth() + 10, (int) bounds
-                    .getHeight() + 10, BufferedImage.TYPE_INT_RGB);
+            BufferedImage img =
+                new BufferedImage((int) bounds.getWidth() + 10,
+                    (int) bounds.getHeight() + 10, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = img.createGraphics();
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
@@ -449,45 +462,49 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @see #setLayouter(Layouter)
      */
     public Layouter getLayouter() {
-        return layouter;
+        return this.layouter;
     }
 
     /**
-     * Sets (but doe snot start) the layout action for this jgraph. First stops the current layout action, if
-     * it is running.
-     * @param prototypeLayouter prototype for the new layout action; the actual layout action is
-     *        obtained by calling <tt>newInstance(this)</tt>
+     * Sets (but doe snot start) the layout action for this jgraph. First stops
+     * the current layout action, if it is running.
+     * @param prototypeLayouter prototype for the new layout action; the actual
+     *        layout action is obtained by calling <tt>newInstance(this)</tt>
      * @see #getLayouter()
      */
     public void setLayouter(Layouter prototypeLayouter) {
-        if (layouter != null) {
-            layouter.stop();
+        if (this.layouter != null) {
+            this.layouter.stop();
         }
-        layouter = prototypeLayouter.newInstance(this);
+        this.layouter = prototypeLayouter.newInstance(this);
     }
-    
+
     /**
-     * Lays out this graph according to the currently set layouter (if any). 
+     * Lays out this graph according to the currently set layouter (if any).
      * @see Layouter#start(boolean)
      */
     public void doGraphLayout() {
-        if (layouter != null) {
-            layouter.start(true);
+        if (this.layouter != null) {
+            this.layouter.start(true);
         }
     }
 
     /**
-     * Indicates whether this jgraph is currently registered at the tool tip manager.
-     * @return <tt>true</tt> if this jgraph is currently registered at the tool tip manager
+     * Indicates whether this jgraph is currently registered at the tool tip
+     * manager.
+     * @return <tt>true</tt> if this jgraph is currently registered at the
+     *         tool tip manager
      */
     public boolean getToolTipEnabled() {
-        return toolTipEnabled;
+        return this.toolTipEnabled;
     }
 
     /**
-     * Registers ur unregisters this jgraph with the tool tip manager. The current registration
-     * state can be queried using <tt>getToolTipEnabled()</tt>
-     * @param enabled <tt>true</tt> if this jgraph is to be registered with the tool tip manager
+     * Registers ur unregisters this jgraph with the tool tip manager. The
+     * current registration state can be queried using
+     * <tt>getToolTipEnabled()</tt>
+     * @param enabled <tt>true</tt> if this jgraph is to be registered with
+     *        the tool tip manager
      * @see #getToolTipEnabled()
      * @see ToolTipManager#registerComponent(javax.swing.JComponent)
      * @see ToolTipManager#unregisterComponent(javax.swing.JComponent)
@@ -498,7 +515,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         } else {
             ToolTipManager.sharedInstance().unregisterComponent(this);
         }
-        toolTipEnabled = enabled;
+        this.toolTipEnabled = enabled;
     }
 
     /**
@@ -507,82 +524,82 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param always flag to indicate if disabled actions should be added
      */
     public void fillOutEditMenu(JPopupMenu menu, boolean always) {
-    	List<JMenuItem> items = new ArrayList<JMenuItem>();
-    	items.add(new JMenuItem(getAddPointAction()));
-    	items.add(new JMenuItem(getRemovePointAction()));
-    	items.add(new JMenuItem(getResetLabelPositionAction()));
-    	items.add(createLineStyleMenu());
-    	boolean add = always;
-    	if (! add) {
-    		for (JMenuItem item: items) {
-    			add |= item.isEnabled();
-    		}
-    	}
-    	if (add) {
-			addSeparatorUnlessFirst(menu);
-			for (JMenuItem item : items) {
-				menu.add(item);
-			}
-		}
+        List<JMenuItem> items = new ArrayList<JMenuItem>();
+        items.add(new JMenuItem(getAddPointAction()));
+        items.add(new JMenuItem(getRemovePointAction()));
+        items.add(new JMenuItem(getResetLabelPositionAction()));
+        items.add(createLineStyleMenu());
+        boolean add = always;
+        if (!add) {
+            for (JMenuItem item : items) {
+                add |= item.isEnabled();
+            }
+        }
+        if (add) {
+            addSeparatorUnlessFirst(menu);
+            for (JMenuItem item : items) {
+                menu.add(item);
+            }
+        }
     }
 
     /**
-	 * Adds all the display menu items of this jgraph to a given popup menu.
-	 * 
-	 * @param menu
-	 *            the popup menu to receive the items
-	 */
+     * Adds all the display menu items of this jgraph to a given popup menu.
+     * 
+     * @param menu the popup menu to receive the items
+     */
     public void fillOutDisplayMenu(JPopupMenu menu) {
         addSeparatorUnlessFirst(menu);
         Object[] cells = getSelectionCells();
-        if (filteredLabels != null && cells.length > 0) {
-        	menu.add(new FilterAction(cells));
-        	menu.addSeparator();
+        if (this.filteredLabels != null && cells.length > 0) {
+            menu.add(new FilterAction(cells));
+            menu.addSeparator();
         }
         menu.add(createShowHideMenu());
         menu.add(createZoomMenu());
     }
 
     /**
-     * Adds all the menu items from the layouter setting menu of this jgraph to a given popup menu.
+     * Adds all the menu items from the layouter setting menu of this jgraph to
+     * a given popup menu.
      * @param menu the popup menu to receive the items
      */
     public void fillOutSetLayoutMenu(JPopupMenu menu) {
         addSeparatorUnlessFirst(menu);
-        for (int i = 0; i < setLayoutMenu.getComponentCount(); i++) {
-            menu.add(setLayoutMenu.getComponent(i));
+        for (int i = 0; i < this.setLayoutMenu.getComponentCount(); i++) {
+            menu.add(this.setLayoutMenu.getComponent(i));
         }
     }
 
     /**
      * Adds the items of a layout menu for this jgraph to a given popup menu.
-     * The items added are the current layout action and a layouter setting sub-menu.
+     * The items added are the current layout action and a layouter setting
+     * sub-menu.
      * @param menu the popup menu to receive the items
      */
     public void fillOutLayoutMenu(JPopupMenu menu) {
         addSeparatorUnlessFirst(menu);
-        menu.add(setLayoutMenu.getCurrentLayoutItem());
-        menu.add(setLayoutMenu);
+        menu.add(this.setLayoutMenu.getCurrentLayoutItem());
+        menu.add(this.setLayoutMenu);
     }
 
     /**
      * Lazily creates and returns the label list associated with this jgraph.
      */
     public LabelList getLabelList() {
-    	if (labelList == null) {
-    		labelList = new LabelList(this);
-    		labelList.updateModel();
-    	}
-        return labelList;
+        if (this.labelList == null) {
+            this.labelList = new LabelList(this);
+            this.labelList.updateModel();
+        }
+        return this.labelList;
     }
 
     /**
-     * Adds an intermediate point to a given j-edge, controlled by
-     * a given location.
-     * If the location if <tt>null</tt>, the point is added directly after
-     * the initial point of the edge, at a slightly randomized position.
-     * Otherwise, the point is added at the given location, between the 
-     * (existing) points closest to the location.
+     * Adds an intermediate point to a given j-edge, controlled by a given
+     * location. If the location if <tt>null</tt>, the point is added
+     * directly after the initial point of the edge, at a slightly randomized
+     * position. Otherwise, the point is added at the given location, between
+     * the (existing) points closest to the location.
      * @param jEdge the j-edge to be modified
      * @param location the point to be added
      */
@@ -597,10 +614,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Removes an intermediate point from a given j-edge, controlled by
-     * a given location.
-     * The point removed is either the second point (if the location is <tt>null</tt>)
-     * or the one closest to the location.
+     * Removes an intermediate point from a given j-edge, controlled by a given
+     * location. The point removed is either the second point (if the location
+     * is <tt>null</tt>) or the one closest to the location.
      * @param jEdge the j-edge to be modified
      * @param location the point to be removed
      */
@@ -613,19 +629,21 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         change.put(jEdge, jEdgeAttr);
         getModel().edit(change, null, null, null);
     }
-    
+
     /**
-     * Resets the label position of a given a given j-edge to the default position.
+     * Resets the label position of a given a given j-edge to the default
+     * position.
      * @param jEdge the j-edge to be modified
      */
     public void resetLabelPosition(JEdge jEdge) {
         AttributeMap newAttr = new AttributeMap();
-        GraphConstants.setLabelPosition(newAttr, JCellLayout.defaultLabelPosition);
+        GraphConstants.setLabelPosition(newAttr,
+            JCellLayout.defaultLabelPosition);
         Map<JCell,AttributeMap> change = new HashMap<JCell,AttributeMap>();
         change.put(jEdge, newAttr);
         getModel().edit(change, null, null, null);
     }
-    
+
     /**
      * Sets the line style of a given a given j-edge to a given value.
      * @param jEdge the j-edge to be modified
@@ -643,43 +661,44 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @return an action to add a point to the currently selected j-edge.
      */
     public JCellEditAction getAddPointAction() {
-        if (addPointAction == null) {
-            addPointAction = new AddPointAction();
-            addAccelerator(addPointAction);
+        if (this.addPointAction == null) {
+            this.addPointAction = new AddPointAction();
+            addAccelerator(this.addPointAction);
         }
-        return addPointAction;
-    }
-
-	/**
-     * @return an action to remove a point from the currently selected j-edge.
-     */
-    public JCellEditAction getRemovePointAction() {
-        if (removePointAction == null) {
-            removePointAction = new RemovePointAction();
-            addAccelerator(removePointAction);
-        }
-        return removePointAction;
+        return this.addPointAction;
     }
 
     /**
-     * @return an action to reset the label position of the currently selected j-edge.
+     * @return an action to remove a point from the currently selected j-edge.
+     */
+    public JCellEditAction getRemovePointAction() {
+        if (this.removePointAction == null) {
+            this.removePointAction = new RemovePointAction();
+            addAccelerator(this.removePointAction);
+        }
+        return this.removePointAction;
+    }
+
+    /**
+     * @return an action to reset the label position of the currently selected
+     *         j-edge.
      */
     public JCellEditAction getResetLabelPositionAction() {
-        if (resetLabelPositionAction == null) {
-            resetLabelPositionAction = new ResetLabelPositionAction();
+        if (this.resetLabelPositionAction == null) {
+            this.resetLabelPositionAction = new ResetLabelPositionAction();
         }
-        return resetLabelPositionAction;
+        return this.resetLabelPositionAction;
     }
 
     /**
      * @return an action to edit the currently selected j-cell label.
      */
     public JCellEditAction getEditLabelAction() {
-        if (editLabelAction == null) {
-            editLabelAction = new EditLabelAction();
-            addAccelerator(editLabelAction);
+        if (this.editLabelAction == null) {
+            this.editLabelAction = new EditLabelAction();
+            addAccelerator(this.editLabelAction);
         }
-        return editLabelAction;
+        return this.editLabelAction;
     }
 
     /**
@@ -687,17 +706,19 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @return an action to set the line style of the currently selected j-edge.
      */
     public JCellEditAction getSetLineStyleAction(int lineStyle) {
-        JCellEditAction result = setLineStyleActionMap.get(Options.getLineStyleName(lineStyle));
+        JCellEditAction result =
+            this.setLineStyleActionMap.get(Options.getLineStyleName(lineStyle));
         if (result == null) {
-            setLineStyleActionMap.put(Options.getLineStyleName(lineStyle), result = new SetLineStyleAction(lineStyle));
+            this.setLineStyleActionMap.put(Options.getLineStyleName(lineStyle),
+                result = new SetLineStyleAction(lineStyle));
             addAccelerator(result);
         }
         return result;
     }
 
     /**
-     * Factory method for the graph selection model.
-     * This implementation returns a {@link JGraph.MyGraphSelectionModel}.
+     * Factory method for the graph selection model. This implementation returns
+     * a {@link JGraph.MyGraphSelectionModel}.
      * @return the new graph selection model
      */
     protected GraphSelectionModel createSelectionModel() {
@@ -705,19 +726,19 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     @Override
-	public GraphLayoutCache getGraphLayoutCache() {
-    	GraphLayoutCache result = super.getGraphLayoutCache();
-		if (!(result instanceof MyGraphLayoutCache)) {
-			result = createGraphLayoutCache();
-			setGraphLayoutCache(result);
-			result.setModel(getModel());
-		}
-		return result;
-	}
+    public GraphLayoutCache getGraphLayoutCache() {
+        GraphLayoutCache result = super.getGraphLayoutCache();
+        if (!(result instanceof MyGraphLayoutCache)) {
+            result = createGraphLayoutCache();
+            setGraphLayoutCache(result);
+            result.setModel(getModel());
+        }
+        return result;
+    }
 
-	/**
-     * Factory method for the graph layout cache.
-     * This implementation returns a {@link groove.gui.jgraph.JGraph.MyGraphLayoutCache}.
+    /**
+     * Factory method for the graph layout cache. This implementation returns a
+     * {@link groove.gui.jgraph.JGraph.MyGraphLayoutCache}.
      * @return the new graph layout cache
      */
     protected GraphLayoutCache createGraphLayoutCache() {
@@ -733,15 +754,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /** Shows a popup menu if the event is a popup trigger. */
     protected void maybeShowPopup(MouseEvent evt) {
-    	if (isPopupMenuEvent(evt)) {
+        if (isPopupMenuEvent(evt)) {
             Point atPoint = evt.getPoint();
             getPopupMenu(atPoint).show(this, atPoint.x, atPoint.y);
-    	}
+        }
     }
-    
+
     /**
-     * Callback method to determine whether a given event is a menu popup event. This implementation
-     * checks for the right hand mouse button. To be overridden by subclasses.
+     * Callback method to determine whether a given event is a menu popup event.
+     * This implementation checks for the right hand mouse button. To be
+     * overridden by subclasses.
      * @param evt the event that could be a popup menu event
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
@@ -750,8 +772,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Callback method to determine whether a given event is a menu popup event. This implementation
-     * checks for the right hand mouse button. To be overridden by subclasses.
+     * Callback method to determine whether a given event is a menu popup event.
+     * This implementation checks for the right hand mouse button. To be
+     * overridden by subclasses.
      * @param evt the event that could be a popup menu event
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
@@ -760,8 +783,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Callback method to determine whether a given event is a menu popup event. This implementation
-     * checks for the right hand mouse button. To be overridden by subclasses.
+     * Callback method to determine whether a given event is a menu popup event.
+     * This implementation checks for the right hand mouse button. To be
+     * overridden by subclasses.
      * @param evt the event that could be a popup menu event
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
@@ -770,9 +794,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             Object jCell = getSelectionCell();
             if (jCell instanceof JEdge) {
                 // check if an intermediate point is in the neighbourhood of evt
-                Rectangle r = new Rectangle(evt.getX()-tolerance, evt.getY()-tolerance, 2*tolerance, 2*tolerance);
+                Rectangle r =
+                    new Rectangle(evt.getX() - this.tolerance, evt.getY()
+                        - this.tolerance, 2 * this.tolerance,
+                        2 * this.tolerance);
                 List<?> points = getJEdgeView((JEdge) jCell).getPoints();
-                for (int i = 1; i < points.size()-1; i++) {
+                for (int i = 1; i < points.size() - 1; i++) {
                     Point2D point = (Point2D) points.get(i);
                     if (r.intersects(point.getX(), point.getY(), 1, 1)) {
                         return true;
@@ -784,31 +811,33 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-	 * Lazily creates and returns the popup menu for this j-graph, activated
-	 * for a given point of the j-graph.
+     * Lazily creates and returns the popup menu for this j-graph, activated for
+     * a given point of the j-graph.
      * @param atPoint the point at which the menu is to be activated
-	 */
-	protected final JPopupMenu getPopupMenu(Point atPoint) {
-		JPopupMenu popupMenu = new JPopupMenu();
-		fillPopupMenu(popupMenu);
-		activatePopupMenu(atPoint);
-		return popupMenu;
-	}
+     */
+    protected final JPopupMenu getPopupMenu(Point atPoint) {
+        JPopupMenu popupMenu = new JPopupMenu();
+        fillPopupMenu(popupMenu);
+        activatePopupMenu(atPoint);
+        return popupMenu;
+    }
 
-	/**
-	 * Fills out the popup menu for this jgraph. Does not clear the menu first. This method is
-	 * invoked at least once whenever a new jmodel is set. This implementation successively invokes
-	 * {@link #fillOutLayoutMenu(JPopupMenu)}and {@link #fillOutDisplayMenu(JPopupMenu)}.
-	 * @param result the menu to be initialised
-	 * @see #activatePopupMenu(Point)
-	 */
-	protected void fillPopupMenu(JPopupMenu result) {
-	    fillOutEditMenu(result, false);
-	    fillOutDisplayMenu(result);
-	    fillOutLayoutMenu(result);
-	}
+    /**
+     * Fills out the popup menu for this jgraph. Does not clear the menu first.
+     * This method is invoked at least once whenever a new jmodel is set. This
+     * implementation successively invokes
+     * {@link #fillOutLayoutMenu(JPopupMenu)}and
+     * {@link #fillOutDisplayMenu(JPopupMenu)}.
+     * @param result the menu to be initialised
+     * @see #activatePopupMenu(Point)
+     */
+    protected void fillPopupMenu(JPopupMenu result) {
+        fillOutEditMenu(result, false);
+        fillOutDisplayMenu(result);
+        fillOutLayoutMenu(result);
+    }
 
-	/**
+    /**
      * Adds a separator to a menu, unless the menu is empty.
      */
     protected void addSeparatorUnlessFirst(JPopupMenu menu) {
@@ -818,16 +847,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-	 * Activates and returns a popup menu, given a certain point at which it is to appear. The menu
-	 * may be freshly created, but will typically be fixed.
-	 * @param point the selected point at the moment of menu popup
-	 */
-	protected void activatePopupMenu(Point point) {
-	    getAddPointAction().setLocation(point);
-	    getRemovePointAction().setLocation(point);
-	}
+     * Activates and returns a popup menu, given a certain point at which it is
+     * to appear. The menu may be freshly created, but will typically be fixed.
+     * @param point the selected point at the moment of menu popup
+     */
+    protected void activatePopupMenu(Point point) {
+        getAddPointAction().setLocation(point);
+        getRemovePointAction().setLocation(point);
+    }
 
-	/**
+    /**
      * Creates and returns a fresh zoom menu upon this jgraph.
      */
     protected ZoomMenu createZoomMenu() {
@@ -840,12 +869,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     protected ShowHideMenu createShowHideMenu() {
         return new ShowHideMenu(this);
     }
-    
+
     /** Creates and returns a fresh layout setting meny upon this j-graph. */
     protected SetLayoutMenu createSetLayoutMenu() {
         return new SetLayoutMenu(this);
     }
-    
+
     /**
      * Cretes and returns a fresh line style menu for this j-graph.
      */
@@ -858,18 +887,20 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         result.add(getSetLineStyleAction(JAttr.STYLE_MANHATTAN));
         return result;
     }
-    
+
     /**
-     * Adds the accelerator key for a given action to
-     * the action and input maps of this j-frame.
+     * Adds the accelerator key for a given action to the action and input maps
+     * of this j-frame.
      * @param action the action to be added
      * @require <tt>frame.getContentPane()</tt> should be initialized
      */
     protected void addAccelerator(Action action) {
         ActionMap am = getActionMap();
         am.put(action.getValue(Action.NAME), action);
-        InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), action.getValue(Action.NAME));
+        InputMap im =
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY),
+            action.getValue(Action.NAME));
     }
 
     /** The set of labels currently filtered from view. */
@@ -890,41 +921,54 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * The currently selected prototype layouter.
      */
     protected Layouter layouter;
-    
+
     /** The permanent <code>AddPointAction</code> associated with this j-graph. */
     protected AddPointAction addPointAction;
-    /** The permanent <code>RemovePointAction</code> associated with this j-graph. */
+    /**
+     * The permanent <code>RemovePointAction</code> associated with this
+     * j-graph.
+     */
     protected RemovePointAction removePointAction;
-    /** The permanent <code>EditLabelAction</code> associated with this j-graph. */
+    /**
+     * The permanent <code>EditLabelAction</code> associated with this
+     * j-graph.
+     */
     protected EditLabelAction editLabelAction;
-    /** The permanent <code>ResetLabelPositionAction</code> associated with this j-graph. */
+    /**
+     * The permanent <code>ResetLabelPositionAction</code> associated with
+     * this j-graph.
+     */
     protected ResetLabelPositionAction resetLabelPositionAction;
     /** Map from line style names to corresponding actions. */
-    protected final Map<String,JCellEditAction> setLineStyleActionMap = new HashMap<String,JCellEditAction>();
-    
+    protected final Map<String,JCellEditAction> setLineStyleActionMap =
+        new HashMap<String,JCellEditAction>();
+
     /**
      * The background color of this component when it is enabled.
      */
     private Color enabledBackground;
 
     /**
-     * Flag to indicate whether this jgraph is currently registered with the {@link ToolTipManager}.
+     * Flag to indicate whether this jgraph is currently registered with the
+     * {@link ToolTipManager}.
      */
     private boolean toolTipEnabled;
 
     /**
-     * A variable to determined whether this MyJGraph instance has been initialized. It is important
-     * that this is the last (non-static) variable declared in the class.
+     * A variable to determined whether this MyJGraph instance has been
+     * initialized. It is important that this is the last (non-static) variable
+     * declared in the class.
      */
-    private boolean initialized = true;
-    
+    private final boolean initialized = true;
+
     /** Maximum duration for layouting a new model. */
     static private final long MAX_LAYOUT_DURATION = 1000;
-    
+
     /**
      * Abstract class for j-cell edit actions.
      */
-    private abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
+    private abstract class JCellEditAction extends AbstractAction implements
+            GraphSelectionListener {
         /**
          * Constructs an edit action that is enabled for all j-cells.
          * @param name the name of the action
@@ -933,15 +977,17 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super(name);
             this.allCells = true;
             this.vertexOnly = true;
-            jCells = new ArrayList<JCell>();
+            this.jCells = new ArrayList<JCell>();
             setEnabled(false);
-            JGraph.this.addGraphSelectionListener(this);
+            addGraphSelectionListener(this);
         }
-        
+
         /**
-         * Constructs an edit action that is enabled for only j-vertices or j-edges.
+         * Constructs an edit action that is enabled for only j-vertices or
+         * j-edges.
          * @param name the name of the action
-         * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
+         * @param vertexOnly <tt>true</tt> if the action is for j-vertices
+         *        only
          */
         protected JCellEditAction(String name, boolean vertexOnly) {
             super(name);
@@ -949,34 +995,38 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             this.vertexOnly = vertexOnly;
             this.jCells = new ArrayList<JCell>();
             setEnabled(false);
-            JGraph.this.addGraphSelectionListener(this);
+            addGraphSelectionListener(this);
         }
-        
+
         /**
-         * Sets the j-cell to the first selected cell.
-         * Disables the action if the type of the cell disagrees with the expected type.
+         * Sets the j-cell to the first selected cell. Disables the action if
+         * the type of the cell disagrees with the expected type.
          */
         public void valueChanged(GraphSelectionEvent e) {
-        	jCell = null;
-        	jCells.clear();
-        	for (Object cell: JGraph.this.getSelectionCells()) {
-        		JCell jCell = (JCell) cell;
-        		if (allCells || vertexOnly == (jCell instanceof JVertex)) {
-        			this.jCell = jCell;
-        			this.jCells.add(jCell);
-        		}
-        	}
-        	setEnabled(jCell != null);
+            this.jCell = null;
+            this.jCells.clear();
+            for (Object cell : JGraph.this.getSelectionCells()) {
+                JCell jCell = (JCell) cell;
+                if (this.allCells
+                    || this.vertexOnly == (jCell instanceof JVertex)) {
+                    this.jCell = jCell;
+                    this.jCells.add(jCell);
+                }
+            }
+            setEnabled(this.jCell != null);
         }
-        
+
         /**
          * Sets the location attribute of this action.
          */
         public void setLocation(Point2D location) {
             this.location = location;
         }
-        
-        /** Switch indication that the action is enabled for all types of j-cells. */
+
+        /**
+         * Switch indication that the action is enabled for all types of
+         * j-cells.
+         */
         protected final boolean allCells;
         /** Switch indication that the action is enabled for all j-vertices. */
         protected final boolean vertexOnly;
@@ -987,19 +1037,19 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         /** The currently set point location. */
         protected Point2D location;
     }
-    
+
     /**
      * Action to add a point to the currently selected j-edge.
      */
     private class AddPointAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
+        /** Constructs an instance of the action. */
         AddPointAction() {
             super(Options.ADD_POINT_ACTION, false);
             putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
-        	addPoint((JEdge) jCell, location);
+            addPoint((JEdge) this.jCell, this.location);
         }
     }
 
@@ -1007,64 +1057,65 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Action to edit the label of the currently selected j-cell.
      */
     private class EditLabelAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
+        /** Constructs an instance of the action. */
         EditLabelAction() {
             super(Options.EDIT_LABEL_ACTION);
             putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
-            startEditingAtCell(jCell);
+            startEditingAtCell(this.jCell);
         }
     }
 
     /** Action to turn filtering on for a set of selected cells. */
     private class FilterAction extends AbstractAction {
-    	FilterAction(Object[] cells) {
-    		super(Options.FILTER_ACTION_NAME);
-    		this.cells = cells;
-    	}
-    	
-    	public void actionPerformed(ActionEvent e) {
-			Set<String> labels = new HashSet<String>();
-			for (Object cell: cells) {
-				labels.addAll(((JCell) cell).getListLabels());
-			}
-			getFilteredLabels().addAll(labels);
-		}
+        FilterAction(Object[] cells) {
+            super(Options.FILTER_ACTION_NAME);
+            this.cells = cells;
+        }
 
-		/** The array of cells upon which this action works. */
-    	private final Object[] cells;
+        public void actionPerformed(ActionEvent e) {
+            Set<String> labels = new HashSet<String>();
+            for (Object cell : this.cells) {
+                labels.addAll(((JCell) cell).getListLabels());
+            }
+            getFilteredLabels().addAll(labels);
+        }
+
+        /** The array of cells upon which this action works. */
+        private final Object[] cells;
     }
-    
+
     /**
      * Action to remove a point from the currently selected j-edge.
      */
     private class RemovePointAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
+        /** Constructs an instance of the action. */
         RemovePointAction() {
             super(Options.REMOVE_POINT_ACTION, false);
             putValue(ACCELERATOR_KEY, Options.REMOVE_POINT_KEY);
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
-        	removePoint((JEdge) jCell, location);
+            removePoint((JEdge) this.jCell, this.location);
         }
     }
 
     /**
-     * Action set the label of the currently selected j-cell to its default position.
+     * Action set the label of the currently selected j-cell to its default
+     * position.
      */
     private class ResetLabelPositionAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
+        /** Constructs an instance of the action. */
         ResetLabelPositionAction() {
             super(Options.RESET_LABEL_POSITION_ACTION, false);
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
-        	for (JCell jCell: jCells) {
-        		resetLabelPosition((JEdge) jCell);
-        	}
+            for (JCell jCell : this.jCells) {
+                resetLabelPosition((JEdge) jCell);
+            }
         }
     }
 
@@ -1072,23 +1123,24 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Action to set the line style of the currently selected j-edge.
      */
     private class SetLineStyleAction extends JCellEditAction {
-    	/** Constructs an instance of the action, for a given line style. */
+        /** Constructs an instance of the action, for a given line style. */
         SetLineStyleAction(int lineStyle) {
             super(Options.getLineStyleName(lineStyle), false);
             putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
             this.lineStyle = lineStyle;
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
-        	for (JCell jCell : jCells) {
-				setLineStyle((JEdge) jCell, lineStyle);
-				List<?> points = GraphConstants.getPoints(jCell.getAttributes());
-				if (points == null || points.size() == 2) {
-					addPoint((JEdge) jCell, location);
-				}
-			}
+            for (JCell jCell : this.jCells) {
+                setLineStyle((JEdge) jCell, this.lineStyle);
+                List<?> points =
+                    GraphConstants.getPoints(jCell.getAttributes());
+                if (points == null || points.size() == 2) {
+                    addPoint((JEdge) jCell, this.location);
+                }
+            }
         }
-        
+
         /** The line style set by this action instance. */
         protected final int lineStyle;
     }
@@ -1096,149 +1148,157 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Menu offering a choice of line style setting actions.
      */
-    private class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
-    	/** Constructs an instance of the action. */
+    private class SetLineStyleMenu extends JMenu implements
+            GraphSelectionListener {
+        /** Constructs an instance of the action. */
         SetLineStyleMenu() {
             super(Options.SET_LINE_STYLE_MENU);
             valueChanged(null);
-            JGraph.this.addGraphSelectionListener(this);
+            addGraphSelectionListener(this);
         }
-        
+
         public void valueChanged(GraphSelectionEvent e) {
             setEnabled(getSelectionCell() instanceof JEdge);
         }
     }
-    
+
     private class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
-    	MyGraphUI() {
-    		// empty
-    	}
-    	
-		@Override
-		public Dimension2D getPreferredSize(org.jgraph.JGraph graph,
-				CellView view) {
-			Dimension2D result = null;
-			if (view instanceof JVertexView) {
-				JVertexView vertexView = (JVertexView) view;
-				String text = convertDigits(vertexView.getCell().getText());
-				result = sizeMap.get(text);
-				if (result == null) {
-					if (text.length() == 0) {
-						result = JAttr.DEFAULT_NODE_SIZE;
-					} else {
-						result = super.getPreferredSize(graph, vertexView);
-					}
-					// // normalize for linewidth of the border
-					// float linewidth =
-					// GraphConstants.getLineWidth(vertexView.getAllAttributes());
-					// result.setSize(result.getWidth()-linewidth,
-					// result.getHeight()-linewidth);
-					sizeMap.put(text, result);
-				}
-				// // adjust for linewidth of the border
-				// float linewidth =
-				// GraphConstants.getLineWidth(vertexView.getAllAttributes());
-				// result = new Dimension((int)
-				// Math.round(result.getWidth()+linewidth), (int)
-				// Math.round(result.getHeight()+linewidth));
-			} else {
-				result = super.getPreferredSize(graph, view);
-			}
-			assert result != null;
-			return result;
-		}
+        MyGraphUI() {
+            // empty
+        }
 
-		/**
-		 * Converts all digits in a string in the range 2-9 to 0. The idea is
-		 * that this will not affect the size of the string, but will unify many
-		 * keys in the size map.
-		 */
-		private String convertDigits(String original) {
-			char[] array = original.toCharArray();
-			for (int i = 0; i < array.length; i++) {
-				char c = array[i];
-				if ('2' <= c && c <= '9') {
-					array[i] = '0';
-				}
-			}
-			return String.valueOf(array);
-		}
+        @Override
+        public Dimension2D getPreferredSize(org.jgraph.JGraph graph,
+                CellView view) {
+            Dimension2D result = null;
+            if (view instanceof JVertexView) {
+                JVertexView vertexView = (JVertexView) view;
+                String text = convertDigits(vertexView.getCell().getText());
+                result = this.sizeMap.get(text);
+                if (result == null) {
+                    if (text.length() == 0) {
+                        result = JAttr.DEFAULT_NODE_SIZE;
+                    } else {
+                        result = super.getPreferredSize(graph, vertexView);
+                    }
+                    // // normalize for linewidth of the border
+                    // float linewidth =
+                    // GraphConstants.getLineWidth(vertexView.getAllAttributes());
+                    // result.setSize(result.getWidth()-linewidth,
+                    // result.getHeight()-linewidth);
+                    this.sizeMap.put(text, result);
+                }
+                // // adjust for linewidth of the border
+                // float linewidth =
+                // GraphConstants.getLineWidth(vertexView.getAllAttributes());
+                // result = new Dimension((int)
+                // Math.round(result.getWidth()+linewidth), (int)
+                // Math.round(result.getHeight()+linewidth));
+            } else {
+                result = super.getPreferredSize(graph, view);
+            }
+            assert result != null;
+            return result;
+        }
 
-		/**
-		 * Taken from <code>com.jgraph.example.fastgraph.FastGraphUI</code>. Updates
-		 * the <code>preferredSize</code> instance variable, which is returned
-		 * from <code>getPreferredSize()</code>. Ignores edges for
-		 * performance
-		 */
-		@Override
-		protected void updateCachedPreferredSize() {
-			CellView[] views = graphLayoutCache.getRoots();
-			Rectangle2D size = null;
-			if (views != null && views.length > 0) {
-				for (int i = 0; i < views.length; i++) {
-					if (views[i] != null && !(views[i] instanceof JEdgeView)) {
-						Rectangle2D r = views[i].getBounds();
-						if (r != null) {
-							if (size == null)
-								size = new Rectangle2D.Double(r.getX(),
-										r.getY(), r.getWidth(), r.getHeight());
-							else
-								Rectangle2D.union(size, r, size);
-						}
-					}
-				}
-			}
-			if (size == null)
-				size = new Rectangle2D.Double();
-			Point2D psize = new Point2D.Double(size.getX() + size.getWidth(),
-					size.getY() + size.getHeight());
-			Dimension d = graph.getMinimumSize();
-			Point2D min = (d != null) ? graph.toScreen(new Point(d.width,
-					d.height)) : new Point(0, 0);
-			Point2D scaled = graph.toScreen(psize);
-			preferredSize = new Dimension((int) Math.max(min.getX(),
-					scaled.getX()), (int) Math.max(min.getY(), scaled.getY()));
-			Insets in = graph.getInsets();
-			if (in != null) {
-				preferredSize.setSize(preferredSize.getWidth() + in.left
-						+ in.right, preferredSize.getHeight() + in.top
-						+ in.bottom);
-			}
-			validCachedPreferredSize = true;
-		}
+        /**
+         * Converts all digits in a string in the range 2-9 to 0. The idea is
+         * that this will not affect the size of the string, but will unify many
+         * keys in the size map.
+         */
+        private String convertDigits(String original) {
+            char[] array = original.toCharArray();
+            for (int i = 0; i < array.length; i++) {
+                char c = array[i];
+                if ('2' <= c && c <= '9') {
+                    array[i] = '0';
+                }
+            }
+            return String.valueOf(array);
+        }
 
-		/**
-		 * Returns a listener that can update the graph when the model changes.
-		 */
-		@Override
-		protected GraphModelListener createGraphModelListener() {
-			return new MyGraphModelHandler();
-		}
+        /**
+         * Taken from <code>com.jgraph.example.fastgraph.FastGraphUI</code>.
+         * Updates the <code>preferredSize</code> instance variable, which is
+         * returned from <code>getPreferredSize()</code>. Ignores edges for
+         * performance
+         */
+        @Override
+        protected void updateCachedPreferredSize() {
+            CellView[] views = this.graphLayoutCache.getRoots();
+            Rectangle2D size = null;
+            if (views != null && views.length > 0) {
+                for (int i = 0; i < views.length; i++) {
+                    if (views[i] != null && !(views[i] instanceof JEdgeView)) {
+                        Rectangle2D r = views[i].getBounds();
+                        if (r != null) {
+                            if (size == null) {
+                                size =
+                                    new Rectangle2D.Double(r.getX(), r.getY(),
+                                        r.getWidth(), r.getHeight());
+                            } else {
+                                Rectangle2D.union(size, r, size);
+                            }
+                        }
+                    }
+                }
+            }
+            if (size == null) {
+                size = new Rectangle2D.Double();
+            }
+            Point2D psize =
+                new Point2D.Double(size.getX() + size.getWidth(), size.getY()
+                    + size.getHeight());
+            Dimension d = this.graph.getMinimumSize();
+            Point2D min =
+                (d != null) ? this.graph.toScreen(new Point(d.width, d.height))
+                        : new Point(0, 0);
+            Point2D scaled = this.graph.toScreen(psize);
+            this.preferredSize =
+                new Dimension((int) Math.max(min.getX(), scaled.getX()),
+                    (int) Math.max(min.getY(), scaled.getY()));
+            Insets in = this.graph.getInsets();
+            if (in != null) {
+                this.preferredSize.setSize(this.preferredSize.getWidth()
+                    + in.left + in.right, this.preferredSize.getHeight()
+                    + in.top + in.bottom);
+            }
+            this.validCachedPreferredSize = true;
+        }
 
-		private Map<String, Dimension2D> sizeMap = new HashMap<String, Dimension2D>();
+        /**
+         * Returns a listener that can update the graph when the model changes.
+         */
+        @Override
+        protected GraphModelListener createGraphModelListener() {
+            return new MyGraphModelHandler();
+        }
 
-	    private class MyGraphModelHandler extends GraphModelHandler {
-	    	MyGraphModelHandler() {
-	    		// empty
-	    	}
+        private final Map<String,Dimension2D> sizeMap =
+            new HashMap<String,Dimension2D>();
 
-			@Override
-			public void graphChanged(GraphModelEvent e) {
-				if (! (e.getChange() instanceof RefreshEdit)) {
-					super.graphChanged(e);
-				}
-			}
-	    }
-	}
-    
+        private class MyGraphModelHandler extends GraphModelHandler {
+            MyGraphModelHandler() {
+                // empty
+            }
+
+            @Override
+            public void graphChanged(GraphModelEvent e) {
+                if (!(e.getChange() instanceof RefreshEdit)) {
+                    super.graphChanged(e);
+                }
+            }
+        }
+    }
+
     /**
-	 * A layout cache that, for efficiency, does not pass on all change events,
-	 * and sets a {@link JCellViewFactory}. It should be possible to use the
-	 * partiality of the cache to hide elements, but this seems unnecessarily
-	 * complicated.
-	 */
-    private class MyGraphLayoutCache extends GraphLayoutCache {   
-    	/** Constructs an instance of the cache. */
+     * A layout cache that, for efficiency, does not pass on all change events,
+     * and sets a {@link JCellViewFactory}. It should be possible to use the
+     * partiality of the cache to hide elements, but this seems unnecessarily
+     * complicated.
+     */
+    private class MyGraphLayoutCache extends GraphLayoutCache {
+        /** Constructs an instance of the cache. */
         MyGraphLayoutCache() {
             super(null, new JCellViewFactory(JGraph.this), true);
             setSelectsLocalInsertedCells(false);
@@ -1248,13 +1308,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             setHidesExistingConnections(false);
             setHidesDanglingConnections(false);
         }
-        
-        /** 
-         * After calling the super method, sets all roots to visible.
-         * This is necessary because the cache is partial.
+
+        /**
+         * After calling the super method, sets all roots to visible. This is
+         * necessary because the cache is partial.
          */
         @Override
-		public void setModel(GraphModel model) {
+        public void setModel(GraphModel model) {
             super.setModel(model);
             Object[] cells = DefaultGraphModel.getRoots(getModel());
             CellView[] cellViews = getMapping(cells, true);
@@ -1262,22 +1322,22 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             // Update PortView Cache and Notify Observers
             updatePorts();
             cellViewsChanged(getRoots());
-		}
+        }
 
-		@Override
-		public boolean isVisible(Object cell) {
-			if (cell instanceof JCell) {
-				return ((JCell) cell).isVisible();
-			} else if (cell instanceof DefaultPort) {
-				return isVisible(((DefaultPort) cell).getParent());
-			} else {
-				return super.isVisible(cell);
-			}
-		}
+        @Override
+        public boolean isVisible(Object cell) {
+            if (cell instanceof JCell) {
+                return ((JCell) cell).isVisible();
+            } else if (cell instanceof DefaultPort) {
+                return isVisible(((DefaultPort) cell).getParent());
+            } else {
+                return super.isVisible(cell);
+            }
+        }
 
-		/**
-         * Overrides the method so {@link JModel.RefreshEdit}s are not
-         * passed on.
+        /**
+         * Overrides the method so {@link JModel.RefreshEdit}s are not passed
+         * on.
          */
         @Override
         public void graphChanged(GraphModelChange change) {
@@ -1286,38 +1346,38 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             }
         }
 
-		/**
-		 * Completely reloads all roots from the model in the order returned by
-		 * DefaultGraphModel.getAll. This uses the current visibleSet and mapping to
-		 * fetch the cell views for the cells.
-		 */
-		@Override
-		protected void reloadRoots() {
-			// Reorder roots
-			Object[] orderedCells = DefaultGraphModel.getAll(graphModel);
-			List<CellView> newRoots = new ArrayList<CellView>();
-			for (int i = 0; i < orderedCells.length; i++) {
-				CellView view = getMapping(orderedCells[i], true);
-				if (view != null) {
-//					view.refresh(this, this, true);
-					if (view.getParentView() == null) {
-						newRoots.add(view);
-					}
-				}
-			}
-			roots = newRoots;
-		}
+        /**
+         * Completely reloads all roots from the model in the order returned by
+         * DefaultGraphModel.getAll. This uses the current visibleSet and
+         * mapping to fetch the cell views for the cells.
+         */
+        @Override
+        protected void reloadRoots() {
+            // Reorder roots
+            Object[] orderedCells = DefaultGraphModel.getAll(this.graphModel);
+            List<CellView> newRoots = new ArrayList<CellView>();
+            for (Object element : orderedCells) {
+                CellView view = getMapping(element, true);
+                if (view != null) {
+                    // view.refresh(this, this, true);
+                    if (view.getParentView() == null) {
+                        newRoots.add(view);
+                    }
+                }
+            }
+            this.roots = newRoots;
+        }
     }
-    
+
     /**
      * Selection model that makes sure hidden cells cannot be selected.
      */
     private class MyGraphSelectionModel extends DefaultGraphSelectionModel {
-    	/** Constructs an instance of the selection model. */
+        /** Constructs an instance of the selection model. */
         MyGraphSelectionModel() {
             super(JGraph.this);
         }
-        
+
         @Override
         public void addSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
@@ -1332,7 +1392,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         @Override
         public void setSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
-            for (Object cell: cells) {
+            for (Object cell : cells) {
                 if (!getModel().isGrayedOut((JCell) cell)) {
                     visibleCells.add(cell);
                 }
@@ -1340,17 +1400,17 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super.setSelectionCells(visibleCells.toArray());
         }
     }
-    
-	/** 
-	 * Mouse listener that creates the popup menu and switches the view to 
-	 * the rule panel on double-clicks.
-	 */
-	private class MyMouseListener extends MouseAdapter {
-    	/** Empty constructor wit the correct visibility. */
-		MyMouseListener() {
-    		// empty
-    	}
-    	
+
+    /**
+     * Mouse listener that creates the popup menu and switches the view to the
+     * rule panel on double-clicks.
+     */
+    private class MyMouseListener extends MouseAdapter {
+        /** Empty constructor wit the correct visibility. */
+        MyMouseListener() {
+            // empty
+        }
+
         @Override
         public void mousePressed(MouseEvent evt) {
             if (isAddPointEvent(evt)) {
@@ -1372,36 +1432,41 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             maybeShowPopup(evt);
         }
     }
-    /** Observer that calls {@link JModel#refresh()} whenever it receives an update event. */
+
+    /**
+     * Observer that calls {@link JModel#refresh()} whenever it receives an
+     * update event.
+     */
     private class RefreshListener implements Observer {
-    	/** Empty constructor wit the correct visibility. */
-    	RefreshListener() {
-    		// empty
-    	}
-    	
-    	/** The method is called when a filtered set is changed. */
-    	@SuppressWarnings("unchecked")
-		public void update(Observable o, Object arg) {
-			Set<String> changedLabelSet = null;
-			if (arg instanceof ObservableSet.AddUpdate) {
-				changedLabelSet = ((ObservableSet.AddUpdate) arg).getAddedSet();
-			} else {
-				changedLabelSet = ((ObservableSet.RemoveUpdate) arg).getRemovedSet();
-			}
-			Set<JCell> changedCellSet = new HashSet<JCell>();
-			for (String label : changedLabelSet) {
-				Set<JCell> labelledCells = getLabelList().getJCells(label);
-				if (labelledCells != null) {
-					for (JCell cell : labelledCells) {
-						changedCellSet.add(cell);
-						if (cell instanceof JEdge) {
-							changedCellSet.add(((JEdge) cell).getSourceVertex());
-							changedCellSet.add(((JEdge) cell).getTargetVertex());
-						}
-					}
-				}
-			}
-			getModel().refresh(changedCellSet);
-		}
+        /** Empty constructor wit the correct visibility. */
+        RefreshListener() {
+            // empty
+        }
+
+        /** The method is called when a filtered set is changed. */
+        @SuppressWarnings("unchecked")
+        public void update(Observable o, Object arg) {
+            Set<String> changedLabelSet = null;
+            if (arg instanceof ObservableSet.AddUpdate) {
+                changedLabelSet = ((ObservableSet.AddUpdate) arg).getAddedSet();
+            } else {
+                changedLabelSet =
+                    ((ObservableSet.RemoveUpdate) arg).getRemovedSet();
+            }
+            Set<JCell> changedCellSet = new HashSet<JCell>();
+            for (String label : changedLabelSet) {
+                Set<JCell> labelledCells = getLabelList().getJCells(label);
+                if (labelledCells != null) {
+                    for (JCell cell : labelledCells) {
+                        changedCellSet.add(cell);
+                        if (cell instanceof JEdge) {
+                            changedCellSet.add(((JEdge) cell).getSourceVertex());
+                            changedCellSet.add(((JEdge) cell).getTargetVertex());
+                        }
+                    }
+                }
+            }
+            getModel().refresh(changedCellSet);
+        }
     }
 }

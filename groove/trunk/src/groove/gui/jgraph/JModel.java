@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: JModel.java,v 1.22 2008-02-05 13:28:03 rensink Exp $
  */
 package groove.gui.jgraph;
@@ -55,8 +55,8 @@ import org.jgraph.graph.GraphConstants;
  * <li>An indicator regarding the description text of model nodes.
  * <li>A method for retrieving tool tip text for JGraph cells.
  * <li>A mapping of graph nodes and edges to the model cells representing them.
- * <li>Model vertex and model edge specializations that store graph nodes and edges as user objects
- * and provide easy retrieval.
+ * <li>Model vertex and model edge specializations that store graph nodes and
+ * edges as user objects and provide easy retrieval.
  * </ul>
  * Instances of JModel are attribute stores.
  * @author Arend Rensink
@@ -64,19 +64,21 @@ import org.jgraph.graph.GraphConstants;
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
-     * Constructs a new JModel with given default node and edge attributes, possibly showing node identities.
+     * Constructs a new JModel with given default node and edge attributes,
+     * possibly showing node identities.
      * @param defaultNodeAttr the default node attributes for this model
      * @param defaultEdgeAttr the default node attributes for this model
      */
-    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
+    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr,
+            Options options) {
         this.defaultNodeAttr = defaultNodeAttr;
         this.defaultEdgeAttr = defaultEdgeAttr;
         this.options = options;
     }
 
     /**
-     * Constructs a new JModel, displaying self-edges through JNode labels.
-     * The default node and edge identities are set through 
+     * Constructs a new JModel, displaying self-edges through JNode labels. The
+     * default node and edge identities are set through
      * {@link JAttr#DEFAULT_NODE_ATTR} and {@link JAttr#DEFAULT_EDGE_ATTR}.
      * @ensure !isLayedOut(), !isShowNodeIdentities()
      * @param options the options for the new model
@@ -87,19 +89,19 @@ abstract public class JModel extends DefaultGraphModel {
 
     /** Returns a (possibly <code>null</code>) name of this model. */
     public String getName() {
-    	return name;
+        return this.name;
     }
 
     /**
-	 * Returns the options associated with this object.
-	 */
-	public final Options getOptions() {
-		return this.options;
-	}
+     * Returns the options associated with this object.
+     */
+    public final Options getOptions() {
+        return this.options;
+    }
 
-	/**
-     * Sets the name of this j-model to a given name.
-     * The name may be <tt>null</tt> if the model is anonymous.
+    /**
+     * Sets the name of this j-model to a given name. The name may be
+     * <tt>null</tt> if the model is anonymous.
      * @see #getName()
      */
     public final void setName(String name) {
@@ -107,26 +109,27 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-	 * Returns the properties associated with this j-model.
-	 */
-	public final GraphProperties getProperties() {
-		if (properties == null) {
-			properties = new GraphProperties();
-		}
-		return this.properties;
-	}
+     * Returns the properties associated with this j-model.
+     */
+    public final GraphProperties getProperties() {
+        if (this.properties == null) {
+            this.properties = new GraphProperties();
+        }
+        return this.properties;
+    }
 
-	/**
-	 * Sets the properties of this j-model to a given properties map.
-	 */
-	public final void setProperties(GraphProperties properties) {
-		this.properties = properties;
-	}
+    /**
+     * Sets the properties of this j-model to a given properties map.
+     */
+    public final void setProperties(GraphProperties properties) {
+        this.properties = properties;
+    }
 
-	/**
-     * Returns a tool tip text for a given graph cell.
-     * Does not test if the cell is hidden.
-     * @param jCell the graph cell (of this graph model) for which a tool tip is to be returned
+    /**
+     * Returns a tool tip text for a given graph cell. Does not test if the cell
+     * is hidden.
+     * @param jCell the graph cell (of this graph model) for which a tool tip is
+     *        to be returned
      * @require cell != null
      */
     public String getToolTipText(JCell jCell) {
@@ -142,58 +145,62 @@ abstract public class JModel extends DefaultGraphModel {
      * @see #setLayedOut
      */
     public boolean isLayedOut() {
-        return layoutableJCells.isEmpty();
+        return this.layoutableJCells.isEmpty();
     }
 
     /**
-     * Sets the layed-out property. This method is called after layout has been finished.
+     * Sets the layed-out property. This method is called after layout has been
+     * finished.
      * @param layedOut indication whether the graph has been layed out
      * @ensure <tt>isLayedOut() == layedOut</tt>
      * @see #isLayedOut
      */
     public void setLayedOut(boolean layedOut) {
         if (layedOut) {
-        layoutableJCells.clear();
+            this.layoutableJCells.clear();
         }
     }
 
-    /** Callback method to determine whether a cell should in principle be moveable. */
-    public boolean isMoveable(JCell jCell) {
-    	return true;
-    }
-    
     /**
-     * Adds a j-cell to the layoutable cells of this j-model.
-     * The j-cell is required to be in the model already.
+     * Callback method to determine whether a cell should in principle be
+     * moveable.
+     */
+    public boolean isMoveable(JCell jCell) {
+        return true;
+    }
+
+    /**
+     * Adds a j-cell to the layoutable cells of this j-model. The j-cell is
+     * required to be in the model already.
      * @param jCell the cell to be made layoutable
      */
     public void addLayoutable(JCell jCell) {
-        assert contains(jCell) : "Cell "+jCell+" is not in model";
-        layoutableJCells.add(jCell);
+        assert contains(jCell) : "Cell " + jCell + " is not in model";
+        this.layoutableJCells.add(jCell);
     }
 
     /**
-     * Removes a j-cell to the layoutable cells of this j-model.
-     * The j-cell is required to be in the model already.
+     * Removes a j-cell to the layoutable cells of this j-model. The j-cell is
+     * required to be in the model already.
      * @param jCell the cell to be made non-layoutable
      */
     public void removeLayoutable(JCell jCell) {
-        assert contains(jCell) : "Cell "+jCell+" is not in model";
-        layoutableJCells.remove(jCell);
+        assert contains(jCell) : "Cell " + jCell + " is not in model";
+        this.layoutableJCells.remove(jCell);
     }
 
     /**
-     * Sets all jcells to unmovable, except those that have been added since the last layout action.
-     * This is done in preparation for layouting.
+     * Sets all jcells to unmovable, except those that have been added since the
+     * last layout action. This is done in preparation for layouting.
      * @return <code>true</code> if there is anything left to layout
      */
     public boolean freeze() {
         boolean result = false;
-    	@SuppressWarnings("unchecked")
-        Iterator<DefaultGraphCell> rootsIter = roots.iterator();
+        @SuppressWarnings("unchecked")
+        Iterator<DefaultGraphCell> rootsIter = this.roots.iterator();
         while (rootsIter.hasNext()) {
             DefaultGraphCell root = rootsIter.next();
-            boolean layoutable = layoutableJCells.contains(root);
+            boolean layoutable = this.layoutableJCells.contains(root);
             GraphConstants.setMoveable(root.getAttributes(), layoutable);
             result |= layoutable;
         }
@@ -201,46 +208,49 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Converts this j-model to a plain groove graph.
-     * Layout information is also transferred.
-     * A plain graph is one in which the nodes and edges are 
-     * {@link DefaultNode}s and {@link DefaultEdge}s, and all
-     * further information is in the labels.
+     * Converts this j-model to a plain groove graph. Layout information is also
+     * transferred. A plain graph is one in which the nodes and edges are
+     * {@link DefaultNode}s and {@link DefaultEdge}s, and all further
+     * information is in the labels.
      */
     public groove.graph.Graph toPlainGraph() {
         groove.graph.Graph result = new DefaultGraph();
         LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
         Map<JVertex,Node> nodeMap = new HashMap<JVertex,Node>();
-        
+
         // Create nodes
-        for (Object root: getRoots()) {
+        for (Object root : getRoots()) {
             if (root instanceof JVertex) {
                 Node node = result.addNode();
                 nodeMap.put((JVertex) root, node);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
-                for (String label: ((JVertex) root).getPlainLabels()) {
+                for (String label : ((JVertex) root).getPlainLabels()) {
                     result.addEdge(node, DefaultLabel.createLabel(label), node);
                 }
             }
         }
 
         // Create Edges
-        for (Object root: getRoots()) {
+        for (Object root : getRoots()) {
             if (root instanceof JEdge) {
-            	JEdge jEdge = (JEdge) root;
+                JEdge jEdge = (JEdge) root;
                 Node source = nodeMap.get(jEdge.getSourceVertex());
                 Node target = nodeMap.get(jEdge.getTargetVertex());
-                assert target != null : "Edge with empty target: "+root;
-                assert source != null : "Edge with empty source: "+root;
+                assert target != null : "Edge with empty target: " + root;
+                assert source != null : "Edge with empty source: " + root;
                 AttributeMap edgeAttr = jEdge.getAttributes();
                 // test if the edge attributes are default
-                boolean attrIsDefault = JEdgeLayout.newInstance(edgeAttr).isDefault();
+                boolean attrIsDefault =
+                    JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
-                for (String label: jEdge.getPlainLabels()) {
-                    Edge edge = result.addEdge(source, DefaultLabel.createLabel(label), target);
-                    // add layout information if there is anything to be noted about the edge
-                    if (! attrIsDefault) {
-                    	layoutMap.putEdge(edge, edgeAttr);
+                for (String label : jEdge.getPlainLabels()) {
+                    Edge edge =
+                        result.addEdge(source, DefaultLabel.createLabel(label),
+                            target);
+                    // add layout information if there is anything to be noted
+                    // about the edge
+                    if (!attrIsDefault) {
+                        layoutMap.putEdge(edge, edgeAttr);
                     }
                 }
             }
@@ -255,92 +265,95 @@ abstract public class JModel extends DefaultGraphModel {
      * Overrides the method so also incident edges of removed nodes are removed.
      */
     @Override
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public void remove(Object[] roots) {
         List<Object> removables = new LinkedList<Object>();
-        for (int i = 0; i < roots.length; i++) {
-            DefaultGraphCell cell = (DefaultGraphCell) roots[i];
+        for (Object element : roots) {
+            DefaultGraphCell cell = (DefaultGraphCell) element;
             if (cell.getChildCount() > 0) {
                 DefaultPort port = (DefaultPort) cell.getChildAt(0);
                 removables.addAll(port.getEdges());
             }
         }
-        // add the roots to the incident edge list, so the remove is done in one go
-        for (int i = 0; i < roots.length; i++) {
-            removables.add(roots[i]);
+        // add the roots to the incident edge list, so the remove is done in one
+        // go
+        for (Object element : roots) {
+            removables.add(element);
         }
         super.remove(removables.toArray());
     }
 
     /**
-     * Notifies the graph model listeners of a change in a set of cells, 
-     * by firing a graph changed update with a {@link RefreshEdit} over the set.
+     * Notifies the graph model listeners of a change in a set of cells, by
+     * firing a graph changed update with a {@link RefreshEdit} over the set.
      * @param jCellSet the set of cells to be refreshed
-     * @see org.jgraph.graph.DefaultGraphModel#fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)
+     * @see org.jgraph.graph.DefaultGraphModel#fireGraphChanged(Object,
+     *      org.jgraph.event.GraphModelEvent.GraphModelChange)
      */
     public void refresh(final Collection<JCell> jCellSet) {
-    	if (!jCellSet.isEmpty()) {
-			// do it now if we are on the event dispatch thread
-			if (SwingUtilities.isEventDispatchThread()) {
-				fireGraphChanged(this, new RefreshEdit(jCellSet));
-			} else {
-				// otherwise, defer to avoid concurrency problems
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						fireGraphChanged(new RefreshEdit(jCellSet));
-					}
-				});
-			}
-		}
-	}
-    
-    /**
-	 * Notifies the listeners that something has changed in the model (or in the
-	 * view of the model).
-	 */
-	@SuppressWarnings("unchecked")
-    public void refresh() {
-    	refresh(getRoots());
+        if (!jCellSet.isEmpty()) {
+            // do it now if we are on the event dispatch thread
+            if (SwingUtilities.isEventDispatchThread()) {
+                fireGraphChanged(this, new RefreshEdit(jCellSet));
+            } else {
+                // otherwise, defer to avoid concurrency problems
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        fireGraphChanged(new RefreshEdit(jCellSet));
+                    }
+                });
+            }
+        }
     }
 
     /**
-	 * Returns the set of labels that is currently filtered from view.
-	 * If <code>null</code>, no filtering is going on.
-	 */
-	public final ObservableSet<String> getFilteredLabels() {
-		return this.filteredLabels;
-	}
+     * Notifies the listeners that something has changed in the model (or in the
+     * view of the model).
+     */
+    @SuppressWarnings("unchecked")
+    public void refresh() {
+        refresh(getRoots());
+    }
 
-	/**
-	 * Sets filtering on a given set of labels.
-	 * Filtered labels will be set to invisible in the {@link JGraph}.
-	 */
-	public final void setFilteredLabels(ObservableSet<String> filteredLabels) {
-//		if (this.filteredLabels != null) {
-//			this.filteredLabels.deleteObserver(getRefreshListener());
-//		}
-		this.filteredLabels = filteredLabels;
-//		if (filteredLabels != null) {
-//			filteredLabels.addObserver(getRefreshListener());
-//		}
-	}
+    /**
+     * Returns the set of labels that is currently filtered from view. If
+     * <code>null</code>, no filtering is going on.
+     */
+    public final ObservableSet<String> getFilteredLabels() {
+        return this.filteredLabels;
+    }
 
-	/** 
-	 * Indicates if a given label is currently being filtered from view.
-	 * This is the case if it is in the set of filtered labels.
-	 */
-	public boolean isFiltering(String label) {
-		return filteredLabels != null && filteredLabels.contains(label);
-	}
+    /**
+     * Sets filtering on a given set of labels. Filtered labels will be set to
+     * invisible in the {@link JGraph}.
+     */
+    public final void setFilteredLabels(ObservableSet<String> filteredLabels) {
+        // if (this.filteredLabels != null) {
+        // this.filteredLabels.deleteObserver(getRefreshListener());
+        // }
+        this.filteredLabels = filteredLabels;
+        // if (filteredLabels != null) {
+        // filteredLabels.addObserver(getRefreshListener());
+        // }
+    }
 
-	/**
+    /**
+     * Indicates if a given label is currently being filtered from view. This is
+     * the case if it is in the set of filtered labels.
+     */
+    public boolean isFiltering(String label) {
+        return this.filteredLabels != null
+            && this.filteredLabels.contains(label);
+    }
+
+    /**
      * Tests the grayed-out status of a given jgraph cell.
      * @param cell the cell that is to be tested
      * @return <tt>true</tt> if the cell is currently grayed-out
      * @see #changeGrayedOut(Set,boolean)
      */
     public boolean isGrayedOut(JCell cell) {
-        return grayedOutJCells.contains(cell);
+        return this.grayedOutJCells.contains(cell);
     }
 
     /**
@@ -351,32 +364,33 @@ abstract public class JModel extends DefaultGraphModel {
      */
     public void changeGrayedOut(Set<JCell> jCells, boolean grayedOut) {
         Set<JCell> changedJCells = new HashSet<JCell>();
-        for (JCell jCell: jCells) {
+        for (JCell jCell : jCells) {
             if (grayedOut != isGrayedOut(jCell)) {
                 if (grayedOut) {
-                    grayedOutJCells.add(jCell);
+                    this.grayedOutJCells.add(jCell);
                     changedJCells.add(jCell);
                     // also gray out incident edges
                     if (!isEdge(jCell)) {
-                        Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
+                        Iterator<?> jEdgeIter =
+                            ((JVertex) jCell).getPort().edges();
                         while (jEdgeIter.hasNext()) {
                             JEdge jEdge = (JEdge) jEdgeIter.next();
-                            if (grayedOutJCells.add(jEdge)) {
+                            if (this.grayedOutJCells.add(jEdge)) {
                                 changedJCells.add(jEdge);
                             }
                         }
                     }
                 } else {
-                    grayedOutJCells.remove(jCell);
+                    this.grayedOutJCells.remove(jCell);
                     changedJCells.add(jCell);
                     // also revive end nodes
                     if (isEdge(jCell)) {
                         JCell sourceJVertex = ((JEdge) jCell).getSourceVertex();
-                        if (grayedOutJCells.remove(sourceJVertex)) {
+                        if (this.grayedOutJCells.remove(sourceJVertex)) {
                             changedJCells.add(sourceJVertex);
                         }
                         JCell targetJVertex = ((JEdge) jCell).getTargetVertex();
-                        if (grayedOutJCells.remove(targetJVertex)) {
+                        if (this.grayedOutJCells.remove(targetJVertex)) {
                             changedJCells.add(targetJVertex);
                         }
                     }
@@ -384,7 +398,8 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         refresh(changedJCells);
-		createLayerEdit(grayedOutJCells.toArray(), GraphModelLayerEdit.BACK).execute();
+        createLayerEdit(this.grayedOutJCells.toArray(),
+            GraphModelLayerEdit.BACK).execute();
     }
 
     /**
@@ -393,62 +408,65 @@ abstract public class JModel extends DefaultGraphModel {
      * @see #isGrayedOut(JCell)
      */
     public void setGrayedOut(Set<JCell> jCells) {
-    	// copy the old set of grayed-out cells
-        Set<JCell> changedJCells = new HashSet<JCell>(grayedOutJCells);
-		grayedOutJCells.clear();
-		for (JCell jCell : jCells) {
-			if (grayedOutJCells.add(jCell)) {
-				// the cell should be either added or removed from the changed cells
-				if (!changedJCells.add(jCell)) {
-					changedJCells.remove(jCell);
-				}
-				// also gray out incident edges
-				if (jCell instanceof JVertex) {
-					Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
-					while (jEdgeIter.hasNext()) {
-						JEdge jEdge = (JEdge) jEdgeIter.next();
-						if (grayedOutJCells.add(jEdge)) {
-							// the cell should be either added or removed from the changed cells
-							if (!changedJCells.add(jEdge)) {
-								changedJCells.remove(jEdge);
-							}
-						}
-					}
-				}
-			}
-		}
-		refresh(changedJCells);
-		createLayerEdit(grayedOutJCells.toArray(), GraphModelLayerEdit.BACK).execute();
+        // copy the old set of grayed-out cells
+        Set<JCell> changedJCells = new HashSet<JCell>(this.grayedOutJCells);
+        this.grayedOutJCells.clear();
+        for (JCell jCell : jCells) {
+            if (this.grayedOutJCells.add(jCell)) {
+                // the cell should be either added or removed from the changed
+                // cells
+                if (!changedJCells.add(jCell)) {
+                    changedJCells.remove(jCell);
+                }
+                // also gray out incident edges
+                if (jCell instanceof JVertex) {
+                    Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
+                    while (jEdgeIter.hasNext()) {
+                        JEdge jEdge = (JEdge) jEdgeIter.next();
+                        if (this.grayedOutJCells.add(jEdge)) {
+                            // the cell should be either added or removed from
+                            // the changed cells
+                            if (!changedJCells.add(jEdge)) {
+                                changedJCells.remove(jEdge);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        refresh(changedJCells);
+        createLayerEdit(this.grayedOutJCells.toArray(),
+            GraphModelLayerEdit.BACK).execute();
     }
-    
+
     /**
-	 * Returns the number of grayed-out cells.
-	 */
+     * Returns the number of grayed-out cells.
+     */
     public Set<JCell> getGrayedOut() {
-        return grayedOutJCells;
+        return this.grayedOutJCells;
     }
 
     /**
-	 * Tests if a given jcell is currently emphasized. Note that emphasis may
-	 * also exist for hidden cells, even if this is not visible.
-	 * 
-	 * @param jCell
-	 *            the jcell that is tested for emphasis
-	 * @return <tt>true</tt> if <tt>jcell</tt> is currently emphasized
-	 */
+     * Tests if a given jcell is currently emphasized. Note that emphasis may
+     * also exist for hidden cells, even if this is not visible.
+     * 
+     * @param jCell the jcell that is tested for emphasis
+     * @return <tt>true</tt> if <tt>jcell</tt> is currently emphasized
+     */
     public boolean isEmphasized(JCell jCell) {
-        return emphJCells.contains(jCell);
+        return this.emphJCells.contains(jCell);
     }
 
     /**
-     * Sets the set of emphasised jcells. 
-     * @param jCellSet the set of jcells to be emphasised. Should not be <tt>null</tt>.
+     * Sets the set of emphasised jcells.
+     * @param jCellSet the set of jcells to be emphasised. Should not be
+     *        <tt>null</tt>.
      */
     public void setEmphasized(Set<JCell> jCellSet) {
-        Set<JCell> changedEmphJCells = new HashSet<JCell>(emphJCells);
+        Set<JCell> changedEmphJCells = new HashSet<JCell>(this.emphJCells);
         changedEmphJCells.addAll(jCellSet);
-        emphJCells.clear();
-        emphJCells.addAll(jCellSet);
+        this.emphJCells.clear();
+        this.emphJCells.addAll(jCellSet);
         refresh(changedEmphJCells);
     }
 
@@ -456,36 +474,36 @@ abstract public class JModel extends DefaultGraphModel {
      * Clears the currently emphasised nodes.
      */
     public void clearEmphasized() {
-        Set<JCell> oldEmphSet = new HashSet<JCell>(emphJCells);
-        emphJCells.clear();
+        Set<JCell> oldEmphSet = new HashSet<JCell>(this.emphJCells);
+        this.emphJCells.clear();
         refresh(oldEmphSet);
     }
-    
+
     /**
      * Invokes {@link JCellContent#clone()} to do the job.
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	protected Object cloneUserObject(Object userObject) {
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected Object cloneUserObject(Object userObject) {
         if (userObject == null) {
             return null;
         } else {
             return ((JCellContent) userObject).clone();
         }
-	}
-	
-	/** 
-	 * Retrieves the value for a given option from the options object,
-	 * or <code>null</code> if the options are not set (i.e., <code>null</code>).
-	 * @param option the name of the option
-	 */
-	protected boolean getOptionValue(String option) {
-		return options != null && options.isSelected(option);
-	}
+    }
 
-	/**
-     * Returns the map of attribute changes needed to emphasize a jvertex.  
-     * This implementation returns {@link JAttr#EMPH_NODE_CHANGE}. 
+    /**
+     * Retrieves the value for a given option from the options object, or
+     * <code>null</code> if the options are not set (i.e., <code>null</code>).
+     * @param option the name of the option
+     */
+    protected boolean getOptionValue(String option) {
+        return this.options != null && this.options.isSelected(option);
+    }
+
+    /**
+     * Returns the map of attribute changes needed to emphasize a jvertex. This
+     * implementation returns {@link JAttr#EMPH_NODE_CHANGE}.
      * @param cell the vertex to be emphasized
      */
     protected AttributeMap getJVertexEmphAttr(JVertex cell) {
@@ -493,75 +511,74 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Returns the map of attribute changes needed to emphasize a jedge.  
-     * This implementation returns {@link JAttr#EMPH_EDGE_CHANGE}. 
+     * Returns the map of attribute changes needed to emphasize a jedge. This
+     * implementation returns {@link JAttr#EMPH_EDGE_CHANGE}.
      */
     protected AttributeMap getJEdgeEmphAttr(JEdge jEdge) {
         return JAttr.EMPH_EDGE_CHANGE;
     }
 
     /**
-     * Returns the map of attribute changes needed to gray-out a jcell. 
-     * This implementation returns {@link JAttr#GRAYED_OUT_ATTR}. 
+     * Returns the map of attribute changes needed to gray-out a jcell. This
+     * implementation returns {@link JAttr#GRAYED_OUT_ATTR}.
      */
     protected AttributeMap getGrayedOutAttr() {
         return JAttr.GRAYED_OUT_ATTR;
     }
 
     @Override
-	public AttributeMap getAttributes(Object node) {
-    	AttributeMap result;
-		if (node instanceof JCell) {
-			result = ((JCell) node).getAttributes();
-			if (result == null) {
-				if (node instanceof JVertex) {
-					result = createJVertexAttr((JVertex) node);
-				} else {
-					result = createJEdgeAttr((JEdge) node);
-				}
-			}
-		} else {
-			result = super.getAttributes(node);
-		}
-		assert result != null : String.format("Cell %s has no attributes", node);
-		return result;
-	}
+    public AttributeMap getAttributes(Object node) {
+        AttributeMap result;
+        if (node instanceof JCell) {
+            result = ((JCell) node).getAttributes();
+            if (result == null) {
+                if (node instanceof JVertex) {
+                    result = createJVertexAttr((JVertex) node);
+                } else {
+                    result = createJEdgeAttr((JEdge) node);
+                }
+            }
+        } else {
+            result = super.getAttributes(node);
+        }
+        assert result != null : String.format("Cell %s has no attributes", node);
+        return result;
+    }
 
-	/**
-	 * Returns a freshly cloned attribute map for a given vertex. This
-	 * implementation returns the default attributes, set at construction time.
-	 * 
-	 * @param jVertex
-	 *            the j-vertex for which the attributes are to be created
-	 */
+    /**
+     * Returns a freshly cloned attribute map for a given vertex. This
+     * implementation returns the default attributes, set at construction time.
+     * 
+     * @param jVertex the j-vertex for which the attributes are to be created
+     */
     protected AttributeMap createJVertexAttr(JVertex jVertex) {
-        AttributeMap result = (AttributeMap) defaultNodeAttr.clone();
+        AttributeMap result = (AttributeMap) this.defaultNodeAttr.clone();
         maybeResetBackground(result);
         return result;
     }
 
-    /** 
-     * Resets the background colour in a certain attribute to {@link Color#WHITE}
-     * if the options demand this.
+    /**
+     * Resets the background colour in a certain attribute to
+     * {@link Color#WHITE} if the options demand this.
      */
     protected void maybeResetBackground(AttributeMap attributes) {
-    	if (! options.isSelected(Options.SHOW_BACKGROUND_OPTION)) {
-    		GraphConstants.setBackground(attributes, Color.WHITE);
-    	}
+        if (!this.options.isSelected(Options.SHOW_BACKGROUND_OPTION)) {
+            GraphConstants.setBackground(attributes, Color.WHITE);
+        }
     }
-    
+
     /**
-     * Returns a freshly cloned attribute map for a given jgraph edge. This implementation returns
-     * the default attributes set at construction time.
+     * Returns a freshly cloned attribute map for a given jgraph edge. This
+     * implementation returns the default attributes set at construction time.
      * @param jEdge the jedge for which the attributes are to be created
      */
     protected AttributeMap createJEdgeAttr(JEdge jEdge) {
-        AttributeMap result = (AttributeMap) defaultEdgeAttr.clone();
+        AttributeMap result = (AttributeMap) this.defaultEdgeAttr.clone();
         return result;
     }
 
     /**
-     * Returns a fresh copy of the attribute map for a given jgraph cell, and 
+     * Returns a fresh copy of the attribute map for a given jgraph cell, and
      * adds the hidden and emphasised attributes to it.
      */
     protected AttributeMap createTransientJAttr(JCell jCell) {
@@ -582,22 +599,23 @@ abstract public class JModel extends DefaultGraphModel {
         }
         return result;
     }
-    
-    /** Calls {@link DefaultGraphModel}{@link #fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)}
+
+    /**
+     * Calls {@link DefaultGraphModel}{@link #fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)}
      * with <code>this</code> as first parameter.
      */
-	void fireGraphChanged(GraphModelEvent.GraphModelChange edit) {
-    	super.fireGraphChanged(this, edit);
+    void fireGraphChanged(GraphModelEvent.GraphModelChange edit) {
+        super.fireGraphChanged(this, edit);
     }
-    
+
     /**
-     * Standard node attributes used in this graph model.
-     * Set in the constructor.
+     * Standard node attributes used in this graph model. Set in the
+     * constructor.
      */
     protected final AttributeMap defaultNodeAttr;
     /**
-     * Standard edge attributes used in this graph model.
-     * Set in the constructor.
+     * Standard edge attributes used in this graph model. Set in the
+     * constructor.
      */
     protected final AttributeMap defaultEdgeAttr;
 
@@ -614,21 +632,21 @@ abstract public class JModel extends DefaultGraphModel {
      * <tt>{@link #setLayedOut(boolean)}</tt> was called.
      */
     protected final Set<JCell> layoutableJCells = new HashSet<JCell>();
-	/** Set of options values to control the display. May be <code>null</code>. */
-	private final Options options;
-	/** Set of labels that is currently filtered from view. */
-	private ObservableSet<String> filteredLabels;
-	/** Properties map of the graph being displayed or edited. */
-	private GraphProperties properties;
-	/**
+    /** Set of options values to control the display. May be <code>null</code>. */
+    private final Options options;
+    /** Set of labels that is currently filtered from view. */
+    private ObservableSet<String> filteredLabels;
+    /** Properties map of the graph being displayed or edited. */
+    private GraphProperties properties;
+    /**
      * The name of this model.
      */
     private String name;
-    
+
     /**
-     * Special graph model edit that does not signal any actual change
-     * but merely passes along a set of cells whose views need to be refreshed
-     * due to some hiding or emphasis action.
+     * Special graph model edit that does not signal any actual change but
+     * merely passes along a set of cells whose views need to be refreshed due
+     * to some hiding or emphasis action.
      * @author Arend Rensink
      * @version $Revision$
      */
@@ -641,23 +659,23 @@ abstract public class JModel extends DefaultGraphModel {
             super(null, null, null, null, null);
             this.refreshedJCells = refreshedJCells;
         }
-        
+
         /**
          * Returns the set of jcells to be refreshed.
          */
         public Collection<JCell> getRefreshedJCells() {
-            return refreshedJCells;
+            return this.refreshedJCells;
         }
-        
-        @Override
-		public Object[] getChanged() {
-        	if (changed == null) {
-        		changed = refreshedJCells.toArray();
-        	}
-        	return changed;
-		}
 
-		/** The set of cells that this event reports on refreshing. */
+        @Override
+        public Object[] getChanged() {
+            if (this.changed == null) {
+                this.changed = this.refreshedJCells.toArray();
+            }
+            return this.changed;
+        }
+
+        /** The set of cells that this event reports on refreshing. */
         private final Collection<JCell> refreshedJCells;
     }
 }
