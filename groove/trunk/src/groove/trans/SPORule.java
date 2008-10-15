@@ -24,7 +24,6 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.NodeFactory;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.RegExprLabel;
@@ -902,12 +901,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 				result.addEdge((Edge) elem);
 			}
 		}
-//		for (Node rootImage: getRootMap().nodeMap().values()) {
-//			result.addNode(rootImage);
-//		}
-//		for (Edge rootImage: getRootMap().edgeMap().values()) {
-//			result.addEdge(rootImage);
-//		}
+		for (Node rootImage: getRootMap().nodeMap().values()) {
+			result.addNode(rootImage);
+		}
+		for (Edge rootImage: getRootMap().edgeMap().values()) {
+			result.addEdge(rootImage);
+		}
 		result.addEdgeSet(Arrays.asList(getEraserEdges()));
 		return result;
 	}
@@ -1082,6 +1081,4 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private static AnchorFactory anchorFactory = MinimalAnchorFactory.getInstance(); 
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
-    /** Handle for profiling {@link #newEvent(VarNodeEdgeMap, NodeFactory, boolean)} and related methods. */
-    static public final int GET_EVENT = reporter.newMethod("getEvent");
 }

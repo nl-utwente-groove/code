@@ -18,10 +18,12 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.ProductGTS;
 import groove.lts.StateGenerator;
+import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Set;
@@ -102,9 +104,16 @@ public class SystemRecord implements NodeFactory {
 	 * If {@link #isReuseEvents()} is set, events are stored internally and reused.
 	 */
     public RuleEvent getEvent(RuleMatch match) {
-    	RuleEvent result;
-    	reporter.start(GET_EVENT);
-        RuleEvent event = match.newEvent(this, isReuseEvents());
+        return match.newEvent(this);
+    }
+    
+    /** 
+     * Returns a "normal" event representing a given event.
+     * If {@link #isReuseEvents()} is set, events are stored internally and reused.
+     */
+    public RuleEvent normaliseEvent(RuleEvent event) {
+        RuleEvent result;
+        reporter.start(GET_EVENT);
         if (isReuseEvents() && event instanceof AbstractEvent) {
             result = eventMap.put((AbstractEvent<?,?>) event);
             if (result == null) {
@@ -119,6 +128,27 @@ public class SystemRecord implements NodeFactory {
         return result;
     }
 
+    /** 
+     * Factory method for a composite event.
+     * If {@link #isReuseEvents()} is set, the event is normalised w.r.t. a global store.
+     * @param rule the rule of the composite event
+     * @param eventSet the set of sub-events for the composite event
+     */
+    public RuleEvent createCompositeEvent(Rule rule, Collection<SPOEvent> eventSet) {
+        return normaliseEvent(new CompositeEvent(rule, eventSet, isReuseEvents()));
+    }
+    
+
+    /** 
+     * Factory method for a simple event.
+     * If {@link #isReuseEvents()} is set, the event is normalised w.r.t. a global store.
+     * @param rule the rule of the composite event
+     * @param elementMap the element map for the simple event
+     */
+    public SPOEvent createSimpleEvent(SPORule rule, VarNodeEdgeMap elementMap) {
+        return (SPOEvent) normaliseEvent(new SPOEvent(rule, elementMap, this, isReuseEvents()));
+    }
+    
     /** 
 	 * Returns the highest node number occurring in a given graph,
 	 * taking only true {@link DefaultNode}s into account.

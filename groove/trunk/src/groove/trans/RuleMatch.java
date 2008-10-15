@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.ArrayList;
@@ -36,70 +35,84 @@ public class RuleMatch extends CompositeMatch {
     
     /** Returns the rule of which this is a match. */
     public SPORule getRule() {
-        return rule;
+        return this.rule;
     }
 
     /** 
      * Creates an event on the basis of this match. 
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
-     * @param reuse flag indicating that the events will be reused, so attempts
-     * should be made to gain time by sacrificing space
      */
-    public RuleEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
+    public RuleEvent newEvent(SystemRecord nodeFactory) {
     	// the event set used to be a sorted set, but I think this is wrong
     	// because the sorting will not respect the desired event hierarchy
     	// and in fact events may actually occur more than once (?)
     	// SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
     	Collection<SPOEvent> eventSet = new ArrayList<SPOEvent>();
-    	collectEvents(eventSet, nodeFactory, reuse);
+    	collectEvents(eventSet, nodeFactory);
     	assert !eventSet.isEmpty();
     	if (eventSet.size() == 1 && !getRule().hasSubRules()) {
     		return eventSet.iterator().next();
     	} else {
-    		return new CompositeEvent(rule, eventSet, reuse);
+    		return createCompositeEvent(nodeFactory, eventSet);
     	}
     }
-    
-    /** 
-     * Recursively collects the events of this match and all sub-matches
-     * into a given collection.
+
+    /**
+     * Recursively collects the events of this match and all sub-matches into a
+     * given collection.
      * @param events the resulting set of events
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
-     * @param reuse flag indicating that the events will be reused, so attempts
-     * should be made to gain time by sacrificing space
      */
-    private void collectEvents(Collection<SPOEvent> events, NodeFactory nodeFactory, boolean reuse) {
-    	SPOEvent myEvent = createEvent(nodeFactory, reuse);
+    private void collectEvents(Collection<SPOEvent> events, SystemRecord nodeFactory) {
+    	SPOEvent myEvent = createSimpleEvent(nodeFactory);
     	events.add(myEvent);
     	for (Match subMatch: getSubMatches()) {
-    		if (subMatch instanceof RuleMatch) {
-    			((RuleMatch) subMatch).collectEvents(events, nodeFactory, reuse);
-    		}
+    	    if (subMatch instanceof RuleMatch) {
+    	        ((RuleMatch) subMatch).collectEvents(events, nodeFactory);
+    	    }
     	}
     }
 
     /** 
-     * Callback factory method for an event based on this match. 
-     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
-     * @param reuse flag indicating that the events will be reused, so attempts
-     * should be made to gain time by sacrificing space
+     * Callback factory method to create a simple event.
+     * Delegates to {@link SystemRecord#createSimpleEvent(SPORule, VarNodeEdgeMap)}
+     * if <code>nodeFactory</code> is not <code>null</code>.
      */
-    private SPOEvent createEvent(NodeFactory nodeFactory, boolean reuse) {
-        return new SPOEvent(getRule(), getElementMap(), nodeFactory, reuse);
+    private SPOEvent createSimpleEvent(SystemRecord nodeFactory) {
+        if (nodeFactory == null) {
+            return new SPOEvent(getRule(), getElementMap(), null, false);
+        } else {
+            return nodeFactory.createSimpleEvent(getRule(), getElementMap());
+        }
     }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public Collection<RuleMatch> addSubMatchChoice(Iterable<? extends Match> choices) {
-		return (Collection<RuleMatch>) super.addSubMatchChoice(choices);
-	}
+    /** 
+     * Callback factory method to create a composite event.
+     * Delegates to {@link SystemRecord#createSimpleEvent(SPORule, VarNodeEdgeMap)}
+     * if <code>nodeFactory</code> is not <code>null</code>.
+     */
+    private RuleEvent createCompositeEvent(SystemRecord nodeFactory,
+            Collection<SPOEvent> eventSet) {
+        if (nodeFactory == null) {
+            return new CompositeEvent(getRule(), eventSet, false);
+        } else {
+            return nodeFactory.createCompositeEvent(getRule(), eventSet);
+        }
+    }
     
     @Override
-	protected RuleMatch createMatch() {
-    	return new RuleMatch(rule, getElementMap());
-	}
+    @SuppressWarnings("unchecked")
+    public Collection<RuleMatch> addSubMatchChoice(
+            Iterable<? extends Match> choices) {
+        return (Collection<RuleMatch>) super.addSubMatchChoice(choices);
+    }
+    
+    @Override
+    protected RuleMatch createMatch() {
+    	return new RuleMatch(getRule(), getElementMap());
+    }
 
-	/** Equality is determined by rule and element map. */
+    /** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {
         return obj instanceof RuleMatch
