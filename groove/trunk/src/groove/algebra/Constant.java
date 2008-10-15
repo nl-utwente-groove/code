@@ -16,8 +16,6 @@
  */
 package groove.algebra;
 
-import org.apache.xpath.operations.Variable;
-
 /**
  * Interface extending the {@link groove.algebra.Operation}-interface without
  * adding more functionality.
@@ -29,7 +27,7 @@ public interface Constant extends Operation {
     /**
      * Returns the value of this constant.
      * @return the value of this constant; may be <code>null</code> if the
-     *         constant is a {@link Variable}.
+     *         constant is a variable.
      */
     public Object getValue();
 }

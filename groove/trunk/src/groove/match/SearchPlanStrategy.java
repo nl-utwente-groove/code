@@ -49,7 +49,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * @param plan the search items that make up the search plan
      * @param injective flag to indicate that the matching should be injective
      */
-    public SearchPlanStrategy(GraphShape source, List<SearchItem> plan,
+    public SearchPlanStrategy(GraphShape source, List<? extends SearchItem> plan,
             boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
         this.edgeIxMap = new HashMap<Edge,Integer>();
@@ -114,7 +114,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Retrieves the search plan for this strategy.
      */
-    final protected List<SearchItem> getPlan() {
+    final protected List<? extends SearchItem> getPlan() {
         return this.plan;
     }
 
@@ -246,7 +246,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * A list of domain elements, in the order in which they are to be matched.
      */
-    final List<SearchItem> plan;
+    final List<? extends SearchItem> plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
     /**
@@ -365,7 +365,19 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             final boolean filtered = getFilter() != null;
             boolean found = this.found;
             boolean exhausted;
-            int current = found ? planSize - 1 : 0;
+            // if an image was found before, roll back the result 
+            // until the last relevant search item
+            int current;
+            if (found) {
+                current = planSize-1;
+                SearchItem.Record currentRecord;
+                while (current >= 0 && ! (currentRecord = getRecord(current)).isRelevant()) {
+                    currentRecord.reset();
+                    current--;
+                }
+            } else {
+                current = 0;
+            }
             do {
                 // the outer loop is to filter solutions through
                 while (current > this.lastSingular && current < planSize) {

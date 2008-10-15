@@ -38,53 +38,43 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> implements
     private Set<ControlTransition> transitions = new HashSet<ControlTransition>();
     private ControlState startState;
 
-    @Override
     public Set<? extends Edge> edgeSet() {
         return transitions();
     }
 
-    @Override
     public Set<? extends Node> nodeSet() {
         return states();
     }
 
-    @Override
     public void addState(ControlState state) {
         this.states.add(state);
     }
 
-    @Override
     public void addTransition(ControlTransition ct) {
         this.transitions.add(ct);
 
     }
 
-    @Override
     public ControlState getStart() {
         return this.startState;
     }
 
-    @Override
     public void removeState(ControlState state) {
         this.states.remove(state);
     }
 
-    @Override
     public void removeTransition(ControlTransition ct) {
         this.transitions.remove(ct);
     }
 
-    @Override
     public void setStart(ControlState start) {
         this.startState = start;
     }
 
-    @Override
     public Set<ControlState> states() {
         return this.states;
     }
 
-    @Override
     public Set<ControlTransition> transitions() {
         return this.transitions;
     }
@@ -97,5 +87,4 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> implements
     public boolean isSuccess(ControlState state) {
         return state.isSuccess();
     }
-
 }

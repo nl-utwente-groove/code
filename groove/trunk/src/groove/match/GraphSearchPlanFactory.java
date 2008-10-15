@@ -177,7 +177,7 @@ public class GraphSearchPlanFactory {
          * @param anchorEdges the set of pre-matched edges; may be
          *        <code>null</code> for an empty set
          */
-        public List<SearchItem> getPlan(Collection<? extends Node> anchorNodes,
+        public List<AbstractSearchItem> getPlan(Collection<? extends Node> anchorNodes,
                 Collection<? extends Edge> anchorEdges) {
             if (this.used) {
                 throw new IllegalStateException(
@@ -185,11 +185,11 @@ public class GraphSearchPlanFactory {
             } else {
                 this.used = true;
             }
-            List<SearchItem> result = new ArrayList<SearchItem>();
-            Collection<SearchItem> items =
+            List<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
+            Collection<AbstractSearchItem> items =
                 computeSearchItems(anchorNodes, anchorEdges);
             while (!items.isEmpty()) {
-                SearchItem bestItem = Collections.max(items, this);
+                AbstractSearchItem bestItem = Collections.max(items, this);
                 result.add(bestItem);
                 items.remove(bestItem);
                 this.remainingEdges.removeAll(bestItem.bindsEdges());
@@ -210,10 +210,10 @@ public class GraphSearchPlanFactory {
          * @param anchorEdges the set of pre-matched edges; may be
          *        <code>null</code> for an empty set
          */
-        Collection<SearchItem> computeSearchItems(
+        Collection<AbstractSearchItem> computeSearchItems(
                 Collection<? extends Node> anchorNodes,
                 Collection<? extends Edge> anchorEdges) {
-            Collection<SearchItem> result = new ArrayList<SearchItem>();
+            Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
             Set<Node> unmatchedNodes =
                 new LinkedHashSet<Node>(this.remainingNodes);
             Set<Edge> unmatchedEdges =
@@ -226,7 +226,7 @@ public class GraphSearchPlanFactory {
                 anchorEdges = Collections.emptySet();
             }
             if (!anchorNodes.isEmpty() || !anchorEdges.isEmpty()) {
-                SearchItem preMatchItem =
+                AbstractSearchItem preMatchItem =
                     new AnchorSearchItem(anchorNodes, anchorEdges);
                 result.add(preMatchItem);
                 unmatchedNodes.removeAll(preMatchItem.bindsNodes());
@@ -243,7 +243,7 @@ public class GraphSearchPlanFactory {
             }
             // then a search item per remaining edge
             for (Edge edge : unmatchedEdges) {
-                SearchItem edgeItem = createEdgeSearchItem(edge);
+                AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
                     unmatchedNodes.removeAll(edgeItem.bindsNodes());
@@ -251,7 +251,7 @@ public class GraphSearchPlanFactory {
             }
             // finally a search item per remaining node
             for (Node node : unmatchedNodes) {
-                SearchItem nodeItem = createNodeSearchItem(node);
+                AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     result.add(nodeItem);
                 }
@@ -315,7 +315,7 @@ public class GraphSearchPlanFactory {
         /**
          * Callback factory method for creating an edge search item.
          */
-        protected SearchItem createEdgeSearchItem(Edge edge) {
+        protected AbstractSearchItem createEdgeSearchItem(Edge edge) {
             Label label = edge.label();
             RegExpr negOperand = RegExprLabel.getNegOperand(label);
             if (negOperand instanceof RegExpr.Empty) {
@@ -360,7 +360,7 @@ public class GraphSearchPlanFactory {
         /**
          * Callback factory method for creating a node search item.
          */
-        protected SearchItem createNodeSearchItem(Node node) {
+        protected AbstractSearchItem createNodeSearchItem(Node node) {
             if (node instanceof ValueNode) {
                 return new ValueNodeSearchItem((ValueNode) node);
             } else if (node instanceof ProductNode) {

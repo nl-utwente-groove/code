@@ -157,7 +157,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Returns the direct sub-rules of this rule, or the entire rule hierarchy.
      * @param recursive if <code>true</code>, returns the entire rule
-     *        hierarch (including this rule); otherwise, only returns the direct
+     *        hierarchy (including this rule); otherwise, only returns the direct
      *        sub-rules.
      */
     public Collection<SPORule> getSubRules(boolean recursive) {
@@ -207,6 +207,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                     getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
         }
         return this.eventMatcher;
+    }
+
+    /** This implementation sets the anchor graph elements to relevant. */
+    @Override
+    MatchStrategy<VarNodeEdgeMap> createMatcher() {
+        return getMatcherFactory().createMatcher(this, null, null,
+            getMatchRelevantNodes());
     }
 
     @Override
@@ -916,7 +923,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * rule. This means it contains all eraser edges and all variables and nodes
      * necessary for creation.
      */
-    Graph getAnchorGraph() {
+    private Graph getAnchorGraph() {
         if (this.anchorGraph == null) {
             this.anchorGraph = computeAnchorGraph();
         }
@@ -936,13 +943,45 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                 result.addEdge((Edge) elem);
             }
         }
-        for (Node rootImage : getRootMap().nodeMap().values()) {
-            result.addNode(rootImage);
-        }
-        for (Edge rootImage : getRootMap().edgeMap().values()) {
-            result.addEdge(rootImage);
-        }
+        // add the root map images
+        result.addNodeSet(getRootMap().nodeMap().values());
+        result.addEdgeSet(getRootMap().edgeMap().values());
         result.addEdgeSet(Arrays.asList(getEraserEdges()));
+        return result;
+    }
+
+    /**
+     * Lazily creates and returns the set of match-relevant nodes of this rule.
+     * These are the nodes whose images are important to distinguish rule matches.
+     * The set consists of the anchor nodes and the root sources of the
+     * universal sub-conditions.
+     */
+    private Set<Node> getMatchRelevantNodes() {
+        if (this.matchRelevantNodes == null) {
+            this.matchRelevantNodes = computeMatchRelevantGraph();
+        }
+        return this.matchRelevantNodes;
+    }
+
+    /**
+     * Computes the match-relevant nodes of the left hand side.
+     * @see #getMatchRelevantNodes()
+     */
+    private Set<Node> computeMatchRelevantGraph() {
+        Set<Node> result = new HashSet<Node>();
+        for (Element elem : anchor()) {
+            if (elem instanceof Node) {
+                result.add((Node) elem);
+            } else {
+                result.addAll(Arrays.asList(((Edge) elem).ends()));
+            }
+        }
+        // add the root map sources of the sub-conditions
+        for (Condition subCondition: getSubConditions()) {
+            if (subCondition instanceof ForallCondition) {
+                result.addAll(subCondition.getRootMap().nodeMap().keySet());
+            }
+        }
         return result;
     }
 
@@ -1001,6 +1040,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * rule.
      */
     private Graph anchorGraph;
+    /**
+     * Subgraph of the left hand containing all elements that are used
+     * to distinguish matches.
+     */
+    private Set<Node> matchRelevantNodes;
     /**
      * A sub-graph of the production rule's right hand side, consisting only of
      * the fresh nodes and edges.

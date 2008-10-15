@@ -929,7 +929,7 @@ public class Generator extends CommandLineTool {
          */
         public ExploreStrategyParser(boolean closeFast) {
             addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new ExploreRuleDFStrategy(), "Depth first full exploration.",
+                new DFSStrategy(), "Depth first full exploration.",
                 "barbed"));
             addStrategy(GeneratorScenarioFactory.getScenarioHandler(
                 new BFSStrategy(), "Breadth first full exploration.",

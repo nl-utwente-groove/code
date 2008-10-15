@@ -77,6 +77,13 @@ public interface SearchItem extends Comparable<SearchItem> {
     Collection<? extends Edge> bindsEdges();
 
     /**
+     * Signals if the image of this search item is a relevant part of the match.
+     * An attempt is made by the search strategy to return only matches that
+     * differ on relevant parts.
+     */
+    boolean isRelevant();
+    
+    /**
      * Prepares the search item for actual searching by providing additional
      * information about the strategy.
      * @param strategy the search strategy to be applied
@@ -89,6 +96,9 @@ public interface SearchItem extends Comparable<SearchItem> {
      * @version $Revision $
      */
     interface Record {
+        /** Returns the relevance status of the enclosing search item. */
+        boolean isRelevant();
+
         /**
          * Indicates if this search record is known to be successful no more
          * than once in a row. That is, the record is singular if
