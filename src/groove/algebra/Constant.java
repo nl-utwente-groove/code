@@ -26,8 +26,6 @@ package groove.algebra;
 public interface Constant extends Operation {
     /**
      * Returns the value of this constant.
-     * @return the value of this constant; may be <code>null</code> if the
-     *         constant is a variable.
      */
     public Object getValue();
 }
