@@ -65,10 +65,8 @@ public class ControlView {
      * 
      * @param result
      * @param controlProgramFile
-     * @throws IOException
      */
-    public ControlView(DefaultGrammarView result, File controlProgramFile)
-        throws IOException {
+    public ControlView(DefaultGrammarView result, File controlProgramFile) {
         this.grammarView = result;
         this.controlFile = controlProgramFile;
         this.controlProgram = loadProgram(controlProgramFile);
@@ -209,43 +207,4 @@ public class ControlView {
         pw.write(controlProgram);
         pw.close();
     }
-
-    /** label for lambda transitions */
-    public static final String LAMBDA_LABEL = "tau";
-
-    /** label for else transitions */
-    public static final String ELSE_LABEL = "else";
-
-    /** priority for a lamba Rule , that can be applied anytime * */
-    public static final int ANY_RULE_PRORITY = Integer.MAX_VALUE - 1;
-
-    /** priority for an Else Rule * */
-    public static final int ELSE_RULE_PRIORITY = -1;
-
-    // /** the Rule object used for Lambda Transitions **/
-    // public static Rule LAMBDA_RULE;
-
-    // /** the RUle object used for Else Transitions **/
-    // public static Rule ELSE_RULE;
-
-    // static {
-    // try
-    // {
-    // Morphism m_l = factory.newMorphism(factory.newGraph(),
-    // factory.newGraph());
-    // Morphism m_e = factory.newMorphism(factory.newGraph(),
-    // factory.newGraph());
-    // LAMBDA_RULE = new SPORule(m_l, new
-    // RuleNameLabel(ControlView.LAMBDA_LABEL),ANY_RULE_PRORITY, new
-    // SystemProperties());
-    // LAMBDA_RULE.setFixed();
-    // ELSE_RULE = new SPORule(m_e, new
-    // RuleNameLabel(ControlView.ELSE_LABEL),ELSE_RULE_PRIORITY, new
-    // SystemProperties());
-    // ELSE_RULE.setFixed();
-    // }
-    // catch(FormatException e){ /* this exception is most certainly never
-    // thrown :) */ }
-    // }
-
 }
