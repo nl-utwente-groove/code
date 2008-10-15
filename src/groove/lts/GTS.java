@@ -98,7 +98,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             return new StartGraphState(
                 getRecord(),
                 startGraph,
-                new LocationAutomatonBuilder().getLocation(this.ruleSystem.getControl().startState()));
+                new LocationAutomatonBuilder().getLocation(this.ruleSystem.getControl().getStart()));
         } else {
             return new StartGraphState(getRecord(), startGraph);
         }

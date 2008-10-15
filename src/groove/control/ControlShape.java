@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -28,73 +27,42 @@ import java.util.Set;
  * visible as an edge.
  * @author Tom Staijen
  */
-public class ControlShape extends ControlTransition {
-
-    // can be null
-    private ControlState start;
-
-    private final Set<ControlState> states = new HashSet<ControlState>();
-    private final Set<ControlTransition> transitions =
-        new HashSet<ControlTransition>();
-
-    /**
-     * the default constructor, passed on to super();
-     * @param source
-     * @param target
-     * @param label
-     */
-    public ControlShape(ControlState source, ControlState target, String label) {
-        super(source, target, label);
-    }
+public interface ControlShape {
 
     /**
      * Adds a ControlState to this shape
      * @param state
      */
-    public void addState(ControlState state) {
-        this.states.add(state);
-    }
+    public void addState(ControlState state);
 
     /**
      * Removes the state from this ControlShape
      * @param state
      */
-    public void removeState(ControlState state) {
-        this.states.remove(state);
-    }
+    public void removeState(ControlState state);
 
     /**
      * Adds a ControlTransitions to this ControlShape
      * @param ct
      */
-    public void addTransition(ControlTransition ct) {
-        // source and target need not be in this shape.
-        this.transitions.add(ct);
-    }
+    public void addTransition(ControlTransition ct);
 
     /**
      * Removes a transition;
      * @param ct
      */
-    public void removeTransition(ControlTransition ct) {
-        this.transitions.remove(ct);
-    }
-
+    public void removeTransition(ControlTransition ct);
     /**
      * Returns all ControlTransitions owned by this ControlShape.
      * @return Set<ControlTransition>
      */
-    public Set<ControlTransition> transitions() {
-        return this.transitions;
-    }
+    public Set<ControlTransition> transitions();
 
     /**
      * Returns all ControlStates owned by this ControlShape.
      * @return Set<ControlState>
      */
-    public Set<ControlState> states() {
-        return this.states;
-    }
+    public Set<ControlState> states();
 
     /**
      * Sets the start-state of this ControlShape. Maybe be <i>null</i>. Should
@@ -103,22 +71,14 @@ public class ControlShape extends ControlTransition {
      * 
      * @param start
      */
-    public void setStart(ControlState start) {
-        this.start = start;
-    }
-
+    public void setStart(ControlState start);
+    
     /**
      * Returns the State state (if there is one). Typically, only the top-level
      * shape has a start state.
      * 
      * @return ControlState
      */
-    public ControlState getStart() {
-        return this.start;
-    }
+    public ControlState getStart();
 
-    @Override
-    public String toString() {
-        return getText() + "(" + super.toString() + ")";
-    }
 }

@@ -187,7 +187,7 @@ public class ControlJModel extends GraphJModel {
     protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result;
         ControlState state = (ControlState) node;
-        if (state.equals(getGraph().startState())) {
+        if (state.equals(getGraph().getStart())) {
             result = JAttr.CONTROL_START_NODE_ATTR.clone();
         } else if (state.isSuccess()) {
             result = JAttr.CONTROL_SUCCESS_NODE_ATTR.clone();

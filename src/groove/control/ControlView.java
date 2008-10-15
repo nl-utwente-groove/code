@@ -185,10 +185,10 @@ public class ControlView {
             gclb.setBuilder(builder);
             // reset the counter for unique controlstate numbers to 0
             Counter.reset();
-            ControlShape programShape = gclb.program();
+            ControlAutomaton aut = gclb.program();
             builder.optimize();
             builder.finalize(grammar);
-            return new ControlAutomaton(programShape);
+            return aut;
         } catch (RecognitionException re) {
             throw new FormatException(re);
         }

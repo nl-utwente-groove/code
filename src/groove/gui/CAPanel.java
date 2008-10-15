@@ -267,7 +267,7 @@ class AutomatonPanel extends JGraphPanel<ControlJGraph> {
             if (jModel.getGraph() == null) {
                 System.err.println("jModel has no underlying graph...");
             }
-            return Collections.singleton(jModel.getJCell(jModel.getGraph().startState()));
+            return Collections.singleton(jModel.getJCell(jModel.getGraph().getStart()));
         }
 
         /**
