@@ -16,12 +16,21 @@
  */
 package groove.gui.jgraph;
 
+/**
+ * This is the JGraph representation of a ControlAutomaton.
+ * @author Tom Staijen
+ * @version $Revision $
+ */
 public class ControlJGraph extends JGraph {
-    public ControlJGraph() {
-        super(ControlJModel.EMPTY_CONTROL_JMODEL, true);
+
+    /**
+     * Creates a ControlJGraph given a ControlJModel
+     * @param model
+     */
+    public ControlJGraph(ControlJModel model) {
+        super(model, true);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setEnabled(false);
-
     }
 
     @Override

@@ -35,6 +35,11 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 
+/**
+ * JModel for a ControlAutomaton
+ * @author Tom Staijen
+ * @version $Revision $
+ */
 public class ControlJModel extends GraphJModel {
 
     /**
@@ -54,22 +59,20 @@ public class ControlJModel extends GraphJModel {
     private ControlTransition activeTransition;
 
     /**
-     * Creates an empty ControlJModel
+     * Creates a controlJmodel given a control automaton
+     * @param shape
+     * @param options
      */
-    public ControlJModel() {
-        super();
-    }
-
     public ControlJModel(GraphShape shape, Options options) {
         super(shape, JAttr.CONTROL_NODE_ATTR, JAttr.CONTROL_EDGE_ATTR, options);
-        reload();
+        this.reload();
     }
 
     @Override
     public ControlAutomaton getGraph() {
-        if (super.getGraph() instanceof ControlAutomaton) {
+        if (super.getGraph() instanceof ControlAutomaton)
             return (ControlAutomaton) super.getGraph();
-        } else {
+        else {
             return null;
         }
     }
@@ -127,7 +130,6 @@ public class ControlJModel extends GraphJModel {
      */
     public Location setActiveLocation(Location location) {
         Location result = this.activeLocation;
-
         this.activeLocation = location;
         Set<JCell> changedCells = new HashSet<JCell>();
 
@@ -148,12 +150,6 @@ public class ControlJModel extends GraphJModel {
         refresh(changedCells);
 
         return result;
-    }
-
-    public boolean isActive(ControlState state) {
-        // FIXME: TOM
-        // return (activeLocation != null && activeLocation.contains(state));
-        return false;
     }
 
     @Override
@@ -199,10 +195,6 @@ public class ControlJModel extends GraphJModel {
             result = JAttr.CONTROL_NODE_ATTR.clone();
         }
 
-        if (isActive(state)) {
-            result.applyMap(JAttr.LTS_NODE_ACTIVE_CHANGE);
-        }
-
         return result;
     }
 
@@ -230,13 +222,9 @@ public class ControlJModel extends GraphJModel {
         return result;
     }
 
-    /** Dummy LTS model. */
-    static public final ControlJModel EMPTY_CONTROL_JMODEL =
-        new ControlJModel();
-
     /**
      * JEdge class that describes the underlying edge as a graph transition.
-     * @author Arend Rensink
+     * @author Tom Staijen
      * @version $Revision $
      */
     private class TransitionJEdge extends GraphJEdge {
@@ -288,7 +276,7 @@ public class ControlJModel extends GraphJModel {
 
     /**
      * JVertex class that describes the underlying node as a graph state.
-     * @author Arend Rensink
+     * @author Tom Staijen
      * @version $Revision $
      */
     private class StateJVertex extends GraphJVertex {
