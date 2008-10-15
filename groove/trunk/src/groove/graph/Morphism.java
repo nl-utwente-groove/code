@@ -187,39 +187,13 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * Convenience method for <tt>remove(Element)</tt> in case the type of the
      * element is <tt>Edge</tt>.
      */
-    @Deprecated
     Edge removeEdge(Edge key);
 
     /**
      * Convenience method for <tt>remove(Element)</tt> in case the type of the
      * element is <tt>Node</tt>.
      */
-    @Deprecated
     Node removeNode(Node key);
-
-    /**
-     * Removes a number of (key,value)-pairs of graph elements from the
-     * morphism, based on a given (node) image. Any edge in the morphism of
-     * which the key is a part is also removed from the range. The method
-     * returns <tt>true</tt> if the image did occur, or <tt>false</tt>
-     * otherwise.
-     * @param image the value to be removed
-     * @return <tt>true</tt> if the image occurred in the morphism
-     * @ensure <tt>! containsValue(image)</tt>.
-     */
-    @Deprecated
-    boolean removeNodeImage(Node image);
-
-    /**
-     * Removes a (key,value)-pair of edges from the morphism, based on a given
-     * (edge) image. The method returns <tt>true</tt> if the image did occur,
-     * or <tt>false</tt> otherwise.
-     * @param image the value to be removed
-     * @return <tt>true</tt> if the image occurred in the morphism
-     * @ensure <tt>! containsValue(value)</tt>.
-     */
-    @Deprecated
-    boolean removeEdgeImage(Edge image);
 
     /**
      * For efficientcy, morphisms are equal only if they are identical (i.e.,
@@ -230,16 +204,6 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      *         object
      */
     public boolean equals(Object obj);
-
-    /**
-     * Overrides the method in <tt>NodeEdgeMap</tt> to reset equality to
-     * identity.
-     * @param other the morphism to be compared with this one
-     * @return <tt>true</tt> if <tt>equals(other)</tt>
-     * @see #equals(Object)
-     */
-    @Deprecated
-    public boolean equals(Morphism other);
 
     /**
      * Factory method; returns a new, empty morphism between two given graphs.

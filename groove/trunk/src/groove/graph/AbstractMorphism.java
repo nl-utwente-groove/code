@@ -183,17 +183,12 @@ public abstract class AbstractMorphism extends
      */
     @Override
     public boolean equals(Object other) {
-        return other instanceof Morphism && equals((Morphism) other);
-    }
-
-    /**
-     * Two morphisms are equal if they have equal domains, codomains and element
-     * maps.
-     */
-    @Deprecated
-    public boolean equals(Morphism other) {
-        return dom().equals(other.dom()) && cod().equals(other.cod())
+        if (other instanceof Morphism) {
+            return dom().equals(((Morphism)other).dom()) && cod().equals(((Morphism)other).cod())
             && super.equals(other);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -235,7 +230,7 @@ public abstract class AbstractMorphism extends
             removeNode(node);
         } else {
             assert graph == this.cod : "Morphism listens only to domain and codomain";
-            removeImage(node);
+            removeNodeImage(node);
             assert !containsValue(node) : "Image " + node
                 + " not removed properly from morphism " + this;
         }
@@ -249,7 +244,7 @@ public abstract class AbstractMorphism extends
             removeEdge(edge);
         } else {
             assert graph == this.cod : "Morphism listens only to domain and codomain";
-            removeImage(edge);
+            removeEdgeImage(edge);
             assert !containsValue(edge) : "Image " + edge
                 + " not removed properly from morphism " + this;
         }
@@ -297,26 +292,11 @@ public abstract class AbstractMorphism extends
 
     /**
      * This implementation 
-     * works directly on the element map. Specializations beware!
-     * @param image the mage to be removed from the map
-     * @return <tt>true</tt> if any entry was actually removed
-     */
-    public boolean removeImage(Element image) {
-        if (image instanceof Node) {
-            return removeNodeImage((Node) image);
-        } else {
-            return removeEdgeImage((Edge) image);
-        }
-    }
-
-    /**
-     * This implementation 
      * works directly on the element map. Specialisations beware!
      * @param image the image to be removed from the map
      * @return <tt>true</tt> if any entry was actually removed
      */
-    @Deprecated
-    public boolean removeNodeImage(Node image) {
+    private boolean removeNodeImage(Node image) {
         boolean result = false;
         // iterate over the element map entries
         Iterator<Map.Entry<Node,Node>> entryIter =
@@ -337,8 +317,7 @@ public abstract class AbstractMorphism extends
      * @param image the image to be removed from the map
      * @return <tt>true</tt> if any entry was actually removed
      */
-    @Deprecated
-    public boolean removeEdgeImage(Edge image) {
+    private boolean removeEdgeImage(Edge image) {
         boolean result = false;
         // iterate over the element map entries
         Iterator<Map.Entry<Edge,Edge>> entryIter =
