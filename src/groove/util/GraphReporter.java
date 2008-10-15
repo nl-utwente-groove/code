@@ -20,7 +20,6 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
-import groove.view.FormatException;
 
 import java.io.IOException;
 import java.util.Arrays;
