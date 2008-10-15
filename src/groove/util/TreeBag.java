@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: TreeBag.java,v 1.4 2008-01-30 09:32:03 iovka Exp $
@@ -29,10 +29,11 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
+public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
+        Bag<T> {
     /**
-     * Models the multiplicity of an element in a bag.
-     * The multiplicity value is initially 1, and never becomes zero.
+     * Models the multiplicity of an element in a bag. The multiplicity value is
+     * initially 1, and never becomes zero.
      */
     protected class MyMultiplicity implements Multiplicity, Cloneable {
         /**
@@ -40,7 +41,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          * @ensure <tt>getValue() == 1</tt>
          */
         protected MyMultiplicity() {
-            value = 1;
+            this.value = 1;
             incSize();
         }
 
@@ -50,13 +51,13 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          * @ensure <tt>result > 0</tt>
          */
         public int getValue() {
-            assert value >= 0;
-            return value;
+            assert this.value >= 0;
+            return this.value;
         }
 
         @Override
         public String toString() {
-            return "" + value;
+            return "" + this.value;
         }
 
         // ------------------------ object overrides --------------------
@@ -64,7 +65,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         /** Returns the current multiplicity value as a hash code. */
         @Override
         public int hashCode() {
-            return value;
+            return this.value;
         }
 
         /**
@@ -73,7 +74,8 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof Multiplicity && ((MyMultiplicity) obj).value == value;
+            return obj instanceof Multiplicity
+                && ((MyMultiplicity) obj).value == this.value;
         }
 
         @Override
@@ -90,21 +92,21 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          * Increases the multiplicity value by 1.
          */
         protected int inc() {
-            value++;
+            this.value++;
             incSize();
-            assert value > 0;
-            return value;
+            assert this.value > 0;
+            return this.value;
         }
 
         /**
-         * Decreases the multiplicity value by 1.
-         * If the multiplicity becomes zero, it should be removed from the bag.
+         * Decreases the multiplicity value by 1. If the multiplicity becomes
+         * zero, it should be removed from the bag.
          */
         protected int dec() {
-            assert value > 0;
-            value--;
+            assert this.value > 0;
+            this.value--;
             decSize();
-            return value;
+            return this.value;
         }
 
         /**
@@ -116,51 +118,52 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     @Override
     public boolean contains(Object key) {
-        return bag.containsKey(key);
+        return this.bag.containsKey(key);
     }
 
     @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
             public boolean hasNext() {
-                if (count == 0) {
-                    return entryIter.hasNext();
+                if (this.count == 0) {
+                    return this.entryIter.hasNext();
                 } else {
                     return true;
                 }
             }
 
             public T next() {
-                if (count == 0) {
+                if (this.count == 0) {
                     nextEntry();
                 }
-                count--;
-                removed = false;
-                return entry.getKey();
+                this.count--;
+                this.removed = false;
+                return this.entry.getKey();
             }
 
             public void remove() {
-                if (removed) {
+                if (this.removed) {
                     throw new IllegalStateException();
                 } else {
                     try {
-                        if (mult.dec() == 0) {
-                            entryIter.remove();
+                        if (this.mult.dec() == 0) {
+                            this.entryIter.remove();
                         }
                     } catch (IllegalStateException exc) {
-                        entryIter.remove();
+                        this.entryIter.remove();
                     }
-                    removed = true;
+                    this.removed = true;
                 }
             }
 
             private void nextEntry() {
-                entry = entryIter.next();
-                mult = entry.getValue();
-                count = mult.getValue();
+                this.entry = this.entryIter.next();
+                this.mult = this.entry.getValue();
+                this.count = this.mult.getValue();
             }
 
-            private final Iterator<Map.Entry<T,MyMultiplicity>> entryIter = bag.entrySet().iterator();
+            private final Iterator<Map.Entry<T,MyMultiplicity>> entryIter =
+                TreeBag.this.bag.entrySet().iterator();
             private Map.Entry<T,MyMultiplicity> entry;
             private MyMultiplicity mult;
             private int count;
@@ -170,17 +173,18 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     @Override
     public int size() {
-        assert size == computeSize() : "Stored size " + size + " differs from actual size " + computeSize();
-        return size;
+        assert this.size == computeSize() : "Stored size " + this.size
+            + " differs from actual size " + computeSize();
+        return this.size;
     }
 
     /**
-     * Returns the set of elements in this bag, i.e., the set of keys
-     * with positive multiplicity.
+     * Returns the set of elements in this bag, i.e., the set of keys with
+     * positive multiplicity.
      * @return the set of elements occurring in this bag
      */
     public Set<T> elementSet() {
-        return bag.keySet();
+        return this.bag.keySet();
     }
 
     /**
@@ -188,7 +192,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      * @ensure <tt>result >= 0</tt>
      */
     public int multiplicity(Object elem) {
-        MyMultiplicity mult = bag.get(elem);
+        MyMultiplicity mult = this.bag.get(elem);
         if (mult == null) {
             return 0;
         } else {
@@ -201,14 +205,14 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      * @ensure <tt>result.keysSet().equals(elementSet())</tt>
      */
     public Map<T,? extends Multiplicity> multiplicityMap() {
-        return Collections.unmodifiableMap(bag);
+        return Collections.unmodifiableMap(this.bag);
     }
 
     @Override
     public boolean add(T elem) {
-        MyMultiplicity mult = bag.get(elem);
+        MyMultiplicity mult = this.bag.get(elem);
         if (mult == null) {
-            bag.put(elem, newMultiplicity());
+            this.bag.put(elem, newMultiplicity());
         } else {
             mult.inc();
         }
@@ -217,8 +221,8 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     @Override
     public void clear() {
-        bag.clear();
-        size = 0;
+        this.bag.clear();
+        this.size = 0;
     }
 
     /**
@@ -231,11 +235,11 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     }
 
     /**
-     * Removes a copy of an object.
-     * The return value signifies if this was the last copy.
+     * Removes a copy of an object. The return value signifies if this was the
+     * last copy.
      * @param elem the object to be removed
      * @return <tt>true</tt> if and only if the last instance of <tt>elem</tt>
-     * was removed
+     *         was removed
      * @see #remove(Object)
      */
     public boolean removeWasLast(Object elem) {
@@ -245,18 +249,19 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     /**
      * Removes an element and returns the remaining multiplicity of that element
      * @param elem the element to be removed
-     * @return the remaining multiplicity of <tt>elem</tt> atfter removing one instance;
-     * <tt>-1</tt> if <tt>elem did not occur in the first place</tt>
+     * @return the remaining multiplicity of <tt>elem</tt> atfter removing one
+     *         instance; <tt>-1</tt> if
+     *         <tt>elem did not occur in the first place</tt>
      */
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public int removeGetCount(Object elem) {
-        MyMultiplicity mult = bag.remove(elem);
+        MyMultiplicity mult = this.bag.remove(elem);
         if (mult == null) {
             return -1;
         } else {
             int value = mult.dec();
             if (value > 0) {
-                bag.put((T) elem, mult);
+                this.bag.put((T) elem, mult);
             }
             return value;
         }
@@ -264,13 +269,14 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     public boolean minus(Collection<?> c) {
         boolean result = false;
-        for (Object elem: c) {
+        for (Object elem : c) {
             result |= remove(elem);
         }
         return result;
     }
-    
-    // -------------------------- object overrides -------------------------------
+
+    // -------------------------- object overrides
+    // -------------------------------
 
     /**
      * Returns the sum of all elements' hash codes.
@@ -278,20 +284,20 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     @Override
     public int hashCode() {
         int result = 0;
-        for (Map.Entry<T,MyMultiplicity> entry: bag.entrySet()) {
-            result += entry.getKey().hashCode() * ((MyMultiplicity) entry).getValue();
+        for (Map.Entry<T,MyMultiplicity> entry : this.bag.entrySet()) {
+            result +=
+                entry.getKey().hashCode() * ((MyMultiplicity) entry).getValue();
         }
         return result;
     }
 
     /**
-     * Returns a shallow clone: elements are shared, multiplicities are
-     * copied.
+     * Returns a shallow clone: elements are shared, multiplicities are copied.
      */
     @Override
     public Object clone() {
         TreeBag<T> result = new TreeBag<T>();
-        for (Map.Entry<T,MyMultiplicity> entry: bag.entrySet()) {
+        for (Map.Entry<T,MyMultiplicity> entry : this.bag.entrySet()) {
             result.bag.put(entry.getKey(), entry.getValue().clone());
         }
         return result;
@@ -302,20 +308,20 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Bag && ((TreeBag<?>) obj).bag.equals(bag);
+        return obj instanceof Bag && ((TreeBag<?>) obj).bag.equals(this.bag);
     }
-    
+
     /**
      * Returns the underlying map as a string representation of this bag.
      */
     @Override
     public String toString() {
-        return bag.toString();
+        return this.bag.toString();
     }
 
     /**
-     * Factory method for a multiplicity object.
-     * To be overwritten in subclasses.
+     * Factory method for a multiplicity object. To be overwritten in
+     * subclasses.
      * @return a new multiplicity, with initial value 1
      */
     protected MyMultiplicity newMultiplicity() {
@@ -323,12 +329,12 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     }
 
     /**
-     * Internal method to compute the total number of elements (i.e., occurrences)
-     * in this mutliset.
+     * Internal method to compute the total number of elements (i.e.,
+     * occurrences) in this mutliset.
      */
     private int computeSize() {
         int result = 0;
-        for (Map.Entry<T,MyMultiplicity> entry: bag.entrySet()) {
+        for (Map.Entry<T,MyMultiplicity> entry : this.bag.entrySet()) {
             MyMultiplicity mult = entry.getValue();
             result += mult.getValue();
         }
@@ -337,19 +343,19 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     /** Increases the size variable. */
     final void incSize() {
-    	size++;
+        this.size++;
     }
 
     /** Increases the size variable. */
     final void decSize() {
-    	size--;
+        this.size--;
     }
-    
+
     /**
      * The underying mapping from elements to multiplicites.
      * @invariant <tt>bag : Object --> Multiplicity</tt>
      */
-    final Map<T, MyMultiplicity> bag = new TreeMap<T, MyMultiplicity>();
+    final Map<T,MyMultiplicity> bag = new TreeMap<T,MyMultiplicity>();
     /**
      * The number of element (occurrences) in this bag.
      * @invariant <tt>size == computeSize()</tt>

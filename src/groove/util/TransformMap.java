@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: TransformMap.java,v 1.3 2008-01-30 09:32:14 iovka Exp $
@@ -27,19 +27,20 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Map<T,V> {
-	/** Constructs a map from a given inner map. */
+abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements
+        Map<T,V> {
+    /** Constructs a map from a given inner map. */
     public TransformMap(Map<T,U> inner) {
         this.inner = inner;
     }
-    
+
     /**
-     * Creates a transform set on the entry set of the inner map,
-     * where the transformation adapts the value accoding to {@link #toOuter(Object)}.
+     * Creates a transform set on the entry set of the inner map, where the
+     * transformation adapts the value accoding to {@link #toOuter(Object)}.
      */
     @Override
     public Set<Entry<T,V>> entrySet() {
-        return new TransformSet<Entry<T,U>,Entry<T,V>>(inner.entrySet()) {
+        return new TransformSet<Entry<T,U>,Entry<T,V>>(this.inner.entrySet()) {
             @Override
             public Entry<T,V> toOuter(Entry<T,U> obj) {
                 final Entry<T,U> innerEntry = obj;
@@ -75,7 +76,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
      */
     @Override
     public V get(Object key) {
-        return toOuter(inner.get(key));
+        return toOuter(this.inner.get(key));
     }
 
     /**
@@ -83,73 +84,72 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
      */
     @Override
     public V remove(Object key) {
-        return toOuter(inner.remove(key));
+        return toOuter(this.inner.remove(key));
     }
 
     /**
-     * Transforms the value using {@link #toInner(Object)}
-     * and delegates the method to the inner map.
+     * Transforms the value using {@link #toInner(Object)} and delegates the
+     * method to the inner map.
      */
     @Override
     public V put(T key, V value) {
-        return toOuter(inner.put(key, toInner(value)));
+        return toOuter(this.inner.put(key, toInner(value)));
     }
 
     /** Delegates the mathod to the inner map. */
     @Override
     public void clear() {
-        inner.clear();
+        this.inner.clear();
     }
 
     /** Delegates the mathod to the inner map. */
     @Override
     public boolean containsKey(Object key) {
-        return inner.containsKey(key);
+        return this.inner.containsKey(key);
     }
 
     /**
-     * Transforms the value using {@link #toInner(Object)}
-     * and delegated the method to the inner map.
+     * Transforms the value using {@link #toInner(Object)} and delegated the
+     * method to the inner map.
      */
     @Override
     public boolean containsValue(Object value) {
-        return inner.containsValue(toInner(value));
+        return this.inner.containsValue(toInner(value));
     }
 
     /** Delegates the method to the inner map. */
     @Override
     public Set<T> keySet() {
-        return inner.keySet();
+        return this.inner.keySet();
     }
 
     /** Delegates the method to the inner map. */
     @Override
     public int size() {
-        return inner.size();
+        return this.inner.size();
     }
 
-    /** 
-     * Callback method to transform the value in the inner map to a
-     * value visible from outside.
+    /**
+     * Callback method to transform the value in the inner map to a value
+     * visible from outside.
      * @param obj the value from the inner map
      * @return the corresponding visible value
      */
     protected abstract V toOuter(U obj);
 
-    /** 
-     * Callback method to transform a value visible from outside to a
-     * value in the inner set representation.
-     * This method should be left and right inverse to {@link #toOuter(Object)}.
-     * Optional method used to implement the modification
-     * method {@link #put(Object,Object)}.
-     * This implementation throws an {@link UnsupportedOperationException}.
+    /**
+     * Callback method to transform a value visible from outside to a value in
+     * the inner set representation. This method should be left and right
+     * inverse to {@link #toOuter(Object)}. Optional method used to implement
+     * the modification method {@link #put(Object,Object)}. This implementation
+     * throws an {@link UnsupportedOperationException}.
      * @param value the value as visible from outside
      * @return the corresponding inner value
      */
     protected U toInner(Object value) {
         throw new UnsupportedOperationException();
     }
-    
+
     /** The inner map, set at construction time. */
     private final Map<T,U> inner;
 }

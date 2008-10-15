@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: DefaultGraphCalculator.java,v 1.16 2008-02-12 15:29:54 fladder Exp $
  */
 package groove.calc;
@@ -51,7 +51,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public DefaultGraphCalculator(RuleSystem rules, Graph start) {
         this(new GraphGrammar(rules, start), false);
     }
-    
+
     /**
      * Creates a graph calculator for a given, fixed graph grammar.
      * @param grammar the graph grammar for the calculator
@@ -61,24 +61,24 @@ public class DefaultGraphCalculator implements GraphCalculator {
     }
 
     /**
-     * Creates a (possibly prototype) calculator on the basis of a given,
-     * fixed graph grammar.
+     * Creates a (possibly prototype) calculator on the basis of a given, fixed
+     * graph grammar.
      * @param grammar the pre-existing graph grammar
-     * @param prototype flag to indicate whether the constructed calculator is to be used
-     * as a prototype
+     * @param prototype flag to indicate whether the constructed calculator is
+     *        to be used as a prototype
      */
     protected DefaultGraphCalculator(GraphGrammar grammar, boolean prototype) {
-    	grammar.testFixed(true);
+        grammar.testFixed(true);
         this.grammar = grammar;
         this.gts = new GTS(grammar);
         this.prototype = prototype;
     }
 
     private Scenario createScenario(Strategy strategy, Acceptor acceptor) {
-    	DefaultScenario scenario = new DefaultScenario(strategy, acceptor);
-    	return scenario;
+        DefaultScenario scenario = new DefaultScenario(strategy, acceptor);
+        return scenario;
     }
-    
+
     /**
      * Beware, maximal != final, maximal can have self-transitions
      */
@@ -87,60 +87,67 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
         GraphState result = null;
         // any final state is maximal; try that first
-        if ( gts.getFinalStates().size() > 0 ) {
-            result = gts.getFinalStates().iterator().next();
+        if (this.gts.getFinalStates().size() > 0) {
+            result = this.gts.getFinalStates().iterator().next();
         } else {
-        	// try linear
-        	Scenario sc = createScenario(new LinearStrategy(), new FinalStateAcceptor(new Result(1)));
+            // try linear
+            Scenario sc =
+                createScenario(new LinearStrategy(), new FinalStateAcceptor(
+                    new Result(1)));
             sc.prepare(getGTS());
             Result scenarioResult = sc.play();
-        	if( scenarioResult.done() ) {
-        		result = scenarioResult.getValue().iterator().next();
-        	} else {
-        		// try depth first
-        		sc = createScenario(new ExploreStateDFStrategy(), new FinalStateAcceptor(new Result(1)));
+            if (scenarioResult.done()) {
+                result = scenarioResult.getValue().iterator().next();
+            } else {
+                // try depth first
+                sc =
+                    createScenario(new ExploreStateDFStrategy(),
+                        new FinalStateAcceptor(new Result(1)));
                 sc.prepare(getGTS());
                 scenarioResult = sc.play();
-        		if( scenarioResult.done() ) {
-        			result = scenarioResult.getValue().iterator().next();
-        		}
-        	}
+                if (scenarioResult.done()) {
+                    result = scenarioResult.getValue().iterator().next();
+                }
+            }
         }
         return result;
     }
 
     /**
-     * Getting a maximal state given the passed strategy.
-     * Beware, maximal != final, maximal can have self-transitions
+     * Getting a maximal state given the passed strategy. Beware, maximal !=
+     * final, maximal can have self-transitions
      */
     public GraphState getMax(Strategy strategy) {
         testPrototype();
 
         GraphState result = null;
         // any final state is maximal; try that first
-        if ( gts.getFinalStates().size() > 0 ) {
-            result = gts.getFinalStates().iterator().next();
+        if (this.gts.getFinalStates().size() > 0) {
+            result = this.gts.getFinalStates().iterator().next();
         } else {
-        	// try linear
-        	Scenario scenatioResult = createScenario(strategy, new PropertyAcceptor(new MaximalStateProperty(), new Result(1)));
+            // try linear
+            Scenario scenatioResult =
+                createScenario(strategy, new PropertyAcceptor(
+                    new MaximalStateProperty(), new Result(1)));
             scenatioResult.prepare(getGTS());
             Result results = scenatioResult.play();
-        	if( results.done() ) {
-        		result = results.getValue().iterator().next();
-        	}
+            if (results.done()) {
+                result = results.getValue().iterator().next();
+            }
         }
         return result;
     }
-    
+
     public Collection<GraphState> getAllMax() {
         testPrototype();
-        Scenario scenario = createScenario(new BFSStrategy(), new FinalStateAcceptor());
+        Scenario scenario =
+            createScenario(new BFSStrategy(), new FinalStateAcceptor());
         scenario.prepare(getGTS());
         return scenario.play().getValue();
     }
 
     public Collection<GraphState> getAll(String conditionName) {
-    	return null;
+        return null;
     }
 
     public GraphState getFirst(String conditionName) {
@@ -154,14 +161,15 @@ public class DefaultGraphCalculator implements GraphCalculator {
     protected Rule getRule(String name) {
         Rule result = getGrammar().getRule(name);
         if (result == null) {
-            throw new IllegalArgumentException("No rule \""+name+"\" in grammar");
+            throw new IllegalArgumentException("No rule \"" + name
+                + "\" in grammar");
         }
         return result;
     }
 
     public GraphState getFirst(Condition condition) {
         testPrototype();
-        
+
         return null;
     }
 
@@ -174,10 +182,10 @@ public class DefaultGraphCalculator implements GraphCalculator {
         if (isPrototype()) {
             return null;
         } else {
-            return gts.startState().getGraph();
+            return this.gts.startState().getGraph();
         }
     }
-    
+
     /**
      * Returns the result from running the passed scenario.
      */
@@ -186,46 +194,46 @@ public class DefaultGraphCalculator implements GraphCalculator {
         scenario.prepare(getGTS());
         return scenario.play();
     }
-    
-    public GraphCalculator newInstance(Graph start) throws IllegalArgumentException {
-    	try {
-			GraphGrammar newGrammar = new GraphGrammar(grammar, start);
-			newGrammar.setFixed();
-			return new DefaultGraphCalculator(newGrammar);
-		} catch (FormatException exc) {
-			throw new IllegalArgumentException(exc.getMessage(), exc);
-		}
+
+    public GraphCalculator newInstance(Graph start)
+        throws IllegalArgumentException {
+        try {
+            GraphGrammar newGrammar = new GraphGrammar(this.grammar, start);
+            newGrammar.setFixed();
+            return new DefaultGraphCalculator(newGrammar);
+        } catch (FormatException exc) {
+            throw new IllegalArgumentException(exc.getMessage(), exc);
+        }
     }
-    
+
     public GTS getGTS() {
-        return gts;
+        return this.gts;
     }
-    
-	public GraphGrammar getGrammar() {
-        return grammar;
+
+    public GraphGrammar getGrammar() {
+        return this.grammar;
     }
 
     /**
-     * Indicates if this calculator is a prototype.
-     * If <code>true</code>, then it is only to be used to create new instances.
+     * Indicates if this calculator is a prototype. If <code>true</code>,
+     * then it is only to be used to create new instances.
      */
     protected boolean isPrototype() {
-        return prototype;
+        return this.prototype;
     }
-    
+
     /**
-	 * Method to test if the calculator is a prototype.
-	 * 
-	 * @throws IllegalStateException
-	 *             if the calculator is a prototype
-	 */
+     * Method to test if the calculator is a prototype.
+     * 
+     * @throws IllegalStateException if the calculator is a prototype
+     */
     private void testPrototype() {
         if (isPrototype()) {
             throw new IllegalStateException();
         }
     }
 
-    /** 
+    /**
      * The grammar underlying this calculator.
      */
     private final GraphGrammar grammar;

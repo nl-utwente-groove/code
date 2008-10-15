@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: AbstractGraphShape.java,v 1.15 2008-01-21 12:57:10 rensink Exp $
  */
 
@@ -38,13 +38,14 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
+public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
+        AbstractCacheHolder<C> implements GraphShape {
     /**
-     * This constructor polls the cache reference queue and calls 
+     * This constructor polls the cache reference queue and calls
      * {@link Reference#clear()} on all encountered references.
      */
     protected AbstractGraphShape() {
-    	super(null);
+        super(null);
         modifiableGraphCount++;
     }
 
@@ -55,16 +56,18 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     public int edgeCount() {
         return edgeSet().size();
     }
-    
+
     /**
-     * Implements the method by distinguishing between nodes and edges, and deferring the
-     * containment question to <tt>nodeSet()</tt> respectively <tt>edgeSet()</tt>
+     * Implements the method by distinguishing between nodes and edges, and
+     * deferring the containment question to <tt>nodeSet()</tt> respectively
+     * <tt>edgeSet()</tt>
      */
     public boolean containsElement(Element elem) {
         if (elem instanceof Node) {
             return nodeSet().contains(elem);
         } else if (elem instanceof RelationEdge) {
-            return nodeSet().containsAll(Arrays.asList(((RelationEdge<?>) elem).ends()));
+            return nodeSet().containsAll(
+                Arrays.asList(((RelationEdge<?>) elem).ends()));
         } else {
             return edgeSet().contains(elem);
         }
@@ -99,14 +102,14 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
             return Collections.unmodifiableSet(result);
         }
     }
-    
+
     /**
      * This implementation returns a set view on the incident edge set,
      * selecting just those edges of which <tt>end(i).equals(node)</tt>.
      */
     public Set<? extends Edge> edgeSet(final Node node, final int i) {
         return new SetView<Edge>(edgeSet(node)) {
-        	@Override
+            @Override
             public boolean approves(Object obj) {
                 return obj instanceof Edge && ((Edge) obj).end(i).equals(node);
             }
@@ -116,11 +119,11 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     public Set<? extends Edge> outEdgeSet(Node node) {
         return edgeSet(node, Edge.SOURCE_INDEX);
     }
-    
+
     /**
      * Returns a mapping from nodes to sets of edges of this graph.
      */
-    protected Map<Node, ? extends Set<? extends Edge>> nodeEdgeMap() {
+    protected Map<Node,? extends Set<? extends Edge>> nodeEdgeMap() {
         return Collections.unmodifiableMap(getCache().getNodeEdgeMap());
     }
 
@@ -132,14 +135,14 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
             return Collections.emptySet();
         }
     }
-    
+
     /**
-     * Returns a map from the labels in this graph of a given arity to non-empty sets
-     * (actually, <tt>Collection</tt>s guaranteed to contain distinct
+     * Returns a map from the labels in this graph of a given arity to non-empty
+     * sets (actually, <tt>Collection</tt>s guaranteed to contain distinct
      * elements) of all edges with that label and arity in this graph.
      * @param arity the number of endpoints of the required edges
      */
-    protected Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int arity) {
+    protected Map<Label,? extends Set<? extends Edge>> labelEdgeMap(int arity) {
         return Collections.unmodifiableMap(getLabelEdgeMaps().get(arity));
     }
 
@@ -152,42 +155,45 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     }
 
     public GraphInfo getInfo() {
-        return graphInfo;
+        return this.graphInfo;
     }
 
-    /** Callback factory method for a graph information object. 
-     * @param info the {@link groove.graph.GraphInfo} to create a fresh instance of
-     * @return a fresh instance of {@link groove.graph.GraphInfo} based on <code>info</code>
+    /**
+     * Callback factory method for a graph information object.
+     * @param info the {@link groove.graph.GraphInfo} to create a fresh instance
+     *        of
+     * @return a fresh instance of {@link groove.graph.GraphInfo} based on
+     *         <code>info</code>
      */
     protected GraphInfo createInfo(GraphInfo info) {
         return new GraphInfo(info);
     }
 
     public GraphInfo setInfo(GraphInfo info) {
-        return graphInfo = (info == null ? null : createInfo(info));
+        return this.graphInfo = (info == null ? null : createInfo(info));
     }
 
     public boolean isFixed() {
-        return listeners == null;
+        return this.listeners == null;
     }
-    
+
     public void setFixed() {
         if (!isFixed()) {
-        	registerFixed();
-    		listeners = null;
+            registerFixed();
+            this.listeners = null;
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
         }
     }
 
-	/**
-	 * Callback method to register that the graph should be set to fixed.
-	 * Called from {@link #setFixed()} if the graph is actually currently not fixed.
-	 */
-	protected void registerFixed() {
-		setCacheCollectable();
-	}
+    /**
+     * Callback method to register that the graph should be set to fixed. Called
+     * from {@link #setFixed()} if the graph is actually currently not fixed.
+     */
+    protected void registerFixed() {
+        setCacheCollectable();
+    }
 
     /** Calls {@link #toString(GraphShape)}. */
     @Override
@@ -206,7 +212,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
         if (isFixed()) {
             return Collections.<GraphShapeListener>emptySet().iterator();
         } else {
-            return listeners.keySet().iterator();
+            return this.listeners.keySet().iterator();
         }
     }
 
@@ -214,8 +220,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
      * Adds a graph listener to this graph.
      */
     public synchronized void addGraphListener(GraphShapeListener listener) {
-        if (listeners != null) {
-            listeners.put(listener,null);
+        if (this.listeners != null) {
+            this.listeners.put(listener, null);
         }
     }
 
@@ -224,12 +230,13 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
      */
     public synchronized void removeGraphListener(GraphShapeListener listener) {
         if (!isFixed()) {
-            listeners.remove(listener);
+            this.listeners.remove(listener);
         }
     }
 
     /**
-     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Node)} on all GraphListeners in listeners.
+     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Node)} on all
+     * GraphListeners in listeners.
      * @param node the node being added
      */
     protected void fireAddNode(Node node) {
@@ -240,7 +247,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     }
 
     /**
-     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Edge)} on all GraphListeners in listeners.
+     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Edge)} on all
+     * GraphListeners in listeners.
      * @param edge the edge being added
      */
     protected void fireAddEdge(Edge edge) {
@@ -251,7 +259,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     }
 
     /**
-     * Calls {@link GraphShapeListener#removeUpdate(GraphShape, Node)} on all GraphListeners in listeners.
+     * Calls {@link GraphShapeListener#removeUpdate(GraphShape, Node)} on all
+     * GraphListeners in listeners.
      * @param node the node being removed
      */
     protected void fireRemoveNode(Node node) {
@@ -263,7 +272,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     }
 
     /**
-     * Calls {@link GraphShapeListener#removeUpdate(GraphShape, Edge)} on all GraphListeners in listeners.
+     * Calls {@link GraphShapeListener#removeUpdate(GraphShape, Edge)} on all
+     * GraphListeners in listeners.
      * @param edge the edge being removed
      */
     protected void fireRemoveEdge(Edge edge) {
@@ -275,23 +285,25 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     }
 
     /**
-	 * Factory method for a graph cache.
-	 * This implementation returns a {@link GraphCache}.
-	 * @return the graph cache
-	 */
-    @Override
-	@SuppressWarnings("unchecked")
-	protected C createCache() {
-	    return (C) new GraphShapeCache(this);
-	}
-    
-    /**
-     * Set of  {@link GraphListener} s to be identified of changes in this graph. Set to <tt>null</tt> when the graph is fixed.
+     * Factory method for a graph cache. This implementation returns a
+     * {@link GraphCache}.
+     * @return the graph cache
      */
-    protected Map<GraphShapeListener,Object> listeners = new HashMap<GraphShapeListener,Object>();
+    @Override
+    @SuppressWarnings("unchecked")
+    protected C createCache() {
+        return (C) new GraphShapeCache(this);
+    }
 
     /**
-     * Returns the number of graphs created and never fixed. 
+     * Set of {@link GraphListener} s to be identified of changes in this graph.
+     * Set to <tt>null</tt> when the graph is fixed.
+     */
+    protected Map<GraphShapeListener,Object> listeners =
+        new HashMap<GraphShapeListener,Object>();
+
+    /**
+     * Returns the number of graphs created and never fixed.
      * @return the number of graphs created and never fixed
      */
     static public int getModifiableGraphCount() {
@@ -299,15 +311,16 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     }
 
     /**
-     * Provides a textual description of a given graph. Lists the nodes and their outgoing edges.
+     * Provides a textual description of a given graph. Lists the nodes and
+     * their outgoing edges.
      * @param graph the graph to be described
      * @return a textual description of <tt>graph</tt>
      */
     public static String toString(GraphShape graph) {
-    	StringBuffer result = new StringBuffer();
-    	result.append(graph.getInfo());
-    	result.append(String.format("Nodes: %s%n", graph.nodeSet()));
-    	result.append(String.format("Edges: %s%n", graph.edgeSet()));
+        StringBuffer result = new StringBuffer();
+        result.append(graph.getInfo());
+        result.append(String.format("Nodes: %s%n", graph.nodeSet()));
+        result.append(String.format("Edges: %s%n", graph.edgeSet()));
         return "Nodes: " + graph.nodeSet() + "; Edges: " + graph.edgeSet();
     }
 
@@ -321,8 +334,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     static private final boolean GATHER_STATISTICS = Groove.GATHER_STATISTICS;
 
     /**
-     * Counts the number of graphs that were not fixed. Added for debugging purposes: observers of
-     * modifiable graphs may cause memory leaks.
+     * Counts the number of graphs that were not fixed. Added for debugging
+     * purposes: observers of modifiable graphs may cause memory leaks.
      */
     static private int modifiableGraphCount = 0;
 

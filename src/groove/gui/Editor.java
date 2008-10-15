@@ -1,18 +1,14 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
- * $Id: Editor.java,v 1.56 2008-03-05 06:07:23 rensink Exp $
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law
+ * or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License. $Id: Editor.java,v
+ * 1.56 2008-03-05 06:07:23 rensink Exp $
  */
 package groove.gui;
 
@@ -36,10 +32,10 @@ import groove.view.AspectualView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -97,10 +93,11 @@ import org.jgraph.graph.GraphUndoManager;
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
  * @version $Revision$ $Date: 2008-03-05 06:07:23 $
  */
-public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
-    /** 
-     * Constructs an editor frame with an initially empty graph
-     * and a given display options setting.
+public class Editor implements GraphModelListener, PropertyChangeListener,
+        IEditorModes {
+    /**
+     * Constructs an editor frame with an initially empty graph and a given
+     * display options setting.
      * @param options the display options object; may be <code>null</code>
      */
     Editor(JFrame frame, Options options) {
@@ -110,7 +107,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         this.options = options;
         if (frame == null) {
             this.frame = new JFrame(EDITOR_NAME);
-//            this.frame.getRootPane().setDoubleBuffered(false);
+            // this.frame.getRootPane().setDoubleBuffered(false);
         } else {
             this.frame = frame;
             this.frame.setTitle(EDITOR_NAME);
@@ -120,9 +117,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         initGUI();
     }
 
-    /** 
-     * Constructs an editor frame with an initially empty graph.
-     * It is not configured as an auxiliary component.
+    /**
+     * Constructs an editor frame with an initially empty graph. It is not
+     * configured as an auxiliary component.
      */
     public Editor() {
         this(null, null);
@@ -130,14 +127,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
     /** Creates the frame and makes it visible. */
     public void start() {
-    	getFrame().pack();
-    	getFrame().setVisible(true);
+        getFrame().pack();
+        getFrame().setVisible(true);
     }
-    
+
     /** Returns the frame in which the editor is displayed. */
     public final JFrame getFrame() {
-		return frame;
-	}
+        return this.frame;
+    }
 
     /**
      * Indicates whether the editor is in node editing mode.
@@ -157,7 +154,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
     /**
      * Sets the graph to be edited
-     * @param graph the graph to be edited; if <code>null</code>, an empty model is started.
+     * @param graph the graph to be edited; if <code>null</code>, an empty
+     *        model is started.
      */
     public void setPlainGraph(Graph graph) {
         if (graph == null) {
@@ -165,23 +163,24 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             setModel(new EditorJModel(getOptions()));
         } else {
             setErrors(GraphInfo.getErrors(graph));
-            setModel(new EditorJModel(GraphJModel.newInstance(graph, getOptions())));
+            setModel(new EditorJModel(GraphJModel.newInstance(graph,
+                getOptions())));
             setRole(GraphInfo.getRole(graph));
         }
     }
-    
+
     /** Returns a plain graph constructed from the editor j-model and role. */
     public Graph getPlainGraph() {
-    	Graph result = getModel().toPlainGraph();
-    	GraphInfo.setRole(result, getRole(false));
-    	GraphInfo.setVersion(result, Version.GXL_VERSION);
-    	return result;
+        Graph result = getModel().toPlainGraph();
+        GraphInfo.setRole(result, getRole(false));
+        GraphInfo.setVersion(result, Version.GXL_VERSION);
+        return result;
     }
 
     /**
-     * Changes the graph being edited to a given j-model, with a given name. If the model is
-     * <tt>null</tt>, a fresh {@link EditorJModel}is created; otherwise, the given j-model is
-     * copied into a new {@link EditorJModel}.
+     * Changes the graph being edited to a given j-model, with a given name. If
+     * the model is <tt>null</tt>, a fresh {@link EditorJModel}is created;
+     * otherwise, the given j-model is copied into a new {@link EditorJModel}.
      * @param model the j-model to be set
      * @see EditorJModel#EditorJModel(Options)
      * @see EditorJModel#EditorJModel(GraphJModel)
@@ -190,7 +189,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         // unregister listeners with the model
         getModel().removeUndoableEditListener(getUndoManager());
         getModel().removeGraphModelListener(this);
-        jgraph.setModel(model);
+        this.jgraph.setModel(model);
         setCurrentGraphModified(false);
         getUndoManager().discardAllEdits();
         getModel().addUndoableEditListener(getUndoManager());
@@ -199,144 +198,161 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         updateStatus();
         updateTitle();
     }
-    
+
     /**
-     * @return the j-model currently being edited, or 
-     * <tt>null</tt> if no editor model is set.
+     * @return the j-model currently being edited, or <tt>null</tt> if no
+     *         editor model is set.
      */
     public EditorJModel getModel() {
-        return jgraph.getModel();
+        return this.jgraph.getModel();
     }
 
-    /** 
+    /**
      * Creates and returns an aspectual view, based on the current plain graph.
-     * The view is a graph view or a rule view, depending in {@link #hasGraphRole()}.
+     * The view is a graph view or a rule view, depending in
+     * {@link #hasGraphRole()}.
      */
     public AspectualView<?> toView() {
-    	return AspectualView.createView(toAspectGraph());
+        return AspectualView.createView(toAspectGraph());
     }
 
-    /** 
-     * Creates and returns a fixed aspect graph, based on the current plain graph.
+    /**
+     * Creates and returns a fixed aspect graph, based on the current plain
+     * graph.
      */
     public AspectGraph toAspectGraph() {
-    	AspectGraph result = AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
-    	result.setFixed();
-    	return result;
+        AspectGraph result =
+            AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
+        result.setFixed();
+        return result;
     }
 
-    /** 
-     * Refreshes the status bar and the errors, if the 
-     * text on any of the cells has changed.
+    /**
+     * Refreshes the status bar and the errors, if the text on any of the cells
+     * has changed.
      */
     public void graphChanged(GraphModelEvent e) {
-    	boolean changed = e.getChange().getInserted() != null || e.getChange().getRemoved() != null;
-    	Map<?,?> changes = e.getChange().getAttributes();
-    	if (!changed && changes != null) {
-			for (Object change : changes.values()) {
-				changed = ((Map<?, ?>) change).keySet().contains(GraphConstants.VALUE);
-				if (changed) {
-					break;
-				}
-			}
-		}
-		if (changed) {
-			setErrors(null);
-			updateStatus();
-		}
+        boolean changed =
+            e.getChange().getInserted() != null
+                || e.getChange().getRemoved() != null;
+        Map<?,?> changes = e.getChange().getAttributes();
+        if (!changed && changes != null) {
+            for (Object change : changes.values()) {
+                changed =
+                    ((Map<?,?>) change).keySet().contains(GraphConstants.VALUE);
+                if (changed) {
+                    break;
+                }
+            }
+        }
+        if (changed) {
+            setErrors(null);
+            updateStatus();
+        }
     }
-    
+
     /**
      * We listen to the {@link #ROLE_PROPERTY}.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-		getGraphTypeButton().setSelected(hasGraphRole());
-		getRuleTypeButton().setSelected(!hasGraphRole());
-    	updateStatus();
-    	updateTitle();
-	}
+        getGraphTypeButton().setSelected(hasGraphRole());
+        getRuleTypeButton().setSelected(!hasGraphRole());
+        updateStatus();
+        updateTitle();
+    }
 
     /**
-	 * Handler method to execute a {@link Editor.OpenGraphAction}. Invokes a file
-	 * chooser dialog, and calls {@link #doOpenGraph(File)} if a file is
-	 * selected.
-	 */
+     * Handler method to execute a {@link Editor.OpenGraphAction}. Invokes a
+     * file chooser dialog, and calls {@link #doOpenGraph(File)} if a file is
+     * selected.
+     */
     protected void handleOpenGraph() {
         int result = getGraphChooser().showOpenDialog(getGraphPanel());
         if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
-        	File selectedFile = getGraphChooser().getSelectedFile();
+            File selectedFile = getGraphChooser().getSelectedFile();
             try {
                 doOpenGraph(selectedFile);
             } catch (IOException exc) {
-                showErrorDialog(String.format("Error while loading %s", selectedFile), exc);
+                showErrorDialog(String.format("Error while loading %s",
+                    selectedFile), exc);
             }
         }
     }
 
     /**
-     * Handler method to execute a {@link Editor.SaveGraphAction} or {@link SaveGraphAsAction}.
-     * If the action was save-as, or there is no model name, invokes a file chooser dialog. 
-     * Calls {@link #doSaveGraph(File)} if a file is selected. 
-     * The return value is the save file, or <code>null</code> if nothing was saved.
-     * @param as if <code>true</code>, the action was save-as and a save dialog should
-     * always be shown
+     * Handler method to execute a {@link Editor.SaveGraphAction} or
+     * {@link SaveGraphAsAction}. If the action was save-as, or there is no
+     * model name, invokes a file chooser dialog. Calls
+     * {@link #doSaveGraph(File)} if a file is selected. The return value is the
+     * save file, or <code>null</code> if nothing was saved.
+     * @param as if <code>true</code>, the action was save-as and a save
+     *        dialog should always be shown
      */
     protected File handleSaveGraph(boolean as) {
-    	if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION) && !handlePreview(null)) {
-    		return null;
-    	} else if (toAspectGraph().hasErrors()) {
-    		JOptionPane.showMessageDialog(getFrame(), "Cannot save graph with syntax errors", null, JOptionPane.WARNING_MESSAGE);
-    		return null;
-    	} else {
-    		File toFile = getCurrentFile();
-    		if (as || toFile == null) {
-    			toFile = ExtensionFilter.showSaveDialog(getGraphChooser(), getGraphPanel(), toFile);
-    		}
-			if (toFile != null) {
-				try {
-					doSaveGraph(toFile);
-					// parse the file name to extract any priority info
-					PriorityFileName priorityName = new PriorityFileName(toFile);
-					String actualName = priorityName.getActualName();
-					setModelName(actualName);
-					if (priorityName.hasPriority()) {
-						getModel().getProperties().setPriority(priorityName.getPriority());
-					}
-					toFile = new File(toFile.getParentFile(), actualName
-							+ ExtensionFilter.getExtension(toFile));
-					currentFile = toFile;
-				} catch (Exception exc) {
-					showErrorDialog(String.format("Error while saving to %s", toFile), exc);
-					toFile = null;
-				}
-			}
-			return toFile;
-		}
+        if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION)
+            && !handlePreview(null)) {
+            return null;
+        } else if (toAspectGraph().hasErrors()) {
+            JOptionPane.showMessageDialog(getFrame(),
+                "Cannot save graph with syntax errors", null,
+                JOptionPane.WARNING_MESSAGE);
+            return null;
+        } else {
+            File toFile = getCurrentFile();
+            if (as || toFile == null) {
+                toFile =
+                    ExtensionFilter.showSaveDialog(getGraphChooser(),
+                        getGraphPanel(), toFile);
+            }
+            if (toFile != null) {
+                try {
+                    doSaveGraph(toFile);
+                    // parse the file name to extract any priority info
+                    PriorityFileName priorityName =
+                        new PriorityFileName(toFile);
+                    String actualName = priorityName.getActualName();
+                    setModelName(actualName);
+                    if (priorityName.hasPriority()) {
+                        getModel().getProperties().setPriority(
+                            priorityName.getPriority());
+                    }
+                    toFile =
+                        new File(toFile.getParentFile(), actualName
+                            + ExtensionFilter.getExtension(toFile));
+                    this.currentFile = toFile;
+                } catch (Exception exc) {
+                    showErrorDialog(String.format("Error while saving to %s",
+                        toFile), exc);
+                    toFile = null;
+                }
+            }
+            return toFile;
+        }
     }
 
     /**
-	 * Shows a preview dialog, and possibly replaces the edited graph by the
-	 * previewed model.
-	 * 
-	 * @return <tt>true</tt> if the dialog was confirmed; if so, the jModel is
-	 *         aspect correct (and so can be saved).
-	 */
-	protected boolean handlePreview(String okOption) {
-		AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
-		if (previewedModel != null) {
-//			setSelectInsertedCells(false);
-			Graph plainGraph = previewedModel.toPlainGraph();
-			setErrors(GraphInfo.getErrors(plainGraph));
-			getModel().replace(GraphJModel.newInstance(plainGraph, getOptions()));
-			// copy the edited properties into the model
-			getModel().setProperties(previewedModel.getProperties());
-//			setSelectInsertedCells(true);
-			return true;
-		} else {
-			return false;
-		}
-	}
-    
+     * Shows a preview dialog, and possibly replaces the edited graph by the
+     * previewed model.
+     * @return <tt>true</tt> if the dialog was confirmed; if so, the jModel is
+     *         aspect correct (and so can be saved).
+     */
+    protected boolean handlePreview(String okOption) {
+        AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
+        if (previewedModel != null) {
+            // setSelectInsertedCells(false);
+            Graph plainGraph = previewedModel.toPlainGraph();
+            setErrors(GraphInfo.getErrors(plainGraph));
+            getModel().replace(
+                GraphJModel.newInstance(plainGraph, getOptions()));
+            // copy the edited properties into the model
+            getModel().setProperties(previewedModel.getProperties());
+            // setSelectInsertedCells(true);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * If the editor has unsaved changes, asks if these should be abandoned;
      * then calls {@link #doQuit()}.
@@ -346,7 +362,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             doQuit();
         }
     }
-    
+
     /**
      * Makes sure all resources are abandoned.
      */
@@ -355,39 +371,41 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         getGraphPanel().dispose();
         // try to persist the user preferences
         try {
-			Preferences.userRoot().flush();
-		} catch (BackingStoreException e) {
-			// do nothing
-		}
+            Preferences.userRoot().flush();
+        } catch (BackingStoreException e) {
+            // do nothing
+        }
     }
 
-	/**
-     * Reads the graph to be edited from a file. If the file does not exist, a new, empty model with
-     * the given name is created.
+    /**
+     * Reads the graph to be edited from a file. If the file does not exist, a
+     * new, empty model with the given name is created.
      * @param fromFile the file to read from
-     * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
+     * @throws IOException if <tt>fromFile</tt> did not contain a correctly
+     *         formatted graph
      */
     private void doOpenGraph(final File fromFile) throws IOException {
-    	currentFile = fromFile;
-    	// first create a graph from the gxl file
-    	final AspectGraph graph = layoutGxl.unmarshalGraph(fromFile);
-    	// load the model in the event dispatch thread, to avoid concurrency
-    	// issues
-    	SwingUtilities.invokeLater(new Runnable() {
-    		public void run() {
-    			setPlainGraph(graph.toPlainGraph());
-    		}
-    	});
+        this.currentFile = fromFile;
+        // first create a graph from the gxl file
+        final AspectGraph graph = this.layoutGxl.unmarshalGraph(fromFile);
+        // load the model in the event dispatch thread, to avoid concurrency
+        // issues
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setPlainGraph(graph.toPlainGraph());
+            }
+        });
     }
 
     /**
      * Saves the currently edited model as an ordinary graph to a file.
      * @param toFile the file to save to
-     * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
+     * @throws IOException if <tt>fromFile</tt> did not contain a correctly
+     *         formatted graph
      */
-    private void doSaveGraph(File toFile) throws IOException { 
+    private void doSaveGraph(File toFile) throws IOException {
         AspectGraph saveGraph = toAspectGraph();
-        layoutGxl.marshalGraph(saveGraph, toFile);
+        this.layoutGxl.marshalGraph(saveGraph, toFile);
         setGraphSaved();
     }
 
@@ -395,15 +413,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     protected void initListeners() {
         getJGraph().setToolTipEnabled(true);
         // Update ToolBar based on Selection Changes
-        getJGraph().getSelectionModel().addGraphSelectionListener(new GraphSelectionListener() {
-            public void valueChanged(GraphSelectionEvent e) {
-                // Update Button States based on Current Selection
-                boolean selected = !getJGraph().isSelectionEmpty();
-                getDeleteAction().setEnabled(selected);
-                getCopyAction().setEnabled(selected);
-                getCutAction().setEnabled(selected);
-            }
-        });
+        getJGraph().getSelectionModel().addGraphSelectionListener(
+            new GraphSelectionListener() {
+                public void valueChanged(GraphSelectionEvent e) {
+                    // Update Button States based on Current Selection
+                    boolean selected = !getJGraph().isSelectionEmpty();
+                    getDeleteAction().setEnabled(selected);
+                    getCopyAction().setEnabled(selected);
+                    getCutAction().setEnabled(selected);
+                }
+            });
         getChangeSupport().addPropertyChangeListener(ROLE_PROPERTY, this);
     }
 
@@ -411,9 +430,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Creates and lazily returns the undo manager for this editor.
      */
     private GraphUndoManager getUndoManager() {
-        if (undoManager == null) {
+        if (this.undoManager == null) {
             // Create a GraphUndoManager which also Updates the ToolBar
-            undoManager = new GraphUndoManager() {
+            this.undoManager = new GraphUndoManager() {
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
                     super.undoableEditHappened(e);
@@ -421,247 +440,277 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
                 }
             };
         }
-        return undoManager;
+        return this.undoManager;
     }
 
     /**
-     * Lazily creates and returns the action to cut graph elements in the editor.
+     * Lazily creates and returns the action to cut graph elements in the
+     * editor.
      */
     Action getCutAction() {
-        if (cutAction == null) {
+        if (this.cutAction == null) {
             Action action = TransferHandler.getCutAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("cut.gif")));
+            action.putValue(Action.SMALL_ICON, new ImageIcon(
+                Groove.getResource("cut.gif")));
             action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
-            cutAction = new TransferAction(action, Options.CUT_KEY, Options.CUT_ACTION_NAME);
+            this.cutAction =
+                new TransferAction(action, Options.CUT_KEY,
+                    Options.CUT_ACTION_NAME);
         }
-        return cutAction;
+        return this.cutAction;
     }
 
     /**
-     * Lazily creates and returns the action to copy graph elements in the editor.
+     * Lazily creates and returns the action to copy graph elements in the
+     * editor.
      */
     Action getCopyAction() {
-        if (copyAction == null) {
+        if (this.copyAction == null) {
             Action action = TransferHandler.getCopyAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("copy.gif")));
-            copyAction = new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
+            action.putValue(Action.SMALL_ICON, new ImageIcon(
+                Groove.getResource("copy.gif")));
+            this.copyAction =
+                new TransferAction(action, Options.COPY_KEY,
+                    Options.COPY_ACTION_NAME);
         }
-        return copyAction;
+        return this.copyAction;
     }
 
     /**
-     * Lazily creates and returns the action to delete graph elements from the editor.
+     * Lazily creates and returns the action to delete graph elements from the
+     * editor.
      */
     Action getDeleteAction() {
-        if (deleteAction == null) {
+        if (this.deleteAction == null) {
             // Remove
-            ImageIcon deleteIcon = new ImageIcon(Groove.getResource("delete.gif"));
-            deleteAction = new ToolbarAction(Options.DELETE_ACTION_NAME, Options.DELETE_KEY,
-                    deleteIcon) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (!getJGraph().isSelectionEmpty()) {
-                        Object[] cells = getJGraph().getSelectionCells();
-                        cells = getJGraph().getDescendants(cells);
-                        getJGraph().getModel().remove(cells);
+            ImageIcon deleteIcon =
+                new ImageIcon(Groove.getResource("delete.gif"));
+            this.deleteAction =
+                new ToolbarAction(Options.DELETE_ACTION_NAME,
+                    Options.DELETE_KEY, deleteIcon) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (!getJGraph().isSelectionEmpty()) {
+                            Object[] cells = getJGraph().getSelectionCells();
+                            cells = getJGraph().getDescendants(cells);
+                            getJGraph().getModel().remove(cells);
+                        }
                     }
-                }
-            };
-            deleteAction.setEnabled(false);
+                };
+            this.deleteAction.setEnabled(false);
         }
-        return deleteAction;
+        return this.deleteAction;
     }
 
     /**
-     * Lazily creates and returns the action to set the editor to edge editing mode.
+     * Lazily creates and returns the action to set the editor to edge editing
+     * mode.
      */
     Action getEdgeModeAction() {
-        if (edgeModeAction == null) {
+        if (this.edgeModeAction == null) {
             ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
-            edgeModeAction = new SetEditingModeAction(Options.EDGE_MODE_NAME,
+            this.edgeModeAction =
+                new SetEditingModeAction(Options.EDGE_MODE_NAME,
                     Options.EDGE_MODE_KEY, edgeIcon);
         }
-        return edgeModeAction;
+        return this.edgeModeAction;
     }
 
     /**
      * Lazily creates and returns the action to edit the graph properties.
      */
     Action getEditPropertiesAction() {
-    	if (editPropertiesAction == null) {
-    		editPropertiesAction = new EditPropertiesAction();
-    	}
-    	return editPropertiesAction;
+        if (this.editPropertiesAction == null) {
+            this.editPropertiesAction = new EditPropertiesAction();
+        }
+        return this.editPropertiesAction;
     }
 
     /**
      * Lazily creates and returns the action to export the current graph.
      */
     Action getExportGraphAction() {
-    	if (exportAction == null) {
-    		exportAction = new ExportGraphAction();
-    	}
-    	return exportAction;
+        if (this.exportAction == null) {
+            this.exportAction = new ExportGraphAction();
+        }
+        return this.exportAction;
     }
 
     /**
      * Lazily creates and returns the action to start editing a fresh graph.
      */
     Action getNewAction() {
-    	if (newAction == null) {
-    		newAction = new NewGraphAction();
-    	}
-    	return newAction;
+        if (this.newAction == null) {
+            this.newAction = new NewGraphAction();
+        }
+        return this.newAction;
     }
 
     /**
-     * Lazily creates and returns the action to set the editor to node editing mode.
+     * Lazily creates and returns the action to set the editor to node editing
+     * mode.
      */
     Action getNodeModeAction() {
-        if (nodeModeAction == null) {
-            ImageIcon nodeIcon = new ImageIcon(Groove.getResource("rectangle.gif"));
-            nodeModeAction = new SetEditingModeAction(Options.NODE_MODE_NAME,
+        if (this.nodeModeAction == null) {
+            ImageIcon nodeIcon =
+                new ImageIcon(Groove.getResource("rectangle.gif"));
+            this.nodeModeAction =
+                new SetEditingModeAction(Options.NODE_MODE_NAME,
                     Options.NODE_MODE_KEY, nodeIcon);
         }
-        return nodeModeAction;
+        return this.nodeModeAction;
     }
 
     /**
      * Lazily creates and returns the action to open a new graph.
      */
     Action getOpenGraphAction() {
-    	if (openAction == null) {
-    		openAction =  new OpenGraphAction();
-    	}
-    	return openAction;
+        if (this.openAction == null) {
+            this.openAction = new OpenGraphAction();
+        }
+        return this.openAction;
     }
 
     /**
-     * Lazily creates and returns the action to paste graph elements into the editor.
+     * Lazily creates and returns the action to paste graph elements into the
+     * editor.
      */
     Action getPasteAction() {
-        if (pasteAction == null) {
+        if (this.pasteAction == null) {
             Action action = TransferHandler.getPasteAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("paste.gif")));
-            pasteAction = new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
+            action.putValue(Action.SMALL_ICON, new ImageIcon(
+                Groove.getResource("paste.gif")));
+            this.pasteAction =
+                new TransferAction(action, Options.PASTE_KEY,
+                    Options.PASTE_ACTION_NAME);
         }
-        return pasteAction;
+        return this.pasteAction;
     }
 
     /**
-	 * Lazily creates and returns the action to quit the editor.
-	 */
-	Action getQuitAction() {
-		if (quitAction == null) {
-			quitAction = new QuitAction();
-		}
-		return quitAction;
-	}
+     * Lazily creates and returns the action to quit the editor.
+     */
+    Action getQuitAction() {
+        if (this.quitAction == null) {
+            this.quitAction = new QuitAction();
+        }
+        return this.quitAction;
+    }
 
-	/**
+    /**
      * Lazily creates and returns the action to redo the last editor action.
      */
     private Action getRedoAction() {
-        if (redoAction == null) {
+        if (this.redoAction == null) {
             ImageIcon redoIcon = new ImageIcon(Groove.getResource("redo.gif"));
-            redoAction = new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, redoIcon) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    super.actionPerformed(evt);
-                    redoLastEdit();
-                }
-            };
-            redoAction.setEnabled(false);
+            this.redoAction =
+                new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY,
+                    redoIcon) {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        super.actionPerformed(evt);
+                        redoLastEdit();
+                    }
+                };
+            this.redoAction.setEnabled(false);
         }
-        return redoAction;
+        return this.redoAction;
     }
 
     /**
-	 * Lazily creates and returns the action to save the current graph.
-	 */
-	private Action getSaveGraphAction() {
-		if (saveAction == null) {
-			saveAction = new SaveGraphAction();
-		}
-		return saveAction;
-	}
+     * Lazily creates and returns the action to save the current graph.
+     */
+    private Action getSaveGraphAction() {
+        if (this.saveAction == null) {
+            this.saveAction = new SaveGraphAction();
+        }
+        return this.saveAction;
+    }
 
     /**
-	 * Lazily creates and returns the action to save the current graph under a different name.
-	 */
-	private Action getSaveGraphAsAction() {
-		if (saveAsAction == null) {
-			saveAsAction = new SaveGraphAsAction();
-		}
-		return saveAsAction;
-	}
+     * Lazily creates and returns the action to save the current graph under a
+     * different name. AREND Arend, decide whether to include this action!
+     */
+    @SuppressWarnings("all")
+    private Action getSaveGraphAsAction() {
+        if (this.saveAsAction == null) {
+            this.saveAsAction = new SaveGraphAsAction();
+        }
+        return this.saveAsAction;
+    }
 
-	/**
-     * Lazily creates and returns the action to set the editor to selection mode.
+    /**
+     * Lazily creates and returns the action to set the editor to selection
+     * mode.
      */
     private Action getSelectModeAction() {
-        if (selectModeAction == null) {
-            ImageIcon selectIcon = new ImageIcon(Groove.getResource("select.gif"));
-            selectModeAction = new SetEditingModeAction(Options.SELECT_MODE_NAME,
+        if (this.selectModeAction == null) {
+            ImageIcon selectIcon =
+                new ImageIcon(Groove.getResource("select.gif"));
+            this.selectModeAction =
+                new SetEditingModeAction(Options.SELECT_MODE_NAME,
                     Options.SELECT_MODE_KEY, selectIcon);
         }
-        return selectModeAction;
+        return this.selectModeAction;
     }
 
     /** Returns the rule preview action, lazily creating it first. */
     private Action getSetRuleTypeAction() {
-        if (rulePreviewAction == null) {
-            rulePreviewAction = new SetRuleRoleAction();
+        if (this.rulePreviewAction == null) {
+            this.rulePreviewAction = new SetRuleRoleAction();
         }
-        return rulePreviewAction;
+        return this.rulePreviewAction;
     }
 
     /** Returns the rule preview action, lazily creating it first. */
     private Action getSetGraphTypeAction() {
-        if (graphPreviewAction == null) {
-            graphPreviewAction = new SetGraphRoleAction();
+        if (this.graphPreviewAction == null) {
+            this.graphPreviewAction = new SetGraphRoleAction();
         }
-        return graphPreviewAction;
+        return this.graphPreviewAction;
     }
 
     /**
      * Lazily creates and returns the action to undo the last editor action.
      */
     private Action getUndoAction() {
-        if (undoAction == null) {
+        if (this.undoAction == null) {
             ImageIcon undoIcon = new ImageIcon(Groove.getResource("undo.gif"));
-            undoAction = new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, undoIcon) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    super.actionPerformed(evt);
-                    undoLastEdit();
-                }
-            };
-            undoAction.setEnabled(false);
+            this.undoAction =
+                new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY,
+                    undoIcon) {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        super.actionPerformed(evt);
+                        undoLastEdit();
+                    }
+                };
+            this.undoAction.setEnabled(false);
         }
-        return undoAction;
+        return this.undoAction;
     }
 
     /** Initialises the GUI. */
     protected void initGUI() {
-    	getFrame().setIconImage(Groove.GROOVE_ICON_16x16.getImage());
+        getFrame().setIconImage(Groove.GROOVE_ICON_16x16.getImage());
         // Set Close Operation to Exit
-    	getFrame().setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-    	getFrame().addWindowListener(new WindowAdapter() {
+        getFrame().setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        getFrame().addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent evt) {
                 handleQuit();
             }
         });
-    	getFrame().setJMenuBar(createMenuBar());
-    	getFrame().setContentPane(createContentPanel(createToolBar()));
+        getFrame().setJMenuBar(createMenuBar());
+        getFrame().setContentPane(createContentPanel(createToolBar()));
     }
 
     /**
-     * Creates a panel showing a given toolbar, and the graph and status panels of the editor.
+     * Creates a panel showing a given toolbar, and the graph and status panels
+     * of the editor.
      */
     JPanel createContentPanel(JToolBar toolBar) {
-        JPanel result = new JPanel(new BorderLayout(),false);
+        JPanel result = new JPanel(new BorderLayout(), false);
         // initialize the main editor panel
         // Add a ToolBar
         result.add(toolBar, BorderLayout.NORTH);
@@ -670,40 +719,41 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         return result;
     }
 
-	/**
-	 * Returns a file chooser for loading graphs, after lazily creating it.
-	 */
-	protected MyFileChooser getGraphChooser() {
-		if (graphChooser == null) {
-			graphChooser = new MyFileChooser();
-    		// listen to file filter changes; possibly we have to update the editor role
-			graphChooser.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent evt) {
-					FileFilter filter = (FileFilter) evt.getNewValue();
-					if (graphChooser.isRuleFilter(filter)) {
-						setRole(Groove.RULE_ROLE);
-					} else if (graphChooser.isStateFilter(filter)) {
-						setRole(Groove.GRAPH_ROLE);
-					}
-				}
-    		});
+    /**
+     * Returns a file chooser for loading graphs, after lazily creating it.
+     */
+    protected MyFileChooser getGraphChooser() {
+        if (this.graphChooser == null) {
+            this.graphChooser = new MyFileChooser();
+            // listen to file filter changes; possibly we have to update the
+            // editor role
+            this.graphChooser.addPropertyChangeListener(
+                JFileChooser.FILE_FILTER_CHANGED_PROPERTY,
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        FileFilter filter = (FileFilter) evt.getNewValue();
+                        if (Editor.this.graphChooser.isRuleFilter(filter)) {
+                            setRole(Groove.RULE_ROLE);
+                        } else if (Editor.this.graphChooser.isStateFilter(filter)) {
+                            setRole(Groove.GRAPH_ROLE);
+                        }
+                    }
+                });
 
-//			graphOpenChooser.addChoosableFileFilter(graphFilter);
-		}
-		return graphChooser;
-	}
+            // graphOpenChooser.addChoosableFileFilter(graphFilter);
+        }
+        return this.graphChooser;
+    }
 
     /**
-	 * Sets the modified status of the currently edited graph. Also updates the frame
-	 * title to reflect the new modified status.
-	 * 
-	 * @param modified
-	 *            the new modified status
-	 * @see #isCurrentGraphModified()
-	 */
+     * Sets the modified status of the currently edited graph. Also updates the
+     * frame title to reflect the new modified status.
+     * @param modified the new modified status
+     * @see #isCurrentGraphModified()
+     */
     protected void setCurrentGraphModified(boolean modified) {
-    	currentGraphModified = modified;
-		updateTitle();
+        this.currentGraphModified = modified;
+        updateTitle();
     }
 
     /**
@@ -711,15 +761,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * @see #setCurrentGraphModified(boolean)
      */
     protected boolean isCurrentGraphModified() {
-        return currentGraphModified;
+        return this.currentGraphModified;
     }
 
     /**
-	 * Registers that a graph has been saved.
-	 * @see #isAnyGraphSaved()
-	 */
+     * Registers that a graph has been saved.
+     * @see #isAnyGraphSaved()
+     */
     protected void setGraphSaved() {
-    	anyGraphSaved = true;
+        this.anyGraphSaved = true;
         setCurrentGraphModified(false);
     }
 
@@ -727,79 +777,83 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Indicates if any graph was saved during the lifetime of this editor.
      */
     protected boolean isAnyGraphSaved() {
-        return anyGraphSaved;
+        return this.anyGraphSaved;
     }
 
     /** Indicates if the current graph has any load errors. */
     private boolean hasErrors() {
-    	return errors != null;
+        return this.errors != null;
     }
-    
+
     /** Returns the collection of load errors in the current graph. */
     private Collection<String> getErrors() {
-    	return this.errors;
+        return this.errors;
     }
-    
+
     /** Sets the load errors in the current graph to a given collection. */
     private void setErrors(Collection<String> errors) {
-    	this.errors = errors;
+        this.errors = errors;
     }
 
     /**
-	 * Indicates if we are editing a rule or a graph.
-	 * @return <code>true</code> if we are editing a graph.
-	 */
-	boolean hasGraphRole() {
-	    return Groove.GRAPH_ROLE.equals(role);
-	}
+     * Indicates if we are editing a rule or a graph.
+     * @return <code>true</code> if we are editing a graph.
+     */
+    boolean hasGraphRole() {
+        return Groove.GRAPH_ROLE.equals(this.role);
+    }
 
-	/**
-     * Returns a textual representation of the graph type,
-     * with the first letter capitalised on demand.
+    /**
+     * Returns a textual representation of the graph type, with the first letter
+     * capitalised on demand.
      * @param upper if <code>true</code>, the first letter is capitalised
      */
     String getRole(boolean upper) {
-    	if (role == null) {
-    		role = Groove.GRAPH_ROLE;
-    	}
-    	if (upper) {
-			char[] result = role.toCharArray();
-			result[0] = Character.toUpperCase(result[0]);
-			return String.valueOf(result);
-		} else {
-			return role;
-		}
+        if (this.role == null) {
+            this.role = Groove.GRAPH_ROLE;
+        }
+        if (upper) {
+            char[] result = this.role.toCharArray();
+            result[0] = Character.toUpperCase(result[0]);
+            return String.valueOf(result);
+        } else {
+            return this.role;
+        }
     }
-    
+
     /**
-     * Sets the edit role to {@link Groove#GRAPH_ROLE} or {@link Groove#RULE_ROLE}.
-     * @param role the edit role to be set; if <code>null</code>, it is set to {@link Groove#GRAPH_ROLE}.
-     * @return <code>true</code> if the edit type was actually changed; <code>false</code> if it 
-     * was already equal to <code>role</code>
+     * Sets the edit role to {@link Groove#GRAPH_ROLE} or
+     * {@link Groove#RULE_ROLE}.
+     * @param role the edit role to be set; if <code>null</code>, it is set
+     *        to {@link Groove#GRAPH_ROLE}.
+     * @return <code>true</code> if the edit type was actually changed;
+     *         <code>false</code> if it was already equal to <code>role</code>
      */
     boolean setRole(String role) {
-    	if (role == null) {
-    		role = Groove.GRAPH_ROLE;
-    	}
-    	if (! (Groove.GRAPH_ROLE.equals(role) || Groove.RULE_ROLE.equals(role))) {
-    		throw new IllegalArgumentException(String.format("Illegal role %s", role));
-    	}
-    	String oldRole = this.role;
+        if (role == null) {
+            role = Groove.GRAPH_ROLE;
+        }
+        if (!(Groove.GRAPH_ROLE.equals(role) || Groove.RULE_ROLE.equals(role))) {
+            throw new IllegalArgumentException(String.format("Illegal role %s",
+                role));
+        }
+        String oldRole = this.role;
         boolean result = !role.equals(oldRole);
         // set the value if it has changed
         if (result) {
-        	this.role = role;
-        	// fire change only if there was a previous value
-        	if (oldRole != null) {
-        		getChangeSupport().firePropertyChange(ROLE_PROPERTY, oldRole, role);
-        	}
+            this.role = role;
+            // fire change only if there was a previous value
+            if (oldRole != null) {
+                getChangeSupport().firePropertyChange(ROLE_PROPERTY, oldRole,
+                    role);
+            }
         }
         return result;
     }
 
     /**
-     * Sets the name of the editor model.
-     * The name may be <tt>null</tt> if the model is to be anonymous.
+     * Sets the name of the editor model. The name may be <tt>null</tt> if the
+     * model is to be anonymous.
      * @param name new name for the editor model
      * @see EditorJModel#setName(String)
      */
@@ -811,8 +865,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-     * Returns the current name of the editor model.
-     * The name may be <tt>null</tt> if the model is anonymous.
+     * Returns the current name of the editor model. The name may be
+     * <tt>null</tt> if the model is anonymous.
      * @see EditorJModel#getName()
      */
     protected String getModelName() {
@@ -823,59 +877,69 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         }
     }
 
-	/** Lazily creates and returns the property change support object for this editor. */
-	private PropertyChangeSupport getChangeSupport() {
-		if (propertyChangeSupport == null) {
-			propertyChangeSupport = new PropertyChangeSupport(this);
-		}
-		return propertyChangeSupport;
-	}
-	
-	/**
-     * Sets the name of the graph in the title bar. If the indicated name is <tt>null</tt>, a
-     * {@link #NEW_GRAPH_TITLE} is used.
+    /**
+     * Lazily creates and returns the property change support object for this
+     * editor.
+     */
+    private PropertyChangeSupport getChangeSupport() {
+        if (this.propertyChangeSupport == null) {
+            this.propertyChangeSupport = new PropertyChangeSupport(this);
+        }
+        return this.propertyChangeSupport;
+    }
+
+    /**
+     * Sets the name of the graph in the title bar. If the indicated name is
+     * <tt>null</tt>, a {@link #NEW_GRAPH_TITLE} is used.
      */
     protected void updateTitle() {
         String modelName = getModelName();
         if (modelName == null) {
-        	modelName = hasGraphRole() ? NEW_GRAPH_TITLE : NEW_RULE_TITLE;
+            modelName = hasGraphRole() ? NEW_GRAPH_TITLE : NEW_RULE_TITLE;
         }
-        String title = (currentGraphModified ? MODIFIED_INDICATOR: "") + (modelName == null ? NEW_GRAPH_TITLE : modelName) + " - " + EDITOR_NAME;
+        String title =
+            (this.currentGraphModified ? MODIFIED_INDICATOR : "")
+                + (modelName == null ? NEW_GRAPH_TITLE : modelName) + " - "
+                + EDITOR_NAME;
         Component window = getRootComponent();
         if (window instanceof JFrame) {
-            ((JFrame) window).setTitle(title);        
+            ((JFrame) window).setTitle(title);
         } else if (window instanceof JDialog) {
-            ((JDialog) window).setTitle(title);                    
+            ((JDialog) window).setTitle(title);
         }
     }
 
     /**
-     * Returns the top level component of the graph panel in the containmeint hierarchy.
+     * Returns the top level component of the graph panel in the containmeint
+     * hierarchy.
      */
     protected Component getRootComponent() {
         Component component = getGraphPanel();
-        while (component != null && !(component instanceof JFrame || component instanceof JDialog)) {
+        while (component != null
+            && !(component instanceof JFrame || component instanceof JDialog)) {
             component = component.getParent();
         }
         return component;
     }
-    
+
     JGraphPanel<?> getGraphPanel() {
-        if (jGraphPanel == null) {
-            jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph, false, getOptions());
+        if (this.jGraphPanel == null) {
+            this.jGraphPanel =
+                new JGraphPanel<EditorJGraph>(this.jgraph, false, getOptions());
         }
-    	return jGraphPanel;
+        return this.jGraphPanel;
     }
 
     /**
-     * Creates and returns the menu bar. Requires the actions to have been initialised first.
+     * Creates and returns the menu bar. Requires the actions to have been
+     * initialised first.
      */
     JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         // file menu, only if the component is not auxiliary
-//        if (getFixedEditType() == null) {
-        	menuBar.add(createFileMenu());
-//        }
+        // if (getFixedEditType() == null) {
+        menuBar.add(createFileMenu());
+        // }
         menuBar.add(createEditMenu());
         menuBar.add(createPropertiesMenu());
         menuBar.add(createDisplayMenu());
@@ -884,90 +948,90 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         return menuBar;
     }
 
-	/**
-	 * Creates and returns a file menu for the menu bar.
-	 */
-	JMenu createFileMenu() {
-		JMenu result = new JMenu(Options.FILE_MENU_NAME);
-		result.setMnemonic(Options.FILE_MENU_MNEMONIC);
-	    result.add(getNewAction());
-	    result.add(getOpenGraphAction());
-	    result.addSeparator();
-	    result.add(getSaveGraphAction());
-	    // Save as not yet enabled (for backward compatibility reasons)
-	    // result.add(getSaveGraphAsAction());
-	    result.add(getExportGraphAction());
-	    result.addSeparator();
-	    result.add(getQuitAction());
-	    return result;
-	}
+    /**
+     * Creates and returns a file menu for the menu bar.
+     */
+    JMenu createFileMenu() {
+        JMenu result = new JMenu(Options.FILE_MENU_NAME);
+        result.setMnemonic(Options.FILE_MENU_MNEMONIC);
+        result.add(getNewAction());
+        result.add(getOpenGraphAction());
+        result.addSeparator();
+        result.add(getSaveGraphAction());
+        // Save as not yet enabled (for backward compatibility reasons)
+        // result.add(getSaveGraphAsAction());
+        result.add(getExportGraphAction());
+        result.addSeparator();
+        result.add(getQuitAction());
+        return result;
+    }
 
-	/**
-	 * Creates and returns an edit menu for the menu bar.
-	 */
-	JMenu createEditMenu() {
-	    JMenu result = new JMenu(Options.EDIT_MENU_NAME);
-	    result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
-	    result.add(getUndoAction());
-	    result.add(getRedoAction());
-	    result.addSeparator();
-	    result.add(getCutAction());
-	    result.add(getCopyAction());
-	    result.add(getPasteAction());
-	    result.add(getDeleteAction());
-	    result.addSeparator();
-	    result.add(getSelectModeAction());
-	    result.add(getNodeModeAction());
-	    result.add(getEdgeModeAction());
-	    jgraph.fillOutEditMenu(result.getPopupMenu(), true);
-	    return result;
-	}
+    /**
+     * Creates and returns an edit menu for the menu bar.
+     */
+    JMenu createEditMenu() {
+        JMenu result = new JMenu(Options.EDIT_MENU_NAME);
+        result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
+        result.add(getUndoAction());
+        result.add(getRedoAction());
+        result.addSeparator();
+        result.add(getCutAction());
+        result.add(getCopyAction());
+        result.add(getPasteAction());
+        result.add(getDeleteAction());
+        result.addSeparator();
+        result.add(getSelectModeAction());
+        result.add(getNodeModeAction());
+        result.add(getEdgeModeAction());
+        this.jgraph.fillOutEditMenu(result.getPopupMenu(), true);
+        return result;
+    }
 
-	/**
-	 * Creates and returns an options menu for the menu bar.
-	 */
-	JMenu createOptionsMenu() {
+    /**
+     * Creates and returns an options menu for the menu bar.
+     */
+    JMenu createOptionsMenu() {
         JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
         result.add(getOptions().getItem(Options.PREVIEW_ON_SAVE_OPTION));
         result.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
         return result;
-	}
+    }
 
-	/**
-	 * Creates and returns a properties menu for the menu bar.
-	 */
-	JMenu createPropertiesMenu() {
+    /**
+     * Creates and returns a properties menu for the menu bar.
+     */
+    JMenu createPropertiesMenu() {
         JMenu result = new JMenu(Options.PROPERTIES_MENU_NAME);
         result.setMnemonic(Options.PROPERTIES_MENU_MNEMONIC);
-	    result.addSeparator();
-	    result.add(getEditPropertiesAction());
+        result.addSeparator();
+        result.add(getEditPropertiesAction());
         return result;
-	}
+    }
 
-	/**
-	 * Creates and returns a display menu for the menu bar.
-	 */
-	JMenu createDisplayMenu() {
+    /**
+     * Creates and returns a display menu for the menu bar.
+     */
+    JMenu createDisplayMenu() {
         JMenu result = new JMenu(Options.DISPLAY_MENU_NAME);
         result.setMnemonic(Options.DISPLAY_MENU_MNEMONIC);
-        jgraph.fillOutDisplayMenu(result.getPopupMenu());
+        this.jgraph.fillOutDisplayMenu(result.getPopupMenu());
         result.addSeparator();
         result.add(getGraphPanel().getViewLabelListItem());
         return result;
-	}
+    }
 
-	/**
-	 * Creates and returns a help menu for the menu bar.
-	 */
-	JMenu createHelpMenu() {
-		JMenu result = new JMenu(HELP_MENU_NAME);
-		result.setMnemonic(Options.HELP_MENU_MNEMONIC);
-    	result.add(new JMenuItem(new AboutAction()));
-    	return result;
-	}
+    /**
+     * Creates and returns a help menu for the menu bar.
+     */
+    JMenu createHelpMenu() {
+        JMenu result = new JMenu(HELP_MENU_NAME);
+        result.setMnemonic(Options.HELP_MENU_MNEMONIC);
+        result.add(new JMenuItem(new AboutAction()));
+        return result;
+    }
 
-	/**
+    /**
      * Creates and returns the tool bar.
      */
     JToolBar createToolBar() {
@@ -986,9 +1050,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * @param toolbar the toolbar to be extended
      */
     void addFileButtons(JToolBar toolbar) {
-    	toolbar.add(getNewAction());
-    	toolbar.add(getOpenGraphAction());
-    	toolbar.add(getSaveGraphAction());
+        toolbar.add(getNewAction());
+        toolbar.add(getOpenGraphAction());
+        toolbar.add(getSaveGraphAction());
     }
 
     /**
@@ -1011,7 +1075,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     void addModeButtons(JToolBar toolbar) {
         // Mode block
         toolbar.addSeparator();
-        toolbar.add(getSelectModeButton());        
+        toolbar.add(getSelectModeButton());
         toolbar.add(getNodeModeButton());
         toolbar.add(getEdgeModeButton());
     }
@@ -1041,136 +1105,146 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-	 * Returns the group of editing mode buttons, lazily creating it first.
-	 */
-	private ButtonGroup getModeButtonGroup() {
-		if (modeButtonGroup == null) {
-			modeButtonGroup = new ButtonGroup();
-			modeButtonGroup.add(getSelectModeButton());
-			modeButtonGroup.add(getNodeModeButton());
-			modeButtonGroup.add(getEdgeModeButton());
-		}
-		return modeButtonGroup;
-	}
+     * Returns the group of editing mode buttons, lazily creating it first.
+     */
+    private ButtonGroup getModeButtonGroup() {
+        if (this.modeButtonGroup == null) {
+            this.modeButtonGroup = new ButtonGroup();
+            this.modeButtonGroup.add(getSelectModeButton());
+            this.modeButtonGroup.add(getNodeModeButton());
+            this.modeButtonGroup.add(getEdgeModeButton());
+        }
+        return this.modeButtonGroup;
+    }
 
-	/**
-	 * Returns the group of editing mode buttons, lazily creating it first.
-	 */
-	private ButtonGroup getTypeButtonGroup() {
-		if (typeButtonGroup == null) {
-			typeButtonGroup = new ButtonGroup();
-			typeButtonGroup.add(getGraphTypeButton());
-			typeButtonGroup.add(getRuleTypeButton());
-		}
-		return typeButtonGroup;
-	}
+    /**
+     * Returns the group of editing mode buttons, lazily creating it first.
+     */
+    private ButtonGroup getTypeButtonGroup() {
+        if (this.typeButtonGroup == null) {
+            this.typeButtonGroup = new ButtonGroup();
+            this.typeButtonGroup.add(getGraphTypeButton());
+            this.typeButtonGroup.add(getRuleTypeButton());
+        }
+        return this.typeButtonGroup;
+    }
 
-	/**
-	 * Returns the button for setting edge editing mode, lazily creating it first.
-	 */
-	private JToggleButton getEdgeModeButton() {
-		if (edgeModeButton == null) {
-			edgeModeButton = new JToggleButton(getEdgeModeAction());
-			edgeModeButton.setText(null);
-			edgeModeButton.setToolTipText(Options.EDGE_MODE_NAME);
-		}
-		return edgeModeButton;
-	}
+    /**
+     * Returns the button for setting edge editing mode, lazily creating it
+     * first.
+     */
+    private JToggleButton getEdgeModeButton() {
+        if (this.edgeModeButton == null) {
+            this.edgeModeButton = new JToggleButton(getEdgeModeAction());
+            this.edgeModeButton.setText(null);
+            this.edgeModeButton.setToolTipText(Options.EDGE_MODE_NAME);
+        }
+        return this.edgeModeButton;
+    }
 
-	/**
-	 * Returns the button for setting node editing mode, lazily creating it first.
-	 */
-	private JToggleButton getNodeModeButton() {
-		if (nodeModeButton == null) {
-			nodeModeButton = new JToggleButton(getNodeModeAction());
-			nodeModeButton.setText(null);
-			nodeModeButton.setToolTipText(Options.NODE_MODE_NAME);
-		}
-		return nodeModeButton;
-	}
+    /**
+     * Returns the button for setting node editing mode, lazily creating it
+     * first.
+     */
+    private JToggleButton getNodeModeButton() {
+        if (this.nodeModeButton == null) {
+            this.nodeModeButton = new JToggleButton(getNodeModeAction());
+            this.nodeModeButton.setText(null);
+            this.nodeModeButton.setToolTipText(Options.NODE_MODE_NAME);
+        }
+        return this.nodeModeButton;
+    }
 
-	/**
-	 * Returns the button for setting selection mode, lazily creating it first.
-	 */
-	private JToggleButton getSelectModeButton() {
-		if (selectModeButton == null) {
-			selectModeButton = new JToggleButton(getSelectModeAction());
-			selectModeButton.setText(null);
-			selectModeButton.setToolTipText(Options.SELECT_MODE_NAME);
-			selectModeButton.doClick();
-		}
-		return selectModeButton;
-	}
+    /**
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    private JToggleButton getSelectModeButton() {
+        if (this.selectModeButton == null) {
+            this.selectModeButton = new JToggleButton(getSelectModeAction());
+            this.selectModeButton.setText(null);
+            this.selectModeButton.setToolTipText(Options.SELECT_MODE_NAME);
+            this.selectModeButton.doClick();
+        }
+        return this.selectModeButton;
+    }
 
-	
-	/**
-	 * Returns the button for setting node editing mode, lazily creating it first.
-	 */
-	JToggleButton getGraphTypeButton() {
-		if (graphTypeButton == null) {
-			graphTypeButton = new JToggleButton(getSetGraphTypeAction());
-			graphTypeButton.setText(null);
-            graphTypeButton.addChangeListener(new ChangeListener() {
+    /**
+     * Returns the button for setting node editing mode, lazily creating it
+     * first.
+     */
+    JToggleButton getGraphTypeButton() {
+        if (this.graphTypeButton == null) {
+            this.graphTypeButton = new JToggleButton(getSetGraphTypeAction());
+            this.graphTypeButton.setText(null);
+            this.graphTypeButton.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
-                    Editor.this.getGraphTypeButton().setToolTipText(Editor.this.getGraphTypeButton().isSelected() ? Options.PREVIEW_ACTION_NAME : Options.SET_GRAPH_ROLE_ACTION_NAME);
+                    Editor.this.getGraphTypeButton().setToolTipText(
+                        Editor.this.getGraphTypeButton().isSelected()
+                                ? Options.PREVIEW_ACTION_NAME
+                                : Options.SET_GRAPH_ROLE_ACTION_NAME);
                 }
             });
-            graphTypeButton.doClick();
-//			graphEditButton.setToolTipText(Options.GRAPH_MODE_ACTION_NAME);
-		}
-		return graphTypeButton;
-	}
+            this.graphTypeButton.doClick();
+            // graphEditButton.setToolTipText(Options.GRAPH_MODE_ACTION_NAME);
+        }
+        return this.graphTypeButton;
+    }
 
-	/**
-	 * Returns the button for setting selection mode, lazily creating it first.
-	 */
-	JToggleButton getRuleTypeButton() {
-		if (ruleTypeButton == null) {
-			ruleTypeButton = new JToggleButton(getSetRuleTypeAction());
-			ruleTypeButton.setText(null);
-            ruleTypeButton.addChangeListener(new ChangeListener() {
+    /**
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    JToggleButton getRuleTypeButton() {
+        if (this.ruleTypeButton == null) {
+            this.ruleTypeButton = new JToggleButton(getSetRuleTypeAction());
+            this.ruleTypeButton.setText(null);
+            this.ruleTypeButton.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
-                    Editor.this.getRuleTypeButton().setToolTipText(Editor.this.getRuleTypeButton().isSelected() ? Options.PREVIEW_ACTION_NAME : Options.SET_RULE_ROLE_ACTION_NAME);
+                    Editor.this.getRuleTypeButton().setToolTipText(
+                        Editor.this.getRuleTypeButton().isSelected()
+                                ? Options.PREVIEW_ACTION_NAME
+                                : Options.SET_RULE_ROLE_ACTION_NAME);
                 }
             });
-//			ruleEditButton.setToolTipText(Options.RULE_MODE_ACTION_NAME);
-		}
-		return ruleTypeButton;
-	}
+            // ruleEditButton.setToolTipText(Options.RULE_MODE_ACTION_NAME);
+        }
+        return this.ruleTypeButton;
+    }
 
     /** Creates a panel consisting of the error panel and the status bar. */
     JPanel getStatusPanel() {
-        if (statusPanel == null) {
-            statusPanel = new JPanel(new BorderLayout());
-            statusPanel.add(getErrorPanel());
-            statusPanel.add(getStatusBar(), BorderLayout.SOUTH);
+        if (this.statusPanel == null) {
+            this.statusPanel = new JPanel(new BorderLayout());
+            this.statusPanel.add(getErrorPanel());
+            this.statusPanel.add(getStatusBar(), BorderLayout.SOUTH);
         }
-        return statusPanel;
+        return this.statusPanel;
     }
 
     /** Lazily creates and returns the error panel. */
     private ErrorListPanel getErrorPanel() {
-        if (errorPanel == null) {
-            errorPanel = new ErrorListPanel();
+        if (this.errorPanel == null) {
+            this.errorPanel = new ErrorListPanel();
         }
-        return errorPanel;
+        return this.errorPanel;
     }
-    
+
     /** Lazily creates and returns the error panel. */
     private JLabel getStatusBar() {
-        return statusBar;
+        return this.statusBar;
     }
 
-	/** 
-	 * Callback factory method for a properties dialog for the currently edited model. 
-	 */
-	PropertiesDialog createPropertiesDialog(boolean editable) {
-		return new PropertiesDialog(getModel().getProperties(), GraphProperties.DEFAULT_USER_KEYS, editable);
-	}
+    /**
+     * Callback factory method for a properties dialog for the currently edited
+     * model.
+     */
+    PropertiesDialog createPropertiesDialog(boolean editable) {
+        return new PropertiesDialog(getModel().getProperties(),
+            GraphProperties.DEFAULT_USER_KEYS, editable);
+    }
 
-    /** 
-     * Updates the Undo/Redo Button State based on Undo Manager.
-     * Also sets {@link #isCurrentGraphModified()} if no more undos are available.
+    /**
+     * Updates the Undo/Redo Button State based on Undo Manager. Also sets
+     * {@link #isCurrentGraphModified()} if no more undos are available.
      */
     protected void updateHistoryButtons() {
         // The View Argument Defines the Context
@@ -1180,11 +1254,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-     * Activates the appropriate mode button (select, node or edge), based on a given (mode) action.
-     * @param forAction the mode action for which the corresponding button is to be activated
+     * Activates the appropriate mode button (select, node or edge), based on a
+     * given (mode) action.
+     * @param forAction the mode action for which the corresponding button is to
+     *        be activated
      */
     protected void updateModeButtons(Action forAction) {
-        Enumeration<AbstractButton> modeButtonEnum = getModeButtonGroup().getElements();
+        Enumeration<AbstractButton> modeButtonEnum =
+            getModeButtonGroup().getElements();
         while (modeButtonEnum.hasMoreElements()) {
             JToggleButton button = (JToggleButton) modeButtonEnum.nextElement();
             if (button.getAction() == forAction) {
@@ -1194,11 +1271,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-     * Activates the appropriate mode button (select, node or edge), based on a given (mode) action.
-     * @param forAction the mode action for which the corresponding button is to be activated
+     * Activates the appropriate mode button (select, node or edge), based on a
+     * given (mode) action.
+     * @param forAction the mode action for which the corresponding button is to
+     *        be activated
      */
     protected void updateTypeButtons(Action forAction) {
-        Enumeration<AbstractButton> modeButtonEnum = getTypeButtonGroup().getElements();
+        Enumeration<AbstractButton> modeButtonEnum =
+            getTypeButtonGroup().getElements();
         while (modeButtonEnum.hasMoreElements()) {
             JToggleButton button = (JToggleButton) modeButtonEnum.nextElement();
             if (button.getAction() == forAction) {
@@ -1206,34 +1286,38 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             }
         }
     }
-    
+
     /** Updates the status bar with information about the currently edited graph. */
     protected void updateStatus() {
-        int elementCount = getModel().getRootCount() - getModel().getGrayedOut().size();
-        getStatusBar().setText(""+elementCount+" visible elements");
+        int elementCount =
+            getModel().getRootCount() - getModel().getGrayedOut().size();
+        getStatusBar().setText("" + elementCount + " visible elements");
         List<String> errors = new ArrayList<String>();
         if (hasErrors()) {
-        	errors.addAll(getErrors());
+            errors.addAll(getErrors());
         }
         errors.addAll(toView().getErrors());
-    	getErrorPanel().setErrors(errors);
+        getErrorPanel().setErrors(errors);
     }
-    
+
     /** Sets the property whether all inserted cells are automatically selected. */
     protected void setSelectInsertedCells(boolean select) {
-        jgraph.getGraphLayoutCache().setSelectsAllInsertedCells(select);  
+        this.jgraph.getGraphLayoutCache().setSelectsAllInsertedCells(select);
     }
-    
-    /** Returns the current property whether all inserted cells are automatically selected. */
+
+    /**
+     * Returns the current property whether all inserted cells are automatically
+     * selected.
+     */
     protected boolean isSelectInsertedCells() {
-        return jgraph.getGraphLayoutCache().isSelectsAllInsertedCells();          
+        return this.jgraph.getGraphLayoutCache().isSelectsAllInsertedCells();
     }
 
     /** Undoes the last registered change to the Model or the View. */
     protected void undoLastEdit() {
         try {
             setSelectInsertedCells(false);
-            getUndoManager().undo(jgraph.getGraphLayoutCache());
+            getUndoManager().undo(this.jgraph.getGraphLayoutCache());
             setSelectInsertedCells(true);
         } catch (Exception ex) {
             System.err.println(ex);
@@ -1246,7 +1330,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     protected void redoLastEdit() {
         try {
             setSelectInsertedCells(false);
-            getUndoManager().redo(jgraph.getGraphLayoutCache());
+            getUndoManager().redo(this.jgraph.getGraphLayoutCache());
             setSelectInsertedCells(true);
         } catch (Exception ex) {
             System.err.println(ex);
@@ -1255,20 +1339,27 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         }
     }
 
-    /** Creates and displays an {@link ErrorDialog} with a given message and exception. */
+    /**
+     * Creates and displays an {@link ErrorDialog} with a given message and
+     * exception.
+     */
     void showErrorDialog(String message, Exception exc) {
         new ErrorDialog(getGraphPanel(), message, exc).setVisible(true);
     }
 
-    /** Creates and shows a confirmation dialog for abandoning the currently edited graph. */
+    /**
+     * Creates and shows a confirmation dialog for abandoning the currently
+     * edited graph.
+     */
     boolean confirmAbandon() {
         if (isCurrentGraphModified()) {
-            int res = JOptionPane.showConfirmDialog(getGraphPanel(),
-                "Save changes in current graph?",
-                null,
-                JOptionPane.YES_NO_CANCEL_OPTION);
+            int res =
+                JOptionPane.showConfirmDialog(getGraphPanel(),
+                    "Save changes in current graph?", null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
             if (res == JOptionPane.YES_OPTION) {
-            	// save-as property set to true, for backward compatibility reasons
+                // save-as property set to true, for backward compatibility
+                // reasons
                 File toFile = handleSaveGraph(true);
                 return toFile != null;
             } else {
@@ -1279,16 +1370,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         }
     }
 
-    /** 
-     * Creates a preview of an aspect model, with properties.
-     * Returns a j-model if the edited model should be replaced, <code>null</code> otherwise.
+    /**
+     * Creates a preview of an aspect model, with properties. Returns a j-model
+     * if the edited model should be replaced, <code>null</code> otherwise.
      */
-    private AspectJModel showPreviewDialog(AspectualView<?> view, String okOption) {
-    	if (previewSize == null) {
-    		previewSize = DEFAULT_PREVIEW_SIZE;
-    	}
-    	boolean partial = view.getAspectGraph().hasErrors();
-    	AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
+    private AspectJModel showPreviewDialog(AspectualView<?> view,
+            String okOption) {
+        if (this.previewSize == null) {
+            this.previewSize = DEFAULT_PREVIEW_SIZE;
+        }
+        boolean partial = view.getAspectGraph().hasErrors();
+        AspectJModel previewModel =
+            AspectJModel.newInstance(view, getOptions());
         JGraph jGraph = new JGraph(previewModel, false);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
@@ -1296,31 +1389,40 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         JComponent previewContent = new JPanel(false);
         previewContent.setLayout(new BorderLayout());
         previewContent.add(jGraphPane);
-//        if (!previewModel.getProperties().isEmpty()) {
-//            getModel().setProperties(new GraphProperties(dialog.getEditedProperties()));
-            PropertiesDialog propertiesDialog = createPropertiesDialog(true);
-            previewContent.add(propertiesDialog.createTablePane(), BorderLayout.NORTH);
-//        }
+        // if (!previewModel.getProperties().isEmpty()) {
+        // getModel().setProperties(new
+        // GraphProperties(dialog.getEditedProperties()));
+        PropertiesDialog propertiesDialog = createPropertiesDialog(true);
+        previewContent.add(propertiesDialog.createTablePane(),
+            BorderLayout.NORTH);
+        // }
         if (partial) {
-        	JLabel errorLabel = new JLabel(String.format("Incomplete preview due to syntax errors in edited %s", getRole(false)));
-        	errorLabel.setForeground(SystemColor.RED);
-        	previewContent.add(errorLabel, BorderLayout.SOUTH);
-        	if (okOption == null) {
-        		okOption = Options.USE_BUTTON;
-        	}
+            JLabel errorLabel =
+                new JLabel(String.format(
+                    "Incomplete preview due to syntax errors in edited %s",
+                    getRole(false)));
+            errorLabel.setForeground(Color.RED);
+            previewContent.add(errorLabel, BorderLayout.SOUTH);
+            if (okOption == null) {
+                okOption = Options.USE_BUTTON;
+            }
         } else if (okOption == null) {
-        	okOption = Options.OK_BUTTON;
+            okOption = Options.OK_BUTTON;
         }
-        JOptionPane previewPane = new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
-        previewPane.setOptions(new String[] { okOption, Options.CANCEL_BUTTON });
-        JDialog dialog = previewPane.createDialog(getFrame(), String.format("%s preview", getRole(true)));
-        dialog.setSize(previewSize);
+        JOptionPane previewPane =
+            new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
+        previewPane.setOptions(new String[] {okOption, Options.CANCEL_BUTTON});
+        JDialog dialog =
+            previewPane.createDialog(getFrame(), String.format("%s preview",
+                getRole(true)));
+        dialog.setSize(this.previewSize);
         dialog.setResizable(true);
         dialog.setVisible(true);
         // put the edited properties into the model
-        previewModel.setProperties(new GraphProperties(propertiesDialog.getEditedProperties()));
+        previewModel.setProperties(new GraphProperties(
+            propertiesDialog.getEditedProperties()));
         Object response = previewPane.getValue();
-        previewSize = dialog.getSize();
+        this.previewSize = dialog.getSize();
         return okOption.equals(response) ? previewModel : null;
     }
 
@@ -1328,35 +1430,35 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Returns the options object associated with the simulator.
      */
     public final Options getOptions() {
-    	// lazily creates the options 
-    	if (options == null) {
-    		options = new Options();
-//        	options.getItem(Options.SHOW_BACKGROUND_OPTION).setSelected(true);
-//        	options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
-//        	options.getItem(Options.PREVIEW_ON_SAVE_OPTION).setSelected(true);
-    	}
-    	return options;
+        // lazily creates the options
+        if (this.options == null) {
+            this.options = new Options();
+            // options.getItem(Options.SHOW_BACKGROUND_OPTION).setSelected(true);
+            // options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
+            // options.getItem(Options.PREVIEW_ON_SAVE_OPTION).setSelected(true);
+        }
+        return this.options;
     }
-    
+
     /** Returns the jgraph component of this editor. */
     EditorJGraph getJGraph() {
-    	return jgraph;
+        return this.jgraph;
     }
 
-	/**
-	 * Sets the current file to a given value.
-	 */
-	final void setCurrentFile(File file) {
-		this.currentFile = file;
-	}
+    /**
+     * Sets the current file to a given value.
+     */
+    final void setCurrentFile(File file) {
+        this.currentFile = file;
+    }
 
-	/**
-	 * @return Returns the currentFile.
-	 */
-	final File getCurrentFile() {
-		return this.currentFile;
-	}
-    
+    /**
+     * @return Returns the currentFile.
+     */
+    final File getCurrentFile() {
+        return this.currentFile;
+    }
+
     /**
      * The options object of this simulator.
      */
@@ -1364,26 +1466,27 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
     /** The frame of the editor. */
     private final JFrame frame;
-    
+
     /** The jgraph instance used in this editor. */
     private final EditorJGraph jgraph;
-//
-//    /**
-//     * Rule factory used for previewing the graph as a rule.
-//     */
-//    private RuleFactory ruleFactory;
-//
-//    /**
-//     * Fixed graph type for the editor, or <code>null</code> if the type is not fixed.
-//     */
-//    private final String fixedType;
-//    
-//    /** The tool bar of this editor. */
-//    private JToolBar editorToolBar;
-    
+    //
+    // /**
+    // * Rule factory used for previewing the graph as a rule.
+    // */
+    // private RuleFactory ruleFactory;
+    //
+    // /**
+    // * Fixed graph type for the editor, or <code>null</code> if the type is
+    // not fixed.
+    // */
+    // private final String fixedType;
+    //    
+    // /** The tool bar of this editor. */
+    // private JToolBar editorToolBar;
+
     /** The jgraph panel used in this editor. */
     private JGraphPanel<EditorJGraph> jGraphPanel;
-    
+
     /** Status bar of the editor. */
     private final JLabel statusBar = new JLabel();
 
@@ -1393,28 +1496,31 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private ErrorListPanel errorPanel;
     /** The size of the (previous) preview dialog. */
     private Dimension previewSize;
-//
-//    /** Text area containing error messages. */
-//    private JTextArea errorArea;
-//    
+    //
+    // /** Text area containing error messages. */
+    // private JTextArea errorArea;
+    //    
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean currentGraphModified;
-    
+
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean anyGraphSaved;
 
     /** Flag indicating if the editor is editing a graph or a rule. */
     private String role;
-    
-    /** Collection of errors in the currently loaded graph; <code>null</code> if there are none. */
+
+    /**
+     * Collection of errors in the currently loaded graph; <code>null</code>
+     * if there are none.
+     */
     private Collection<String> errors;
-    
+
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 
     /** Object providing the core functionality for property changes. */
     private PropertyChangeSupport propertyChangeSupport;
-    
+
     /** Currently edited file. */
     private File currentFile;
 
@@ -1457,8 +1563,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     /** Action to start an empty graph for editing. */
     private Action newAction;
 
-//    /** Action to close the editor. Only if the editor is auxiliary. */
-//    private Action closeAction;
+    // /** Action to close the editor. Only if the editor is auxiliary. */
+    // private Action closeAction;
     /** Action to quit the editor. */
     private Action quitAction;
     /** Action to set the editor to selection mode. */
@@ -1482,9 +1588,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private ButtonGroup modeButtonGroup;
     /** Collection of graph editing type buttons. */
     private ButtonGroup typeButtonGroup;
-    
-	/**
-     * @param args empty or a singleton containing a filename of the graph to be edited
+
+    /**
+     * @param args empty or a singleton containing a filename of the graph to be
+     *        edited
      */
     public static void main(String[] args) {
         try {
@@ -1500,7 +1607,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             System.out.println("Error: " + exc.getMessage());
         }
     }
-    
+
     /** The name of the editor application. */
     public static final String EDITOR_NAME = "Groove Editor";
     /** The name displayed in the frame title for a new graph. */
@@ -1510,21 +1617,25 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     /** The indication displayed in the frame title for a modified graph. */
     public static final String MODIFIED_INDICATOR = "> ";
     /** Size of the preview dialog window. */
-    private static final Dimension DEFAULT_PREVIEW_SIZE = new Dimension(500, 500);
-    /** 
-     * Property name of the edit type of the editor.
-     * The edit type is the kind of object being edited.
-     * Possible values are {@link Groove#GRAPH_ROLE} and {@link Groove#RULE_ROLE}.
+    private static final Dimension DEFAULT_PREVIEW_SIZE =
+        new Dimension(500, 500);
+    /**
+     * Property name of the edit type of the editor. The edit type is the kind
+     * of object being edited. Possible values are {@link Groove#GRAPH_ROLE} and
+     * {@link Groove#RULE_ROLE}.
      */
     static public final String ROLE_PROPERTY = "type";
-//    /** 
-//     * Value of the {@link #ROLE_PROPERTY} property, indicating that a graph is being edited.
-//     */
-//    static public final String GRAPH_TYPE = "graph";
-//    /** 
-//     * Value of the {@link #ROLE_PROPERTY} property, indicating that a rule is being edited.
-//     */
-//    static public final String RULE_TYPE = "rule";
+
+    // /**
+    // * Value of the {@link #ROLE_PROPERTY} property, indicating that a graph
+    // is being edited.
+    // */
+    // static public final String GRAPH_TYPE = "graph";
+    // /**
+    // * Value of the {@link #ROLE_PROPERTY} property, indicating that a rule is
+    // being edited.
+    // */
+    // static public final String RULE_TYPE = "rule";
     /**
      * Action for displaying an about box.
      */
@@ -1544,15 +1655,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         public EditPropertiesAction() {
             super(Options.EDIT_ACTION_NAME);
         }
-        
-        /** 
-         * Displays a {@link PropertiesDialog} for the properties
-         * of the edited graph.
+
+        /**
+         * Displays a {@link PropertiesDialog} for the properties of the edited
+         * graph.
          */
         public void actionPerformed(ActionEvent e) {
             PropertiesDialog dialog = createPropertiesDialog(true);
             if (dialog.showDialog(getFrame())) {
-                getModel().setProperties(new GraphProperties(dialog.getEditedProperties()));
+                getModel().setProperties(
+                    new GraphProperties(dialog.getEditedProperties()));
                 setCurrentGraphModified(true);
                 updateTitle();
             }
@@ -1570,33 +1682,36 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         }
 
         public void actionPerformed(ActionEvent evt) {
-			if (getModelName() != null) {
-                exporter.getFileChooser().setSelectedFile(new File(getModelName()));
-			}
-			File toFile = ExtensionFilter.showSaveDialog(exporter.getFileChooser(), getFrame(), null);
-			if (toFile != null) {
-				try {
-					exporter.export(getJGraph(), toFile);
-				} catch (IOException exc) {
-					showErrorDialog("Error while saving to " + toFile, exc);
-				}
-			}
+            if (getModelName() != null) {
+                this.exporter.getFileChooser().setSelectedFile(
+                    new File(getModelName()));
+            }
+            File toFile =
+                ExtensionFilter.showSaveDialog(this.exporter.getFileChooser(),
+                    getFrame(), null);
+            if (toFile != null) {
+                try {
+                    this.exporter.export(getJGraph(), toFile);
+                } catch (IOException exc) {
+                    showErrorDialog("Error while saving to " + toFile, exc);
+                }
+            }
         }
-        
+
         private final Exporter exporter = new Exporter();
     }
 
-
     /**
-	 * Action to start with a blank graph.
-	 */
+     * Action to start with a blank graph.
+     */
     private class NewGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         NewGraphAction() {
-            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(Groove.getResource("new.gif")));
+            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(
+                Groove.getResource("new.gif")));
             putValue(MNEMONIC_KEY, Options.NEW_MNEMONIC);
         }
-    
+
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
@@ -1613,10 +1728,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private class OpenGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected OpenGraphAction() {
-            super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(Groove.getResource("open.gif")));
+            super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(
+                Groove.getResource("open.gif")));
             putValue(MNEMONIC_KEY, Options.OPEN_MNEMONIC);
         }
-    
+
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
@@ -1625,8 +1741,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-     * Action for quitting the editor.
-     * Calls {@link Editor#handleQuit()} to execute the action.
+     * Action for quitting the editor. Calls {@link Editor#handleQuit()} to
+     * execute the action.
      */
     private class QuitAction extends AbstractAction {
         /** Constructs an instance of the action. */
@@ -1635,7 +1751,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
             putValue(MNEMONIC_KEY, Options.QUIT_MNEMONIC);
         }
-    
+
         /**
          * Calls {@link Editor#handleQuit()}.
          */
@@ -1650,14 +1766,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private class SaveGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(Groove.getResource("save.gif")));
+            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(
+                Groove.getResource("save.gif")));
             putValue(MNEMONIC_KEY, Options.SAVE_MNEMONIC);
         }
-    
+
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-        	// save-as property set to true, for backward compatibility reasons
+            // save-as property set to true, for backward compatibility reasons
             handleSaveGraph(true);
         }
     }
@@ -1670,7 +1787,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         protected SaveGraphAsAction() {
             super(Options.SAVE_AS_ACTION_NAME);
         }
-    
+
         public void actionPerformed(ActionEvent evt) {
             handleSaveGraph(true);
         }
@@ -1681,12 +1798,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      */
     private class SetEditingModeAction extends ToolbarAction {
         /** Constructs an action with a given name, key and icon. */
-        SetEditingModeAction(String text, KeyStroke acceleratorKey, ImageIcon smallIcon) {
+        SetEditingModeAction(String text, KeyStroke acceleratorKey,
+                ImageIcon smallIcon) {
             super(text, acceleratorKey, smallIcon);
             putValue(SHORT_DESCRIPTION, null);
         }
-    
-        /** (non-Javadoc)
+
+        /**
+         * (non-Javadoc)
          * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
          */
         @Override
@@ -1702,17 +1821,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private class SetGraphRoleAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SetGraphRoleAction() {
-            super(Options.SET_GRAPH_ROLE_ACTION_NAME, null, Groove.GRAPH_MODE_ICON);
+            super(Options.SET_GRAPH_ROLE_ACTION_NAME, null,
+                Groove.GRAPH_MODE_ICON);
         }
-    
-        /** (non-Javadoc)
+
+        /**
+         * (non-Javadoc)
          * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
          */
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             if (!setRole(Groove.GRAPH_ROLE)) {
-                // only do a preview if the type was not changed (on the second click)
+                // only do a preview if the type was not changed (on the second
+                // click)
                 handlePreview(null);
             }
         }
@@ -1724,17 +1846,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private class SetRuleRoleAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SetRuleRoleAction() {
-            super(Options.SET_RULE_ROLE_ACTION_NAME, null, Groove.RULE_MODE_ICON);
+            super(Options.SET_RULE_ROLE_ACTION_NAME, null,
+                Groove.RULE_MODE_ICON);
         }
-    
-        /** (non-Javadoc)
+
+        /**
+         * (non-Javadoc)
          * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
          */
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             if (!setRole(Groove.RULE_ROLE)) {
-                // only do a preview if the type was not changed (on the second click)
+                // only do a preview if the type was not changed (on the second
+                // click)
                 handlePreview(null);
             }
         }
@@ -1743,34 +1868,38 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     /** This will change the source of the actionevent to graph. */
     private class TransferAction extends ToolbarAction {
         /**
-         * Constructs an action that redirects to another action, while 
-         * seting the source of the event to the editor's j-graph.
+         * Constructs an action that redirects to another action, while seting
+         * the source of the event to the editor's j-graph.
          */
-        public TransferAction(Action action, KeyStroke acceleratorKey, String name) {
+        public TransferAction(Action action, KeyStroke acceleratorKey,
+                String name) {
             super(name, acceleratorKey, (ImageIcon) action.getValue(SMALL_ICON));
             putValue(SHORT_DESCRIPTION, name);
             setEnabled(false);
             this.action = action;
         }
-    
+
         /** Redirects the Actionevent. */
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            evt = new ActionEvent(getJGraph(), evt.getID(), evt.getActionCommand(), evt.getModifiers());
-            action.actionPerformed(evt);
+            evt =
+                new ActionEvent(getJGraph(), evt.getID(),
+                    evt.getActionCommand(), evt.getModifiers());
+            this.action.actionPerformed(evt);
             if (this == getCutAction() || this == getCopyAction()) {
                 getPasteAction().setEnabled(true);
             }
         }
-        
+
         /** The action that this transfer action wraps. */
-        protected Action action;        
+        protected Action action;
     }
 
     /**
-     * General class for actions with toolbar buttons. Takes care of image, name and key
-     * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
+     * General class for actions with toolbar buttons. Takes care of image, name
+     * and key accelleration; moreover, the
+     * <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
      * @version $Revision$
@@ -1781,32 +1910,36 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             super(name, icon);
             putValue(Action.SHORT_DESCRIPTION, name);
             putValue(ACCELERATOR_KEY, acceleratorKey);
-            getGraphPanel().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                    .put(acceleratorKey, name);
+            getGraphPanel().getInputMap(
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                acceleratorKey, name);
             getJGraph().getInputMap().put(acceleratorKey, name);
             getGraphPanel().getActionMap().put(name, this);
         }
-    
+
         public void actionPerformed(ActionEvent evt) {
-        	getJGraph().stopEditing();
+            getJGraph().stopEditing();
         }
     }
-    
-    /** File chooser taking the distinction between graphs and rules into account. */
-    private class MyFileChooser extends GrooveFileChooser {  
-    	/** Empty constructor with the right visibility. */
-    	MyFileChooser() {
-    		// empty
-    	}
-    	
+
+    /**
+     * File chooser taking the distinction between graphs and rules into
+     * account.
+     */
+    private class MyFileChooser extends GrooveFileChooser {
+        /** Empty constructor with the right visibility. */
+        MyFileChooser() {
+            // empty
+        }
+
         @Override
         public int showOpenDialog(Component parent) throws HeadlessException {
             resetChoosableFileFilters();
             setAcceptAllFileFilterUsed(true);
             addChoosableFileFilter(getGraphFilter());
             if (getCurrentFile() != null) {
-            	setCurrentDirectory(getCurrentFile().getParentFile());
-            	rescanCurrentDirectory();
+                setCurrentDirectory(getCurrentFile().getParentFile());
+                rescanCurrentDirectory();
             }
             setSelectedFile(new File(""));
             int result = super.showOpenDialog(parent);
@@ -1815,42 +1948,46 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
         @Override
         public int showSaveDialog(Component parent) throws HeadlessException {
-        	int result;
-			resetChoosableFileFilters();
-			setAcceptAllFileFilterUsed(false);
-			setFilters(hasGraphRole());
-			if (getCurrentFile() != null) {
-				setCurrentDirectory(getCurrentFile().getParentFile());
-				rescanCurrentDirectory();
-				setSelectedFile(getCurrentFile());
-			}
-			// get the file to write to
-			result = super.showSaveDialog(parent);
-			lastSaveFilter = getFileFilter();
-			return result;
-		}
+            int result;
+            resetChoosableFileFilters();
+            setAcceptAllFileFilterUsed(false);
+            setFilters(hasGraphRole());
+            if (getCurrentFile() != null) {
+                setCurrentDirectory(getCurrentFile().getParentFile());
+                rescanCurrentDirectory();
+                setSelectedFile(getCurrentFile());
+            }
+            // get the file to write to
+            result = super.showSaveDialog(parent);
+            this.lastSaveFilter = getFileFilter();
+            return result;
+        }
 
-		/**
+        /**
          * Sets the file filters to either those that accept graphs, or rules.
          */
         private void setFilters(boolean graphRole) {
             resetChoosableFileFilters();
-            FileFilter defaultFilter = graphRole == isStateFilter(lastSaveFilter) ? lastSaveFilter : null;
-            for (FileFilter filter: new FileFilter[] { getStateFilter(), getRuleFilter(), getGxlFilter()} ) {
+            FileFilter defaultFilter =
+                graphRole == isStateFilter(this.lastSaveFilter)
+                        ? this.lastSaveFilter : null;
+            for (FileFilter filter : new FileFilter[] {getStateFilter(),
+                getRuleFilter(), getGxlFilter()}) {
                 addChoosableFileFilter(filter);
-                boolean suitable = graphRole ? !isRuleFilter(filter) : !isStateFilter(filter);
+                boolean suitable =
+                    graphRole ? !isRuleFilter(filter) : !isStateFilter(filter);
                 if (suitable && defaultFilter == null) {
-                	defaultFilter = filter;
+                    defaultFilter = filter;
                 }
             }
             setFileFilter(defaultFilter);
         }
-        
+
         /** Determines if a given file filter is dedicated to graph states. */
         private boolean isStateFilter(FileFilter filter) {
             return filter == getStateFilter() || filter == getGxlFilter();
         }
-        
+
         /** Determines if a given file filter is dedicated to rules. */
         private boolean isRuleFilter(FileFilter filter) {
             return filter == getRuleFilter();
@@ -1858,69 +1995,70 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getStateFilter() {
-        	if (stateFilter == null) {
-        		stateFilter = Groove.createStateFilter();
-        	}
-        	return stateFilter;
+            if (this.stateFilter == null) {
+                this.stateFilter = Groove.createStateFilter();
+            }
+            return this.stateFilter;
         }
-        
+
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getRuleFilter() {
-        	if (ruleFilter == null) {
-        		ruleFilter = Groove.createRuleFilter();
-        	}
-        	return ruleFilter;
+            if (this.ruleFilter == null) {
+                this.ruleFilter = Groove.createRuleFilter();
+            }
+            return this.ruleFilter;
         }
 
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getGxlFilter() {
-        	if (gxlFilter == null) {
-        		gxlFilter = Groove.createGxlFilter();
-        	}
-        	return gxlFilter;
+            if (this.gxlFilter == null) {
+                this.gxlFilter = Groove.createGxlFilter();
+            }
+            return this.gxlFilter;
         }
 
         /** Lazily creates and returns the graph filter. */
         private ExtensionFilter getGraphFilter() {
-        	if (graphFilter == null) {
-        		graphFilter = new ExtensionFilter("Graph files", "") {
+            if (this.graphFilter == null) {
+                this.graphFilter = new ExtensionFilter("Graph files", "") {
                     @Override
                     public boolean accept(File file) {
-                        return isAcceptDirectories() && file.isDirectory()  
-                                || file.getName().endsWith(Groove.GXL_EXTENSION)
-                                || file.getName().endsWith(Groove.RULE_EXTENSION)
-                                || file.getName().endsWith(Groove.STATE_EXTENSION);
+                        return isAcceptDirectories() && file.isDirectory()
+                            || file.getName().endsWith(Groove.GXL_EXTENSION)
+                            || file.getName().endsWith(Groove.RULE_EXTENSION)
+                            || file.getName().endsWith(Groove.STATE_EXTENSION);
                     }
 
                     @Override
                     public String getDescription() {
-                        return "Graph files (*" + Groove.GXL_EXTENSION + ", *" + Groove.RULE_EXTENSION
-                                + ", *" + Groove.STATE_EXTENSION + ")";
+                        return "Graph files (*" + Groove.GXL_EXTENSION + ", *"
+                            + Groove.RULE_EXTENSION + ", *"
+                            + Groove.STATE_EXTENSION + ")";
                     }
-                    
+
                     @Override
                     public boolean acceptExtension(File file) {
                         return false;
                     }
-                    
+
                     @Override
                     public String stripExtension(String fileName) {
                         File file = new File(fileName);
-                        if (gxlFilter.acceptExtension(file)) {
-                            return gxlFilter.stripExtension(fileName);
-                        } else if (stateFilter.acceptExtension(file)) {
-                            return stateFilter.stripExtension(fileName);
-                        } else if (ruleFilter.acceptExtension(file)) {
-                            return ruleFilter.stripExtension(fileName);
+                        if (MyFileChooser.this.gxlFilter.acceptExtension(file)) {
+                            return MyFileChooser.this.gxlFilter.stripExtension(fileName);
+                        } else if (MyFileChooser.this.stateFilter.acceptExtension(file)) {
+                            return MyFileChooser.this.stateFilter.stripExtension(fileName);
+                        } else if (MyFileChooser.this.ruleFilter.acceptExtension(file)) {
+                            return MyFileChooser.this.ruleFilter.stripExtension(fileName);
                         } else {
                             return fileName;
                         }
                     }
                 };
-        	}
-        	return graphFilter;
+            }
+            return this.graphFilter;
         }
-        
+
         /** Last file filter used in a save dialog. */
         private FileFilter lastSaveFilter;
         /**
@@ -1937,7 +2075,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
          * Extension filter used for exporting the LTS in jpeg format.
          */
         ExtensionFilter gxlFilter;
-        
+
         /**
          * Extension filter for all known kinds of graph files.
          */

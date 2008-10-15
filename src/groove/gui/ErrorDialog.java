@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: ErrorDialog.java,v 1.5 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
@@ -41,15 +41,15 @@ import javax.swing.border.EmptyBorder;
  * @version $Revision$
  */
 public class ErrorDialog extends JDialog {
-	/** Dialog title. */
+    /** Dialog title. */
     public static final String ERROR_MESSAGE_TEXT = "Error message";
-	/** Button text of the Details button. */
+    /** Button text of the Details button. */
     public static final String NO_DETAILS_BUTTON_TEXT = "Details >>";
-	/** Button text of the More Details button. */
+    /** Button text of the More Details button. */
     public static final String SOME_DETAILS_BUTTON_TEXT = "More >>";
-	/** Button text of the No Details button. */
+    /** Button text of the No Details button. */
     public static final String ALL_DETAILS_BUTTON_TEXT = "Details <<";
-	/** Button text of the Cancel button. */
+    /** Button text of the Cancel button. */
     public static final String CANCEL_BUTTON_TEXT = "OK";
 
     /** Details status: no details. */
@@ -61,11 +61,12 @@ public class ErrorDialog extends JDialog {
 
     /** Details text array. */
     private static final String[] DETAILS_LEVEL_TEXT =
-        { NO_DETAILS_BUTTON_TEXT, SOME_DETAILS_BUTTON_TEXT, ALL_DETAILS_BUTTON_TEXT };
+        {NO_DETAILS_BUTTON_TEXT, SOME_DETAILS_BUTTON_TEXT,
+            ALL_DETAILS_BUTTON_TEXT};
 
     /**
-     * Searches upwards in the hierarchy of parent components
-     * until it finds a <tt>JFrame</tt> or <tt>null</tt>.
+     * Searches upwards in the hierarchy of parent components until it finds a
+     * <tt>JFrame</tt> or <tt>null</tt>.
      */
     static protected JFrame getParentFrame(Component component) {
         if (component == null || component instanceof JFrame) {
@@ -76,9 +77,9 @@ public class ErrorDialog extends JDialog {
     }
 
     /**
-     * Consructs a new error dialog, with the same top-level frame as the
-     * given component, a simple error message, and an exception giving more
-     * detail about the error. The dialog is not yet shown.
+     * Consructs a new error dialog, with the same top-level frame as the given
+     * component, a simple error message, and an exception giving more detail
+     * about the error. The dialog is not yet shown.
      */
     public ErrorDialog(Component component, String message, Throwable exc) {
         super(getParentFrame(component), ERROR_MESSAGE_TEXT, true);
@@ -87,35 +88,31 @@ public class ErrorDialog extends JDialog {
 
         // setup cancel button
         JComponent cancelPane = Box.createHorizontalBox();
-        cancelButton = new JButton(CANCEL_BUTTON_TEXT);
+        this.cancelButton = new JButton(CANCEL_BUTTON_TEXT);
         cancelPane.add(Box.createHorizontalGlue());
-        cancelPane.add(cancelButton);
+        cancelPane.add(this.cancelButton);
         cancelPane.add(Box.createHorizontalGlue());
-        cancelButton.setSelected(true);
+        this.cancelButton.setSelected(true);
 
         // setup details pane
-        detailsButton = new JButton(NO_DETAILS_BUTTON_TEXT);
-        detailsButton.setEnabled(exc != null);
+        this.detailsButton = new JButton(NO_DETAILS_BUTTON_TEXT);
+        this.detailsButton.setEnabled(exc != null);
         JComponent detailsButtonPane = Box.createHorizontalBox();
-        detailsButtonPane.add(cancelButton);
+        detailsButtonPane.add(this.cancelButton);
         detailsButtonPane.add(Box.createHorizontalGlue());
-        detailsButtonPane.add(detailsButton);
+        detailsButtonPane.add(this.detailsButton);
 
-        detailsPane = new JPanel(new BorderLayout());
-        detailsPane.add(detailsButtonPane, BorderLayout.SOUTH);
+        this.detailsPane = new JPanel(new BorderLayout());
+        this.detailsPane.add(detailsButtonPane, BorderLayout.SOUTH);
 
         // setup message pane
         JPanel messagePane = new JPanel(new BorderLayout());
-        messagePane.add(detailsPane, BorderLayout.CENTER);
+        messagePane.add(this.detailsPane, BorderLayout.CENTER);
 
         // setup option pane
         JOptionPane optionPane =
-            new JOptionPane(
-                message,
-                JOptionPane.ERROR_MESSAGE,
-                JOptionPane.DEFAULT_OPTION,
-                null,
-                new Object[] { messagePane });
+            new JOptionPane(message, JOptionPane.ERROR_MESSAGE,
+                JOptionPane.DEFAULT_OPTION, null, new Object[] {messagePane});
         optionPane.add(messagePane, BorderLayout.SOUTH);
 
         // setup content pane
@@ -123,49 +120,52 @@ public class ErrorDialog extends JDialog {
         contentPane.add(optionPane);
 
         // setup text area
-        detailsArea = new JTextArea();
-        detailsArea.setEditable(false);
-        detailsTextPane = new JScrollPane(detailsArea);
-        detailsTextPane.setPreferredSize(new Dimension(300, 100));
-        detailsTextPane.setBorder(new EmptyBorder(5, 0, 5, 0));
+        this.detailsArea = new JTextArea();
+        this.detailsArea.setEditable(false);
+        this.detailsTextPane = new JScrollPane(this.detailsArea);
+        this.detailsTextPane.setPreferredSize(new Dimension(300, 100));
+        this.detailsTextPane.setBorder(new EmptyBorder(5, 0, 5, 0));
         setDetailsLevel(NO_DETAILS);
 
         // setup button listener
         ActionListener buttonListener = new ButtonListener();
-        cancelButton.addActionListener(buttonListener);
-        detailsButton.addActionListener(buttonListener);
+        this.cancelButton.addActionListener(buttonListener);
+        this.detailsButton.addActionListener(buttonListener);
     }
 
     /**
-     * Sets the level of details in the text area of the error dialog.
-     * Legal values are: <ul>
+     * Sets the level of details in the text area of the error dialog. Legal
+     * values are:
+     * <ul>
      * <li> <code>NO_DETAILS</code>: the text area is hidden
-     * <li> <code>SOME_DETAILS</code>: the text area is shown with just the message in the exception
-     * <li> <code>FULL_DETAILS</code>: the text area is shown with the error stack trace
+     * <li> <code>SOME_DETAILS</code>: the text area is shown with just the
+     * message in the exception
+     * <li> <code>FULL_DETAILS</code>: the text area is shown with the error
+     * stack trace
      * </ul>
      * @param detailsLevel the desired level of details
      */
     public void setDetailsLevel(int detailsLevel) {
         switch (detailsLevel) {
-            case NO_DETAILS :
-                detailsPane.remove(detailsTextPane);
-                break;
-            case SOME_DETAILS :
-                detailsArea.setText(exc.getMessage() + "\n");
-                detailsPane.add(detailsTextPane, BorderLayout.CENTER);
-                detailsTextPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
-                break;
-            case FULL_DETAILS :
-                detailsArea.setText("");
-                detailsArea.append(exc.toString() + "\n");
-                StackTraceElement[] traceElems = exc.getStackTrace();
-                for (int i = 0; i < traceElems.length; i++) {
-                    detailsArea.append("    " + traceElems[i].toString() + "\n");
-                }
-                detailsPane.add(detailsTextPane, BorderLayout.CENTER);
-                detailsArea.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+        case NO_DETAILS:
+            this.detailsPane.remove(this.detailsTextPane);
+            break;
+        case SOME_DETAILS:
+            this.detailsArea.setText(this.exc.getMessage() + "\n");
+            this.detailsPane.add(this.detailsTextPane, BorderLayout.CENTER);
+            this.detailsTextPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+            break;
+        case FULL_DETAILS:
+            this.detailsArea.setText("");
+            this.detailsArea.append(this.exc.toString() + "\n");
+            StackTraceElement[] traceElems = this.exc.getStackTrace();
+            for (StackTraceElement element : traceElems) {
+                this.detailsArea.append("    " + element.toString() + "\n");
+            }
+            this.detailsPane.add(this.detailsTextPane, BorderLayout.CENTER);
+            this.detailsArea.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
         }
-        detailsButton.setText(DETAILS_LEVEL_TEXT[detailsLevel]);
+        this.detailsButton.setText(DETAILS_LEVEL_TEXT[detailsLevel]);
         pack();
     }
 
@@ -173,13 +173,16 @@ public class ErrorDialog extends JDialog {
     protected class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
-            if (source.equals(detailsButton)) {
-                detailsLevel = (detailsLevel + 1) % 3;
-                if (detailsLevel == SOME_DETAILS && exc.getMessage() == null) {
-                    detailsLevel = (detailsLevel + 1) % 3;
+            if (source.equals(ErrorDialog.this.detailsButton)) {
+                ErrorDialog.this.detailsLevel =
+                    (ErrorDialog.this.detailsLevel + 1) % 3;
+                if (ErrorDialog.this.detailsLevel == SOME_DETAILS
+                    && ErrorDialog.this.exc.getMessage() == null) {
+                    ErrorDialog.this.detailsLevel =
+                        (ErrorDialog.this.detailsLevel + 1) % 3;
                 }
-                setDetailsLevel(detailsLevel);
-            } else if (source.equals(cancelButton)) {
+                setDetailsLevel(ErrorDialog.this.detailsLevel);
+            } else if (source.equals(ErrorDialog.this.cancelButton)) {
                 setVisible(false);
             }
         }

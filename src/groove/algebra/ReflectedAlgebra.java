@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: ReflectedAlgebra.java,v 1.4 2007-10-10 08:59:59 rensink Exp $
  */
 package groove.algebra;
@@ -30,9 +30,10 @@ public class ReflectedAlgebra<T> extends Algebra {
      * @param sig Signature of the algebra to be reflected
      * @param alg The algebra to be reflected.
      */
-    public <S extends IntSignature<?>, A extends RealAlgebra<T>> ReflectedAlgebra(Class<S> sig, A alg) {
-        super(getName(sig), "Algebra generated from "+alg.getClass());
-        for (Method method: sig.getMethods()) {
+    public <S extends IntSignature<?>,A extends RealAlgebra<T>> ReflectedAlgebra(
+            Class<S> sig, A alg) {
+        super(getName(sig), "Algebra generated from " + alg.getClass());
+        for (Method method : sig.getMethods()) {
             addOperation(createOperation(method));
         }
         this.alg = alg;
@@ -43,20 +44,21 @@ public class ReflectedAlgebra<T> extends Algebra {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
     public String getSymbol(Object value) {
-        return alg.getSymbol((T) value);
+        return this.alg.getSymbol((T) value);
     }
-    
+
     final RealAlgebra<T> alg;
 
     static private Operation createOperation(Method method) {
         final Class<?>[] parameterTypes = method.getParameterTypes();
         return new Operation() {
 
-            /* (non-Javadoc)
+            /*
+             * (non-Javadoc)
              * @see groove.algebra.Operation#algebra()
              */
             public Algebra algebra() {
@@ -64,22 +66,26 @@ public class ReflectedAlgebra<T> extends Algebra {
                 return null;
             }
 
-            /* (non-Javadoc)
+            /*
+             * (non-Javadoc)
              * @see groove.algebra.Operation#apply(java.util.List)
              */
-            public Object apply(List<Object> args) throws IllegalArgumentException {
+            public Object apply(List<Object> args)
+                throws IllegalArgumentException {
                 // TODO Auto-generated method stub
                 return null;
             }
 
-            /* (non-Javadoc)
+            /*
+             * (non-Javadoc)
              * @see groove.algebra.Operation#arity()
              */
             public int arity() {
                 return parameterTypes.length;
             }
 
-            /* (non-Javadoc)
+            /*
+             * (non-Javadoc)
              * @see groove.algebra.Operation#symbol()
              */
             public String symbol() {
@@ -87,7 +93,8 @@ public class ReflectedAlgebra<T> extends Algebra {
                 return null;
             }
 
-            /* (non-Javadoc)
+            /*
+             * (non-Javadoc)
              * @see groove.algebra.Operation#getResultType()
              */
             public Algebra getResultType() {
@@ -95,11 +102,13 @@ public class ReflectedAlgebra<T> extends Algebra {
                 return null;
             }
 
-            
         };
     }
-    
-    /** Retrieves the value of the static {@link #NAME_FIELD} field of a given class object. */
+
+    /**
+     * Retrieves the value of the static {@link #NAME_FIELD} field of a given
+     * class object.
+     */
     static private String getName(Class<?> sig) {
         try {
             return (String) sig.getField(NAME_FIELD).get(null);
@@ -113,10 +122,10 @@ public class ReflectedAlgebra<T> extends Algebra {
             throw new IllegalArgumentException(e);
         }
     }
-    
+
     /** Name of the (static) name field of a signature class object. */
     static public final String NAME_FIELD = "NAME";
-    
+
     /**
      * Class that wraps a reflected Java method into an algebra operation.
      */
@@ -125,7 +134,7 @@ public class ReflectedAlgebra<T> extends Algebra {
             this.method = method;
             this.parameterTypes = method.getParameterTypes();
         }
-        
+
         public Algebra algebra() {
             return ReflectedAlgebra.this;
         }
@@ -139,7 +148,8 @@ public class ReflectedAlgebra<T> extends Algebra {
                 throw new IllegalArgumentException("Wrong number of arguments");
             }
             try {
-                return method.invoke(alg, args.toArray());
+                return this.method.invoke(ReflectedAlgebra.this.alg,
+                    args.toArray());
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(e);
             } catch (InvocationTargetException e) {
@@ -148,14 +158,15 @@ public class ReflectedAlgebra<T> extends Algebra {
         }
 
         public int arity() {
-            return parameterTypes.length;
+            return this.parameterTypes.length;
         }
 
         public String symbol() {
-            return method.getName();
+            return this.method.getName();
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
          * @see groove.algebra.Operation#getResultType()
          */
         public Algebra getResultType() {

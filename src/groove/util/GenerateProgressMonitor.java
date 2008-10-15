@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: GenerateProgressMonitor.java,v 1.3 2008-01-30 09:32:09 iovka Exp $
@@ -23,9 +23,9 @@ import groove.graph.Node;
 import groove.lts.GTS;
 
 /**
- * Class that implements a visualisation of the progress of a GTS generation process.
- * The monitor should be added as a {@link groove.graph.GraphListener} to the GTS
- * in question.
+ * Class that implements a visualisation of the progress of a GTS generation
+ * process. The monitor should be added as a {@link groove.graph.GraphListener}
+ * to the GTS in question.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -41,7 +41,7 @@ public class GenerateProgressMonitor extends GraphAdapter {
     public void addUpdate(GraphShape graph, Node node) {
         if (graph.nodeCount() % UNIT == 0) {
             System.out.print("s");
-            printed++;
+            this.printed++;
         }
         endLine((GTS) graph);
     }
@@ -50,19 +50,19 @@ public class GenerateProgressMonitor extends GraphAdapter {
     public void addUpdate(GraphShape graph, Edge edge) {
         if (graph.edgeCount() % UNIT == 0) {
             System.out.print("t");
-            printed++;
+            this.printed++;
         }
         endLine((GTS) graph);
     }
-    
+
     private void endLine(GTS gts) {
-        if (printed == WIDTH) {
+        if (this.printed == WIDTH) {
             int nodeCount = gts.nodeCount();
             int edgeCount = gts.edgeCount();
             int explorableCount = gts.openStateCount();
-            System.out.println(" " + nodeCount + "s (" + explorableCount + "x) "
-                    + edgeCount + "t ");
-            printed = 0;
+            System.out.println(" " + nodeCount + "s (" + explorableCount
+                + "x) " + edgeCount + "t ");
+            this.printed = 0;
         }
     }
 

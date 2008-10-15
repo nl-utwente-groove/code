@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: JVertexLayout.java,v 1.3 2008-01-30 09:33:00 iovka Exp $
  */
 package groove.gui.layout;
@@ -23,8 +23,8 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * Class containing the information to lay out a node.
- * The information consists of the node bounds.
+ * Class containing the information to lay out a node. The information consists
+ * of the node bounds.
  */
 public class JVertexLayout implements JCellLayout {
     /**
@@ -45,10 +45,12 @@ public class JVertexLayout implements JCellLayout {
      * Indicates whether a given node location is the default location.
      * @param x the x-coordinate of the node location to be tested
      * @param y the y-coordinate of the node location to be tested
-     * @return <code>true</code> if <code>location</code> is the default node location
+     * @return <code>true</code> if <code>location</code> is the default
+     *         node location
      */
     static public boolean isDefaultNodeLocation(double x, double y) {
-        return defaultNodeLocation.getX() == x && defaultNodeLocation.getY() == y;
+        return defaultNodeLocation.getX() == x
+            && defaultNodeLocation.getY() == y;
     }
 
     /**
@@ -64,19 +66,18 @@ public class JVertexLayout implements JCellLayout {
      * @return the bounds attribute of a node layout
      */
     public Rectangle2D getBounds() {
-        return (Rectangle2D) bounds.clone();
+        return (Rectangle2D) this.bounds.clone();
     }
 
     /**
-     * Converts the layout information into an attribute map
-     * as required by <tt>jgraph</tt>.
-     * The attribute map contains the stored bounds.
+     * Converts the layout information into an attribute map as required by
+     * <tt>jgraph</tt>. The attribute map contains the stored bounds.
      * @return an attribute map with layout information
      */
     public AttributeMap toJAttr() {
         AttributeMap result = new AttributeMap();
-        if (bounds != null) {
-            GraphConstants.setBounds(result, bounds);
+        if (this.bounds != null) {
+            GraphConstants.setBounds(result, this.bounds);
         }
         return result;
     }
@@ -85,7 +86,8 @@ public class JVertexLayout implements JCellLayout {
      * Node information is default if the location is the origin <tt>(0,0)</tt>.
      */
     public boolean isDefault() {
-        return JVertexLayout.isDefaultNodeLocation(getBounds().getX(), getBounds().getY());
+        return JVertexLayout.isDefaultNodeLocation(getBounds().getX(),
+            getBounds().getY());
     }
 
     /**
@@ -101,7 +103,7 @@ public class JVertexLayout implements JCellLayout {
             return false;
         }
     }
-    
+
     /**
      * Returns the hash code of the bounds.
      */
@@ -109,7 +111,7 @@ public class JVertexLayout implements JCellLayout {
     public int hashCode() {
         return getBounds().hashCode();
     }
-    
+
     /** The node bounds. */
     private final Rectangle2D bounds;
 }

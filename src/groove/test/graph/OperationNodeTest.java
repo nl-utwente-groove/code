@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: OperationNodeTest.java,v 1.4 2008-01-30 09:32:47 iovka Exp $
@@ -42,28 +42,34 @@ public class OperationNodeTest extends TestCase {
 
     @Override
     public void setUp() {
-        algebraGraph = AlgebraGraph.getInstance();
-        iAlgebra = algebraGraph.getAlgebra(AlgebraConstants.INTEGER);
-        sAlgebra = algebraGraph.getAlgebra(AlgebraConstants.STRING);
-        bAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
+        this.algebraGraph = AlgebraGraph.getInstance();
+        this.iAlgebra = this.algebraGraph.getAlgebra(AlgebraConstants.INTEGER);
+        this.sAlgebra = this.algebraGraph.getAlgebra(AlgebraConstants.STRING);
+        this.bAlgebra = this.algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
         try {
-			intNode = algebraGraph.getValueNode((Constant) iAlgebra.getOperation("1"));
-			checkIntNode = algebraGraph.getValueNode((Constant) iAlgebra.getOperation("2"));
-			boolNode = algebraGraph.getValueNode((Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.TRUE));
-			checkBoolNode = algebraGraph.getValueNode((Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.FALSE));
-			stringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("\"Hello\""));
-			checkStringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("\"Hello World!\""));
-		} catch (UnknownSymbolException exc) {
-			exc.printStackTrace();
-		}
+            this.intNode =
+                this.algebraGraph.getValueNode((Constant) this.iAlgebra.getOperation("1"));
+            this.checkIntNode =
+                this.algebraGraph.getValueNode((Constant) this.iAlgebra.getOperation("2"));
+            this.boolNode =
+                this.algebraGraph.getValueNode((Constant) this.bAlgebra.getOperation(DefaultBooleanAlgebra.TRUE));
+            this.checkBoolNode =
+                this.algebraGraph.getValueNode((Constant) this.bAlgebra.getOperation(DefaultBooleanAlgebra.FALSE));
+            this.stringNode =
+                this.algebraGraph.getValueNode((Constant) this.sAlgebra.getOperation("\"Hello\""));
+            this.checkStringNode =
+                this.algebraGraph.getValueNode((Constant) this.sAlgebra.getOperation("\"Hello World!\""));
+        } catch (UnknownSymbolException exc) {
+            exc.printStackTrace();
+        }
     }
 
     final public void testEquals() {
-        assertEquals(true, intNode.equals(intNode));
-        assertEquals(false, intNode.equals(checkIntNode));
-        assertEquals(true, boolNode.equals(boolNode));
-        assertEquals(false, boolNode.equals(checkBoolNode));
-        assertEquals(true, stringNode.equals(stringNode));
-        assertEquals(false, stringNode.equals(checkStringNode));
+        assertEquals(true, this.intNode.equals(this.intNode));
+        assertEquals(false, this.intNode.equals(this.checkIntNode));
+        assertEquals(true, this.boolNode.equals(this.boolNode));
+        assertEquals(false, this.boolNode.equals(this.checkBoolNode));
+        assertEquals(true, this.stringNode.equals(this.stringNode));
+        assertEquals(false, this.stringNode.equals(this.checkStringNode));
     }
 }

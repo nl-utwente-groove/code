@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: AbstractGraph.java,v 1.25 2008-02-19 10:35:31 fladder Exp $
  */
 package groove.graph;
@@ -31,23 +31,25 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Partial implementation of a graph.
- * Adds to the AbstractGraphShape the ability to add nodes and edges,
- * and some morphism capabilities.
+ * Partial implementation of a graph. Adds to the AbstractGraphShape the ability
+ * to add nodes and edges, and some morphism capabilities.
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
+public abstract class AbstractGraph<C extends GraphCache> extends
+        AbstractGraphShape<C> implements InternalGraph {
     public Morphism getIsomorphismTo(final Graph to) {
         reporter.start(GET_ISOMORPHISM_TO);
-//        Morphism isoMorphism = new DefaultMorphism(this, to) {
-//			@Override
-//			protected MatchStrategy createMatchStrategy() {
-//				return IsoMatchFactory.getInstance().createMatcher(dom());
-//			}
-//        };
+        // Morphism isoMorphism = new DefaultMorphism(this, to) {
+        // @Override
+        // protected MatchStrategy createMatchStrategy() {
+        // return IsoMatchFactory.getInstance().createMatcher(dom());
+        // }
+        // };
         Morphism result;
-        final NodeEdgeMap map = DefaultIsoChecker.getInstance().getIsomorphism(AbstractGraph.this, to);
+        final NodeEdgeMap map =
+            DefaultIsoChecker.getInstance().getIsomorphism(AbstractGraph.this,
+                to);
         if (map != null) {
             result = new DefaultMorphism(this, to) {
                 @Override
@@ -69,67 +71,74 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     public Node createNode() {
         return DefaultNode.createNode();
     }
-    
-    /**     * Returns the node counter used to number nodes distinctly.     */    final protected Dispenser getNodeCounter() {    	return getCache().getNodeCounter();    }
 
     /**
-     * Factory method for edges of this graph.
-     * This implementation delegates to {@link #createEdge(Node, Label)} if
-     * <code>ends.length == 1</code>, to {@link #createEdge(Node, Label, Node)} if
-     * <code>ends.length == 2</code> and throws a {@link IllegalArgumentException}
-     * otherwise.
+     * Returns the node counter used to number nodes distinctly.
+     */
+    final protected Dispenser getNodeCounter() {
+        return getCache().getNodeCounter();
+    }
+
+    /**
+     * Factory method for edges of this graph. This implementation delegates to
+     * {@link #createEdge(Node, Label)} if <code>ends.length == 1</code>, to
+     * {@link #createEdge(Node, Label, Node)} if <code>ends.length == 2</code>
+     * and throws a {@link IllegalArgumentException} otherwise.
      * @param ends the endpoints of the new edge
      * @param label the label of the new edge
      * @return the freshly created Edge
-     * @throws IllegalArgumentException if the number of edges is not supported by this graph.
+     * @throws IllegalArgumentException if the number of edges is not supported
+     *         by this graph.
      */
     public Edge createEdge(Node[] ends, Label label) {
         switch (ends.length) {
-        case 1 :
+        case 1:
             return createEdge(ends[Edge.SOURCE_INDEX], label);
-        case 2 :
-            return createEdge(ends[Edge.SOURCE_INDEX], label, ends[Edge.TARGET_INDEX]);
-        default :
-            throw new IllegalArgumentException("Hyperedges with "+ends.length+" tentacles not supported");
+        case 2:
+            return createEdge(ends[Edge.SOURCE_INDEX], label,
+                ends[Edge.TARGET_INDEX]);
+        default:
+            throw new IllegalArgumentException("Hyperedges with " + ends.length
+                + " tentacles not supported");
         }
     }
 
     /**
-     * Factory method for binary edges of this graph.
-     * This implementation returns a {@link DefaultEdge}.
+     * Factory method for binary edges of this graph. This implementation
+     * returns a {@link DefaultEdge}.
      * @param source the source node of the new edge
      * @param label the label of the new edge
      * @param target the target node of the new edge
      * @return the freshly binary created edge
      */
     public BinaryEdge createEdge(Node source, Label label, Node target) {
-//        if (label instanceof DefaultLabel) {
-//            return new DefaultLabelEdge(source, (DefaultLabel) label, target);
-//        } else {
-            return DefaultEdge.createEdge(source, label, target);
-//        }
+        // if (label instanceof DefaultLabel) {
+        // return new DefaultLabelEdge(source, (DefaultLabel) label, target);
+        // } else {
+        return DefaultEdge.createEdge(source, label, target);
+        // }
     }
 
     /**
-     * Factory method for unary edges of this graph.
-     * This implementation returns a {@link DefaultFlag}.
-     * Subclasses may choose to throw a {@link UnsupportedOperationException} 
-     * if unary edges are not supported.
+     * Factory method for unary edges of this graph. This implementation returns
+     * a {@link DefaultFlag}. Subclasses may choose to throw a
+     * {@link UnsupportedOperationException} if unary edges are not supported.
      * @param source the source node of the new edge
      * @param label the label of the new edge
      * @return the freshly created unary edge
      */
     public UnaryEdge createEdge(Node source, Label label) {
-//        if (label instanceof DefaultLabel) {
-//            return new DefaultLabelFlag(source, (DefaultLabel) label);
-//        } else {
-            return new DefaultFlag(source, label);
-//        }
+        // if (label instanceof DefaultLabel) {
+        // return new DefaultLabelFlag(source, (DefaultLabel) label);
+        // } else {
+        return new DefaultFlag(source, label);
+        // }
     }
 
     public Node addNode() {
         Node freshNode = createNode();
-        assert !nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s", freshNode, nodeSet());
+        assert !nodeSet().contains(freshNode) : String.format(
+            "Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
         return freshNode;
     }
@@ -154,7 +163,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     public boolean addNodeSet(Collection<? extends Node> nodeSet) {
         boolean added = false;
-        for (Node node: nodeSet) {
+        for (Node node : nodeSet) {
             added |= addNode(node);
         }
         return added;
@@ -162,7 +171,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     public boolean addEdgeSet(Collection<? extends Edge> edgeSet) {
         boolean added = false;
-        for (Edge edge: edgeSet) {
+        for (Edge edge : edgeSet) {
             added |= addEdge(edge);
         }
         return added;
@@ -170,7 +179,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     public boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet) {
         boolean added = false;
-        for (Edge edge: edgeSet) {
+        for (Edge edge : edgeSet) {
             added |= addEdgeWithoutCheck(edge);
         }
         return added;
@@ -178,7 +187,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     public boolean removeNodeSet(Collection<Node> nodeSet) {
         boolean removed = false;
-        for (Node node: nodeSet) {
+        for (Node node : nodeSet) {
             removed |= removeNode(node);
         }
         return removed;
@@ -186,7 +195,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
         boolean removed = false;
-        for (Node node: nodeSet) {
+        for (Node node : nodeSet) {
             removed |= removeNodeWithoutCheck(node);
         }
         return removed;
@@ -194,17 +203,17 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     public boolean removeEdgeSet(Collection<Edge> edgeSet) {
         boolean removed = false;
-        for (Edge edge: edgeSet) {
+        for (Edge edge : edgeSet) {
             removed |= removeEdge(edge);
         }
         return removed;
     }
 
     public boolean mergeNodes(Node from, Node to) {
-        if (! from.equals(to)) {
+        if (!from.equals(to)) {
             fireReplaceNode(from, to);
             // compute edge replacements and add new edges
-            for (Edge edge: new HashSet<Edge>(edgeSet(from))) {
+            for (Edge edge : new HashSet<Edge>(edgeSet(from))) {
                 boolean changed = false;
                 Node[] ends = edge.ends();
                 for (int i = 0; i < ends.length; i++) {
@@ -241,7 +250,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     }
 
     /**
-     * Calls {@link GraphListener#replaceUpdate(GraphShape, Node, Node)} on all registered GraphListeners.
+     * Calls {@link GraphListener#replaceUpdate(GraphShape, Node, Node)} on all
+     * registered GraphListeners.
      * @param from the replaced node
      * @param to the new node
      * @see GraphListener#replaceUpdate(GraphShape,Node,Node)
@@ -251,13 +261,14 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         while (iter.hasNext()) {
             GraphShapeListener listener = iter.next();
             if (listener instanceof GraphListener) {
-            	((GraphListener) listener).replaceUpdate(this, from, to);
+                ((GraphListener) listener).replaceUpdate(this, from, to);
             }
         }
     }
 
     /**
-     * Calls {@link GraphListener#replaceUpdate(GraphShape, Edge, Edge)} on all registered GraphListeners.
+     * Calls {@link GraphListener#replaceUpdate(GraphShape, Edge, Edge)} on all
+     * registered GraphListeners.
      * @param from the replaced edge
      * @param to the new edge
      * @see GraphListener#replaceUpdate(GraphShape,Edge,Edge)
@@ -267,40 +278,41 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         while (iter.hasNext()) {
             GraphShapeListener listener = iter.next();
             if (listener instanceof GraphListener) {
-            	((GraphListener) listener).replaceUpdate(this, from, to);
+                ((GraphListener) listener).replaceUpdate(this, from, to);
             }
         }
     }
-    
+
     /**
-     * Callback method that indicates if the graph supports edges with the 
-     * indicated number of edges.
-     * This implementation only returns <code>true</code> if <code>endCount</code>
-     * equals <code>2</code>, meaning that the graph only supports binary edges.
+     * Callback method that indicates if the graph supports edges with the
+     * indicated number of edges. This implementation only returns
+     * <code>true</code> if <code>endCount</code> equals <code>2</code>,
+     * meaning that the graph only supports binary edges.
      * @param endCount the number for which to check wether its valid
-     * @return <tt>true</tt> if <code>endCount</code> equals 2, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if <code>endCount</code> equals 2,
+     *         <tt>false</tt> otherwise
      * @see #addEdge(Node[], Label)
      */
     protected boolean isValidEndCount(int endCount) {
         return endCount == 2;
     }
-    
+
     public CertificateStrategy getCertifier() {
         return getCache().getCertificateStrategy();
     }
 
     /**
-     * Factory method for a morphism.
-     * This implementation invokes {@link GraphFactory#newMorphism(Graph, Graph)} on
-     * the current graph factory.
+     * Factory method for a morphism. This implementation invokes
+     * {@link GraphFactory#newMorphism(Graph, Graph)} on the current graph
+     * factory.
      */
     protected Morphism createMorphism(Graph dom, Graph cod) {
         return graphFactory.newMorphism(dom, cod);
     }
 
     /**
-     * Factory method for a graph cache.
-     * This implementation returns a {@link GraphCache}.
+     * Factory method for a graph cache. This implementation returns a
+     * {@link GraphCache}.
      * @return the graph cache
      */
     @Override
@@ -308,7 +320,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     protected C createCache() {
         return (C) new GraphCache(this);
     }
-    
+
     /**
      * Partitions a set of graph elements into its maximal connected subsets.
      * The set does not necessarily contain all endpoints of edges it contains.
@@ -318,80 +330,83 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      * @param edgeSet the set of edges to be partitioned
      * @return The set of maximal connected subsets of <code>elementSet</code>
      */
-    static public <N extends Node,E extends Edge> Set<Pair<Set<N>, Set<E>>> getConnectedSets(Collection<N> nodeSet, Collection<E> edgeSet) {
+    static public <N extends Node,E extends Edge> Set<Pair<Set<N>,Set<E>>> getConnectedSets(
+            Collection<N> nodeSet, Collection<E> edgeSet) {
         // mapping from nodes of elementSet to sets of connected elements
-        Map<Element,Pair<Set<N>,Set<E>>> resultMap = new HashMap<Element,Pair<Set<N>,Set<E>>>();
+        Map<Element,Pair<Set<N>,Set<E>>> resultMap =
+            new HashMap<Element,Pair<Set<N>,Set<E>>>();
         for (N elem : nodeSet) {
-			// the node cell consists of a singleton for the time being
-			Set<N> nodeCellSecond = new HashSet<N>();
-			nodeCellSecond.add(elem);
-			resultMap.put(elem, new Pair<Set<N>, Set<E>>(nodeCellSecond, new HashSet<E>()));
-		}
+            // the node cell consists of a singleton for the time being
+            Set<N> nodeCellSecond = new HashSet<N>();
+            nodeCellSecond.add(elem);
+            resultMap.put(elem, new Pair<Set<N>,Set<E>>(nodeCellSecond,
+                new HashSet<E>()));
+        }
         for (E edge : edgeSet) {
-        	Pair<Set<N>,Set<E>> cell = null;
-			for (int i = 0; i < edge.endCount(); i++) {
-				Pair<Set<N>,Set<E>> newCell = resultMap.get(edge.end(i));
-				if (newCell != null) {
-					if (cell == null) {
-						cell = newCell;
-					} else if (newCell != cell) {
-						cell.first().addAll(newCell.first());
-						cell.second().addAll(newCell.second());
-						for (N loser : newCell.first()) {
-							resultMap.put(loser, cell);
-						}
-						for (E loser : newCell.second()) {
-							resultMap.put(loser, cell);
-						}
-					}
-				}
-			}
-			if (cell == null) {
-				// no end nodes of edge have a cell
-				Set<E> cellSecond = new HashSet<E>();
-				cellSecond.add(edge);
-				cell = new Pair<Set<N>,Set<E>>(new HashSet<N>(), cellSecond);
-			} else {
-				cell.second().add(edge);
-			}
-			resultMap.put(edge, cell);
-		}
-		return new HashSet<Pair<Set<N>,Set<E>>>(resultMap.values());
+            Pair<Set<N>,Set<E>> cell = null;
+            for (int i = 0; i < edge.endCount(); i++) {
+                Pair<Set<N>,Set<E>> newCell = resultMap.get(edge.end(i));
+                if (newCell != null) {
+                    if (cell == null) {
+                        cell = newCell;
+                    } else if (newCell != cell) {
+                        cell.first().addAll(newCell.first());
+                        cell.second().addAll(newCell.second());
+                        for (N loser : newCell.first()) {
+                            resultMap.put(loser, cell);
+                        }
+                        for (E loser : newCell.second()) {
+                            resultMap.put(loser, cell);
+                        }
+                    }
+                }
+            }
+            if (cell == null) {
+                // no end nodes of edge have a cell
+                Set<E> cellSecond = new HashSet<E>();
+                cellSecond.add(edge);
+                cell = new Pair<Set<N>,Set<E>>(new HashSet<N>(), cellSecond);
+            } else {
+                cell.second().add(edge);
+            }
+            resultMap.put(edge, cell);
+        }
+        return new HashSet<Pair<Set<N>,Set<E>>>(resultMap.values());
     }
 
     /**
-	 * Tests if a given graph is connected; throws a
-	 * {@link IllegalArgumentException} if it is not. Implemented by testing
-	 * whether the number of partitions of the graph equals 1.
-	 * 
-	 * @return <tt>true</tt> if this graph contains exactly one connected
-	 *         component, <tt>false</tt> otherwise
-	 */
+     * Tests if a given graph is connected; throws a
+     * {@link IllegalArgumentException} if it is not. Implemented by testing
+     * whether the number of partitions of the graph equals 1.
+     * 
+     * @return <tt>true</tt> if this graph contains exactly one connected
+     *         component, <tt>false</tt> otherwise
+     */
     public boolean isConnected() {
         return getConnectedSets(nodeSet(), edgeSet()).size() == 1;
     }
-    
+
     // -------------------- REPORTER DEFINITIONS ------------------------
-    
+
     /** Returns an empty graph. */
     @SuppressWarnings("all")
     static public <C extends GraphCache> AbstractGraph<C> emptyGraph() {
-    	return EMPTY_GRAPH;
+        return EMPTY_GRAPH;
     }
-    
+
     /**
      * The factory used to get morphisms from
      * @see #createMorphism(Graph,Graph)
      */
     static private GraphFactory graphFactory = GraphFactory.getInstance();
-    
+
     /**
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier()
      */
-    static private CertificateStrategy certificateFactory = new groove.graph.iso.Bisimulator(null);
-    
-    
+    static private CertificateStrategy certificateFactory =
+        new groove.graph.iso.Bisimulator(null);
+
     /**
      * Fixed empty graph.
      */
@@ -403,7 +418,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      * @param certificateFactory the new strategy
      * @see #getCertifier()
      */
-    static protected void setCertificateFactory(CertificateStrategy certificateFactory) {
+    static protected void setCertificateFactory(
+            CertificateStrategy certificateFactory) {
         AbstractGraph.certificateFactory = certificateFactory;
     }
 
@@ -416,17 +432,19 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     }
 
     /**
-     * This implementation checks if the other is also an <tt>AbstractGraph</tt>; if so, it first
-     * compares the graph certificates at increasing precision to ensure that it is actually worth
-     * trying to compute an isomorphism.
+     * This implementation checks if the other is also an <tt>AbstractGraph</tt>;
+     * if so, it first compares the graph certificates at increasing precision
+     * to ensure that it is actually worth trying to compute an isomorphism.
      */
 
     /** Handle for profiling the {@link #getIsomorphismTo(Graph)} method */
-    static final int GET_ISOMORPHISM_TO = reporter.newMethod("getIsomorphismTo(Graph)");
+    static final int GET_ISOMORPHISM_TO =
+        reporter.newMethod("getIsomorphismTo(Graph)");
     /** Handle for profiling the {@link #clone()} method */
     static final int CLONE = reporter.newMethod("clone()");
     /** Handle for profiling the {@link #containsElement(Element)} method */
-    static final int CONTAINS_ELEMENT = reporter.newMethod("containsElement(Element)");
+    static final int CONTAINS_ELEMENT =
+        reporter.newMethod("containsElement(Element)");
     /** Handle for profiling the {@link #addNode(Node)} method */
     static final int ADD_NODE = reporter.newMethod("addNode(Node)");
     /** Handle for profiling the {@link #addEdge(Edge)} method */
@@ -437,10 +455,16 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     static final int REMOVE_EDGE = reporter.newMethod("removeEdge(Edge)");
     /** Handle for profiling the initDelta method of the delta implementations */
     static protected final int INIT_DATA = reporter.newMethod("initDelta()");
-    /** Handle for profiling the transferDelta method of the delta implementations */
-    static protected final int TRANSFER_DATA = reporter.newMethod("transferDelta()");
+    /**
+     * Handle for profiling the transferDelta method of the delta
+     * implementations
+     */
+    static protected final int TRANSFER_DATA =
+        reporter.newMethod("transferDelta()");
+
     /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
-    private static class EmptyGraph<C extends GraphCache> extends AbstractGraph<C> {
+    private static class EmptyGraph<C extends GraphCache> extends
+            AbstractGraph<C> {
         /**
          * The empty graph to which no elements can be added.
          */
@@ -449,11 +473,13 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         }
 
         public boolean addEdgeWithoutCheck(Edge edge) {
-            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
+            throw new UnsupportedOperationException(
+                "Can't add element to fixed empty graph");
         }
 
         public boolean removeNodeWithoutCheck(Node node) {
-            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
+            throw new UnsupportedOperationException(
+                "Can't remove element vrom fixed empty graph");
         }
 
         @Override
@@ -466,11 +492,13 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         }
 
         public boolean addEdge(Edge edge) {
-            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
+            throw new UnsupportedOperationException(
+                "Can't add element to fixed empty graph");
         }
 
         public boolean addNode(Node node) {
-            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
+            throw new UnsupportedOperationException(
+                "Can't add element to fixed empty graph");
         }
 
         public Set<? extends Edge> edgeSet() {
@@ -482,11 +510,13 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         }
 
         public boolean removeEdge(Edge edge) {
-            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
+            throw new UnsupportedOperationException(
+                "Can't remove element vrom fixed empty graph");
         }
 
         public boolean removeNode(Node node) {
-            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
+            throw new UnsupportedOperationException(
+                "Can't remove element vrom fixed empty graph");
         }
     }
 }

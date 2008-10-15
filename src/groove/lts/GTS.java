@@ -1,17 +1,17 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
-/* 
+/*
  * $Id: GTS.java,v 1.39 2008-03-18 10:58:51 fladder Exp $
  */
 package groove.lts;
@@ -42,83 +42,86 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Implements an LTS of which the states are {@link GraphState}s 
- * and the transitions {@link GraphTransition}s.
- * A GTS stores a fixed rule system.
+ * Implements an LTS of which the states are {@link GraphState}s and the
+ * transitions {@link GraphTransition}s. A GTS stores a fixed rule system.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
-     * The number of transitions generated but not added (due to overlapping existing transitions)
+     * The number of transitions generated but not added (due to overlapping
+     * existing transitions)
      */
     private static int spuriousTransitionCount;
-    
-	/**
+
+    /**
      * Returns the number of confluent diamonds found during generation.
      */
     public static int getSpuriousTransitionCount() {
         return spuriousTransitionCount;
     }
-    
+
     /**
      * Returns an estimate of the number of bytes used to store each state.
      */
     public double getBytesPerState() {
-    	return getStateSet().getBytesPerElement();
+        return getStateSet().getBytesPerElement();
     }
-    
+
     /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(GraphGrammar grammar) {
-    	grammar.testFixed(true);
+        grammar.testFixed(true);
         this.ruleSystem = grammar;
-//        this.storeTransitions = storeTransitions;
+        // this.storeTransitions = storeTransitions;
     }
 
     /**
-     * Callback factory method to create and initialise the start graph of the GTS,
-     * on the basis of a given graph.
-     * Creation is done using {@link #createStartState(Graph)}.
+     * Callback factory method to create and initialise the start graph of the
+     * GTS, on the basis of a given graph. Creation is done using
+     * {@link #createStartState(Graph)}.
      */
     protected GraphState computeStartState(Graph startGraph) {
         GraphState result = createStartState(startGraph);
-//        result.getGraph().setFixed();
+        // result.getGraph().setFixed();
         return result;
     }
 
     /**
-     * Callback factory method to create the start graph of the GTS,
-     * on the basis of a given graph.
+     * Callback factory method to create the start graph of the GTS, on the
+     * basis of a given graph.
      */
     protected GraphState createStartState(Graph startGraph) {
         // initialise the start state with a control location if necessary
-    	if( this.ruleSystem.getControl() != null ) {
-    		return new StartGraphState(getRecord(), startGraph, new LocationAutomatonBuilder().getLocation(this.ruleSystem.getControl().startState()));
+        if (this.ruleSystem.getControl() != null) {
+            return new StartGraphState(
+                getRecord(),
+                startGraph,
+                new LocationAutomatonBuilder().getLocation(this.ruleSystem.getControl().startState()));
         } else {
-        	return new StartGraphState(getRecord(), startGraph);
+            return new StartGraphState(getRecord(), startGraph);
         }
     }
 
     /** This implementation specialises the return type to {@link GraphState}. */
     public GraphState startState() {
-    	if (startState == null) {
-    		startState = computeStartState(getGrammar().getStartGraph());
-    		addState(startState);
-    	}
-        return startState;
+        if (this.startState == null) {
+            this.startState = computeStartState(getGrammar().getStartGraph());
+            addState(this.startState);
+        }
+        return this.startState;
     }
 
     /**
      * Returns the rule system underlying this GTS.
      */
     public GraphGrammar getGrammar() {
-        return ruleSystem;
+        return this.ruleSystem;
     }
 
     public Collection<GraphState> getFinalStates() {
-        return finalStates;
+        return this.finalStates;
     }
 
     public boolean hasFinalStates() {
@@ -131,7 +134,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /** Adds a given state to the final states of this GTS. */
     private void setFinal(State state) {
-        finalStates.add((GraphState) state);
+        this.finalStates.add((GraphState) state);
     }
 
     public boolean isOpen(State state) {
@@ -139,9 +142,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
-     * Indicates if the GTS currently has open states.
-     * Equivalent to (but more efficient than) <code>getOpenStateIter().hasNext()</code>
-     * or <code>!getOpenStates().isEmpty()</code>.
+     * Indicates if the GTS currently has open states. Equivalent to (but more
+     * efficient than) <code>getOpenStateIter().hasNext()</code> or
+     * <code>!getOpenStates().isEmpty()</code>.
      * @return <code>true</code> if the GTS currently has open states
      * @see #getOpenStateIter()
      * @see #getOpenStates()
@@ -149,7 +152,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     public boolean hasOpenStates() {
         return openStateCount() > 0;
     }
-    
+
     /**
      * Returns a view on the set of currently open states.
      * @see #hasOpenStates()
@@ -157,7 +160,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     public Collection<GraphState> getOpenStates() {
         return new CollectionView<GraphState>(getStateSet()) {
-        	@Override
+            @Override
             public boolean approves(Object obj) {
                 return !((State) obj).isClosed();
             }
@@ -165,14 +168,14 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
-     * Returns an iterator over the set of currently open states.
-     * Equivalent to <code>getOpenStates().iterator()</code>.
+     * Returns an iterator over the set of currently open states. Equivalent to
+     * <code>getOpenStates().iterator()</code>.
      * @see #hasOpenStates()
      * @see #getOpenStates()
      */
     public Iterator<GraphState> getOpenStateIter() {
         return new FilterIterator<GraphState>(nodeSet().iterator()) {
-        	@Override
+            @Override
             protected boolean approves(Object obj) {
                 return !((State) obj).isClosed();
             }
@@ -180,126 +183,132 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
-     * Removes a state from the set of open states, and notifies the graph listeners.
-     * Also determines the final status of the state.
-     * Only call this after all outgoing transitions of the state have been generated!
+     * Removes a state from the set of open states, and notifies the graph
+     * listeners. Also determines the final status of the state. Only call this
+     * after all outgoing transitions of the state have been generated!
      * @param state the state to be removed from the set of open states
      * @require <tt>state instanceof GraphState</tt>
      */
     public void setClosed(State state) {
         GraphState graphState = (GraphState) state;
-        
+
         if (graphState.setClosed()) {
-        	if (determineIsFinal(graphState)) {
-        		setFinal(graphState);
-        	}
+            if (determineIsFinal(graphState)) {
+                setFinal(graphState);
+            }
             incClosedCount();
             notifyLTSListenersOfClose(state);
         }
     }
-    
+
     /** Increases the count of closed states by one. */
     protected void incClosedCount() {
-        closedCount++;
+        this.closedCount++;
     }
-    
-    // a state is final if 
+
+    // a state is final if
     // - with location, and then the location is a success state
     // - without location, and then no outgoing transitions
     private boolean determineIsFinal(GraphState state) {
-    	if (state.getLocation() == null) {
-    		return ! state.getTransitionIter().hasNext(); // TODO this can probably be optimised, with e.g. an additional function for a GTS
-    	} else {
-    		Set<Rule> rulesFound = new HashSet<Rule>();
-    		for (GraphTransition trans : state.getTransitionSet()) {
-    			rulesFound.add(trans.getEvent().getRule());
-    		}
-    		return state.getLocation().isSuccess(rulesFound);
-    	}
+        if (state.getLocation() == null) {
+            return !state.getTransitionIter().hasNext(); // TODO this can
+                                                            // probably be
+                                                            // optimised, with
+                                                            // e.g. an
+                                                            // additional
+                                                            // function for a
+                                                            // GTS
+        } else {
+            Set<Rule> rulesFound = new HashSet<Rule>();
+            for (GraphTransition trans : state.getTransitionSet()) {
+                rulesFound.add(trans.getEvent().getRule());
+            }
+            return state.getLocation().isSuccess(rulesFound);
+        }
     }
 
     /** Returns the number of not fully explored states. */
     public int openStateCount() {
-        return nodeCount() - closedCount;
+        return nodeCount() - this.closedCount;
     }
 
-	@Override
+    @Override
     public int nodeCount() {
         return getStateSet().size();
     }
 
-	@Override
+    @Override
     public int edgeCount() {
-        return transitionCount;
+        return this.transitionCount;
     }
 
-	/**
-	 * This implementation calls {@link GraphState#getTransitionSet()} on <tt>node</tt>.
-	 */
-	@Override
-	public Set<GraphTransition> outEdgeSet(Node node) {
-		return ((GraphState) node).getTransitionSet();
-	}
-	
+    /**
+     * This implementation calls {@link GraphState#getTransitionSet()} on
+     * <tt>node</tt>.
+     */
+    @Override
+    public Set<GraphTransition> outEdgeSet(Node node) {
+        return ((GraphState) node).getTransitionSet();
+    }
+
     // ----------------------- OBJECT OVERRIDES ------------------------
 
     public Set<? extends GraphState> nodeSet() {
-        return Collections.unmodifiableSet(stateSet);
+        return Collections.unmodifiableSet(this.stateSet);
     }
 
-    public Set<? extends GraphTransition> edgeSet()
-    {
+    public Set<? extends GraphTransition> edgeSet() {
         if (isStoreTransitions()) {
-        	return new TransitionSet();
+            return new TransitionSet();
         } else {
             return new NextStateSet();
-        }   	
+        }
     }
-    
+
     /** Get method for the state set. Lazily creates the set first. */
     protected TreeHashSet<GraphState> getStateSet() {
-        if (stateSet == null) {
-            stateSet = createStateSet();
+        if (this.stateSet == null) {
+            this.stateSet = createStateSet();
         }
-        return stateSet;
+        return this.stateSet;
     }
-    
+
     /** Callback factory method for a state set. */
     protected TreeHashSet<GraphState> createStateSet() {
         return new TreeHashStateSet();
     }
-    
-	@Override
+
+    @Override
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
     }
-    
+
     /**
-	 * Returns the (fixed) derivation record for this GTS.
-	 */
-	public final SystemRecord getRecord() {
-		if (record == null) {
-			record = createRecord();
-		}
-		return record;
-	}
+     * Returns the (fixed) derivation record for this GTS.
+     */
+    public final SystemRecord getRecord() {
+        if (this.record == null) {
+            this.record = createRecord();
+        }
+        return this.record;
+    }
 
-	/** Callback method to create a derivation data store for this GTS. */
-	protected SystemRecord createRecord() {
-		return new SystemRecord(getGrammar());
-	}
+    /** Callback method to create a derivation data store for this GTS. */
+    protected SystemRecord createRecord() {
+        return new SystemRecord(getGrammar());
+    }
 
-	/**
-	 * Adds a transition to the GTS, under the assumption that the source
-	 * and target states are already present.
-	 * @param transition the source state of the transition to be added
-	 */
-	public void addTransition(GraphTransition transition) {
-		if (isStoreTransitions()) {
+    /**
+     * Adds a transition to the GTS, under the assumption that the source and
+     * target states are already present.
+     * @param transition the source state of the transition to be added
+     */
+    public void addTransition(GraphTransition transition) {
+        if (isStoreTransitions()) {
             reporter.start(ADD_TRANSITION_STOP);
             // add (possibly isomorphically modified) edge to LTS
             if (transition.source().addTransition(transition)) {
-                transitionCount++;
+                this.transitionCount++;
                 fireAddEdge(transition);
             } else {
                 spuriousTransitionCount++;
@@ -307,19 +316,20 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             reporter.stop();
         } else if (transition instanceof GraphNextState) {
             reporter.start(ADD_TRANSITION_STOP);
-            transitionCount++;
-            fireAddEdge(transition);        	
+            this.transitionCount++;
+            fireAddEdge(transition);
             reporter.stop();
         }
-	}
-	
+    }
+
     /**
      * Adds a state to the GTS, if it is not isomorphic to an existing state.
-     * Returns the isomorphic state if one was found, or <tt>null</tt> if the state was actually added.
+     * Returns the isomorphic state if one was found, or <tt>null</tt> if the
+     * state was actually added.
      * @param newState the state to be added
-     * @return a state isomorphic to <tt>state</tt>;
-     * or <tt>null</tt> if there was no existing isomorphic state (in which  case, and only then,
-     * <tt>state</tt> was added and the listeners notified).
+     * @return a state isomorphic to <tt>state</tt>; or <tt>null</tt> if
+     *         there was no existing isomorphic state (in which case, and only
+     *         then, <tt>state</tt> was added and the listeners notified).
      */
     public GraphState addState(GraphState newState) {
         reporter.start(ADD_STATE);
@@ -334,41 +344,41 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
-	 * Indicates if transitions are to be stored in the GTS.
-	 * If they are not stored, the transition set will only include
-	 * the spanning tree (consisting of the {@link GraphNextState}s).
-	 */
-	protected final boolean isStoreTransitions() {
-		return getRecord().isStoreTransitions();
-	}
+     * Indicates if transitions are to be stored in the GTS. If they are not
+     * stored, the transition set will only include the spanning tree
+     * (consisting of the {@link GraphNextState}s).
+     */
+    protected final boolean isStoreTransitions() {
+        return getRecord().isStoreTransitions();
+    }
 
-	/**
-     * Iterates over the graph listeners and notifies those which
-     * are also LTS listeners of the fact that a state has been closed.
+    /**
+     * Iterates over the graph listeners and notifies those which are also LTS
+     * listeners of the fact that a state has been closed.
      */
     protected void notifyLTSListenersOfClose(State closed) {
         Iterator<GraphShapeListener> listenerIter = getGraphListeners();
         while (listenerIter.hasNext()) {
-        	GraphShapeListener listener = listenerIter.next();
+            GraphShapeListener listener = listenerIter.next();
             if (listener instanceof LTSListener) {
                 ((LTSListener) listener).closeUpdate(this, closed);
             }
         }
     }
-    
+
     /**
-	 * @return Returns the transitionCount.
-	 */
-	final int getTransitionCount() {
-		return this.transitionCount;
-	}
+     * @return Returns the transitionCount.
+     */
+    final int getTransitionCount() {
+        return this.transitionCount;
+    }
 
     /**
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
      */
     private GraphState startState;
-    
+
     /**
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>
@@ -376,7 +386,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     private final GraphGrammar ruleSystem;
     /** The set of states of the GTS. */
     private TreeHashSet<GraphState> stateSet;
-    
+
     /**
      * Set of states that have not yet been extended.
      * @invariant <tt>freshStates \subseteq nodes</tt>
@@ -393,187 +403,201 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The number of transitions in the GTS.
      */
     private int transitionCount = 0;
-//    /** Flag to indicate whether transitions are to be stored in the GTS. */
-//    private final boolean storeTransitions;
-    
+
+    // /** Flag to indicate whether transitions are to be stored in the GTS. */
+    // private final boolean storeTransitions;
+
     /** Specialised set implementation for storing states. */
     protected class TreeHashStateSet extends TreeHashSet<GraphState> {
-    	/** Constructs a new, empty state set. */
+        /** Constructs a new, empty state set. */
         TreeHashStateSet() {
-            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION);
+            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
+                STATE_SET_ROOT_RESOLUTION);
         }
-        
+
         /**
-         * First compares the control locations, then calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
+         * First compares the control locations, then calls
+         * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
          * @see GraphState#getLocation()
          */
-    	@Override
+        @Override
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
-			if (getRecord().isCollapse()) {
-			    // distinct control locations means distinct states
-			    if (isDistinctLocations(stateKey, otherStateKey)) {
+            if (getRecord().isCollapse()) {
+                // distinct control locations means distinct states
+                if (isDistinctLocations(stateKey, otherStateKey)) {
                     return false;
-			    }
+                }
                 Graph one = stateKey.getGraph();
                 Graph two = otherStateKey.getGraph();
                 if (getRecord().isCheckIso()) {
                     // check for graph isomorphism
-                    return checker.areIsomorphic(one, two);
+                    return this.checker.areIsomorphic(one, two);
                 } else {
                     // check for graph equality
-                    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
+                    return one.nodeSet().equals(two.nodeSet())
+                        && one.edgeSet().equals(two.edgeSet());
                 }
-			} else {
+            } else {
                 return stateKey == otherStateKey;
-			}
-		}
-    	
-    	/** Callback method to test if two graph states have different associated locations. */
-    	protected boolean isDistinctLocations(GraphState stateKey, GraphState otherStateKey) {
-            Location control = stateKey.getLocation();
-            return control != null && ! control.equals(otherStateKey.getLocation());
-    	}
+            }
+        }
 
         /**
-		 * Returns the hash code of the state, modified by the control location (if any).
-		 */
-    	@Override
+         * Callback method to test if two graph states have different associated
+         * locations.
+         */
+        protected boolean isDistinctLocations(GraphState stateKey,
+                GraphState otherStateKey) {
+            Location control = stateKey.getLocation();
+            return control != null
+                && !control.equals(otherStateKey.getLocation());
+        }
+
+        /**
+         * Returns the hash code of the state, modified by the control location
+         * (if any).
+         */
+        @Override
         protected int getCode(GraphState stateKey) {
-    	    int result;
-    		if (getRecord().isCollapse()) { 
+            int result;
+            if (getRecord().isCollapse()) {
                 if (getRecord().isCheckIso()) {
-                    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+                    result =
+                        stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
                 } else {
                     Graph graph = stateKey.getGraph();
-                    result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+                    result =
+                        graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 }
                 Object control = stateKey.getLocation();
-                result += control == null ? 0 : System.identityHashCode(control);
-    		} else {
+                result +=
+                    control == null ? 0 : System.identityHashCode(control);
+            } else {
                 result = System.identityHashCode(stateKey);
             }
-    		return result;
+            return result;
         }
-        
+
         /** The isomorphism checker of the state set. */
-        private IsoChecker checker = DefaultIsoChecker.getInstance();
+        private final IsoChecker checker = DefaultIsoChecker.getInstance();
     }
 
     /**
-     * An unmodifiable view on the transitions of this GTS.
-     * The transitions are (re)constructed from the outgoing
-     * transitions as stored in the states.
+     * An unmodifiable view on the transitions of this GTS. The transitions are
+     * (re)constructed from the outgoing transitions as stored in the states.
      */
     private class TransitionSet extends AbstractSet<GraphTransition> {
-    	/** Empty constructor with the correct visibility. */
-    	TransitionSet() {
-    		// empty
-    	}
-    	
-        /**
-         * To determine whether a transition is in the set,
-         * we look if the source state is known and if the 
-         * transition is registered as outgoing transition with the source state.
-         * @require <tt>o instanceof GraphTransition</tt> 
-         */
-    	@Override
-        public boolean contains(Object o) {
-        	if (o instanceof GraphTransition) {
-        		GraphTransition transition = (GraphTransition) o;
-        		GraphState source = transition.source();
-        		return (containsElement(source) && source.containsTransition(transition));
-        	} else {
-        		return false;
-        	}
+        /** Empty constructor with the correct visibility. */
+        TransitionSet() {
+            // empty
         }
 
         /**
-         * Iterates over the state and for each state over
-         * that state's outgoing transitions.
+         * To determine whether a transition is in the set, we look if the
+         * source state is known and if the transition is registered as outgoing
+         * transition with the source state.
+         * @require <tt>o instanceof GraphTransition</tt>
          */
-    	@Override
+        @Override
+        public boolean contains(Object o) {
+            if (o instanceof GraphTransition) {
+                GraphTransition transition = (GraphTransition) o;
+                GraphState source = transition.source();
+                return (containsElement(source) && source.containsTransition(transition));
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Iterates over the state and for each state over that state's outgoing
+         * transitions.
+         */
+        @Override
         public Iterator<GraphTransition> iterator() {
-            Iterator<Iterator<GraphTransition>> stateOutTransitionIter = new TransformIterator<GraphState,Iterator<GraphTransition>>(nodeSet().iterator()) {
-            	@Override
-                public Iterator<GraphTransition> toOuter(GraphState state) {
-                    return state.getTransitionIter();
-                }
-            };
+            Iterator<Iterator<GraphTransition>> stateOutTransitionIter =
+                new TransformIterator<GraphState,Iterator<GraphTransition>>(
+                    nodeSet().iterator()) {
+                    @Override
+                    public Iterator<GraphTransition> toOuter(GraphState state) {
+                        return state.getTransitionIter();
+                    }
+                };
             return new NestedIterator<GraphTransition>(stateOutTransitionIter);
         }
 
-    	@Override
+        @Override
         public int size() {
             return getTransitionCount();
         }
     }
 
     /**
-     * An unmodifiable view on the transitions of this GTS.
-     * The transitions are (re)constructed from the outgoing
-     * transitions as stored in the states.
+     * An unmodifiable view on the transitions of this GTS. The transitions are
+     * (re)constructed from the outgoing transitions as stored in the states.
      */
     private class NextStateSet extends AbstractSet<GraphTransition> {
-    	/** Empty constructor with the correct visibility. */
-    	NextStateSet() {
-    		// empty
-    	}
-    	
+        /** Empty constructor with the correct visibility. */
+        NextStateSet() {
+            // empty
+        }
+
         /**
-         * To determine whether a transition is in the set,
-         * we look if the target state (which is typically a {@link GraphNextState})
-         * is actually this transition.
+         * To determine whether a transition is in the set, we look if the
+         * target state (which is typically a {@link GraphNextState}) is
+         * actually this transition.
          */
-    	@Override
+        @Override
         public boolean contains(Object o) {
-        	if (o instanceof GraphTransition) {
-        		GraphTransition transition = (GraphTransition) o;
-        		GraphState target = transition.target();
-        		return target.equals(transition);
-        	} else {
-        		return false;
-        	}
+            if (o instanceof GraphTransition) {
+                GraphTransition transition = (GraphTransition) o;
+                GraphState target = transition.target();
+                return target.equals(transition);
+            } else {
+                return false;
+            }
         }
 
         /**
          * Iterates over the states that are {@link GraphNextState}s.
          */
-    	@Override
+        @Override
         public Iterator<GraphTransition> iterator() {
             Iterator<? extends GraphState> stateIter = nodeSet().iterator();
             return new FilterIterator<GraphTransition>(stateIter) {
-				@Override
-				protected boolean approves(Object obj) {
-					return obj instanceof GraphNextState;
-				}
+                @Override
+                protected boolean approves(Object obj) {
+                    return obj instanceof GraphNextState;
+                }
             };
         }
 
-    	@Override
+        @Override
         public int size() {
             return nodeCount() - 1;
         }
     }
-	/**
-	 * Tree resolution of the state set (which is a {@link TreeHashSet}).
-	 * A smaller value means memory savings; a larger value means speedup.
-	 */
+
+    /**
+     * Tree resolution of the state set (which is a {@link TreeHashSet}). A
+     * smaller value means memory savings; a larger value means speedup.
+     */
     protected final static int STATE_SET_RESOLUTION = 2;
-	/**
-	 * Tree root resolution of the state set (which is a {@link TreeHashSet}).
-	 * A larger number means speedup, but
-	 * the memory initially reserved for the set grows exponentially with this number.
-	 */
+    /**
+     * Tree root resolution of the state set (which is a {@link TreeHashSet}).
+     * A larger number means speedup, but the memory initially reserved for the
+     * set grows exponentially with this number.
+     */
     protected final static int STATE_SET_ROOT_RESOLUTION = 10;
     /**
      * Number of states for which the state set should have room initially.
      */
     protected final static int INITIAL_STATE_SET_SIZE = 10000;
-    
+
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
-    static public final int ADD_TRANSITION_STOP = reporter.newMethod("addTransition  - stop");
+    static public final int ADD_TRANSITION_STOP =
+        reporter.newMethod("addTransition  - stop");
 
-    
 }

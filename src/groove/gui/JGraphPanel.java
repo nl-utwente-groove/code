@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: JGraphPanel.java,v 1.20 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
@@ -48,30 +48,30 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * preferred width is set to the minimum width.
      */
     public final static int MINIMUM_LABEL_PANE_WIDTH = 75;
-    
+
     /**
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 
-     * @param jGraph
-     *            the jgraph on which this panel is a view
-     * @param withStatusBar
-     *            <tt>true</tt> if a status bar should be added to the panel
-     * @param options Options object used to create menu item listeners. 
-     * If <code>null</code>, no listeners are created.
+     * @param jGraph the jgraph on which this panel is a view
+     * @param withStatusBar <tt>true</tt> if a status bar should be added to
+     *        the panel
+     * @param options Options object used to create menu item listeners. If
+     *        <code>null</code>, no listeners are created.
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
     public JGraphPanel(JG jGraph, boolean withStatusBar, Options options) {
-    	super(false);
-    	// right now we always want label panels; keep this option
-    	boolean withLabelPanel = true;
+        super(false);
+        // right now we always want label panels; keep this option
+        boolean withLabelPanel = true;
         this.jGraph = jGraph;
         this.options = options;
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
-        this.viewLabelListItem = withLabelPanel ? this.createViewLabelListItem() : null;
-        this.setLayout(new BorderLayout());
+        this.viewLabelListItem =
+            withLabelPanel ? this.createViewLabelListItem() : null;
+        setLayout(new BorderLayout());
         this.setPane(withLabelPanel ? createSplitPane() : this.createSoloPane());
-        if (statusBar != null) {
-            add(statusBar, BorderLayout.SOUTH);
+        if (this.statusBar != null) {
+            add(this.statusBar, BorderLayout.SOUTH);
         }
         addRefreshListener(Options.SHOW_BACKGROUND_OPTION);
     }
@@ -87,26 +87,26 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * Returns the underlying {@link JGraph}.
      */
     public JG getJGraph() {
-        return jGraph;
+        return this.jGraph;
     }
-    
+
     /**
-     * Returns the underlying {@link JModel}, or <code>null</code>
-     * if the jgraph is currently disabled.
+     * Returns the underlying {@link JModel}, or <code>null</code> if the
+     * jgraph is currently disabled.
      */
     public JModel getJModel() {
-    	if (isEnabled()) {
-    		return jGraph.getModel();
-    	} else {
-    		return null;
-    	}
+        if (isEnabled()) {
+            return this.jGraph.getModel();
+        } else {
+            return null;
+        }
     }
 
     /**
      * Returns the status bar of this panel, if any.
      */
     public JLabel getStatusBar() {
-        return statusBar;
+        return this.statusBar;
     }
 
     /**
@@ -114,14 +114,14 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      */
     @Override
     public void setEnabled(boolean enabled) {
-        jGraph.setEnabled(enabled);
-        statusBar.setEnabled(enabled);
+        this.jGraph.setEnabled(enabled);
+        this.statusBar.setEnabled(enabled);
         super.setEnabled(enabled);
     }
-    
-    /** 
-     * Readies the panel for garbage collection,
-     * in particular unregistering all listeners.
+
+    /**
+     * Readies the panel for garbage collection, in particular unregistering all
+     * listeners.
      */
     public void dispose() {
         removeOptionListeners();
@@ -133,7 +133,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      */
     protected JComponent createSoloPane() {
         // set up the real editor pane
-        JScrollPane result = new JScrollPane(jGraph);
+        JScrollPane result = new JScrollPane(this.jGraph);
         result.setDoubleBuffered(false);
         result.setPreferredSize(new Dimension(500, 400));
         return result;
@@ -146,16 +146,16 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     protected JComponent createSplitPane() {
         JPanel labelPane = new JPanel(new BorderLayout(), false);
         labelPane.add(new JLabel(" " + Options.LABEL_PANE_TITLE + " "),
-                BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(jGraph.getLabelList()) {
-        	@Override
+            BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane(this.jGraph.getLabelList()) {
+            @Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
             }
 
-        	@Override
+            @Override
             public Dimension getPreferredSize() {
-                if (jGraph.getLabelList().getModel().getSize() == 0) {
+                if (JGraphPanel.this.jGraph.getLabelList().getModel().getSize() == 0) {
                     return getMinimumSize();
                 } else {
                     return super.getPreferredSize();
@@ -164,8 +164,9 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         };
         labelPane.add(scrollPane, BorderLayout.CENTER);
         // set up the split editor pane
-        JSplitPane result = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                createSoloPane(), labelPane);
+        JSplitPane result =
+            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createSoloPane(),
+                labelPane);
         result.setOneTouchExpandable(true);
         result.setResizeWeight(1.0);
         return result;
@@ -197,117 +198,122 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * stored in {@link #currentPane}.
      */
     protected void setPane(JComponent editorPane) {
-        if (currentPane != null) {
-            remove(currentPane);
+        if (this.currentPane != null) {
+            remove(this.currentPane);
         }
         add(editorPane, BorderLayout.CENTER);
-        currentPane = editorPane;
+        this.currentPane = editorPane;
         revalidate();
     }
-    
+
     /** Returns the component inside the panel. */
     protected JComponent getPane() {
-    	return currentPane;
+        return this.currentPane;
     }
 
     /**
-     * Adds a refresh listener to the menu item associated with for an option with a given name.
+     * Adds a refresh listener to the menu item associated with for an option
+     * with a given name.
      * @see #getRefreshListener()
      */
     protected void addRefreshListener(String option) {
-    	addOptionListener(option, getRefreshListener());
+        addOptionListener(option, getRefreshListener());
     }
-    
+
     /**
-     * Returns the refresh listener for this panel.
-     * Lazily creates the listener.
+     * Returns the refresh listener for this panel. Lazily creates the listener.
      */
     protected final ItemListener getRefreshListener() {
-    	if (refreshListener == null) {
-    		refreshListener =  new ItemListener() {
-    			public void itemStateChanged(ItemEvent e) {
-    				if (isEnabled()) {
-    					refresh();
-    				}
-    			}
-    		};
-    	}
-    	return refreshListener;
+        if (this.refreshListener == null) {
+            this.refreshListener = new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    if (isEnabled()) {
+                        refresh();
+                    }
+                }
+            };
+        }
+        return this.refreshListener;
     }
-    
+
     /**
-     * Adds a listener to the menu item associated with for an option with a given name.
-     * Throws an exception if no such option was in the options object passed
-     * in at construction time.
+     * Adds a listener to the menu item associated with for an option with a
+     * given name. Throws an exception if no such option was in the options
+     * object passed in at construction time.
      */
     private void addOptionListener(String option, ItemListener listener) {
         JMenuItem optionItem = getOptionsItem(option);
         if (optionItem == null) {
-            throw new IllegalArgumentException(String.format("Unknown option: %s", option));
+            throw new IllegalArgumentException(String.format(
+                "Unknown option: %s", option));
         }
         optionItem.addItemListener(listener);
-        listeners.add(new Pair<JMenuItem, ItemListener>(optionItem, listener));
+        this.listeners.add(new Pair<JMenuItem,ItemListener>(optionItem,
+            listener));
     }
-    
-    /** Removes all listeners added by {@link #addOptionListener(String, ItemListener)}. */
+
+    /**
+     * Removes all listeners added by
+     * {@link #addOptionListener(String, ItemListener)}.
+     */
     private void removeOptionListeners() {
-        for (Pair<JMenuItem,ItemListener> record: listeners) {
+        for (Pair<JMenuItem,ItemListener> record : this.listeners) {
             record.first().removeItemListener(record.second());
         }
-        listeners.clear();
+        this.listeners.clear();
     }
-    
-    /** 
-     * Refreshes everything on the panel, for instance in reaction to a 
-     * change in one of the visualisation options.
-     * This implementation calls {@link JModel#refresh()} and {@link #refreshStatus()}.
+
+    /**
+     * Refreshes everything on the panel, for instance in reaction to a change
+     * in one of the visualisation options. This implementation calls
+     * {@link JModel#refresh()} and {@link #refreshStatus()}.
      */
     protected void refresh() {
-    	JModel jModel = getJModel();
-    	getJGraph().setEnabled(jModel != null);
-    	if (jModel != null) {
-    		jModel.refresh();
-    	}
-    	getJGraph().clearSelection();
-    	refreshStatus();
+        JModel jModel = getJModel();
+        getJGraph().setEnabled(jModel != null);
+        if (jModel != null) {
+            jModel.refresh();
+        }
+        getJGraph().clearSelection();
+        refreshStatus();
     }
-    
-    /** 
-     * If the panel has a status bar, refreshes it 
-     * with the text obtained from {@link #getStatusText()}.
+
+    /**
+     * If the panel has a status bar, refreshes it with the text obtained from
+     * {@link #getStatusText()}.
      */
     protected void refreshStatus() {
-    	if (getStatusBar() != null) {
-    		getStatusBar().setText(getStatusText());
-    	}
+        if (getStatusBar() != null) {
+            getStatusBar().setText(getStatusText());
+        }
     }
-    
+
     /**
-     * Callback method from {@link #refreshStatus()} to obtain the current status text, which is 
-     * to be printed on the status bar (if any).
-     * This implementation returns the empty string.
+     * Callback method from {@link #refreshStatus()} to obtain the current
+     * status text, which is to be printed on the status bar (if any). This
+     * implementation returns the empty string.
      */
     protected String getStatusText() {
-    	return "";
+        return "";
     }
-    
-    /**
-	 * Returns the options object passed in at construction time.
-	 */
-	protected final Options getOptions() {
-		return this.options;
-	}
 
-	/** 
-     * Retrieves the options item for a given option name,
-     * creating it first if necessary.
+    /**
+     * Returns the options object passed in at construction time.
+     */
+    protected final Options getOptions() {
+        return this.options;
+    }
+
+    /**
+     * Retrieves the options item for a given option name, creating it first if
+     * necessary.
      */
     protected JMenuItem getOptionsItem(String option) {
-    	Options options = getOptions();
-    	return options == null ? null : options.getItem(option);
+        Options options = getOptions();
+        return options == null ? null : options.getItem(option);
     }
 
-	/**
+    /**
      * The {@link JGraph}on which this panel provides a view.
      */
     protected final JG jGraph;
@@ -324,7 +330,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /** The menu item to switch the label list on and off. */
     private final JMenuItem viewLabelListItem;
 
-    private final List<Pair<JMenuItem,ItemListener>> listeners =  new LinkedList<Pair<JMenuItem,ItemListener>>();
+    private final List<Pair<JMenuItem,ItemListener>> listeners =
+        new LinkedList<Pair<JMenuItem,ItemListener>>();
     /**
      * The editor pane most recently installed by {@link #setPane}.
      */

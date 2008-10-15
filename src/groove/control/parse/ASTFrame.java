@@ -19,31 +19,31 @@ import org.antlr.runtime.tree.CommonTree;
  */
 public class ASTFrame extends JFrame {
 
-	private static final long serialVersionUID = -92059391014955313L;
+    private static final long serialVersionUID = -92059391014955313L;
 
-	public ASTFrame(String lab, CommonTree t) {
-		super(lab);
+    public ASTFrame(String lab, CommonTree t) {
+        super(lab);
 
-		JTree tree = new JTree(new ASTtoTreeModelAdapter(t));
+        JTree tree = new JTree(new ASTtoTreeModelAdapter(t));
 
-		JScrollPane scrollPane = new JScrollPane(tree);
+        JScrollPane scrollPane = new JScrollPane(tree);
 
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-		panel.add(scrollPane);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(scrollPane);
 
-		Container content = getContentPane();
-		content.add(panel, BorderLayout.CENTER);
+        Container content = getContentPane();
+        content.add(panel, BorderLayout.CENTER);
 
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				Frame f = (Frame) e.getSource();
-				f.setVisible(false);
-				f.dispose();
-				// System.exit(0);
-			}
-		});
-	}
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                Frame f = (Frame) e.getSource();
+                f.setVisible(false);
+                f.dispose();
+                // System.exit(0);
+            }
+        });
+    }
 
 }

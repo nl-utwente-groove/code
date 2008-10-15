@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: ExplorationTest.java,v 1.20 2008-01-31 14:25:54 fladder Exp $
  */
 
@@ -46,18 +46,19 @@ import java.io.InputStreamReader;
 import junit.framework.TestCase;
 
 /**
- * System test class, which explores a number of graph production systems and tests if this gives
- * rise to the expected numbers of states and transitions. The test cases are listed in a separate
- * file, named in {@link #TEST_CASES_NAME}.
+ * System test class, which explores a number of graph production systems and
+ * tests if this gives rise to the expected numbers of states and transitions.
+ * The test cases are listed in a separate file, named in
+ * {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
  * @version $Revision$
  */
 public class ExplorationTest extends TestCase {
-	/** Location of the samples. */
+    /** Location of the samples. */
     static public final String INPUT_DIR = "junit/samples";
     /**
-     * Name of a text file to be found in the same package as this class. 
+     * Name of a text file to be found in the same package as this class.
      */
     static public final String TEST_CASES_NAME = "groove/test/testcases.txt";
 
@@ -84,8 +85,8 @@ public class ExplorationTest extends TestCase {
      */
     public class TestCaseRecord {
         /** Sets the fields of this record. */
-        public TestCaseRecord(String grammarName, String startFileName, String strategy,
-                int nodeCount, int edgeCount, int openCount) {
+        public TestCaseRecord(String grammarName, String startFileName,
+                String strategy, int nodeCount, int edgeCount, int openCount) {
             super();
             this.grammarName = grammarName;
             this.startGraphName = startFileName;
@@ -113,14 +114,16 @@ public class ExplorationTest extends TestCase {
         /** Expected number of open states remaining after exploration. */
         public final int openCount;
     }
-    
+
     /** Tests the append sample. */
     public void testAppend() {
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "full", 145, 256);
         testExploration("append.gps", "append-2-list-5", "branching", 145, 256);
-        testExploration("append.gps", "append-2-list-5", "node-bounded:20", 62, 88, 13);
-        testExploration("append.gps", "append-2-list-5", "edge-bounded:append=6", 79, 108, 12);
+        testExploration("append.gps", "append-2-list-5", "node-bounded:20", 62,
+            88, 13);
+        testExploration("append.gps", "append-2-list-5",
+            "edge-bounded:append=6", 79, 108, 12);
     }
 
     /** Tests the ferryman sample. */
@@ -185,125 +188,138 @@ public class ExplorationTest extends TestCase {
     public void testWildcards() {
         testExploration("wildcards.gps", 8, 12);
     }
-    
+
     /** Tests various parameters settable through the system properties. */
     public void testSystemProperties() {
-    	GrammarView<?,?> gg = loadGrammar("simple.gps", null);
-    	testExploration(gg, null, 41, 300, 0);
-//    	GraphGrammar ggCopy = new GraphGrammar(gg);
-    	GrammarView<?,?> ggCopy = loadGrammar("simple.gps", null);
-    	ggCopy.getProperties().setCheckCreatorEdges(true);
-    	testExploration(ggCopy, null, 41, 188, 0);
-    	ggCopy = loadGrammar("simple.gps", null);
-    	ggCopy.getProperties().setCheckDangling(true);
-    	testExploration(ggCopy, null, 41, 230, 0);
-    	ggCopy = loadGrammar("simple.gps", null);
-    	ggCopy.getProperties().setInjective(true);
-    	testExploration(ggCopy, null, 13, 64, 0);
-    	ggCopy = loadGrammar("simple.gps", null);
-    	ggCopy.getProperties().setCheckIsomorphism(false);
-    	testExploration(ggCopy, null, 73, 536, 0);
-    	gg = loadGrammar("rhs-is-nac.gps", null);
-    	testExploration(gg, null, 21, 56, 0);
+        GrammarView<?,?> gg = loadGrammar("simple.gps", null);
+        testExploration(gg, null, 41, 300, 0);
+        // GraphGrammar ggCopy = new GraphGrammar(gg);
+        GrammarView<?,?> ggCopy = loadGrammar("simple.gps", null);
+        ggCopy.getProperties().setCheckCreatorEdges(true);
+        testExploration(ggCopy, null, 41, 188, 0);
+        ggCopy = loadGrammar("simple.gps", null);
+        ggCopy.getProperties().setCheckDangling(true);
+        testExploration(ggCopy, null, 41, 230, 0);
+        ggCopy = loadGrammar("simple.gps", null);
+        ggCopy.getProperties().setInjective(true);
+        testExploration(ggCopy, null, 13, 64, 0);
+        ggCopy = loadGrammar("simple.gps", null);
+        ggCopy.getProperties().setCheckIsomorphism(false);
+        testExploration(ggCopy, null, 73, 536, 0);
+        gg = loadGrammar("rhs-is-nac.gps", null);
+        testExploration(gg, null, 21, 56, 0);
     }
 
-    /** 
-     * Reads and executes the test cases specified in a given named file. 
-     * The format is described in {@link #testExplorations(BufferedReader)}.
-     * Calls <tt>testExploration(new BufferedReader(new FileReader(filename)))</tt>.
+    /**
+     * Reads and executes the test cases specified in a given named file. The
+     * format is described in {@link #testExplorations(BufferedReader)}. Calls
+     * <tt>testExploration(new BufferedReader(new FileReader(filename)))</tt>.
      */
     protected void testExplorations(String filename) {
         try {
-            BufferedReader testCasesReader = new BufferedReader(new FileReader(filename));
+            BufferedReader testCasesReader =
+                new BufferedReader(new FileReader(filename));
             testExplorations(testCasesReader);
         } catch (IOException exc) {
-            fail("Can't find test cases file: "+exc);
+            fail("Can't find test cases file: " + exc);
         }
     }
 
-    /** 
-     * Reads and executes the test cases in a given input stream. 
-     * The format is described in {@link #testExplorations(BufferedReader)}.
-     * Calls <tt>testExploration(new BufferedReader(new InputStreamReader(testCasesStream)))</tt>.
+    /**
+     * Reads and executes the test cases in a given input stream. The format is
+     * described in {@link #testExplorations(BufferedReader)}. Calls
+     * <tt>testExploration(new BufferedReader(new InputStreamReader(testCasesStream)))</tt>.
      */
     protected void testExplorations(InputStream testCasesStream) {
-        BufferedReader testCasesReader = new BufferedReader(new InputStreamReader(testCasesStream));
+        BufferedReader testCasesReader =
+            new BufferedReader(new InputStreamReader(testCasesStream));
         testExplorations(testCasesReader);
     }
 
-    /** 
-     * Reads and executes the test cases in a given reader. Each line describes a test
-     * case, as while space-separated fields
+    /**
+     * Reads and executes the test cases in a given reader. Each line describes
+     * a test case, as while space-separated fields
      * <ul>
      * <li> The test command {@link #TEST_COMMAND}
-     * <li> Name of the production system, to be found in the same package as the text file
+     * <li> Name of the production system, to be found in the same package as
+     * the text file
      * <li> Name of the start state, to be found in the production system
-     * <li> Exploration strategy, in the input format of {@link groove.util.Generator.ExploreOption}
+     * <li> Exploration strategy, in the input format of
+     * {@link groove.util.Generator.ExploreOption}
      * <li> Expected number of states
      * <li> Expected number of transitions; not tested if < 0
-     * <li> (Optional) expected number of open states after exploration; not tested if < 0.
-     * (Used for bounded exploration strategies)
+     * <li> (Optional) expected number of open states after exploration; not
+     * tested if < 0. (Used for bounded exploration strategies)
      * </ul>
      * Lines not starting with {@link #TEST_COMMAND} are ignored.
      */
     protected void testExplorations(BufferedReader testCasesReader) {
         TestCaseRecord testCase = readNextRecord(testCasesReader);
         while (testCase != null) {
-            testExploration(testCase);                
+            testExploration(testCase);
             testCase = readNextRecord(testCasesReader);
-        }      
+        }
     }
 
     /**
-	 * Tests exploration according to a given test case record.
-	 * @return the explored GTS
-	 */
-	protected GTS testExploration(TestCaseRecord testCase) {
-	    return testExploration(testCase.grammarName, testCase.startGraphName, testCase.strategy, testCase.nodeCount, testCase.edgeCount);
-	}
+     * Tests exploration according to a given test case record.
+     * @return the explored GTS
+     */
+    protected GTS testExploration(TestCaseRecord testCase) {
+        return testExploration(testCase.grammarName, testCase.startGraphName,
+            testCase.strategy, testCase.nodeCount, testCase.edgeCount);
+    }
 
-	/**
+    /**
      * Tests exploration of a given grammar, saving the GTS if required.
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link groove.util.Generator.ExploreOption} 
+     * @param strategyDescr description of the exploration strategy to be used,
+     *        in the format of {@link groove.util.Generator.ExploreOption}
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-	@SuppressWarnings("unchecked")
-    protected GTS testExploration(GrammarView<?,?> view, String strategyDescr, int nodeCount,
-            int edgeCount, int openCount, boolean save) {
+    @SuppressWarnings("unchecked")
+    protected GTS testExploration(GrammarView<?,?> view, String strategyDescr,
+            int nodeCount, int edgeCount, int openCount, boolean save) {
         try {
-        	GraphGrammar gg = view.toGrammar();
+            GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
             Scenario scenario;
             if (strategyDescr != null) {
-            	parser.parse(strategyDescr);
-                scenario = parser.getStrategy();
-                if (parser.getCondition() != null) {
-                	Rule conditionRule = gg.getRule(new RuleNameLabel(parser.getCondition()));
-                	assertNotNull(conditionRule);
-                	// the scenario handler must then be conditional
-					ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
-					explCond.setCondition(conditionRule);
-					explCond.setNegated(parser.isNegated());
-					((ConditionalScenario<Rule>) scenario).setCondition(explCond, parser.getCondition());
+                this.parser.parse(strategyDescr);
+                scenario = this.parser.getStrategy();
+                if (this.parser.getCondition() != null) {
+                    Rule conditionRule =
+                        gg.getRule(new RuleNameLabel(this.parser.getCondition()));
+                    assertNotNull(conditionRule);
+                    // the scenario handler must then be conditional
+                    ExploreCondition<Rule> explCond =
+                        new IsRuleApplicableCondition();
+                    explCond.setCondition(conditionRule);
+                    explCond.setNegated(this.parser.isNegated());
+                    ((ConditionalScenario<Rule>) scenario).setCondition(
+                        explCond, this.parser.getCondition());
                 }
             } else {
-            	scenario = GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(), "Breadth first full exploration.", "full");
+                scenario =
+                    GeneratorScenarioFactory.getScenarioHandler(
+                        new BFSStrategy(), "Breadth first full exploration.",
+                        "full");
             }
             scenario.prepare(lts);
             scenario.play();
             assertFalse(scenario.isInterrupted());
 
-           	if (save) {
-				try {
-					Groove.saveGraph(new LTSGraph(lts), view.getName());
-				} catch (IOException exc) { // proceed
-				}
-			}
-            if (nodeCount >= 0) {                assertEquals(nodeCount, lts.nodeCount());
+            if (save) {
+                try {
+                    Groove.saveGraph(new LTSGraph(lts), view.getName());
+                } catch (IOException exc) { // proceed
+                }
+            }
+            if (nodeCount >= 0) {
+                assertEquals(nodeCount, lts.nodeCount());
             }
             if (edgeCount >= 0) {
                 assertEquals(edgeCount, lts.edgeCount());
@@ -317,45 +333,21 @@ public class ExplorationTest extends TestCase {
         }
     }
 
-    
-    
-    
-	/**
-	 * Tests exploration of a given grammar.
-	 * 
-	 * @param view
-	 *            the graph grammar to be tested
-	 * @param strategyDescr
-	 *            description of the exploration strategy to be used, in the
-	 *            format of {@link groove.util.Generator.ExploreOption}
-	 * @param nodeCount
-	 *            expected number of nodes; disregarded if < 0
-	 * @param edgeCount
-	 *            expected number of edges; disregarded if < 0
-	 * @param openCount
-	 *            expected number of open states; disregarded if < 0
-	 * @return the explored GTS
-	 */
-	protected GTS testExploration(GrammarView<?, ?> view, String strategyDescr,
-			int nodeCount, int edgeCount, int openCount) {
-        return testExploration(view, strategyDescr, nodeCount, edgeCount, openCount, false);
-    }
-
     /**
-     * Tests exploration of a given grammar, starting at a given start graph,
-     * and using a given exploration strategy.
-     * @param grammarName name of the rule system to be tested
-     * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link Generator.ExploreOption} 
+     * Tests exploration of a given grammar.
+     * 
+     * @param view the graph grammar to be tested
+     * @param strategyDescr description of the exploration strategy to be used,
+     *        in the format of {@link groove.util.Generator.ExploreOption}
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr, int nodeCount,
-            int edgeCount, int openCount) {
-    	GrammarView<?,?> gg = loadGrammar(grammarName, startGraphName);
-    	return testExploration(gg, strategyDescr, nodeCount, edgeCount, openCount);
+    protected GTS testExploration(GrammarView<?,?> view, String strategyDescr,
+            int nodeCount, int edgeCount, int openCount) {
+        return testExploration(view, strategyDescr, nodeCount, edgeCount,
+            openCount, false);
     }
 
     /**
@@ -363,14 +355,35 @@ public class ExplorationTest extends TestCase {
      * and using a given exploration strategy.
      * @param grammarName name of the rule system to be tested
      * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link groove.util.Generator.ExploreOption} 
+     * @param strategyDescr description of the exploration strategy to be used,
+     *        in the format of {@link Generator.ExploreOption}
+     * @param nodeCount expected number of nodes; disregarded if < 0
+     * @param edgeCount expected number of edges; disregarded if < 0
+     * @param openCount expected number of open states; disregarded if < 0
+     * @return the explored GTS
+     */
+    protected GTS testExploration(String grammarName, String startGraphName,
+            String strategyDescr, int nodeCount, int edgeCount, int openCount) {
+        GrammarView<?,?> gg = loadGrammar(grammarName, startGraphName);
+        return testExploration(gg, strategyDescr, nodeCount, edgeCount,
+            openCount);
+    }
+
+    /**
+     * Tests exploration of a given grammar, starting at a given start graph,
+     * and using a given exploration strategy.
+     * @param grammarName name of the rule system to be tested
+     * @param startGraphName name of the start graph
+     * @param strategyDescr description of the exploration strategy to be used,
+     *        in the format of {@link groove.util.Generator.ExploreOption}
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr, int nodeCount,
-            int edgeCount) {
-        return testExploration(grammarName, startGraphName, strategyDescr, nodeCount, edgeCount, -1);
+    protected GTS testExploration(String grammarName, String startGraphName,
+            String strategyDescr, int nodeCount, int edgeCount) {
+        return testExploration(grammarName, startGraphName, strategyDescr,
+            nodeCount, edgeCount, -1);
     }
 
     /**
@@ -382,28 +395,33 @@ public class ExplorationTest extends TestCase {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(String grammarName, String startGraphName, int nodeCount,
-            int edgeCount) {
-        return testExploration(grammarName, startGraphName, null, nodeCount, edgeCount);
+    protected GTS testExploration(String grammarName, String startGraphName,
+            int nodeCount, int edgeCount) {
+        return testExploration(grammarName, startGraphName, null, nodeCount,
+            edgeCount);
     }
 
     /**
-     * Tests exploration of a given grammar, starting at the default start graph.
-     * The exploration strategy is the default one.
+     * Tests exploration of a given grammar, starting at the default start
+     * graph. The exploration strategy is the default one.
      * @param grammarName name of the rule system to be tested
      * @param nodeCount expected number of nodes
      * @param edgeCount expected number of edges
      * @return the explored GTS
      */
-    protected GTS testExploration(String grammarName, int nodeCount, int edgeCount) {
-        return testExploration(grammarName, GrammarViewXml.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
+    protected GTS testExploration(String grammarName, int nodeCount,
+            int edgeCount) {
+        return testExploration(grammarName,
+            GrammarViewXml.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
     }
-    
+
     /**
-     * Returns the test case record corresponding to the test command line on the input. Returns
-     * <tt>null</tt> if no more test command lines are found.
+     * Returns the test case record corresponding to the test command line on
+     * the input. Returns <tt>null</tt> if no more test command lines are
+     * found.
      * @param testCaseFile the input file
-     * @return test record for the next test, or <tt>null</tt> if no more test is found.
+     * @return test record for the next test, or <tt>null</tt> if no more test
+     *         is found.
      */
     private TestCaseRecord readNextRecord(BufferedReader testCaseFile) {
         TestCaseRecord result = null;
@@ -418,8 +436,10 @@ public class ExplorationTest extends TestCase {
                     if (args.length >= OPEN_COUNT_INDEX) {
                         openCount = Integer.parseInt(args[OPEN_COUNT_INDEX]);
                     }
-                    result = new TestCaseRecord(args[GRAMMAR_INDEX], args[START_STATE_INDEX],
-                            args[STRATEGY_INDEX], nodeCount, edgeCount, openCount);
+                    result =
+                        new TestCaseRecord(args[GRAMMAR_INDEX],
+                            args[START_STATE_INDEX], args[STRATEGY_INDEX],
+                            nodeCount, edgeCount, openCount);
                 }
             }
         } catch (IOException exc) {
@@ -430,20 +450,23 @@ public class ExplorationTest extends TestCase {
         return result;
     }
 
-    private GrammarView<?,?> loadGrammar(String grammarName, String startGraphName) {
+    private GrammarView<?,?> loadGrammar(String grammarName,
+            String startGraphName) {
         try {
-        	return loader.unmarshal(new File(INPUT_DIR, grammarName), startGraphName);
+            return this.loader.unmarshal(new File(INPUT_DIR, grammarName),
+                startGraphName);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         } catch (FormatException exc) {
             throw new RuntimeException(exc);
         }
     }
-    
+
     /**
      * Parser for the exploration strategies.
      */
-    private Generator.ExploreStrategyParser parser = new Generator.ExploreStrategyParser(false);
+    private final Generator.ExploreStrategyParser parser =
+        new Generator.ExploreStrategyParser(false);
 
     /**
      * Grammar loader used in this test case.

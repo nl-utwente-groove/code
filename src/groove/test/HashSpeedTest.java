@@ -1,15 +1,15 @@
 // GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
  * $Id: HashSpeedTest.java,v 1.3 2008-01-30 09:33:07 iovka Exp $
@@ -33,7 +33,8 @@ import groove.util.Reporter;
  * Tests the speed of various alternatives in a {@link HashSet}:
  * <ul>
  * <li> Creation versus clearing
- * <li> Iterating over the keyset and getting the image versus iterating over the entry set.
+ * <li> Iterating over the keyset and getting the image versus iterating over
+ * the entry set.
  * </ul>
  * @author Arend Rensink
  * @version $Revision$
@@ -44,7 +45,7 @@ public class HashSpeedTest {
     static final int KEY_TRY_COUNT = 50000;
     static final int KIND_TRY_COUNT = 1000;
     static final int ELEM_COUNT = 100;
-    
+
     static final int LINKED_KIND = 0;
     static final int ARRAY_KIND = 1;
     static final int HASH_KIND = 2;
@@ -64,7 +65,7 @@ public class HashSpeedTest {
         }
         elementSet = Arrays.asList(elementArray);
     }
-    
+
     static public void createVersusClear(boolean create) {
         Set<Integer> testSet = new HashSet<Integer>();
         for (int i = 0; i < CREATE_TRY_COUNT; i++) {
@@ -157,18 +158,18 @@ public class HashSpeedTest {
             case LINKED_KIND:
                 testSet = new LinkedList<Integer>();
                 break;
-            default: //case ARRAY_KIND:
+            default: // case ARRAY_KIND:
                 testSet = new ArrayList<Integer>();
                 break;
             }
             for (int j = 0; j < ELEM_COUNT; j++) {
-                    testSet.addAll(elementSet);
+                testSet.addAll(elementSet);
             }
             switch (kind) {
             case LINKED_KIND:
                 reporter.start(LINKED_INDEX);
                 break;
-            default : //case ARRAY_KIND:
+            default: // case ARRAY_KIND:
                 reporter.start(ARRAY_INDEX);
                 break;
             }
@@ -180,29 +181,29 @@ public class HashSpeedTest {
             reporter.stop();
         }
     }
-    
+
     static public void keyVersusEntry(boolean key) {
         Map<Integer,Integer> testMap = new HashMap<Integer,Integer>(elementMap);
         int sum = 0;
         for (int i = 0; i < KEY_TRY_COUNT; i++) {
             if (key) {
                 reporter.start(KEY);
-                for (Integer element: testMap.keySet()) {
+                for (Integer element : testMap.keySet()) {
                     sum += testMap.get(element);
                 }
             } else {
                 reporter.start(ENTRY);
-                for (Map.Entry<Integer,Integer> entry: testMap.entrySet()) {
+                for (Map.Entry<Integer,Integer> entry : testMap.entrySet()) {
                     sum += entry.getValue();
                 }
             }
             reporter.stop();
         }
     }
-    
+
     static public void testCreateVersusClear() {
         createVersusClear(false);
-        createVersusClear(true);        
+        createVersusClear(true);
     }
 
     static public void testKeyVersusEntry() {
@@ -221,7 +222,7 @@ public class HashSpeedTest {
         indexVersusIterator(LINKED_KIND);
         indexVersusIterator(ARRAY_KIND);
     }
-    
+
     public static void main(String[] args) {
         if (args.length == 0 || args[0].equals("create")) {
             testCreateVersusClear();

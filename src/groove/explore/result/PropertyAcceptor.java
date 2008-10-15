@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id$
  */
 package groove.explore.result;
@@ -27,26 +27,30 @@ import groove.util.Property;
  * @author Staijen
  */
 public class PropertyAcceptor extends Acceptor {
-	/** Creates a new instance with a given property and a default {@link Result}. */
-	public PropertyAcceptor(Property<GraphState> property) {
-		this(property, null);
-	}
-	
-	/** Creates a new instance with a given property and {@link Result}. */
-	public PropertyAcceptor(Property<GraphState> property, Result result) {
-		super(result);
-		this.property = property;
-	}
-	
-	@Override
-	public void closeUpdate(LTS graph, State explored) {		
-		if( property.isSatisfied((GraphState) explored)) {			getResult().add((GraphState) explored);		}	}
+    /** Creates a new instance with a given property and a default {@link Result}. */
+    public PropertyAcceptor(Property<GraphState> property) {
+        this(property, null);
+    }
 
-	/** This implementation returns a {@link PropertyAcceptor}. */
-	@Override
-	public Acceptor newInstance() {
-		return new PropertyAcceptor(property, getResult().newInstance());
-	}
+    /** Creates a new instance with a given property and {@link Result}. */
+    public PropertyAcceptor(Property<GraphState> property, Result result) {
+        super(result);
+        this.property = property;
+    }
 
-	private final Property<GraphState> property;
+    @Override
+    public void closeUpdate(LTS graph, State explored) {
+
+        if (this.property.isSatisfied((GraphState) explored)) {
+            getResult().add((GraphState) explored);
+        }
+    }
+
+    /** This implementation returns a {@link PropertyAcceptor}. */
+    @Override
+    public Acceptor newInstance() {
+        return new PropertyAcceptor(this.property, getResult().newInstance());
+    }
+
+    private final Property<GraphState> property;
 }

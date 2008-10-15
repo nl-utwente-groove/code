@@ -11,32 +11,32 @@ import java.util.Observable;
 import java.util.Set;
 
 /**
- * Provides a view upon a given set that sends notifications of
- * additions and removals.
+ * Provides a view upon a given set that sends notifications of additions and
+ * removals.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class ObservableSet<T> extends Observable implements Set<T> {
-    /** 
-     * Creates a new observable set on top of a given set.
-     * The set will be aliased. 
+    /**
+     * Creates a new observable set on top of a given set. The set will be
+     * aliased.
      */
     public ObservableSet(final Set<T> set) {
         super();
         this.set = set;
     }
-    
+
     /** Constructs an observable set on top of a fresh empty set. */
     public ObservableSet() {
         this(new HashSet<T>());
     }
-    
+
     /**
-     * Delegates the method to the underlying set,
-     * then notifies the observers with an AddUpdate.
+     * Delegates the method to the underlying set, then notifies the observers
+     * with an AddUpdate.
      */
     public boolean add(T o) {
-        if (set.add(o)) {
+        if (this.set.add(o)) {
             setChanged();
             notifyObservers(new AddUpdate<T>(o));
             return true;
@@ -46,14 +46,14 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     }
 
     /**
-     * Adds the elements to the underlying set, then
-     * notifies the observers for those elements actually added.
+     * Adds the elements to the underlying set, then notifies the observers for
+     * those elements actually added.
      */
-    public boolean addAll(Collection< ? extends T> c) {
+    public boolean addAll(Collection<? extends T> c) {
         Set<T> addedElements = new HashSet<T>();
         boolean result = false;
-        for (T element: c) {
-            if (set.add(element)) {
+        for (T element : c) {
+            if (this.set.add(element)) {
                 addedElements.add(element);
                 result = true;
             }
@@ -66,13 +66,13 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     }
 
     /**
-     * Delegates the method to the underlying set, then
-     * notifies the observers with a {@link RemoveUpdate}.
+     * Delegates the method to the underlying set, then notifies the observers
+     * with a {@link RemoveUpdate}.
      */
     public void clear() {
-        if (!set.isEmpty()) {
-            Set<T> elements = new HashSet<T>(set);
-            set.clear();
+        if (!this.set.isEmpty()) {
+            Set<T> elements = new HashSet<T>(this.set);
+            this.set.clear();
             setChanged();
             notifyObservers(new RemoveUpdate<T>(elements));
         }
@@ -82,14 +82,14 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      * Delegates the method to the underlying set.
      */
     public boolean contains(Object o) {
-        return set.contains(o);
+        return this.set.contains(o);
     }
 
     /**
      * Delegates the method to the underlying set.
      */
-    public boolean containsAll(Collection< ? > c) {
-        return set.containsAll(c);
+    public boolean containsAll(Collection<?> c) {
+        return this.set.containsAll(c);
     }
 
     /**
@@ -97,7 +97,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      */
     @Override
     public boolean equals(Object o) {
-        return set.equals(o);
+        return this.set.equals(o);
     }
 
     /**
@@ -105,38 +105,39 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      */
     @Override
     public int hashCode() {
-        return set.hashCode();
+        return this.set.hashCode();
     }
 
     /**
      * Delegates the method to the underlying set.
      */
     public boolean isEmpty() {
-        return set.isEmpty();
+        return this.set.isEmpty();
     }
 
     /**
-     * Returns an iterator that delegates to an iterator over the underlying set,
-     * in addition notifying the observers if <code>remove</code> is called in the iterator.
+     * Returns an iterator that delegates to an iterator over the underlying
+     * set, in addition notifying the observers if <code>remove</code> is
+     * called in the iterator.
      */
     public Iterator<T> iterator() {
-        final Iterator<T> iter = set.iterator();
+        final Iterator<T> iter = this.set.iterator();
         return new Iterator<T>() {
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             public T next() {
-                last = iter.next();
-                return last;
+                this.last = iter.next();
+                return this.last;
             }
 
             public void remove() {
                 iter.remove();
                 setChanged();
-                notifyObservers(new RemoveUpdate<T>(last));
+                notifyObservers(new RemoveUpdate<T>(this.last));
             }
-            
+
             /** The last element returned by #next(). */
             private T last;
         };
@@ -145,9 +146,9 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public boolean remove(Object o) {
-        if (set.remove(o)) {
+        if (this.set.remove(o)) {
             setChanged();
             notifyObservers(new RemoveUpdate<T>((T) o));
             return true;
@@ -159,12 +160,12 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
-	@SuppressWarnings("unchecked")
-    public boolean removeAll(Collection< ? > c) {
+    @SuppressWarnings("unchecked")
+    public boolean removeAll(Collection<?> c) {
         Set<T> removedElements = new HashSet<T>();
         boolean result = false;
-        for (Object element: c) {
-            if (set.remove(element)) {
+        for (Object element : c) {
+            if (this.set.remove(element)) {
                 removedElements.add((T) element);
                 result = true;
             }
@@ -180,10 +181,10 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
-    public boolean retainAll(Collection< ? > c) {
+    public boolean retainAll(Collection<?> c) {
         boolean result = false;
         Set<T> removedSet = new HashSet<T>();
-        Iterator<T> iter = set.iterator();
+        Iterator<T> iter = this.set.iterator();
         while (iter.hasNext()) {
             T element = iter.next();
             if (!c.contains(element)) {
@@ -203,33 +204,33 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      * Delegates the method to the underlying set.
      */
     public int size() {
-        return set.size();
+        return this.set.size();
     }
 
     /**
      * Delegates the method to the underlying set.
      */
     public Object[] toArray() {
-        return set.toArray();
+        return this.set.toArray();
     }
 
     /**
      * Delegates the method to the underlying set.
      */
     public <U> U[] toArray(U[] a) {
-        return set.toArray(a);
+        return this.set.toArray(a);
     }
-    
-    /** 
-     * Just calls the super method.
-     * This is there for the sake of visibility from the inner Iterator class. 
+
+    /**
+     * Just calls the super method. This is there for the sake of visibility
+     * from the inner Iterator class.
      */
     @Override
-	final protected synchronized void setChanged() {
-		super.setChanged();
-	}
+    final protected synchronized void setChanged() {
+        super.setChanged();
+    }
 
-	/** The underlying set. */
+    /** The underlying set. */
     private final Set<T> set;
 
     /** Class wrapping an update that has added one or more elements. */
@@ -238,38 +239,38 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         AddUpdate(Set<T> addedSet) {
             this.addedSet = Collections.unmodifiableSet(addedSet);
         }
-        
+
         /** Constructs an instance for a given singleton element. */
         AddUpdate(T element) {
             this.addedSet = Collections.singleton(element);
         }
-        
+
         /** Returns the set of added elements. */
         public Set<T> getAddedSet() {
-            return addedSet;
+            return this.addedSet;
         }
-        
+
         /** The set of added elements. */
         private final Set<T> addedSet;
     }
-    
+
     /** Class wrapping an update that has removed one or more elements. */
     static public class RemoveUpdate<T> {
         /** Constructs an instance for a given set of removed elements. */
         RemoveUpdate(Set<T> removedSet) {
             this.removedSet = Collections.unmodifiableSet(removedSet);
         }
-        
+
         /** Constructs an instance for a given singleton element. */
         RemoveUpdate(T element) {
             this.removedSet = Collections.singleton(element);
         }
-        
+
         /** Returns the set of removed elements. */
         public Set<T> getRemovedSet() {
-            return removedSet;
+            return this.removedSet;
         }
-        
+
         /** The set of added elements. */
         private final Set<T> removedSet;
     }

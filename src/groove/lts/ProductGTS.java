@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id: ProductGTS.java,v 1.5 2008/03/19 20:46:48 kastenberg Exp $
  */
 package groove.lts;
@@ -49,11 +49,11 @@ import java.util.Set;
  */
 public class ProductGTS implements LTS {
 
-	/**
+    /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public ProductGTS(GraphGrammar grammar) {
-    	this.graphGrammar = grammar;
+        this.graphGrammar = grammar;
     }
 
     /**
@@ -61,8 +61,8 @@ public class ProductGTS implements LTS {
      * @param startState the Buechi start-state
      */
     public void setStartState(BuchiGraphState startState) {
-    	addState(startState);
-    	this.startState = startState;
+        addState(startState);
+        this.startState = startState;
     }
 
     /**
@@ -70,63 +70,63 @@ public class ProductGTS implements LTS {
      * @return the Buechi start-state of the gts
      */
     public BuchiGraphState startBuchiState() {
-    	return startState;
+        return this.startState;
     }
 
     /**
-     * Adds a transition to the product gts. Basically, the transition is
-     * only added to the set of outgoing transitions of the source state.
+     * Adds a transition to the product gts. Basically, the transition is only
+     * added to the set of outgoing transitions of the source state.
      * 
      * @param transition the transition to be added
      * @return the singleton set containing the transition added.
      */
     public Set<ProductTransition> addTransition(ProductTransition transition) {
-    	transition.source().addTransition(transition);
-    	transitionCount++;
-    	Set<ProductTransition> result = new HashSet<ProductTransition>(1);
-    	result.add(transition);
-    	return result;
-    }
-
-    /**
-     * Adds a Buechi graph-state to the gts. If there exists an isomorphic
-     * state in the gts, nothing is done, and this isomorphic state is returned.
-     * If it is a new state, this method returns <code>null</code>.
-     * @param newState the state to be added
-     * @return the isomorphic state if such a state is already in the gts,
-     * <code>null</code> otherwise
-     */
-    public BuchiGraphState addState(BuchiGraphState newState) {
-//        reporter.start(ADD_STATE);
-        // see if isomorphic graph is already in the GTS
-        ((AbstractGraphState) newState).setStateNumber(nodeCount());
-        BuchiGraphState result = stateSet.put(newState);
-        // new states are first considered open
-        if (result == null) {
-//            openStates.put(newState);
-            stateCount++;
-            openStateCount++;
-            fireAddNode(newState);
-        }
-//        reporter.stop();
+        transition.source().addTransition(transition);
+        this.transitionCount++;
+        Set<ProductTransition> result = new HashSet<ProductTransition>(1);
+        result.add(transition);
         return result;
     }
 
     /**
-     * Closes a Buechi graph-state. Currently, listeners are
-     * always notified, even when the state was already closed.
+     * Adds a Buechi graph-state to the gts. If there exists an isomorphic state
+     * in the gts, nothing is done, and this isomorphic state is returned. If it
+     * is a new state, this method returns <code>null</code>.
+     * @param newState the state to be added
+     * @return the isomorphic state if such a state is already in the gts,
+     *         <code>null</code> otherwise
+     */
+    public BuchiGraphState addState(BuchiGraphState newState) {
+        // reporter.start(ADD_STATE);
+        // see if isomorphic graph is already in the GTS
+        ((AbstractGraphState) newState).setStateNumber(nodeCount());
+        BuchiGraphState result = this.stateSet.put(newState);
+        // new states are first considered open
+        if (result == null) {
+            // openStates.put(newState);
+            this.stateCount++;
+            this.openStateCount++;
+            fireAddNode(newState);
+        }
+        // reporter.stop();
+        return result;
+    }
+
+    /**
+     * Closes a Buechi graph-state. Currently, listeners are always notified,
+     * even when the state was already closed.
      * @param state the state to be closed.
      */
     public void setClosed(BuchiGraphState state) {
-    	if (state.setClosed()) {
-//    		openStates.remove(state);
-    		closedCount++;
-    		openStateCount--;
-        	notifyListenersOfClose(state);
-    	}
-    	// always notify listeners of state-closing
-    	// even if the state was already closed
-    	notifyListenersOfClose(state);
+        if (state.setClosed()) {
+            // openStates.remove(state);
+            this.closedCount++;
+            this.openStateCount--;
+            notifyListenersOfClose(state);
+        }
+        // always notify listeners of state-closing
+        // even if the state was already closed
+        notifyListenersOfClose(state);
     }
 
     /**
@@ -134,7 +134,7 @@ public class ProductGTS implements LTS {
      * @return always returns <tt>true</tt>
      */
     public boolean isCheckIsomorphism() {
-    	return true;
+        return true;
     }
 
     /**
@@ -142,10 +142,10 @@ public class ProductGTS implements LTS {
      * @return the system-record of this gts
      */
     public SystemRecord getRecord() {
-    	if (record == null) {
-    		record = createRecord();
-    	}
-    	return record;
+        if (this.record == null) {
+            this.record = createRecord();
+        }
+        return this.record;
     }
 
     /**
@@ -153,7 +153,7 @@ public class ProductGTS implements LTS {
      * @return the freshly created system-record for this gts.
      */
     protected SystemRecord createRecord() {
-    	return new SystemRecord(getGrammar());
+        return new SystemRecord(getGrammar());
     }
 
     /**
@@ -161,7 +161,7 @@ public class ProductGTS implements LTS {
      * @return the grammar of this gts
      */
     public GraphGrammar getGrammar() {
-    	return graphGrammar;
+        return this.graphGrammar;
     }
 
     /**
@@ -169,7 +169,7 @@ public class ProductGTS implements LTS {
      * @param listener the listener to be added.
      */
     public void addListener(GraphListener listener) {
-    	listeners.add(listener);
+        this.listeners.add(listener);
     }
 
     /**
@@ -177,8 +177,8 @@ public class ProductGTS implements LTS {
      * @param listener the listener to be removed.
      */
     public void removeListener(GraphListener listener) {
-    	assert (listeners.contains(listener)) : "Listener cannot be removed since it is not registered.";
-    	listeners.remove(listener);
+        assert (this.listeners.contains(listener)) : "Listener cannot be removed since it is not registered.";
+        this.listeners.remove(listener);
     }
 
     /**
@@ -186,7 +186,7 @@ public class ProductGTS implements LTS {
      * @return an iterator over the current listeners.
      */
     public Iterator<GraphShapeListener> getListeners() {
-    	return listeners.iterator();
+        return this.listeners.iterator();
     }
 
     /**
@@ -194,15 +194,16 @@ public class ProductGTS implements LTS {
      * @param state the state that has been closed.
      */
     public void notifyListenersOfClose(BuchiGraphState state) {
-    	for (GraphShapeListener listener: listeners) {
-    		if (listener instanceof Acceptor) {
-    			((Acceptor) listener).closeUpdate(this, state);
-    		}
-    	}
+        for (GraphShapeListener listener : this.listeners) {
+            if (listener instanceof Acceptor) {
+                ((Acceptor) listener).closeUpdate(this, state);
+            }
+        }
     }
 
     /**
-     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Node)} on all GraphListeners in listeners.
+     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Node)} on all
+     * GraphListeners in listeners.
      * @param node the node being added
      */
     protected void fireAddNode(Node node) {
@@ -218,20 +219,20 @@ public class ProductGTS implements LTS {
      * @return the set of outgoing transitions of <code>state</code>
      */
     public Set<ProductTransition> outEdgeSet(BuchiGraphState state) {
-    	return state.outTransitions();
+        return state.outTransitions();
     }
 
     /**
-     * Indicates if the ProductGTS currently has open states.
-     * Equivalent to (but more efficient than) <code>getOpenStateIter().hasNext()</code>
-     * or <code>!getOpenStates().isEmpty()</code>.
+     * Indicates if the ProductGTS currently has open states. Equivalent to (but
+     * more efficient than) <code>getOpenStateIter().hasNext()</code> or
+     * <code>!getOpenStates().isEmpty()</code>.
      * @return <code>true</code> if the ProductGTS currently has open states
      * @see #getOpenStateIter()
      * @see #getOpenStates()
      */
     public boolean hasOpenStates() {
-    	int openStateCount = openStateCount();
-    	return openStateCount > 0;
+        int openStateCount = openStateCount();
+        return openStateCount > 0;
     }
 
     /**
@@ -240,8 +241,8 @@ public class ProductGTS implements LTS {
      * @see #getOpenStateIter()
      */
     public Collection<BuchiGraphState> getOpenStates() {
-        return new CollectionView<BuchiGraphState>(stateSet) {
-        	@Override
+        return new CollectionView<BuchiGraphState>(this.stateSet) {
+            @Override
             public boolean approves(Object obj) {
                 return !((State) obj).isClosed();
             }
@@ -254,8 +255,8 @@ public class ProductGTS implements LTS {
      * @see #getOpenStateIter()
      */
     public Collection<BuchiGraphState> getPocketStates() {
-        return new CollectionView<BuchiGraphState>(stateSet) {
-        	@Override
+        return new CollectionView<BuchiGraphState>(this.stateSet) {
+            @Override
             public boolean approves(Object obj) {
                 return ((BuchiGraphState) obj).isPocket();
             }
@@ -263,14 +264,14 @@ public class ProductGTS implements LTS {
     }
 
     /**
-     * Returns an iterator over the set of currently open states.
-     * Equivalent to <code>getOpenStates().iterator()</code>.
+     * Returns an iterator over the set of currently open states. Equivalent to
+     * <code>getOpenStates().iterator()</code>.
      * @see #hasOpenStates()
      * @see #getOpenStates()
      */
     public Iterator<BuchiGraphState> getOpenStateIter() {
         return new FilterIterator<BuchiGraphState>(nodeSet().iterator()) {
-        	@Override
+            @Override
             protected boolean approves(Object obj) {
                 return !((State) obj).isClosed();
             }
@@ -279,212 +280,222 @@ public class ProductGTS implements LTS {
 
     /** Returns the number of not fully expored states. */
     public int openStateCount() {
-    	return nodeCount() - closedCount;
+        return nodeCount() - this.closedCount;
     }
 
-    private GraphGrammar graphGrammar;
+    private final GraphGrammar graphGrammar;
     private BuchiGraphState startState;
-    private TreeHashSet<BuchiGraphState> stateSet = new TreeHashStateSet();
+    private final TreeHashSet<BuchiGraphState> stateSet =
+        new TreeHashStateSet();
     private int stateCount = 0;
-//    private TreeHashSet<BuchiGraphState> openStates = new TreeHashStateSet();
+    // private TreeHashSet<BuchiGraphState> openStates = new TreeHashStateSet();
     private int openStateCount = 0;
     private int closedCount = 0;
     private int transitionCount = 0;
     private SystemRecord record;
 
-    private Set<GraphShapeListener> listeners = new HashSet<GraphShapeListener>();
+    private final Set<GraphShapeListener> listeners =
+        new HashSet<GraphShapeListener>();
 
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<BuchiGraphState> {
-    	/** Constructs a new, empty state set. */
+        /** Constructs a new, empty state set. */
         TreeHashStateSet() {
-            super(GTS.INITIAL_STATE_SET_SIZE, GTS.STATE_SET_RESOLUTION, GTS.STATE_SET_ROOT_RESOLUTION);
+            super(GTS.INITIAL_STATE_SET_SIZE, GTS.STATE_SET_RESOLUTION,
+                GTS.STATE_SET_ROOT_RESOLUTION);
         }
-        
+
         /**
-         * First compares the control locations, then calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
+         * First compares the control locations, then calls
+         * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
          * @see GraphState#getLocation()
          */
-    	@Override
-        protected boolean areEqual(BuchiGraphState stateKey, BuchiGraphState otherStateKey) {
-			if (
-					(stateKey.getLocation() == null || stateKey.getLocation().equals(otherStateKey.getLocation())) &&
-					(stateKey.getBuchiLocation() == null || stateKey.getBuchiLocation().equals(otherStateKey.getBuchiLocation()))) {
-				Graph one = stateKey.getGraph();
-				Graph two = otherStateKey.getGraph();
-				if (isCheckIsomorphism()) {
-				    return checker.areIsomorphic(one, two);
-				} else {
-				    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
-				}
-			}
-			else {
-				return false;
-			}
-		}
+        @Override
+        protected boolean areEqual(BuchiGraphState stateKey,
+                BuchiGraphState otherStateKey) {
+            if ((stateKey.getLocation() == null || stateKey.getLocation().equals(
+                otherStateKey.getLocation()))
+                && (stateKey.getBuchiLocation() == null || stateKey.getBuchiLocation().equals(
+                    otherStateKey.getBuchiLocation()))) {
+                Graph one = stateKey.getGraph();
+                Graph two = otherStateKey.getGraph();
+                if (isCheckIsomorphism()) {
+                    return this.checker.areIsomorphic(one, two);
+                } else {
+                    return one.nodeSet().equals(two.nodeSet())
+                        && one.edgeSet().equals(two.edgeSet());
+                }
+            } else {
+                return false;
+            }
+        }
 
         /**
-		 * Returns the hash code of the isomorphism certificate, modified by the control
-		 * location (if any).
-		 */
-    	@Override
+         * Returns the hash code of the isomorphism certificate, modified by the
+         * control location (if any).
+         */
+        @Override
         protected int getCode(BuchiGraphState stateKey) {
-    	    int result;
-    		if (isCheckIsomorphism()) {
-    		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
-    		} else {
-    			Graph graph = stateKey.getGraph();
-    		    result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
-    		}
-    		BuchiLocation location = stateKey.getBuchiLocation();
-    		result += System.identityHashCode(location);
-    		return result;
+            int result;
+            if (isCheckIsomorphism()) {
+                result =
+                    stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+            } else {
+                Graph graph = stateKey.getGraph();
+                result =
+                    graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+            }
+            BuchiLocation location = stateKey.getBuchiLocation();
+            result += System.identityHashCode(location);
+            return result;
         }
-        
+
         /** The isomorphism checker of the state set. */
-        private IsoChecker checker = DefaultIsoChecker.getInstance();
+        private final IsoChecker checker = DefaultIsoChecker.getInstance();
     }
 
-	public Set<? extends Transition> edgeSet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Set<? extends Transition> edgeSet() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public Collection<? extends State> getFinalStates() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Collection<? extends State> getFinalStates() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public boolean hasFinalStates() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public boolean hasFinalStates() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	public boolean isFinal(State state) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public boolean isFinal(State state) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	public boolean isOpen(State state) {
-		// TODO Auto-generated method stub
-		return !state.isClosed();
-//		return false;
-	}
+    public boolean isOpen(State state) {
+        // TODO Auto-generated method stub
+        return !state.isClosed();
+        // return false;
+    }
 
-	public Set<? extends State> nodeSet() {
-		// TODO Auto-generated method stub
-		return stateSet;
-	}
+    public Set<? extends State> nodeSet() {
+        // TODO Auto-generated method stub
+        return this.stateSet;
+    }
 
-	/**
-	 * Deprecated. Use {@link ProductGTS#startBuchiState()} instead.
-	 */
-	@Deprecated
-	public State startState() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * Deprecated. Use {@link ProductGTS#startBuchiState()} instead.
+     */
+    @Deprecated
+    public State startState() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public void addGraphListener(GraphShapeListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
+    public void addGraphListener(GraphShapeListener listener) {
+        // TODO Auto-generated method stub
 
-	public boolean containsElement(Element elem) {
-		if (elem instanceof BuchiGraphState) {
-			return containsState((BuchiGraphState) elem);
-		} else if (elem instanceof ProductTransition) {
-			return containsTransition((ProductTransition) elem);
-		}
-		return false;
-	}
+    }
 
-	/**
-	 * Checks whether a given state is contained in the current ProductGTS.
-	 * @param state the state to check containment for
-	 * @return <tt>true</tt> if the state is in the state-set, <tt>false</tt> otherwise
-	 * @see TreeHashSet#contains(Object)
-	 */
-	public boolean containsState(BuchiGraphState state) {
-		return stateSet.contains(state);
-	}
+    public boolean containsElement(Element elem) {
+        if (elem instanceof BuchiGraphState) {
+            return containsState((BuchiGraphState) elem);
+        } else if (elem instanceof ProductTransition) {
+            return containsTransition((ProductTransition) elem);
+        }
+        return false;
+    }
 
-	/**
-	 * Checks whether a given transition is in the set of outgoing transitions
-	 * of the source state as contained in the current ProductGTS.
-	 * @param transition the transition to check containment for
-	 * @return <tt>true</tt> if the transition is in the set of outgoing transitions
-	 * of its source-state, <tt>false</tt> otherwise
-	 */
-	public boolean containsTransition(ProductTransition transition) {
-		BuchiGraphState source = transition.source();
-		return containsState(source) && source.outTransitions().contains(transition);
-	}
+    /**
+     * Checks whether a given state is contained in the current ProductGTS.
+     * @param state the state to check containment for
+     * @return <tt>true</tt> if the state is in the state-set, <tt>false</tt>
+     *         otherwise
+     * @see TreeHashSet#contains(Object)
+     */
+    public boolean containsState(BuchiGraphState state) {
+        return this.stateSet.contains(state);
+    }
 
-	public boolean containsElementSet(Collection<? extends Element> elements) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    /**
+     * Checks whether a given transition is in the set of outgoing transitions
+     * of the source state as contained in the current ProductGTS.
+     * @param transition the transition to check containment for
+     * @return <tt>true</tt> if the transition is in the set of outgoing
+     *         transitions of its source-state, <tt>false</tt> otherwise
+     */
+    public boolean containsTransition(ProductTransition transition) {
+        BuchiGraphState source = transition.source();
+        return containsState(source)
+            && source.outTransitions().contains(transition);
+    }
 
-	public int edgeCount() {
-		return transitionCount;
-	}
+    public boolean containsElementSet(Collection<? extends Element> elements) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	public Set<? extends Edge> edgeSet(Node node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public int edgeCount() {
+        return this.transitionCount;
+    }
 
-	public Set<? extends Edge> edgeSet(Node node, int i) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Set<? extends Edge> edgeSet(Node node) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public GraphInfo getInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Set<? extends Edge> edgeSet(Node node, int i) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public GraphInfo getInfo() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public boolean isFixed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public boolean isFixed() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	public int nodeCount() {
-		// TODO Auto-generated method stub
-		return stateSet.size();
-	}
+    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public Set<? extends GraphTransition> outEdgeSet(Node node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public int nodeCount() {
+        // TODO Auto-generated method stub
+        return this.stateSet.size();
+    }
 
-	public void removeGraphListener(GraphShapeListener listener) {
-		// TODO Auto-generated method stub
-	}
+    public Set<? extends GraphTransition> outEdgeSet(Node node) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public void setFixed() {
-		// TODO Auto-generated method stub
-	}
+    public void removeGraphListener(GraphShapeListener listener) {
+        // TODO Auto-generated method stub
+    }
 
-	public GraphInfo setInfo(GraphInfo info) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public void setFixed() {
+        // TODO Auto-generated method stub
+    }
 
-	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    public GraphInfo setInfo(GraphInfo info) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public int size() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }
