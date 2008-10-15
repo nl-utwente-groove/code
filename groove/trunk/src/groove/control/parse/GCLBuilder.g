@@ -10,6 +10,10 @@ package groove.control.parse;
 import groove.control.*;
 }
 
+@init {
+@SuppressWarnings("all")
+}
+
 @members{
 	AutomatonBuilder builder;
     
@@ -27,11 +31,10 @@ import groove.control.*;
     
 }
 
-program returns [ControlShape shape=null] 
+program returns [ControlAutomaton aut=null] 
 @init{ ControlState start; ControlState end; }
   : ^(PROGRAM functions {
-		builder.startProgram(); 
-  		shape = builder.currentShape(); 
+		aut = builder.startProgram(); 
   		start = builder.getStart(); 
   		end = builder.getEnd(); 
 	}
@@ -126,9 +129,8 @@ statement
 		builder.tagDelta(newState); 
 		builder.deltaInitCopy(newState, start); 
 	}
-) | ^(TRY { 
-		builder.debug("try,enter");
-	} { 
+) | ^(TRY
+    { 
 		newState = builder.newState(); 
 		builder.restore(start, newState); 
 		fail = builder.addElse(); 
@@ -146,9 +148,7 @@ statement
 		} else {
 			builder.initCopy(newState, start);
 		}
-	} { 
-		builder.debug("try,exit");
-	}
+	} 
 ) |	^(IF { 
 		newState = builder.newState(); 
 		builder.restore(start, newState);

@@ -16,6 +16,7 @@
  */
 package groove.control.parse;
 
+import groove.control.ControlAutomaton;
 import groove.control.ControlShape;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
@@ -26,9 +27,6 @@ import groove.view.FormatException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-
-import antlr.SemanticException;
 
 /**
  * 
@@ -51,15 +49,15 @@ public class AutomatonBuilder extends Namespace {
     /** label used to identify any keyword in transition label. */
     public static final String _ANY_ = "/%/__ANY__/%/";
 
+    /** Contains transitions that may lead to merging of source and target. */
     private final HashSet<ControlTransition> mergeCandidates =
         new HashSet<ControlTransition>();
 
-    private final HashSet<String> openScopes = new HashSet<String>();
-
-    private ControlShape programShape;
-
-    private ControlShape current;
-    private String currentName;
+    /**
+     * The automaton that is created. It is returned as an empty automaton by
+     * startProgram, before it is filled.
+     */
+    private ControlAutomaton aut;
 
     /** container for all transitions, to be iterated when merging states. */
     private final HashSet<ControlTransition> transitions =
@@ -95,64 +93,27 @@ public class AutomatonBuilder extends Namespace {
         debug("restore: start = " + start + ", end = " + end);
     }
 
-    public void openScope(String name) throws SemanticException {
-        if (this.openScopes.contains(name)) {
-            throw new SemanticException(
-                "Recursive procedure calls are not allowed (" + name + ")");
-        }
-
-        ControlShape cs =
-            new ControlShape(this.currentStart, this.currentEnd, name);
-        storeTransition(cs);
-        // cs.setParent(current); // now done by storeTransition for all
-        // transitions
-        this.current = cs;
-        this.currentName = name;
-        this.openScopes.add(name);
-    }
-
-    public void closeScope() {
-        this.openScopes.remove(this.currentName);
-        this.current = this.current.getParent();
-        if (this.current != null) {
-            this.currentName = this.current.getText();
-        } else {
-            this.currentName = null;
-        }
-    }
-
     /**
      * Start method for building the automaton of a program
      */
-    public void startProgram() {
-        this.current = new ControlShape(null, null, "program");
+    public ControlAutomaton startProgram() {
+        this.aut = new ControlAutomaton();
 
-        this.programShape = this.current;
-
-        this.currentStart = new ControlState(this.current);
-        this.currentEnd = new ControlState(this.current);
-
-        this.current.setSource(this.currentStart);
-        this.current.setTarget(this.currentEnd);
-
+        this.currentStart = new ControlState(this.aut);
+        this.currentEnd = new ControlState(this.aut);
+        this.aut.addState(this.currentStart);
+        this.aut.setStart(this.currentStart);
         this.currentEnd.setSuccess();
-        this.current.setStart(this.currentStart);
-        this.currentName = this.current.getLabel();
+        this.aut.addState(this.currentEnd);
 
-        this.current.addState(this.currentStart);
-        this.current.addState(this.currentEnd);
-    }
-
-    /** Returns the control shape currently being built. */
-    public ControlShape currentShape() {
-        return this.current;
+        return this.aut;
     }
 
     /**
      * Finished building the automaton of the program.
      */
     public void endProgram() {
-        closeScope();
+        // nothing to do
     }
 
     /**
@@ -217,19 +178,32 @@ public class AutomatonBuilder extends Namespace {
         storeTransition(ct);
     }
 
+    /**
+     * Add a delta to the init of this state.
+     * @param state
+     */
     public void tagDelta(ControlState state) {
         state.addInit(_DELTA_);
         debug("tagDelta: " + state);
     }
 
+    /**
+     * Copies the init of the source state to the target state
+     * @param source
+     * @param target
+     */
     public void initCopy(ControlState source, ControlState target) {
         debug("initCopy: " + source + " to " + target);
-
         target.addInit(source);
-
         debug("initCopy: updated target " + target);
     }
 
+    /**
+     * Copies the init of the source state to the target state. The delta is
+     * removed from the target before the init is copied from the source.
+     * @param source
+     * @param target has a delta in its init
+     */
     public void deltaInitCopy(ControlState source, ControlState target) {
         debug("deltaInitCopy: " + source + " to " + target);
         if (target.getInit().contains(_DELTA_)) {
@@ -242,17 +216,23 @@ public class AutomatonBuilder extends Namespace {
         }
     }
 
+    /**
+     * A failure is added to the transitions using the init from the given
+     * state.
+     * @param state
+     * @param trans
+     */
     public void fail(ControlState state, ControlTransition trans) {
         debug("fail: " + state + " to " + trans);
-        // if( state.getInit().contains(_DELTA_) ) {
-        // checkOrphan.add(trans.target());
-        // rmTransition(trans);
-        // } else {
         trans.setFailureFromInit(state);
-        // }
         debug("fail: updated trans = " + trans);
     }
 
+    /**
+     * Creates a transition without any label. The fail(state,trans) method
+     * should be used to set the failure of this transition once it is know.
+     * @return the created transition
+     */
     public ControlTransition addElse() {
         ControlTransition ct =
             new ControlTransition(this.currentStart, this.currentEnd);
@@ -260,36 +240,54 @@ public class AutomatonBuilder extends Namespace {
         return ct;
     }
 
+    /**
+     * Creates a nwe state and adds this state to the automaton.
+     * @return the fresh state.
+     */
     public ControlState newState() {
-        ControlState newState = new ControlState(this.current);
-        this.current.addState(newState);
+        ControlState newState = new ControlState(this.aut);
+        this.aut.addState(newState);
         debug("newState: created " + newState);
         return newState;
     }
 
-    public void storeTransition(ControlTransition ct) {
+    /**
+     * Stores a transition in the automaton, and in the local cache of
+     * transitions.
+     * @param ct
+     */
+    private void storeTransition(ControlTransition ct) {
         this.transitions.add(ct);
-        this.current.addTransition(ct);
-        ct.setParent(this.current);
+        this.aut.addTransition(ct);
+        ct.setParent(this.aut);
     }
 
-    public void rmTransition(ControlTransition ct) {
+    /**
+     * Deletes a transition from the automaton and in any local cache it is in.
+     * @param ct
+     */
+    private void rmTransition(ControlTransition ct) {
         debug("rmTransition: removed transition " + ct);
         this.transitions.remove(ct);
         // in case it is a merge candidate
         this.mergeCandidates.remove(ct);
-        ct.getParent().removeTransition(ct);
-    }
-
-    public void rmState(ControlState state) {
-        // TODO: make sure the state has no incoming or outgoing edges
-        debug("rmState: " + state);
-        state.getParent().removeState(state);
+        // remove the transition from the automaton
+        this.aut.removeTransition(ct);
     }
 
     /**
-     * Merges currentState and currentEnd Will result in currentStart to become
-     * currentEnd
+     * Removes a state from the automaton.
+     * @param state
+     */
+    public void rmState(ControlState state) {
+        // TODO: make sure the state has no incoming or outgoing edges
+        debug("rmState: " + state);
+        this.aut.removeState(state);
+    }
+
+    /**
+     * Merges currentState and currentEnd. Will result in currentStart to become
+     * currentEnd.
      */
     public void merge() {
 
@@ -313,11 +311,8 @@ public class AutomatonBuilder extends Namespace {
         if (this.currentStart.getParent().getStart() == this.currentStart) {
             this.currentStart.getParent().setStart(this.currentEnd);
         }
-        if (this.currentStart.getParent().source() == this.currentStart) {
-            this.currentStart.getParent().setSource(this.currentEnd);
-        }
-        if (this.currentStart.getParent().target() == this.currentStart) {
-            this.currentStart.getParent().setTarget(this.currentEnd);
+        if (this.aut.getStart() == this.currentStart) {
+            this.aut.setStart(this.currentEnd);
         }
 
         // copy any init values, since the states are considered only seperated
@@ -334,8 +329,8 @@ public class AutomatonBuilder extends Namespace {
     }
 
     /**
-     * TODO: Remove stupid automaton stuff, e.g. lambda's (by merging)
-     * 
+     * Removes certain lambda transitions by merging the source and target
+     * states. Removes failures with delta's. Removes unreachable states.
      */
     public void optimize() {
 
@@ -379,9 +374,8 @@ public class AutomatonBuilder extends Namespace {
             merge();
         }
 
-        // now we go over the failure transitions and see if there are delta's
-        // transitions are removed, target may be unreachable
-
+        // Now we go over the failure transitions and see if there are delta's.
+        // Transitions are removed, target may be unreachable
         Set<ControlTransition> remove = new HashSet<ControlTransition>();
 
         for (ControlTransition ct : this.transitions) {
@@ -390,12 +384,12 @@ public class AutomatonBuilder extends Namespace {
                 remove.add(ct);
             }
         }
-        // do actual remove
+        // Do actual remove
         for (ControlTransition ct : remove) {
             rmTransition(ct);
         }
 
-        // removing unreachable states
+        // Removing unreachable states
         for (ControlState t : checkOrphan) {
             boolean delete = true;
             for (ControlTransition ct : this.transitions) {
@@ -403,7 +397,8 @@ public class AutomatonBuilder extends Namespace {
                     delete = false;
                 }
             }
-            if (delete && this.programShape.source() != t) {
+            // delete is it is not the startstate
+            if (delete && this.aut.getStart() != t) {
                 rmState(t);
             }
         }
@@ -522,11 +517,15 @@ public class AutomatonBuilder extends Namespace {
                 _ANY_));
     }
 
-    public void testMerge(ControlTransition ct) {
+    /**
+     * Tags this transition as a candidate for merging source and target.
+     * @param ct
+     */
+    private void testMerge(ControlTransition ct) {
         this.mergeCandidates.add(ct);
     }
 
-    public void debug(String msg) {
+    private void debug(String msg) {
         // System.err.println("debug: " + msg);
     }
 }

@@ -17,54 +17,76 @@
 package groove.control;
 
 import groove.graph.AbstractGraphShape;
+import groove.graph.Edge;
 import groove.graph.GraphCache;
+import groove.graph.Node;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Representation of a Control automaton that can be visualised in a
- * JGraphPanel. This class is loosely coupled to a top-level GraphShape, which
- * contains the actual model.
- * 
- * Through active shapres, child scopes can be toggled either visible as an
- * edge, or with it's node- and edge-content.
+ * JGraphPanel. 
  * 
  * @author Tom Staijen
  */
-public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
+public class ControlAutomaton extends AbstractGraphShape<GraphCache> implements
+        ControlShape {
     /** the top-level ControlShape * */
-    private final ControlShape shape;
 
-    /**
-     * Construct a new ControlAutomaton for passed ControlShape. The
-     * ControlShape should have a start-state and not have a parent.
-     * @param shape
-     */
-    public ControlAutomaton(ControlShape shape) {
-        this.shape = shape;
+    private Set<ControlState> states = new HashSet<ControlState>();
+    private Set<ControlTransition> transitions = new HashSet<ControlTransition>();
+    private ControlState startState;
+
+    @Override
+    public Set<? extends Edge> edgeSet() {
+        return transitions();
     }
 
-    /**
-     * Return all edges in the active graphshapes dynamically.
-     * @return Set<ControlTransition>
-     */
-    public Set<ControlTransition> edgeSet() {
-        return this.shape.transitions();
+    @Override
+    public Set<? extends Node> nodeSet() {
+        return states();
     }
 
-    /**
-     * Return all nodes in the active graphshapes dynamically. Set<ControlState>
-     */
-    public Set<ControlState> nodeSet() {
-        return this.shape.states();
+    @Override
+    public void addState(ControlState state) {
+        this.states.add(state);
     }
 
-    /**
-     * Returns the start-state of the top-level GraphShape.
-     * @return ControlState.
-     */
-    public ControlState startState() {
-        return this.shape.getStart();
+    @Override
+    public void addTransition(ControlTransition ct) {
+        this.transitions.add(ct);
+
+    }
+
+    @Override
+    public ControlState getStart() {
+        return this.startState;
+    }
+
+    @Override
+    public void removeState(ControlState state) {
+        this.states.remove(state);
+    }
+
+    @Override
+    public void removeTransition(ControlTransition ct) {
+        this.transitions.remove(ct);
+    }
+
+    @Override
+    public void setStart(ControlState start) {
+        this.startState = start;
+    }
+
+    @Override
+    public Set<ControlState> states() {
+        return this.states;
+    }
+
+    @Override
+    public Set<ControlTransition> transitions() {
+        return this.transitions;
     }
 
     /**
