@@ -16,7 +16,7 @@
  */
 package groove.algebra;
 
-import com.sun.org.apache.xpath.internal.operations.Variable;
+import org.apache.xpath.operations.Variable;
 
 /**
  * Interface extending the {@link groove.algebra.Operation}-interface without
