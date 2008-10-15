@@ -123,7 +123,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 if (((GraphState) getActualNode()).getLocation() != null) {
                     Location l = ((GraphState) getActualNode()).getLocation();
                     result.add(new StringBuilder("ctrl: "
-                        + Converter.toHtml(l.toString())));
+                        + Converter.toHtml(l.getName())));
                 }
             }
         }
