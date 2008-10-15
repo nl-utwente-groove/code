@@ -109,8 +109,8 @@ public class AliasMatchesIterator extends MatchesIterator {
                 Collection<RuleEvent> matches = result.get(rule);
                 if (matches == null) {
                     // if the rule is enabled, we will also add the fresh
-                    // matches
-                    // so we need a set; otherwise, a list is more efficient
+                    // matches so we need a set;
+                    // otherwise, a list is more efficient
                     if (this.enabledRules.contains(rule)) {
                         matches = new LinkedHashSet<RuleEvent>();
                     } else {
@@ -118,7 +118,7 @@ public class AliasMatchesIterator extends MatchesIterator {
                     }
                     result.put(rule, matches);
                 }
-                matches.add(new VirtualEvent(event, stub));
+                matches.add(new VirtualEvent<GraphTransitionStub>(event, stub));
             }
         }
         reporter.stop();

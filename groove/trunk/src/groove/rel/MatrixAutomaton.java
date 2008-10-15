@@ -1020,15 +1020,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                                 // we have a wildcard id; let's look it up
                                 Label oldLabel = valuation.get(id);
                                 if (oldLabel == null) {
-                                    // it's a new id; store it
-                                    if (valuation == null) {
-                                        valuation =
-                                            Collections.singletonMap(id, label);
-                                    } else {
-                                        valuation =
-                                            new HashMap<String,Label>(valuation);
-                                        valuation.put(id, label);
-                                    }
+                                    valuation = new HashMap<String,Label>(valuation);
+                                    valuation.put(id, label);
                                 } else {
                                     // it's a know id; check its value
                                     labelOk = oldLabel.equals(label);

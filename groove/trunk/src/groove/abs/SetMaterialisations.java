@@ -667,34 +667,6 @@ public class SetMaterialisations {
     }
 
     /**
-     * Adds a concrete graph structure to an abstract graph, w.r.t. some typing
-     * of the concrete nodes. The nodes of the concrete graph are supposed to be
-     * already in the abstract graph.
-     * @param abstrGraph Abstract graph to be enriched. Is modified by the
-     *        method.
-     * @param concrGraph Concrete part to be added.
-     * @param toAdd The nodes of the concrete part to be effectively added.
-     * @param notAdded Out parameter. This contains edges that present in the
-     *        abstract graph whereas an equivalent edge was added.
-     * @param nodeTypes Types for the nodes of the concrete part.
-     */
-    static private void addConcrToAbstr(DefaultAbstrGraph abstrGraph,
-            Graph concrGraph, Set<Node> toAdd, ConcretePart.Typing nodeTypes,
-            Collection<Edge> notAdded) {
-        // Add the edges
-        for (Edge ee : concrGraph.edgeSet()) {
-            DefaultEdge e = (DefaultEdge) ee;
-            Node source = abstrGraph.nodeFor(nodeTypes.typeOf(e.source()));
-            Node target = abstrGraph.nodeFor(nodeTypes.typeOf(e.target()));
-            assert source != null && target != null : "No node for this pattern.";
-            Edge added = abstrGraph.addEdge(source, e.label(), target);
-            if (added != null) {
-                notAdded.add(added);
-            }
-        }
-    }
-
-    /**
      * Updates a matching that matched into the abstract graph to match into the
      * concrete part.
      * @param match

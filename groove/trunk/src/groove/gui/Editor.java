@@ -899,8 +899,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
         String title =
             (this.currentGraphModified ? MODIFIED_INDICATOR : "")
-                + (modelName == null ? NEW_GRAPH_TITLE : modelName) + " - "
-                + EDITOR_NAME;
+                + modelName + " - " + EDITOR_NAME;
         Component window = getRootComponent();
         if (window instanceof JFrame) {
             ((JFrame) window).setTitle(title);

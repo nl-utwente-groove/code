@@ -914,11 +914,8 @@ public class CTLStarFormula {
      * Creates a fresh instance of the logic or-operator.
      * @param operands the operands of the or-operator
      * @return the freshly created or-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
-    protected TemporalFormula createOr(List<TemporalFormula> operands)
-        throws FormatException {
+    protected TemporalFormula createOr(List<TemporalFormula> operands) {
         return Or.createInstance(operands);
     }
 
@@ -926,11 +923,8 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal next-operator.
      * @param operand the operands of the next-operator
      * @return the freshly created next-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
-    protected TemporalFormula createNext(TemporalFormula operand)
-        throws FormatException {
+    protected TemporalFormula createNext(TemporalFormula operand) {
         return Next.createInstance(operand);
     }
 
@@ -938,11 +932,8 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal until-operator.
      * @param operands the operands of the until-operator
      * @return the freshly created until-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
-    protected TemporalFormula createUntil(List<TemporalFormula> operands)
-        throws FormatException {
+    protected TemporalFormula createUntil(List<TemporalFormula> operands) {
         return Until.createInstance(operands);
     }
 
@@ -950,11 +941,8 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal globally-operator.
      * @param operand the operands of the globally-operator
      * @return the freshly created globally-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
-    protected TemporalFormula createGlobally(TemporalFormula operand)
-        throws FormatException {
+    protected TemporalFormula createGlobally(TemporalFormula operand) {
         return Globally.createInstance(operand);
     }
 
@@ -962,11 +950,8 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal finally-operator.
      * @param operand the operands of the finally-operator
      * @return the freshly created finally-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
-    protected TemporalFormula createFinally(TemporalFormula operand)
-        throws FormatException {
+    protected TemporalFormula createFinally(TemporalFormula operand) {
         return Finally.createInstance(operand);
     }
 
@@ -974,9 +959,12 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal exists-operator.
      * @param operand the operands of the exists-operator
      * @return the freshly created exists-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
+    // This method does not throw an exception but it is overridden by an other
+    // method that does. If we do not declare here that an exception can be
+    // thrown, then we get a compile error. If we do, we get a warning. Hence,
+    // the SuppressWarnings annotation.
+    @SuppressWarnings("all")
     protected TemporalFormula createExists(TemporalFormula operand)
         throws FormatException {
         return Exists.createInstance(operand);
@@ -986,9 +974,12 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal all-operator.
      * @param operand the operands of the all-operator
      * @return the freshly created all-instance
-     * @throws FormatException if the expression does not conform structural
-     *         requirements
      */
+    // This method does not throw an exception but it is overridden by an other
+    // method that does. If we do not declare here that an exception can be
+    // thrown, then we get a compile error. If we do, we get a warning. Hence,
+    // the SuppressWarnings annotation.
+    @SuppressWarnings("all")
     protected TemporalFormula createAll(TemporalFormula operand)
         throws FormatException {
         return All.createInstance(operand);

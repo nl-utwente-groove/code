@@ -135,18 +135,9 @@ public class AspectualViewGps extends Observable implements
      * Loads the control program from the location set in the properties of the
      * grammar. Can only be done after rules and properties are loaded. TODO:
      * put this somewhere else?
-     * @throws IOException
-     * @throws FileNotFoundException
      */
     private void loadControl(DefaultGrammarView result, File location,
-            String controlName) throws IOException, FileNotFoundException {
-        // String controlFileName =
-        // result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
-        // if( controlFileName == null)
-        // return;
-        // File controlProgramFile = new File(location,
-        // result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
-        // System.out.println(controlProgram.getAbsolutePath());
+            String controlName) {
 
         if (controlName == null) {
             controlName = "control";
@@ -159,16 +150,8 @@ public class AspectualViewGps extends Observable implements
                 new File(location, result.getName() + Groove.CONTROL_EXTENSION);
         }
         if (controlProgramFile.exists()) {
-            // try
-            // {
             ControlView cv = new ControlView(result, controlProgramFile);
             result.setControl(cv);
-            // }
-            // catch(IOException e) {
-            // System.err.println("Error: unable to open control program " +
-            // controlProgramFile.getName());
-            // System.err.println("Proceeding without control.");
-            // }
         }
     }
 

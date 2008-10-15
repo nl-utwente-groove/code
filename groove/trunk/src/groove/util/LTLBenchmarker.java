@@ -122,8 +122,7 @@ public class LTLBenchmarker extends CommandLineTool {
     private static Set<Rule> ruleSet;
 
     // private static int CURRENT_ITERATION = 0;
-    private static final int NR_OF_RUNS = 3;
-
+    // private static final int NR_OF_RUNS = 3;
     // private static String STRATEGY_PATH = "P";
 
     private static String logFileName;
@@ -1315,7 +1314,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /**
      * The finalization phase of state space generation.
      */
-    protected void exit(long total) throws IOException, FormatException {
+    protected void exit(long total) throws IOException {
         if (getScenario().getResult().getValue().size() > 0) {
             System.out.println("Counter-example found.");
         } else {

@@ -658,7 +658,7 @@ public class Generator extends CommandLineTool {
      * <tt>{@link #start}</tt>.
      */
     protected void exit(Collection<? extends Object> result)
-        throws IOException, FormatException {
+        throws IOException {
         if (getFinalSaveName() != null) {
             if (result.isEmpty()) {
                 System.out.println("No resulting graphs");

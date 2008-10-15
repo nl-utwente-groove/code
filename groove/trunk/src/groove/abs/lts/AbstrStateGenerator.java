@@ -19,7 +19,6 @@ package groove.abs.lts;
 import groove.abs.AbstrGraph;
 import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
-import groove.abs.Util;
 import groove.explore.util.ExploreCache;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -106,16 +105,6 @@ public class AbstrStateGenerator extends StateGenerator {
     /** Specialises return type. */
     public AGTS getGTS() {
         return (AGTS) super.getGTS();
-    }
-
-    // ---------------------------------------------------------------
-    // INVARIANTS
-    // ---------------------------------------------------------------
-    private void checkInvariants() {
-        if (!Util.ea()) {
-            return;
-        }
-        // the applier is null, as not used
     }
 
 }

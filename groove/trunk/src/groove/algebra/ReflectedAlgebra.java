@@ -16,7 +16,6 @@
  */
 package groove.algebra;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -126,55 +125,57 @@ public class ReflectedAlgebra<T> extends Algebra {
     /** Name of the (static) name field of a signature class object. */
     static public final String NAME_FIELD = "NAME";
 
-    /**
-     * Class that wraps a reflected Java method into an algebra operation.
-     */
-    private class MethodOperation implements Operation {
-        MethodOperation(Method method) {
-            this.method = method;
-            this.parameterTypes = method.getParameterTypes();
-        }
-
-        public Algebra algebra() {
-            return ReflectedAlgebra.this;
-        }
-
-        /**
-         * 
-         */
-        public Object apply(List<Object> args) throws IllegalArgumentException {
-            int arity = arity();
-            if (args.size() != arity) {
-                throw new IllegalArgumentException("Wrong number of arguments");
-            }
-            try {
-                return this.method.invoke(ReflectedAlgebra.this.alg,
-                    args.toArray());
-            } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException(e);
-            } catch (InvocationTargetException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-
-        public int arity() {
-            return this.parameterTypes.length;
-        }
-
-        public String symbol() {
-            return this.method.getName();
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see groove.algebra.Operation#getResultType()
-         */
-        public Algebra getResultType() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        private final Method method;
-        private final Class<?>[] parameterTypes;
-    }
+    // EDUARDO I commented this whole inner class because it was not being
+    // used. Arend, if this is dead code, please remove it.
+//    /**
+//     * Class that wraps a reflected Java method into an algebra operation.
+//     */
+//    private class MethodOperation implements Operation {
+//        MethodOperation(Method method) {
+//            this.method = method;
+//            this.parameterTypes = method.getParameterTypes();
+//        }
+//
+//        public Algebra algebra() {
+//            return ReflectedAlgebra.this;
+//        }
+//
+//        /**
+//         * 
+//         */
+//        public Object apply(List<Object> args) throws IllegalArgumentException {
+//            int arity = arity();
+//            if (args.size() != arity) {
+//                throw new IllegalArgumentException("Wrong number of arguments");
+//            }
+//            try {
+//                return this.method.invoke(ReflectedAlgebra.this.alg,
+//                    args.toArray());
+//            } catch (IllegalAccessException e) {
+//                throw new IllegalArgumentException(e);
+//            } catch (InvocationTargetException e) {
+//                throw new IllegalArgumentException(e);
+//            }
+//        }
+//
+//        public int arity() {
+//            return this.parameterTypes.length;
+//        }
+//
+//        public String symbol() {
+//            return this.method.getName();
+//        }
+//
+//        /*
+//         * (non-Javadoc)
+//         * @see groove.algebra.Operation#getResultType()
+//         */
+//        public Algebra getResultType() {
+//            // TODO Auto-generated method stub
+//            return null;
+//        }
+//
+//        private final Method method;
+//        private final Class<?>[] parameterTypes;
+//    }
 }

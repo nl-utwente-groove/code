@@ -96,11 +96,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param rule the production rule for which a rule graph is to be
      *        constructed
      * @require <tt>rule != null</tt>
-     * @throws FormatException if <code>rule</code> cannot be displayed as a
-     *         {@link AspectualRuleView}, for instance because its NACs are
-     *         nested too deep or not connected
      */
-    public AspectualRuleView(Rule rule) throws FormatException {
+    public AspectualRuleView(Rule rule) {
         this.name = rule.getName();
         this.priority = rule.getPriority();
         this.enabled = true;
@@ -988,7 +985,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the fresh rule created by the factory
      */
     protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name,
-            int priority) throws FormatException {
+            int priority) {
         return new SPORule(ruleMorphism, name, priority, getProperties());
     }
 
@@ -1002,7 +999,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the fresh rule created by the factory
      */
     protected SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap,
-            NodeEdgeMap coRootMap, RuleNameLabel name) throws FormatException {
+            NodeEdgeMap coRootMap, RuleNameLabel name) {
         return new SPORule(ruleMorphism, rootMap, coRootMap, name,
             getProperties());
     }
@@ -1015,7 +1012,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the fresh condition
      */
     protected ForallCondition createForall(Graph target, NodeEdgeMap rootMap,
-            RuleNameLabel name) throws FormatException {
+            RuleNameLabel name) {
         return new ForallCondition(target, rootMap, name, getProperties());
     }
 
@@ -1025,8 +1022,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param rootMap root map of the new condition
      * @return the fresh condition
      */
-    protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap)
-        throws FormatException {
+    protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) {
         return new NotCondition(target, rootMap, getProperties());
     }
 
@@ -1075,7 +1071,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * view.
      */
     protected AspectGraph computeAspectGraph(Rule rule,
-            NodeEdgeMap viewToRuleMap) throws FormatException {
+            NodeEdgeMap viewToRuleMap) {
         AspectGraph result = createAspectGraph();
         // start with lhs
         Map<Node,AspectNode> lhsNodeMap = new HashMap<Node,AspectNode>();
