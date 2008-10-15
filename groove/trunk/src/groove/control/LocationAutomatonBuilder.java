@@ -32,6 +32,7 @@ public class LocationAutomatonBuilder {
         if (location == null) {
             location = computeLocation(baseSet);
             this.locationMap.put(baseSet, location);
+            location.setName("" + this.locationMap.size());
         }
         return location;
     }

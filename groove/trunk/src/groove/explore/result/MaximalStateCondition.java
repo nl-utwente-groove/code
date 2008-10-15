@@ -1,10 +1,17 @@
-package groove.calc;
+package groove.explore.result;
 
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.util.Property;
 
-public class MaximalStateProperty extends Property<GraphState> {
+/**
+ * Condition expressing that a state is maximal if it has only
+ * self-transitions.
+ * 
+ * @author Tom Staijen
+ * @version $Revision $
+ */
+public class MaximalStateCondition extends ExploreCondition<GraphState> {
+    
     @Override
     public boolean isSatisfied(GraphState state) {
         return isMaximal(state);

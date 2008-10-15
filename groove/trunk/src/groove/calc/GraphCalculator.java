@@ -85,7 +85,7 @@ public interface GraphCalculator {
      * as <code>getAll(getGrammar().getRule(conditionName))</code>. The
      * method will fail to terminate the state space is infinite.
      * @param conditionName the graph condition that should be satisfied
-     * @return A set of {@link GraphResult}s that satisfy the condition
+     * @return A set of {@link GraphState}s that satisfy the condition
      *         <code>conditionName</code> for each <code>result</code> in
      *         the set.
      * @throws IllegalStateException if the basis has not been initialised
@@ -98,7 +98,7 @@ public interface GraphCalculator {
      * Returns the set of all graphs satisfying a certain condition. The method
      * will fail to terminate the state space is infinite.
      * @param condition the graph condition that should be satisfied
-     * @return A set of {@link GraphResult}s such that
+     * @return A set of {@link GraphState}s such that
      *         <code>condition.hasMatching(result)</code> for each
      *         <code>result</code> in the set.
      * @throws IllegalStateException if the basis has not been initialised

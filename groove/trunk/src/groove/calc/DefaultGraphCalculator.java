@@ -20,7 +20,8 @@ import groove.explore.DefaultScenario;
 import groove.explore.Scenario;
 import groove.explore.result.Acceptor;
 import groove.explore.result.FinalStateAcceptor;
-import groove.explore.result.PropertyAcceptor;
+import groove.explore.result.CloseConditionAcceptor;
+import groove.explore.result.MaximalStateCondition;
 import groove.explore.result.Result;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.ExploreStateDFStrategy;
@@ -127,8 +128,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
         } else {
             // try linear
             Scenario scenatioResult =
-                createScenario(strategy, new PropertyAcceptor(
-                    new MaximalStateProperty(), new Result(1)));
+                createScenario(strategy, new CloseConditionAcceptor(
+                    new MaximalStateCondition(), new Result(1)));
             scenatioResult.prepare(getGTS());
             Result results = scenatioResult.play();
             if (results.done()) {

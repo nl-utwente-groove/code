@@ -211,6 +211,11 @@ public class ControlView {
         pw.close();
     }
     
+    /**
+     * Returns a unique identifier for the location, set by the
+     * LocationAutomatonBuilder
+     * @return name
+     */
     public String getName()  {
         return this.controlName;
     }
