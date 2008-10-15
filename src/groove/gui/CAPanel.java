@@ -206,10 +206,13 @@ public class CAPanel extends JPanel implements SimulationListener {
                 new JDialog(CAPanel.this.simulator.getFrame(),
                     "Control Automaton");
             jf.add(autPanel);
-            jf.setSize(400, 600);
+            jf.setSize(600, 700);
             Point p = CAPanel.this.simulator.getFrame().getLocation();
             jf.setLocation(new Point(p.x + 50, p.y + 50));
             jf.setVisible(true);
+            
+            cjg.getLayouter().start(true);
+            
         }
     }
 
@@ -228,8 +231,8 @@ class AutomatonPanel extends JGraphPanel<ControlJGraph> {
         this.getJGraph().setConnectable(false);
         this.getJGraph().setDisconnectable(false);
         this.getJGraph().setEnabled(true);
-        this.layouter = new MyForestLayouter().newInstance(this.getJGraph());
-        this.getJGraph().setLayouter(this.layouter);
+//        this.layouter = new MyForestLayouter().newInstance(this.getJGraph());
+//        this.getJGraph().setLayouter(this.layouter);
         getJGraph().setToolTipEnabled(true);
     }
 
@@ -242,41 +245,5 @@ class AutomatonPanel extends JGraphPanel<ControlJGraph> {
      * A specialization of the forest layouter that takes the LTS start graph as
      * its suggested root.
      */
-    class MyForestLayouter extends groove.gui.layout.ForestLayouter {
-        /**
-         * Creates a prototype layouter
-         */
-        public MyForestLayouter() {
-            super();
-        }
-
-        /**
-         * Creates a new instance, for a given {@link JGraph}.
-         */
-        public MyForestLayouter(String name, JGraph jgraph) {
-            super(name, jgraph);
-        }
-
-        /**
-         * This method returns a singleton set consisting of the LTS start
-         * state.
-         */
-        @Override
-        protected Collection<?> getSuggestedRoots() {
-            ControlJModel jModel = getJModel();
-            if (jModel.getGraph() == null) {
-                System.err.println("jModel has no underlying graph...");
-            }
-            return Collections.singleton(jModel.getJCell(jModel.getGraph().getStart()));
-        }
-
-        /**
-         * This implementation returns a {@link MyForestLayouter}.
-         */
-        @Override
-        public Layouter newInstance(JGraph jGraph) {
-            return new MyForestLayouter(this.name, jGraph);
-        }
-    }
 
 }

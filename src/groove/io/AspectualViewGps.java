@@ -138,7 +138,7 @@ public class AspectualViewGps extends Observable implements
      */
     private void loadControl(DefaultGrammarView result, File location,
             String controlName) {
-
+        
         if (controlName == null) {
             controlName = "control";
         }
@@ -150,7 +150,7 @@ public class AspectualViewGps extends Observable implements
                 new File(location, result.getName() + Groove.CONTROL_EXTENSION);
         }
         if (controlProgramFile.exists()) {
-            ControlView cv = new ControlView(result, controlProgramFile);
+            ControlView cv = new ControlView(result, controlProgramFile, controlName);
             result.setControl(cv);
         }
     }

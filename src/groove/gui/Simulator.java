@@ -551,6 +551,18 @@ public class Simulator {
         return this.newRuleAction;
     }
 
+    /**
+     * Returns the rule creation action permanently associated with this
+     * simulator.
+     */
+    public NewControlAction getNewControlAction() {
+        // lazily create the action
+        if (this.newControlAction == null) {
+            this.newControlAction = new NewControlAction();
+        }
+        return this.newControlAction;
+    }
+
     /** Returns the quit action permanently associated with this simulator. */
     public Action getQuitAction() {
         // lazily create the action
@@ -859,7 +871,9 @@ public class Simulator {
      * of the LTS.
      */
     void doLoadControlFile(File file) {
-        ControlView cv = new ControlView(getCurrentGrammar(), file);
+        ControlView cv =
+            new ControlView(getCurrentGrammar(), file,
+                this.controlFilter.stripExtension(file.getName()));
         getCurrentGrammar().setControl(cv);
         setGrammar(getCurrentGrammar());
     }
@@ -1001,10 +1015,12 @@ public class Simulator {
                     }
                     if (currentControlFile != null) {
                         ControlView cv =
-                            new ControlView(grammar, currentControlFile);
+                            new ControlView(
+                                grammar,
+                                currentControlFile,
+                                this.controlFilter.stripExtension(currentControlFile.getName()));
                         grammar.setControl(cv);
                     }
-
                     setGrammar(grammar);
                 }
             } catch (IOException exc) {
@@ -1614,6 +1630,7 @@ public class Simulator {
         result.add(createItem(getNewGrammarAction(), menuName));
         result.add(createItem(getNewGraphAction(), menuName));
         result.add(createItem(getNewRuleAction(), menuName));
+        result.add(createItem(getNewControlAction(), menuName));
         return result;
     }
 
@@ -2127,6 +2144,11 @@ public class Simulator {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
             }
+            ControlView cv = getCurrentGrammar().getControl();
+            if (cv != null) {
+                title.append(" | ");
+                title.append(cv.getName());
+            }
             title.append(" - ");
         }
         title.append(APPLICATION_NAME);
@@ -2517,6 +2539,10 @@ public class Simulator {
      * The rule creation action permanently associated with this simulator.
      */
     private NewRuleAction newRuleAction;
+    /**
+     * The control creation action permanently associated with this simulator.
+     */
+    private NewControlAction newControlAction;
     /**
      * The quit action permanently associated with this simulator.
      */
@@ -3536,6 +3562,66 @@ public class Simulator {
                         };
                     dialog.start();
                 }
+            }
+        }
+
+        /** Enabled if there is a grammar loaded. */
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
+    }
+
+    private class NewControlAction extends AbstractAction implements
+            Refreshable {
+        NewControlAction() {
+            super(Options.NEW_CONTROL_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(false)) {
+
+                File location = Simulator.this.getCurrentGrammarFile();
+                DefaultGrammarView grammar = Simulator.this.getCurrentGrammar();
+
+                int offset = 0;
+                File controlFile =
+                    new File(
+                        location,
+                        Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME));
+                while (controlFile.exists()) {
+                    offset++;
+                    controlFile =
+                        new File(
+                            location,
+                            Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME
+                                + offset));
+                }
+
+                JFileChooser chooser = Simulator.this.getControlFileChooser();
+                chooser.setSelectedFile(controlFile);
+
+                int result = chooser.showOpenDialog(getFrame());
+                // now load, if so required
+                if (result == JFileChooser.APPROVE_OPTION
+                    && confirmAbandon(false)) {
+
+                    if (!chooser.getSelectedFile().exists()) {
+
+                        // ControlView cv = grammar.getControl();
+                        try {
+                            ControlView.saveFile("", chooser.getSelectedFile());
+                            doLoadControlFile(chooser.getSelectedFile());
+                            Simulator.this.getGraphViewsPanel().setSelectedComponent(
+                                Simulator.this.getControlPanel());
+                        } catch (IOException ioe) {
+                            // TOM where does the error go? ofc there should not
+                            // be one
+                        }
+
+                    }
+                }
+
             }
         }
 

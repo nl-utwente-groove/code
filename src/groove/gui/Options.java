@@ -209,6 +209,8 @@ public class Options {
     public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar";
     /** New action name */
     public static final String NEW_RULE_ACTION_NAME = "New Rule";
+    /** New action name */
+    public static final String NEW_CONTROL_ACTION_NAME = "New Control";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node Mode";
     /** Open action name */

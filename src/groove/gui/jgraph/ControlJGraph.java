@@ -16,6 +16,13 @@
  */
 package groove.gui.jgraph;
 
+import groove.gui.SetLayoutMenu;
+import groove.gui.layout.Layouter;
+import groove.gui.layout.SpringLayouter;
+
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * This is the JGraph representation of a ControlAutomaton.
  * @author Tom Staijen
@@ -30,11 +37,65 @@ public class ControlJGraph extends JGraph {
     public ControlJGraph(ControlJModel model) {
         super(model, true);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
+        getGraphLayoutCache().setSelectsAllInsertedCells(false);
+        this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance((this)));
         setEnabled(false);
     }
 
     @Override
     public ControlJModel getModel() {
         return (ControlJModel) super.getModel();
+    }
+
+    /**
+     * Creates the layouter to be used at construction time.
+     */
+    protected Layouter createInitialLayouter() {
+        return new MyForestLayouter();
+    }
+
+    /**
+     * Overwrites the menu, so the forest layouter takes the Control start state
+     * as its root.
+     */
+    @Override
+    protected SetLayoutMenu createSetLayoutMenu() {
+        SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
+        result.addLayoutItem(createInitialLayouter());
+        return result;
+    }
+
+    class MyForestLayouter extends groove.gui.layout.ForestLayouter {
+        /**
+         * Creates a prototype layouter
+         */
+        public MyForestLayouter() {
+            super();
+        }
+
+        /**
+         * Creates a new instance, for a given {@link JGraph}.
+         */
+        public MyForestLayouter(String name, JGraph jgraph) {
+            super(name, jgraph);
+        }
+
+        /**
+         * This method returns a singleton set consisting of the LTS start
+         * state.
+         */
+        @Override
+        protected Collection<?> getSuggestedRoots() {
+            return Collections.singleton(getModel().getJCell(
+                getModel().getGraph().getStart()));
+        }
+
+        /**
+         * This implementation returns a {@link MyForestLayouter}.
+         */
+        @Override
+        public Layouter newInstance(JGraph jGraph) {
+            return new MyForestLayouter(this.name, jGraph);
+        }
     }
 }
