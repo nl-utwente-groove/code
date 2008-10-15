@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.control.ControlView;
 import groove.explore.util.MatchesIterator;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -728,8 +727,7 @@ public class RuleJTree extends JTree implements SimulationListener {
          * (and will) have children.
          */
         public PriorityTreeNode(int priority) {
-            super((priority == ControlView.ANY_RULE_PRORITY) ? "Priority ANY"
-                    : "Priority " + priority, true);
+            super("Priority " + priority, true);
         }
     }
 

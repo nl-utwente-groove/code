@@ -859,19 +859,9 @@ public class Simulator {
      * of the LTS.
      */
     void doLoadControlFile(File file) {
-        try {
-            // ControlView cv = getCurrentGrammar().getControl();
-            // if( cv == null ) {
-            ControlView cv = new ControlView(getCurrentGrammar(), file);
-            getCurrentGrammar().setControl(cv);
-            // } else {
-            // cv.loadProgram(file);
-            // }
-            setGrammar(getCurrentGrammar());
-        } catch (IOException exc) {
-            showErrorDialog("Could not load control program from "
-                + file.getName(), exc);
-        }
+        ControlView cv = new ControlView(getCurrentGrammar(), file);
+        getCurrentGrammar().setControl(cv);
+        setGrammar(getCurrentGrammar());
     }
 
     /**
@@ -1362,7 +1352,13 @@ public class Simulator {
             // regularly
             this.graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
-                    refreshActions();
+                    JTabbedPane source = (JTabbedPane) evt.getSource();
+                    // only refresh actions if the selected panel is not a
+                    // control panel,
+                    // since that is not a graphpane!
+                    if (!(source.getSelectedComponent() instanceof CAPanel)) {
+                        refreshActions();
+                    }
                 }
             });
             this.graphViewsPanel.setVisible(true);
@@ -1479,12 +1475,11 @@ public class Simulator {
      * @see #setGraphPanel(JGraphPanel)
      */
     JGraphPanel<?> getGraphPanel() {
-        // hack om splitpane te supporten
-        Component c = getGraphViewsPanel().getSelectedComponent();
-        if (c instanceof CAPanel) {
-            c = ((CAPanel) c).getJGraphPanel();
+        if (!(getGraphViewsPanel().getSelectedComponent() instanceof JGraphPanel)) {
+            return null;
+        } else {
+            return (JGraphPanel<?>) getGraphViewsPanel().getSelectedComponent();
         }
-        return (JGraphPanel<?>) c;
     }
 
     /**
@@ -3804,7 +3799,7 @@ public class Simulator {
     }
 
     private static Collection<GraphState> visualize; // = new
-                                                        // HashSet<GraphState>();
+    // HashSet<GraphState>();
 
     private History history;
 
