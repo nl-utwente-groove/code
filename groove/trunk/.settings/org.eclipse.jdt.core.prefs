@@ -1,4 +1,4 @@
-#Wed Oct 15 10:35:06 CEST 2008
+#Wed Oct 15 10:49:33 CEST 2008
 eclipse.preferences.version=1
 instance/org.eclipse.core.net/org.eclipse.core.net.hasMigrated=true
 org.eclipse.jdt.core.compiler.doc.comment.support=enabled
@@ -83,8 +83,8 @@ org.eclipse.jdt.core.formatter.alignment_for_conditional_expression=16
 org.eclipse.jdt.core.formatter.alignment_for_enum_constants=0
 org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer=20
 org.eclipse.jdt.core.formatter.alignment_for_multiple_fields=16
-org.eclipse.jdt.core.formatter.alignment_for_parameters_in_constructor_declaration=20
-org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration=20
+org.eclipse.jdt.core.formatter.alignment_for_parameters_in_constructor_declaration=16
+org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration=16
 org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation=0
 org.eclipse.jdt.core.formatter.alignment_for_superclass_in_type_declaration=16
 org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_enum_declaration=16
