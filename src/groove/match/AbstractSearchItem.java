@@ -108,6 +108,25 @@ abstract class AbstractSearchItem implements SearchItem {
         return new DummyRecord();
     }
 
+    /** 
+     * Changes the relevance status of this search item.
+     * @see #isRelevant()
+     */
+    void setRelevant(boolean relevant) {
+        this.relevant = relevant;
+    }
+    
+    public boolean isRelevant() {
+        return this.relevant;
+    }
+
+    /** 
+     * Flag indicating the relevance of this search item.
+     * Default value is <code>true</code>
+     * @see #isRelevant()
+     */
+    private boolean relevant = true;
+    
     /**
      * Dummy search record, which does nothing upon {@link #find()} except
      * alternatingly return <code>true</code> and <code>false</code>.
@@ -126,6 +145,10 @@ abstract class AbstractSearchItem implements SearchItem {
         /** This implementation returns <code>true</code>. */
         public boolean isSingular() {
             return true;
+        }
+
+        public boolean isRelevant() {
+            return AbstractSearchItem.this.isRelevant();
         }
 
         public void reset() {
@@ -156,6 +179,10 @@ abstract class AbstractSearchItem implements SearchItem {
             this.host = search.getHost();
         }
 
+        public boolean isRelevant() {
+            return AbstractSearchItem.this.isRelevant();
+        }
+        
         /** The underlying search for this record. */
         final Search search;
         /** The underlying search for this record. */

@@ -28,7 +28,9 @@ import groove.trans.SystemProperties;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Factory that adds to a graph search plan the following items the search items
@@ -55,9 +57,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      *        constructed
      */
     public SearchPlanStrategy createMatcher(Condition condition) {
-        NodeEdgeMap patternMap = condition.getRootMap();
-        return createMatcher(condition, patternMap.nodeMap().values(),
-            patternMap.edgeMap().values());
+        return createMatcher(condition, null, null);
     }
 
     /**
@@ -75,10 +75,47 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<? extends Node> anchorNodes,
             Collection<? extends Edge> anchorEdges) {
+        return createMatcher(condition, anchorNodes, anchorEdges, null);
+    }
+
+    /**
+     * Factory method returning a search plan for a graph condition, taking into
+     * account that a certain set of nodes and edges has been matched already.
+     * This extends the ordinary search plan with negative tests. Takes control
+     * and common labels into account (if any).
+     * @param condition the condition for which a search plan is to be
+     *        constructed
+     * @param anchorNodes the nodes of the condition that have been matched
+     *        already; if <code>null</code>, the condition's pattern map 
+     *        values are used
+     * @param anchorEdges the edges of the condition that have been matched
+     *        already; if <code>null</code>, the condition's pattern map 
+     *        values are used
+     * @param relevantNodes nodes from the condition whose image should be a 
+     * distinguishing factor in the returned matches; if <code>null</code>,
+     * all nodes are relevant
+     */
+    public SearchPlanStrategy createMatcher(Condition condition,
+            Collection<? extends Node> anchorNodes,
+            Collection<? extends Edge> anchorEdges,
+            Collection<? extends Node> relevantNodes) {
+        assert (anchorNodes == null) == (anchorEdges == null) : "Anchor nodes and edges should be null simultaneously";
+        if (anchorNodes == null) {
+            NodeEdgeMap patternMap = condition.getRootMap();
+            anchorNodes = patternMap.nodeMap().values();
+            anchorEdges = patternMap.edgeMap().values();
+        }
         PlanData planData = new GrammarPlanData(condition);
-        SearchPlanStrategy result =
-            new SearchPlanStrategy(condition.getTarget(), planData.getPlan(
-                anchorNodes, anchorEdges), isInjective());
+        List<AbstractSearchItem> plan = planData.getPlan(anchorNodes, anchorEdges);
+        if (relevantNodes != null) {
+            Set<Node> unboundRelevantNodes = new HashSet<Node>(relevantNodes);
+            Set<String> boundVars = new HashSet<String>();
+            for (AbstractSearchItem item : plan) {
+                item.setRelevant(unboundRelevantNodes.removeAll(item.bindsNodes()) | boundVars.addAll(item.bindsVars()));
+            }
+        }
+        SearchPlanStrategy result = 
+            new SearchPlanStrategy(condition.getTarget(), plan, isInjective());
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
@@ -127,10 +164,10 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
          * @param anchorEdges the set of pre-matched edges
          */
         @Override
-        Collection<SearchItem> computeSearchItems(
+        Collection<AbstractSearchItem> computeSearchItems(
                 Collection<? extends Node> anchorNodes,
                 Collection<? extends Edge> anchorEdges) {
-            Collection<SearchItem> result =
+            Collection<AbstractSearchItem> result =
                 super.computeSearchItems(anchorNodes, anchorEdges);
             for (Condition subCondition : ((AbstractCondition<?>) this.condition).getSubConditions()) {
                 if (subCondition instanceof MergeEmbargo) {
