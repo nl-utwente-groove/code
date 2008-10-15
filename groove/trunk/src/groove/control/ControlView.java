@@ -58,6 +58,8 @@ public class ControlView {
 
     private ControlAutomaton automaton;
 
+    private String controlName;
+    
     /**
      * Constructor, needs a grammar view and a filename to a control program.
      * 
@@ -66,9 +68,10 @@ public class ControlView {
      * @param result
      * @param controlProgramFile
      */
-    public ControlView(DefaultGrammarView result, File controlProgramFile) {
+    public ControlView(DefaultGrammarView result, File controlProgramFile, String controlName) {
         this.grammarView = result;
         this.controlFile = controlProgramFile;
+        this.controlName = controlName;
         this.controlProgram = loadProgram(controlProgramFile);
     }
 
@@ -207,4 +210,9 @@ public class ControlView {
         pw.write(controlProgram);
         pw.close();
     }
+    
+    public String getName()  {
+        return this.controlName;
+    }
+    
 }

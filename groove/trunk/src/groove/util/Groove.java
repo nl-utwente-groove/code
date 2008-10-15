@@ -100,6 +100,10 @@ public class Groove {
     public static final String EPS_EXTENSION = ".eps";
     /** Extension for Graph Layout files. */
     public static final String LAYOUT_EXTENSION = ".gl";
+
+    /** Default name for control files. */
+    public static final String DEFAULT_CONTROL_NAME = "control";
+   
     /** Extension for property files. */
     public static final String CONTROL_EXTENSION = ".gcp";
 
