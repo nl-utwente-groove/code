@@ -175,6 +175,8 @@ public class DefaultIsoChecker implements IsoChecker {
             new HashMap<Edge,Collection<Edge>>();
         Certificate<Edge>[] edgeCerts =
             dom.getCertifier().getEdgeCertificates();
+        // construct a mapping from the domain edges
+        // to either unique codomain edges or sets of them
         int edgeCount = edgeCerts.length;
         for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
             Certificate<Edge> edgeCert = edgeCerts[i];
@@ -239,6 +241,11 @@ public class DefaultIsoChecker implements IsoChecker {
                 }
             }
         }
+        assert checkIsomorphism(dom, cod, result);
+//        assert dom.edgeSet().containsAll(result.edgeMap().keySet());
+//        assert cod.edgeSet().containsAll(result.edgeMap().values());
+//        assert result.nodeMap().keySet().equals(dom.nodeSet());
+//        assert result.nodeMap().keySet().equals(cod.nodeSet());
         return result;
     }
 
@@ -249,14 +256,14 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param values the set of cod edges that should be tried as image of
      *        <code>key</code>
      * @param result the result map
-     * @param newlyMappedDomNodes the set of dom nodes that are mapped but may
+     * @param connectedNodes the set of dom nodes that are mapped but may
      *        have unmapped incident edges
      * @param usedCodNodes the set of node values in <code>result</code>
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
      */
     private boolean selectEdge(Edge key, Collection<Edge> values,
-            NodeEdgeMap result, Set<Node> newlyMappedDomNodes,
+            NodeEdgeMap result, Set<Node> connectedNodes,
             Set<Node> usedCodNodes) {
         int arity = key.endCount();
         Node[] nodeImages = new Node[arity];
@@ -264,6 +271,7 @@ public class DefaultIsoChecker implements IsoChecker {
             nodeImages[i] = result.getNode(key.end(i));
         }
         for (Edge value : values) {
+            // first test if this edge value is viable
             boolean correct = true;
             for (int i = 0; correct && i < key.endCount(); i++) {
                 if (nodeImages[i] == null) {
@@ -273,18 +281,20 @@ public class DefaultIsoChecker implements IsoChecker {
                 }
             }
             if (correct) {
-                for (int i = 0; correct && i < key.endCount(); i++) {
+                for (int i = 0; i < key.endCount(); i++) {
                     if (nodeImages[i] == null) {
-                        result.putNode(key.end(i), value.end(i));
-                        newlyMappedDomNodes.add(key.end(i));
+                        Node nodeImage = result.putNode(key.end(i), value.end(i));
+                        assert nodeImage == null;
+                        connectedNodes.add(key.end(i));
                         usedCodNodes.add(value.end(i));
                     }
                 }
-                result.putEdge(key, value);
+                Edge edgeImage = result.putEdge(key, value);
+                assert edgeImage == null;
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -293,14 +303,14 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param key the dom edge to be inserted
      * @param value the cod edge that is the image of <code>key</code>
      * @param result the result map
-     * @param newlyMappedDomNodes the set of dom nodes that are mapped but may
+     * @param connectedNodes the set of dom nodes that are mapped but may
      *        have unmapped incident edges
      * @param usedCodNodes the set of node values in <code>result</code>
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
      */
     private boolean setEdge(Edge key, Edge value, NodeEdgeMap result,
-            Set<Node> newlyMappedDomNodes, Set<Node> usedCodNodes) {
+            Set<Node> connectedNodes, Set<Node> usedCodNodes) {
         for (int i = 0; i < key.endCount(); i++) {
             Node end = key.end(i);
             Node endImage = value.end(i);
@@ -309,7 +319,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 if (!usedCodNodes.add(endImage)) {
                     return false;
                 }
-                newlyMappedDomNodes.add(end);
+                connectedNodes.add(end);
             } else if (oldEndImage != endImage) {
                 return false;
             }
@@ -415,6 +425,27 @@ public class DefaultIsoChecker implements IsoChecker {
         return result;
     }
 
+    private boolean checkIsomorphism(Graph dom, Graph cod, NodeEdgeMap map) {
+        for (Edge edge: dom.edgeSet()) {
+            if (edge.source() != edge.opposite() && !map.edgeMap().containsKey(edge)) {
+                return false;
+            }
+        }
+        for (Map.Entry<Edge,Edge> edgeEntry: map.edgeMap().entrySet()) {
+            Edge key = edgeEntry.getKey();
+            Edge value = edgeEntry.getValue();
+            for (int i = 0; i < key.endCount(); i++) {
+                if (! map.getNode(key.end(i)).equals(value.end(i))) {
+                    return false;
+                }
+            }
+        }
+        if (map.nodeMap().size() != new HashSet<Node>(map.nodeMap().values()).size()) {
+            return false;
+        }
+        return true;
+    }
+    
     /** Returns the singleton instance of this class. */
     static public DefaultIsoChecker getInstance() {
         return instance;
