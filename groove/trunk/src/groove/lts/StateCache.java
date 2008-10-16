@@ -185,15 +185,16 @@ class StateCache {
         // determine the freeze count of the state's parent state
         int parentCount;
         AbstractGraphState parent = state.source();
-        if (parent.getFrozenGraph() != null
-            || !(parent instanceof DefaultGraphNextState)) {
-            parentCount = 0;
-        } else if (parent.isCacheCleared()) {
-            parentCount = getFreezeCount((DefaultGraphNextState) parent);
-        } else {
-            parentCount = parent.getCache().getFreezeCount();
+        parentCount = 1;
+        while (parent instanceof DefaultGraphNextState && parent.getFrozenGraph() != null) {
+            if (parent.isCacheCleared()) {
+                parent = ((DefaultGraphNextState) parent).source();
+                parentCount++;
+            } else {
+                parentCount += parent.getCache().getFreezeCount();
+            }
         }
-        return parentCount + 1;
+        return parentCount;
     }
 
     /**

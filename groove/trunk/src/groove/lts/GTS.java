@@ -267,7 +267,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /** Get method for the state set. Lazily creates the set first. */
-    protected TreeHashSet<GraphState> getStateSet() {
+    public TreeHashSet<GraphState> getStateSet() {
         if (this.stateSet == null) {
             this.stateSet = createStateSet();
         }

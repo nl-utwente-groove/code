@@ -18,6 +18,7 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
+import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
@@ -84,11 +85,17 @@ public class DefaultScenario implements Scenario {
         this(strategy, acceptor, null, null);
     }
 
-    /** Creates a named scenario with a given strategy and acceptor. */
+    /** 
+     * Creates a named scenario with a given strategy and acceptor.
+     * @param acceptor the acceptor to be used; if <code>null</code>, a {@link FinalStateAcceptor}
+     * will be created.
+     * @param name the name of the scenario; may be <code>null</code> 
+     * @param description one-line description of the scenario; may be <code>null</code> 
+     */
     public DefaultScenario(Strategy strategy, Acceptor acceptor, String name,
             String description) {
         this.strategy = strategy;
-        this.acceptor = acceptor;
+        this.acceptor = acceptor == null ? new FinalStateAcceptor() : acceptor;
         this.name = name;
         this.description = description;
     }
