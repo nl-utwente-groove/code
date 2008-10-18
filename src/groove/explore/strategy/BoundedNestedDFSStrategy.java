@@ -46,7 +46,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class BoundedNestedDFSStrategy extends
-        DefaultBoundedModelCheckingStrategy<GraphState> {
+        AbstractBoundedModelCheckingStrategy<GraphState> {
     /**
      * The next step makes atomic the full exploration of a state.
      */
