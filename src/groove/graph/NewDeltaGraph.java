@@ -22,11 +22,13 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Class to serve to capture the graphs associated with graph states. These have
@@ -226,34 +228,60 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     private void initData() {
         reporter.start(INIT_DATA);
-        if (this.edgeSet == null) {
+        if (!isDataInitialised()) {
             assert this.nodeEdgeMap == null;
             assert this.labelEdgeMaps == null;
             if (this.basis == null) {
                 this.edgeSet = createEdgeSet(null);
                 this.nodeEdgeMap = new LinkedHashMap<Node,DefaultEdgeSet>();
-                // apply the delta to fill the structures
+                // apply the delta to fill the structures;
+                // the swing target actually shares this graph's structures
                 this.delta.applyDelta(new SwingTarget());
             } else {
-                DataTarget target = this.basis.getDataTarget();
-                // apply the delta to fill the structures
-                this.delta.applyDelta(target);
-                target.install(this);
+                // back up to the first initialised graph
+                // or the first graph without a basis
+                Stack<NewDeltaGraph> basisChain = new Stack<NewDeltaGraph>();
+                basisChain.push(this);
+                NewDeltaGraph backward = this.basis;
+                while (backward.basis != null && !backward.isDataInitialised()) {
+                    basisChain.push(backward);
+                    backward = backward.basis;
+                }
+                // now iteratively construct the intermediate graphs
+                backward.initData();
+                while (!basisChain.isEmpty()) {
+                    NewDeltaGraph forward = basisChain.pop();
+                    DataTarget target = forward.basis.getDataTarget(basisChain.size());
+                    // apply the delta to fill the structures
+                    forward.delta.applyDelta(target);
+                    target.install(forward);
+                }
             }
         }
         reporter.stop();
     }
 
+    /** Reports if the data structures of this delta graph have been initialised. */
+    private boolean isDataInitialised() {
+        return this.edgeSet != null;
+    }
+    
     /**
      * Creates a delta target that will construct the necessary data structures
      * for a child graph.
+     * @param depth the basis chain depth at which this graph was found.
      */
-    private DataTarget getDataTarget() {
+    private DataTarget getDataTarget(int depth) {
+        DataTarget result;
         reporter.start(TRANSFER_DATA);
-        // initialise own data, if necessary
-        initData();
-        DataTarget result =
+        // data should have been initialised
+        assert isDataInitialised();
+        if (depth % MAX_CHAIN_DEPTH == 0) {
+            result = new CopyTarget();
+        } else {
+            result =
             this.copyData ? new CopyTarget() : new SwingTarget();
+        }
         reporter.stop();
         return result;
     }
@@ -309,12 +337,16 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     private Reference<CertificateStrategy> certifier;
     /**
      * Flag indicating that data should be copied rather than shared in
-     * {@link #getDataTarget()}.
+     * {@link #getDataTarget(int)}.
      */
     private boolean copyData = true;
+    /** Maximum basis chain length at which the data target is set
+     * to a {@link CopyTarget} regardless of the value of {@link #copyData}.
+     */
+    static private final int MAX_CHAIN_DEPTH = 100;
     /**
-     * Debug flag for aliasing the node and edge set. Aliasing the sets gives
-     * problems in matching.
+     * Debug flag for aliasing the node and edge set. Aliasing the sets may give
+     * {@link ConcurrentModificationException}s during matching.
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class. */
