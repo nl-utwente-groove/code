@@ -329,15 +329,16 @@ public class Bisimulator implements CertificateStrategy {
     }
 
     /** Iterates node certificates until this results in a stable partitioning. */
-    private synchronized void iterateCertificates() {
+    private void iterateCertificates() {
         // get local copies of attributes for speedup
         IntSet certStore = Bisimulator.certStore;
         int nodeCertCount = this.nodeCertCount;
-        int nodePartitionCount = 0;
+        int partitionCount = 0;
         int certificateValue;
         // collect and then count the number of certificates
         boolean goOn;
         int iterateCount = 0;
+        int breakSymmetryCount = 0;
         do {
             reporter.start(ITERATE_CERTIFICATES);
             certificateValue = nodeCertCount;
@@ -348,32 +349,54 @@ public class Bisimulator implements CertificateStrategy {
                 certificateValue += edgeCert.setNewValue();
             }
             // now compute the new node certificates
-            for (Certificate<Node> nodeCert : this.nodeCerts) {
+            // while keeping track of the lowest value, in case
+            // we need to break symmetry
+            int minCertValue = Integer.MAX_VALUE;
+            NodeCertificate minCert = null;
+            for (NodeCertificate nodeCert : this.nodeCerts) {
                 int newCert = nodeCert.setNewValue();
-                if (iterateCount > 0 && nodePartitionCount < nodeCertCount) {
-                    certStore.add(newCert);
+                if (iterateCount > 0 && partitionCount < nodeCertCount) {
+                    if (!certStore.add(newCert)) {
+                        // this certificate is a duplicate; maybe it is the smallest
+                        if (BREAK_SYMMETRIES && newCert < minCertValue || minCert == null) {
+                            minCertValue = newCert;
+                            minCert = nodeCert;
+                        }
+                    }
                 }
                 certificateValue += newCert;
             }
-            int newNodePartitionCount = certStore.size();
+            int newPartitionCount = certStore.size();
+            // break symmetry if we have converged on a partition count
+            // lower than the node count
+            if (BREAK_SYMMETRIES && iterateCount > 0 && newPartitionCount == partitionCount && newPartitionCount < nodeCertCount) {
+                minCert.breakSymmetry();
+                breakSymmetryCount ++;
+                totalSymmetryBreakCount ++;
+//                if (breakSymmetryCount > 1) {
+//                    System.err.printf("%nSymmetry broken %d times%n", breakSymmetryCount);
+//                }
+            }
             // we stop the iteration when the number of partitions has not grown
             // moreover, when the number of partitions equals the number of
             // nodes then
             // it cannot grow, so we might as well stop straight away
             // note, however, that doing so gives rise to more false positives
             // which, on the other hand, are easily recognisable as such
-            goOn =
-                iterateCount == 0 || newNodePartitionCount > nodePartitionCount;// &&
-                                                                                // newNodePartitionCount
-                                                                                // <
-                                                                                // nodeCount;
-            if (nodePartitionCount < nodeCertCount) {
-                nodePartitionCount = newNodePartitionCount;
+            if (iterateCount == 0) {
+                goOn = true;
+            } else if (BREAK_SYMMETRIES) {
+                goOn = newPartitionCount < nodeCertCount && breakSymmetryCount < MAX_BREAK_SYMMETRY;
+            } else {
+                goOn = newPartitionCount > partitionCount;
+            }
+            if (partitionCount < nodeCertCount) {
+                partitionCount = newPartitionCount;
             }
             iterateCount++;
             reporter.stop();
         } while (goOn);
-        this.nodePartitionCount = nodePartitionCount;
+        this.nodePartitionCount = partitionCount;
         this.graphCertificate = new Long(certificateValue);
         if (USE_EDGE1_CERTIFICATES) {
             // so far we have done nothing with the flags, so
@@ -434,6 +457,14 @@ public class Bisimulator implements CertificateStrategy {
         return result;
     }
 
+    /**
+     * Returns the total number of times symmetry was broken
+     * during the calculation of the certificates.
+     */
+    static public int getSymmetryBreakCount() {
+        return totalSymmetryBreakCount;
+    }
+
     /** Array of default node certificates. */
 
     /**
@@ -456,10 +487,17 @@ public class Bisimulator implements CertificateStrategy {
      */
     static private final int TREE_RESOLUTION = 3;
     /**
+     * The maximum number of times a symmetry breaking step will be undertaken.
+     */
+    static private final int MAX_BREAK_SYMMETRY = 10;
+    /**
      * Store for node certificates, to count the number of partitions
      */
     static private final IntSet certStore = new TreeIntSet(TREE_RESOLUTION);
+    /** Debug flag to switch the use of {@link Edge1Certificate}s on and off. */
     static private final boolean USE_EDGE1_CERTIFICATES = false;
+    /** Debug flag to switch the use symmetry breaking on and off. */
+    static private final boolean BREAK_SYMMETRIES = false;
     /**
      * Array to record the number of iterations done in computing certificates.
      */
@@ -467,6 +505,8 @@ public class Bisimulator implements CertificateStrategy {
     /** Array for storing default node certificates. */
     static private NodeCertificate[] defaultNodeCerts =
         new NodeCertificate[DefaultNode.getNodeCount()];
+    /** Total number of times the symmetry was broken. */
+    static private int totalSymmetryBreakCount;
     /** Growth factor for the length of #defaultNodeCerts. */
     static private final float GROWTH_FACTOR = 1.5f;
 
@@ -609,6 +649,14 @@ public class Bisimulator implements CertificateStrategy {
                 && (this.value == ((Certificate<?>) obj).value);
         }
 
+        /** 
+         * Change the certificate value predictably
+         * to break symmetry.
+         */
+        public void breakSymmetry() {
+            this.value += this.value << 1;
+        }
+        
         /**
          * The new value for this certificate node is the sum of the values of
          * the incident certificate edges.
