@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class NestedDFSStrategy extends DefaultModelCheckingStrategy {
+public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
     /**
      * The next step makes atomic the full exploration of a state.
      */
