@@ -25,7 +25,7 @@ package groove.explore.strategy;
  * @version $Revision$
  */
 public abstract class DefaultBoundedModelCheckingStrategy<T> extends
-        DefaultModelCheckingStrategy implements BoundedModelCheckingStrategy {
+        AbstractModelCheckingStrategy implements BoundedModelCheckingStrategy {
 
     public boolean finished() {
         return true;
