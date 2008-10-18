@@ -52,7 +52,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     public DefaultGraphNextState(AbstractGraphState source,
             RuleApplication appl, Location control) {
         this(source, appl.getEvent(), appl.getCreatedNodes(), control);
-        getCache().setDelta(appl);
     }
 
     /**
