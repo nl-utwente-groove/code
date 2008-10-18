@@ -24,7 +24,10 @@ import groove.graph.GraphAdapter;
  * @version $Revision$
  */
 public class LTSAdapter extends GraphAdapter implements LTSListener {
-    /** Default implementation that does nothing. */
+    /**
+     * Event that occurs when closing a state. This default implementation
+     * has no behaviour.
+     */
     public void closeUpdate(LTS graph, State explored) {
         // this implementation does nothing
     }
