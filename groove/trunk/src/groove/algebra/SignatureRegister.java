@@ -16,8 +16,6 @@
  */
 package groove.algebra;
 
-import groove.view.aspect.NewAttributeAspect;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
