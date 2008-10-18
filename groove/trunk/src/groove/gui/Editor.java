@@ -13,9 +13,12 @@
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
+import groove.graph.DefaultEdge;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.Node;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
@@ -28,6 +31,7 @@ import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
 import groove.util.Groove;
 import groove.util.Version;
+import groove.view.AspectualGraphView;
 import groove.view.AspectualView;
 import groove.view.aspect.AspectGraph;
 
@@ -47,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
@@ -351,6 +356,37 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         } else {
             return false;
         }
+    }
+
+    /**
+     * Preview the given graph (e.g., for debugging purposes).
+     * @param graph the graph to preview
+     * @param name title of the preview-window
+     */
+    public static void previewGraph(final Graph graph, final String name) {
+        Runnable runLater = new Runnable() {
+                public void run() {
+                        Editor e = new Editor();
+                        
+                        AspectGraph tmp = new AspectGraph();
+                        Map<Node, Node> toNew = new HashMap<Node, Node> ();
+                        for( Node node : graph.nodeSet() ) {
+                                Node image = tmp.createNode();
+                                tmp.addNode(image);
+                                toNew.put(node, image);
+                        }
+                        for( Edge edge : graph.edgeSet() ) {
+                                Edge image;
+                                image = DefaultEdge.createEdge(edge.end(Edge.SOURCE_INDEX), edge.label(), edge.end(Edge.TARGET_INDEX));
+                                tmp.addEdge(image);
+                        }
+
+                                AspectualGraphView view = new AspectualGraphView(tmp);
+                                e.showPreviewDialog(view, name);
+                }
+        };
+        Thread t = new Thread(runLater);
+        t.start();
     }
 
     /**
