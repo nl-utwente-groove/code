@@ -31,7 +31,6 @@ import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
-import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.util.MatchApplier;
@@ -563,6 +562,7 @@ public class Generator extends CommandLineTool {
         println("\t\tEqual certificates:\t" + equalCertsCount);
         println("\t\tEqual simulation:\t" + equalSimCount);
         println("\t\tIterations:\t" + Bisimulator.getIterateCount());
+        println("\t\tSymmetry breaking:\t" + Bisimulator.getSymmetryBreakCount());
     }
 
     /**
@@ -592,7 +592,8 @@ public class Generator extends CommandLineTool {
         long running = DefaultScenario.getRunningTime();
         long overhead = total - running;
         long isoChecking = DefaultIsoChecker.getTotalTime();
-        long building = StateGenerator.getGenerateTime() - isoChecking;
+        long generateTime = MatchApplier.getGenerateTime() + StateGenerator.getGenerateTime();
+        long building = generateTime - isoChecking;
         long measuring = Reporter.getTotalTime();
 
         // this calculation incorporates only transforming RuleMatches into
