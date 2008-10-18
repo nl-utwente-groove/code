@@ -85,22 +85,28 @@ class StateCache {
         return this.graph != null;
     }
 
+    /** 
+     * Retrieves the delta stored in this cache,
+     * or if no delta is stored, gets it from the state (and stores it here).
+     */
     DeltaApplier getDelta() {
-        if (this.delta == null) {
-            Element[] frozenGraph = this.state.getFrozenGraph();
-            if (frozenGraph != null) {
-                this.delta = new FrozenDeltaApplier(frozenGraph);
-            } else {
-                this.delta = ((DefaultGraphNextState) this.state).getDelta();
-            }
+        return computeDelta(this.state);
+    }
+
+    /** 
+     * Returns the delta of a given state.
+     */
+    private DeltaApplier computeDelta(AbstractGraphState state) {
+        DeltaApplier result;
+        Element[] frozenGraph = state.getFrozenGraph();
+        if (frozenGraph != null) {
+            result = new FrozenDeltaApplier(frozenGraph);
+        } else {
+            result = ((DefaultGraphNextState) state).getDelta();
         }
-        return this.delta;
+        return result;
     }
-
-    void setDelta(DeltaApplier delta) {
-        this.delta = delta;
-    }
-
+    
     /**
      * Compute the graph from the information in the state. The state is assumed
      * to be a {@link DefaultGraphNextState}.
@@ -115,87 +121,96 @@ class StateCache {
             throw new IllegalStateException(
                 "Underlying state does not have information to reconstruct the graph");
         } else {
+            int depth = 0; // depth of reconstruction
             DefaultGraphNextState state = (DefaultGraphNextState) this.state;
             // make sure states get reconstructed sequentially rather than
             // recursively
-            if (state.source().isCacheCleared()) {
-                // go back along the chain of states until the first one
-                // that is frozen or still in cache
-                AbstractGraphState backward = state.source();
-                List<AbstractGraphState> stateChain =
-                    new LinkedList<AbstractGraphState>();
-                while (backward instanceof GraphNextState
-                    && backward.isCacheCleared()
-                    && backward.getFrozenGraph() == null) {
-                    stateChain.add(0, backward);
-                    backward = ((DefaultGraphNextState) backward).source();
-                }
-                // now let all states along the chain reconstruct their graphs,
-                // from ancestor to this one
-                for (AbstractGraphState forward : stateChain) {
-                    forward.getGraph();
-                }
+            AbstractGraphState backward = state.source();
+            List<AbstractGraphState> stateChain =
+                new LinkedList<AbstractGraphState>();
+            while (backward instanceof GraphNextState
+                && backward.isCacheCleared()
+                && backward.getFrozenGraph() == null) {
+                stateChain.add(0, backward);
+                backward = ((DefaultGraphNextState) backward).source();
+                depth++;
             }
-            result =
-                this.graphFactory.newGraph(state.source().getGraph(),
-                    getDelta());
+            // now let all states along the chain reconstruct their graphs,
+            // from ancestor to this one
+            result = backward.getGraph();
+            for (AbstractGraphState forward : stateChain) {
+                result =
+                    this.graphFactory.newGraph(result, computeDelta(forward));
+            }
+            result = this.graphFactory.newGraph(result, getDelta());
             // If the state is closed, then we are reconstructing the graph
             // for the second time at least; see if we should freeze it
-            if (getState().isClosed() && isFreezeGraph()) {
+            if (getState().isClosed() && isFreezeGraph(depth)) {
                 // if (isFreezeGraph()) {
                 state.setFrozenGraph(computeFrozenGraph(result));
             }
         }
         return result;
     }
+//
+//    /**
+//     * Decides whether the underlying graph should be frozen. The decision is
+//     * taken on the basis of the <i>freeze count</i>, as computed by
+//     * {@link #getFreezeCount()}; the graph is frozen if the freeze count
+//     * exceeds {@link #FREEZE_BOUND}.
+//     * @return <code>true</code> if the graph should be frozen
+//     */
+//    private boolean isFreezeGraph() {
+//        return isFreezeGraph(getFreezeCount());
+//    }
 
     /**
      * Decides whether the underlying graph should be frozen. The decision is
-     * taken on the basis of the <i>freeze count</i>, as computed by
-     * {@link #getFreezeCount()}; the graph is frozen if the freeze count
+     * taken on the basis of the <i>freeze count</i>, passed in as a 
+     * parameter; the graph is frozen if the freeze count
      * exceeds {@link #FREEZE_BOUND}.
      * @return <code>true</code> if the graph should be frozen
      */
-    private boolean isFreezeGraph() {
-        return this.freezeGraphs && getFreezeCount() > FREEZE_BOUND;
+    private boolean isFreezeGraph(int freezeCount) {
+        return this.freezeGraphs && freezeCount > FREEZE_BOUND;
     }
-
-    /**
-     * Computes a number expressing the urgency of freezing the underlying
-     * graph. The current measure is based on the number of steps from the
-     * previous frozen graph.
-     * @return the freeze count of the underlying state
-     */
-    private int getFreezeCount() {
-        if (this.state instanceof DefaultGraphNextState) {
-            return getFreezeCount((DefaultGraphNextState) this.state);
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * Computes a number expressing the urgency of freezing the graph of a given
-     * state. The current measure is based on the number of steps from the
-     * previous frozen graph, following the chain of parents from the given
-     * state.
-     * @return the freeze count of a given state
-     */
-    private int getFreezeCount(DefaultGraphNextState state) {
-        // determine the freeze count of the state's parent state
-        int parentCount;
-        AbstractGraphState parent = state.source();
-        parentCount = 1;
-        while (parent instanceof DefaultGraphNextState && parent.getFrozenGraph() != null) {
-            if (parent.isCacheCleared()) {
-                parent = ((DefaultGraphNextState) parent).source();
-                parentCount++;
-            } else {
-                parentCount += parent.getCache().getFreezeCount();
-            }
-        }
-        return parentCount;
-    }
+//
+//    /**
+//     * Computes a number expressing the urgency of freezing the underlying
+//     * graph. The current measure is based on the number of steps from the
+//     * previous frozen graph.
+//     * @return the freeze count of the underlying state
+//     */
+//    private int getFreezeCount() {
+//        if (this.state instanceof DefaultGraphNextState) {
+//            return getFreezeCount((DefaultGraphNextState) this.state);
+//        } else {
+//            return 0;
+//        }
+//    }
+//
+//    /**
+//     * Computes a number expressing the urgency of freezing the graph of a given
+//     * state. The current measure is based on the number of steps from the
+//     * previous frozen graph, following the chain of parents from the given
+//     * state.
+//     * @return the freeze count of a given state
+//     */
+//    private int getFreezeCount(DefaultGraphNextState state) {
+//        // determine the freeze count of the state's parent state
+//        int parentCount;
+//        AbstractGraphState parent = state.source();
+//        parentCount = 1;
+//        while (parent instanceof DefaultGraphNextState && parent.getFrozenGraph() != null) {
+//            if (parent.isCacheCleared()) {
+//                parent = ((DefaultGraphNextState) parent).source();
+//                parentCount++;
+//            } else {
+//                parentCount += parent.getCache().getFreezeCount();
+//            }
+//        }
+//        return parentCount;
+//    }
 
     /**
      * Computes a frozen graph representation from a given graph. The frozen
@@ -311,7 +326,6 @@ class StateCache {
     private Map<RuleEvent,GraphState> transitionMap;
     /** Cached graph for this state. */
     private Graph graph;
-    private groove.graph.DeltaApplier delta;
     /**
      * Flag indicating if (a fraction of the) state graphs should be frozen.
      * This is set to <code>true</code> if states in the GTS are collapsed.
