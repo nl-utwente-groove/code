@@ -27,7 +27,7 @@ import groove.trans.RuleEvent;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransitionStub extends Element {
+public interface GraphTransitionStub { //extends Element {
     /**
      * Returns the event that underlies the transition from a given source to
      * this object.
@@ -41,9 +41,10 @@ public interface GraphTransitionStub extends Element {
     Node[] getAddedNodes(GraphState source);
 
     /**
-     * Returns the target state of this graph transition stub.
+     * Returns the target state of this graph transition stub, given
+     * a certain source state.
      */
-    GraphState target();
+    GraphState getTarget(GraphState source);
 
     /**
      * Constructs a graph transition from this transition stub, based on a given

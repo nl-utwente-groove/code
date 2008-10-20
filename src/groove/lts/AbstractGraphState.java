@@ -133,7 +133,7 @@ abstract public class AbstractGraphState extends
             getCachedTransitionStubs()) {
             @Override
             public GraphState toOuter(GraphTransitionStub stub) {
-                return stub.target();
+                return stub.getTarget(AbstractGraphState.this);
             }
         };
     }
@@ -143,7 +143,7 @@ abstract public class AbstractGraphState extends
             getTransitionStubIter()) {
             @Override
             public GraphState toOuter(GraphTransitionStub obj) {
-                return obj.target();
+                return obj.getTarget(AbstractGraphState.this);
             }
         };
     }
@@ -156,7 +156,7 @@ abstract public class AbstractGraphState extends
             for (int i = 0; result == null && i < outTransitions.length; i++) {
                 GraphTransitionStub trans = outTransitions[i];
                 if (trans.getEvent(this) == event) {
-                    result = trans.target();
+                    result = trans.getTarget(AbstractGraphState.this);
                 }
             }
         } else {
@@ -165,7 +165,7 @@ abstract public class AbstractGraphState extends
             while (result == null && outTransIter.hasNext()) {
                 GraphTransitionStub trans = outTransIter.next();
                 if (trans.getEvent(this) == event) {
-                    result = trans.target();
+                    result = trans.getTarget(AbstractGraphState.this);
                 }
             }
         }
