@@ -234,7 +234,7 @@ public class StateGenerator {
             // alternating the events does not imply confluence
             return null;
         }
-        GraphState result = prior.target().getNextState(sourceEvent);
+        GraphState result = prior.getTarget(source).getNextState(sourceEvent);
         // if (result != null) {
         // confluentDiamondCount++;
         // }
