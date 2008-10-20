@@ -57,7 +57,7 @@ class StateCache {
         boolean result = getStubSet().add(stub);
         if (result && this.transitionMap != null) {
             GraphState oldState =
-                this.transitionMap.put(stub.getEvent(this.state), stub.target());
+                this.transitionMap.put(stub.getEvent(this.state), stub.getTarget(this.state));
             assert oldState == null;
         }
         return result;
@@ -67,6 +67,11 @@ class StateCache {
         return this.state;
     }
 
+    /** Sets the cached graph. */
+    void setGraph(Graph graph) {
+        this.graph = graph;
+    }
+    
     /**
      * Lazily creates and returns the graph of the underlying state. This is
      * only supported if the state is a {@link GraphNextState}
@@ -249,7 +254,7 @@ class StateCache {
     private Map<RuleEvent,GraphState> computeTransitionMap() {
         Map<RuleEvent,GraphState> result = createTransitionMap();
         for (GraphTransitionStub stub : getStubSet()) {
-            result.put(stub.getEvent(this.state), stub.target());
+            result.put(stub.getEvent(this.state), stub.getTarget(this.state));
         }
         return result;
     }
@@ -263,7 +268,7 @@ class StateCache {
      * Returns the cached set of {@link GraphTransitionStub}s. The set is
      * constructed lazily if the state is closed, using
      * {@link #computeStubSet()}; if the state is not closed, an empty set is
-     * initialized.
+     * initialised.
      */
     Set<GraphTransitionStub> getStubSet() {
         if (this.stubSet == null) {
