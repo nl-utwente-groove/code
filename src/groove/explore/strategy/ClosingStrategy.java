@@ -66,6 +66,10 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     @Override
     public void prepare(GTS gts, GraphState startState) {
         super.prepare(gts, startState);
+        // for the closing strategy, there is no problem in aliasing
+        // the graph data structures. On the whole, this seems wise, to
+        // avoid excessive garbage collection.
+        gts.getRecord().setCopyGraphs(false);
         getGTS().addGraphListener(this.exploreListener);
     }
 
