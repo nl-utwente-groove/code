@@ -186,7 +186,29 @@ public class VirtualEvent<C> implements RuleEvent {
             "Virtual events should give rise to DefaultAliasTranstions");
     }
 
+    public Node[] getAddedNodes(groove.lts.GraphState source) {
+        return this.innerEvent.getAddedNodes(source);
+    }
+
+    public RuleEvent getEvent(groove.lts.GraphState source) {
+        return this.innerEvent.getEvent(source);
+    }
+
+    public groove.lts.GraphState getTarget(groove.lts.GraphState source) {
+        return this.innerEvent.getTarget(source);
+    }
+
+    public boolean isSymmetry() {
+        return this.innerEvent.isSymmetry();
+    }
+
+    public GraphTransition toTransition(groove.lts.GraphState source) {
+        return this.innerEvent.toTransition(source);
+    }
+
+    /** Object wrapped together with the event. */
     private final C innerTarget;
+    /** Wrapped event. */
     private final RuleEvent innerEvent;
 
     /**

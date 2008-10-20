@@ -212,6 +212,14 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
     }
 
+    /**
+     * When a {@link DefaultGraphNextState} is used as a graph transition
+     * stub, the state itself is always the target state.
+     */
+    public GraphState getTarget(GraphState source) {
+        return this;
+    }
+
     @Override
     public Graph getGraph() {
         return getCache().getGraph();

@@ -42,7 +42,8 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
         this.target = target;
     }
 
-    public GraphState target() {
+    /** This implementation always returns the stored target state. */
+    public GraphState getTarget(GraphState source) {
         return this.target;
     }
 
@@ -74,7 +75,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
 
     public GraphTransition toTransition(GraphState source) {
         return new DefaultGraphTransition(getEvent(source),
-            getAddedNodes(source), source, target(), isSymmetry());
+            getAddedNodes(source), source, getTarget(source), isSymmetry());
     }
 
     /**
@@ -82,8 +83,8 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
      * from {@link #equals(Object)}.
      */
     protected boolean equalsStub(AbstractGraphTransitionStub other) {
-        boolean result = target() == other.target() && getEvent() == other.getEvent() && isSymmetry() == other.isSymmetry();
-        assert !result || Arrays.equals(addedNodes, other.addedNodes);
+        boolean result = this.target == other.target && getEvent() == other.getEvent() && isSymmetry() == other.isSymmetry();
+        assert !result || Arrays.equals(this.addedNodes, other.addedNodes);
         return result;
     }
 
@@ -101,7 +102,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
      */
     @Override
     public int hashCode() {
-        return getEvent().hashCode() + target().hashCode();
+        return getEvent().hashCode() + this.target.hashCode();
     }
 
     /**

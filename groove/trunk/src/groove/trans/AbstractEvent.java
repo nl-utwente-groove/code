@@ -22,6 +22,9 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSet;
+import groove.lts.DefaultGraphTransition;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 import groove.util.Reporter;
@@ -140,6 +143,71 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
      */
     abstract int computeEventHashCode();
 
+    /** 
+     * Always returns an empty array.
+     * The method does not check if this event is actually applicable at <code>source</code>.
+     * @throws UnsupportedOperationException} if the rule
+     * is not unmodifying
+     */
+    public Node[] getAddedNodes(GraphState source) {
+        if (getRule().isModifying()) {
+            throw new UnsupportedOperationException("Only unmodifying events can be used as graph transition stubs");
+        }
+        return EMPTY_NODE_ARRAY;
+    }
+
+    /** 
+     * Returns this event.
+     * The method does not check if this event is actually applicable at <code>source</code>.
+     * @throws UnsupportedOperationException} if the rule
+     * is not unmodifying
+     */
+    public RuleEvent getEvent(GraphState source) {
+        if (getRule().isModifying()) {
+            throw new UnsupportedOperationException("Only unmodifying events can be used as graph transition stubs");
+        }
+        return this;
+    }
+
+    /** 
+     * Returns the passed-in source event.
+     * The method does not check if this event is actually applicable at <code>source</code>.
+     * @throws UnsupportedOperationException} if the rule
+     * is not unmodifying
+     */
+    public GraphState getTarget(GraphState source) {
+        if (getRule().isModifying()) {
+            throw new UnsupportedOperationException("Only unmodifying events can be used as graph transition stubs");
+        }
+        return source;
+    }
+
+    /** 
+     * Always returns <code>false</code>.
+     * The method does not check if this event is actually applicable at <code>source</code>.
+     * @throws UnsupportedOperationException} if the rule
+     * is not unmodifying
+     */
+    public boolean isSymmetry() {
+        if (getRule().isModifying()) {
+            throw new UnsupportedOperationException("Only unmodifying events can be used as graph transition stubs");
+        }
+        return false;
+    }
+
+    /** 
+     * Returns a {@link DefaultGraphTransition}.
+     * The method does not check if this event is actually applicable at <code>source</code>.
+     * @throws UnsupportedOperationException} if the rule
+     * is not unmodifying
+     */
+    public GraphTransition toTransition(GraphState source) {
+        if (getRule().isModifying()) {
+            throw new UnsupportedOperationException("Only unmodifying events can be used as graph transition stubs");
+        }
+        return new DefaultGraphTransition(this, EMPTY_NODE_ARRAY, source, source, false);
+    }
+
     /**
      * Callback factory method to create a fresh, empty node set.
      */
@@ -182,6 +250,8 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     private int hashCode;
     /** The pre-computed identity hash code for this object. */
     private int identityHashCode;
+    /** Constant empty node array. */
+    private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
     static Reporter reporter = Reporter.register(RuleEvent.class);
     static private int EQUALS = reporter.newMethod("equals()");
 

@@ -61,7 +61,9 @@ public class DefaultGraphTransition extends
     }
 
     public GraphTransitionStub toStub() {
-        if (isSymmetry()) {
+        if (!getEvent().getRule().isModifying()) {
+            return getEvent();
+        } else if (isSymmetry()) {
             return new SymmetryTransitionStub(getEvent(), getAddedNodes(),
                 target());
         } else if (target() instanceof DefaultGraphNextState) {
@@ -113,6 +115,19 @@ public class DefaultGraphTransition extends
             throw new IllegalArgumentException("Source state incompatible");
         } else {
             return this;
+        }
+    }
+
+    /**
+     * This implementation throws an {@link IllegalArgumentException} if
+     * <code>source</code> is not equal to the source of the transition,
+     * otherwise it returns <code>target()</code>.
+     */
+    public GraphState getTarget(GraphState source) {
+        if (source != source()) {
+            throw new IllegalArgumentException("Source state incompatible");
+        } else {
+            return target();
         }
     }
 
