@@ -22,15 +22,21 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.CertificateStrategy.Certificate;
+import groove.util.Pair;
 import groove.util.Reporter;
 import groove.util.SmallCollection;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Implementation of an isomorphism checking algorithm that first tries to
@@ -144,6 +150,132 @@ public class DefaultIsoChecker implements IsoChecker {
                         }
                     }
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Tries to construct an isomorphism between the two given graphs, using
+     * only the edges. The result is a bijective mapping from the non-isolated
+     * nodes and edges of the source graph to those of the target graph, or
+     * <code>null</code> if no such mapping could be found.
+     * @param dom the first graph to be compared
+     * @param cod the second graph to be compared
+     */
+    private NodeEdgeMap computeNewIsomorphism(Graph dom, Graph cod) {
+        // make sure the graphs are of the same size
+        if (dom.nodeCount() != cod.nodeCount()
+            || dom.edgeCount() != cod.edgeCount()) {
+            return null;
+        }
+        NodeEdgeMap result = new NodeEdgeHashMap();
+        Set<Node> usedNodeImages = new HashSet<Node>();
+        List<Map.Entry<Edge,Collection<Edge>>> plan = computePlan(dom, cod, result, usedNodeImages);
+        if (plan == null) {
+            return null;
+        }
+        @SuppressWarnings("unchecked")
+        Iterator<Edge>[] records = new Iterator[plan.size()];
+        Node[] sourceImages = new Node[plan.size()];
+        Node[] targetImages = new Node[plan.size()];
+        int i = 0;
+        while (i >= 0 && i < records.length) {
+            if (records[i] == null) {
+                // we're moving forward
+                records[i] = plan.get(i).getValue().iterator();
+            }
+            Edge key = plan.get(i).getKey();
+            if (!records[i].hasNext()) {
+                // we're moving backward
+                if (sourceImages[i] != null) {
+                    usedNodeImages.remove(sourceImages[i]);
+                }
+                if (targetImages[i] != null) {
+                    usedNodeImages.remove(targetImages[i]);
+                }
+                records[i] = null;
+                i--;
+            } else {
+                Edge image = records[i].next();
+                Node oldSourceImage = result.putNode(key.source(), image.source());
+                if (oldSourceImage == null) {
+                    sourceImages[i] = image.source();
+                    if (!usedNodeImages.add(image.source())) {
+                        // injectivity is destroyed; take next edge image
+                        result.removeNode(key.source());
+                        continue;
+                    }
+                } else if (!oldSourceImage.equals(image.source())) {
+                    // the source node already had a different image; take next edge image
+                    result.putNode(key.source(), oldSourceImage);
+                    continue;
+                } else {
+                    sourceImages[i] = null;
+                }
+                Node oldTargetImage = result.putNode(key.opposite(), image.opposite());
+                if (oldTargetImage == null) {
+                    targetImages[i] = image.opposite();
+                    if (!usedNodeImages.add(image.opposite())) {
+                        // injectivity is destroyed; take next edge image
+                        result.removeNode(key.opposite());
+                        continue;
+                    }
+                } else if (!oldTargetImage.equals(image.opposite())) {
+                    // the target node already had a different image; take next edge image
+                    result.putNode(key.opposite(), oldTargetImage);
+                    continue;
+                } else {
+                    targetImages[i] = null;
+                }
+                result.putEdge(key, image);
+                i++;
+            }
+        }
+        assert checkIsomorphism(dom, cod, result);
+//        assert dom.edgeSet().containsAll(result.edgeMap().keySet());
+//        assert cod.edgeSet().containsAll(result.edgeMap().values());
+//        assert result.nodeMap().keySet().equals(dom.nodeSet());
+//        assert result.nodeMap().keySet().equals(cod.nodeSet());
+        return result;
+    }
+    
+    private List<Map.Entry<Edge,Collection<Edge>>> computePlan(Graph dom, Graph cod, NodeEdgeMap map, Set<Node> usedNodeImages) {
+        List<Map.Entry<Edge,Collection<Edge>>> result = new ArrayList<Map.Entry<Edge,Collection<Edge>>>();
+        PartitionMap<Edge> codPartitionMap =
+            cod.getCertifier().getEdgePartitionMap();
+        Set<Pair<Edge,Collection<Edge>>> edgeImageSet =
+            new TreeSet<Pair<Edge,Collection<Edge>>>(new Comparator<Pair<Edge,Collection<Edge>>>() {
+                public int compare(Pair<Edge,Collection<Edge>> o1,
+                        Pair<Edge,Collection<Edge>> o2) {
+                    int result = o1.second().size() - o2.second().size();
+                    if (result == 0) {
+                        result = o1.first().compareTo(o2.first());
+                    }
+                    return result;
+                }
+                
+            });
+        // the set of dom nodes that have an image in result, but whose incident
+        // images possibly don't
+        Set<Node> connectedNodes = new HashSet<Node>();
+        Certificate<Edge>[] edgeCerts =
+            dom.getCertifier().getEdgeCertificates();
+        // construct a mapping from the domain edges
+        // to either unique codomain edges or sets of them
+        int edgeCount = edgeCerts.length;
+        for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
+            Certificate<Edge> edgeCert = edgeCerts[i];
+            SmallCollection<Edge> images = codPartitionMap.get(edgeCert);
+            if (images == null) {
+                return null;
+            } else if (images.isSingleton()) {
+                if (!setEdge(edgeCert.getElement(), images.getSingleton(),
+                    map, connectedNodes, usedNodeImages)) {
+                    return null;
+                }
+            } else {
+                edgeImageSet.add(new Pair<Edge,Collection<Edge>>(edgeCert.getElement(), images));
             }
         }
         return result;
