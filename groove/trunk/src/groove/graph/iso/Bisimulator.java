@@ -373,9 +373,6 @@ public class Bisimulator implements CertificateStrategy {
                 minCert.breakSymmetry();
                 breakSymmetryCount ++;
                 totalSymmetryBreakCount ++;
-//                if (breakSymmetryCount > 1) {
-//                    System.err.printf("%nSymmetry broken %d times%n", breakSymmetryCount);
-//                }
             }
             // we stop the iteration when the number of partitions has not grown
             // moreover, when the number of partitions equals the number of
@@ -497,7 +494,7 @@ public class Bisimulator implements CertificateStrategy {
     /** Debug flag to switch the use of {@link Edge1Certificate}s on and off. */
     static private final boolean USE_EDGE1_CERTIFICATES = false;
     /** Debug flag to switch the use symmetry breaking on and off. */
-    static private final boolean BREAK_SYMMETRIES = false;
+    static private final boolean BREAK_SYMMETRIES = true;
     /**
      * Array to record the number of iterations done in computing certificates.
      */
