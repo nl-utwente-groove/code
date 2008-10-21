@@ -106,7 +106,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * reports if this succeeds.
      */
     public boolean hasIsomorphism(Graph dom, Graph cod) {
-        return computeNewIsomorphism(dom, cod) != null;
+        boolean result = computeNewIsomorphism(dom, cod) != null;
+        return result;
     }
 
     /**
@@ -168,7 +169,8 @@ public class DefaultIsoChecker implements IsoChecker {
         }
         NodeEdgeMap result = new NodeEdgeHashMap();
         Set<Node> usedNodeImages = new HashSet<Node>();
-        List<IsoSearchItem> plan = computePlan(dom, cod, result, usedNodeImages);
+        List<IsoSearchItem> plan =
+            computePlan(dom, cod, result, usedNodeImages);
         if (plan == null) {
             return null;
         }
@@ -182,30 +184,41 @@ public class DefaultIsoChecker implements IsoChecker {
         int i = 0;
         while (i >= 0 && i < records.length) {
             if (ISO_PRINT) {
-                System.err.printf("%d ",i);
+                System.err.printf("%d ", i);
             }
             IsoSearchItem item = plan.get(i);
             if (records[i] == null) {
                 // we're moving forward
                 records[i] = item.images.iterator();
             } else {
-                if (!item.sourcePreMatched) {
-                    usedNodeImages.remove(sourceImages[i]);
+                // we're trying the next element of this record;
+                // first wipe out the traces of the previous match
+                if (!item.sourcePreMatched && sourceImages[i] != null) {
+                    boolean removed = usedNodeImages.remove(sourceImages[i]);
+                    assert removed : String.format(
+                        "Image %s for source %s not present in used node set %s",
+                        sourceImages[i], item.key.source(), usedNodeImages);
+                    sourceImages[i] = null;
                 }
-                if (!item.targetPreMatched) {
-                    usedNodeImages.remove(targetImages[i]);
+                if (!item.targetPreMatched && targetImages[i] != null) {
+                    boolean removed = usedNodeImages.remove(targetImages[i]);
+                    assert removed : String.format(
+                        "Image %s for target %s not present in used node set %s",
+                        targetImages[i], item.key.opposite(), usedNodeImages);
+                    targetImages[i] = null;
                 }
             }
-            Edge key = item.key;
             if (!records[i].hasNext()) {
                 // we're moving backward
                 records[i] = null;
                 i--;
             } else {
+                Edge key = item.key;
                 Edge image = records[i].next();
                 if (item.sourcePreMatched) {
                     if (!result.getNode(key.source()).equals(image.source())) {
-                        // the source node had a different image; take next edge image
+                        // the source node had a different image; take next edge
+                        // image
                         continue;
                     }
                 } else {
@@ -219,10 +232,12 @@ public class DefaultIsoChecker implements IsoChecker {
                 if (item.targetPreMatched) {
                     // check if the old and new images coincide
                     if (!result.getNode(key.opposite()).equals(image.opposite())) {
-                        // the target node had a different image; take next edge image
+                        // the target node had a different image; take next edge
+                        // image
                         // but first roll back the choice of source node image
                         if (!item.sourcePreMatched) {
                             usedNodeImages.remove(sourceImages[i]);
+                            sourceImages[i] = null;
                         }
                         continue;
                     }
@@ -232,6 +247,7 @@ public class DefaultIsoChecker implements IsoChecker {
                         // but first roll back the choice of source node image
                         if (!item.sourcePreMatched) {
                             usedNodeImages.remove(sourceImages[i]);
+                            sourceImages[i] = null;
                         }
                         continue;
                     }
@@ -251,20 +267,19 @@ public class DefaultIsoChecker implements IsoChecker {
             if (ISO_PRINT) {
                 System.err.printf("Succeeded%n");
             }
-        assert checkIsomorphism(dom, cod, result) : String.format("Erronous result using plan %s", plan);
-//        assert dom.edgeSet().containsAll(result.edgeMap().keySet());
-//        assert cod.edgeSet().containsAll(result.edgeMap().values());
-//        assert result.nodeMap().keySet().equals(dom.nodeSet());
-//        assert result.nodeMap().keySet().equals(cod.nodeSet());
-        return result;
+            assert checkIsomorphism(dom, cod, result) : String.format(
+                "Erronous result using plan %s", plan);
+            return result;
         }
     }
-    
-    private List<IsoSearchItem> computePlan(Graph dom, Graph cod, NodeEdgeMap resultMap, Set<Node> usedNodeImages) {
+
+    private List<IsoSearchItem> computePlan(Graph dom, Graph cod,
+            NodeEdgeMap resultMap, Set<Node> usedNodeImages) {
         List<IsoSearchItem> result = new ArrayList<IsoSearchItem>();
         PartitionMap<Edge> codPartitionMap =
             cod.getCertifier().getEdgePartitionMap();
-        Map<Edge,Collection<Edge>> remainingEdgeSet = new HashMap<Edge,Collection<Edge>>();
+        Map<Edge,Collection<Edge>> remainingEdgeSet =
+            new HashMap<Edge,Collection<Edge>>();
         // the set of dom nodes that have an image in result, but whose incident
         // images possibly don't
         Set<Node> connectedNodes = new HashSet<Node>();
@@ -288,7 +303,8 @@ public class DefaultIsoChecker implements IsoChecker {
         }
         // pick an edge key to start planning the next connected component
         while (!remainingEdgeSet.isEmpty()) {
-            Iterator<Map.Entry<Edge,Collection<Edge>>> remainingEdgeIter = remainingEdgeSet.entrySet().iterator();
+            Iterator<Map.Entry<Edge,Collection<Edge>>> remainingEdgeIter =
+                remainingEdgeSet.entrySet().iterator();
             Map.Entry<Edge,Collection<Edge>> first = remainingEdgeIter.next();
             remainingEdgeIter.remove();
             TreeSet<IsoSearchItem> subPlan = new TreeSet<IsoSearchItem>();
@@ -298,22 +314,24 @@ public class DefaultIsoChecker implements IsoChecker {
                 Iterator<IsoSearchItem> subIter = subPlan.iterator();
                 IsoSearchItem next = subIter.next();
                 subIter.remove();
-                // add incident edges from the source node, if that was not already matched
+                // add incident edges from the source node, if that was not
+                // already matched
                 Node keySource = next.key.source();
                 next.sourcePreMatched = !connectedNodes.add(keySource);
                 if (!next.sourcePreMatched) {
-                    for (Edge edge: dom.edgeSet(keySource)) {
+                    for (Edge edge : dom.edgeSet(keySource)) {
                         Collection<Edge> images = remainingEdgeSet.remove(edge);
                         if (images != null) {
                             subPlan.add(new IsoSearchItem(edge, images));
                         }
                     }
                 }
-                // add incident edges from the target node, if that was not already matched
+                // add incident edges from the target node, if that was not
+                // already matched
                 Node keyTarget = next.key.opposite();
                 next.targetPreMatched = !connectedNodes.add(keyTarget);
                 if (!next.targetPreMatched) {
-                    for (Edge edge: dom.edgeSet(keyTarget)) {
+                    for (Edge edge : dom.edgeSet(keyTarget)) {
                         Collection<Edge> images = remainingEdgeSet.remove(edge);
                         if (images != null) {
                             subPlan.add(new IsoSearchItem(edge, images));
@@ -419,10 +437,10 @@ public class DefaultIsoChecker implements IsoChecker {
             }
         }
         assert checkIsomorphism(dom, cod, result);
-//        assert dom.edgeSet().containsAll(result.edgeMap().keySet());
-//        assert cod.edgeSet().containsAll(result.edgeMap().values());
-//        assert result.nodeMap().keySet().equals(dom.nodeSet());
-//        assert result.nodeMap().keySet().equals(cod.nodeSet());
+        // assert dom.edgeSet().containsAll(result.edgeMap().keySet());
+        // assert cod.edgeSet().containsAll(result.edgeMap().values());
+        // assert result.nodeMap().keySet().equals(dom.nodeSet());
+        // assert result.nodeMap().keySet().equals(cod.nodeSet());
         return result;
     }
 
@@ -433,15 +451,14 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param values the set of cod edges that should be tried as image of
      *        <code>key</code>
      * @param result the result map
-     * @param connectedNodes the set of dom nodes that are mapped but may
-     *        have unmapped incident edges
+     * @param connectedNodes the set of dom nodes that are mapped but may have
+     *        unmapped incident edges
      * @param usedCodNodes the set of node values in <code>result</code>
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
      */
     private boolean selectEdge(Edge key, Collection<Edge> values,
-            NodeEdgeMap result, Set<Node> connectedNodes,
-            Set<Node> usedCodNodes) {
+            NodeEdgeMap result, Set<Node> connectedNodes, Set<Node> usedCodNodes) {
         int arity = key.endCount();
         Node[] nodeImages = new Node[arity];
         for (int i = 0; i < arity; i++) {
@@ -460,7 +477,8 @@ public class DefaultIsoChecker implements IsoChecker {
             if (correct) {
                 for (int i = 0; i < key.endCount(); i++) {
                     if (nodeImages[i] == null) {
-                        Node nodeImage = result.putNode(key.end(i), value.end(i));
+                        Node nodeImage =
+                            result.putNode(key.end(i), value.end(i));
                         assert nodeImage == null;
                         connectedNodes.add(key.end(i));
                         usedCodNodes.add(value.end(i));
@@ -480,8 +498,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param key the dom edge to be inserted
      * @param value the cod edge that is the image of <code>key</code>
      * @param result the result map
-     * @param connectedNodes the set of dom nodes that are mapped but may
-     *        have unmapped incident edges
+     * @param connectedNodes the set of dom nodes that are mapped but may have
+     *        unmapped incident edges
      * @param usedCodNodes the set of node values in <code>result</code>
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
@@ -496,10 +514,10 @@ public class DefaultIsoChecker implements IsoChecker {
                 if (!usedCodNodes.add(endImage)) {
                     return false;
                 }
-                connectedNodes.add(end);
             } else if (oldEndImage != endImage) {
                 return false;
             }
+            connectedNodes.add(end);
         }
         result.putEdge(key, value);
         return true;
@@ -603,28 +621,40 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     private boolean checkIsomorphism(Graph dom, Graph cod, NodeEdgeMap map) {
-        for (Edge edge: dom.edgeSet()) {
-            if (edge.source() != edge.opposite() && !map.edgeMap().containsKey(edge)) {
+        for (Edge edge : dom.edgeSet()) {
+            if (edge.source() != edge.opposite()
+                && !map.edgeMap().containsKey(edge)) {
                 System.err.printf("Result contains no image for %s%n", edge);
                 return false;
             }
         }
-        for (Map.Entry<Edge,Edge> edgeEntry: map.edgeMap().entrySet()) {
+        for (Map.Entry<Edge,Edge> edgeEntry : map.edgeMap().entrySet()) {
             Edge key = edgeEntry.getKey();
             Edge value = edgeEntry.getValue();
             for (int i = 0; i < key.endCount(); i++) {
-                if (! map.getNode(key.end(i)).equals(value.end(i))) {
-                    System.err.printf("Edge %s mapped to %s, but end %s mapped to %s%n", key, value, key.end(i), map.getNode(key.end(i)));
+                if (!map.getNode(key.end(i)).equals(value.end(i))) {
+                    System.err.printf(
+                        "Edge %s mapped to %s, but end %s mapped to %s%n", key,
+                        value, key.end(i), map.getNode(key.end(i)));
                     return false;
                 }
             }
         }
         if (map.nodeMap().size() != new HashSet<Node>(map.nodeMap().values()).size()) {
+            for (Map.Entry<Node,Node> first : map.nodeMap().entrySet()) {
+                for (Map.Entry<Node,Node> second : map.nodeMap().entrySet()) {
+                    if (first != second
+                        && first.getValue() == second.getValue()) {
+                        System.err.printf("Image of %s and %s both %s%n",
+                            first.getKey(), second.getKey(), first.getValue());
+                    }
+                }
+            }
             return false;
         }
         return true;
     }
-    
+
     /** Returns the singleton instance of this class. */
     static public DefaultIsoChecker getInstance() {
         return instance;
@@ -794,7 +824,7 @@ public class DefaultIsoChecker implements IsoChecker {
         reporter.newMethod("Isomorphism by simulation");
     /** Handle for profiling {@link #areGraphEqual(Graph, Graph)}. */
     static final int EQUALS_TEST = reporter.newMethod("Equality test");
-    
+
     private class IsoSearchPair implements Comparable<IsoSearchPair> {
         /** Constructs an instance from given data. */
         public IsoSearchPair(Edge key, Collection<Edge> images) {
@@ -805,53 +835,59 @@ public class DefaultIsoChecker implements IsoChecker {
 
         public int compareTo(IsoSearchPair o) {
             // lower images set size is better
-            int result = this.images.size() - o.images.size();
+            int result = images.size() - o.images.size();
             if (result == 0) {
                 // no criteria; just take the key edge
-                result = this.key.compareTo(o.key);
+                result = key.compareTo(o.key);
             }
             return result;
         }
 
         /** The domain key of this record. */
         final Edge key;
-        /** The codomain images of this record; guaranteed to contain at least two elements. */
+        /**
+         * The codomain images of this record; guaranteed to contain at least
+         * two elements.
+         */
         final Collection<Edge> images;
     }
-    
+
     /**
      * Item in an isomorphism search plan
      */
     private class IsoSearchItem extends IsoSearchPair {
         /** Constructs an instance from given data. */
         public IsoSearchItem(Edge key, Collection<Edge> images) {
-            super(key,images);
+            super(key, images);
         }
 
         @Override
         public int compareTo(IsoSearchPair o) {
             // higher pre-match count is better
-            int result = ((IsoSearchItem) o).getPreMatchCount() - this.getPreMatchCount();
+            int result =
+                ((IsoSearchItem) o).getPreMatchCount()
+                    - this.getPreMatchCount();
             if (result == 0) {
                 result = super.compareTo(o);
             }
             return result;
         }
-        
+
         private int getPreMatchCount() {
             int preMatchCount = 0;
-            if (this.sourcePreMatched) {
+            if (sourcePreMatched) {
                 preMatchCount++;
             }
-            if (this.targetPreMatched) {
+            if (targetPreMatched) {
                 preMatchCount++;
             }
             return preMatchCount;
         }
-        
+
         @Override
         public String toString() {
-            return String.format("(%s,%s,%s,%s)", this.key, this.images, this.sourcePreMatched, this.targetPreMatched);
+            return String.format("(%s,%s,%s,%s)", key, images,
+                sourcePreMatched, targetPreMatched);
         }
 
         /** Flag indicating if the key source node has already been matched. */
