@@ -135,7 +135,8 @@ public class Bisimulator implements CertificateStrategy {
         reporter.start(GET_PARTITION_MAP);
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
-        for (int i = 0; i < this.edge2CertCount; i++) {
+        int bound = USE_EDGE1_CERTIFICATES ? this.edgeCerts.length : this.edge2CertCount;
+        for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
         reporter.stop();
@@ -494,7 +495,7 @@ public class Bisimulator implements CertificateStrategy {
     /** Debug flag to switch the use of {@link Edge1Certificate}s on and off. */
     static private final boolean USE_EDGE1_CERTIFICATES = false;
     /** Debug flag to switch the use symmetry breaking on and off. */
-    static private final boolean BREAK_SYMMETRIES = true;
+    static private final boolean BREAK_SYMMETRIES = false;
     /**
      * Array to record the number of iterations done in computing certificates.
      */
