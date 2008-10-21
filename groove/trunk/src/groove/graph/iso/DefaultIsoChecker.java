@@ -22,20 +22,17 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.CertificateStrategy.Certificate;
-import groove.util.Pair;
 import groove.util.Reporter;
 import groove.util.SmallCollection;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -109,7 +106,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * reports if this succeeds.
      */
     public boolean hasIsomorphism(Graph dom, Graph cod) {
-        return computeIsomorphism(dom, cod) != null;
+        return computeNewIsomorphism(dom, cod) != null;
     }
 
     /**
@@ -121,7 +118,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param cod the second graph to be compared
      */
     public NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
-        NodeEdgeMap result = computeIsomorphism(dom, cod);
+        NodeEdgeMap result = computeNewIsomorphism(dom, cod);
         if (result != null && result.nodeMap().size() != dom.nodeCount()) {
             // there's sure to be an isomorphism, but we have to add the
             // isolated nodes
@@ -171,7 +168,7 @@ public class DefaultIsoChecker implements IsoChecker {
         }
         NodeEdgeMap result = new NodeEdgeHashMap();
         Set<Node> usedNodeImages = new HashSet<Node>();
-        List<Map.Entry<Edge,Collection<Edge>>> plan = computePlan(dom, cod, result, usedNodeImages);
+        List<IsoSearchItem> plan = computePlan(dom, cod, result, usedNodeImages);
         if (plan == null) {
             return null;
         }
@@ -179,90 +176,101 @@ public class DefaultIsoChecker implements IsoChecker {
         Iterator<Edge>[] records = new Iterator[plan.size()];
         Node[] sourceImages = new Node[plan.size()];
         Node[] targetImages = new Node[plan.size()];
+        if (ISO_PRINT) {
+            System.err.printf("%nIsomorphism check: ");
+        }
         int i = 0;
         while (i >= 0 && i < records.length) {
+            if (ISO_PRINT) {
+                System.err.printf("%d ",i);
+            }
+            IsoSearchItem item = plan.get(i);
             if (records[i] == null) {
                 // we're moving forward
-                records[i] = plan.get(i).getValue().iterator();
-            }
-            Edge key = plan.get(i).getKey();
-            if (!records[i].hasNext()) {
-                // we're moving backward
-                if (sourceImages[i] != null) {
+                records[i] = item.images.iterator();
+            } else {
+                if (!item.sourcePreMatched) {
                     usedNodeImages.remove(sourceImages[i]);
                 }
-                if (targetImages[i] != null) {
+                if (!item.targetPreMatched) {
                     usedNodeImages.remove(targetImages[i]);
                 }
+            }
+            Edge key = item.key;
+            if (!records[i].hasNext()) {
+                // we're moving backward
                 records[i] = null;
                 i--;
             } else {
                 Edge image = records[i].next();
-                Node oldSourceImage = result.putNode(key.source(), image.source());
-                if (oldSourceImage == null) {
-                    sourceImages[i] = image.source();
+                if (item.sourcePreMatched) {
+                    if (!result.getNode(key.source()).equals(image.source())) {
+                        // the source node had a different image; take next edge image
+                        continue;
+                    }
+                } else {
                     if (!usedNodeImages.add(image.source())) {
                         // injectivity is destroyed; take next edge image
-                        result.removeNode(key.source());
                         continue;
                     }
-                } else if (!oldSourceImage.equals(image.source())) {
-                    // the source node already had a different image; take next edge image
-                    result.putNode(key.source(), oldSourceImage);
-                    continue;
-                } else {
-                    sourceImages[i] = null;
+                    result.putNode(key.source(), image.source());
+                    sourceImages[i] = image.source();
                 }
-                Node oldTargetImage = result.putNode(key.opposite(), image.opposite());
-                if (oldTargetImage == null) {
-                    targetImages[i] = image.opposite();
+                if (item.targetPreMatched) {
+                    // check if the old and new images coincide
+                    if (!result.getNode(key.opposite()).equals(image.opposite())) {
+                        // the target node had a different image; take next edge image
+                        // but first roll back the choice of source node image
+                        if (!item.sourcePreMatched) {
+                            usedNodeImages.remove(sourceImages[i]);
+                        }
+                        continue;
+                    }
+                } else {
                     if (!usedNodeImages.add(image.opposite())) {
                         // injectivity is destroyed; take next edge image
-                        result.removeNode(key.opposite());
+                        // but first roll back the choice of source node image
+                        if (!item.sourcePreMatched) {
+                            usedNodeImages.remove(sourceImages[i]);
+                        }
                         continue;
                     }
-                } else if (!oldTargetImage.equals(image.opposite())) {
-                    // the target node already had a different image; take next edge image
-                    result.putNode(key.opposite(), oldTargetImage);
-                    continue;
-                } else {
-                    targetImages[i] = null;
+                    result.putNode(key.opposite(), image.opposite());
+                    targetImages[i] = image.opposite();
                 }
                 result.putEdge(key, image);
                 i++;
             }
         }
-        assert checkIsomorphism(dom, cod, result);
+        if (i < 0) {
+            if (ISO_PRINT) {
+                System.err.printf("Failed%n");
+            }
+            return null;
+        } else {
+            if (ISO_PRINT) {
+                System.err.printf("Succeeded%n");
+            }
+        assert checkIsomorphism(dom, cod, result) : String.format("Erronous result using plan %s", plan);
 //        assert dom.edgeSet().containsAll(result.edgeMap().keySet());
 //        assert cod.edgeSet().containsAll(result.edgeMap().values());
 //        assert result.nodeMap().keySet().equals(dom.nodeSet());
 //        assert result.nodeMap().keySet().equals(cod.nodeSet());
         return result;
+        }
     }
     
-    private List<Map.Entry<Edge,Collection<Edge>>> computePlan(Graph dom, Graph cod, NodeEdgeMap map, Set<Node> usedNodeImages) {
-        List<Map.Entry<Edge,Collection<Edge>>> result = new ArrayList<Map.Entry<Edge,Collection<Edge>>>();
+    private List<IsoSearchItem> computePlan(Graph dom, Graph cod, NodeEdgeMap resultMap, Set<Node> usedNodeImages) {
+        List<IsoSearchItem> result = new ArrayList<IsoSearchItem>();
         PartitionMap<Edge> codPartitionMap =
             cod.getCertifier().getEdgePartitionMap();
-        Set<Pair<Edge,Collection<Edge>>> edgeImageSet =
-            new TreeSet<Pair<Edge,Collection<Edge>>>(new Comparator<Pair<Edge,Collection<Edge>>>() {
-                public int compare(Pair<Edge,Collection<Edge>> o1,
-                        Pair<Edge,Collection<Edge>> o2) {
-                    int result = o1.second().size() - o2.second().size();
-                    if (result == 0) {
-                        result = o1.first().compareTo(o2.first());
-                    }
-                    return result;
-                }
-                
-            });
+        Map<Edge,Collection<Edge>> remainingEdgeSet = new HashMap<Edge,Collection<Edge>>();
         // the set of dom nodes that have an image in result, but whose incident
         // images possibly don't
         Set<Node> connectedNodes = new HashSet<Node>();
         Certificate<Edge>[] edgeCerts =
             dom.getCertifier().getEdgeCertificates();
-        // construct a mapping from the domain edges
-        // to either unique codomain edges or sets of them
+        // collect the pairs of edge keys and edge image sets
         int edgeCount = edgeCerts.length;
         for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
             Certificate<Edge> edgeCert = edgeCerts[i];
@@ -271,11 +279,48 @@ public class DefaultIsoChecker implements IsoChecker {
                 return null;
             } else if (images.isSingleton()) {
                 if (!setEdge(edgeCert.getElement(), images.getSingleton(),
-                    map, connectedNodes, usedNodeImages)) {
+                    resultMap, connectedNodes, usedNodeImages)) {
                     return null;
                 }
             } else {
-                edgeImageSet.add(new Pair<Edge,Collection<Edge>>(edgeCert.getElement(), images));
+                remainingEdgeSet.put(edgeCert.getElement(), images);
+            }
+        }
+        // pick an edge key to start planning the next connected component
+        while (!remainingEdgeSet.isEmpty()) {
+            Iterator<Map.Entry<Edge,Collection<Edge>>> remainingEdgeIter = remainingEdgeSet.entrySet().iterator();
+            Map.Entry<Edge,Collection<Edge>> first = remainingEdgeIter.next();
+            remainingEdgeIter.remove();
+            TreeSet<IsoSearchItem> subPlan = new TreeSet<IsoSearchItem>();
+            subPlan.add(new IsoSearchItem(first.getKey(), first.getValue()));
+            // repeatedly pick an edge from the component
+            while (!subPlan.isEmpty()) {
+                Iterator<IsoSearchItem> subIter = subPlan.iterator();
+                IsoSearchItem next = subIter.next();
+                subIter.remove();
+                // add incident edges from the source node, if that was not already matched
+                Node keySource = next.key.source();
+                next.sourcePreMatched = !connectedNodes.add(keySource);
+                if (!next.sourcePreMatched) {
+                    for (Edge edge: dom.edgeSet(keySource)) {
+                        Collection<Edge> images = remainingEdgeSet.remove(edge);
+                        if (images != null) {
+                            subPlan.add(new IsoSearchItem(edge, images));
+                        }
+                    }
+                }
+                // add incident edges from the target node, if that was not already matched
+                Node keyTarget = next.key.opposite();
+                next.targetPreMatched = !connectedNodes.add(keyTarget);
+                if (!next.targetPreMatched) {
+                    for (Edge edge: dom.edgeSet(keyTarget)) {
+                        Collection<Edge> images = remainingEdgeSet.remove(edge);
+                        if (images != null) {
+                            subPlan.add(new IsoSearchItem(edge, images));
+                        }
+                    }
+                }
+                result.add(next);
             }
         }
         return result;
@@ -560,6 +605,7 @@ public class DefaultIsoChecker implements IsoChecker {
     private boolean checkIsomorphism(Graph dom, Graph cod, NodeEdgeMap map) {
         for (Edge edge: dom.edgeSet()) {
             if (edge.source() != edge.opposite() && !map.edgeMap().containsKey(edge)) {
+                System.err.printf("Result contains no image for %s%n", edge);
                 return false;
             }
         }
@@ -568,6 +614,7 @@ public class DefaultIsoChecker implements IsoChecker {
             Edge value = edgeEntry.getValue();
             for (int i = 0; i < key.endCount(); i++) {
                 if (! map.getNode(key.end(i)).equals(value.end(i))) {
+                    System.err.printf("Edge %s mapped to %s, but end %s mapped to %s%n", key, value, key.end(i), map.getNode(key.end(i)));
                     return false;
                 }
             }
@@ -730,6 +777,7 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     static private int distinctSimCount;
 
+    static private final boolean ISO_PRINT = false;
     /** Reporter instance for profiling IsoChecker methods. */
     static public final Reporter reporter = Reporter.register(IsoChecker.class);
     /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */
@@ -746,4 +794,69 @@ public class DefaultIsoChecker implements IsoChecker {
         reporter.newMethod("Isomorphism by simulation");
     /** Handle for profiling {@link #areGraphEqual(Graph, Graph)}. */
     static final int EQUALS_TEST = reporter.newMethod("Equality test");
+    
+    private class IsoSearchPair implements Comparable<IsoSearchPair> {
+        /** Constructs an instance from given data. */
+        public IsoSearchPair(Edge key, Collection<Edge> images) {
+            super();
+            this.key = key;
+            this.images = images;
+        }
+
+        public int compareTo(IsoSearchPair o) {
+            // lower images set size is better
+            int result = this.images.size() - o.images.size();
+            if (result == 0) {
+                // no criteria; just take the key edge
+                result = this.key.compareTo(o.key);
+            }
+            return result;
+        }
+
+        /** The domain key of this record. */
+        final Edge key;
+        /** The codomain images of this record; guaranteed to contain at least two elements. */
+        final Collection<Edge> images;
+    }
+    
+    /**
+     * Item in an isomorphism search plan
+     */
+    private class IsoSearchItem extends IsoSearchPair {
+        /** Constructs an instance from given data. */
+        public IsoSearchItem(Edge key, Collection<Edge> images) {
+            super(key,images);
+        }
+
+        @Override
+        public int compareTo(IsoSearchPair o) {
+            // higher pre-match count is better
+            int result = ((IsoSearchItem) o).getPreMatchCount() - this.getPreMatchCount();
+            if (result == 0) {
+                result = super.compareTo(o);
+            }
+            return result;
+        }
+        
+        private int getPreMatchCount() {
+            int preMatchCount = 0;
+            if (this.sourcePreMatched) {
+                preMatchCount++;
+            }
+            if (this.targetPreMatched) {
+                preMatchCount++;
+            }
+            return preMatchCount;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("(%s,%s,%s,%s)", this.key, this.images, this.sourcePreMatched, this.targetPreMatched);
+        }
+
+        /** Flag indicating if the key source node has already been matched. */
+        boolean sourcePreMatched;
+        /** Flag indicating if the key target node has already been matched. */
+        boolean targetPreMatched;
+    }
 }
