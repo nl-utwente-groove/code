@@ -20,8 +20,6 @@ import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
-import groove.gui.jgraph.JGraph;
-import groove.gui.layout.Layouter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -34,8 +32,6 @@ import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
-import java.util.Collections;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -219,8 +215,6 @@ public class CAPanel extends JPanel implements SimulationListener {
 }
 
 class AutomatonPanel extends JGraphPanel<ControlJGraph> {
-    private Layouter layouter;
-
     /**
      * The constructor of this panel creates a panel with the Control Automaton
      * of the current grammar.
