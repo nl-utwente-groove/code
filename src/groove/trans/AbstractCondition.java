@@ -23,8 +23,8 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ArgumentEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.ConditionSearchPlanFactory;
@@ -347,11 +347,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     /**
      * Tests is a give edge is a proper anchor, in the sense that it is matched
-     * to an actual host graph edge. This fails to hold for {@link AlgebraEdge}s
-     * and {@link ProductEdge}s.
+     * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}s
+     * and {@link OperatorEdge}s.
      */
     boolean isAnchorable(Edge edge) {
-        return !(edge instanceof AlgebraEdge || edge instanceof ProductEdge);
+        return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 
     /**

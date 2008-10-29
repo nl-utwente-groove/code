@@ -20,7 +20,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 import groove.graph.Node;
+import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 
 /**
@@ -34,12 +36,13 @@ class ValueNodeSearchItem extends AbstractSearchItem {
      * itself.
      * @param node the node to be matched
      */
-    public ValueNodeSearchItem(ValueNode node) {
-        if (!node.hasValue()) {
+    public ValueNodeSearchItem(VariableNode node) {
+        if (!node.isConstant()) {
             throw new IllegalArgumentException(String.format(
                 "Cannot search for variable node %s", node));
         }
         this.node = node;
+        this.nodeImage = AlgebraGraph.getInstance().getValueNode(node.getConstant());
         this.boundNodes = Collections.<Node>singleton(node);
     }
 
@@ -73,7 +76,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     }
 
     /** Returns the value node we are looking up. */
-    public ValueNode getNode() {
+    public VariableNode getNode() {
         return this.node;
     }
 
@@ -83,8 +86,10 @@ class ValueNodeSearchItem extends AbstractSearchItem {
 
     /** Singleton set consisting of <code>node</code>. */
     private final Collection<Node> boundNodes;
-    /** The value node to be matched. */
-    final ValueNode node;
+    /** The (constant) variable node to be matched. */
+    final VariableNode node;
+    /** The value node that represents the value of the constant. */
+    final ValueNode nodeImage;
     /** The index of the value node (in the result. */
     int nodeIx;
 
@@ -108,7 +113,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         @Override
         boolean set() {
             return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
-                ValueNodeSearchItem.this.node);
+                ValueNodeSearchItem.this.nodeImage);
         }
 
         @Override

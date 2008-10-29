@@ -18,8 +18,8 @@ package groove.match;
 
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ArgumentEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
@@ -118,11 +118,11 @@ class AnchorSearchItem extends AbstractSearchItem {
 
     /**
      * Tests is a give edge is a proper anchor, in the sense that it is matched
-     * to an actual host graph edge. This fails to hold for {@link AlgebraEdge}s
-     * and {@link ProductEdge}s.
+     * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}s
+     * and {@link OperatorEdge}s.
      */
     private boolean isAnchorable(Edge edge) {
-        return !(edge instanceof AlgebraEdge || edge instanceof ProductEdge);
+        return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 
     @Override

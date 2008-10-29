@@ -31,10 +31,10 @@ import groove.util.Groove;
 // AREND I would call this ArgumentEdge, and include the
 // number (as derived from the label); in fact, I think a constructor
 // with an int rather than a label would be more appropriate
-public class AlgebraEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
+public class ArgumentEdge extends
+        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
     /** Constructs a fresh edge. */
-    public AlgebraEdge(ProductNode source, int number, ValueNode target) {
+    public ArgumentEdge(ProductNode source, int number, VariableNode target) {
         super(source, DefaultLabel.createLabel("" + Groove.LC_PI + number),
             target);
         this.number = number;

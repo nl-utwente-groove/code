@@ -3582,10 +3582,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-
                 File location = Simulator.this.getCurrentGrammarFile();
-                DefaultGrammarView grammar = Simulator.this.getCurrentGrammar();
-
                 int offset = 0;
                 File controlFile =
                     new File(

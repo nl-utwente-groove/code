@@ -25,8 +25,10 @@ import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.AlgebraGraph;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -46,13 +48,14 @@ import java.util.TreeSet;
 
 /**
  * Aspectual view upon an attributed graph.
+ * The attribute values are represented by {@link VariableNode}s with
+ * self-{@link OperatorEdge}s.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class AspectualGraphView extends AspectualView<Graph> {
     /**
-     * Constructs an instance from a given aspect graph view. It is required
-     * that the aspect graph has a name.
+     * Constructs an instance from a given aspect graph view.
      * @see GraphInfo#getName(groove.graph.GraphShape)
      */
     public AspectualGraphView(AspectGraph view) {
@@ -122,16 +125,16 @@ public class AspectualGraphView extends AspectualView<Graph> {
         NodeEdgeMap elementMap = new NodeEdgeHashMap();
         // we need to record the view-to-model node map for the return value
         Map<AspectNode,Node> viewToModelMap = new HashMap<AspectNode,Node>();
-        // we need to record the model-to-view node map for removing isolated
-        // value nodes
-        Map<Node,AspectNode> modelToViewMap = new HashMap<Node,AspectNode>();
+//        // we need to record the model-to-view node map for removing isolated
+//        // value nodes
+//        Map<Node,AspectNode> modelToViewMap = new HashMap<Node,AspectNode>();
         // copy the nodes from view to model
         for (AspectNode viewNode : view.nodeSet()) {
             try {
-                boolean actualNode = true;
+                boolean nodeInModel = true;
                 for (AspectValue value : viewNode.getAspectMap().values()) {
                     if (isVirtualValue(value)) {
-                        actualNode = false;
+                        nodeInModel = false;
                     } else if (!isAllowedValue(value)) {
                         throw new FormatException(
                             "Node aspect value '%s' not allowed in graphs",
@@ -139,9 +142,9 @@ public class AspectualGraphView extends AspectualView<Graph> {
                     }
                 }
                 // include the node in the model if it is not virtual
-                if (actualNode) {
+                if (nodeInModel) {
                     Node nodeImage =
-                        AttributeAspect.createAttributeNode(viewNode, view);
+                        createAttributeNode(view, viewNode);
                     if (nodeImage == null) {
                         nodeImage = model.addNode();
                     } else if (isAllowedNode(nodeImage)) {
@@ -152,7 +155,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
                             getAttributeValue(viewNode)));
                     }
                     viewToModelMap.put(viewNode, nodeImage);
-                    modelToViewMap.put(nodeImage, viewNode);
+//                    modelToViewMap.put(nodeImage, viewNode);
                 }
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
@@ -194,20 +197,30 @@ public class AspectualGraphView extends AspectualView<Graph> {
                 }
             }
         }
-        // remove isolated value nodes from the result graph
+        // remove isolated variable nodes from the result graph
         Iterator<Map.Entry<AspectNode,Node>> viewToModelIter =
             viewToModelMap.entrySet().iterator();
         while (viewToModelIter.hasNext()) {
             Map.Entry<AspectNode,Node> viewToModelEntry =
                 viewToModelIter.next();
             Node modelNode = viewToModelEntry.getValue();
-            if (modelNode instanceof ValueNode
+            if (modelNode instanceof VariableNode
                 && model.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
                 model.removeNode(modelNode);
                 elementMap.removeNode(viewToModelEntry.getKey());
                 viewToModelIter.remove();
             }
+        }
+        // turn variable nodes into value nodes
+        NodeEdgeMap conversionMap = new NodeEdgeHashMap();
+        model = AlgebraGraph.getInstance().convertGraph(model, conversionMap);
+        // adapt the element map
+        for (Map.Entry<Node,Node> nodeEntry: elementMap.nodeMap().entrySet()) {
+            nodeEntry.setValue(conversionMap.getNode(nodeEntry.getValue()));
+        }
+        for (Map.Entry<Edge,Edge> edgeEntry: elementMap.edgeMap().entrySet()) {
+            edgeEntry.setValue(conversionMap.getEdge(edgeEntry.getValue()));
         }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
@@ -220,18 +233,37 @@ public class AspectualGraphView extends AspectualView<Graph> {
     }
 
     /**
+     * Attempts to create an attribute node from a given aspect node.
+     * Turns {@link VariableNode}s into {@link ValueNode}s.
+     * @return null if the aspect node is not an attribute node.
+     * @throws FormatException if the aspect value is wrongly formatted
+     */
+    private Node createAttributeNode(AspectGraph view, AspectNode viewNode)
+        throws FormatException {
+        Node result = AttributeAspect.createAttributeNode(viewNode, view);
+//        if (result instanceof VariableNode) {
+//            if (((VariableNode) result).isConstant()) {
+//                result = AlgebraGraph.getInstance().getValueNode(((VariableNode) result).getConstant());
+//            } else {
+//                throw new FormatException("Variable node %s should be a constant", result);
+//            }
+//        }
+        return result;
+    }
+
+    /**
      * Tests if a certain attribute node is of the type allowed in graphs.
      */
     private boolean isAllowedNode(Node node) {
-        return node instanceof ValueNode && ((ValueNode) node).hasValue();
+        return node instanceof VariableNode && ((VariableNode) node).isConstant();
     }
 
     /**
      * Tests if a certain attribute edge is of the type allowed in graphs.
      */
     private boolean isAllowedEdge(Edge edge) {
-        return edge instanceof ProductEdge
-            && ((ProductEdge) edge).getOperation() instanceof Constant;
+        return edge instanceof OperatorEdge
+            && ((OperatorEdge) edge).getOperation() instanceof Constant;
     }
 
     /**

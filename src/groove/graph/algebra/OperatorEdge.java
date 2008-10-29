@@ -31,14 +31,14 @@ import groove.graph.DefaultLabel;
  * @version $Revision$
  */
 // AREND I would call this OperatorEdge and unify it with ValueEdge
-public class ProductEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
+public class OperatorEdge extends
+        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
     /**
      * Constructs a product edge for a constant, which is always a self-edge.
      * @param target the source and target of the edge
      * @param operation the constant associated with the edge
      */
-    public ProductEdge(ValueNode target, Constant operation) {
+    public OperatorEdge(VariableNode target, Constant operation) {
         this(target, target, operation);
     }
 
@@ -48,7 +48,7 @@ public class ProductEdge extends
      * @param target the target node for the edge
      * @param operation the associated operation
      */
-    public ProductEdge(ProductNode source, ValueNode target, Operation operation) {
+    public OperatorEdge(ProductNode source, VariableNode target, Operation operation) {
         super(source, DefaultLabel.createLabel(operation.symbol()), target);
         this.operation = operation;
     }
@@ -65,17 +65,19 @@ public class ProductEdge extends
     /**
      * Returns the result of applying the operations on its operands.
      * @return the result of applying the operations on its operands
+     * @deprecated the result cannot be obtained on the signature level
      */
+    @Deprecated
     public Object getResult() {
         return this.operation.apply(source().getOperands());
     }
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof ProductEdge)) {
+        if (!(object instanceof OperatorEdge)) {
             return false;
         } else {
-            ProductEdge other = (ProductEdge) object;
+            OperatorEdge other = (OperatorEdge) object;
             if (!source().equals(other.source())) {
                 return false;
             } else if (!target().equals(other.target())) {

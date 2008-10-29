@@ -21,10 +21,10 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ArgumentEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.view.FormatException;
 
@@ -86,13 +86,13 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private void testAlgebra() throws FormatException {
         // collect value and product nodes
-        Set<ValueNode> unresolvedValueNodes = new HashSet<ValueNode>();
+        Set<VariableNode> unresolvedValueNodes = new HashSet<VariableNode>();
         Map<ProductNode,BitSet> unresolvedProductNodes =
             new HashMap<ProductNode,BitSet>();
         // test if product nodes have the required arguments
         for (Node node : getTarget().nodeSet()) {
-            if (node instanceof ValueNode) {
-                if (!((ValueNode) node).hasValue()) {
+            if (node instanceof VariableNode) {
+                if (!((VariableNode) node).isConstant()) {
                     boolean hasIncomingNonAttributeEdge = false;
                     for (Edge edge : getTarget().edgeSet(node,
                         Edge.TARGET_INDEX)) {
@@ -101,7 +101,7 @@ abstract public class PositiveCondition<M extends Match> extends
                         }
                     }
                     if (!hasIncomingNonAttributeEdge) {
-                        unresolvedValueNodes.add((ValueNode) node);
+                        unresolvedValueNodes.add((VariableNode) node);
                     }
                 }
             } else if (node instanceof ProductNode) {
@@ -121,9 +121,9 @@ abstract public class PositiveCondition<M extends Match> extends
                 ProductNode product = productEntry.getKey();
                 BitSet arguments = productEntry.getValue();
                 for (Edge edge : getTarget().outEdgeSet(product)) {
-                    if (edge instanceof AlgebraEdge
+                    if (edge instanceof ArgumentEdge
                         && !unresolvedValueNodes.contains(edge.opposite())) {
-                        int argumentNumber = ((AlgebraEdge) edge).getNumber();
+                        int argumentNumber = ((ArgumentEdge) edge).getNumber();
                         arguments.set(argumentNumber);
                     }
                 }
@@ -131,8 +131,8 @@ abstract public class PositiveCondition<M extends Match> extends
                     // the product node is resolved, so resolve the targets of
                     // the outgoing operations
                     for (Edge edge : getTarget().outEdgeSet(product)) {
-                        if (edge instanceof ProductEdge) {
-                            if (unresolvedValueNodes.remove(((ProductEdge) edge).target())) {
+                        if (edge instanceof OperatorEdge) {
+                            if (unresolvedValueNodes.remove(((OperatorEdge) edge).target())) {
                                 stable = false;
                             }
                         }
