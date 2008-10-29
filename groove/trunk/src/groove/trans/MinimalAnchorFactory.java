@@ -19,8 +19,8 @@ package groove.trans;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ArgumentEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 
@@ -145,9 +145,9 @@ public class MinimalAnchorFactory implements AnchorFactory {
 
     /**
      * Tests if a given edge can be an anchor. This fails to hold for
-     * {@link ProductEdge}s that are not {@link AlgebraEdge}s.
+     * {@link OperatorEdge}s that are not {@link ArgumentEdge}s.
      */
     private boolean isAnchorable(Edge edge) {
-        return !(edge instanceof AlgebraEdge || edge instanceof ProductEdge);
+        return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 }

@@ -19,8 +19,10 @@ package groove.gui.jgraph;
 import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
+import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.util.Converter.HTMLTag;
 
 import java.awt.Color;
@@ -178,15 +180,15 @@ public class JVertexView extends VertexView {
     }
 
     /**
-     * Callback method idicating that a certain vertex is a data vertex (and so
+     * Callback method indicating that a certain vertex is a data vertex (and so
      * should be rendered differently).
      */
     private int getVertexShape() {
         if (getCell() instanceof GraphJVertex) {
-            GraphJVertex cell = (GraphJVertex) getCell();
-            if (cell.getActualNode() instanceof ValueNode) {
+            Node actualNode = ((GraphJVertex) getCell()).getActualNode();
+            if (actualNode instanceof VariableNode || actualNode instanceof ValueNode) {
                 return ELLIPSE_SHAPE;
-            } else if (cell.getActualNode() instanceof ProductNode) {
+            } else if (actualNode instanceof ProductNode) {
                 return DIAMOND_SHAPE;
             }
         }

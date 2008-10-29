@@ -649,7 +649,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             for (Map.Entry<AspectEdge,Boolean> edgeEntry : newEdges.entrySet()) {
                 AspectEdge edge = edgeEntry.getKey();
                 Edge edgeImage = viewToRuleMap.getEdge(edge);
-                if (RuleAspect.inLHS(edge)) {
+//                assert edgeImage != null : String.format("Image of %s not in map", edge);
+                if (edgeImage != null && RuleAspect.inLHS(edge)) {
                     lhs.addEdge(edgeImage);
                     if (hasConcreteImage(edgeImage.label())) {
                         if (!edgeEntry.getValue()) {
@@ -662,7 +663,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                         // edgeImage.label());
                     }
                 }
-                if (RuleAspect.inRHS(edge) && !RuleAspect.isMerger(edge)) {
+                if (edgeImage != null && RuleAspect.inRHS(edge) && !RuleAspect.isMerger(edge)) {
                     // use the toRight map because we may have merged nodes
                     Edge rhsEdgeImage = computeEdgeImage(edge, toRight);
                     rhs.addEdge(rhsEdgeImage);

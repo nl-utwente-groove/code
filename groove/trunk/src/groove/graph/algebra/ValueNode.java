@@ -31,7 +31,7 @@ import java.util.Iterator;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
-public class ValueNode extends ProductNode {
+public class ValueNode extends DefaultNode {
     /**
      * Constructs a node for a given {@link groove.algebra.Constant}. Preferred
      * construction through {@link AlgebraGraph#getValueNode(Algebra, Object)}.
@@ -39,7 +39,7 @@ public class ValueNode extends ProductNode {
      * @param value the value to create a graph node for
      */
     ValueNode(Algebra algebra, Object value) {
-        super(0);
+        super();
         this.algebra = algebra;
         this.value = value;
         assert value == null || algebra != null;
@@ -75,21 +75,21 @@ public class ValueNode extends ProductNode {
      * the value in the algebra.
      */
     public String getSymbol() {
-        if (hasValue()) {
+//        if (hasValue()) {
             return getAlgebra().getSymbol(getValue());
-        } else {
-            return null;
-        }
+//        } else {
+//            return null;
+//        }
     }
-
-    /**
-     * Indicates if the constant has a definite value, i.e., is not a variable.
-     * Convenience method for <code>getConstant() != null</code>.
-     * @return <code>true</code> if this node's value is not a variable
-     */
-    public boolean hasValue() {
-        return this.value != null;
-    }
+//
+//    /**
+//     * Indicates if the constant has a definite value, i.e., is not a variable.
+//     * Convenience method for <code>getConstant() != null</code>.
+//     * @return <code>true</code> if this node's value is not a variable
+//     */
+//    public boolean hasValue() {
+//        return this.value != null;
+//    }
 
     /**
      * This methods returns an indication of the variable if there is no
@@ -97,13 +97,9 @@ public class ValueNode extends ProductNode {
      */
     @Override
     public String toString() {
-        if (!hasValue()) {
-            return "x" + (getNumber() - DefaultNode.MAX_NODE_NUMBER);
-        } else {
-            String algebraName =
-                AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
-            return algebraName + CONTENT_SEPARATOR + this.value;
-        }
+        String algebraName =
+            AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
+        return algebraName + CONTENT_SEPARATOR + this.value;
     }
 
     /**

@@ -51,7 +51,7 @@ public class DefaultStringAlgebra extends Algebra {
     public String getSymbol(Object value) {
         if (!(value instanceof String)) {
             throw new IllegalArgumentException(String.format(
-                "Value is of class %s rather than Boolean", value.getClass()));
+                "Value is of class %s rather than String", value.getClass()));
         }
         return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
     }

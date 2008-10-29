@@ -19,9 +19,10 @@ package groove.match;
 import groove.algebra.Operation;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraGraph;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Arrays;
@@ -43,17 +44,19 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * ends have already been matched (in the search plan) before this one.
      * @param edge the edge to be matched
      */
-    public OperatorEdgeSearchItem(ProductEdge edge) {
+    public OperatorEdgeSearchItem(OperatorEdge edge) {
         this.edge = edge;
         this.operation = edge.getOperation();
         this.arguments = edge.source().getArguments();
         this.target = edge.target();
         this.neededNodes = new HashSet<Node>(this.arguments);
-        if (this.target.hasValue()) {
+        if (this.target.isConstant()) {
             this.boundNodes = Collections.<Node>emptySet();
             this.neededNodes.add(this.target);
+            this.value = this.target.getConstant().getValue();
         } else {
             this.boundNodes = Collections.<Node>singleton(this.target);
+            this.value = null;
         }
     }
 
@@ -93,8 +96,8 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     public int compareTo(SearchItem other) {
         int result = 0;
         if (other instanceof OperatorEdgeSearchItem) {
-            ProductEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
-            List<ValueNode> otherArguments = otherEdge.source().getArguments();
+            OperatorEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
+            List<VariableNode> otherArguments = otherEdge.source().getArguments();
             result = this.edge.label().compareTo(otherEdge.label());
             for (int i = 0; result == 0 && i < this.arguments.size(); i++) {
                 result = this.arguments.get(i).compareTo(otherArguments.get(i));
@@ -119,7 +122,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     /** Returns the product edge being calculated by this search item. */
-    public ProductEdge getEdge() {
+    public OperatorEdge getEdge() {
         return this.edge;
     }
 
@@ -133,13 +136,15 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     /** The product edge for which we seek an image. */
-    final ProductEdge edge;
+    final OperatorEdge edge;
     /** The operation of the product edge. */
     final Operation operation;
     /** List of operands of the product edge's source node. */
-    final List<ValueNode> arguments;
+    final List<VariableNode> arguments;
     /** The target node of the product edge. */
-    final ValueNode target;
+    final VariableNode target;
+    /** The value of the target node, if it is a constant. */
+    final Object value;
     /** Singleton set consisting of <code>target</code>. */
     final Collection<Node> boundNodes;
     /** Set of the nodes in <code>arguments</code>. */
@@ -178,11 +183,10 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         boolean set() {
             boolean result;
             Object outcome = calculateResult();
-            if (outcome == null
-                || OperatorEdgeSearchItem.this.target.hasValue()
-                && !OperatorEdgeSearchItem.this.target.getValue().equals(
-                    outcome)) {
+            if (outcome == null) {
                 result = false;
+            } else if (OperatorEdgeSearchItem.this.value != null) {
+                result = OperatorEdgeSearchItem.this.value.equals(outcome);
             } else if (OperatorEdgeSearchItem.this.targetFound
                 || this.targetPreMatch != null) {
                 Node targetFind = this.targetPreMatch;
@@ -234,8 +238,6 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                     // and so we cannot match the edge
                     return null;
                 }
-                assert ((ValueNode) operandImage).hasValue() : String.format(
-                    "Graph node %s has no value", operandImage);
                 operands[i] = ((ValueNode) operandImage).getValue();
             }
             try {

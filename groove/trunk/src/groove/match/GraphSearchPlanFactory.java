@@ -23,10 +23,10 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ArgumentEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -236,7 +236,7 @@ public class GraphSearchPlanFactory {
             Iterator<Node> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
                 Node node = unmatchedNodeIter.next();
-                if (node instanceof ValueNode && ((ValueNode) node).hasValue()) {
+                if (node instanceof VariableNode && ((VariableNode) node).isConstant()) {
                     result.add(createNodeSearchItem(node));
                     unmatchedNodeIter.remove();
                 }
@@ -341,12 +341,12 @@ public class GraphSearchPlanFactory {
                 return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem((BinaryEdge) edge);
-            } else if (edge instanceof ProductEdge) {
+            } else if (edge instanceof OperatorEdge) {
                 // constants are more efficiently matched as ValueNodes
-                if (!(((ProductEdge) edge).getOperation() instanceof Constant)) {
-                    return new OperatorEdgeSearchItem((ProductEdge) edge);
+                if (!(((OperatorEdge) edge).getOperation() instanceof Constant)) {
+                    return new OperatorEdgeSearchItem((OperatorEdge) edge);
                 }
-            } else if (edge instanceof AlgebraEdge) {
+            } else if (edge instanceof ArgumentEdge) {
                 return null;
             } else if (edge instanceof BinaryEdge) {
                 return new Edge2SearchItem((BinaryEdge) edge);
@@ -361,8 +361,8 @@ public class GraphSearchPlanFactory {
          * Callback factory method for creating a node search item.
          */
         protected AbstractSearchItem createNodeSearchItem(Node node) {
-            if (node instanceof ValueNode) {
-                return new ValueNodeSearchItem((ValueNode) node);
+            if (node instanceof VariableNode) {
+                return new ValueNodeSearchItem((VariableNode) node);
             } else if (node instanceof ProductNode) {
                 return null;
             } else {

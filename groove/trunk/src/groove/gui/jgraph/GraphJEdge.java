@@ -20,8 +20,8 @@ import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ArgumentEdge;
+import groove.graph.algebra.OperatorEdge;
 import groove.util.Converter;
 
 import java.util.ArrayList;
@@ -286,9 +286,9 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /** This implementation recognises argument and operation edges. */
     @Override
     StringBuilder getEdgeKindDescription() {
-        if (getActualEdge() instanceof AlgebraEdge) {
+        if (getActualEdge() instanceof ArgumentEdge) {
             return new StringBuilder("Argument edge");
-        } else if (getActualEdge() instanceof ProductEdge) {
+        } else if (getActualEdge() instanceof OperatorEdge) {
             return new StringBuilder("Operation edge");
         } else {
             return new StringBuilder("Edge");
