@@ -51,7 +51,6 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
-import groove.gui.UserSettings;
 import groove.io.AspectGxl;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
@@ -3901,8 +3900,7 @@ public class Simulator {
         /** Constructs a fresh history instance. */
         public History() {
             String[] sh =
-                Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(
-                    ",");
+                Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(",");
             for (String p : sh) {
                 this.history.add(p);
             }
@@ -3911,6 +3909,10 @@ public class Simulator {
             this.menu.setMnemonic(Options.OPEN_RECENT_MENU_MNEMONIC);
 
             synchMenu();
+
+            if (this.history.size() > 0) {
+                //openLastFile(this.history.get(0));                
+            }
 
         }
 
@@ -3972,6 +3974,22 @@ public class Simulator {
                 }
             }
             return ret;
+        }
+        
+        private void openLastFile(String p_path){
+            if (p_path != null) {
+                final File f = new File(p_path);
+                if (f.exists()) {                
+                    FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+                    final AspectualViewGps loader = getGrammarLoaderMap().get(filterUsed);
+                
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            doLoadGrammar(loader, f, null);
+                        }
+                    });
+                }
+            }
         }
 
     }
