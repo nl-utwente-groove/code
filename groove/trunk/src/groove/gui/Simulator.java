@@ -51,6 +51,7 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
+import groove.gui.UserSettings;
 import groove.io.AspectGxl;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
@@ -208,6 +209,7 @@ public class Simulator {
      */
     public void start() {
         getFrame().pack();
+        groove.gui.UserSettings.applyUserSettings(this.frame); // Applies previous user settings (mzimakova)
         getFrame().setVisible(true);
     }
 
@@ -914,6 +916,7 @@ public class Simulator {
      * Ends the program.
      */
     void doQuit() {
+        groove.gui.UserSettings.synchSettings(this.frame); // Saves a current user settings (mzimakova)
         if (confirmAbandon(false)) {
             if (REPORT) {
                 try {
