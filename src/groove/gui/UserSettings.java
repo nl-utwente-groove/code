@@ -16,9 +16,12 @@ package groove.gui;
 
 import groove.trans.SystemProperties;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
+import javax.swing.JSplitPane;
 
 /**
  * Program that working with user settings
@@ -72,29 +75,45 @@ public class UserSettings {
          int id_maximize = -1;
          int id_width = -1;
          int id_height = -1;
+         int id_divider = -1;
 
          String[] sh =
              Options.userPrefs.get(SystemProperties.USER_SETTINGS, "").split(",");
          for (String p : sh) {
              user_settings.add(p);
-             id_maximize =
-                 GetIndex(id_maximize, p, "maximization", user_settings.size());
+             id_maximize = GetIndex(id_maximize, p, "maximization", user_settings.size());
              id_width = GetIndex(id_width, p, "width", user_settings.size());
              id_height = GetIndex(id_height, p, "height", user_settings.size());
+             id_divider = GetIndex(id_divider, p, "divider", user_settings.size());
          }
 
-         if ((id_maximize >= 0)
-             & (CheckMaximize(user_settings.get(id_maximize)))) {
-             MyFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-         } else {
-             if ((id_width >= 0) & (GetNumber(user_settings.get(id_width)) > 0)) {
-                 MyFrame.setSize(GetNumber(user_settings.get(id_width)),
-                     MyFrame.getHeight());
+         if (id_maximize >= 0) {
+             if (CheckMaximize(user_settings.get(id_maximize))) {
+                 MyFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);                 
              }
-             if ((id_height >= 0)
-                 & (GetNumber(user_settings.get(id_height)) > 0)) {
-                 MyFrame.setSize(MyFrame.getWidth(),
-                     GetNumber(user_settings.get(id_height)));
+         } else {
+             if (id_width >= 0) {
+                 if (GetNumber(user_settings.get(id_width)) > 0) {
+                     MyFrame.setSize(GetNumber(user_settings.get(id_width)), MyFrame.getHeight());                     
+                 }
+             }
+             if (id_height >= 0) {
+                 if (GetNumber(user_settings.get(id_height)) > 0) {
+                     MyFrame.setSize(MyFrame.getWidth(), GetNumber(user_settings.get(id_height)));                     
+                 }
+             }
+         }
+         
+         if (id_divider >= 0) {
+             if (GetNumber(user_settings.get(id_divider)) > 0) {
+                 Container contentPane = MyFrame.getContentPane();
+                 for (int i=0; i < contentPane.getComponentCount(); i++) {
+                     Component comp = contentPane.getComponent(i);
+                     if (comp instanceof JSplitPane) {
+                         JSplitPane jsp = (JSplitPane) comp;
+                         jsp.setDividerLocation(GetNumber(user_settings.get(id_divider)));
+                     }
+                 }                              
              }
          }
 
@@ -110,6 +129,16 @@ public class UserSettings {
             ret = ret + "width=" + MyFrame.getWidth() + ",";
             ret = ret + "height=" + MyFrame.getHeight() + ",";
         }
+
+        Container contentPane = MyFrame.getContentPane();
+        for (int i=0; i < contentPane.getComponentCount(); i++) {
+            Component comp = contentPane.getComponent(i);
+            if (comp instanceof JSplitPane) {
+                JSplitPane jsp = (JSplitPane) comp;
+                ret = ret + "divider=" + jsp.getDividerLocation() + ",";
+            }
+        }             
+
         if (ret.lastIndexOf(",") == ret.length()) {
             ret = ret.substring(0, ret.length() - 1);
         }
