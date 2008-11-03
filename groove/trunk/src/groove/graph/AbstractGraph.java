@@ -48,7 +48,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         // };
         Morphism result;
         final NodeEdgeMap map =
-            DefaultIsoChecker.getInstance().getIsomorphism(AbstractGraph.this,
+            DefaultIsoChecker.getInstance(true).getIsomorphism(AbstractGraph.this,
                 to);
         if (map != null) {
             result = new DefaultMorphism(this, to) {
@@ -297,8 +297,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         return endCount == 2;
     }
 
-    public CertificateStrategy getCertifier() {
-        return getCache().getCertificateStrategy();
+    public CertificateStrategy getCertifier(boolean strong) {
+        return getCache().getCertificateStrategy(strong);
     }
 
     /**
@@ -402,7 +402,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
 
     /**
      * The current strategy for computing isomorphism certificates.
-     * @see #getCertifier()
+     * @see #getCertifier(boolean)
      */
     static private CertificateStrategy certificateFactory =
         new groove.graph.iso.Bisimulator(null);
@@ -416,7 +416,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     /**
      * Changes the strategy for computing isomorphism certificates.
      * @param certificateFactory the new strategy
-     * @see #getCertifier()
+     * @see #getCertifier(boolean)
      */
     static protected void setCertificateFactory(
             CertificateStrategy certificateFactory) {

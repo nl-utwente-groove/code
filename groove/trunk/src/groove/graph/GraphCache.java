@@ -83,15 +83,15 @@ public class GraphCache extends GraphShapeCache {
     /**
      * Returns a certificate strategy for the current state of this graph. If no
      * strategy is currently cached, it is created by calling
-     * {@link CertificateStrategy#newInstance(Graph)} on
+     * {@link CertificateStrategy#newInstance(Graph, boolean)} on
      * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph
      * is fixed (see {@link Graph#isFixed()}, the strategy is cached.
      */
-    protected CertificateStrategy getCertificateStrategy() {
+    protected CertificateStrategy getCertificateStrategy(boolean strong) {
         CertificateStrategy result = this.certificateStrategy;
-        if (result == null) {
+        if (result == null || result.getStrength() != strong) {
             result =
-                AbstractGraph.getCertificateFactory().newInstance(getGraph());
+                AbstractGraph.getCertificateFactory().newInstance(getGraph(), strong);
             if (this.graph.isFixed()) {
                 this.certificateStrategy = result;
             }

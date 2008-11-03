@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.graph.Element;
 import groove.graph.Node;
 import groove.trans.RuleEvent;
 

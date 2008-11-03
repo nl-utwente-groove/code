@@ -317,11 +317,11 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public CertificateStrategy getCertifier() {
-        if (this.certifier == null || this.certifier.get() == null) {
+    public CertificateStrategy getCertifier(boolean strong) {
+        if (this.certifier == null || this.certifier.get() == null || this.certifier.get().getStrength() != strong) {
             this.certifier =
                 new WeakReference<CertificateStrategy>(
-                    AbstractGraph.getCertificateFactory().newInstance(this));
+                    AbstractGraph.getCertificateFactory().newInstance(this, strong));
         }
         return this.certifier.get();
     }

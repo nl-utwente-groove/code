@@ -42,8 +42,10 @@ public interface Graph extends GraphShape, DeltaTarget {
     /**
      * Returns the certificate strategy object used for this graph. The
      * certificate strategy is used to decide isomorphism between graphs.
+     * @param strong if <code>true</code>, a strong certifier is returned.
+     * @see CertificateStrategy#getStrength()
      */
-    public CertificateStrategy getCertifier();
+    public CertificateStrategy getCertifier(boolean strong);
 
     // --------------------------------- Object overrides
     // ----------------------------

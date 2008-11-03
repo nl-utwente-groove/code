@@ -487,7 +487,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
     }
 
     void computeHashCode() {
-        Object certificate = getCertifier().getGraphCertificate();
+        Object certificate = getCertifier(true).getGraphCertificate();
         this.hashCode = certificate.hashCode();
     }
 

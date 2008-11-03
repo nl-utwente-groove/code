@@ -37,4 +37,10 @@ public interface IsoChecker {
      *         <code>cod</code> are isomorphic
      */
     public boolean areIsomorphic(Graph dom, Graph cod);
+    
+    /** 
+     * Indicates if the checker is currently set to strong.
+     * If the checker is strong, no false negatives will be returned.
+     */
+    public boolean isStrong();
 }

@@ -88,10 +88,18 @@ public interface CertificateStrategy {
     /**
      * Factory method; returns a certificate strategy for a given graph.
      * @param graph the underlying graph for the new certificate strategy.
+     * @param strong if <code>true</code>, a strong certifier is created.
      * @return a fresh certificate strategy for <tt>graph</tt>
+     * @see #getStrength()
      */
-    public CertificateStrategy newInstance(Graph graph);
+    public CertificateStrategy newInstance(Graph graph, boolean strong);
 
+    /** 
+     * Returns the strength of the strategy:
+     * A strong strategy will spend more effort in avoiding false negatives. 
+     */
+    public boolean getStrength();
+    
     /**
      * Type of the certificates constructed by the strategy. A value of this
      * type represents a given graph element in an isomorphism-invariant way.
