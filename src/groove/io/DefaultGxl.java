@@ -542,7 +542,7 @@ public class DefaultGxl extends AbstractXml {
     static public final String LABEL_ATTR_NAME = "label";
     /** Private isomorphism checker, for testing purposes. */
     static private final IsoChecker isoChecker =
-        DefaultIsoChecker.getInstance();
+        DefaultIsoChecker.getInstance(true);
 
     /**
      * The following implementation of <tt>Label</tt> allows us to use graphs

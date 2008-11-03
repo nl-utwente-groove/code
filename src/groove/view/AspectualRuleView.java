@@ -1415,7 +1415,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     static public final RegExprLabel MERGE_LABEL = RegExpr.empty().toLabel();
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker =
-        DefaultIsoChecker.getInstance();
+        DefaultIsoChecker.getInstance(true);
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */

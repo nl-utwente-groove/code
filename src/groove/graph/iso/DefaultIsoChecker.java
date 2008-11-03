@@ -43,9 +43,12 @@ import java.util.TreeSet;
  * @version $Revision$
  */
 public class DefaultIsoChecker implements IsoChecker {
-    /** Empty constructor, for the singleton in stance of this class. */
-    private DefaultIsoChecker() {
-        // empty
+    /** 
+     * Empty constructor, for the singleton instance of this class. 
+     * @param strong if <code>true</code>, the checker will not returns false negatives.
+     */
+    private DefaultIsoChecker(boolean strong) {
+        this.strong = strong;
     }
 
     public boolean areIsomorphic(Graph dom, Graph cod) {
@@ -62,8 +65,8 @@ public class DefaultIsoChecker implements IsoChecker {
             equalGraphsCount++;
             result = true;
         } else {
-            CertificateStrategy domCertifier = dom.getCertifier();
-            CertificateStrategy codCertifier = cod.getCertifier();
+            CertificateStrategy domCertifier = dom.getCertifier(isStrong());
+            CertificateStrategy codCertifier = cod.getCertifier(isStrong());
             if (!domCertifier.getGraphCertificate().equals(
                 codCertifier.getGraphCertificate())) {
                 intCertOverlap++;
@@ -124,10 +127,10 @@ public class DefaultIsoChecker implements IsoChecker {
             // there's sure to be an isomorphism, but we have to add the
             // isolated nodes
             PartitionMap<Node> codPartitionMap =
-                cod.getCertifier().getNodePartitionMap();
+                cod.getCertifier(isStrong()).getNodePartitionMap();
             Set<Node> usedNodeImages = new HashSet<Node>();
             Certificate<Node>[] nodeCerts =
-                dom.getCertifier().getNodeCertificates();
+                dom.getCertifier(isStrong()).getNodeCertificates();
             for (Certificate<Node> nodeCert : nodeCerts) {
                 Node node = nodeCert.getElement();
                 if (!result.containsKey(node)) {
@@ -277,14 +280,14 @@ public class DefaultIsoChecker implements IsoChecker {
             NodeEdgeMap resultMap, Set<Node> usedNodeImages) {
         List<IsoSearchItem> result = new ArrayList<IsoSearchItem>();
         PartitionMap<Edge> codPartitionMap =
-            cod.getCertifier().getEdgePartitionMap();
+            cod.getCertifier(isStrong()).getEdgePartitionMap();
         Map<Edge,Collection<Edge>> remainingEdgeSet =
             new HashMap<Edge,Collection<Edge>>();
         // the set of dom nodes that have an image in result, but whose incident
         // images possibly don't
         Set<Node> connectedNodes = new HashSet<Node>();
         Certificate<Edge>[] edgeCerts =
-            dom.getCertifier().getEdgeCertificates();
+            dom.getCertifier(isStrong()).getEdgeCertificates();
         // collect the pairs of edge keys and edge image sets
         int edgeCount = edgeCerts.length;
         for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
@@ -360,7 +363,7 @@ public class DefaultIsoChecker implements IsoChecker {
         }
         NodeEdgeMap result = new NodeEdgeHashMap();
         PartitionMap<Edge> codPartitionMap =
-            cod.getCertifier().getEdgePartitionMap();
+            cod.getCertifier(isStrong()).getEdgePartitionMap();
         // the mapping has to be injective, so we remember the used cod nodes
         Set<Node> usedNodeImages = new HashSet<Node>();
         // the set of dom nodes that have an image in result, but whose incident
@@ -369,7 +372,7 @@ public class DefaultIsoChecker implements IsoChecker {
         Map<Edge,Collection<Edge>> edgeImageMap =
             new HashMap<Edge,Collection<Edge>>();
         Certificate<Edge>[] edgeCerts =
-            dom.getCertifier().getEdgeCertificates();
+            dom.getCertifier(isStrong()).getEdgeCertificates();
         // construct a mapping from the domain edges
         // to either unique codomain edges or sets of them
         int edgeCount = edgeCerts.length;
@@ -655,9 +658,30 @@ public class DefaultIsoChecker implements IsoChecker {
         return true;
     }
 
-    /** Returns the singleton instance of this class. */
-    static public DefaultIsoChecker getInstance() {
-        return instance;
+    public boolean isStrong() {
+        return this.strong;
+    }
+
+    /**
+     * Sets the checker strength.
+     * @see #isStrong()
+     */
+    public void setStrong(boolean strong) {
+        this.strong = strong;
+    }
+
+    /** 
+     * Flag indicating the strength of the isomorphism check.
+     * If <code>true</code>, no false negatives are returned.
+     */
+    private boolean strong;
+    
+    /** 
+     * Returns the singleton instance of this class.
+     * @param strong if <code>true</code>, the checker will not returns false negatives.
+     */
+    static public DefaultIsoChecker getInstance(boolean strong) {
+        return strong ? strongInstance : weakInstance;
     }
 
     /**
@@ -771,8 +795,10 @@ public class DefaultIsoChecker implements IsoChecker {
         return distinctSimCount;
     }
 
-    /** The singleton instance of this class. */
-    static private final DefaultIsoChecker instance = new DefaultIsoChecker();
+    /** The singleton strong instance of this class. */
+    static private final DefaultIsoChecker strongInstance = new DefaultIsoChecker(true);
+    /** The singleton weak instance of this class. */
+    static private final DefaultIsoChecker weakInstance = new DefaultIsoChecker(false);
     /** The total number of isomorphism checks. */
     static private int totalCheckCount;
     /**
@@ -835,10 +861,10 @@ public class DefaultIsoChecker implements IsoChecker {
 
         public int compareTo(IsoSearchPair o) {
             // lower images set size is better
-            int result = images.size() - o.images.size();
+            int result = this.images.size() - o.images.size();
             if (result == 0) {
                 // no criteria; just take the key edge
-                result = key.compareTo(o.key);
+                result = this.key.compareTo(o.key);
             }
             return result;
         }
@@ -875,10 +901,10 @@ public class DefaultIsoChecker implements IsoChecker {
 
         private int getPreMatchCount() {
             int preMatchCount = 0;
-            if (sourcePreMatched) {
+            if (this.sourcePreMatched) {
                 preMatchCount++;
             }
-            if (targetPreMatched) {
+            if (this.targetPreMatched) {
                 preMatchCount++;
             }
             return preMatchCount;
@@ -886,8 +912,8 @@ public class DefaultIsoChecker implements IsoChecker {
 
         @Override
         public String toString() {
-            return String.format("(%s,%s,%s,%s)", key, images,
-                sourcePreMatched, targetPreMatched);
+            return String.format("(%s,%s,%s,%s)", this.key, this.images,
+                this.sourcePreMatched, this.targetPreMatched);
         }
 
         /** Flag indicating if the key source node has already been matched. */

@@ -565,7 +565,7 @@ public class Groove {
      *         {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
     static public NodeEdgeMap getIsomorphism(Graph source, Graph target) {
-        return DefaultIsoChecker.getInstance().getIsomorphism(source, target);
+        return DefaultIsoChecker.getInstance(true).getIsomorphism(source, target);
     }
 
     /**

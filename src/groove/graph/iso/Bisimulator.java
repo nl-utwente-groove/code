@@ -158,7 +158,7 @@ public class Bisimulator implements CertificateStrategy {
         return this.graphCertificate;
     }
 
-    public CertificateStrategy newInstance(Graph graph) {
+    public CertificateStrategy newInstance(Graph graph, boolean strong) {
         return new Bisimulator(graph);
     }
 
@@ -181,6 +181,11 @@ public class Bisimulator implements CertificateStrategy {
     public Certificate<Edge>[] getEdgeCertificates() {
         getGraphCertificate();
         return this.edgeCerts;
+    }
+    
+    /** Right now only a strong strategy is implemented. */
+    public boolean getStrength() {
+        return true;
     }
 
     /** Computes the node and edge certificate arrays. */

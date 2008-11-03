@@ -276,9 +276,26 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /** Callback factory method for a state set. */
     protected TreeHashSet<GraphState> createStateSet() {
-        return new TreeHashStateSet();
+        return new StateSet(getCollapse());
     }
 
+    /** 
+     * Method to determine the collapse strategy of the state set.
+     * This is determined by {@link SystemRecord#isCollapse()} and
+     * {@link SystemRecord#isCheckIso()}. 
+     */ 
+    protected int getCollapse() {
+        int collapse;
+        if (!getRecord().isCollapse()) {
+            collapse = StateSet.COLLAPSE_NONE;
+        } else if (!getRecord().isCheckIso()) {
+            collapse = StateSet.COLLAPSE_EQUAL;
+        } else {
+            collapse = StateSet.COLLAPSE_ISO_STRONG;
+        }
+        return collapse;
+    }
+    
     @Override
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
@@ -409,11 +426,13 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     // private final boolean storeTransitions;
 
     /** Specialised set implementation for storing states. */
-    protected class TreeHashStateSet extends TreeHashSet<GraphState> {
+    public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
-        TreeHashStateSet() {
+        public StateSet(int collapse) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
+            this.collapse = collapse;  
+            this.checker = DefaultIsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
         }
 
         /**
@@ -423,23 +442,23 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
          */
         @Override
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
-            if (getRecord().isCollapse()) {
+            if (this.collapse == COLLAPSE_NONE) {
+                return stateKey == otherStateKey;
+            } else {
                 // distinct control locations means distinct states
                 if (isDistinctLocations(stateKey, otherStateKey)) {
                     return false;
                 }
                 Graph one = stateKey.getGraph();
                 Graph two = otherStateKey.getGraph();
-                if (getRecord().isCheckIso()) {
-                    // check for graph isomorphism
-                    return this.checker.areIsomorphic(one, two);
-                } else {
+                if (this.collapse == COLLAPSE_EQUAL) {
                     // check for graph equality
                     return one.nodeSet().equals(two.nodeSet())
                         && one.edgeSet().equals(two.edgeSet());
+                } else {
+                    // check for graph isomorphism
+                    return this.checker.areIsomorphic(one, two);
                 }
-            } else {
-                return stateKey == otherStateKey;
             }
         }
 
@@ -461,26 +480,47 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         @Override
         protected int getCode(GraphState stateKey) {
             int result;
-            if (getRecord().isCollapse()) {
-                if (getRecord().isCheckIso()) {
-                    result =
-                        stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
-                } else {
+            if (this.collapse == COLLAPSE_NONE) {
+                result = System.identityHashCode(stateKey);
+            } else {
+                if (this.collapse == COLLAPSE_EQUAL) {
                     Graph graph = stateKey.getGraph();
                     result =
                         graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+                } else {
+                    result =
+                        stateKey.getGraph().getCertifier(true).getGraphCertificate().hashCode();
                 }
                 Object control = stateKey.getLocation();
                 result +=
                     control == null ? 0 : System.identityHashCode(control);
-            } else {
-                result = System.identityHashCode(stateKey);
             }
             return result;
         }
 
         /** The isomorphism checker of the state set. */
-        private final IsoChecker checker = DefaultIsoChecker.getInstance();
+        private final IsoChecker checker;
+        /** The value of the collapse property. */
+        private final int collapse;
+        
+        /** Value for the state collapse property indicating that no states should be collapsed. */
+        static public final int COLLAPSE_NONE = 0;
+        /** Value for the state collapse property indicating that only states with equal graphs should be collapsed. */
+        static public final int COLLAPSE_EQUAL = 1;
+        /** 
+         * Value for the state collapse property indicating that states with isomorphic graphs
+         * should be collapsed, where isomorphism is only weakly tested.
+         * A weak isomorphism test could yield false negatives.
+         * @see IsoChecker#isStrong()
+         */
+        static public final int COLLAPSE_ISO_WEAK = 2;
+        /** 
+         * Value for the state collapse property indicating that states with isomorphic graphs
+         * should be collapsed, where isomorphism is strongly tested.
+         * A strong isomorphism test is more costly than a weak one but will never yield false negatives.
+         * @see IsoChecker#isStrong()
+         */
+        static public final int COLLAPSE_ISO_STRONG = 3;
     }
 
     /**

@@ -471,12 +471,12 @@ public class PatternFamily implements Iterable<GraphPattern> {
     class DefaultGraphPatternHasher implements Hasher<GraphPattern> {
 
         public int getHashCode(GraphPattern p) {
-            return p.graph().getCertifier().getGraphCertificate().hashCode();
+            return p.graph().getCertifier(true).getGraphCertificate().hashCode();
         }
 
         public boolean areEqual(GraphPattern p1, GraphPattern p2) {
             NodeEdgeMap isomorphism =
-                DefaultIsoChecker.getInstance().getIsomorphism(p1.graph(),
+                DefaultIsoChecker.getInstance(true).getIsomorphism(p1.graph(),
                     p2.graph());
             if (isomorphism == null) {
                 return false;

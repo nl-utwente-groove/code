@@ -46,13 +46,18 @@ public class PGTS extends GTS {
 
     @Override
     protected TreeHashSet<GraphState> createStateSet() {
-        return new TreeHashStateSet();
+        return new TreeHashStateSet(getCollapse());
     }
 
-    private final TreeHashSet<GraphState> openStates = new TreeHashStateSet();
+    private final TreeHashSet<GraphState> openStates = new TreeHashStateSet(getCollapse());
 
     /** Specialised set implementation for storing states. */
-    protected class TreeHashStateSet extends GTS.TreeHashStateSet {
+    protected static class TreeHashStateSet extends GTS.StateSet {
+        /** Constructs a state set with a given collapse strategy. */
+        public TreeHashStateSet(int collapse) {
+            super(collapse);
+        }
+
         /**
          * Tests if the Büchi locations are different (in addition to the super
          * test).

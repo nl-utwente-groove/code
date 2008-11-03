@@ -65,7 +65,7 @@ public class Analyzer extends CommandLineTool {
     static private final int ISO = reporter.newMethod("Full isomorphism check");
     static private final int CERT = reporter.newMethod("Certificate check");
     static private final IsoChecker isoChecker =
-        DefaultIsoChecker.getInstance();
+        DefaultIsoChecker.getInstance(true);
 
     public static void main(String[] args) {
         Analyzer analyzer =
