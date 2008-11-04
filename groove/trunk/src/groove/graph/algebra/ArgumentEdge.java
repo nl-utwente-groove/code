@@ -28,9 +28,6 @@ import groove.util.Groove;
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
-// AREND I would call this ArgumentEdge, and include the
-// number (as derived from the label); in fact, I think a constructor
-// with an int rather than a label would be more appropriate
 public class ArgumentEdge extends
         AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
     /** Constructs a fresh edge. */
@@ -42,7 +39,7 @@ public class ArgumentEdge extends
 
     /** Returns the argument number of this edge. */
     public int getNumber() {
-        return this.number;
+        return number;
     }
 
     /** The number of this algebra edge. */

@@ -43,9 +43,10 @@ import java.util.TreeSet;
  * @version $Revision$
  */
 public class DefaultIsoChecker implements IsoChecker {
-    /** 
-     * Empty constructor, for the singleton instance of this class. 
-     * @param strong if <code>true</code>, the checker will not returns false negatives.
+    /**
+     * Empty constructor, for the singleton instance of this class.
+     * @param strong if <code>true</code>, the checker will not returns false
+     *        negatives.
      */
     private DefaultIsoChecker(boolean strong) {
         this.strong = strong;
@@ -670,15 +671,16 @@ public class DefaultIsoChecker implements IsoChecker {
         this.strong = strong;
     }
 
-    /** 
-     * Flag indicating the strength of the isomorphism check.
-     * If <code>true</code>, no false negatives are returned.
+    /**
+     * Flag indicating the strength of the isomorphism check. If
+     * <code>true</code>, no false negatives are returned.
      */
     private boolean strong;
-    
-    /** 
+
+    /**
      * Returns the singleton instance of this class.
-     * @param strong if <code>true</code>, the checker will not returns false negatives.
+     * @param strong if <code>true</code>, the checker will not returns false
+     *        negatives.
      */
     static public DefaultIsoChecker getInstance(boolean strong) {
         return strong ? strongInstance : weakInstance;
@@ -702,11 +704,11 @@ public class DefaultIsoChecker implements IsoChecker {
 
     /**
      * Returns the time spent calculating certificates, certificate maps and
-     * partition maps in {@link Bisimulator}.
+     * partition maps in {@link FreezingBisimulator}.
      */
     static public long getCertifyingTime() {
-        return Bisimulator.reporter.getTotalTime(Bisimulator.COMPUTE_CERTIFICATES)
-            + Bisimulator.reporter.getTotalTime(Bisimulator.GET_PARTITION_MAP);
+        return FreezingBisimulator.reporter.getTotalTime(FreezingBisimulator.COMPUTE_CERTIFICATES)
+            + FreezingBisimulator.reporter.getTotalTime(FreezingBisimulator.GET_PARTITION_MAP);
     }
 
     /**
@@ -796,9 +798,11 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     /** The singleton strong instance of this class. */
-    static private final DefaultIsoChecker strongInstance = new DefaultIsoChecker(true);
+    static private final DefaultIsoChecker strongInstance =
+        new DefaultIsoChecker(true);
     /** The singleton weak instance of this class. */
-    static private final DefaultIsoChecker weakInstance = new DefaultIsoChecker(false);
+    static private final DefaultIsoChecker weakInstance =
+        new DefaultIsoChecker(false);
     /** The total number of isomorphism checks. */
     static private int totalCheckCount;
     /**

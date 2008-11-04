@@ -42,7 +42,7 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.iso.Bisimulator;
+import groove.graph.iso.FreezingBisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
@@ -163,7 +163,7 @@ public class Generator extends CommandLineTool {
             report();
             exit(result);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getGTS().nodeCount());
         } catch (Exception e) {
@@ -561,8 +561,9 @@ public class Generator extends CommandLineTool {
         println("\t\tEqual graphs:\t" + equalGraphCount);
         println("\t\tEqual certificates:\t" + equalCertsCount);
         println("\t\tEqual simulation:\t" + equalSimCount);
-        println("\t\tIterations:\t" + Bisimulator.getIterateCount());
-        println("\t\tSymmetry breaking:\t" + Bisimulator.getSymmetryBreakCount());
+        println("\t\tIterations:\t" + FreezingBisimulator.getIterateCount());
+        println("\t\tSymmetry breaking:\t"
+            + FreezingBisimulator.getSymmetryBreakCount());
     }
 
     /**
@@ -592,7 +593,8 @@ public class Generator extends CommandLineTool {
         long running = DefaultScenario.getRunningTime();
         long overhead = total - running;
         long isoChecking = DefaultIsoChecker.getTotalTime();
-        long generateTime = MatchApplier.getGenerateTime() + StateGenerator.getGenerateTime();
+        long generateTime =
+            MatchApplier.getGenerateTime() + StateGenerator.getGenerateTime();
         long building = generateTime - isoChecking;
         long measuring = Reporter.getTotalTime();
 
@@ -658,8 +660,7 @@ public class Generator extends CommandLineTool {
      * The finalisation phase of state space generation. Called from
      * <tt>{@link #start}</tt>.
      */
-    protected void exit(Collection<? extends Object> result)
-        throws IOException {
+    protected void exit(Collection<? extends Object> result) throws IOException {
         if (getFinalSaveName() != null) {
             if (result.isEmpty()) {
                 System.out.println("No resulting graphs");
@@ -930,8 +931,7 @@ public class Generator extends CommandLineTool {
          */
         public ExploreStrategyParser(boolean closeFast) {
             addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new DFSStrategy(), "Depth first full exploration.",
-                "barbed"));
+                new DFSStrategy(), "Depth first full exploration.", "barbed"));
             addStrategy(GeneratorScenarioFactory.getScenarioHandler(
                 new BFSStrategy(), "Breadth first full exploration.",
                 "branching"));

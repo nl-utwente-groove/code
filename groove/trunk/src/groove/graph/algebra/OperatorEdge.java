@@ -30,7 +30,6 @@ import groove.graph.DefaultLabel;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-// AREND I would call this OperatorEdge and unify it with ValueEdge
 public class OperatorEdge extends
         AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
     /**
@@ -48,7 +47,8 @@ public class OperatorEdge extends
      * @param target the target node for the edge
      * @param operation the associated operation
      */
-    public OperatorEdge(ProductNode source, VariableNode target, Operation operation) {
+    public OperatorEdge(ProductNode source, VariableNode target,
+            Operation operation) {
         super(source, DefaultLabel.createLabel(operation.symbol()), target);
         this.operation = operation;
     }
@@ -59,7 +59,7 @@ public class OperatorEdge extends
      * @return the <code>operation</code> of this <code>ProductEdge</code>
      */
     public Operation getOperation() {
-        return this.operation;
+        return operation;
     }
 
     /**
@@ -69,7 +69,7 @@ public class OperatorEdge extends
      */
     @Deprecated
     public Object getResult() {
-        return this.operation.apply(source().getOperands());
+        return operation.apply(source().getOperands());
     }
 
     @Override
