@@ -440,10 +440,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             if (SearchPlanStrategy.this.injective && !isValueNode) {
                 Node oldImage = this.nodeImages[index];
                 if (oldImage != null) {
-                    this.usedNodes.remove(oldImage);
+                    boolean removed = getUsedNodes().remove(oldImage);
+                    assert removed: String.format("Node image %s not in used nodes %s", oldImage, getUsedNodes());
                 }
-                Set<Node> usedNodes = getUsedNodes();
-                if (image != null && !usedNodes.add(image)) {
+                if (image != null && !getUsedNodes().add(image)) {
+                    this.nodeImages[index] = null;
                     return false;
                 }
             }

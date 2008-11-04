@@ -20,11 +20,15 @@ import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.DFSStrategy;
+import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.LTS;
 import groove.lts.LTSAdapter;
+import groove.lts.State;
 import groove.trans.GraphGrammar;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
@@ -65,7 +69,7 @@ public class GTSComparator {
     static private GTS runScenario1(GraphGrammar grammar) {
         GTS result = new GTS(grammar);
         result.addGraphListener(new GenerateProgressMonitor());
-        Scenario scenario1 = ScenarioFactory.getScenario(new DFSStrategy(), null, null, null);
+        Scenario scenario1 = ScenarioFactory.getScenario(new BFSStrategy(), null, null, null);
         scenario1.prepare(result);
         scenario1.play();
         System.out.printf("%nStates: %d, transitions: %d%n%n", result.nodeCount(), result.edgeCount());
@@ -78,6 +82,14 @@ public class GTSComparator {
         result.addGraphListener(new GenerateProgressMonitor());
         result.addGraphListener(new LTSAdapter() {
             @Override
+            public void closeUpdate(LTS graph, State explored) {
+                GraphState otherState = result1.addState((GraphState) explored);
+                if (otherState.getTransitionSet().size() != ((GraphState) explored).getTransitionSet().size()) {
+                    throw new IllegalStateException();                    
+                }
+            }
+            
+            @Override
             public void addUpdate(GraphShape graph, Node node) {
                 GraphState state = (GraphState) node;
                 if (!result1.containsElement(state)) {
@@ -86,8 +98,17 @@ public class GTSComparator {
                     relation.put(state, result1.getStateSet().put(state));
                 }
             }
+            @Override
+            public void addUpdate(GraphShape graph, Edge edge) {
+                GraphTransition trans = (GraphTransition) edge;
+                if (!result1.containsElement(trans)) {
+                    throw new IllegalStateException();
+                } else {
+//                    relation.put(trans, result1.getStateSet().put(trans));
+                }
+            }
         });
-        Scenario scenario2 = ScenarioFactory.getScenario(new BFSStrategy(), null, null, null);
+        Scenario scenario2 = ScenarioFactory.getScenario(new DFSStrategy(), null, null, null);
         scenario2.prepare(result);
         scenario2.play();
         System.out.printf("%nStates: %d, transitions: %d%n%n", result.nodeCount(), result.edgeCount());

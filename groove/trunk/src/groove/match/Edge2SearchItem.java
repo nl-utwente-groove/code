@@ -319,6 +319,9 @@ class Edge2SearchItem extends AbstractSearchItem {
         boolean setImage(Edge image) {
             assert image instanceof BinaryEdge;
             if (this.sourceFind == null) {
+                // maybe the prospective source image was used as 
+                // target image of this same edge in the previous attempt
+                rollBackTargetImage();
                 if (!this.search.putNode(this.sourceIx, image.source())) {
                     return false;
                 }
@@ -357,16 +360,25 @@ class Edge2SearchItem extends AbstractSearchItem {
         @Override
         public void reset() {
             super.reset();
-            if (this.selected != null) {
-                if (this.setEdge) {
-                    this.search.putEdge(this.edgeIx, null);
-                }
-                if (this.sourceFind == null) {
-                    this.search.putNode(this.sourceIx, null);
-                }
-                if (this.targetFind == null && !Edge2SearchItem.this.selfEdge) {
-                    this.search.putNode(this.targetIx, null);
-                }
+            if (this.setEdge) {
+                this.search.putEdge(this.edgeIx, null);
+            }
+            rollBackSourceImage();
+            rollBackTargetImage();
+            this.selected = null;    
+        }
+
+        /** Rolls back the image set for the source. */
+        private void rollBackSourceImage() {
+            if (this.sourceFind == null) {
+                this.search.putNode(this.sourceIx, null);
+            }
+        }
+        
+        /** Rolls back the image set for the source. */
+        private void rollBackTargetImage() {
+            if (this.targetFind == null && !Edge2SearchItem.this.selfEdge) {
+                this.search.putNode(this.targetIx, null);
             }
         }
 
