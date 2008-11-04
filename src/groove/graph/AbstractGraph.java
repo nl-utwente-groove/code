@@ -48,8 +48,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         // };
         Morphism result;
         final NodeEdgeMap map =
-            DefaultIsoChecker.getInstance(true).getIsomorphism(AbstractGraph.this,
-                to);
+            DefaultIsoChecker.getInstance(true).getIsomorphism(
+                AbstractGraph.this, to);
         if (map != null) {
             result = new DefaultMorphism(this, to) {
                 @Override
@@ -405,7 +405,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @see #getCertifier(boolean)
      */
     static private CertificateStrategy certificateFactory =
-        new groove.graph.iso.Bisimulator(null);
+        new groove.graph.iso.FreezingBisimulator(null);
 
     /**
      * Fixed empty graph.
