@@ -24,6 +24,7 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
+import groove.util.Pair;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
@@ -136,9 +137,7 @@ public class FreezingBisimulator implements CertificateStrategy {
         reporter.start(GET_PARTITION_MAP);
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
-        int bound =
-            USE_EDGE1_CERTIFICATES ? this.edgeCerts.length
-                    : this.edge2CertCount;
+        int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
@@ -153,8 +152,11 @@ public class FreezingBisimulator implements CertificateStrategy {
     public Object getGraphCertificate() {
         reporter.start(GET_GRAPH_CERTIFICATE);
         // check if the certificate has been computed before
-        if (this.graphCertificate == null) {
+        if (this.graphCertificate == 0) {
             computeCertificates();
+            if (this.graphCertificate == 0) {
+                this.graphCertificate = 1;
+            }
         }
         reporter.stop();
         // return the computed certificate
@@ -265,19 +267,13 @@ public class FreezingBisimulator implements CertificateStrategy {
             + this.otherNodeCertMap + "; so not in the node set "
             + this.graph.nodeSet() + " of " + this.graph;
         if (edge instanceof UnaryEdge || source == edge.opposite()) {
-            if (USE_EDGE1_CERTIFICATES) {
-                Edge1Certificate edge1Cert =
-                    new Edge1Certificate(edge, sourceCert);
-                this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
-                    edge1Cert;
-                this.edge1CertCount++;
-                assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
-                    "%s unary and %s binary edges do not equal %s edges",
-                    this.edge1CertCount, this.edge2CertCount,
-                    this.edgeCerts.length);
-            } else {
-                sourceCert.addValue(edge.label().hashCode());
-            }
+            Edge1Certificate edge1Cert = new Edge1Certificate(edge, sourceCert);
+            this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
+                edge1Cert;
+            this.edge1CertCount++;
+            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
+                "%s unary and %s binary edges do not equal %s edges",
+                this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
             NodeCertificate targetCert = getNodeCert(edge.opposite());
             assert targetCert != null : "Edge target of " + edge
@@ -337,51 +333,49 @@ public class FreezingBisimulator implements CertificateStrategy {
         }
     }
 
-    /** Iterates node certificates until this results in a stable partitioning. */
+    /** 
+     * Iterates node certificates until this results in a stable partitioning.
+     */
     private void iterateCertificates() {
         // get local copies of attributes for speedup
         TreeHashSet<NodeCertificate> certStore = FreezingBisimulator.certStore;
         int nodeCertCount = this.nodeCertCount;
-        // count of certificates that get frozen
-        int frozenNodeCount = 0;
         int partitionCount = 0;
-        int certificateValue;
+        long graphCertificate = this.graphCertificate;
         // collect and then count the number of certificates
         boolean goOn;
         int iterateCount = 0;
         int breakSymmetryCount = 0;
         do {
             reporter.start(ITERATE_CERTIFICATES);
-            certificateValue = nodeCertCount;
+            graphCertificate = nodeCertCount;
             certStore.clear();
             // first compute the new edge certificates
             for (int i = 0; i < this.edge2CertCount; i++) {
                 Certificate<Edge> edgeCert = this.edgeCerts[i];
-                certificateValue += edgeCert.setNewValue();
+                graphCertificate += edgeCert.setNewValue();
             }
             // now compute the new node certificates
             // while keeping track of the lowest value, in case
             // we need to break symmetry
             int minCertValue = Integer.MAX_VALUE;
             NodeCertificate minCert = null;
-            int newFrozenNodeCount = 0;
+            int frozenNodeCount = 0;
             for (int i = 0; i < nodeCertCount; i++) {
                 NodeCertificate nodeCert = this.nodeCerts[i];
                 int newCert = nodeCert.setNewValue();
-                if (iterateCount > 0 && partitionCount < nodeCertCount
-                    && !nodeCert.isFrozen()) {
+                if (iterateCount > 0 && partitionCount < nodeCertCount) {
+                    if (nodeCert.isFrozen()) {
+                        frozenNodeCount++;
+                    } else {
                     NodeCertificate oldCertForValue = certStore.put(nodeCert);
                     if (oldCertForValue == null) {
                         // assume this certificate will remain unique and freeze
                         // it
                         nodeCert.freeze(iterateCount + 1);
-                        newFrozenNodeCount++;
                     } else {
-                        // the original certificate should be un frozen
-                        if (oldCertForValue.isFrozen()) {
-                            oldCertForValue.freeze(0);
-                            newFrozenNodeCount--;
-                        }
+                        // the original certificate should be unfrozen
+                        oldCertForValue.freeze(0);
                         // this certificate is a duplicate; maybe it is the
                         // smallest
                         if (BREAK_SYMMETRIES && newCert < minCertValue
@@ -390,11 +384,11 @@ public class FreezingBisimulator implements CertificateStrategy {
                             minCert = nodeCert;
                         }
                     }
+                    }
                 }
-                certificateValue += newCert;
+                graphCertificate += newCert;
             }
             int newPartitionCount = certStore.size() + frozenNodeCount;
-            frozenNodeCount += newFrozenNodeCount;
             // break symmetry if we have converged on a partition count
             // lower than the node count
             if (BREAK_SYMMETRIES && iterateCount > 0
@@ -425,23 +419,21 @@ public class FreezingBisimulator implements CertificateStrategy {
             iterateCount++;
             reporter.stop();
         } while (goOn);
-        this.nodePartitionCount = partitionCount;
-        this.graphCertificate = new Long(certificateValue);
-        if (USE_EDGE1_CERTIFICATES) {
-            // so far we have done nothing with the flags, so
-            // give them a chance to get their hash code right
-            int edgeCount = this.edgeCerts.length;
-            for (int i = this.edge2CertCount; i < edgeCount; i++) {
-                this.edgeCerts[i].setNewValue();
-            }
+        // so far we have done nothing with the flags, so
+        // give them a chance to get their hash code right
+        int edgeCount = this.edgeCerts.length;
+        for (int i = this.edge2CertCount; i < edgeCount; i++) {
+            this.edgeCerts[i].setNewValue();
         }
+        this.graphCertificate = graphCertificate;
+        this.nodePartitionCount = partitionCount;
         recordIterateCount(iterateCount);
     }
 
     /** The underlying graph */
     private final Graph graph;
     /** The pre-computed graph certificate, if any. */
-    private Object graphCertificate;
+    private long graphCertificate;
     /** The pre-computed certificate map, if any. */
     private Map<Element,Certificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */
@@ -543,8 +535,6 @@ public class FreezingBisimulator implements CertificateStrategy {
                 return key.getValue();
             }
         };
-    /** Debug flag to switch the use of {@link Edge1Certificate}s on and off. */
-    static private final boolean USE_EDGE1_CERTIFICATES = false;
     /** Debug flag to switch the use symmetry breaking on and off. */
     static private final boolean BREAK_SYMMETRIES = false;
     /**
