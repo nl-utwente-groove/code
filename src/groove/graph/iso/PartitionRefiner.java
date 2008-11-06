@@ -24,33 +24,46 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
-import groove.util.Pair;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Implements an algorithm to partition a given graph into sets of bisimilar
+ * Implements an algorithm to partition a given graph into sets of symmetric
  * graph elements (i.e., nodes and edges). The result is available as a mapping
- * from graph elements to "certificate" objects; two edges are bisimilar if they
- * map to the same (i.e., <tt>equal</tt>) certificate. The difference with
- * the {@link Bisimulator} is that here the node certificates are "frozen" when
- * they are found to be in an equivalence class of their own.
+ * from graph elements to "certificate" objects; two edges are predicted to be
+ * symmetric if they map to the same (i.e., <tt>equal</tt>) certificate. This
+ * strategy goes beyond bisimulation in that it breaks all apparent symmetries 
+ * in all possible ways and accumulates the results.
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class FreezingBisimulator implements CertificateStrategy {
+public class PartitionRefiner implements CertificateStrategy {
+    /**
+     * Constructs a new bisimulation strategy, on the basis of a given graph.
+     * The strategy checks for isomorphism weakly, meaning that it might yield false negatives.
+     * @param graph the underlying graph for the bisimulation strategy; should
+     *        not be <tt>null</tt>
+     */
+    public PartitionRefiner(Graph graph) {
+        this(graph,false);
+    }
+
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
+     * @param strong if <code>true</code>, the strategy puts more effort into getting
+     * distinct certificates.
      */
-    public FreezingBisimulator(Graph graph) {
+    public PartitionRefiner(Graph graph, boolean strong) {
         this.graph = graph;
+        this.strong = strong;
     }
 
     public Graph getGraph() {
@@ -164,7 +177,7 @@ public class FreezingBisimulator implements CertificateStrategy {
     }
 
     public CertificateStrategy newInstance(Graph graph, boolean strong) {
-        return new FreezingBisimulator(graph);
+        return new PartitionRefiner(graph);
     }
 
     /**
@@ -197,7 +210,37 @@ public class FreezingBisimulator implements CertificateStrategy {
     synchronized private void computeCertificates() {
         // we compute the certificate map
         initCertificates();
+        // first iteration
         iterateCertificates();
+        // check if duplicate
+        if ((this.strong || BREAK_DUPLICATES) && this.nodePartitionCount < this.nodeCertCount) {
+            // now look for smallest unbroken duplicate certificate (if any)
+            int oldPartitionCount;
+            do {
+                oldPartitionCount = this.nodePartitionCount;
+                checkpointCertificates();
+                List<NodeCertificate> duplicates = getSmallestDuplicates();
+                // successively break the symmetry at each of these
+                for (NodeCertificate duplicate: duplicates) {
+                    duplicate.breakSymmetry();
+                    iterateCertificates();
+                    rollBackCertificates();
+                    this.nodePartitionCount = oldPartitionCount;
+                }
+                accumulateCertificates();
+                // calculate the edge and node certificates once more
+                // to push out the accumulated node values and get the correct
+                // node partition count
+                advanceEdgeCerts();
+                advanceNodeCerts(true);
+            } while (this.nodePartitionCount < this.nodeCertCount && this.nodePartitionCount > oldPartitionCount);
+        }
+        // so far we have done nothing with the self-edges, so
+        // give them a chance to get their value right
+        int edgeCount = this.edgeCerts.length;
+        for (int i = this.edge2CertCount; i < edgeCount; i++) {
+            this.edgeCerts[i].setNewValue();
+        }
         reporter.stop();
     }
 
@@ -338,100 +381,130 @@ public class FreezingBisimulator implements CertificateStrategy {
      */
     private void iterateCertificates() {
         // get local copies of attributes for speedup
-        TreeHashSet<NodeCertificate> certStore = FreezingBisimulator.certStore;
         int nodeCertCount = this.nodeCertCount;
-        int partitionCount = 0;
-        long graphCertificate = this.graphCertificate;
         // collect and then count the number of certificates
         boolean goOn;
-        int iterateCount = 0;
-        int breakSymmetryCount = 0;
         do {
             reporter.start(ITERATE_CERTIFICATES);
-            graphCertificate = nodeCertCount;
-            certStore.clear();
+            int oldPartitionCount = this.nodePartitionCount;
             // first compute the new edge certificates
-            for (int i = 0; i < this.edge2CertCount; i++) {
-                Certificate<Edge> edgeCert = this.edgeCerts[i];
-                graphCertificate += edgeCert.setNewValue();
-            }
-            // now compute the new node certificates
-            // while keeping track of the lowest value, in case
-            // we need to break symmetry
-            int minCertValue = Integer.MAX_VALUE;
-            NodeCertificate minCert = null;
-            int frozenNodeCount = 0;
-            for (int i = 0; i < nodeCertCount; i++) {
-                NodeCertificate nodeCert = this.nodeCerts[i];
-                int newCert = nodeCert.setNewValue();
-                if (iterateCount > 0 && partitionCount < nodeCertCount) {
-                    if (nodeCert.isFrozen()) {
-                        frozenNodeCount++;
-                    } else {
-                    NodeCertificate oldCertForValue = certStore.put(nodeCert);
-                    if (oldCertForValue == null) {
-                        // assume this certificate will remain unique and freeze
-                        // it
-                        nodeCert.freeze(iterateCount + 1);
-                    } else {
-                        // the original certificate should be unfrozen
-                        oldCertForValue.freeze(0);
-                        // this certificate is a duplicate; maybe it is the
-                        // smallest
-                        if (BREAK_SYMMETRIES && newCert < minCertValue
-                            || minCert == null) {
-                            minCertValue = newCert;
-                            minCert = nodeCert;
-                        }
-                    }
-                    }
-                }
-                graphCertificate += newCert;
-            }
-            int newPartitionCount = certStore.size() + frozenNodeCount;
-            // break symmetry if we have converged on a partition count
-            // lower than the node count
-            if (BREAK_SYMMETRIES && iterateCount > 0
-                && newPartitionCount == partitionCount
-                && newPartitionCount < nodeCertCount) {
-                minCert.breakSymmetry();
-                breakSymmetryCount++;
-                totalSymmetryBreakCount++;
-            }
+            advanceEdgeCerts();
+            advanceNodeCerts(this.iterateCount > 0 && this.nodePartitionCount < nodeCertCount);
             // we stop the iteration when the number of partitions has not grown
             // moreover, when the number of partitions equals the number of
             // nodes then
             // it cannot grow, so we might as well stop straight away
-            // note, however, that doing so gives rise to more false positives
-            // which, on the other hand, are easily recognisable as such
-            if (iterateCount == 0) {
+            if (this.iterateCount == 0) {
                 goOn = true;
-            } else if (BREAK_SYMMETRIES) {
-                goOn =
-                    newPartitionCount < nodeCertCount
-                        && breakSymmetryCount < MAX_BREAK_SYMMETRY;
             } else {
-                goOn = newPartitionCount > partitionCount;
+                goOn = this.nodePartitionCount > oldPartitionCount;
             }
-            if (partitionCount < nodeCertCount) {
-                partitionCount = newPartitionCount;
-            }
-            iterateCount++;
+            this.iterateCount++;
             reporter.stop();
         } while (goOn);
-        // so far we have done nothing with the flags, so
-        // give them a chance to get their hash code right
-        int edgeCount = this.edgeCerts.length;
-        for (int i = this.edge2CertCount; i < edgeCount; i++) {
-            this.edgeCerts[i].setNewValue();
-        }
-        this.graphCertificate = graphCertificate;
-        this.nodePartitionCount = partitionCount;
-        recordIterateCount(iterateCount);
+        recordIterateCount(this.iterateCount);
     }
 
+    /** 
+     * Calls {@link Certificate#setNewValue()} on all edge certificates.
+     */
+    private void advanceEdgeCerts() {
+        for (int i = 0; i < this.edge2CertCount; i++) {
+            Certificate<Edge> edgeCert = this.edgeCerts[i];
+            this.graphCertificate += edgeCert.setNewValue();
+        }
+    }
+
+    /** 
+     * Calls {@link Certificate#setNewValue()} on all node certificates.
+     * Also calculates the certificate store on demand. 
+     * @param store if <code>true</code>, {@link #certStore} and {@link #nodePartitionCount} are recalculated
+     */
+    private void advanceNodeCerts(boolean store) {
+        certStore.clear();
+        for (int i = 0; i < this.nodeCertCount; i++) {
+            NodeCertificate nodeCert = this.nodeCerts[i];
+            this.graphCertificate += nodeCert.setNewValue();
+            if (store) {
+                NodeCertificate oldCertForValue = certStore.put(nodeCert);
+                if (!nodeCert.isSingular()) {
+                    if (oldCertForValue == null) {
+                        // assume this certificate is singular
+                        nodeCert.setSingular(this.iterateCount);
+                    } else {
+                        // the original certificate was not singular
+                        oldCertForValue.setSingular(0);
+                    }
+                }
+            }
+        }
+        if (store) {
+            this.nodePartitionCount = certStore.size();
+        }
+    }
+
+    /** Calls {@link Certificate#setCheckpoint()} on all node and edge certificates. */
+    private void checkpointCertificates() {
+        for (NodeCertificate nodeCert: this.nodeCerts) {
+            nodeCert.setCheckpoint();
+        }
+        for (int i = 0; i < this.edge2CertCount; i++) {
+            Certificate<Edge> edgeCert = this.edgeCerts[i];
+            edgeCert.setCheckpoint();
+        }
+    }
+
+    /** Calls {@link Certificate#rollBack()} on all node and edge certificates. */
+    private void rollBackCertificates() {
+        for (NodeCertificate nodeCert: this.nodeCerts) {
+            nodeCert.rollBack();
+        }
+        for (int i = 0; i < this.edge2CertCount; i++) {
+            Certificate<Edge> edgeCert = this.edgeCerts[i];
+            edgeCert.rollBack();
+        }
+    }
+
+    /** Calls {@link Certificate#accumulate(int)} on all node and edge certificates. */
+    private void accumulateCertificates() {
+        for (NodeCertificate nodeCert: this.nodeCerts) {
+            nodeCert.accumulate(this.iterateCount);
+        }
+        for (int i = 0; i < this.edge2CertCount; i++) {
+            Certificate<Edge> edgeCert = this.edgeCerts[i];
+            edgeCert.accumulate(this.iterateCount);
+        }
+    }
+
+    /** Returns the list of duplicate certificates with the smallest value. */
+    private List<NodeCertificate> getSmallestDuplicates() {
+        List<NodeCertificate> result = new LinkedList<NodeCertificate>();
+        NodeCertificate minCert = null;
+        for (NodeCertificate cert: this.nodeCerts) {
+            if (!cert.isSingular()) {
+                if (minCert == null) {
+                    minCert = cert;
+                    result.add(cert);
+                } else if (cert.getValue() < minCert.getValue()) {
+                    minCert = cert;
+                    result.clear();
+                    result.add(cert);
+                } else if (cert.getValue() == minCert.getValue()) {
+                    result.add(cert);
+                }
+            }
+        }
+        assert result.size() != 1;
+        return result;
+    }
+    
     /** The underlying graph */
     private final Graph graph;
+    /** 
+     * Flag to indicate that more effort should be put into 
+     * obtaining distinct certificates.
+     */
+    private final boolean strong;
     /** The pre-computed graph certificate, if any. */
     private long graphCertificate;
     /** The pre-computed certificate map, if any. */
@@ -467,7 +540,8 @@ public class FreezingBisimulator implements CertificateStrategy {
     private int edge1CertCount;
     /** Map from nodes that are not {@link DefaultNode}s to node certificates. */
     private Map<Node,NodeCertificate> otherNodeCertMap;
-
+    /** Total number of iterations in {@link #iterateCertificates()}. */ 
+    private int iterateCount;
     /** Array of default node certificates. */
 
     /**
@@ -477,7 +551,7 @@ public class FreezingBisimulator implements CertificateStrategy {
      */
     static public List<Integer> getIterateCount() {
         List<Integer> result = new ArrayList<Integer>();
-        for (int element : iterateCount) {
+        for (int element : iterateCountArray) {
             result.add(element);
         }
         return result;
@@ -499,23 +573,19 @@ public class FreezingBisimulator implements CertificateStrategy {
      * @param count the number of iterations
      */
     static private void recordIterateCount(int count) {
-        if (iterateCount.length < count + 1) {
+        if (iterateCountArray.length < count + 1) {
             int[] newIterateCount = new int[count + 1];
-            System.arraycopy(iterateCount, 0, newIterateCount, 0,
-                iterateCount.length);
-            iterateCount = newIterateCount;
+            System.arraycopy(iterateCountArray, 0, newIterateCount, 0,
+                iterateCountArray.length);
+            iterateCountArray = newIterateCount;
         }
-        iterateCount[count]++;
+        iterateCountArray[count]++;
     }
 
     /**
      * The resolution of the tree-based certificate store.
      */
     static private final int TREE_RESOLUTION = 3;
-    /**
-     * The maximum number of times a symmetry breaking step will be undertaken.
-     */
-    static private final int MAX_BREAK_SYMMETRY = 10;
     /**
      * Store for node certificates, to count the number of partitions
      */
@@ -535,12 +605,13 @@ public class FreezingBisimulator implements CertificateStrategy {
                 return key.getValue();
             }
         };
-    /** Debug flag to switch the use symmetry breaking on and off. */
-    static private final boolean BREAK_SYMMETRIES = false;
+        
+    /** Debug flag to switch the use of duplicate breaking on and off. */
+    static private final boolean BREAK_DUPLICATES = true; 
     /**
      * Array to record the number of iterations done in computing certificates.
      */
-    static private int[] iterateCount = new int[0];
+    static private int[] iterateCountArray = new int[0];
     /** Array for storing default node certificates. */
     static private NodeCertificate[] defaultNodeCerts =
         new NodeCertificate[DefaultNode.getNodeCount()];
@@ -551,20 +622,13 @@ public class FreezingBisimulator implements CertificateStrategy {
 
     // --------------------------- reporter definitions ---------------------
     /** Reporter instance to profile methods of this class. */
-    static public final Reporter reporter =
-        Reporter.register(FreezingBisimulator.class);
+    static public final Reporter reporter = DefaultIsoChecker.reporter;
     /** Handle to profile {@link #computeCertificates()}. */
     static public final int COMPUTE_CERTIFICATES =
         reporter.newMethod("computeCertificates()");
     /** Handle to profile {@link #initCertificates()}. */
     static protected final int INIT_CERTIFICATES =
         reporter.newMethod("initCertificates()");
-    /** Handle to profile nested node certification. */
-    static protected final int NODE_CERTS =
-        reporter.newMethod("Nested node certs");
-    /** Handle to profile nested edge certification. */
-    static protected final int EDGE_CERTS =
-        reporter.newMethod("Nested edge certs");
     /** Handle to profile {@link #initNodeCert(Node)}. */
     static protected final int INIT_CERT_NODE =
         reporter.newMethod("initCertNode()");
@@ -645,9 +709,41 @@ public class FreezingBisimulator implements CertificateStrategy {
         public E getElement() {
             return this.element;
         }
+        
+        /** 
+         * Sets a checkpoint that we can later roll back to.
+         */
+        public void setCheckpoint() {
+            this.checkpointValue = this.value;
+        }
+        
+        /**
+         * Rolls back the value to that frozen at the latest checkpoint.
+         */
+        public void rollBack() {
+            this.cumulativeValue += this.value;
+            this.value = this.checkpointValue;
+        }
 
+        /** 
+         * Combines the accumulated intermediate values collected 
+         * at rollback, and adds them to the actual value.
+         * @param round the iteration round
+         */
+        public void accumulate(int round) {
+            this.value += this.cumulativeValue;
+            this.cumulativeValue = 0;
+        }
+        
         /** The current value, which determines the hash code. */
         protected int value;
+        /** The value as frozen at the last call of {@link #setCheckpoint()}. */
+        private int checkpointValue;
+        /** 
+         * The cumulative values as calculated during the {@link #rollBack()}s
+         * after the last {@link #setCheckpoint()}.
+         */
+        private int cumulativeValue;
         /** The element for which this is a certificate. */
         private final E element;
     }
@@ -658,7 +754,7 @@ public class FreezingBisimulator implements CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static private class NodeCertificate extends Certificate<Node> {
+    static class NodeCertificate extends Certificate<Node> {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -684,14 +780,24 @@ public class FreezingBisimulator implements CertificateStrategy {
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof NodeCertificate
-                && (this.freezeRound == ((NodeCertificate) obj).freezeRound)
-                && (this.value == ((NodeCertificate) obj).value);
+            if (obj instanceof NodeCertificate && this.singularRound == ((NodeCertificate) obj).singularRound) {
+                if (this.singularRound == 0) {
+                    return this.value == ((NodeCertificate) obj).value;
+                } else {
+                    return this.singularValue == ((NodeCertificate) obj).singularValue;
+                }
+            } else {
+                return false;
+            }
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode() + this.freezeRound;
+            if (this.singularRound == 0) {
+                return super.hashCode();
+            } else {
+                return this.singularValue + this.singularRound;
+            }
         }
 
         /**
@@ -728,30 +834,66 @@ public class FreezingBisimulator implements CertificateStrategy {
         }
 
         /**
-         * Freezes the certificate at a certain round.
-         * @param round the round at which the certificate is frozen; if
-         *        <code>0</code>, it is unfrozen.
+         * Signals that the certificate has become singular at a certain round.
+         * @param round the round at which the certificate is set to singular; if
+         *        <code>0</code>, it is still duplicate.
          */
-        protected void freeze(int round) {
-            this.freezeRound = round;
+        protected void setSingular(int round) {
+            this.singularRound = round;
+            this.singularValue = getValue();
         }
 
         /**
-         * Returns the round at which this certificate was frozen, or
-         * <code>0</code> if it was not yet frozen.
+         * Signals if the certificate is singular or duplicate.
          */
-        protected boolean isFrozen() {
-            return this.freezeRound > 0;
+        protected boolean isSingular() {
+            return this.singularRound > 0;
+        }
+        
+        /** We also have to checkpoint the singularity information. */
+        @Override
+        public void setCheckpoint() {
+            super.setCheckpoint();
+            this.checkpointSingularRound = this.singularRound;
+            this.checkpointSingularValue = this.singularValue;
+        }
+
+        /** We also have to roll back the singularity information. */
+        @Override
+        public void rollBack() {
+            super.rollBack();
+            this.cumulativeSingular |= isSingular();
+            this.singularRound = this.checkpointSingularRound;
+            this.singularValue = this.checkpointSingularValue;
+        }
+
+        @Override
+        public void accumulate(int round) {
+            super.accumulate(round);
+            if (this.cumulativeSingular && !isSingular()) {
+                setSingular(round);
+            }
         }
 
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
         /**
-         * Round at which the certificate has been frozen; if <code>0</code>,
-         * it hasn't been frozen.
+         * Round at which the certificate has been set to singular; if <code>0</code>,
+         * it is duplicate.
          */
-        protected int freezeRound;
-
+        protected int singularRound;
+        /** 
+         * Frozen certificate value when the certificate was set to singular.
+         * If the certificate is singular, this is the value that will be used
+         * as a criterion for equality. 
+         */
+        private int singularValue;
+        /** The value of {@link #singularRound} as frozen at the last checkpoint. */
+        private int checkpointSingularRound;
+        /** The value of {@link #singularValue} as frozen at the last checkpoint. */
+        private int checkpointSingularValue;
+        /** Stores whether the certificate ever became singular between checkpoints. */
+        private boolean cumulativeSingular;
     }
 
     /**
@@ -760,7 +902,7 @@ public class FreezingBisimulator implements CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static private class ValueNodeCertificate extends NodeCertificate {
+    static class ValueNodeCertificate extends NodeCertificate {
         /**
          * Constructs a new certificate node. The incidence count (i.e., the
          * number of incident edges) is passed in as a parameter. The initial
@@ -802,7 +944,7 @@ public class FreezingBisimulator implements CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static private class Edge2Certificate extends Certificate<Edge> {
+    static class Edge2Certificate extends Certificate<Edge> {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
@@ -904,7 +1046,7 @@ public class FreezingBisimulator implements CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static private class Edge1Certificate extends Certificate<Edge> {
+    static class Edge1Certificate extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public Edge1Certificate(Edge edge, NodeCertificate source) {
             super(edge);

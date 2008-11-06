@@ -31,96 +31,16 @@ import java.util.Set;
  */
 public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
         Bag<T> {
-    /**
-     * Models the multiplicity of an element in a bag. The multiplicity value is
-     * initially 1, and never becomes zero.
-     */
-    protected class MyMultiplicity implements Multiplicity, Cloneable,
-            Comparable<Object> {
-        /**
-         * Constructs a fresh multiplicity, with initial value 1.
-         * @ensure <tt>getValue() == 1</tt>
-         */
-        protected MyMultiplicity() {
-            this.value = 1;
-            incSize();
-        }
-
-        /**
-         * Returns the current multiplicity value.
-         * @return The multiplicity value
-         * @ensure <tt>result > 0</tt>
-         */
-        public int getValue() {
-            assert this.value >= 0;
-            return this.value;
-        }
-
-        @Override
-        public String toString() {
-            return "" + this.value;
-        }
-
-        // ------------------------ object overrides --------------------
-
-        /** Returns the current multiplicity value as a hash code. */
-        @Override
-        public int hashCode() {
-            return this.value;
-        }
-
-        /**
-         * Two <tt>Multiplicity</tt> objects are considered equal if they
-         * contain the same values.
-         */
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof HashBag.MyMultiplicity
-                && ((MyMultiplicity) obj).value == this.value;
-        }
-
-        @Override
-        public MyMultiplicity clone() {
-            try {
-                return (MyMultiplicity) super.clone();
-            } catch (CloneNotSupportedException exc) {
-                assert false;
-                return null;
-            }
-        }
-
-        public int compareTo(Object o) {
-            return hashCode() - o.hashCode();
-        }
-
-        /**
-         * Increases the multiplicity value by 1.
-         */
-        protected int inc() {
-            this.value++;
-            incSize();
-            assert this.value > 0;
-            return this.value;
-        }
-
-        /**
-         * Decreases the multiplicity value by 1. If the multiplicity becomes
-         * zero, it should be removed from the bag.
-         */
-        protected int dec() {
-            assert this.value > 0;
-            this.value--;
-            decSize();
-            return this.value;
-        }
-
-        /**
-         * The current multiplicity value.
-         * @invariant <tt>value > 0</tt>
-         */
-        private int value;
+    /** Constructs an empty bag. */
+    public HashBag() {
+        // empty
     }
-
+    
+    /** Constructs a bag from an existing collection. */
+    public HashBag(Collection<T> input) {
+        addAll(input);
+    }
+    
     @Override
     public boolean contains(Object key) {
         return this.bag.containsKey(key);
@@ -362,4 +282,94 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      * @invariant <tt>size == computeSize()</tt>
      */
     private int size;
+
+    /**
+     * Models the multiplicity of an element in a bag. The multiplicity value is
+     * initially 1, and never becomes zero.
+     */
+    protected class MyMultiplicity implements Multiplicity, Cloneable,
+            Comparable<Object> {
+        /**
+         * Constructs a fresh multiplicity, with initial value 1.
+         * @ensure <tt>getValue() == 1</tt>
+         */
+        protected MyMultiplicity() {
+            this.value = 1;
+            incSize();
+        }
+
+        /**
+         * Returns the current multiplicity value.
+         * @return The multiplicity value
+         * @ensure <tt>result > 0</tt>
+         */
+        public int getValue() {
+            assert this.value >= 0;
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            return "" + this.value;
+        }
+
+        // ------------------------ object overrides --------------------
+
+        /** Returns the current multiplicity value as a hash code. */
+        @Override
+        public int hashCode() {
+            return this.value;
+        }
+
+        /**
+         * Two <tt>Multiplicity</tt> objects are considered equal if they
+         * contain the same values.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof HashBag.MyMultiplicity
+                && ((MyMultiplicity) obj).value == this.value;
+        }
+
+        @Override
+        public MyMultiplicity clone() {
+            try {
+                return (MyMultiplicity) super.clone();
+            } catch (CloneNotSupportedException exc) {
+                assert false;
+                return null;
+            }
+        }
+
+        public int compareTo(Object o) {
+            return hashCode() - o.hashCode();
+        }
+
+        /**
+         * Increases the multiplicity value by 1.
+         */
+        protected int inc() {
+            this.value++;
+            incSize();
+            assert this.value > 0;
+            return this.value;
+        }
+
+        /**
+         * Decreases the multiplicity value by 1. If the multiplicity becomes
+         * zero, it should be removed from the bag.
+         */
+        protected int dec() {
+            assert this.value > 0;
+            this.value--;
+            decSize();
+            return this.value;
+        }
+
+        /**
+         * The current multiplicity value.
+         * @invariant <tt>value > 0</tt>
+         */
+        private int value;
+    }
 }
