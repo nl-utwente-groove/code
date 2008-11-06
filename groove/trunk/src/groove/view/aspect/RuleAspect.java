@@ -352,7 +352,7 @@ public class RuleAspect extends AbstractAspect {
             REMARK.setSourceToEdge(REMARK);
             REMARK.setTargetToEdge(REMARK);
             // incompatibilities
-            instance.setIncompatible(NestingAspect.getInstance());
+//            instance.setIncompatible(NestingAspect.getInstance());
             VALUE_COUNT = instance.getValues().size();
         } catch (FormatException exc) {
             throw new Error("Aspect '" + RULE_ASPECT_NAME

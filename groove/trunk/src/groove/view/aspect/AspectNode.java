@@ -106,8 +106,7 @@ public class AspectNode extends DefaultNode implements AspectElement {
     }
 
     /**
-     * Returns the map from aspects to aspect values for this edge, lazily
-     * creating it first.
+     * Returns the map from aspects to aspect values for this edge.
      */
     public AspectMap getAspectMap() {
         return this.aspectMap;
@@ -118,8 +117,7 @@ public class AspectNode extends DefaultNode implements AspectElement {
      */
     private final AspectMap aspectMap;
     /**
-     * The internal map from aspects to corresponding (explicitly declared)
-     * values.
+     * The set of explicitly declared aspect values.
      */
     private final Set<AspectValue> declaredAspectValues;
 }
