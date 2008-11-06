@@ -41,7 +41,7 @@ public class AspectMap extends LinkedHashMap<Aspect,AspectValue> {
         for (AspectValue oldValue : values()) {
             if (!oldValue.isCompatible(value)) {
                 throw new FormatException(
-                    "Node aspect values %s and %s are incompatible", oldValue,
+                    "Aspect values %s and %s are incompatible", oldValue,
                     value);
             }
         }
