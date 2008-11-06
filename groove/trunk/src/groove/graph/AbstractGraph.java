@@ -405,7 +405,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @see #getCertifier(boolean)
      */
     static private CertificateStrategy certificateFactory =
-        new groove.graph.iso.FreezingBisimulator(null);
+        new groove.graph.iso.PartitionRefiner(null);
 
     /**
      * Fixed empty graph.

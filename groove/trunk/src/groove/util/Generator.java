@@ -42,7 +42,7 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.iso.FreezingBisimulator;
+import groove.graph.iso.PartitionRefiner;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
@@ -561,9 +561,9 @@ public class Generator extends CommandLineTool {
         println("\t\tEqual graphs:\t" + equalGraphCount);
         println("\t\tEqual certificates:\t" + equalCertsCount);
         println("\t\tEqual simulation:\t" + equalSimCount);
-        println("\t\tIterations:\t" + FreezingBisimulator.getIterateCount());
+        println("\t\tIterations:\t" + PartitionRefiner.getIterateCount());
         println("\t\tSymmetry breaking:\t"
-            + FreezingBisimulator.getSymmetryBreakCount());
+            + PartitionRefiner.getSymmetryBreakCount());
     }
 
     /**

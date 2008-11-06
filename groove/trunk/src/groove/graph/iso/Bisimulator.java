@@ -498,7 +498,7 @@ public class Bisimulator implements CertificateStrategy {
      */
     static private final IntSet certStore = new TreeIntSet(TREE_RESOLUTION);
     /** Debug flag to switch the use of {@link Edge1Certificate}s on and off. */
-    static private final boolean USE_EDGE1_CERTIFICATES = false;
+    static private final boolean USE_EDGE1_CERTIFICATES = true;
     /** Debug flag to switch the use symmetry breaking on and off. */
     static private final boolean BREAK_SYMMETRIES = false;
     /**

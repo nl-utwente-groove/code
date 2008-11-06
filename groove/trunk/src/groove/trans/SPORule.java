@@ -296,7 +296,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             Set<Edge> danglingEdges =
                 new HashSet<Edge>(host.edgeSet(erasedNode));
             for (Edge eraserEdge : lhs().edgeSet(eraserNode)) {
-                danglingEdges.remove(match.getEdge(eraserEdge));
+                boolean removed = danglingEdges.remove(match.getEdge(eraserEdge));
+                assert removed : String.format("Match %s not present in incident edges %s", match.getEdge(eraserEdge), host.edgeSet(erasedNode));
             }
             if (!danglingEdges.isEmpty()) {
                 result = false;
