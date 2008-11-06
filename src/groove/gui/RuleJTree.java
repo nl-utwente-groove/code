@@ -114,7 +114,6 @@ public class RuleJTree extends JTree implements SimulationListener {
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
         this.displayedGrammar = grammar;
         if (grammar == null) {
-            this.dirNodeMap.clear();
             this.ruleNodeMap.clear();
             this.matchNodeMap.clear();
             this.matchTransitionMap.clear();
@@ -134,7 +133,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
-        this.dirNodeMap.clear();
+        Map<NameLabel,DirectoryTreeNode> dirNodeMap = new HashMap<NameLabel,DirectoryTreeNode>();
         this.ruleNodeMap.clear();
         this.matchNodeMap.clear();
         this.matchTransitionMap.clear();
@@ -151,18 +150,19 @@ public class RuleJTree extends JTree implements SimulationListener {
             grammar.getPriorityMap().values())) {
             RuleNameLabel ruleName = rule.getNameLabel();
             // create new top node for the rule, if the rule has a different
-            // priority then the last
+            // priority than the last
             if (hasSpecialPriorities) {
                 int rulePriority = rule.getPriority();
                 if (lastPriority != rulePriority) {
                     lastPriority = rulePriority;
                     topNode = new PriorityTreeNode(lastPriority);
                     this.topDirectoryNode.add(topNode);
+                    dirNodeMap.clear();
                 }
             }
             // recursively add parent directory nodes as required
             DefaultMutableTreeNode parentNode =
-                addParentNode(topNode, ruleName);
+                addParentNode(topNode, dirNodeMap, ruleName);
             // create the rule node and register it
             AspectualRuleView ruleView = grammar.getRuleMap().get(ruleName);
             RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
@@ -260,23 +260,23 @@ public class RuleJTree extends JTree implements SimulationListener {
 
     /** Adds tree nodes for all levels of a structured rule name. */
     private DefaultMutableTreeNode addParentNode(
-            DefaultMutableTreeNode topNode, RuleNameLabel ruleName) {
+            DefaultMutableTreeNode topNode, Map<NameLabel,DirectoryTreeNode> dirNodeMap, RuleNameLabel ruleName) {
         RuleNameLabel parent = ruleName.parent();
         if (parent == null) {
             // there is no parent rule name; the parent node is the top node
             return topNode;
         } else {
             // there is a proper parent rule; look it up in the node map
-            DirectoryTreeNode result = this.dirNodeMap.get(parent);
+            DirectoryTreeNode result = dirNodeMap.get(parent);
             if (result == null) {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
                 DefaultMutableTreeNode grandParentNode =
-                    addParentNode(topNode, parent);
+                    addParentNode(topNode, dirNodeMap, parent);
                 // make the parent node and register it
                 result = new DirectoryTreeNode(parent);
                 grandParentNode.add(result);
-                this.dirNodeMap.put(parent, result);
+                dirNodeMap.put(parent, result);
             }
             return result;
         }
@@ -530,21 +530,15 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     protected final Map<NameLabel,RuleTreeNode> ruleNodeMap =
         new HashMap<NameLabel,RuleTreeNode>();
-    /**
-     * Mapping from rule names in the current grammar to rule nodes in the
-     * current rule directory.
-     * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
-     *                                               \cup RuleTreeNode</tt>
-     */
-    protected final Map<NameLabel,DirectoryTreeNode> dirNodeMap =
-        new HashMap<NameLabel,DirectoryTreeNode>();
-    /**
-     * Mapping from derivation edges in the current LTS to match nodes in the
-     * current rule directory.
-     * @invariant <tt>matchNodeMap: Transition --> MatchTreeNode</tt>
-     */
-    // protected final Map<Transition,MatchTreeNode> transitionNodeMap = new
-    // HashMap<Transition,MatchTreeNode>();
+//    /**
+//     * Mapping from rule names in the current grammar to rule nodes in the
+//     * current rule directory.
+//     * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
+//     *                                               \cup RuleTreeNode</tt>
+//     */
+//    protected final Map<Integer,Map<NameLabel,DirectoryTreeNode>> dirNodeMap =
+//        new HashMap<Integer,Map<NameLabel,DirectoryTreeNode>>();
+
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
      * directory
