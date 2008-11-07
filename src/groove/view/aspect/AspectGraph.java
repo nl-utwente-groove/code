@@ -248,6 +248,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * version information into account.
      */
     private AspectParser getAspectParser(GraphShape graph) {
+        String rule_role = Groove.RULE_ROLE;
+        String graph_role = GraphInfo.getRole(graph);
+        String graph_version = GraphInfo.getVersion(graph); 
+        
         boolean convertToCurly =
             Groove.RULE_ROLE.equals(GraphInfo.getRole(graph))
                 && GraphInfo.getVersion(graph) == null;
@@ -456,13 +460,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             }
         } else {
             try {
-                Graph plainGraph = Groove.loadGraph(file);
+                Graph plainGraph = null; //Groove.loadGraph(file);
                 if (plainGraph != null) {
                     System.out.printf("Testing %s", file);
                     testTranslation(plainGraph);
                     System.out.println(" - OK");
                 }
-            } catch (IOException exc) {
+            } catch (Exception exc) {
                 // do nothing (skip)
             }
         }

@@ -25,9 +25,9 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.gui.Exporter;
 import groove.gui.Exporter.StructuralFormat;
-import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
+import groove.io.FileGps;
 import groove.io.Xml;
 import groove.match.GraphSearchPlanFactory;
 import groove.rel.VarNodeEdgeMap;
@@ -103,7 +103,7 @@ public class Groove {
 
     /** Default name for control files. */
     public static final String DEFAULT_CONTROL_NAME = "control";
-   
+
     /** Extension for property files. */
     public static final String CONTROL_EXTENSION = ".gcp";
 
@@ -354,21 +354,23 @@ public class Groove {
      * @return the graph contained in <code>file</code>, or <code>null</code>
      *         if the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
+     *         TOM: fix!
      */
-    static public Graph loadGraph(File file) throws IOException {
-        if (file.exists()) {
-            Graph result = graphLoader.unmarshalGraph(file);
+     static public Graph loadGraph(File file) throws IOException {
+         if (file.exists()) {
+            Graph result = graphLoader.unmarshalGraph(file.toURI().toURL());
             return result;
         } else {
             return null;
         }
-    }
-
+     }
     /**
      * Indicates if a given file is a rule file as recognized by the GROOVE
      * system.
      */
     static public boolean isRuleFile(File file) {
+        // return createRuleFilter().accept(file);
+        // TOM:
         return createRuleFilter().accept(file);
     }
 
@@ -376,10 +378,31 @@ public class Groove {
      * Indicates if a given file is a state file as recognized by the GROOVE
      * system.
      */
-    static public boolean isStateFile(File file) {
-        return createStateFilter().accept(file);
+    static public boolean isStateURL(URL url) {
+        // TOM:
+        // return createStateFilter().accept(file);
+        return createStateFilter().hasExtension(url.getFile());
     }
 
+    /**
+     * Indicates if a given file is a rule file as recognized by the GROOVE
+     * system.
+     */
+    static public boolean isRuleURL(URL url) {
+        // return createRuleFilter().accept(file);
+        // TOM:
+        return createRuleFilter().hasExtension(url.getFile());
+    }
+
+    /**
+     * Indicates if a given file is a state file as recognized by the GROOVE
+     * system.
+     */
+    static public boolean isStateFile(File file) {
+         return createStateFilter().accept(file);
+    }
+
+    
     /**
      * Attempts to save a graph to a file with a given name. Adds the
      * <tt>.gxl</tt> extension if the file has no extension.
@@ -425,6 +448,7 @@ public class Groove {
      * @return the rule graph contained in <code>filename</code>
      * @throws IOException if <code>filename</code> does not exist or is
      *         wrongly formatted
+     *         TOM: fixx
      */
     static public AspectualRuleView loadRuleGraph(String filename)
         throws IOException {
@@ -443,7 +467,7 @@ public class Groove {
     static public AspectualRuleView loadRuleGraph(String filename,
             SystemProperties properties) throws IOException {
         File file = new File(createRuleFilter().addExtension(filename));
-        return gpsLoader.unmarshalRule(file, properties);
+        return gpsLoader.unmarshalRule(file.toURI().toURL(), properties);
     }
 
     /**
@@ -458,15 +482,9 @@ public class Groove {
     static public GrammarView<?,?> loadGrammar(String dirname)
         throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
+        
+        // TOM: here's the change to be made for loading via grammarsources!
         return gpsLoader.unmarshal(dir);
-    }
-
-    /**
-     * Loads a Grammar from a Resource FIXME: implement this!
-     */
-    static public GrammarView<?,?> loadGrammar(URL directory) {
-        // return gpsLoader.unmarshal(new File(directory));
-        return null;
     }
 
     /**
@@ -522,6 +540,7 @@ public class Groove {
     static public DefaultGrammarView loadGrammar(String dirname,
             String startfilename) throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
+
         return gpsLoader.unmarshal(dir, startfilename);
     }
 
@@ -852,5 +871,5 @@ public class Groove {
     /**
      * The fixed grammar loader.
      */
-    static private final AspectualViewGps gpsLoader = new AspectualViewGps();
+    static private final FileGps gpsLoader = new FileGps(false);
 }

@@ -2,8 +2,7 @@ package groove.test;
 
 import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
-import groove.io.AspectualViewGps;
-import groove.io.GrammarViewXml;
+import groove.io.FileGps;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -37,13 +36,14 @@ public class CalculatorTest extends TestCase {
                 startGraphName);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
-        } catch (FormatException exc) {
-            throw new RuntimeException(exc);
         }
+//        catch (FormatException exc) {
+//            throw new RuntimeException(exc);
+//        }
     }
 
     /**
      * Grammar loader used in this test case.
      */
-    protected GrammarViewXml<?> loader = new AspectualViewGps();
+    protected FileGps loader = new FileGps(false);
 }

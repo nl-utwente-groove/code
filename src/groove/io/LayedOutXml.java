@@ -38,10 +38,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -163,20 +165,22 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
 
     /** This implementation also retrieves layout information. */
     @Override
-    protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file)
+    protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {
         // first get the non-layed out result
         Pair<Graph,Map<String,Node>> preliminary =
-            this.marshaller.unmarshalGraphMap(file);
+            this.marshaller.unmarshalGraphMap(url);
         Graph result = preliminary.first();
         Map<String,Node> nodeMap = preliminary.second();
-        File layoutFile = toLayoutFile(file);
-        if (layoutFile.exists()) {
+        URL layoutURL = toLayoutURL(url);
+        try {
             BufferedReader layoutReader =
-                new BufferedReader(new FileReader(layoutFile));
+                new BufferedReader(new InputStreamReader(layoutURL.openStream()));
             LayoutMap<Node,Edge> layoutMap =
                 readLayout(result, nodeMap, layoutReader);
             GraphInfo.setLayoutMap(result, layoutMap);
+        } catch(IOException e) {
+            // we do nothing when there is no layout found at the url
         }
         return new Pair<Graph,Map<String,Node>>(result, nodeMap);
     }
@@ -496,6 +500,15 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
             + Groove.LAYOUT_EXTENSION);
     }
 
+    /**
+     * Converts a file containing a graph to the file containing the graph's
+     * layout information, by adding <code>Groove.LAYOUT_EXTENSION</code> to
+     * the url path.
+     */
+    private URL toLayoutURL(URL graphURL) throws MalformedURLException {
+        return new URL(graphURL.toExternalForm() + Groove.LAYOUT_EXTENSION);
+    }
+    
     /**
      * Converts a graph node plus layout information to a string.
      */

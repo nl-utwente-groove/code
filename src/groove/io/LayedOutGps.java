@@ -10,17 +10,12 @@ import groove.view.aspect.AspectGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LayedOutGps extends AspectualViewGps {
+@Deprecated
+public class LayedOutGps extends FileGps {
     /**
      * Constructs an instance of the grammar marshaller.
      */
     public LayedOutGps() {
-        super();
-    }
-
-    /** This implementation returns a {@link LayedOutXml} graph reader. */
-    @Override
-    protected Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory) {
-        return new AspectGxl(new LayedOutXml(new DefaultGxl()));
+        super(true);
     }
 }

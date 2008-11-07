@@ -20,6 +20,7 @@ import groove.view.View;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Interface for the conversion of views to and from XML documents. To be
@@ -34,7 +35,7 @@ public interface ViewXml<V extends View<?>> {
      * @param file the output file
      * @throws IOException if an error occurred during file output
      */
-    public void marshal(V view, File file) throws IOException;
+    public void marshal(V view, File target) throws IOException;
 
     /**
      * Converts an XML formatted file into a graph, and returns the graph.
@@ -43,5 +44,5 @@ public interface ViewXml<V extends View<?>> {
      * @return the unmarshalled graph
      * @throws IOException if an error occurred during file input
      */
-    public V unmarshal(File file) throws IOException;
+    public V unmarshal(URL source) throws IOException;
 }

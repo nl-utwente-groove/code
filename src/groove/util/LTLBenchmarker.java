@@ -32,8 +32,8 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
-import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.io.FileGps;
 import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -1394,8 +1394,8 @@ public class LTLBenchmarker extends CommandLineTool {
      * Factory method for the grammar loader to be used by state space
      * generation.
      */
-    protected AspectualViewGps createGrammarLoader() {
-        return new AspectualViewGps();
+    protected FileGps createGrammarLoader() {
+        return new FileGps(false);
         // return new GpsGrammar(new UntypedGxl(graphFactory),
         // SPORuleFactory.getInstance());
     }
@@ -1510,7 +1510,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /**
      * The grammar loader.
      */
-    protected final AspectualViewGps loader = createGrammarLoader();
+    protected final FileGps loader = createGrammarLoader();
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
     private static class StatisticsListener extends GraphAdapter {

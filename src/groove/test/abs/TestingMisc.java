@@ -40,6 +40,7 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
+import groove.io.FileGps;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
@@ -111,7 +112,7 @@ public class TestingMisc extends TestCase {
 
         try {
             this.listGrammar4 =
-                (new AspectualViewGps()).unmarshal(
+                (new FileGps(false)).unmarshal(
                     new File("junit/samples/list4.gps"), "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
@@ -123,7 +124,7 @@ public class TestingMisc extends TestCase {
 
         try {
             this.listGrammar10 =
-                (new AspectualViewGps()).unmarshal(
+                (new FileGps(false)).unmarshal(
                     new File("junit/samples/list10.gps"), "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
@@ -135,7 +136,7 @@ public class TestingMisc extends TestCase {
 
         try {
             this.listGrammar5 =
-                (new AspectualViewGps()).unmarshal(
+                (new FileGps(false)).unmarshal(
                     new File("junit/samples/list5.gps"), "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();

@@ -27,10 +27,12 @@ import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -46,8 +48,9 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * @author Staijen Loads a control program into a given ControlAutomaton
  */
 public class ControlView {
-    /** File where the control program is stored. * */
-    private final File controlFile;
+//    /** File where the control program is stored. * */
+//    private final File controlFile;
+
     /** Grammar view to which this control view belongs. */
     private final DefaultGrammarView grammarView;
     /**
@@ -68,41 +71,12 @@ public class ControlView {
      * @param result
      * @param controlProgramFile
      */
-    public ControlView(DefaultGrammarView result, File controlProgramFile, String controlName) {
+    public ControlView(DefaultGrammarView result, URL controlURL, String controlName) throws IOException {
         this.grammarView = result;
-        this.controlFile = controlProgramFile;
+//      this.controlFile = controlProgramFile;
         this.controlName = controlName;
-        this.controlProgram = loadProgram(controlProgramFile);
+        this.controlProgram = loadProgram(controlURL.openStream());
     }
-
-    //	
-    // /**
-    // * Initialises the Control given the rulenames in the grammar
-    // * Can only be called once and must be called before any other method is
-    // used.
-    // * @param grammar
-    // */
-    // public void initNamespace(DefaultGrammarView grammar)
-    // {
-    //		
-    // //System.out.println("Initializing Control NameSpace");
-    //		
-    // // try
-    // // {
-    // // AspectualRuleView lambdaRV = new
-    // AspectualRuleView(ControlView.LAMBDA_RULE);
-    // // AspectualRuleView elseRV = new
-    // AspectualRuleView(ControlView.ELSE_RULE);
-    // // grammar.addRule(lambdaRV);
-    // // grammar.addRule(elseRV);
-    // //
-    // // } catch(FormatException e) {
-    // // // will not happen
-    // // }
-    //		
-    // this.builder = new AutomatonBuilder();
-    // this.builder.setRuleNames(grammar);
-    // }
 
     /** returns the control automaton */
     public ControlAutomaton getAutomaton() {
@@ -115,10 +89,10 @@ public class ControlView {
     }
 
     /** loads the program from a File * */
-    private String loadProgram(File controlFile) {
+    private String loadProgram(InputStream stream) {
         StringBuilder contents = new StringBuilder();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(controlFile));
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
             String line;
             while (((line = br.readLine()) != null)) {
                 contents.append(line + "\r\n");
@@ -130,9 +104,9 @@ public class ControlView {
     }
 
     /** returns the File containing the current control program */
-    public File getFile() {
-        return this.controlFile;
-    }
+//    public File getFile() {
+//        return this.controlFile;
+//    }
 
     /**
      * This method should only be called from DefaultGrammarView.computeGrammar
@@ -204,9 +178,8 @@ public class ControlView {
      * @param file
      * @throws IOException
      */
-    public static void saveFile(String controlProgram, File file)
-        throws IOException {
-        PrintWriter pw = new PrintWriter(file);
+    public static void store(String controlProgram, OutputStream out) {
+        PrintWriter pw = new PrintWriter(out);
         pw.write(controlProgram);
         pw.close();
     }

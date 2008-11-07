@@ -42,10 +42,11 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.iso.PartitionRefiner;
 import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.iso.PartitionRefiner;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.io.FileGps;
 import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultAliasApplication;
@@ -703,8 +704,8 @@ public class Generator extends CommandLineTool {
      * Factory method for the grammar loader to be used by state space
      * generation.
      */
-    protected AspectualViewGps createGrammarLoader() {
-        return new AspectualViewGps();
+    protected FileGps createGrammarLoader() {
+        return new FileGps(false);
         // return new GpsGrammar(new UntypedGxl(graphFactory),
         // SPORuleFactory.getInstance());
     }
@@ -814,7 +815,7 @@ public class Generator extends CommandLineTool {
     /**
      * The grammar loader.
      */
-    protected final AspectualViewGps loader = createGrammarLoader();
+    protected final FileGps loader = createGrammarLoader();
 
     /**
      * Option to save all final states generated.
