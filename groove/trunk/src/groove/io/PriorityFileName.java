@@ -17,6 +17,7 @@
 package groove.io;
 
 import java.io.File;
+import java.net.URL;
 
 import groove.trans.Rule;
 
@@ -38,6 +39,7 @@ public class PriorityFileName {
      *         parsed as an integer, or yields a negative number.
      */
     public PriorityFileName(String fullName) {
+      
         int separatorPos = fullName.indexOf(SEPARATOR);
         if (separatorPos <= 0) {
             this.priority = DEFAULT_PRIORITY;
@@ -75,12 +77,20 @@ public class PriorityFileName {
         this(ExtensionFilter.getPureName(file));
         this.extension = file.getName().substring(this.ruleName.length());
     }
+    
+    /**
+     * Convenience method to create a PriorityFileName for a URL.
+     * @param url
+     */
+    public PriorityFileName(URL url) {
+        this(new File(url.getFile()));
+    }
 
     /**
      * Creates a file name from a given rule name and (possibly explicit)
      * priority.
      */
-    PriorityFileName(String ruleName, int priority, boolean explicitPriority) {
+    public PriorityFileName(String ruleName, int priority, boolean explicitPriority) {
         this.ruleName = ruleName;
         this.priority = priority;
         this.explicitPriority = explicitPriority;

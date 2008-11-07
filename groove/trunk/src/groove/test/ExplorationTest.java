@@ -24,7 +24,7 @@ import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.strategy.BFSStrategy;
 import groove.graph.Graph;
-import groove.io.AspectualViewGps;
+import groove.io.FileGps;
 import groove.io.GrammarViewXml;
 import groove.lts.GTS;
 import groove.lts.LTSGraph;
@@ -457,9 +457,10 @@ public class ExplorationTest extends TestCase {
                 startGraphName);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
-        } catch (FormatException exc) {
-            throw new RuntimeException(exc);
         }
+//        catch (FormatException exc) {
+//            throw new RuntimeException(exc);
+//        }
     }
 
     /**
@@ -471,5 +472,5 @@ public class ExplorationTest extends TestCase {
     /**
      * Grammar loader used in this test case.
      */
-    protected GrammarViewXml<?> loader = new AspectualViewGps();
+    protected FileGps loader = new FileGps(false);
 }

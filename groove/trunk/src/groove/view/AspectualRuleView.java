@@ -1364,7 +1364,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             }
         } else {
             try {
-                Graph plainGraph = Groove.loadGraph(file);
+                // TOM: had to disable since this method is gone
+                Graph plainGraph = null; //Groove.loadGraph(file);
                 if (plainGraph != null) {
                     System.out.printf("Testing %s%n", file);
                     testTranslation(file.getName(),
@@ -1373,7 +1374,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                 }
             } catch (FormatException exc) {
                 // do nothing (skip)
-            } catch (IOException exc) {
+            } catch (Exception exc) {
                 // do nothing (skip)
             }
         }

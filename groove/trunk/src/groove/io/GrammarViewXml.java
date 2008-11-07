@@ -16,11 +16,12 @@
  */
 package groove.io;
 
-import groove.view.FormatException;
+import groove.grammar.GrammarSource;
 import groove.view.GrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Interface for the conversion of graph grammars to and from (sets of) XML
@@ -50,15 +51,15 @@ public interface GrammarViewXml<GG extends GrammarView<?,?>> extends ViewXml<GG>
      *        of files)
      * @throws IOException if an error occurs during file output
      */
-    public void marshal(GG gg, File file) throws IOException;
+    public void marshal(GG gg, File target) throws IOException;
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, and
      * returns the graph grammar. The resulting grammar is not yet fixed.
      * Convenience method for <code>unmarshal(file, null)</code>.
-     * @see #unmarshal(File, String)
+     * @see #unmarshal(GrammarSource)
      */
-    public GG unmarshal(File file) throws IOException;
+    public GG unmarshal(URL url) throws IOException;
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, and
@@ -78,6 +79,6 @@ public interface GrammarViewXml<GG extends GrammarView<?,?>> extends ViewXml<GG>
      * @throws FormatException if an error occurs in the conversion
      * @throws IOException if an error occurs during file input
      */
-    public GG unmarshal(File file, String startStateName)
-        throws FormatException, IOException;
+//    public GG unmarshal(GrammarSource source)
+//        throws FormatException, IOException;
 }

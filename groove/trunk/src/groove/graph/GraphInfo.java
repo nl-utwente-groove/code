@@ -21,6 +21,7 @@ import groove.util.Groove;
 import groove.util.Version;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,8 +89,8 @@ public class GraphInfo {
      * @return a file stored in the info object, or <code>null</code>
      * @see #setFile(File)
      */
-    public File getFile() {
-        return (File) this.data.get(FILE_KEY);
+    public String getFile() {
+        return (String) this.data.get(FILE_KEY);
     }
 
     /**
@@ -99,7 +100,7 @@ public class GraphInfo {
      * altogether.
      * @see #getFile()
      */
-    public void setFile(File file) {
+    public void setFile(String file) {
         if (file == null) {
             this.data.remove(FILE_KEY);
         } else {
@@ -320,19 +321,15 @@ public class GraphInfo {
     /**
      * Convenience method to retrieve the file of a graph.
      */
-    public static File getFile(GraphShape graph) {
+    public static File getFile(GraphShape graph) throws IOException {
         GraphInfo graphInfo = graph.getInfo();
-        if (graphInfo == null) {
-            return null;
-        } else {
-            return graphInfo.getFile();
-        }
+        return new File(graphInfo.getFile());
     }
 
     /**
      * Convenience method to set the file of a graph.
      */
-    public static void setFile(GraphShape graph, File file) {
+    public static void setFile(GraphShape graph, String file) {
         if (file != null) {
             getInfo(graph, true).setFile(file);
         }

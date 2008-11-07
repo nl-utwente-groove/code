@@ -54,9 +54,9 @@ import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.io.FileGps;
 import groove.io.GrammarViewXml;
 import groove.io.GrooveFileChooser;
-import groove.io.LayedOutGps;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
 import groove.lts.GTS;
@@ -208,7 +208,10 @@ public class Simulator {
      */
     public void start() {
         getFrame().pack();
-        groove.gui.UserSettings.applyUserSettings(this.frame); // Applies previous user settings (mzimakova)
+        groove.gui.UserSettings.applyUserSettings(this.frame); // Applies
+        // previous user
+        // settings
+        // (mzimakova)
         getFrame().setVisible(true);
     }
 
@@ -711,25 +714,22 @@ public class Simulator {
         return selectedFile;
     }
 
+    /**
+     * Does the actual saving of a control program in the current grammar.
+     * @param program
+     * @return
+     */
     File handleSaveControl(String program) {
         // check if we had a control program
         ControlView cv = getCurrentGrammar().getControl();
-        File selectedFile = null;
 
-        if (cv != null) {
-            selectedFile = cv.getFile();
-        } else {
-            selectedFile =
-                new File(getCurrentGrammarFile(), getCurrentGrammar().getName()
-                    + ".gcp");
-            System.err.println("" + selectedFile);
-        }
+        File controlFile =
+            new File(this.currentGrammarFile, cv.getName()
+                + Groove.CONTROL_EXTENSION);
 
-        if (selectedFile != null) {
-            doSaveControl(program, selectedFile);
-        }
+        doSaveControl(program, controlFile);
 
-        return selectedFile;
+        return controlFile;
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
@@ -781,7 +781,8 @@ public class Simulator {
             public void run() {
                 try {
                     final DefaultGrammarView grammar =
-                        grammarLoader.unmarshal(grammarFile, startStateName);
+                        grammarLoader.unmarshal(grammarFile.toURI().toURL(),
+                            startStateName);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             setGrammar(grammar);
@@ -798,8 +799,10 @@ public class Simulator {
                         getStateFileChooser().setSelectedFile(startFile);
                     }
                     if (grammar.getControl() != null) {
-                        getControlFileChooser().setSelectedFile(
-                            grammar.getControl().getFile());
+                        File controlFile =
+                            new File(grammarFile,
+                                grammar.getControl().getName());
+                        getControlFileChooser().setSelectedFile(controlFile);
                     }
                     getGrammarFileChooser().setSelectedFile(grammarFile);
                 } catch (final IOException exc) {
@@ -872,11 +875,12 @@ public class Simulator {
      * of the LTS.
      */
     void doLoadControlFile(File file) {
-        ControlView cv =
-            new ControlView(getCurrentGrammar(), file,
-                this.controlFilter.stripExtension(file.getName()));
-        getCurrentGrammar().setControl(cv);
-        setGrammar(getCurrentGrammar());
+        try {
+            new FileGps(false).loadControl(this.currentGrammar, file);
+            setGrammar(getCurrentGrammar());
+        } catch (IOException e) {
+            this.showErrorDialog("Error loading control file", e);
+        }
     }
 
     /**
@@ -915,7 +919,9 @@ public class Simulator {
      * Ends the program.
      */
     void doQuit() {
-        groove.gui.UserSettings.synchSettings(this.frame); // Saves a current user settings (mzimakova)
+        groove.gui.UserSettings.synchSettings(this.frame); // Saves a current
+        // user settings
+        // (mzimakova)
         if (confirmAbandon(false)) {
             if (REPORT) {
                 try {
@@ -961,6 +967,8 @@ public class Simulator {
             setRule(ruleName);
         } catch (IOException exc) {
             showErrorDialog("Error while saving rule", exc);
+        } catch (UnsupportedOperationException u) {
+            showErrorDialog("Current grammar is read-only", u);
         }
     }
 
@@ -1005,10 +1013,10 @@ public class Simulator {
                 if (startGraph != null && currentStateFile == null
                     && currentControlFile == null) {
                     setGrammar(this.currentGrammarLoader.unmarshal(
-                        this.currentGrammarFile, startGraph.getName()));
+                        this.currentGrammarFile.toURI().toURL(), startGraph.getName()));
                 } else {
                     DefaultGrammarView grammar =
-                        this.currentGrammarLoader.unmarshal(this.currentGrammarFile);
+                        this.currentGrammarLoader.unmarshal(this.currentGrammarFile.toURI().toURL());
                     if (currentStateFile != null) {
                         AspectGraph aspectStartGraph =
                             this.graphLoader.unmarshalGraph(currentStateFile);
@@ -1016,12 +1024,7 @@ public class Simulator {
                         grammar.setStartGraph(startGraph);
                     }
                     if (currentControlFile != null) {
-                        ControlView cv =
-                            new ControlView(
-                                grammar,
-                                currentControlFile,
-                                this.controlFilter.stripExtension(currentControlFile.getName()));
-                        grammar.setControl(cv);
+                        doLoadControlFile(currentControlFile);
                     }
                     setGrammar(grammar);
                 }
@@ -1052,7 +1055,7 @@ public class Simulator {
 
     void doSaveControl(String controlProgram, File file) {
         try {
-            ControlView.saveFile(controlProgram, file);
+            ControlView.store(controlProgram, new FileOutputStream(file));
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
         }
@@ -1901,7 +1904,7 @@ public class Simulator {
      */
     protected void initGrammarLoaders() {
         this.grammarLoaderMap.clear();
-        this.gpsLoader = new LayedOutGps();
+        this.gpsLoader = new FileGps(true);
         // gpsLoader = new GpsGrammar(graphLoader,
         // DefaultRuleFactory.getInstance());
         this.grammarLoaderMap.put(this.gpsLoader.getExtensionFilter(),
@@ -2361,7 +2364,7 @@ public class Simulator {
     /**
      * The loader used for unmarshalling gps-formatted graph grammars.
      */
-    private LayedOutGps gpsLoader;
+    private AspectualViewGps gpsLoader;
 
     /**
      * A mapping from extension filters (recognizing the file formats from the
@@ -3609,7 +3612,7 @@ public class Simulator {
 
                         // ControlView cv = grammar.getControl();
                         try {
-                            ControlView.saveFile("", chooser.getSelectedFile());
+                            ControlView.store("", new FileOutputStream(chooser.getSelectedFile()));
                             doLoadControlFile(chooser.getSelectedFile());
                             Simulator.this.getGraphViewsPanel().setSelectedComponent(
                                 Simulator.this.getControlPanel());
@@ -3897,7 +3900,8 @@ public class Simulator {
         /** Constructs a fresh history instance. */
         public History() {
             String[] sh =
-                Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(",");
+                Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(
+                    ",");
             for (String p : sh) {
                 this.history.add(p);
             }
@@ -3908,7 +3912,7 @@ public class Simulator {
             synchMenu();
 
             if (this.history.size() > 0) {
-                //openLastFile(this.history.get(0));                
+                // openLastFile(this.history.get(0));
             }
 
         }
@@ -3972,14 +3976,16 @@ public class Simulator {
             }
             return ret;
         }
-        
-        private void openLastFile(String p_path){
+
+        private void openLastFile(String p_path) {
             if (p_path != null) {
                 final File f = new File(p_path);
-                if (f.exists()) {                
-                    FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                    final AspectualViewGps loader = getGrammarLoaderMap().get(filterUsed);
-                
+                if (f.exists()) {
+                    FileFilter filterUsed =
+                        getGrammarFileChooser().getFileFilter();
+                    final AspectualViewGps loader =
+                        getGrammarLoaderMap().get(filterUsed);
+
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             doLoadGrammar(loader, f, null);

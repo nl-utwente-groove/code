@@ -20,6 +20,7 @@ import groove.graph.GraphShape;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Interface for the conversion of graphs to and from XML documents. To be
@@ -30,22 +31,23 @@ import java.io.IOException;
  */
 public interface Xml<G extends GraphShape> {
     /**
-     * Writes a graph to a file, in XML format.
+     * Writes a graph to an outputstream, in XML format.
      * @param graph the graph to be marshalled
-     * @param file the output file
+     * @param stream the output stream
      * @throws IOException if an error occurred during file output
      */
     public void marshalGraph(G graph, File file) throws IOException;
-
+    
     /**
-     * Converts an XML formatted file into a graph, and returns the graph.
+     * Converts an XML formatted inputstream into a graph, and returns the graph.
      * Convenience method for <code>unmarshal(file, null)</code>.
-     * @param file the file to be read from
+     * @param stream the input stream to be read from
      * @return the unmarshalled graph
      * @throws IOException if an error occurred during file input
      */
+    public G unmarshalGraph(URL url) throws IOException;
     public G unmarshalGraph(File file) throws IOException;
-
+    
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file);
 }

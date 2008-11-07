@@ -22,6 +22,7 @@ import groove.explore.util.PriorityCache;
 import groove.explore.util.SimpleCache;
 import groove.graph.Graph;
 import groove.io.AspectualViewGps;
+import groove.io.FileGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
@@ -62,7 +63,7 @@ public class StrategiesTest extends TestCase {
             try {
                 for (int i = 0; i < nb; i++) {
                     grammars[i] =
-                        (new AspectualViewGps()).unmarshal(
+                        (new FileGps(false)).unmarshal(
                             new File(this.PATH_PREFIX + "matchesiter.gps"),
                             "start" + i).toGrammar();
                 }
@@ -143,7 +144,7 @@ public class StrategiesTest extends TestCase {
             GraphGrammar grammar = null;
             try {
                 grammar =
-                    (new AspectualViewGps()).unmarshal(
+                    (new FileGps(false)).unmarshal(
                         new File(this.PATH_PREFIX + "matchesiter.gps"),
                         "start4").toGrammar();
             } catch (FormatException e) {
@@ -208,7 +209,7 @@ public class StrategiesTest extends TestCase {
 
         try {
             grammar =
-                (new AspectualViewGps()).unmarshal(
+                (new FileGps(false)).unmarshal(
                     new File(this.PATH_PREFIX + "matchesiter2.gps"), "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
@@ -237,7 +238,7 @@ public class StrategiesTest extends TestCase {
 
         try {
             grammar =
-                (new AspectualViewGps()).unmarshal(
+                (new FileGps(false)).unmarshal(
                     new File(this.PATH_PREFIX + "exploreCache1.gps")).toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
@@ -354,7 +355,7 @@ public class StrategiesTest extends TestCase {
 
         try {
             grammar =
-                (new AspectualViewGps()).unmarshal(
+                (new FileGps(false)).unmarshal(
                     new File(this.PATH_PREFIX + "exploreCache2.gps")).toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();

@@ -21,7 +21,7 @@ import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.BranchingStrategy;
-import groove.io.AspectualViewGps;
+import groove.io.FileGps;
 import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
@@ -60,8 +60,7 @@ public class MyGenerator {
     private void loadGrammar(String grammarFile, String startGraph) {
         try {
             this.grammar =
-                (new AspectualViewGps()).unmarshal(new File(grammarFile),
-                    startGraph).toGrammar();
+                (new FileGps(false)).unmarshal(new File(grammarFile), startGraph).toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);

@@ -20,7 +20,6 @@ package groove.io;
 import groove.control.ControlView;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -30,11 +29,8 @@ import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.net.URL;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
@@ -51,7 +47,7 @@ import java.util.Properties;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectualViewGps extends Observable implements
+public abstract class AspectualViewGps extends Observable implements
         GrammarViewXml<DefaultGrammarView> {
     /**
      * Constructs an instance based on a given graph format reader, and a given
@@ -60,73 +56,44 @@ public class AspectualViewGps extends Observable implements
      * graph.
      * @param graphFactory the graph format reader
      */
-    private AspectualViewGps(GraphFactory graphFactory) {
-        this.graphMarshaller = createGraphMarshaller(graphFactory);
+    private AspectualViewGps(GraphFactory graphFactory, boolean layouted) {
+        this.graphMarshaller = createGraphMarshaller(graphFactory, layouted);
     }
 
     /**
      * Constructs an instance based on the standard graph and rule factories.
      */
-    public AspectualViewGps() {
-        this(GraphFactory.getInstance());
+    protected AspectualViewGps(boolean layouted) {
+        this(GraphFactory.getInstance(), layouted);
     }
 
-    public ExtensionFilter getExtensionFilter() {
-        return GRAMMAR_FILTER;
-    }
+    /**
+     * Loads the grammar from the given url with the given startGraphName.
+     * @param url
+     * @param startGraphName
+     * @return
+     */
+    public abstract DefaultGrammarView unmarshal(URL location,
+            String startGraphName) throws IOException;
 
-    public DefaultGrammarView unmarshal(File location) throws IOException {
-        return unmarshal(location, null);
-    }
-
-    public DefaultGrammarView unmarshal(File location, String startGraphName)
-        throws IOException {
-        return unmarshal(location, startGraphName, null);
-    }
-
-    public DefaultGrammarView unmarshal(File location, String startGraphName,
-            String controlName) throws IOException {
-        if (!location.exists()) {
-            throw new FileNotFoundException(LOAD_ERROR
-                + ": rule rystem location \"" + location.getAbsolutePath()
-                + "\" does not exist");
-        }
-        if (!location.isDirectory()) {
-            throw new IOException(LOAD_ERROR + ": rule system location \""
-                + location + "\" is not a directory");
-        }
-
-        String grammarName =
-            getExtensionFilter().stripExtension(location.getName());
-        DefaultGrammarView result = createGrammar(grammarName);
-
-        loadProperties(result, location);
-        loadRules(result, location);
-        loadStartGraph(result, startGraphName, location);
-        loadControl(result, location, controlName);
-        return result;
-    }
+    /**
+     * Loads the grammar from the given url with the given startGraphName and
+     * controlName.
+     */
+    public abstract DefaultGrammarView unmarshal(URL location,
+            String startGraphName, String controlName) throws IOException;
 
     /**
      * Loads the properties file for a given graph grammar from a given
      * location.
      */
-    private void loadProperties(DefaultGrammarView result, File location)
-        throws IOException, FileNotFoundException {
+    protected void loadProperties(DefaultGrammarView result, URL propertiesURL)
+        throws IOException {
         // search for a properties file
 
-        File propertiesFile =
-            new File(location,
-                PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
-        if (!propertiesFile.exists()) {
-            propertiesFile =
-                new File(location,
-                    PROPERTIES_FILTER.addExtension(result.getName()));
-        }
-        Properties grammarProperties = null;
-        if (propertiesFile.exists()) {
-            grammarProperties = new Properties();
-            grammarProperties.load(new FileInputStream(propertiesFile));
+        if (propertiesURL != null) {
+            Properties grammarProperties = new Properties();
+            grammarProperties.load(propertiesURL.openStream());
             result.setProperties(grammarProperties);
         }
     }
@@ -136,21 +103,13 @@ public class AspectualViewGps extends Observable implements
      * grammar. Can only be done after rules and properties are loaded. TODO:
      * put this somewhere else?
      */
-    private void loadControl(DefaultGrammarView result, File location,
-            String controlName) {
-        
-        if (controlName == null) {
-            controlName = "control";
-        }
-        File controlProgramFile =
-            new File(location, controlName + Groove.CONTROL_EXTENSION);
-        // backwards compatibilty, trying <grammarname>.gcp also
-        if (!controlProgramFile.exists()) {
-            controlProgramFile =
-                new File(location, result.getName() + Groove.CONTROL_EXTENSION);
-        }
-        if (controlProgramFile.exists()) {
-            ControlView cv = new ControlView(result, controlProgramFile, controlName);
+    protected void loadControl(DefaultGrammarView result, URL controlURL, String controlName)
+        throws IOException {
+
+        if (controlURL != null) {
+            ControlView cv =
+                new ControlView(result, controlURL,
+                    controlName);
             result.setControl(cv);
         }
     }
@@ -158,127 +117,83 @@ public class AspectualViewGps extends Observable implements
     /**
      * Loads the rules for a given graph grammar from a given location.
      */
-    private void loadRules(DefaultGrammarView result, File location)
-        throws IOException {
-        Map<RuleNameLabel,File> ruleMap = new HashMap<RuleNameLabel,File>();
-        collectRuleNames(ruleMap, location, null);
+    protected void loadRules(DefaultGrammarView result,
+            Map<RuleNameLabel,URL> ruleMap) throws IOException {
         setChanged();
         notifyObservers(LOADING_RULES);
         setChanged();
         notifyObservers(ruleMap.size());
-        for (Map.Entry<RuleNameLabel,File> ruleEntry : ruleMap.entrySet()) {
-            try {
-                result.addRule(loadRule(ruleEntry.getValue(),
-                    ruleEntry.getKey(), result.getProperties()));
-                setChanged();
-                notifyObservers(result);
-            } catch (IOException exc) {
-                throw new IOException(exc.getMessage());
-            }
+        for (Map.Entry<RuleNameLabel,URL> ruleEntry : ruleMap.entrySet()) {
+            result.addRule(loadRule(ruleEntry.getValue(), ruleEntry.getKey(),
+                result.getProperties()));
+            setChanged();
+            notifyObservers(result);
         }
         setChanged();
         notifyObservers();
     }
 
     /**
-     * Constructs a map from rule names to files, from the rules in a given
-     * directory and its sub-directories.
-     * @param result the result map; initially empty output parameter
-     * @param directory the directory from which to load the rules
-     * @param rulePath the parent rule name; may be <code>null</code> if this
-     *        is the top level
-     * @return A map from rule names to files where the rules can be loaded from
-     */
-    private Map<RuleNameLabel,File> collectRuleNames(
-            Map<RuleNameLabel,File> result, File directory,
-            RuleNameLabel rulePath) throws IOException {
-        File[] files = directory.listFiles(RULE_FILTER);
-        if (files == null) {
-            throw new IOException(LOAD_ERROR + ": no files found at "
-                + directory);
-        } else {
-            // read in production rules
-            for (File file : files) {
-                String fileName = RULE_FILTER.stripExtension(file.getName());
-                PriorityFileName priorityFileName =
-                    new PriorityFileName(fileName);
-                RuleNameLabel ruleName =
-                    new RuleNameLabel(rulePath,
-                        priorityFileName.getActualName());
-                // check for overlapping rule and directory names
-                if (file.isDirectory()) {
-                    collectRuleNames(result, file, ruleName);
-                } else if (result.put(ruleName, file) != null) {
-                    throw new IOException(LOAD_ERROR
-                        + ": duplicate rule name \"" + ruleName + "\"");
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Loads in and returns a single rule from a given location, giving it a
      * given name and priority.
      */
-    private AspectualRuleView loadRule(File location, RuleNameLabel ruleName,
+    private AspectualRuleView loadRule(URL location, RuleNameLabel ruleName,
             SystemProperties properties) throws IOException {
+
         AspectGraph unmarshalledRule =
             getGraphMarshaller().unmarshalGraph(location);
+
         GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
+
         AspectualRuleView result =
             createRuleView(unmarshalledRule, ruleName, properties);
+
         return result;
     }
 
     /**
-     * @param result
-     * @param startGraphName
-     * @param location
+     * 
+     */
+    protected void loadStartGraph(DefaultGrammarView result,
+            URL startGraphSource) throws IOException {
+        // determine the start graph file
+
+        // get the start graph
+        if (startGraphSource != null) {
+            setChanged();
+            notifyObservers(LOADING_START_GRAPH);
+            setChanged();
+            notifyObservers(1);
+
+            AspectGraph unmarshalledStartGraph =
+                unmarshalGraph(startGraphSource);
+
+            AspectualGraphView startGraph =
+                new AspectualGraphView(unmarshalledStartGraph);
+            
+            startGraph.getName();
+            
+            setChanged();
+            notifyObservers(startGraph);
+            result.setStartGraph(startGraph);
+            setChanged();
+            notifyObservers();
+        }
+    }
+
+    /**
+     * Loads a graph from a certain url
+     * 
+     * @param graph
+     * @param source
      * @throws IOException
      */
-    private void loadStartGraph(DefaultGrammarView result,
-            String startGraphName, File location) throws IOException {
-        // determine the start graph file
-        File startGraphFile;
-        if (startGraphName == null) {
-            startGraphFile =
-                new File(location,
-                    STATE_FILTER.addExtension(DEFAULT_START_GRAPH_NAME));
-            if (!startGraphFile.exists()) {
-                startGraphFile = null;
-            }
-        } else {
-            startGraphFile = new File(startGraphName);
-            if (!startGraphFile.exists()) {
-                startGraphFile =
-                    new File(location,
-                        STATE_FILTER.addExtension(startGraphName));
-            }
-        }
-        // get the start graph
-        if (startGraphFile != null) {
-            try {
-                setChanged();
-                notifyObservers(LOADING_START_GRAPH);
-                setChanged();
-                notifyObservers(1);
-                AspectGraph unmarshalledStartGraph =
-                    getGraphMarshaller().unmarshalGraph(startGraphFile);
-                GraphInfo.setRole(unmarshalledStartGraph, Groove.GRAPH_ROLE);
-                AspectualGraphView startGraph =
-                    new AspectualGraphView(unmarshalledStartGraph);
-                setChanged();
-                notifyObservers(startGraph);
-                result.setStartGraph(startGraph);
-            } catch (FileNotFoundException exc) {
-                throw new IOException(LOAD_ERROR + ": start graph "
-                    + startGraphFile + " not found");
-            } finally {
-                setChanged();
-                notifyObservers();
-            }
-        }
+    public AspectGraph unmarshalGraph(URL graph) throws IOException {
+        AspectGraph unmarshalledStartGraph =
+            getGraphMarshaller().unmarshalGraph(graph);
+        GraphInfo.setRole(unmarshalledStartGraph, Groove.GRAPH_ROLE);
+
+        return unmarshalledStartGraph;
     }
 
     /**
@@ -288,175 +203,39 @@ public class AspectualViewGps extends Observable implements
      * @param properties the properties for the rule to be unmarshalled
      * @return a rule view for the given rule.
      * @throws IOException
+     * 
+     * TOM: commented away since not needed for full grammar loading
      */
-    public AspectualRuleView unmarshalRule(File location,
+    public AspectualRuleView unmarshalRule(URL location,
             SystemProperties properties) throws IOException {
         String filename =
-            Groove.createRuleFilter().stripExtension(location.getName());
+            Groove.createRuleFilter().stripExtension(location.getFile());
         PriorityFileName priorityFileName = new PriorityFileName(filename);
         RuleNameLabel ruleName =
             new RuleNameLabel(priorityFileName.getActualName());
-        return createRuleView(getGraphMarshaller().unmarshalGraph(location),
-            ruleName, properties);
+
+        return loadRule(location, ruleName, properties);
     }
 
-    public void marshal(DefaultGrammarView gg, File location)
-        throws IOException {
-        createLocation(location);
-        String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
-        gg.setName(grammarName);
-        // iterate over rules and save them
-        for (RuleNameLabel ruleName : gg.getRuleMap().keySet()) {
-            // turn the rule into a rule graph
-            marshalRule(gg.getRule(ruleName), location);
-        }
-        saveStartGraph(gg.getStartGraph(), location);
-        saveProperties(gg, location);
+    public void marshal(DefaultGrammarView gg, File target) throws IOException,
+        UnsupportedOperationException {
+        // not supported by default
     }
-
+    
     /**
-     * Prepares a location for marshalling a graph grammar.
+     * Stores a given rule in a given directory.
+     * @param rule
+     * @param dir
      */
-    private void createLocation(File location) throws IOException {
-        // delete existing file, if any
-        if (location.exists()) {
-            if (!deleteRecursive(location)) {
-                throw new IOException("Existing location " + location
-                    + " cannot be deleted");
-            }
-        }
-        // create location as directory
-        location.mkdirs();
+    public void marshalRule(AspectualRuleView rule, File dir) throws IOException {
+        throw new UnsupportedOperationException("Current grammar does not support saving.");
     }
-
+    
     /**
-     * Recursively traverses all subdirectories and deletes all files and
-     * directories.
+     * Deletes a rule given a grammar directory
      */
-    private boolean deleteRecursive(File location) {
-        if (location.isDirectory()) {
-            for (File file : location.listFiles()) {
-                if (!deleteRecursive(file)) {
-                    return false;
-                }
-            }
-        }
-        return location.delete();
-    }
-
-    /**
-     * Saves a graph as start graph (using the default name) in a given
-     * location, assumed to be a directory.
-     * @see #DEFAULT_START_GRAPH_NAME
-     */
-    private void saveStartGraph(AspectualGraphView startGraph, File location)
-        throws IOException {
-        if (startGraph != null) {
-            // save start graph
-            File startGraphLocation =
-                new File(location,
-                    STATE_FILTER.addExtension(startGraph.getName()));
-            getGraphMarshaller().marshalGraph(startGraph.getAspectGraph(),
-                startGraphLocation);
-        }
-    }
-
-    /**
-     * Saves the properties of a graph grammar in a given location, assumed to
-     * be a directory.
-     * 
-     */
-    private void saveProperties(DefaultGrammarView gg, File location)
-        throws IOException, FileNotFoundException {
-        // save properties
-        String grammarName = gg.getName();
-        File propertiesFile =
-            new File(location, PROPERTIES_FILTER.addExtension(grammarName));
-        Properties grammarProperties = gg.getProperties();
-        grammarProperties.store(new FileOutputStream(propertiesFile),
-            "Graph grammar properties for " + gg.getName());
-    }
-
-    /**
-     * Marshals a single rule, given in graph input format, to a given location.
-     * Creates the necessary sub-directories if the rule has a structured rule
-     * name.
-     * @param ruleGraph the rule to be marshaled
-     * @param location the location to which the rule is to be marshaled
-     * @throws IOException if {@link Xml#marshalGraph(GraphShape, File)} throws
-     *         an exception
-     */
-    public void marshalRule(AspectualRuleView ruleGraph, File location)
-        throws IOException {
-        this.graphMarshaller.marshalGraph(ruleGraph.getAspectGraph(), getFile(
-            location, ruleGraph, true));
-    }
-
-    /**
-     * Removes a rule file from the file system
-     * @param ruleGraph the rule to be removed
-     * @param location the basis location of the GPS
-     */
-    public void deleteRule(AspectualRuleView ruleGraph, File location) {
-        File deletedFile = getFile(location, ruleGraph, false);
-        if (deletedFile != null) {
-            getGraphMarshaller().deleteGraph(deletedFile);
-        }
-    }
-
-    /**
-     * Constructs a rule file from the combination of a basis location (the
-     * directory where the GPS is stored), a rule name, and the
-     * {@link #RULE_FILTER} extension. The method looks for an existing file; if
-     * there is none, a further parameter determines if it should be created
-     * (including any enclosing directories)
-     * @param create if <code>true</code>, a file is created if none is found
-     */
-    private File getFile(File location, AspectualRuleView ruleGraph,
-            boolean create) {
-        File result = null;
-        // if the rule name is structured, go to the relevant sub-directory
-        String remainingName = ruleGraph.getName();
-        int priority = ruleGraph.getPriority();
-        boolean searching = true;
-        while (searching) {
-            File candidate =
-                new File(location, RULE_FILTER.addExtension(remainingName));
-            if (!candidate.exists()) {
-                PriorityFileName priorityName =
-                    new PriorityFileName(remainingName, priority, true);
-                candidate =
-                    new File(location,
-                        RULE_FILTER.addExtension(priorityName.toString()));
-            }
-            if (candidate.exists()) {
-                result = candidate;
-            }
-            int separator = remainingName.indexOf(RuleNameLabel.SEPARATOR);
-            searching = result == null && separator >= 0;
-            if (searching) {
-                // descend into sub-directory if no file is found and the name
-                // specifies a further hierarchy
-                String subDir = remainingName.substring(0, separator);
-                remainingName = remainingName.substring(separator + 1);
-                location = new File(location, subDir);
-                // if the sub-directory does not exist, create it or stop the
-                // search
-                if (!location.exists()) {
-                    if (create) {
-                        location.mkdir();
-                    } else {
-                        searching = false;
-                    }
-                }
-            }
-        }
-        // create a file if none is found and the create parameter says so
-        if (result == null && create) {
-            result =
-                new File(location, RULE_FILTER.addExtension(remainingName));
-        }
-        return result;
+    public void deleteRule(AspectualRuleView rule, File dir) {
+        throw new UnsupportedOperationException("Current grammar does not support deleting.");
     }
 
     /**
@@ -468,8 +247,13 @@ public class AspectualViewGps extends Observable implements
     }
 
     /** Callback factory method for creating a graph marshaller. */
-    protected Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory) {
-        return new AspectGxl(new DefaultGxl(graphFactory));
+    protected Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory,
+            boolean layouted) {
+        if (layouted) {
+            return new AspectGxl(new LayedOutXml(graphFactory));
+        } else {
+            return new AspectGxl(new DefaultGxl(graphFactory));
+        }
     }
 
     /**
@@ -488,7 +272,7 @@ public class AspectualViewGps extends Observable implements
      * @param ruleName the name of the rule to be created
      * @return the {@link AspectualRuleView} created from the given graph
      */
-    protected AspectualRuleView createRuleView(AspectGraph graph,
+    private AspectualRuleView createRuleView(AspectGraph graph,
             RuleNameLabel ruleName, SystemProperties properties) {
         return new AspectualRuleView(graph, ruleName, properties);
     }
@@ -503,18 +287,12 @@ public class AspectualViewGps extends Observable implements
     /** Notification text for the start graph loading phase. */
     static public final String LOADING_START_GRAPH = "Loading start graph";
     /** Error message if a grammar cannot be loaded. */
-    static private final String LOAD_ERROR = "Can't load graph grammar";
+    static protected final String LOAD_ERROR = "Can't load graph grammar";
 
-    /** File filter for graph grammars in the GPS format. */
-    static private final ExtensionFilter GRAMMAR_FILTER =
-        Groove.createRuleSystemFilter();
-    /** File filter for transformation rules in the GPR format. */
-    static private final ExtensionFilter RULE_FILTER =
-        Groove.createRuleFilter();
-    /** File filter for state graphs in the GST format. */
-    static private final ExtensionFilter STATE_FILTER =
-        Groove.createStateFilter();
-    /** File filter for property files. */
-    static private final ExtensionFilter PROPERTIES_FILTER =
-        Groove.createPropertyFilter();
+    /** The default name of the start state of a grammar. */
+    static public final String DEFAULT_START_GRAPH_NAME = "start";
+
+    /** The default name of the control file of a grammar. */
+    static public final String DEFAULT_CONTROL_NAME = "control";
+
 }

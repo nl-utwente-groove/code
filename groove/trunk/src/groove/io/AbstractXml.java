@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.grammar.GrammarSource;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
@@ -23,6 +24,7 @@ import groove.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -38,23 +40,15 @@ public abstract class AbstractXml implements Xml<Graph> {
         this.graphFactory = graphFactory;
     }
 
-    public Graph unmarshalGraph(File file) throws IOException {
-        return unmarshalGraphMap(file).first();
+    public Graph unmarshalGraph(URL url) throws IOException {
+        return unmarshalGraphMap(url).first();
     }
 
-    /**
-     * Reads a graph from an XML formatted file and returns it. Also constructs
-     * a map from node identities in the XML file to graph nodes. This can be
-     * used to connect with layout information.
-     * @param file the file to be read from
-     * @return a pair consisting of the unmarshalled graph and a string-to-node
-     *         map from node identities in the XML file to nodes in the
-     *         unmarshalled graph
-     * @throws IOException if an error occurred during file input
-     */
-    abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file)
-        throws IOException;
-
+    /** backwards compatibility method */
+    public Graph unmarshalGraph(File file) throws IOException {
+        return unmarshalGraph(FileGps.toURL(file));
+    }
+    
     /**
      * Deletes the graph file, as well as all variants with the same name but
      * different priorities.
@@ -63,11 +57,25 @@ public abstract class AbstractXml implements Xml<Graph> {
         deleteFile(file);
         // deleteVariants(file);
     }
-
+    
     /** Deletes a given file, storing a graph, and possible auxiliary files. */
     protected void deleteFile(File file) {
         file.delete();
     }
+
+
+    /**
+     * Reads a graph from an XML formatted file and returns it. Also constructs
+     * a map from node identities in the XML file to graph nodes. This can be
+     * used to connect with layout information.
+     * @param url the URL to be read from
+     * @return a pair consisting of the unmarshalled graph and a string-to-node
+     *         map from node identities in the XML file to nodes in the
+     *         unmarshalled graph
+     * @throws IOException if an error occurred during file input
+     */
+    abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
+        throws IOException;
 
     /**
      * Changes the graph factory used for unmarshalling.
