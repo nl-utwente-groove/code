@@ -20,6 +20,7 @@ import groove.trans.RuleNameLabel;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -61,11 +62,23 @@ public class JarGps extends AspectualViewGps {
         DefaultGrammarView result =
             createGrammar(FileGps.GRAMMAR_FILTER.stripExtension(dir));
 
-        
-        // find the rules in the jar
-
+        // connection to the file index in the jar file
         JarFile jarFile =
             ((JarURLConnection) location.openConnection()).getJarFile();
+
+        
+        // PROPERTIES
+        JarEntry pe = jarFile.getJarEntry(dir + Groove.PROPERTY_NAME + Groove.PROPERTY_EXTENSION);
+        // backwards compatibility: <grammar name>.properties
+        if ( pe == null ) {
+            pe = jarFile.getJarEntry(dir + result.getName() + Groove.PROPERTY_EXTENSION);
+        }
+        if (pe != null) {
+            URL propertiesEntry = new URL(baseURL + pe.getName());
+            this.loadProperties(result, propertiesEntry);
+        }
+        
+        // RULES
 
         // store RuleNameLabels for rulegroup directories
         HashMap<String,RuleNameLabel> pathLabels =
@@ -99,22 +112,26 @@ public class JarGps extends AspectualViewGps {
                 ruleMap.put(label, ruleURL);
             }
         }
-
+        
+        loadRules(result, ruleMap);
+        
         // init start graph url
         JarEntry je =
             jarFile.getJarEntry(dir + startGraphName + Groove.STATE_EXTENSION);
-
-        
-        
-
-        loadRules(result, ruleMap);
-        
 
         if (je != null) {
             URL startGraphEntry = new URL(baseURL + je.getName());
             this.loadStartGraph(result, startGraphEntry);
         }
 
+        // control
+        
+        JarEntry ce = jarFile.getJarEntry(dir + controlName + Groove.CONTROL_EXTENSION);
+        if( ce != null ) {
+            URL controlEntry = new URL(baseURL + je.getName());
+            this.loadControl(result, controlEntry, controlName);
+        }
+        
 
         return result;
     }
