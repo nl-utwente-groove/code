@@ -39,10 +39,17 @@ import java.util.Map;
  */
 public class FileGps extends AspectualViewGps {
 
+    /**
+     * Creates a grammar (un)marshaller for .gps directories.
+     * @param layouted whether or not layout iformation must be loaded.
+     */
     public FileGps(boolean layouted) {
         super(layouted);
     }
 
+    /**
+     * 
+     */
     public void marshal(DefaultGrammarView gg, File location)
         throws IOException {
         createLocation(location);
@@ -374,12 +381,5 @@ public class FileGps extends AspectualViewGps {
     /** File filter for control files. */
     static protected final ExtensionFilter CONTROL_FILTER =
         Groove.createControlFilter();
-    
-    public static void main(String args[]) throws IOException {
-        long start = System.currentTimeMillis();
-        new FileGps(false).unmarshal(new File("c:/grammars/cups.gps"), "start", "cups");
-        long elapsed = System.currentTimeMillis()-start;
-        System.out.println("From File Took " + elapsed + " ms");
-    }
 
 }
