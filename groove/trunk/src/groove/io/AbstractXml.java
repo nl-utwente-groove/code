@@ -16,7 +16,6 @@
  */
 package groove.io;
 
-import groove.grammar.GrammarSource;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;

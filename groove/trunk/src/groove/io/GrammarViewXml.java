@@ -16,7 +16,6 @@
  */
 package groove.io;
 
-import groove.grammar.GrammarSource;
 import groove.view.GrammarView;
 
 import java.io.File;

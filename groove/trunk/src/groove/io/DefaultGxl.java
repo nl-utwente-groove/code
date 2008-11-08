@@ -16,7 +16,6 @@
  */
 package groove.io;
 
-import groove.grammar.GrammarSource;
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.AbstractLabel;
 import groove.graph.AbstractUnaryEdge;
