@@ -128,6 +128,8 @@ public abstract class AspectualViewGps extends Observable implements
         setChanged();
         notifyObservers(ruleMap.size());
         for (Map.Entry<RuleNameLabel,URL> ruleEntry : ruleMap.entrySet()) {
+
+            System.out.println("Loading rule " + ruleEntry.getKey());
             result.addRule(loadRule(ruleEntry.getValue(), ruleEntry.getKey(),
                 result.getProperties()));
             setChanged();

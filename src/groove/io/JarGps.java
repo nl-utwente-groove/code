@@ -20,7 +20,6 @@ import groove.trans.RuleNameLabel;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -34,9 +33,23 @@ import java.util.jar.JarFile;
 /**
  * @author Tom Staijen
  * @version $Revision $
+ * 
+ * A grammar loader class that can load grammars from Jar files. Inside the
+ * Jarfile a directory is expected that is structured as a regular .gps
+ * directory. The grammar can be loaded given a URL to the directory in the jar
+ * file (including the tailing /), optionaly with the start graph name as
+ * "query" and the control name as "ref". Example url's:
+ * jar:file:/c:/grammars.jar!/languages/java.gps/?simpleprogram#simplecontrol
+ * jar:http://www.someurl.com/some.jar!/java.gps/#scenario1 (default start graph
+ * used)
+ * 
  */
 public class JarGps extends AspectualViewGps {
 
+    /**
+     * Create a Jar grammar loader
+     * @param layouted indicates whether layouts should be loaded.
+     */
     public JarGps(boolean layouted) {
         super(layouted);
     }
@@ -53,7 +66,7 @@ public class JarGps extends AspectualViewGps {
         String baseURL =
             location.toExternalForm().substring(0,
                 location.toExternalForm().indexOf("!") + 2);
-        
+
         // the path in the jar of the gps
         String dir =
             location.getPath().substring(location.getPath().indexOf("!") + 2);
@@ -66,18 +79,21 @@ public class JarGps extends AspectualViewGps {
         JarFile jarFile =
             ((JarURLConnection) location.openConnection()).getJarFile();
 
-        
         // PROPERTIES
-        JarEntry pe = jarFile.getJarEntry(dir + Groove.PROPERTY_NAME + Groove.PROPERTY_EXTENSION);
+        JarEntry pe =
+            jarFile.getJarEntry(dir + Groove.PROPERTY_NAME
+                + Groove.PROPERTY_EXTENSION);
         // backwards compatibility: <grammar name>.properties
-        if ( pe == null ) {
-            pe = jarFile.getJarEntry(dir + result.getName() + Groove.PROPERTY_EXTENSION);
+        if (pe == null) {
+            pe =
+                jarFile.getJarEntry(dir + result.getName()
+                    + Groove.PROPERTY_EXTENSION);
         }
         if (pe != null) {
             URL propertiesEntry = new URL(baseURL + pe.getName());
             this.loadProperties(result, propertiesEntry);
         }
-        
+
         // RULES
 
         // store RuleNameLabels for rulegroup directories
@@ -86,7 +102,7 @@ public class JarGps extends AspectualViewGps {
 
         // store the rules
         Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
-        
+
         for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
             JarEntry entry = entries.nextElement();
             if (entry.getName().startsWith(dir)
@@ -94,27 +110,14 @@ public class JarGps extends AspectualViewGps {
                 String path =
                     FileGps.RULE_FILTER.stripExtension(entry.getName());
                 path = path.substring(dir.length());
-
-                int dirpos = path.lastIndexOf('/');
-                
-                URL ruleURL;
-                RuleNameLabel label; 
-
-                if (dirpos != -1) {
-                    String file = path.substring(dirpos + 1);
-                    String folder = path.substring(0, dirpos);
-                    label = new RuleNameLabel(initGroups(pathLabels,folder), file);
-                } else {
-                    label = new RuleNameLabel(path);
-                }
-                ruleURL = new URL(baseURL + entry.getName());
-
+                RuleNameLabel label = initLabel(pathLabels, path, true);
+                URL ruleURL = new URL(baseURL + entry.getName());
                 ruleMap.put(label, ruleURL);
             }
         }
-        
+
         loadRules(result, ruleMap);
-        
+
         // init start graph url
         JarEntry je =
             jarFile.getJarEntry(dir + startGraphName + Groove.STATE_EXTENSION);
@@ -125,34 +128,37 @@ public class JarGps extends AspectualViewGps {
         }
 
         // control
-        
-        JarEntry ce = jarFile.getJarEntry(dir + controlName + Groove.CONTROL_EXTENSION);
-        if( ce != null ) {
+
+        JarEntry ce =
+            jarFile.getJarEntry(dir + controlName + Groove.CONTROL_EXTENSION);
+        if (ce != null) {
             URL controlEntry = new URL(baseURL + je.getName());
             this.loadControl(result, controlEntry, controlName);
         }
-        
 
         return result;
     }
 
-    private RuleNameLabel initGroups(Map<String,RuleNameLabel> folders,
-            String path) {
+    private RuleNameLabel initLabel(Map<String,RuleNameLabel> folders,
+            String path, boolean isFile) {
         if (!folders.containsKey(path)) {
 
             RuleNameLabel label;
             if (path.indexOf('/') != -1) {
                 String parent = path.substring(0, path.lastIndexOf('/'));
-                String name = path.substring(path.lastIndexOf('/') + 1);
 
-                RuleNameLabel pLabel = initGroups(folders, parent);
+                RuleNameLabel pLabel = initLabel(folders, parent, false);
                 label =
                     new RuleNameLabel(pLabel,
-                        path.substring(path.lastIndexOf('/')));
+                        path.substring(path.lastIndexOf('/') + 1));
             } else {
                 label = new RuleNameLabel(path);
             }
-            return folders.put(path, label);
+            if( !isFile ) {
+                folders.put(path, label);
+            }
+            return label;
+
         } else {
             return folders.get(path);
         }
@@ -185,9 +191,11 @@ public class JarGps extends AspectualViewGps {
     }
 
     public static void main(String args[]) throws IOException {
-        URL url =
-            new URL("jar:file:c:/grammars/cups.jar!/cups.gps/?start#cups");
-        new JarGps(false).unmarshal(url);
+        long start = System.currentTimeMillis();
+        URL url = new URL("jar:file:c:/grammars/cups.jar!/cups.gps/");
+        new JarGps(false).unmarshal(url, "start", "cups");
+        long elapsed = System.currentTimeMillis() - start;
+        System.out.println("From Jar Took " + elapsed + " ms");
     }
 
 }
