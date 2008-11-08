@@ -69,12 +69,18 @@ public abstract class AspectualViewGps extends Observable implements
 
     /**
      * Loads the grammar from the given url with the given startGraphName.
-     * @param url
+     * @param location
      * @param startGraphName
-     * @return
      */
-    public abstract DefaultGrammarView unmarshal(URL location,
-            String startGraphName) throws IOException;
+    public DefaultGrammarView unmarshal(URL location, String startGraphName)
+        throws IOException {
+        return unmarshal(location, startGraphName, DEFAULT_CONTROL_NAME);
+    }
+
+    public DefaultGrammarView unmarshal(URL location) throws IOException {
+        return unmarshal(location, DEFAULT_START_GRAPH_NAME,
+            DEFAULT_CONTROL_NAME);
+    }
 
     /**
      * Loads the grammar from the given url with the given startGraphName and
@@ -103,13 +109,11 @@ public abstract class AspectualViewGps extends Observable implements
      * grammar. Can only be done after rules and properties are loaded. TODO:
      * put this somewhere else?
      */
-    protected void loadControl(DefaultGrammarView result, URL controlURL, String controlName)
-        throws IOException {
+    protected void loadControl(DefaultGrammarView result, URL controlURL,
+            String controlName) throws IOException {
 
         if (controlURL != null) {
-            ControlView cv =
-                new ControlView(result, controlURL,
-                    controlName);
+            ControlView cv = new ControlView(result, controlURL, controlName);
             result.setControl(cv);
         }
     }
@@ -170,9 +174,9 @@ public abstract class AspectualViewGps extends Observable implements
 
             AspectualGraphView startGraph =
                 new AspectualGraphView(unmarshalledStartGraph);
-            
+
             startGraph.getName();
-            
+
             setChanged();
             notifyObservers(startGraph);
             result.setStartGraph(startGraph);
@@ -221,21 +225,24 @@ public abstract class AspectualViewGps extends Observable implements
         UnsupportedOperationException {
         // not supported by default
     }
-    
+
     /**
      * Stores a given rule in a given directory.
      * @param rule
      * @param dir
      */
-    public void marshalRule(AspectualRuleView rule, File dir) throws IOException {
-        throw new UnsupportedOperationException("Current grammar does not support saving.");
+    public void marshalRule(AspectualRuleView rule, File dir)
+        throws IOException {
+        throw new UnsupportedOperationException(
+            "Current grammar does not support saving.");
     }
-    
+
     /**
      * Deletes a rule given a grammar directory
      */
     public void deleteRule(AspectualRuleView rule, File dir) {
-        throw new UnsupportedOperationException("Current grammar does not support deleting.");
+        throw new UnsupportedOperationException(
+            "Current grammar does not support deleting.");
     }
 
     /**
