@@ -1,7 +1,6 @@
 /* $Id: AspectGxl.java,v 1.5 2008-01-30 09:33:42 iovka Exp $ */
 package groove.io;
 
-import groove.grammar.GrammarSource;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.view.aspect.AspectGraph;
