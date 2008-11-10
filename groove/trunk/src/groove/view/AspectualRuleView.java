@@ -179,7 +179,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         Iterator<? extends Edge> edgeIter = graph.edgeSet().iterator();
         while (edgeIter.hasNext()) {
             AspectEdge edge = (AspectEdge) edgeIter.next();
-            if (getRuleValue(edge) == role) {
+            if (role.equals(getRuleValue(edge))) {
                 try {
                     Label varLabel =
                         getDefaultLabelParser().parse(edge.label());

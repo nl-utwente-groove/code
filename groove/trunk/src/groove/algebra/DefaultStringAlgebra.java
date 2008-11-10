@@ -86,19 +86,19 @@ public class DefaultStringAlgebra extends Algebra {
     /** Name of the string concatenation operation */
     public static final String CONCAT_SYMBOL = "concat";
     /**
-     * Integer less than operation symbol.
+     * String less than operation symbol.
      */
     public static final String LT_SYMBOL = "lt";
     /**
-     * Integer less-or-equal operation symbol.
+     * String less-or-equal operation symbol.
      */
     public static final String LE_SYMBOL = "le";
     /**
-     * Integer greater than operation symbol.
+     * String greater than operation symbol.
      */
     public static final String GT_SYMBOL = "gt";
     /**
-     * Integer greater-or-equal operation symbol.
+     * String greater-or-equal operation symbol.
      */
     public static final String GE_SYMBOL = "ge";
     /** Name of the string equals operation */
