@@ -27,6 +27,8 @@ import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
+import static groove.util.Groove.DEFAULT_CONTROL_NAME;
+import static groove.util.Groove.DEFAULT_START_GRAPH_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -295,11 +297,4 @@ public abstract class AspectualViewGps extends Observable implements
     static public final String LOADING_START_GRAPH = "Loading start graph";
     /** Error message if a grammar cannot be loaded. */
     static protected final String LOAD_ERROR = "Can't load graph grammar";
-
-    /** The default name of the start state of a grammar. */
-    static public final String DEFAULT_START_GRAPH_NAME = "start";
-
-    /** The default name of the control file of a grammar. */
-    static public final String DEFAULT_CONTROL_NAME = "control";
-
 }

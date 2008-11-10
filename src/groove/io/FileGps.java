@@ -24,6 +24,8 @@ import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
+import static groove.util.Groove.DEFAULT_CONTROL_NAME;
+import static groove.util.Groove.DEFAULT_START_GRAPH_NAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -207,6 +209,9 @@ public class FileGps extends AspectualViewGps {
 
         // START GRAPH
         File startGraphFile;
+        if (startGraphName == null) {
+            startGraphName = DEFAULT_START_GRAPH_NAME;
+        }
         startGraphFile =
             new File(location, STATE_FILTER.addExtension(startGraphName));
         if (startGraphFile.exists()) {

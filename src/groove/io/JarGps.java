@@ -19,6 +19,7 @@ package groove.io;
 import groove.trans.RuleNameLabel;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
+import static groove.util.Groove.DEFAULT_CONTROL_NAME;
 
 import java.io.IOException;
 import java.net.JarURLConnection;

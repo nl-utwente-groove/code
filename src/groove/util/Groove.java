@@ -101,6 +101,9 @@ public class Groove {
     /** Extension for Graph Layout files. */
     public static final String LAYOUT_EXTENSION = ".gl";
 
+    /** Default name for the start graph. */
+    public static final String DEFAULT_START_GRAPH_NAME = "start";
+
     /** Default name for control files. */
     public static final String DEFAULT_CONTROL_NAME = "control";
 
@@ -108,7 +111,7 @@ public class Groove {
     public static final String CONTROL_EXTENSION = ".gcp";
 
     /** Default name for property files. */
-    public static final String PROPERTY_NAME = "grammar";
+    public static final String PROPERTY_NAME = "system";
 
     /** Extension for property files. */
     public static final String PROPERTY_EXTENSION = ".properties";
