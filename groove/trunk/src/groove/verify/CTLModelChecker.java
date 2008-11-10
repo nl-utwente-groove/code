@@ -16,7 +16,6 @@
  */
 package groove.verify;
 
-import groove.grammar.GrammarSource;
 import groove.io.FileGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
