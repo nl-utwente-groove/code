@@ -15,7 +15,6 @@
 package groove.lts;
 
 import groove.control.Location;
-import groove.graph.AbstractGraphShape;
 import groove.graph.DeltaApplier;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -52,7 +51,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     public DefaultGraphNextState(AbstractGraphState source,
             RuleApplication appl, Location control) {
         this(source, appl.getEvent(), appl.getCreatedNodes(), control);
-        getCache().setGraph(appl.getTarget());
+        // getCache().setGraph(appl.getTarget());
     }
 
     /**
@@ -85,23 +84,23 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * footprint.
      */
     public Morphism getMorphism() {
-        RuleApplication appl = getEvent().newApplication(source().getGraph());
-        Graph derivedTarget = appl.getTarget();
-        Graph realTarget = target().getGraph();
-        if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
-            && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
-            return appl.getMorphism();
-        } else {
-            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
-            assert iso != null : "Can't reconstruct derivation from graph transition "
-                + this
-                + ": \n"
-                + AbstractGraphShape.toString(derivedTarget)
-                + " and \n"
-                + AbstractGraphShape.toString(realTarget)
-                + " \nnot isomorphic";
-            return appl.getMorphism().then(iso);
-        }
+        RuleApplication appl = new DefaultApplication(getEvent(), source().getGraph(), getGraph(), getAddedNodes());
+//        Graph derivedTarget = appl.getTarget();
+//        Graph realTarget = target().getGraph();
+//        if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
+//            && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
+        return appl.getMorphism();
+//        } else {
+//            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
+//            assert iso != null : "Can't reconstruct derivation from graph transition "
+//                + this
+//                + ": \n"
+//                + AbstractGraphShape.toString(derivedTarget)
+//                + " and \n"
+//                + AbstractGraphShape.toString(realTarget)
+//                + " \nnot isomorphic";
+//            return appl.getMorphism().then(iso);
+//        }
     }
 
     /**
