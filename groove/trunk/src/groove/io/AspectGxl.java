@@ -31,7 +31,7 @@ public class AspectGxl implements Xml<AspectGraph> {
      * @see AspectGraph#toPlainGraph()
      */
     public void marshalGraph(AspectGraph graph, File file) throws IOException {
-        this.marshaller.marshalGraph(graph, file);
+        this.marshaller.marshalGraph(graph.toPlainGraph(), file);
     }
 
     /** Calls {@link #deleteGraph(File)} on the internal marshaller. */
