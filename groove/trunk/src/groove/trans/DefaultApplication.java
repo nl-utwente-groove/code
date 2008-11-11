@@ -84,6 +84,21 @@ public class DefaultApplication implements RuleApplication, Derivation {
         }
     }
 
+    /**
+     * Reconstructs a derivation on the basis of a given rule event, host
+     * graph and target graph, and created nodes.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     * @param coanchorImage the created nodes, in the order of the rule's
+     *        coanchor. If <code>null</code>, the coanchor image has to be
+     *        computed from the source graph.
+     */
+    public DefaultApplication(RuleEvent event, Graph source, Graph target,
+            Node[] coanchorImage) {
+        this(event,source,coanchorImage);
+        this.target = target;
+    }
+
     public Graph getSource() {
         return this.source;
     }
