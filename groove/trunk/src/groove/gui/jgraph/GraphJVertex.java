@@ -25,7 +25,6 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
 import groove.util.Converter;
 import groove.view.LabelParser;
@@ -320,8 +319,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      */
     boolean hasValue() {
         return (getActualNode() instanceof ValueNode)
-            || (getActualNode() instanceof VariableNode)
-            && ((VariableNode) getActualNode()).isConstant();
+            && ((ValueNode) getActualNode()).hasValue();
     }
 
     /**
@@ -332,8 +330,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     String getValueSymbol() {
         if (getActualNode() instanceof ValueNode) {
             return ((ValueNode) getActualNode()).getSymbol();
-        } else if (hasValue()) {
-            return ((VariableNode) getActualNode()).getConstant().symbol();
         } else {
             return null;
         }
@@ -380,9 +376,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         StringBuilder result = new StringBuilder();
         Node node = getActualNode();
         if (node instanceof ValueNode) {
-                result.append("Constant");
-        } else if (node instanceof VariableNode) {
-            if (((VariableNode) node).isConstant()) {
+            if (((ValueNode) node).hasValue()) {
                 result.append("Constant");
             } else {
                 result.append("Variable");

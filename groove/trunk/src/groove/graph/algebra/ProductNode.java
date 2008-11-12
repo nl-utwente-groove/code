@@ -37,7 +37,7 @@ public class ProductNode extends DefaultNode {
      */
     public ProductNode(int arity) {
         super();
-        this.arguments = new ArrayList<VariableNode>(arity);
+        this.arguments = new ArrayList<ValueNode>(arity);
         for (int i = 0; i < arity; i++) {
             this.arguments.add(null);
         }
@@ -47,9 +47,9 @@ public class ProductNode extends DefaultNode {
     /**
      * Constructor.
      */
-    public ProductNode(List<VariableNode> arguments) {
+    public ProductNode(List<ValueNode> arguments) {
         super();
-        this.arguments = new ArrayList<VariableNode>(arguments);
+        this.arguments = new ArrayList<ValueNode>(arguments);
         assert !this.arguments.contains(null) : "Null argument not allowed";
         this.argCount = arguments.size();
     }
@@ -59,12 +59,12 @@ public class ProductNode extends DefaultNode {
      * @throws IllegalArgumentException if argument number <code>i</code> has
      *         already been set
      */
-    public void setArgument(int i, VariableNode arg) {
+    public void setArgument(int i, ValueNode arg) {
         if (arg == null) {
             throw new IllegalArgumentException(
                 String.format("Null argument not allowed"));
         }
-        VariableNode oldArg = this.arguments.set(i, arg);
+        ValueNode oldArg = this.arguments.set(i, arg);
         if (oldArg == null) {
             this.argCount++;
         } else if (!oldArg.equals(arg)) {
@@ -74,71 +74,8 @@ public class ProductNode extends DefaultNode {
     }
 
     /** Retrieves the list of arguments of the product node. */
-    public List<VariableNode> getArguments() {
+    public List<ValueNode> getArguments() {
         return this.arguments;
-    }
-
-    /**
-     * Adds an operand to <code>operands</code>.
-     * @param constant the {@link groove.algebra.Constant} to be added to the
-     *        <code>operands</code>
-     * @return <tt>true</tt> (as per the general contract of the
-     *         Collection.add method).
-     * @deprecated operands of product nodes are variable nodes
-     */
-    @Deprecated
-    public boolean addOperand(Constant constant) {
-        return this.operands.add(constant);
-    }
-
-    /**
-     * Returns the list of operands.
-     * @return the list of operands.
-     * @deprecated Operands should be {@link VariableNode}s
-     */
-    @Deprecated
-    public List<Object> getOperands() {
-        if (this.operands == null) {
-            this.operands = computeOperands();
-        }
-        return this.operands;
-    }
-
-    /**
-     * Computes the operands from the arguments.
-     * @return a list of constant operand values
-     * @throws IllegalStateException if there are operands which do not carry
-     *         values
-     * @deprecated Operands should be {@link VariableNode}s
-     */
-    @Deprecated
-    protected List<Object> computeOperands() {
-        if (this.argCount < arity()) {
-            throw new IllegalStateException(String.format(
-                "Arguments %s have not all been set", this.arguments));
-        }
-        List<Object> result = new ArrayList<Object>(this.arguments.size());
-        for (VariableNode arg : this.arguments) {
-            Object value = arg;//.getValue();
-            if (value == null) {
-                throw new IllegalStateException(String.format(
-                    "Argument %s does not have value", arg));
-            }
-            result.add(value);
-        }
-        assert result.size() == arity();
-        return result;
-    }
-
-    /**
-     * Gets the operand at the given index.
-     * @param index the index of the operand to be returned
-     * @return the OperationInstance at <code>index</code>
-     * @deprecated Operands should be {@link VariableNode}s
-     */
-    @Deprecated
-    public Object getOperand(int index) {
-        return getOperands().get(index);
     }
 
     /**
@@ -158,13 +95,11 @@ public class ProductNode extends DefaultNode {
      * The list of arguments of this product node (which are the value nodes to
      * which an outgoing AlgebraEdge is pointing).
      */
-    private final List<VariableNode> arguments;
+    private final List<ValueNode> arguments;
     /**
      * The number of arguments (i.e., elements of <code>argument</code>) that
      * have already been set.
      */
     private int argCount;
     /** the list of operands contained in this <code>ProductNode</code> */
-    @Deprecated
-    private List<Object> operands;
 }

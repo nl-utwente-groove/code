@@ -26,7 +26,7 @@ import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.VariableNode;
+import groove.graph.algebra.ValueNode;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -236,7 +236,7 @@ public class GraphSearchPlanFactory {
             Iterator<Node> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
                 Node node = unmatchedNodeIter.next();
-                if (node instanceof VariableNode && ((VariableNode) node).isConstant()) {
+                if (node instanceof ValueNode && ((ValueNode) node).hasValue()) {
                     result.add(createNodeSearchItem(node));
                     unmatchedNodeIter.remove();
                 }
@@ -361,8 +361,8 @@ public class GraphSearchPlanFactory {
          * Callback factory method for creating a node search item.
          */
         protected AbstractSearchItem createNodeSearchItem(Node node) {
-            if (node instanceof VariableNode) {
-                return new ValueNodeSearchItem((VariableNode) node);
+            if (node instanceof ValueNode) {
+                return new ValueNodeSearchItem((ValueNode) node);
             } else if (node instanceof ProductNode) {
                 return null;
             } else {

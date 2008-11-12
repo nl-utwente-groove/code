@@ -29,9 +29,9 @@ import groove.util.Groove;
  * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
 public class ArgumentEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
+        AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
     /** Constructs a fresh edge. */
-    public ArgumentEdge(ProductNode source, int number, VariableNode target) {
+    public ArgumentEdge(ProductNode source, int number, ValueNode target) {
         super(source, DefaultLabel.createLabel("" + Groove.LC_PI + number),
             target);
         this.number = number;

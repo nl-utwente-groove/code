@@ -22,7 +22,6 @@ import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Arrays;
@@ -50,10 +49,10 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         this.arguments = edge.source().getArguments();
         this.target = edge.target();
         this.neededNodes = new HashSet<Node>(this.arguments);
-        if (this.target.isConstant()) {
+        if (this.target.hasValue()) {
             this.boundNodes = Collections.<Node>emptySet();
             this.neededNodes.add(this.target);
-            this.value = this.target.getConstant().getValue();
+            this.value = this.target.getValue();
         } else {
             this.boundNodes = Collections.<Node>singleton(this.target);
             this.value = null;
@@ -97,7 +96,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         int result = 0;
         if (other instanceof OperatorEdgeSearchItem) {
             OperatorEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
-            List<VariableNode> otherArguments = otherEdge.source().getArguments();
+            List<ValueNode> otherArguments = otherEdge.source().getArguments();
             result = this.edge.label().compareTo(otherEdge.label());
             for (int i = 0; result == 0 && i < this.arguments.size(); i++) {
                 result = this.arguments.get(i).compareTo(otherArguments.get(i));
@@ -140,9 +139,9 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     /** The operation of the product edge. */
     final Operation operation;
     /** List of operands of the product edge's source node. */
-    final List<VariableNode> arguments;
+    final List<ValueNode> arguments;
     /** The target node of the product edge. */
-    final VariableNode target;
+    final ValueNode target;
     /** The value of the target node, if it is a constant. */
     final Object value;
     /** Singleton set consisting of <code>target</code>. */

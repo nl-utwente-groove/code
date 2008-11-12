@@ -25,16 +25,15 @@ import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ import java.util.TreeSet;
 
 /**
  * Aspectual view upon an attributed graph.
- * The attribute values are represented by {@link VariableNode}s with
+ * The attribute values are represented by {@link ValueNode}s with
  * self-{@link OperatorEdge}s.
  * @author Arend Rensink
  * @version $Revision $
@@ -60,6 +59,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
      */
     public AspectualGraphView(AspectGraph view) {
         this.view = view;
+        this.attributeFactory = new AttributeElementFactory(view);
         // we fix the view; is it conceptually right to do that here?
         view.setFixed();
         String name = GraphInfo.getName(view);
@@ -183,7 +183,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
                 try {
                     // create an image for the view edge
                     Edge edgeImage =
-                        AttributeAspect.createAttributeEdge(viewEdge, endImages);
+                        this.attributeFactory.createAttributeEdge(viewEdge, endImages);
                     if (edgeImage == null) {
                         edgeImage = model.addEdge(endImages, parse(viewEdge));
                     } else if (!isAllowedEdge(edgeImage)) {
@@ -204,7 +204,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
             Map.Entry<AspectNode,Node> viewToModelEntry =
                 viewToModelIter.next();
             Node modelNode = viewToModelEntry.getValue();
-            if (modelNode instanceof VariableNode
+            if (modelNode instanceof ValueNode
                 && model.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
                 model.removeNode(modelNode);
@@ -212,16 +212,16 @@ public class AspectualGraphView extends AspectualView<Graph> {
                 viewToModelIter.remove();
             }
         }
-        // turn variable nodes into value nodes
-        NodeEdgeMap conversionMap = new NodeEdgeHashMap();
-        model = AlgebraGraph.getInstance().convertGraph(model, conversionMap);
-        // adapt the element map
-        for (Map.Entry<Node,Node> nodeEntry: elementMap.nodeMap().entrySet()) {
-            nodeEntry.setValue(conversionMap.getNode(nodeEntry.getValue()));
-        }
-        for (Map.Entry<Edge,Edge> edgeEntry: elementMap.edgeMap().entrySet()) {
-            edgeEntry.setValue(conversionMap.getEdge(edgeEntry.getValue()));
-        }
+//        // turn variable nodes into value nodes
+//        NodeEdgeMap conversionMap = new NodeEdgeHashMap();
+//        model = AlgebraGraph.getInstance().convertGraph(model, conversionMap);
+//        // adapt the element map
+//        for (Map.Entry<Node,Node> nodeEntry: elementMap.nodeMap().entrySet()) {
+//            nodeEntry.setValue(conversionMap.getNode(nodeEntry.getValue()));
+//        }
+//        for (Map.Entry<Edge,Edge> edgeEntry: elementMap.edgeMap().entrySet()) {
+//            edgeEntry.setValue(conversionMap.getEdge(edgeEntry.getValue()));
+//        }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
         if (errors.isEmpty()) {
@@ -234,13 +234,12 @@ public class AspectualGraphView extends AspectualView<Graph> {
 
     /**
      * Attempts to create an attribute node from a given aspect node.
-     * Turns {@link VariableNode}s into {@link ValueNode}s.
      * @return null if the aspect node is not an attribute node.
      * @throws FormatException if the aspect value is wrongly formatted
      */
     private Node createAttributeNode(AspectGraph view, AspectNode viewNode)
         throws FormatException {
-        Node result = AttributeAspect.createAttributeNode(viewNode, view);
+        Node result = this.attributeFactory.createAttributeNode(viewNode);
 //        if (result instanceof VariableNode) {
 //            if (((VariableNode) result).isConstant()) {
 //                result = AlgebraGraph.getInstance().getValueNode(((VariableNode) result).getConstant());
@@ -255,7 +254,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
      * Tests if a certain attribute node is of the type allowed in graphs.
      */
     private boolean isAllowedNode(Node node) {
-        return node instanceof VariableNode && ((VariableNode) node).isConstant();
+        return node instanceof ValueNode && ((ValueNode) node).hasValue();
     }
 
     /**
@@ -298,6 +297,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
     private final List<String> errors;
     /** Map from view to model nodes. */
     private final NodeEdgeMap viewToModelMap;
+    /** The attribute element factory for this view. */
+    private final AttributeElementFactory attributeFactory;
     /** The graph factory used by this view, to construct the model. */
     private static final GraphFactory graphFactory = GraphFactory.getInstance();
 }
