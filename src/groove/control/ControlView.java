@@ -48,32 +48,31 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * @author Staijen Loads a control program into a given ControlAutomaton
  */
 public class ControlView {
-//    /** File where the control program is stored. * */
-//    private final File controlFile;
+    // /** File where the control program is stored. * */
+    // private final File controlFile;
 
     /** Grammar view to which this control view belongs. */
     private final DefaultGrammarView grammarView;
-    /**
-     * The control program, loaded from {@link #controlFile} at construction
-     * time.
-     */
+
+    /** The control program loaded at construction time. */
     private final String controlProgram;
 
     private ControlAutomaton automaton;
 
     private String controlName;
-    
+
     /**
      * Constructor, needs a grammar view and a filename to a control program.
      * 
      * Afterwards, programShape and automaton should have a value.
      * 
      * @param result
-     * @param controlProgramFile
+     * @param controlURL the URL to read the control program from
      */
-    public ControlView(DefaultGrammarView result, URL controlURL, String controlName) throws IOException {
+    public ControlView(DefaultGrammarView result, URL controlURL,
+            String controlName) throws IOException {
         this.grammarView = result;
-//      this.controlFile = controlProgramFile;
+        // this.controlFile = controlProgramFile;
         this.controlName = controlName;
         this.controlProgram = loadProgram(controlURL.openStream());
     }
@@ -92,7 +91,8 @@ public class ControlView {
     private String loadProgram(InputStream stream) {
         StringBuilder contents = new StringBuilder();
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+            BufferedReader br =
+                new BufferedReader(new InputStreamReader(stream));
             String line;
             while (((line = br.readLine()) != null)) {
                 contents.append(line + "\r\n");
@@ -104,10 +104,9 @@ public class ControlView {
     }
 
     /** returns the File containing the current control program */
-//    public File getFile() {
-//        return this.controlFile;
-//    }
-
+    // public File getFile() {
+    // return this.controlFile;
+    // }
     /**
      * This method should only be called from DefaultGrammarView.computeGrammar
      * Create the automaton once, then, use getAutomaton() to get the automaton.
@@ -172,25 +171,23 @@ public class ControlView {
     }
 
     /**
-     * Saves the program to the given file.
-     * 
+     * Saves the program to the given OutputStream.
      * @param controlProgram
-     * @param file
-     * @throws IOException
+     * @param out the output stream to write the control program to.
      */
     public static void store(String controlProgram, OutputStream out) {
         PrintWriter pw = new PrintWriter(out);
         pw.write(controlProgram);
         pw.close();
     }
-    
+
     /**
      * Returns a unique identifier for the location, set by the
      * LocationAutomatonBuilder
      * @return name
      */
-    public String getName()  {
+    public String getName() {
         return this.controlName;
     }
-    
+
 }

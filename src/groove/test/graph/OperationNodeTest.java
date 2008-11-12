@@ -64,6 +64,7 @@ public class OperationNodeTest extends TestCase {
         }
     }
 
+    /** test the equals method of different nodes */
     final public void testEquals() {
         assertEquals(true, this.intNode.equals(this.intNode));
         assertEquals(false, this.intNode.equals(this.checkIntNode));

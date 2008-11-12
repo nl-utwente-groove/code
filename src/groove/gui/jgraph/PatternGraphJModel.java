@@ -34,6 +34,11 @@ public class PatternGraphJModel extends GraphJModel {
         super(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
 
+    /**
+     * Returns an instanceof this class for the given GraphPattern.
+     * @param graph
+     * @param options
+     */
     public static PatternGraphJModel getInstance(GraphPattern graph,
             Options options) {
         PatternGraphJModel result = new PatternGraphJModel(graph, options);

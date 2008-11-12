@@ -16,7 +16,6 @@
  */
 package groove.type;
 
-import groove.graph.AbstractNodeEdgeMap;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -36,11 +35,13 @@ public class DefaultTypeGraph extends DefaultGraph {
 
     private final Map<Object,NodeEdgeMap> typings;
 
+    /** Initializes a new type graph instance */
     public DefaultTypeGraph() {
         super();
         this.typings = new HashMap<Object,NodeEdgeMap>();
     }
 
+    /** adds typing to the given graph */
     public void addTyping(Graph graph) {
 
         NodeEdgeMap map = new NodeEdgeHashMap();
@@ -51,7 +52,7 @@ public class DefaultTypeGraph extends DefaultGraph {
         this.typings.put(graph, map);
     }
 
-    protected NodeEdgeMap addNodeTypes(Set<? extends Node> nodes) {
+    private NodeEdgeMap addNodeTypes(Set<? extends Node> nodes) {
 
         NodeEdgeMap map = new NodeEdgeHashMap();
 
@@ -63,7 +64,7 @@ public class DefaultTypeGraph extends DefaultGraph {
         return map;
     }
 
-    protected NodeEdgeMap addEdgeTypes(Set<? extends Edge> edges) {
+    private NodeEdgeMap addEdgeTypes(Set<? extends Edge> edges) {
 
         NodeEdgeMap map = new NodeEdgeHashMap();
 
@@ -77,13 +78,13 @@ public class DefaultTypeGraph extends DefaultGraph {
         return map;
     }
 
-    public void mergeNodeTypes(AbstractNodeEdgeMap<Node,Node,Edge,Edge> map) {
-        for (Map.Entry<Node,Node> nodes : map.nodeMap().entrySet()) {
-            mergeNodes(nodes.getKey(), nodes.getValue());
-        }
-    }
-
-    public NodeEdgeMap getTyping(Object o) {
-        return this.typings.get(o);
-    }
+//    Commented away, never used (TOM)
+//    private void mergeNodeTypes(AbstractNodeEdgeMap<Node,Node,Edge,Edge> map) {
+//        for (Map.Entry<Node,Node> nodes : map.nodeMap().entrySet()) {
+//            mergeNodes(nodes.getKey(), nodes.getValue());
+//        }
+//    }
+//    private NodeEdgeMap getTyping(Object o) {
+//        return this.typings.get(o);
+//    }
 }

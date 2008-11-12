@@ -28,6 +28,7 @@ import junit.framework.TestSuite;
  */
 public class TestAbstraction extends TestCase {
 
+    /** suite method for testing abstract simulation */
     public static Test suite() {
         TestSuite suite = new TestSuite("Tests for abstract transformation.");
         suite.addTest(new TestSuite(TestingAbstGraph.class));

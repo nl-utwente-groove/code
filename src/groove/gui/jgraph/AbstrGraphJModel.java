@@ -33,6 +33,7 @@ public class AbstrGraphJModel extends GraphJModel {
         // options.setSelected(Options.VERTEX_LABEL_OPTION, true);
     }
 
+    /** Creates a new instance of this class */
     public static AbstrGraphJModel newInstance(AbstrGraph graph, Options options) {
         AbstrGraphJModel result = new AbstrGraphJModel(graph, options);
         result.reload();

@@ -67,7 +67,7 @@ public class CompositeEvent extends
 
     public String getAnchorImageString() {
     	List<String> eventLabels = new ArrayList<String>();
-    	for (SPOEvent event: eventArray) {
+    	for (SPOEvent event: this.eventArray) {
     		eventLabels.add(event.getRule().getName().name()+event.getAnchorImageString());
     	}
         return Arrays.toString(eventLabels.toArray());

@@ -38,7 +38,7 @@ public class AspectGxl implements Xml<AspectGraph> {
     public void deleteGraph(File file) {
         this.marshaller.deleteGraph(file);
     }
-    
+
     /**
      * Unmarshals the file using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}.
@@ -55,12 +55,11 @@ public class AspectGxl implements Xml<AspectGraph> {
     public AspectGraph unmarshalGraph(File file) throws IOException {
         return unmarshalGraph(FileGps.toURL(file));
     }
-    
-    
-//    /** Calls {@link #deleteGraph(File)} on the internal marshaller. */
-//    public void deleteGraph(File file) {
-//        this.marshaller.deleteGraph(file);
-//    }
+
+    // /** Calls {@link #deleteGraph(File)} on the internal marshaller. */
+    // public void deleteGraph(File file) {
+    // this.marshaller.deleteGraph(file);
+    // }
 
     /**
      * The marshaller to get and store graphs, which are then converted to

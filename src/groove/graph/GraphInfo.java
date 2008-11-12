@@ -87,7 +87,7 @@ public class GraphInfo {
     /**
      * Returns the file associated with the graph, if any.
      * @return a file stored in the info object, or <code>null</code>
-     * @see #setFile(File)
+     * @see #setFile(String)
      */
     public String getFile() {
         return (String) this.data.get(FILE_KEY);

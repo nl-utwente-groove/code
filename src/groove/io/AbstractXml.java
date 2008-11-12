@@ -47,7 +47,7 @@ public abstract class AbstractXml implements Xml<Graph> {
     public Graph unmarshalGraph(File file) throws IOException {
         return unmarshalGraph(FileGps.toURL(file));
     }
-    
+
     /**
      * Deletes the graph file, as well as all variants with the same name but
      * different priorities.
@@ -56,12 +56,11 @@ public abstract class AbstractXml implements Xml<Graph> {
         deleteFile(file);
         // deleteVariants(file);
     }
-    
+
     /** Deletes a given file, storing a graph, and possible auxiliary files. */
     protected void deleteFile(File file) {
         file.delete();
     }
-
 
     /**
      * Reads a graph from an XML formatted file and returns it. Also constructs

@@ -483,6 +483,7 @@ public class ConcretePart {
         this.centerNodes = centerNodes;
     }
 
+    /** Returns the graph */
     public final Graph graph() {
         return this.graph;
     }

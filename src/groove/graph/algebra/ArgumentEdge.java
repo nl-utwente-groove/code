@@ -39,7 +39,7 @@ public class ArgumentEdge extends
 
     /** Returns the argument number of this edge. */
     public int getNumber() {
-        return number;
+        return this.number;
     }
 
     /** The number of this algebra edge. */

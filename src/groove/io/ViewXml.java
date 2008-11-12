@@ -35,12 +35,11 @@ public interface ViewXml<V extends View<?>> {
      * @param file the output file
      * @throws IOException if an error occurred during file output
      */
-    public void marshal(V view, File target) throws IOException;
+    public void marshal(V view, File file) throws IOException;
 
     /**
      * Converts an XML formatted file into a graph, and returns the graph.
-     * Convenience method for <code>unmarshal(file, null)</code>.
-     * @param file the file to be read from
+     * @param source the url to be read from
      * @return the unmarshalled graph
      * @throws IOException if an error occurred during file input
      */

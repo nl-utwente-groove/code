@@ -36,7 +36,6 @@ import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;

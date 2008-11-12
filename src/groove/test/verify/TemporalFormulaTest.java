@@ -35,6 +35,7 @@ public class TemporalFormulaTest extends TestCase {
         //
     }
 
+    /** test the creation of ctl formulae */
     public void testCTLFormulaCreation() {
         try {
             TemporalFormula formula;
@@ -75,9 +76,9 @@ public class TemporalFormulaTest extends TestCase {
             formula = CTLFormula.parseFormula("A(get U (empty | full))");
 
             // HARMEN: make sure that the following formula cannot
-                        // be parsed as a ctl formula
+            // be parsed as a ctl formula
             // i.e. in CTL, every temporal operator should be
-                        // bounded by a path quantifier
+            // bounded by a path quantifier
             formula = CTLFormula.parseFormula("G(empty)");
 
             // LTL formulae

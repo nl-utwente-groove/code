@@ -717,7 +717,7 @@ public class Simulator {
     /**
      * Does the actual saving of a control program in the current grammar.
      * @param program
-     * @return
+     * @return the file to save control to.
      */
     File handleSaveControl(String program) {
         // check if we had a control program
@@ -3977,6 +3977,10 @@ public class Simulator {
             return ret;
         }
 
+        /**
+         * MARIA: this method is never used locally
+         * @param p_path
+         */
         private void openLastFile(String p_path) {
             if (p_path != null) {
                 final File f = new File(p_path);

@@ -101,11 +101,13 @@ public class Util {
     // ////////////////////////////////////////////////////////////////////
     // For debugging
 
+    /** Check whether the first argument is a subgraph of the second argument */
     static public void checkSubgraph(Graph subgraph, Graph graph) {
         assert graph.containsElementSet(subgraph.nodeSet()) : "Not a subgraph";
         assert graph.containsElementSet(subgraph.edgeSet()) : "Not a subgraph";
     }
 
+    /** Returns the intersection of two given sets. */
     static public <T> Set<? extends T> intersection(Set<? extends T> s1,
             Set<? extends T> s2) {
         Set<T> result = new HashSet<T>(Math.min(s1.size(), s2.size()));
@@ -130,6 +132,7 @@ public class Util {
         }
     }
 
+    /** Returns a total morhphism of the given morphism. AREND: check this comment. */
     public static Morphism getTotalExtension(Morphism morph) {
         SearchPlanStrategy mstr =
             GraphSearchPlanFactory.getInstance().createMatcher(morph.dom(),
@@ -139,6 +142,7 @@ public class Util {
             morph.cod(), morph.elementMap()).next());
     }
 
+    /** Returns the labelset of the given graph */
     public static Set<Label> labelSet(Graph g) {
         Set<Label> result = new HashSet<Label>();
         for (Edge e : g.edgeSet()) {

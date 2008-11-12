@@ -24,6 +24,8 @@ import groove.graph.DefaultGraph;
  * @version $Revision$
  */
 public class DefaultGraphTest extends GraphTest {
+    
+    /** Initializes a test for DefaultGraph */
     public DefaultGraphTest(String name) {
         super(name, new DefaultGraph());
     }

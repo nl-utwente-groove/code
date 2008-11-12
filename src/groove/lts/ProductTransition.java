@@ -48,18 +48,22 @@ public class ProductTransition { // extends DefaultGraphTransition {
         this.target = target;
     }
 
+    /** returns the graphtransition of this producttransition */
     public GraphTransition graphTransition() {
         return this.graphTransition;
     }
 
+    /** returns the source state of this product transition */
     public BuchiGraphState source() {
         return this.source;
     }
 
+    /** returns the target state of this product transition */
     public BuchiGraphState target() {
         return this.target;
     }
 
+    /** returnsz the rule of this buchi transition */
     public Rule rule() {
         return graphTransition().getEvent().getRule();
     }

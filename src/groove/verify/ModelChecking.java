@@ -167,6 +167,7 @@ public class ModelChecking {
         // updateColourScheme();
     }
 
+    /** Updates the color scheme */
     public static void updateColourScheme() {
         if (ModelChecking.START_FROM_BORDER_STATES) {
             nextColourScheme();

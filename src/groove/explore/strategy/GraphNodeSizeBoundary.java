@@ -49,6 +49,7 @@ public class GraphNodeSizeBoundary extends AbstractBoundary {
         return result;
     }
 
+    /** Returns whether the given graph's size crosses this boundary. */
     public boolean crossingBoundary(Graph graph) {
         return graph.nodeCount() > this.graphSizeBoundary;
     }

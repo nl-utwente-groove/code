@@ -33,21 +33,26 @@ public interface Xml<G extends GraphShape> {
     /**
      * Writes a graph to an outputstream, in XML format.
      * @param graph the graph to be marshalled
-     * @param stream the output stream
+     * @param file the file to write to
      * @throws IOException if an error occurred during file output
      */
     public void marshalGraph(G graph, File file) throws IOException;
-    
+
     /**
-     * Converts an XML formatted inputstream into a graph, and returns the graph.
-     * Convenience method for <code>unmarshal(file, null)</code>.
-     * @param stream the input stream to be read from
+     * Converts an XML formatted inputstream into a graph, and returns the
+     * graph. Convenience method for <code>unmarshal(file, null)</code>.
+     * @param url the URL to be read from
      * @return the unmarshalled graph
      * @throws IOException if an error occurred during file input
      */
     public G unmarshalGraph(URL url) throws IOException;
+
+    /**
+     * Backwards compatibility method for unmarshalling from files.
+     * @throws IOException
+     */
     public G unmarshalGraph(File file) throws IOException;
-    
+
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file);
 }

@@ -127,6 +127,7 @@ public class LTLBenchmarker extends CommandLineTool {
 
     private static String logFileName;
 
+    /** Initializes a new instance of the LTLBenchmarker */
     public LTLBenchmarker() {
         super(Collections.<String>emptyList());
     }
@@ -827,10 +828,12 @@ public class LTLBenchmarker extends CommandLineTool {
         startStateName = arguments.remove(0);
     }
 
+    /** Sets the name of the logfile, which is taken from the arguments */
     public static void setLogFileName(List<String> arguments) {
         logFileName = arguments.remove(0);
     }
 
+    /** Returns the ruleSet */
     public Set<Rule> ruleSet() {
         if (ruleSet == null) {
             computeRuleSet();
@@ -848,15 +851,15 @@ public class LTLBenchmarker extends CommandLineTool {
         }
     }
 
-    public String property() {
+    private String property() {
         return property;
     }
 
-    public static void setProperty(List<String> arguments) {
+    private static void setProperty(List<String> arguments) {
         property = arguments.remove(0);
     }
 
-    public static void setStrategyType(List<String> arguments) {
+    private static void setStrategyType(List<String> arguments) {
         strategyType = arguments.remove(0);
         if (strategyType.equals(STRATEGY_GRAPH_SIZE)) {
             initialBound = Integer.parseInt(arguments.remove(0));
@@ -898,7 +901,7 @@ public class LTLBenchmarker extends CommandLineTool {
         return productGTS;
     }
 
-    public GTS getGTS() {
+    private GTS getGTS() {
         if (this.gts == null) {
             this.gts = new GTS(getGrammar());
         }
@@ -1364,7 +1367,7 @@ public class LTLBenchmarker extends CommandLineTool {
         writer.close();
     }
 
-    public static void log(String message) {
+    private static void log(String message) {
         try {
             FileWriter logFileWriter = new FileWriter(logFileName, true);
             BufferedWriter writer = new BufferedWriter(logFileWriter);
@@ -1540,6 +1543,7 @@ public class LTLBenchmarker extends CommandLineTool {
         private int edgeCount;
     }
 
+    /** Prints the usage message */
     public static void printUsageMessage() {
         System.out.println("Usage: <grammar-location> <start-graph> strategy property");
     }

@@ -19,11 +19,13 @@ package groove.test.graph;
 import groove.graph.NodeSetLabelEdgeMapGraph;
 
 /**
- * Test class to test <tt>DefaultGraph</tt>
+ * Test class to test <tt>NodeSetEdgeMapGraph</tt>
  * @author Arend Rensink
  * @version $Revision$
  */
 public class NodeSetEdgeMapGraphTest extends GraphTest {
+    
+    /** Inializes a test for a NodeSetEdgeMapGraph */
     public NodeSetEdgeMapGraphTest(String name) {
         super(name, new NodeSetLabelEdgeMapGraph());
     }
