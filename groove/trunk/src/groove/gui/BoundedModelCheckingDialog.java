@@ -142,6 +142,10 @@ public class BoundedModelCheckingDialog {
         return this.cancelButton;
     }
 
+    /**
+     * Shows the dialog that requests the boundary.
+     * @param frame
+     */
     public void showDialog(JFrame frame) {
         // createContentPane();
         this.dialog = createContentPane().createDialog(frame, createTitle());
@@ -151,14 +155,22 @@ public class BoundedModelCheckingDialog {
         this.dialog.setVisible(true);
     }
 
-    public String createTitle() {
+    private String createTitle() {
         return this.DIALOG_TITLE;
     }
 
+    /**
+     * Gives the boundary inserted in the dialog
+     * @return the inserted boundary
+     */
     public Boundary getBoundary() {
         return this.boundary;
     }
 
+    /**
+     * Set the grammar for which a boundary is to be given.
+     * @param grammar
+     */
     public void setGrammar(GraphGrammar grammar) {
         this.grammar = grammar;
         this.ruleNames = new ArrayList<String>();
@@ -166,15 +178,16 @@ public class BoundedModelCheckingDialog {
             this.ruleNames.add(rule.getName().name());
         }
     }
-//
-//    /**
-//     * The bound to be set through the dialog.
-//     */
-//    private int bound;
-//    /**
-//     * The delta to be set through the dialog.
-//     */
-//    private int delta;
+
+    //
+    // /**
+    // * The bound to be set through the dialog.
+    // */
+    // private int bound;
+    // /**
+    // * The delta to be set through the dialog.
+    // */
+    // private int delta;
     /**
      * The graph-grammar from which to obtain the rules.
      */
@@ -235,7 +248,7 @@ public class BoundedModelCheckingDialog {
             BoundedModelCheckingDialog.this.dialog.dispose();
         }
 
-        public void setBoundary() {
+        private void setBoundary() {
             if (BoundedModelCheckingDialog.this.graphBoundButton.isSelected()) {
                 int graphBound =
                     Integer.parseInt(BoundedModelCheckingDialog.this.boundField.getText());

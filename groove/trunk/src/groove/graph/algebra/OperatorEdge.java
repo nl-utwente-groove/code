@@ -59,7 +59,7 @@ public class OperatorEdge extends
      * @return the <code>operation</code> of this <code>ProductEdge</code>
      */
     public Operation getOperation() {
-        return operation;
+        return this.operation;
     }
 
     /**
@@ -69,7 +69,7 @@ public class OperatorEdge extends
      */
     @Deprecated
     public Object getResult() {
-        return operation.apply(source().getOperands());
+        return this.operation.apply(source().getOperands());
     }
 
     @Override

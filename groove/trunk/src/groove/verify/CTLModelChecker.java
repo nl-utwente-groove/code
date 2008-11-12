@@ -327,7 +327,7 @@ public class CTLModelChecker extends CommandLineTool {
             try {
                 this.grammar =
                     this.loader.unmarshal(new File(this.grammarLocation),
-                        startStateName).toGrammar();
+                        this.startStateName).toGrammar();
                 this.grammar.setFixed();
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage());

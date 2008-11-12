@@ -30,7 +30,6 @@ import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -248,10 +247,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * version information into account.
      */
     private AspectParser getAspectParser(GraphShape graph) {
-        String rule_role = Groove.RULE_ROLE;
-        String graph_role = GraphInfo.getRole(graph);
-        String graph_version = GraphInfo.getVersion(graph); 
-        
         boolean convertToCurly =
             Groove.RULE_ROLE.equals(GraphInfo.getRole(graph))
                 && GraphInfo.getVersion(graph) == null;
@@ -460,7 +455,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             }
         } else {
             try {
-                Graph plainGraph = null; //Groove.loadGraph(file);
+                Graph plainGraph = Groove.loadGraph(file);
                 if (plainGraph != null) {
                     System.out.printf("Testing %s", file);
                     testTranslation(plainGraph);

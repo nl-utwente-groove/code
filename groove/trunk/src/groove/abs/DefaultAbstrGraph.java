@@ -767,6 +767,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 
     // DEBUGGING CLASS
 
+    /** Returns an instance of the AbstrGraphCreator */
     public static AbstrGraphCreator getAbstrGraphCreatorInstance() {
         return (new DefaultAbstrGraph()).new AbstrGraphCreator();
     }

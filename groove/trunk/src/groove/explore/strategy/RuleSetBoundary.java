@@ -70,6 +70,7 @@ public abstract class RuleSetBoundary extends AbstractBoundary {
         // do nothing
     }
 
+    /** Returns whether this boundary contains the given rule. */
     public boolean containsRule(Rule rule) {
         return this.ruleSetBoundary.contains(rule);
     }

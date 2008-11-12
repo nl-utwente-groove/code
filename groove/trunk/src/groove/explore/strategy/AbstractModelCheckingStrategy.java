@@ -399,6 +399,10 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         this.lastTransition = transition;
     }
 
+    /**
+     * Set the current buchi state
+     * @param atState
+     */
     public void setAtBuchiState(BuchiGraphState atState) {
         this.atBuchiState = atState;
     }
@@ -411,14 +415,25 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         return this.searchStack;
     }
 
+    /**
+     * Pushes the given state on the search stack.
+     * @param state
+     */
     public void pushState(BuchiGraphState state) {
         searchStack().push(state);
     }
 
+    /**
+     * Returns the transition stack.
+     */
     public Stack<ProductTransition> transitionStack() {
         return this.transitionStack;
     }
 
+    /**
+     * Pushes a transition on the transition stack.
+     * @param transition
+     */
     public void pushTransition(ProductTransition transition) {
         transitionStack().push(transition);
         assert (transitionStack().size() == (searchStack().size() - 1)) : "search stacks out of sync ("

@@ -236,7 +236,7 @@ public class TestingPatternFamily extends junit.framework.TestCase {
         return result;
     }
 
-    public void _testMatching1() {
+    private void _testMatching1() {
         Graph g = new DefaultGraph();
         Node n0 = g.addNode();
         Node n1 = g.addNode();
@@ -261,6 +261,7 @@ public class TestingPatternFamily extends junit.framework.TestCase {
 
     }
 
+    /** Main method for running this test as a java program */
     public static void main(String[] args) {
         TestingPatternFamily test = new TestingPatternFamily();
         test._testMatching1();

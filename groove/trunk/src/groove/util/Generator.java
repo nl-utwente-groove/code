@@ -44,7 +44,6 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PartitionRefiner;
-import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
 import groove.io.FileGps;
 import groove.io.RuleList;

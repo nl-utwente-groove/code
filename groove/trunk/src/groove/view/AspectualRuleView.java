@@ -64,7 +64,6 @@ import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -452,7 +451,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     boolean isNextLevelCreator =
                         RuleAspect.isCreator(edge) && level.isUniversal();
                     if (level.isUniversal() && hasConcreteImage(edge.label())) { // createRuleLabel(edge.label())))
-                                                                                    // {
+                        // {
                         // add the edge and its end nodes as stale to the next
                         // (rule) level
                         for (int child = 0; child < subLevelCountMap.get(level); child++) {
@@ -510,7 +509,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     if (levelName != null) {
                         ruleNameSuffix = levelName + ruleNameSuffix;
                     } else {
-                    	ruleNameSuffix = this.name+ruleNameSuffix;
+                        ruleNameSuffix = this.name + ruleNameSuffix;
                     }
                     condition.setName(new RuleNameLabel(ruleNameSuffix));
                     levelRuleMap.get(parentLevel).addSubCondition(condition);
@@ -649,7 +648,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             for (Map.Entry<AspectEdge,Boolean> edgeEntry : newEdges.entrySet()) {
                 AspectEdge edge = edgeEntry.getKey();
                 Edge edgeImage = viewToRuleMap.getEdge(edge);
-//                assert edgeImage != null : String.format("Image of %s not in map", edge);
+                // assert edgeImage != null : String.format("Image of %s not in
+                // map", edge);
                 if (edgeImage != null && RuleAspect.inLHS(edge)) {
                     lhs.addEdge(edgeImage);
                     if (hasConcreteImage(edgeImage.label())) {
@@ -663,7 +663,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                         // edgeImage.label());
                     }
                 }
-                if (edgeImage != null && RuleAspect.inRHS(edge) && !RuleAspect.isMerger(edge)) {
+                if (edgeImage != null && RuleAspect.inRHS(edge)
+                    && !RuleAspect.isMerger(edge)) {
                     // use the toRight map because we may have merged nodes
                     Edge rhsEdgeImage = computeEdgeImage(edge, toRight);
                     rhs.addEdge(rhsEdgeImage);
@@ -1365,7 +1366,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         } else {
             try {
                 // TOM: had to disable since this method is gone
-                Graph plainGraph = null; //Groove.loadGraph(file);
+                Graph plainGraph = Groove.loadGraph(file);
                 if (plainGraph != null) {
                     System.out.printf("Testing %s%n", file);
                     testTranslation(file.getName(),

@@ -8,8 +8,15 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 
+/**
+ * An ExploreCache for prioritizes rule sets.
+ * 
+ * @author Tom Staijen
+ * @version $Revision $
+ */
 public class PriorityCache implements ExploreCache {
 
+    /** Initializer */
     public PriorityCache(SortedMap<Integer,Set<Rule>> rules,
             boolean isRandomized) {
         this.rules = rules;

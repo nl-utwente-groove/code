@@ -18,8 +18,14 @@ package groove.gui.jgraph;
 
 import groove.gui.Simulator;
 
+/**
+ * LTSJGrapj for abstract simulation
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class AbstrLTSJGraph extends LTSJGraph {
 
+    /** Initializes an AbstrLTSJGraph given the used Simulator */
     public AbstrLTSJGraph(Simulator simulator) {
         super(simulator, AbstrLTSJModel.EMPTY_ABSTR_LTS_JMODEL);
     }

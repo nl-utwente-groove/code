@@ -30,12 +30,14 @@ public class Tokenizer extends StringTokenizer {
     String delims;
     String str;
 
+    /** Initializer */ 
     public Tokenizer(String str, String delims) {
         super(str, delims);
         this.delims = delims;
         this.str = str;
     }
 
+    /** Initializer */ 
     public Tokenizer(String str, String delims, boolean returnDelims) {
         super(str, delims, returnDelims);
         this.delims = delims;

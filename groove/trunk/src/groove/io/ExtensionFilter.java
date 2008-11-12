@@ -176,7 +176,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
         // asking confirmation if an existing file is to be overwritten
         boolean doSave; // indicates that the save should be carried through
         boolean noChoice; // indicates that a definite choice has not been
-                            // made
+        // made
         File res = null; // the file to save to (if doSave)
         do {
             doSave =

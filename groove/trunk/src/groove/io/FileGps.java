@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import static groove.util.Groove.DEFAULT_CONTROL_NAME;
 import groove.control.ControlView;
 import groove.graph.GraphShape;
 import groove.trans.RuleNameLabel;
@@ -24,8 +25,6 @@ import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
-import static groove.util.Groove.DEFAULT_CONTROL_NAME;
-import static groove.util.Groove.DEFAULT_START_GRAPH_NAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,8 +49,9 @@ public class FileGps extends AspectualViewGps {
     }
 
     /**
-     * 
+     * Marshal a grammar to a certain directory, represented by the given File.
      */
+    @Override
     public void marshal(DefaultGrammarView gg, File location)
         throws IOException {
         createLocation(location);
@@ -76,6 +76,7 @@ public class FileGps extends AspectualViewGps {
      * @throws IOException if {@link Xml#marshalGraph(GraphShape, File)} throws
      *         an exception
      */
+    @Override
     public void marshalRule(AspectualRuleView ruleGraph, File location)
         throws IOException {
         this.getGraphMarshaller().marshalGraph(ruleGraph.getAspectGraph(),
@@ -85,6 +86,7 @@ public class FileGps extends AspectualViewGps {
     /**
      * Deletes the rule given a grammar location.
      */
+    @Override
     public void deleteRule(AspectualRuleView ruleGraph, File location) {
         this.getGraphMarshaller().deleteGraph(
             getFile(location, ruleGraph, false));
@@ -148,8 +150,6 @@ public class FileGps extends AspectualViewGps {
 
     /**
      * For backwards compatibility, this creates a grammarsource first
-     * @param location
-     * @return
      */
     public DefaultGrammarView unmarshal(File location) throws IOException {
         return unmarshal(location, DEFAULT_START_GRAPH_NAME,
@@ -173,6 +173,14 @@ public class FileGps extends AspectualViewGps {
      */
     public DefaultGrammarView unmarshal(File location, String startGraphName,
             String controlName) throws IOException {
+
+        if (startGraphName == null) {
+            startGraphName = DEFAULT_START_GRAPH_NAME;
+        }
+        if (controlName == null) {
+            controlName = DEFAULT_CONTROL_NAME;
+        }
+
         if (!location.exists()) {
             throw new FileNotFoundException(LOAD_ERROR
                 + ": rule rystem location \"" + location.getAbsolutePath()
@@ -209,9 +217,6 @@ public class FileGps extends AspectualViewGps {
 
         // START GRAPH
         File startGraphFile;
-        if (startGraphName == null) {
-            startGraphName = DEFAULT_START_GRAPH_NAME;
-        }
         startGraphFile =
             new File(location, STATE_FILTER.addExtension(startGraphName));
         if (startGraphFile.exists()) {
@@ -234,6 +239,10 @@ public class FileGps extends AspectualViewGps {
         return result;
     }
 
+    /**
+     * Loads a control program for the given grammar from the given control
+     * File.
+     */
     public void loadControl(DefaultGrammarView grammar, File controlFile)
         throws IOException {
         String controlName =

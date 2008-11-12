@@ -15,12 +15,9 @@
 package groove.gui;
 
 import groove.trans.SystemProperties;
-import groove.util.Groove;
-import groove.gui.Simulator;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;

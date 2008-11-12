@@ -17,6 +17,7 @@
 
 package groove.io;
 
+import static groove.util.Groove.DEFAULT_CONTROL_NAME;
 import groove.control.ControlView;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -27,8 +28,6 @@ import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
-import static groove.util.Groove.DEFAULT_CONTROL_NAME;
-import static groove.util.Groove.DEFAULT_START_GRAPH_NAME;
 
 import java.io.File;
 import java.io.IOException;

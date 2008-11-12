@@ -1,8 +1,6 @@
 /* $Id: LayedOutGps.java,v 1.3 2008-01-30 09:33:42 iovka Exp $ */
 package groove.io;
 
-import groove.graph.GraphFactory;
-import groove.view.aspect.AspectGraph;
 
 /**
  * Grammar marshaller that reads in and constructs layout information for the

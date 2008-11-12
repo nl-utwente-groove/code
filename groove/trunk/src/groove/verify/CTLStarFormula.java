@@ -148,6 +148,7 @@ public class CTLStarFormula {
      */
     static public final String FALSE = "false";
 
+    /** Interface for temporal operators */ 
     public interface TemporalOperator {
         // empty interface
     }
@@ -845,6 +846,10 @@ public class CTLStarFormula {
         return parser.parse(expr);
     }
 
+    /**
+     * Parses the temporal formula in the string and returns the created
+     * structure.
+     */
     protected TemporalFormula parse(String expr) throws FormatException {
         ExprParser.parseExpr(expr);
         // try to parse the expression using each of the available operators in

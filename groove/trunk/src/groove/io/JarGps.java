@@ -191,12 +191,4 @@ public class JarGps extends AspectualViewGps {
         return unmarshal(jarURL, startGraphName, controlName);
     }
 
-    public static void main(String args[]) throws IOException {
-        long start = System.currentTimeMillis();
-        URL url = new URL("jar:file:c:/grammars/cups.jar!/cups.gps/");
-        new JarGps(false).unmarshal(url, "start", "cups");
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("From Jar Took " + elapsed + " ms");
-    }
-
 }

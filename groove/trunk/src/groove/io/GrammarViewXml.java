@@ -28,7 +28,8 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GrammarViewXml<GG extends GrammarView<?,?>> extends ViewXml<GG> {
+public interface GrammarViewXml<GG extends GrammarView<?,?>> extends
+        ViewXml<GG> {
     /**
      * The default name of the start state of a grammar.
      */
@@ -50,34 +51,22 @@ public interface GrammarViewXml<GG extends GrammarView<?,?>> extends ViewXml<GG>
      *        of files)
      * @throws IOException if an error occurs during file output
      */
-    public void marshal(GG gg, File target) throws IOException;
+    public void marshal(GG gg, File file) throws IOException;
 
     /**
-     * Converts an XML formatted file or set of files into a graph grammar, and
-     * returns the graph grammar. The resulting grammar is not yet fixed.
-     * Convenience method for <code>unmarshal(file, null)</code>.
-     * @see #unmarshal(GrammarSource)
+     * Converts an url for an XML formatted file or set of files into a graph
+     * grammar, and returns the graph grammar. The resulting grammar is not yet
+     * fixed. The start state is given explicitly by a string, which either
+     * stands for the name of the start state within the grammar, or for the
+     * name of a separate file containing the start state. If <code>null</code>,
+     * {@link #DEFAULT_START_GRAPH_NAME} is tried; if that does not exist, the
+     * start state is not initialized.
+     * @param url the url to be read from (if the XML format allows storing the
+     *        grammar in a single file) or directory (if the grammar is stored
+     *        as a set of files)
+     * @return the unmarshalled (unfixed) graph grammar
+     * @throws IOException if an error occurs during file input
      */
     public GG unmarshal(URL url) throws IOException;
 
-    /**
-     * Converts an XML formatted file or set of files into a graph grammar, and
-     * returns the graph grammar. The resulting grammar is not yet fixed. The
-     * start state is given explicitly by a string, which either stands for the
-     * name of the start state within the grammar, or for the name of a separate
-     * file containing the start state. If <code>null</code>,
-     * {@link #DEFAULT_START_GRAPH_NAME} is tried; if that does not exist, the
-     * start state is not initialized.
-     * @param file the file to be read from (if the XML format allows storing
-     *        the grammar in a single file) or directory (if the grammar is
-     *        stored as a set of files)
-     * @param startStateName the file where the start state is to be found; if
-     *        <tt>null</tt>, the default name
-     *        {@link #DEFAULT_START_GRAPH_NAME} is tried.
-     * @return the unmarshalled (unfixed) graph grammar
-     * @throws FormatException if an error occurs in the conversion
-     * @throws IOException if an error occurs during file input
-     */
-//    public GG unmarshal(GrammarSource source)
-//        throws FormatException, IOException;
 }

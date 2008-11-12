@@ -26,6 +26,7 @@ import junit.framework.TestSuite;
  */
 public class AllGraphTests {
 
+    /** suite method for running the test as a JUnit test */
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for groove.graph");
         // $JUnit-BEGIN$

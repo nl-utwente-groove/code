@@ -55,8 +55,6 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 
-import org.jgraph.graph.GraphModel;
-
 import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
 

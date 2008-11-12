@@ -88,7 +88,7 @@ public class DefaultGxl extends AbstractXml {
             file.delete();
         }
     }
-    
+
     /**
      * This implementation works by converting the graph to an attributed graph
      * using {@link #attrToGxlGraph}, and marshalling the result using
@@ -101,10 +101,9 @@ public class DefaultGxl extends AbstractXml {
         GraphInfo.setVersion(attrGraph, Version.GXL_VERSION);
         groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
         // now marshal the attribute graph
-        
+
         marshalGxlGraph(gxlGraph, file);
     }
-    
 
     /**
      * This implementation works by unmarshalling to an attributed graph using
@@ -115,7 +114,7 @@ public class DefaultGxl extends AbstractXml {
     protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {
         Graph result;
-        
+
         groove.gxl.Graph gxlGraph = unmarshalGxlGraph(url.openStream());
         Pair<Graph,Map<String,Node>> attrGraph = gxlToAttrGraph(gxlGraph);
         result = attrToNormGraph(attrGraph.first());
@@ -125,15 +124,16 @@ public class DefaultGxl extends AbstractXml {
         PriorityFileName priorityName = new PriorityFileName(url);
         GraphInfo.setName(result, priorityName.getActualName());
         if (priorityName.hasPriority()) {
-                GraphInfo.getProperties(result, true).setPriority(priorityName.getPriority());
+            GraphInfo.getProperties(result, true).setPriority(
+                priorityName.getPriority());
         }
-        
-        if( Groove.isRuleURL(url)){
+
+        if (Groove.isRuleURL(url)) {
             GraphInfo.setRuleRole(result);
         } else {
             GraphInfo.setGraphRole(result);
         }
-       
+
         if (!Version.isKnownGxlVersion(GraphInfo.getVersion(result))) {
             GraphInfo.addErrors(
                 result,
@@ -414,7 +414,7 @@ public class DefaultGxl extends AbstractXml {
     /**
      * Marshals a GXL graph to an untyped GXL writer.
      * @param gxlGraph the GXL graph
-     * @param out the destination for the marshalling operation
+     * @param file the destination file for the marshalling operation
      * @throws IOException is the marshalling runs into some IO or XML errors
      */
     private void marshalGxlGraph(groove.gxl.Graph gxlGraph, File file)
@@ -439,8 +439,8 @@ public class DefaultGxl extends AbstractXml {
      * @param in the source of the unmarhalling
      * @return the resulting GXL graph
      */
-    private groove.gxl.Graph unmarshalGxlGraph(InputStream in) throws IOException,
-        FileNotFoundException {
+    private groove.gxl.Graph unmarshalGxlGraph(InputStream in)
+        throws IOException, FileNotFoundException {
         // get a gxl object from the reader
         groove.gxl.Gxl gxl;
         try {
@@ -514,7 +514,7 @@ public class DefaultGxl extends AbstractXml {
                 Graph graph = gxl.unmarshalGraph(url);
                 System.out.println("OK");
                 System.out.print("    Creating output file: ");
-//                file = new java.io.File(element + ".tmp");
+                // file = new java.io.File(element + ".tmp");
                 System.out.println("OK");
                 System.out.print("    Re-marshalling graph: ");
                 gxl.marshalGraph(graph, new File(element));

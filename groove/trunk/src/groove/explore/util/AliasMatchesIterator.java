@@ -17,9 +17,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-// TODO This class may be better integrated into its super class. For instance,
-// the aliasMatchIter field is not needed, super.matchIter may be used instead
-
+/**
+ * An iterator over the matches in a certain state that takes aliases into
+ * account. TODO: This class may be better integrated into its super class. For
+ * instance, the aliasMatchIter field is not needed, super.matchIter may be used
+ * instead
+ */
 public class AliasMatchesIterator extends MatchesIterator {
     /**
      * Creates an aliased matches iterator for a state and a rule.
