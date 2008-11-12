@@ -23,7 +23,9 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.view.aspect.AttributeAspect;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
@@ -31,7 +33,7 @@ import java.util.Iterator;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
-public class ValueNode extends DefaultNode {
+public class ValueNode extends ProductNode {
     /**
      * Constructs a node for a given {@link groove.algebra.Constant}. Preferred
      * construction through {@link AlgebraGraph#getValueNode(Algebra, Object)}.
@@ -39,7 +41,7 @@ public class ValueNode extends DefaultNode {
      * @param value the value to create a graph node for
      */
     ValueNode(Algebra algebra, Object value) {
-        super();
+        super(EMPTY_ARGUMENT_LIST);
         this.algebra = algebra;
         this.value = value;
         assert value == null || algebra != null;
@@ -61,35 +63,33 @@ public class ValueNode extends DefaultNode {
     }
 
     /**
-     * Returns the <code>Constant</code> this <code>ValueNode</code> is
-     * representing.
-     * @return the <code>Constant</code> this <code>ValueNode</code> is
-     *         representing
+     * Returns the algebra value this value node is
+     * representing. May be <code>null</code> if the value node is
+     * a variable.
      */
     public Object getValue() {
         return this.value;
     }
 
+    /** 
+     * Returns <code>true</code> if this value node represents a variable.
+     * @see #getValue()
+     */
+    public boolean hasValue() {
+        return this.value != null;
+    }
+    
     /**
      * Returns a symbolic description of the value, which uniquely identifies
      * the value in the algebra.
      */
     public String getSymbol() {
-//        if (hasValue()) {
+        if (hasValue()) {
             return getAlgebra().getSymbol(getValue());
-//        } else {
-//            return null;
-//        }
+        } else {
+            return null;
+        }
     }
-//
-//    /**
-//     * Indicates if the constant has a definite value, i.e., is not a variable.
-//     * Convenience method for <code>getConstant() != null</code>.
-//     * @return <code>true</code> if this node's value is not a variable
-//     */
-//    public boolean hasValue() {
-//        return this.value != null;
-//    }
 
     /**
      * This methods returns an indication of the variable if there is no
@@ -97,9 +97,13 @@ public class ValueNode extends DefaultNode {
      */
     @Override
     public String toString() {
-        String algebraName =
-            AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
-        return algebraName + CONTENT_SEPARATOR + this.value;
+        if (!hasValue()) {
+            return "x" + (getNumber() - DefaultNode.MAX_NODE_NUMBER);
+        } else {
+            String algebraName =
+                AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
+            return algebraName + CONTENT_SEPARATOR + getSymbol();
+        }
     }
 
     /**
@@ -122,4 +126,7 @@ public class ValueNode extends DefaultNode {
         }
         return result;
     }
+    
+    /** Empty list of value nodes, to be passed to the super constructor. */
+    static private final List<ValueNode> EMPTY_ARGUMENT_LIST = Arrays.asList();
 }

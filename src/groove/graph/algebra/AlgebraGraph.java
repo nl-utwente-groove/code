@@ -16,24 +16,16 @@
  */
 package groove.graph.algebra;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.DefaultBooleanAlgebra;
 import groove.algebra.DefaultIntegerAlgebra;
 import groove.algebra.DefaultRealAlgebra;
 import groove.algebra.DefaultStringAlgebra;
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.GraphFactory;
-import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -104,48 +96,48 @@ public class AlgebraGraph extends DefaultGraph {
             return null;
         }
     }
-
-    /** 
-     * Converts a graph with {@link VariableNode}s to a graph
-     * with {@link ValueNode}s.
-     * The graph should otherwise just contain {@link DefaultNode}s and
-     * {@link DefaultEdge}s.
-     * @param graph the graph to be converted
-     * @param conversionMap if not <code>null</code>, a map from the old graph
-     * to the result graph
-     */
-    public Graph convertGraph(Graph graph, NodeEdgeMap conversionMap) {
-        if (conversionMap == null) {
-            conversionMap = new NodeEdgeHashMap();
-        }
-        Graph result = GraphFactory.getInstance().newGraph();
-        for (Node node: graph.nodeSet()) {
-            Node image = convertNode(node);
-            result.addNode(image);
-            conversionMap.putNode(node, image);
-        }
-        for (Edge edge: graph.edgeSet()) {
-            if (!edge.getClass().equals(DefaultEdge.class)) {
-                throw new IllegalArgumentException(String.format("Invalid edge type %s", edge.getClass()));
-            }
-            Edge image = conversionMap.mapEdge(edge);
-            result.addEdge(image);
-        }
-        return result;
-    }
-    
-    private Node convertNode(Node node) {
-        Node image;
-        if (node instanceof VariableNode) {
-            image = getValueNode(((VariableNode) node).getConstant());
-        } else if (! node.getClass().equals(DefaultNode.class)) {
-            throw new IllegalArgumentException(String.format("Invalid node type %s", node.getClass()));
-        } else {
-            image = node;
-        }
-        return image;
-    }
-    
+//
+//    /** 
+//     * Converts a graph with {@link VariableNode}s to a graph
+//     * with {@link ValueNode}s.
+//     * The graph should otherwise just contain {@link DefaultNode}s and
+//     * {@link DefaultEdge}s.
+//     * @param graph the graph to be converted
+//     * @param conversionMap if not <code>null</code>, a map from the old graph
+//     * to the result graph
+//     */
+//    public Graph convertGraph(Graph graph, NodeEdgeMap conversionMap) {
+//        if (conversionMap == null) {
+//            conversionMap = new NodeEdgeHashMap();
+//        }
+//        Graph result = GraphFactory.getInstance().newGraph();
+//        for (Node node: graph.nodeSet()) {
+//            Node image = convertNode(node);
+//            result.addNode(image);
+//            conversionMap.putNode(node, image);
+//        }
+//        for (Edge edge: graph.edgeSet()) {
+//            if (!edge.getClass().equals(DefaultEdge.class)) {
+//                throw new IllegalArgumentException(String.format("Invalid edge type %s", edge.getClass()));
+//            }
+//            Edge image = conversionMap.mapEdge(edge);
+//            result.addEdge(image);
+//        }
+//        return result;
+//    }
+//    
+//    private Node convertNode(Node node) {
+//        Node image;
+//        if (node instanceof VariableNode) {
+//            image = getValueNode(((VariableNode) node).getConstant());
+//        } else if (! node.getClass().equals(DefaultNode.class)) {
+//            throw new IllegalArgumentException(String.format("Invalid node type %s", node.getClass()));
+//        } else {
+//            image = node;
+//        }
+//        return image;
+//    }
+//    
     /**
      * mapping from objects standing for algebra values to the node representing that specific value.
      */

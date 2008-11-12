@@ -31,13 +31,13 @@ import groove.graph.DefaultLabel;
  * @version $Revision$
  */
 public class OperatorEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
+        AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
     /**
      * Constructs a product edge for a constant, which is always a self-edge.
      * @param target the source and target of the edge
      * @param operation the constant associated with the edge
      */
-    public OperatorEdge(VariableNode target, Constant operation) {
+    public OperatorEdge(ValueNode target, Constant operation) {
         this(target, target, operation);
     }
 
@@ -47,7 +47,7 @@ public class OperatorEdge extends
      * @param target the target node for the edge
      * @param operation the associated operation
      */
-    public OperatorEdge(ProductNode source, VariableNode target,
+    public OperatorEdge(ProductNode source, ValueNode target,
             Operation operation) {
         super(source, DefaultLabel.createLabel(operation.symbol()), target);
         this.operation = operation;
@@ -60,16 +60,6 @@ public class OperatorEdge extends
      */
     public Operation getOperation() {
         return this.operation;
-    }
-
-    /**
-     * Returns the result of applying the operations on its operands.
-     * @return the result of applying the operations on its operands
-     * @deprecated the result cannot be obtained on the signature level
-     */
-    @Deprecated
-    public Object getResult() {
-        return this.operation.apply(source().getOperands());
     }
 
     @Override

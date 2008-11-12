@@ -24,7 +24,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.VariableNode;
+import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.view.FormatException;
 
@@ -86,13 +86,13 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private void testAlgebra() throws FormatException {
         // collect value and product nodes
-        Set<VariableNode> unresolvedValueNodes = new HashSet<VariableNode>();
+        Set<ValueNode> unresolvedValueNodes = new HashSet<ValueNode>();
         Map<ProductNode,BitSet> unresolvedProductNodes =
             new HashMap<ProductNode,BitSet>();
         // test if product nodes have the required arguments
         for (Node node : getTarget().nodeSet()) {
-            if (node instanceof VariableNode) {
-                if (!((VariableNode) node).isConstant()) {
+            if (node instanceof ValueNode) {
+                if (!((ValueNode) node).hasValue()) {
                     boolean hasIncomingNonAttributeEdge = false;
                     for (Edge edge : getTarget().edgeSet(node,
                         Edge.TARGET_INDEX)) {
@@ -101,7 +101,7 @@ abstract public class PositiveCondition<M extends Match> extends
                         }
                     }
                     if (!hasIncomingNonAttributeEdge) {
-                        unresolvedValueNodes.add((VariableNode) node);
+                        unresolvedValueNodes.add((ValueNode) node);
                     }
                 }
             } else if (node instanceof ProductNode) {

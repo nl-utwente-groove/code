@@ -59,6 +59,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
@@ -104,6 +105,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.properties = rule.getProperties();
         this.viewToRuleMap = new NodeEdgeHashMap();
         this.graph = computeAspectGraph(rule, this.viewToRuleMap);
+        this.attributeFactory = new AttributeElementFactory(this.graph);
     }
 
     /**
@@ -131,6 +133,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
+        this.attributeFactory = new AttributeElementFactory(graph);
         if (!graph.getErrors().isEmpty()) {
             this.errors = graph.getErrors();
         }
@@ -141,21 +144,20 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
      * Checks if the variables bound by the left hand side of an aspect graph
      * cover all variables used in the right hand side and the NACs.
-     * @param graph the graph to be checked
      * @throws FormatException if there is a free variable in the rhs or NAC
      */
-    protected void testVariableBinding(AspectGraph graph)
+    protected void testVariableBinding()
         throws FormatException {
-        Set<String> boundVars = getVars(graph, READER, true);
-        boundVars.addAll(getVars(graph, ERASER, true));
-        Set<String> rhsOnlyVars = getVars(graph, CREATOR, false);
+        Set<String> boundVars = getVars(READER, true);
+        boundVars.addAll(getVars(ERASER, true));
+        Set<String> rhsOnlyVars = getVars(CREATOR, false);
         if (!boundVars.containsAll(rhsOnlyVars)) {
             rhsOnlyVars.removeAll(boundVars);
             throw new FormatException(
                 "Right hand side variables %s not bound on left hand side",
                 rhsOnlyVars);
         }
-        Set<String> embargoVars = getVars(graph, EMBARGO, false);
+        Set<String> embargoVars = getVars(EMBARGO, false);
         if (!boundVars.containsAll(embargoVars)) {
             embargoVars.removeAll(boundVars);
             throw new FormatException(
@@ -167,15 +169,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Collects the variables from the regular expressions in edges with a given
      * role from a given graph. A flag indicates if it is just the bound
      * variables we are interested in.
-     * @param graph the graph to be checked
      * @param role the role to look for
      * @param bound if <code>true</code>, collect bound variables only
      * @return the requested set of variables
      */
-    protected Set<String> getVars(AspectGraph graph, AspectValue role,
-            boolean bound) {
+    protected Set<String> getVars(AspectValue role, boolean bound) {
         Set<String> result = new HashSet<String>();
-        Iterator<? extends Edge> edgeIter = graph.edgeSet().iterator();
+        Iterator<? extends Edge> edgeIter = this.graph.edgeSet().iterator();
         while (edgeIter.hasNext()) {
             AspectEdge edge = (AspectEdge) edgeIter.next();
             if (role.equals(getRuleValue(edge))) {
@@ -248,7 +248,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             throw new FormatException(this.errors);
         }
         if (this.rule == null) {
-            Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule(this.graph);
+            Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule();
             this.rule = ruleMapPair.first();
             this.viewToRuleMap = ruleMapPair.second();
         }
@@ -276,7 +276,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     public NodeEdgeMap getMap() {
         if (this.viewToRuleMap == null) {
             try {
-                Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule(this.graph);
+                Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule();
                 this.rule = ruleMapPair.first();
                 this.viewToRuleMap = ruleMapPair.second();
             } catch (FormatException exc) {
@@ -317,16 +317,15 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 
     /**
      * Callback method to compute a rule from an aspect graph.
-     * @param graph the aspect graph to compute the rule from
      */
-    protected Pair<Rule,NodeEdgeMap> computeRule(AspectGraph graph)
+    private Pair<Rule,NodeEdgeMap> computeRule()
         throws FormatException {
         SPORule rule;
         NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
         // ParameterAspect map with id's bound to nodes
         Map<Integer,Node> parameterMap = new HashMap<Integer,Node>();
 
-        Set<String> errors = new TreeSet<String>(graph.getErrors());
+        Set<String> errors = new TreeSet<String>(this.graph.getErrors());
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -340,7 +339,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         Map<TreeIndex,Integer> subLevelCountMap =
             new HashMap<TreeIndex,Integer>();
         subLevelCountMap.put(topLevel, 0);
-        createLevelMap(graph, metaLevelMap, nameLevelMap, subLevelCountMap);
+        createLevelMap(metaLevelMap, nameLevelMap, subLevelCountMap);
         //
         // mapping from rule nodes to nesting levels
         Map<AspectNode,TreeIndex> nodeLevelMap =
@@ -358,9 +357,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         }
         try {
             // add nodes to nesting data structures
-            for (AspectNode node : graph.nodeSet()) {
+            for (AspectNode node : this.graph.nodeSet()) {
                 if (RuleAspect.inRule(node)) {
-                    AspectNode nestingNode = getNestingNode(graph, node);
+                    AspectNode nestingNode = getNestingNode(node);
                     TreeIndex level =
                         nestingNode == null ? topLevel
                                 : metaLevelMap.get(nestingNode);
@@ -400,7 +399,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                         }
                     }
                     nodeLevelMap.put(node, level);
-                    Node nodeImage = computeNodeImage(node, graph);
+                    Node nodeImage = computeNodeImage(node);
                     // if the node is a valuenode, check if it has an id
                     // if( nodeImage instanceof ValueNode ) {
                     Integer id = ParameterAspect.getID(node);
@@ -413,7 +412,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                 }
             }
             // add edges to nesting data structures
-            for (AspectEdge edge : graph.edgeSet()) {
+            for (AspectEdge edge : this.graph.edgeSet()) {
                 if (RuleAspect.inRule(edge)) {
                     TreeIndex sourceLevel = nodeLevelMap.get(edge.source());
                     assert sourceLevel != null : String.format(
@@ -476,7 +475,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     viewToRuleMap.putEdge(edge, edgeImage);
                 }
             }
-            testVariableBinding(graph);
+            testVariableBinding();
             Map<TreeIndex,Condition> levelRuleMap =
                 new HashMap<TreeIndex,Condition>();
             for (TreeIndex level : nestedNodesMap.keySet()) {
@@ -707,9 +706,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     }
 
     /** Returns the aspect node indicating the nesting level of a given node. */
-    private AspectNode getNestingNode(AspectGraph graph, AspectNode node) {
+    private AspectNode getNestingNode(AspectNode node) {
         AspectEdge levelEdge = null;
-        for (AspectEdge edge : graph.outEdgeSet(node)) {
+        for (AspectEdge edge : this.graph.outEdgeSet(node)) {
             if (NestingAspect.isLevelEdge(edge)) {
                 levelEdge = edge;
                 break;
@@ -727,25 +726,23 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Computes various level-related structures. The parameters are expected to
      * be empty structures, which are filled in by the method (serving as output
      * parameters).
-     * @param graph the graph from which to construct the information
      * @param metaLevelMap mapping from aspect meta-nodes to the corresponding
      *        level
      * @param nameLevelMap mapping from level names to levels
      * @param subLevelCountMap mapping from levels to the number of sub-levels
      */
-    private void createLevelMap(AspectGraph graph,
-            Map<AspectNode,TreeIndex> metaLevelMap,
+    private void createLevelMap(Map<AspectNode,TreeIndex> metaLevelMap,
             Map<String,TreeIndex> nameLevelMap,
             Map<TreeIndex,Integer> subLevelCountMap) {
         Map<AspectNode,AspectNode> parentMap =
             new HashMap<AspectNode,AspectNode>();
         // compute the level parent map
-        for (AspectNode node : graph.nodeSet()) {
+        for (AspectNode node : this.graph.nodeSet()) {
             if (NestingAspect.isMetaElement(node)) {
                 // by the correctness of the aspect graph we know that
                 // there is at most one outgoing edge, which is a parent edge
                 // and points to a meta-node of the opposite nature
-                Set<AspectEdge> outEdges = graph.outEdgeSet(node);
+                Set<AspectEdge> outEdges = this.graph.outEdgeSet(node);
                 if (!outEdges.isEmpty()) {
                     AspectNode parentNode =
                         outEdges.iterator().next().opposite();
@@ -753,7 +750,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                 }
             }
         }
-        for (AspectNode node : graph.nodeSet()) {
+        for (AspectNode node : this.graph.nodeSet()) {
             if (NestingAspect.isMetaElement(node)
                 && !metaLevelMap.containsKey(node)) {
                 addLevel(metaLevelMap, nameLevelMap, subLevelCountMap,
@@ -836,18 +833,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
      * Creates an image for a given aspect node. Node numbers are copied.
      * @param node the node to be copied
-     * @param context the graph in which the original node occurs; may be
-     *        necessary to determine the type of the image.
      * @return the fresh node
      * @throws FormatException if <code>node</code> does not occur in a
      *         correct way in <code>context</code>
      */
-    protected Node computeNodeImage(AspectNode node, AspectGraph context)
+    protected Node computeNodeImage(AspectNode node)
         throws FormatException {
         if (getAttributeValue(node) == null) {
             return DefaultNode.createNode(node.getNumber());
         } else {
-            return AttributeAspect.createAttributeNode(node, context);
+            return this.attributeFactory.createAttributeNode(node);
         }
     }
 
@@ -876,7 +871,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         if (getAttributeValue(edge) == null) {
             return createEdge(ends, parse(edge));// createRuleLabel(edge.label()));
         } else {
-            return AttributeAspect.createAttributeEdge(edge, ends);
+            return this.attributeFactory.createAttributeEdge(edge, ends);
         }
     }
 
@@ -1324,6 +1319,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 
     /** The aspect graph representation of the rule. */
     private final AspectGraph graph;
+    /** The attribute element factory for this view. */
+    private final AttributeElementFactory attributeFactory;
     /** Errors found while converting the view to a rule. */
     private List<String> errors;
     /** The rule derived from this graph, once it is computed. */
@@ -1365,7 +1362,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             }
         } else {
             try {
-                // TOM: had to disable since this method is gone
                 Graph plainGraph = Groove.loadGraph(file);
                 if (plainGraph != null) {
                     System.out.printf("Testing %s%n", file);
