@@ -78,7 +78,7 @@ public class DefaultTypeGraph extends DefaultGraph {
         return map;
     }
 
-//    Commented away, never used (TOM)
+//    tom commented this method away away, since it is never used
 //    private void mergeNodeTypes(AbstractNodeEdgeMap<Node,Node,Edge,Edge> map) {
 //        for (Map.Entry<Node,Node> nodes : map.nodeMap().entrySet()) {
 //            mergeNodes(nodes.getKey(), nodes.getValue());

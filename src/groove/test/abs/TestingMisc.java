@@ -604,7 +604,6 @@ public class TestingMisc extends TestCase {
             System.out.println("{2,w} = " + i[10]);
 
         } catch (ExceptionRemovalImpossible e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -621,7 +620,6 @@ public class TestingMisc extends TestCase {
             j[5] = m.remove(j[3], 2);
             j[6] = m.remove(j[3], 3);
         } catch (ExceptionRemovalImpossible e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

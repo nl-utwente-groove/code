@@ -270,6 +270,11 @@ public class FileGps extends AspectualViewGps {
         return url;
     }
 
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+    
     /**
      * Prepares a location for marshalling a graph grammar.
      */
@@ -304,9 +309,8 @@ public class FileGps extends AspectualViewGps {
             File directory, RuleNameLabel rulePath) throws IOException {
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
-            // TOM: empty grammar is hardly an error
-            // throw new IOException(LOAD_ERROR + ": no files found at "
-            // + directory);
+             throw new IOException(LOAD_ERROR + ": no files found at "
+             + directory);
         } else {
             // read in production rules
             for (File file : files) {

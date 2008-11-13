@@ -52,7 +52,6 @@ public class PatternGraphJModel extends GraphJModel {
     @Override
     /** Specialises return type */
     public GraphPattern getGraph() {
-        // TODO Auto-generated method stub
         return (GraphPattern) super.getGraph();
     }
 

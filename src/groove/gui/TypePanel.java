@@ -132,7 +132,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 Graph typeGraph;
                 File file =
                     new File(
-                        this.simulator.getCurrentGrammarFile().getAbsolutePath()
+                        this.simulator.getCurrentGrammarURL().getFile()
                             + Groove.FILE_SEPARATOR
                             + Groove.TGR_NAME
                             + Groove.GXL_EXTENSION);
@@ -172,7 +172,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                         TypeReconstructor.reconstruct(TypePanel.this.grammar.toModel());
                     Groove.saveGraph(
                         typeGraph,
-                        TypePanel.this.simulator.getCurrentGrammarFile().getAbsolutePath()
+                        TypePanel.this.simulator.getCurrentGrammarURL().getFile()
                             + Groove.FILE_SEPARATOR
                             + Groove.TGR_NAME
                             + Groove.GXL_EXTENSION);

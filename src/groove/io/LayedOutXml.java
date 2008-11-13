@@ -40,6 +40,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -174,10 +175,12 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
         Map<String,Node> nodeMap = preliminary.second();
         URL layoutURL = toLayoutURL(url);
         try {
+            InputStream in = layoutURL.openStream();
             BufferedReader layoutReader =
-                new BufferedReader(new InputStreamReader(layoutURL.openStream()));
+                new BufferedReader(new InputStreamReader(in));
             LayoutMap<Node,Edge> layoutMap =
                 readLayout(result, nodeMap, layoutReader);
+            in.close();
             GraphInfo.setLayoutMap(result, layoutMap);
         } catch(IOException e) {
             // we do nothing when there is no layout found at the url

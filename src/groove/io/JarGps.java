@@ -72,9 +72,13 @@ public class JarGps extends AspectualViewGps {
         String dir =
             location.getPath().substring(location.getPath().indexOf("!") + 2);
 
+        if( !dir.endsWith("/")) {
+            dir += "/";
+        }
+        
         // create the result
         DefaultGrammarView result =
-            createGrammar(FileGps.GRAMMAR_FILTER.stripExtension(dir));
+            createGrammar(FileGps.GRAMMAR_FILTER.stripExtension(dir.substring(0, dir.length()-1)));
 
         // connection to the file index in the jar file
         JarFile jarFile =
@@ -116,7 +120,7 @@ public class JarGps extends AspectualViewGps {
                 ruleMap.put(label, ruleURL);
             }
         }
-
+        
         loadRules(result, ruleMap);
 
         // init start graph url
@@ -137,6 +141,8 @@ public class JarGps extends AspectualViewGps {
             this.loadControl(result, controlEntry, controlName);
         }
 
+        jarFile.close();
+        
         return result;
     }
 

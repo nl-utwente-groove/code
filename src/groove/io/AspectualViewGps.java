@@ -31,6 +31,7 @@ import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.Observable;
@@ -75,6 +76,11 @@ public abstract class AspectualViewGps extends Observable implements
      */
     public DefaultGrammarView unmarshal(URL location, String startGraphName)
         throws IOException {
+        
+        if( startGraphName == null ) {
+            startGraphName = DEFAULT_START_GRAPH_NAME;
+        }
+        
         return unmarshal(location, startGraphName, DEFAULT_CONTROL_NAME);
     }
 
@@ -100,19 +106,19 @@ public abstract class AspectualViewGps extends Observable implements
 
         if (propertiesURL != null) {
             Properties grammarProperties = new Properties();
-            grammarProperties.load(propertiesURL.openStream());
+            InputStream s = propertiesURL.openStream();
+            grammarProperties.load(s);
+            s.close();
             result.setProperties(grammarProperties);
         }
     }
 
     /**
      * Loads the control program from the location set in the properties of the
-     * grammar. Can only be done after rules and properties are loaded. TODO:
-     * put this somewhere else?
+     * grammar. Can only be done after rules and properties are loaded.
      */
     protected void loadControl(DefaultGrammarView result, URL controlURL,
             String controlName) throws IOException {
-
         if (controlURL != null) {
             ControlView cv = new ControlView(result, controlURL, controlName);
             result.setControl(cv);
@@ -207,8 +213,6 @@ public abstract class AspectualViewGps extends Observable implements
      * @param properties the properties for the rule to be unmarshalled
      * @return a rule view for the given rule.
      * @throws IOException
-     * 
-     * TOM: commented away since not needed for full grammar loading
      */
     public AspectualRuleView unmarshalRule(URL location,
             SystemProperties properties) throws IOException {
@@ -285,6 +289,14 @@ public abstract class AspectualViewGps extends Observable implements
         return new AspectualRuleView(graph, ruleName, properties);
     }
 
+    /**
+     * Returns whether this loader can also marshal. false by default.
+     * @return if this loader is readOnly
+     */
+    public boolean canWrite() {
+        return false;
+    }
+    
     /**
      * The xml reader used to unmarshal graphs.
      */

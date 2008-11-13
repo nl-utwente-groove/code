@@ -357,23 +357,16 @@ public class Groove {
      * @return the graph contained in <code>file</code>, or <code>null</code>
      *         if the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
-     *         TOM: fix!
      */
-     static public Graph loadGraph(File file) throws IOException {
-         if (file.exists()) {
-            Graph result = graphLoader.unmarshalGraph(file.toURI().toURL());
-            return result;
-        } else {
-            return null;
-        }
-     }
+    static public Graph loadGraph(File file) throws IOException {
+        return graphLoader.unmarshalGraph(file.toURI().toURL());
+    }
+
     /**
      * Indicates if a given file is a rule file as recognized by the GROOVE
      * system.
      */
     static public boolean isRuleFile(File file) {
-        // return createRuleFilter().accept(file);
-        // TOM:
         return createRuleFilter().accept(file);
     }
 
@@ -382,8 +375,6 @@ public class Groove {
      * system.
      */
     static public boolean isStateURL(URL url) {
-        // TOM:
-        // return createStateFilter().accept(file);
         return createStateFilter().hasExtension(url.getFile());
     }
 
@@ -392,8 +383,6 @@ public class Groove {
      * system.
      */
     static public boolean isRuleURL(URL url) {
-        // return createRuleFilter().accept(file);
-        // TOM:
         return createRuleFilter().hasExtension(url.getFile());
     }
 
@@ -402,10 +391,9 @@ public class Groove {
      * system.
      */
     static public boolean isStateFile(File file) {
-         return createStateFilter().accept(file);
+        return createStateFilter().accept(file);
     }
 
-    
     /**
      * Attempts to save a graph to a file with a given name. Adds the
      * <tt>.gxl</tt> extension if the file has no extension.
@@ -451,7 +439,6 @@ public class Groove {
      * @return the rule graph contained in <code>filename</code>
      * @throws IOException if <code>filename</code> does not exist or is
      *         wrongly formatted
-     *         TOM: fixx
      */
     static public AspectualRuleView loadRuleGraph(String filename)
         throws IOException {
@@ -485,8 +472,6 @@ public class Groove {
     static public GrammarView<?,?> loadGrammar(String dirname)
         throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        
-        // TOM: here's the change to be made for loading via grammarsources!
         return gpsLoader.unmarshal(dir);
     }
 
@@ -587,7 +572,8 @@ public class Groove {
      *         {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
     static public NodeEdgeMap getIsomorphism(Graph source, Graph target) {
-        return DefaultIsoChecker.getInstance(true).getIsomorphism(source, target);
+        return DefaultIsoChecker.getInstance(true).getIsomorphism(source,
+            target);
     }
 
     /**

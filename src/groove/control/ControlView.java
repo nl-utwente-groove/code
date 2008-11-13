@@ -74,7 +74,9 @@ public class ControlView {
         this.grammarView = result;
         // this.controlFile = controlProgramFile;
         this.controlName = controlName;
-        this.controlProgram = loadProgram(controlURL.openStream());
+        InputStream s = controlURL.openStream();
+        this.controlProgram = loadProgram(s);
+        s.close();
     }
 
     /** returns the control automaton */
@@ -99,7 +101,7 @@ public class ControlView {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        } 
         return contents.toString();
     }
 

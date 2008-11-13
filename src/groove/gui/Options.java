@@ -199,6 +199,9 @@ public class Options {
         "Load Start State ...";
     /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
+    /** Load grammar from url action name */
+    public static final String LOAD_URL_GRAMMAR_ACTION_NAME = "Load Grammar from URL ...";
+
     /** Name for the model checking action. */
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
     /** New action name */

@@ -132,23 +132,7 @@ public class ControlJModel extends GraphJModel {
         Location result = this.activeLocation;
         this.activeLocation = location;
         Set<JCell> changedCells = new HashSet<JCell>();
-
-        // TODO: get changed cells from old and new location
-
-        // FIXME: Tom
-        // if( result != null ) {
-        // for( ControlState cs : result ) {
-        // changedCells.add(getJCell(cs));
-        // }
-        // }
-        // if( location != null ) {
-        // for( ControlState cs : location ) {
-        // changedCells.add(getJCell(cs));
-        // }
-        // }
-
         refresh(changedCells);
-
         return result;
     }
 

@@ -280,7 +280,6 @@ public class AutomatonBuilder extends Namespace {
      * @param state
      */
     public void rmState(ControlState state) {
-        // TODO: make sure the state has no incoming or outgoing edges
         debug("rmState: " + state);
         this.aut.removeState(state);
     }
