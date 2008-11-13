@@ -1,0 +1,26 @@
+# Layout information for C:\local\production_systems\simulation.gps\init_fields_last.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n5 302 128 18 21 
+n n6 209 127 35 32 
+n n3 216 197 34 18 
+n n1 197 55 63 18 
+n n7 45 53 73 18 
+n n2 217 262 34 32 
+n n4 104 128 18 21 
+n n0 322 238 40 18 
+e n3 n4 "name" 571 -28 233 206 114 200 113 138 11
+e n3 n2 "next" 361 2 237 215 237 260 237 262 11
+e n7 n7 "del:initFields" 883 -6 81 62 62 119 29 87 81 62 12
+e n6 n6 "init" 977 7 219 159 213 175 238 176 232 159 12
+e n7 n7 "new:descend" 1341 -7 81 62 48 50 50 11 81 62 12
+e n7 n1 "self" 377 0 81 62 230 64 11
+e n3 n5 "type" 733 26 233 206 315 206 311 138 11
+e n7 n0 "class" 662 -145 81 62 89 34 344 33 342 247 11
+e n0 n3 "fields" 482 -18 342 247 259 251 233 206 11
+e n7 n3 "del:init" 700 65 81 62 96 211 233 206 11

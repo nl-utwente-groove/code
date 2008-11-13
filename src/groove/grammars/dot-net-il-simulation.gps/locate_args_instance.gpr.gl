@@ -1,0 +1,22 @@
+# Layout information for C:\local\production_systems\simulation.gps\locate_args_instance.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n2 188 182 18 21 
+n n1 405 213 69 32 
+n n4 339 53 64 18 
+n n5 153 10 86 18 
+n n0 405 139 63 18 
+n n3 354 116 32 18 
+e n4 n3 "index" 500 0 371 62 372 77 378 124 11
+e n5 n0 "signature" 284 -42 239 19 436 19 436 139 11
+e n5 n5 "del:locateArg" 1240 -4 153 27 101 37 101 16 153 17 12
+e n5 n4 "has" 560 15 234 28 234 63 339 63 11
+e n5 n5 "new:transferArgs" 1420 34 182 28 126 64 143 85 188 28 12
+e n5 n3 "new:targetIndex" 645 41 222 28 222 124 362 124 11
+e n0 n1 "parameters" 500 0 437 157 437 186 437 213 11
+e n5 n2 "del:nextIndex" 746 0 196 28 196 182 11

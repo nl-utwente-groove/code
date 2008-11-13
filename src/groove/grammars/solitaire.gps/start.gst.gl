@@ -1,0 +1,74 @@
+# Layout information for C:\local\groove\solitaire.gps\start.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n62 450 305 6 14 
+n n15 319 311 6 14 
+n n30 293 207 6 14 
+n n43 563 401 6 14 
+n n16 210 332 6 14 
+n n31 150 332 6 14 
+n n48 249 244 6 14 
+n n59 286 332 6 14 
+n n32 316 176 6 14 
+n n34 487 336 6 14 
+n n41 293 522 6 14 
+n n60 173 301 6 14 
+n n61 249 366 6 14 
+n n1 293 457 6 14 
+n n29 256 119 6 14 
+n n14 249 301 6 14 
+n n47 353 457 6 14 
+n n58 429 457 6 14 
+n n63 210 397 6 14 
+n n18 353 272 6 14 
+n n3 286 275 6 14 
+n n12 392 176 6 14 
+n n27 390 305 6 14 
+n n44 429 207 6 14 
+n n64 563 279 6 14 
+n n17 487 279 6 14 
+n n2 113 244 6 14 
+n n13 316 491 6 14 
+n n28 390 248 6 14 
+n n38 286 397 6 14 
+n n57 293 150 6 14 
+n n37 173 366 6 14 
+n n51 353 150 6 14 
+n n8 210 275 6 14 
+n n23 150 275 6 14 
+n n40 316 426 6 14 
+n n35 113 301 6 14 
+n n7 316 119 6 14 
+n n54 450 248 6 14 
+n n49 150 397 6 14 
+n n22 427 279 6 14 
+n n53 173 244 6 14 
+n n9 353 522 6 14 
+n n21 316 241 6 14 
+n n33 487 401 6 14 
+n n6 353 207 6 14 
+n n52 316 369 6 14 
+n n24 526 248 6 14 
+n n42 392 119 6 14 
+n n4 429 150 6 14 
+n n19 390 370 6 14 
+n n36 113 366 6 14 
+n n55 526 370 6 14 
+n n26 256 176 6 14 
+n n11 427 401 6 14 
+n n50 392 426 6 14 
+n n39 427 336 6 14 
+n n45 256 491 6 14 
+n n20 526 305 6 14 
+n n46 429 522 6 14 
+n n25 353 400 6 14 
+n n56 563 336 6 14 
+n n10 256 426 6 14 
+n n5 392 491 6 14 
+n n0 450 370 6 14 
+e n61 n52 "right" 500 0 256 375 323 378 11

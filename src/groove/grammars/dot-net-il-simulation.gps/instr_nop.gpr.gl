@@ -1,0 +1,7 @@
+# Layout information for C:\local\production_systems\simulation.gps\instr_nop.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n2 235 250 18 18 
+n n0 234 161 18 18 
+n n1 27 166 18 18 

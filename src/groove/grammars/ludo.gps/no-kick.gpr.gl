@@ -1,0 +1,14 @@
+# Layout information for E:\kastenberg\eclipse\workspace\Groove-samples\ludo.gps\no-kick.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n3 304 111 22 14 
+n n1 224 167 26 14 
+n n2 219 77 26 28 
+n n0 119 115 30 14 
+e n0 n0 "new:done" 500 0 143 135 160 168 120 172 134 135 12
+e n0 n0 "del:kick" 500 0 143 115 158 78 116 80 133 115 12

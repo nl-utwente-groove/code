@@ -1,0 +1,21 @@
+# Layout information for C:\local\production_systems\simulation.gps\class_ascend.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n4 15 183 40 18 
+n n0 134 183 73 18 
+n n2 133 64 73 32 
+n n3 248 183 63 18 
+n n1 12 67 40 18 
+e n0 n0 "del:ascend" 1009 4 170 192 149 238 186 239 170 192 12
+e n2 n4 "ascendedFrom" 373 1 169 80 35 192 12
+e n2 n0 "caller" 574 2 169 80 170 192 11
+e n2 n2 "ascend" 948 7 169 80 182 14 155 19 169 80 12
+e n4 n1 "extends" 429 2 37 183 37 129 37 85 11
+e n2 n3 "self" 139 -26 210 81 280 81 280 183 11
+e n0 n3 "self" 390 0 207 192 248 192 11
+e n2 n1 "class" 500 0 133 74 114 74 53 79 11

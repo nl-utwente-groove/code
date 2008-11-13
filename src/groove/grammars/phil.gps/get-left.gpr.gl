@@ -1,0 +1,16 @@
+# Layout information for C:\local\groove\samples\phil.gps\get-left.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n2 130 238 18 18 
+n n1 210 148 18 18 
+n n0 281 235 18 18 
+e n0 n1 "new:hold" 262 18 295 244 294 181 226 157 13
+e n0 n0 "new:hasLeft" 173 1 295 244 368 270 369 214 295 244 12
+e n0 n1 "left" 500 0 295 244 226 157 12
+e n0 n0 "del:hungry" 869 -3 295 244 229 276 226 224 295 244 12
+e n2 n1 "not:hold" 298 -16 144 247 150 186 226 157 12

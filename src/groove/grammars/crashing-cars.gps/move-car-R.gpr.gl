@@ -1,0 +1,13 @@
+# Layout information for C:\local\groove\samples\crashing-cars.gps\move-car-R.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n0 198 90 14 15 
+n n2 103 90 14 15 
+n n1 140 21 23 15 
+e n2 n2 "new:free" 978 14 103 103 59 114 60 83 103 96 12
+e n0 n0 "del:free" 1056 -15 222 103 261 113 262 82 222 96 12

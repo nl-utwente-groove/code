@@ -1,0 +1,23 @@
+# Layout information for C:\files\work\groove_svn\samples\bridge.gps\start.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n5734 328 115 57 15 
+n n5735 316 346 6 15 
+n n5730 55 111 23 15 
+n n5732 165 116 7 15 
+n n5739 169 170 7 15 
+n n5740 484 562 23 15 
+n n5742 448 227 31 15 
+n n5736 606 361 24 15 
+n n5731 40 308 30 15 
+n n5729 172 326 7 15 
+n n5738 72 156 23 15 
+n n5733 174 229 7 15 
+n n5728 325 192 31 15 
+n n5737 46 233 23 15 
+n n5741 489 122 65 15 

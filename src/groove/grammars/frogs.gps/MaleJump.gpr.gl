@@ -1,0 +1,9 @@
+# Layout information for C:\local\eclipse\workspace\groove\samples\frogs.gps\MaleJump.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n85 212 59 18 18 
+n n87 21 133 18 18 
+n n83 207 135 18 18 
+n n84 19 55 18 18 
+n n86 112 135 18 18 

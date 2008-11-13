@@ -1,0 +1,17 @@
+# Layout information for C:\local\groove\svn-samples\append.gps\append.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n65024 241 100 28 15 
+n n65019 43 101 15 15 
+n n65022 152 29 15 15 
+n n65020 239 25 23 15 
+n n65023 34 157 28 30 
+n n65018 25 20 41 45 
+n n65021 153 101 15 15 
+e n65018 n65019 "caller" 444 0 51 56 51 101 11
+e n65019 n65023 "return" 282 0 52 118 52 157 11

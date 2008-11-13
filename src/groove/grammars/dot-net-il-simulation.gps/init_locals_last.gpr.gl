@@ -1,0 +1,29 @@
+# Layout information for C:\local\production_systems\simulation.gps\init_locals_last.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n6 221 54 69 18 
+n n4 206 398 39 32 
+n n1 83 122 86 18 
+n n7 126 271 18 21 
+n n2 233 263 39 32 
+n n0 176 216 18 21 
+n n3 209 317 39 18 
+n n5 381 271 18 21 
+n n8 217 122 78 18 
+e n8 n3 "locals" -89 -80 295 130 419 130 420 334 248 334 11
+e n3 n7 "name" 485 -13 209 323 135 323 135 292 11
+e n3 n4 "next" 503 6 229 335 229 376 229 398 11
+e n3 n5 "type" 697 21 248 326 390 326 390 292 11
+e n1 n3 "del:init" 664 107 124 133 108 334 281 327 11
+e n1 n1 "new:execute" 751 13 65 142 15 155 17 116 57 124 12
+e n1 n2 "has" 651 -60 143 142 265 159 265 263 11
+e n1 n1 "del:initLocals" 280 1 124 133 51 213 18 181 124 133 12
+e n1 n6 "new:ip" 330 -44 107 124 107 64 221 64 11
+e n2 n0 "index" 569 27 237 263 237 220 194 220 11
+e n1 n8 "executes" 438 0 100 133 260 132 11
+e n1 n0 "del:nextIndex" 338 12 140 142 140 223 176 223 11

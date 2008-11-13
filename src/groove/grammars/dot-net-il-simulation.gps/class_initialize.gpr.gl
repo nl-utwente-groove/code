@@ -1,0 +1,15 @@
+# Layout information for C:\local\production_systems\simulation.gps\class_initialize.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n0 21 19 40 32 
+n n3 22 118 40 18 
+n n2 117 119 73 18 
+n n1 237 119 63 18 
+e n2 n3 "class" 500 0 153 128 83 123 42 127 11
+e n2 n2 "del:ascend" 898 4 153 128 147 172 176 185 153 128 12
+e n2 n2 "new:locateField" 952 3 153 128 193 46 142 43 153 128 12

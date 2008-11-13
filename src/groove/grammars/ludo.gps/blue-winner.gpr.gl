@@ -1,0 +1,31 @@
+# Layout information for E:\kastenberg\eclipse\workspace\Groove-samples\ludo.gps\blue-winner.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n3 187 187 30 14 
+n n1 272 267 22 14 
+n n9 108 267 22 14 
+n n6 357 113 26 14 
+n n11 186 346 31 14 
+n n2 444 180 18 28 
+n n5 112 340 41 28 
+n n4 20 268 22 14 
+n n7 95 114 26 14 
+n n10 11 113 26 14 
+n n8 270 112 26 14 
+n n0 361 268 22 14 
+e n7 n6 "not:=" 1009 -18 131 119 368 67 368 113 11
+e n3 n10 "myPawn" 751 -2 187 188 47 130 11
+e n3 n3 "del:done" 979 -8 210 207 250 324 266 316 211 207 12
+e n7 n8 "not:=" 1028 10 131 124 201 124 270 124 11
+e n3 n4 "home" 741 0 187 206 52 270 11
+e n10 n8 "not:=" 1200 2 38 113 38 58 270 117 11
+e n3 n0 "home" 737 -1 227 206 361 270 11
+e n10 n6 "not:=" 1033 -9 47 114 196 48 357 115 11
+e n10 n7 "not:=" 846 -11 47 125 73 125 95 125 11
+e n8 n6 "not:=" 758 -11 306 124 335 124 357 124 11
+e n3 n6 "myPawn" 735 1 227 188 357 130 11

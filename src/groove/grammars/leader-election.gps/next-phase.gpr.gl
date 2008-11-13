@@ -1,0 +1,12 @@
+# Layout information for C:\local\groove\samples\circle-extrema.gps\next-phase.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n0 169 204 37 14 
+n n1 123 84 47 14 
+n n3 123 259 28 14 
+n n2 56 203 37 14 
