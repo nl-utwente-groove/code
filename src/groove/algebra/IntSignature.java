@@ -16,18 +16,18 @@
  */
 package groove.algebra;
 
+import java.math.BigInteger;
+
 /**
  * Interface for integer algebras.
+ * The normalised Java implementation of integers is {@link BigInteger}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface IntSignature<T> extends Signature {
+public interface IntSignature<I,B> extends Signature {
     /** Addition of two integers. */
-    T add(T arg1, T arg2);
+    I add(I arg1, I arg2);
 
     /** Name of this signature. */
     static final String NAME = "int";
-    
-    /** The default implementation of this signature. */
-    static final Class<? extends IntSignature<?>> DEFAULT = JavaIntAlgebra.class;
 }
