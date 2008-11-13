@@ -125,8 +125,8 @@ public class ReflectedAlgebra<T> extends Algebra {
     /** Name of the (static) name field of a signature class object. */
     static public final String NAME_FIELD = "NAME";
 
-    // EDUARDO I commented this whole inner class because it was not being
-    // used. Arend, if this is dead code, please remove it.
+    // (eduardo:) I commented this whole inner class because it was not being
+    // used. AREND, if this is dead code, please remove it.
 //    /**
 //     * Class that wraps a reflected Java method into an algebra operation.
 //     */

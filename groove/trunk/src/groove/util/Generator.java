@@ -44,9 +44,11 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PartitionRefiner;
+import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
 import groove.io.FileGps;
 import groove.io.RuleList;
+import groove.io.URLLoaderFactory;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
@@ -70,6 +72,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -177,8 +181,7 @@ public class Generator extends CommandLineTool {
      *        name extension)
      */
     public void setGrammarLocation(String grammarLocation) {
-        this.grammarLocation =
-            this.ruleSystemFilter.addExtension(grammarLocation);
+        this.grammarLocation = grammarLocation;
     }
 
     /**
@@ -247,18 +250,36 @@ public class Generator extends CommandLineTool {
                 }
             }
         };
-        this.loader.addObserver(loadObserver);
+
+        URL url;
+
+        File f = new File(this.ruleSystemFilter.addExtension(this.grammarLocation));
+        if( f.exists() ) {
+            url = FileGps.toURL(f);
+        } else {
+            try {
+                url = new URL(this.grammarLocation);
+            } catch (MalformedURLException e) {
+                printError("Can't load grammar: " + e.getMessage());
+                return;
+            }
+        }
+        // now we are guarenteed to have a URL
+        
+        
+        
         try {
-            this.grammar =
-                this.loader.unmarshal(new File(this.grammarLocation),
-                    this.startStateName).toGrammar();
+            
+            AspectualViewGps loader = URLLoaderFactory.getLoader(url, false);
+            loader.addObserver(loadObserver);    
+            this.grammar = loader.unmarshal(url, this.startStateName).toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
             printError("Can't load grammar: " + exc.getMessage());
         } catch (FormatException exc) {
             printError("Grammar format error: " + exc.getMessage());
         }
-        this.loader.deleteObserver(loadObserver);
+
     }
 
     /**
@@ -272,7 +293,7 @@ public class Generator extends CommandLineTool {
         super.processArguments();
         List<String> argsList = getArgs();
         if (argsList.size() > 0) {
-            setGrammarLocation(argsList.remove(0));
+                setGrammarLocation(argsList.remove(0));
         }
         if (argsList.size() > 0) {
             setStartGraph(argsList.remove(0));
@@ -814,8 +835,7 @@ public class Generator extends CommandLineTool {
     /**
      * The grammar loader.
      */
-    protected final FileGps loader = createGrammarLoader();
-
+    // protected final FileGps loader = createGrammarLoader();
     /**
      * Option to save all final states generated.
      */

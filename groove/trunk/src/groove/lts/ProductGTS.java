@@ -370,18 +370,14 @@ public class ProductGTS implements LTS {
     }
 
     public boolean isFinal(State state) {
-        // TODO Auto-generated method stub
         return false;
     }
 
     public boolean isOpen(State state) {
-        // TODO Auto-generated method stub
         return !state.isClosed();
-        // return false;
     }
 
     public Set<? extends State> nodeSet() {
-        // TODO Auto-generated method stub
         return this.stateSet;
     }
 
@@ -396,7 +392,6 @@ public class ProductGTS implements LTS {
 
     public void addGraphListener(GraphShapeListener listener) {
         // TODO Auto-generated method stub
-
     }
 
     public boolean containsElement(Element elem) {

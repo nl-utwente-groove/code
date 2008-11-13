@@ -36,7 +36,6 @@ public class AbstrLTSJModel extends LTSJModel {
     /** @require lts should be of type AGTS */
     AbstrLTSJModel(LTS lts, Options options) {
         super(lts, options);
-        // TODO Auto-generated constructor stub
         assert lts instanceof AGTS : "Wrong type : " + lts
             + " should be of type AGTS.";
     }
