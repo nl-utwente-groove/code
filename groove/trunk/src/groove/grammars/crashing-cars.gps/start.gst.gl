@@ -1,0 +1,17 @@
+# Layout information for C:\local\groove\samples\crashing-cars.gps\start.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n4 148 87 22 30 
+n n0 236 87 22 30 
+n n3 60 86 22 30 
+n n2 312 87 22 30 
+n n1 393 88 22 30 
+e n1 n2 "l" 759 8 393 109 366 133 336 107 12
+e n0 n4 "l" 853 7 236 107 206 131 172 106 12
+e n2 n0 "l" 787 5 313 108 287 133 259 108 12
+e n4 n3 "l" 803 6 148 106 117 130 84 105 12

@@ -1,0 +1,17 @@
+# Layout information for C:\local\groove\tictactoe.gps\win-diag.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n2 394 212 7 14 
+n n4 281 212 7 14 
+n n1 281 89 15 15 
+n n3 274 275 20 28 
+n n0 171 214 7 14 
+e n0 n4 "diag" 499 0 180 223 298 221 12
+e n0 n3 "next" 500 0 180 234 180 293 274 293 11
+e n4 n2 "diag" 425 0 298 221 403 221 11
+e n3 n2 "next" 500 0 304 292 402 292 402 232 11

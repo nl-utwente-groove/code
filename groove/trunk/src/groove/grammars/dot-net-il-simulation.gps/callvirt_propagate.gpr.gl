@@ -1,0 +1,22 @@
+# Layout information for D:\Workspace\simulation.gps\callvirt_propagate.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n4 180 89 86 18 
+n n1 338 233 50 32 
+n n0 408 83 58 18 
+n n3 206 197 40 18 
+n n5 93 265 40 18 
+n n2 337 129 63 18 
+e n4 n5 "del:lookup" 403 52 180 99 112 99 112 265 11
+e n4 n3 "new:lookup" 500 0 223 98 221 169 226 206 11
+e n1 n0 "name" 615 29 388 233 443 195 443 101 11
+e n4 n0 "name" 491 -3 202 93 240 93 365 93 11
+e n4 n2 "signature" 341 -5 266 103 366 103 366 130 11
+e n1 n2 "has" 500 0 369 233 369 171 369 147 11
+e n5 n1 "method" 493 9 133 274 362 274 362 251 11
+e n4 n4 "lookup" 975 0 219 89 191 21 150 43 211 89 12

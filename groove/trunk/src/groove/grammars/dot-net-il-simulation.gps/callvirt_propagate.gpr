@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n4"/>
+        <node id="n0"/>
+        <node id="n1"/>
+        <node id="n3"/>
+        <node id="n2"/>
+        <node id="n5"/>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>Identifier</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n5">
+            <attr name="label">
+                <string>del:lookup</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n2">
+            <attr name="label">
+                <string>has</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n5">
+            <attr name="label">
+                <string>Class</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n4">
+            <attr name="label">
+                <string>MethodFrame</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n2">
+            <attr name="label">
+                <string>signature</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n4">
+            <attr name="label">
+                <string>lookup</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
+            <attr name="label">
+                <string>Signature</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n3">
+            <attr name="label">
+                <string>Class</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n1">
+            <attr name="label">
+                <string>method</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n3">
+            <attr name="label">
+                <string>new:lookup</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n0">
+            <attr name="label">
+                <string>name</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n0">
+            <attr name="label">
+                <string>name</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n3">
+            <attr name="label">
+                <string>extends</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>Method</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

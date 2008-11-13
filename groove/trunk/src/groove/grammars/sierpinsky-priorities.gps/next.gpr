@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="next" role="rule" edgeids="false" edgemode="directed">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n16937"/>
+        <node id="n16938"/>
+        <edge from="n16938" to="n16938">
+            <attr name="label">
+                <string>del:current</string>
+            </attr>
+        </edge>
+        <edge from="n16937" to="n16937">
+            <attr name="label">
+                <string>new:current</string>
+            </attr>
+        </edge>
+        <edge from="n16938" to="n16937">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

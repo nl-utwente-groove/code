@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="next" role="rule" edgeids="false" edgemode="directed">
+        <attr name="remark">
+            <string>Recursively invokes append on the next list element</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n64835"/>
+        <node id="n64837"/>
+        <node id="n64836"/>
+        <node id="n64838"/>
+        <node id="n64839"/>
+        <edge from="n64839" to="n64835">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge from="n64837" to="n64836">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge from="n64839" to="n64839">
+            <attr name="label">
+                <string>del:control</string>
+            </attr>
+        </edge>
+        <edge from="n64839" to="n64838">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge from="n64837" to="n64835">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge from="n64837" to="n64837">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge from="n64837" to="n64837">
+            <attr name="label">
+                <string>control</string>
+            </attr>
+        </edge>
+        <edge from="n64837" to="n64839">
+            <attr name="label">
+                <string>caller</string>
+            </attr>
+        </edge>
+        <edge from="n64837" to="n64837">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge from="n64839" to="n64839">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge from="n64838" to="n64836">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

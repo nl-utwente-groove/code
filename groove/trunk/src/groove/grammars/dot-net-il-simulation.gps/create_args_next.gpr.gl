@@ -1,0 +1,35 @@
+# Layout information for C:\local\production_systems\simulation.gps\create_args_next.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n5 260 67 31 18 
+n n3 188 213 18 21 
+n n0 171 170 31 18 
+n n7 251 169 32 18 
+n n8 208 120 37 18 
+n n4 306 206 64 32 
+n n6 249 271 69 18 
+n n1 439 212 18 21 
+n n9 480 115 63 18 
+n n2 252 360 69 18 
+n n10 108 22 86 18 
+e n10 n0 "new:nextIndex" 448 -9 151 40 151 179 171 179 11
+e n10 n6 "del:create" 716 91 134 40 134 281 249 281 11
+e n9 n6 "parameters" 620 -76 497 133 497 288 318 288 11
+e n9 n2 "parameters" 757 -87 513 133 513 366 321 366 11
+e n8 n0 "int:add" 500 0 226 129 187 134 186 179 11
+e n6 n3 "name" 426 -23 319 276 197 271 197 222 11
+e n6 n1 "type" 365 16 318 277 448 277 448 230 11
+e n6 n2 "next" 501 7 319 276 301 330 317 369 11
+e n10 n5 "del:nextIndex" 488 16 163 40 163 74 260 74 11
+e n10 n10 "createArgs" 872 -5 149 31 42 31 43 66 149 31 12
+e n4 n5 "index" 386 9 323 222 311 76 269 76 11
+e n8 n5 "arg:0" 687 15 213 127 269 123 275 76 11
+e n10 n4 "has" 620 -74 194 40 339 56 339 206 11
+e n8 n7 "arg:1" 664 -13 213 127 269 131 267 178 11
+e n10 n9 "signature" 582 -53 194 30 512 30 512 115 11
+e n10 n2 "new:create" 712 102 124 40 124 370 252 370 11

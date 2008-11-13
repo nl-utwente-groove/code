@@ -1,0 +1,14 @@
+# Layout information for C:\local\groove\tictactoe.gps\move.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n2 275 144 20 14 
+n n1 151 206 7 14 
+n n3 151 116 15 15 
+n n0 287 114 15 15 
+e n0 n0 "new:turn" 984 -22 295 122 340 143 341 104 295 122 12
+e n3 n3 "del:turn" 794 21 151 129 112 150 112 109 151 121 12

@@ -1,0 +1,23 @@
+# Layout information for D:\Workspace\simulation.gps\callvirt_resolve.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n4 338 233 50 18 
+n n5 180 89 86 18 
+n n3 408 83 58 18 
+n n0 93 265 40 18 
+n n1 134 233 78 18 
+n n2 337 129 63 18 
+e n4 n2 "has" 500 0 369 233 369 171 369 147 11
+e n5 n3 "name" 491 -3 202 93 240 93 365 93 11
+e n5 n0 "del:lookup" 403 52 180 99 112 99 112 265 11
+e n5 n5 "new:locateLocals" 1032 -9 223 98 275 61 277 22 223 98 12
+e n5 n2 "signature" 341 -5 266 103 366 103 366 130 11
+e n4 n3 "name" 500 0 367 266 443 195 443 101 11
+e n5 n5 "del:lookup" 975 0 219 89 191 21 150 43 211 89 12
+e n0 n4 "method" 500 0 133 274 362 274 362 251 11
+e n5 n1 "new:executes" 568 9 180 105 156 105 156 233 11

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="start" role="rule" edgeids="false" edgemode="directed">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="remark">
+            <string>Starts a phone conversation</string>
+        </attr>
+        <node id="n16911"/>
+        <node id="n16912"/>
+        <edge from="n16911" to="n16911">
+            <attr name="label">
+                <string>Girl</string>
+            </attr>
+        </edge>
+        <edge from="n16912" to="n16911">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+        </edge>
+        <edge from="n16911" to="n16912">
+            <attr name="label">
+                <string>new:phones</string>
+            </attr>
+        </edge>
+        <edge from="n16912" to="n16911">
+            <attr name="label">
+                <string>new:phones</string>
+            </attr>
+        </edge>
+        <edge from="n16912" to="n16912">
+            <attr name="label">
+                <string>Girl</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

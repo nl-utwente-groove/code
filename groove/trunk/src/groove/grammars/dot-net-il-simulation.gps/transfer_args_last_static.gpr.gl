@@ -1,0 +1,31 @@
+# Layout information for C:\local\production_systems\simulation.gps\transfer_args_last_static.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n4 323 114 50 18 
+n n2 461 154 29 18 
+n n0 259 253 29 18 
+n n6 497 33 32 18 
+n n8 150 187 41 18 
+n n7 116 87 86 18 
+n n3 434 82 64 18 
+n n9 140 328 18 21 
+n n5 306 165 78 18 
+n n1 156 253 29 32 
+e n3 n9 "new:value" 709 -96 444 100 444 335 203 335 11
+e n3 n6 "index" 500 0 447 92 513 92 513 51 11
+e n7 n7 "del:transferArgs" 718 4 159 96 54 115 56 76 159 96 12
+e n8 n0 "new:top" 779 -24 170 196 272 199 275 272 11
+e n4 n5 "body" 364 0 352 132 352 143 352 165 11
+e n7 n3 "has" 473 0 159 96 346 93 415 95 11
+e n7 n8 "has" 500 0 170 105 170 136 170 162 11
+e n8 n1 "top" 500 0 170 196 168 218 170 269 11
+e n7 n7 "new:locateLocals" 975 0 141 105 49 154 84 183 151 105 12
+e n3 n2 "value" 500 0 466 91 471 113 475 163 11
+e n7 n6 "del:targetIndex" 265 -30 155 87 155 44 497 44 11
+e n7 n4 "method" 500 0 194 105 194 124 316 124 11
+e n7 n5 "new:executes" 479 34 188 105 188 173 363 175 11

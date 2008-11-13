@@ -1,0 +1,21 @@
+# Layout information for D:\Workspace\simulation.gps\instr_stloc.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n9 148 369 29 18 
+n n0 244 273 18 21 
+n n3 233 173 39 18 
+n n2 225 118 69 18 
+n n8 17 116 86 18 
+n n4 151 276 29 32 
+n n6 380 35 18 21 
+n n7 37 276 41 18 
+n n5 224 29 69 32 
+n n1 347 273 29 18 
+e n4 n0 "value" 500 0 180 284 220 284 244 284 11
+e n9 n4 "next" 500 0 162 378 165 351 165 285 11
+e n3 n6 "index" 500 0 252 182 389 183 389 45 11

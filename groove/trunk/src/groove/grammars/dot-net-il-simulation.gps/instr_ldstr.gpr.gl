@@ -1,0 +1,18 @@
+# Layout information for C:\local\production_systems\simulation.gps\instr_ldstr.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n2 17 116 86 18 
+n n7 276 275 42 32 
+n n4 224 29 69 32 
+n n1 151 276 35 32 
+n n6 392 50 18 21 
+n n0 37 276 41 18 
+n n3 148 369 29 18 
+n n5 225 118 69 18 
+e n3 n1 "next" 500 0 162 378 165 351 165 285 11
+e n1 n7 "value" 488 0 186 284 220 284 276 284 11

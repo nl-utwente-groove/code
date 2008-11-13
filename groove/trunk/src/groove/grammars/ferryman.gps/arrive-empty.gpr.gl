@@ -1,0 +1,8 @@
+# Layout information for C:\Eclipse-3\groove\samples\ferryman.gps\arrive-empty.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+e n330 n329 "new:moored" 616 102 147 96 222 127 203 193 12
+n n329 185 184 18 18 
+n n331 36 84 18 18 
+n n330 131 87 18 18 

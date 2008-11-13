@@ -1,0 +1,13 @@
+# Layout information for C:\files\work\groove_cvs\samples\bridge.gps\dead.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n5555 122 399 30 15 
+n n5553 172 315 28 15 
+n n5554 285 367 20 15 
+n n5557 277 273 24 15 
+n n5556 114 206 48 15 

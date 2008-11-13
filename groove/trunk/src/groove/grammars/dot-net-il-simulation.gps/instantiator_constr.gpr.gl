@@ -1,0 +1,40 @@
+# Layout information for C:\local\production_systems\simulation.gps\instantiator_constr.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n0 803 359 32 18 
+n n3 389 393 32 18 
+n n1 429 290 50 18 
+n n5 426 149 69 32 
+n n2 148 333 86 47 
+n n11 429 234 58 18 
+n n9 297 234 63 18 
+n n12 57 202 41 18 
+n n4 37 18 29 18 
+n n13 671 351 64 32 
+n n6 152 95 73 32 
+n n7 551 234 40 18 
+n n8 170 202 44 18 
+n n10 671 101 63 18 
+e n5 n7 "typeSpec" 309 -29 495 173 573 173 573 234 11
+e n6 n6 "descend" 1074 8 216 99 220 21 175 32 216 99 12
+e n2 n12 "has" 621 -33 148 356 76 356 76 220 11
+e n7 n1 "method" 108 -21 573 252 573 296 479 296 11
+e n2 n9 "signature" 586 44 234 338 311 338 311 252 11
+e n2 n2 "locateArg" 1094 10 181 380 152 458 213 463 195 380 12
+e n2 n13 "has" 500 0 234 368 461 368 730 368 11
+e n6 n5 "calledFrom" 501 -16 238 114 460 114 460 149 11
+e n5 n9 "methodSignature" 857 26 426 180 332 180 332 234 11
+e n13 n10 "value" 500 0 703 367 702 280 702 110 11
+e n2 n1 "method" 758 28 234 346 460 346 460 308 11
+e n1 n11 "name" 500 0 454 299 455 272 458 243 11
+e n2 n3 "nextIndex" 624 3 225 380 225 398 389 398 11
+e n5 n11 "methodName" 500 0 460 165 457 202 458 241 11
+e n10 n7 "instanceOf" 811 -41 682 119 682 244 591 244 11
+e n2 n5 "calledFrom" 512 -105 223 333 223 166 426 166 11
+e n6 n10 "self" 500 0 225 103 631 103 761 103 11
+e n1 n9 "has" 830 -23 429 298 352 298 352 252 11

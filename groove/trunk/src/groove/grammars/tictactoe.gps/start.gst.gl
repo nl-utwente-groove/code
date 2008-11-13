@@ -1,0 +1,42 @@
+# Layout information for C:\local\groove\tictactoe.gps\start.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n2 440 202 7 14 
+n n4 243 377 7 14 
+n n9 535 110 8 14 
+n n8 440 378 7 14 
+n n6 341 205 7 14 
+n n1 155 102 20 28 
+n n3 244 293 7 14 
+n n10 441 293 7 14 
+n n7 250 206 7 14 
+n n5 344 379 7 14 
+n n0 346 293 7 14 
+e n10 n2 "next" 500 0 450 296 474 253 449 211 12
+e n4 n5 "next" 499 0 252 386 353 388 11
+e n2 n6 "next" 500 0 449 211 399 184 350 214 12
+e n4 n3 "next" 500 0 245 377 226 345 246 313 12
+e n8 n5 "next" 500 0 440 393 400 417 361 394 12
+e n6 n2 "next" 499 1 350 214 449 211 11
+e n0 n6 "next" 878 0 359 293 378 257 356 225 12
+e n8 n10 "next" 500 0 449 387 475 341 450 296 12
+e n0 n3 "next" 1121 -4 346 299 305 280 261 299 12
+e n6 n0 "next" 338 -1 354 225 354 293 11
+e n6 n7 "next" 500 0 350 214 304 188 259 215 12
+e n10 n0 "next" 663 -8 441 306 399 321 363 306 12
+e n1 n9 "other" 137 0 170 118 356 145 544 119 12
+e n0 n10 "next" 498 2 355 302 450 296 11
+e n2 n0 "diag" 1081 0 443 222 419 271 363 298 12
+e n0 n4 "diag" 750 0 346 305 287 326 257 377 12
+e n8 n0 "diag" 800 -7 440 383 382 356 359 313 12
+e n5 n4 "next" 500 0 344 393 300 416 260 392 12
+e n3 n7 "next" 500 0 247 293 228 257 251 226 12
+e n9 n1 "other" 192 0 544 119 359 86 170 118 12
+e n0 n7 "diag" 816 4 349 293 320 238 267 219 12
+e n5 n0 "next" 500 0 347 379 329 344 348 313 12
+e n7 n6 "next" 499 0 259 215 350 214 11

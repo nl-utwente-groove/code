@@ -1,0 +1,13 @@
+# Layout information for C:\local\groove\samples\phil.gps\release-right.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n1 108 162 16 14 
+n n0 197 74 21 14 
+e n1 n1 "del:hasRight" 953 -11 134 176 191 195 191 145 134 166 12
+e n1 n1 "new:think" 1028 16 108 178 65 198 66 139 108 164 12
+e n1 n0 "del:hold" 275 -19 122 171 141 107 213 83 12

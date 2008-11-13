@@ -1,0 +1,11 @@
+# Layout information for C:\local\production_systems\static_analysis.gps\resolve_labels.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n225 94 134 18 18 
+n n226 327 134 18 18 
+n n222 235 312 18 18 
+n n223 196 73 18 18 
+n n221 109 221 18 18 
+e n221 n224 "not:=" 510 263 128 230 361 238 11
+n n224 342 221 18 18 
