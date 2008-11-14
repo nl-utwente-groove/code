@@ -214,7 +214,7 @@ public class AlgebraRegister {
             methodNames.add(method.getName());
         }
         // now create an operation for all those declared methods
-        Method[] methods = algebra.getClass().getMethods();
+        Method[] methods = algebra.getClass().getDeclaredMethods();
         for (Method method: methods) {
             if (methodNames.contains(method.getName())) {
                 result.put(method.getName(), createOperation(algebra, method));
@@ -361,55 +361,31 @@ public class AlgebraRegister {
         return result.toLowerCase();
     }
 
-    //
-    //    /**
-    //     * Looks up the default implementation of a signature class. The name should
-    //     * be available as the value of a field of the signature named
-    //     * {@link #DEFAULT_FIELD}.
-    //     * @throws IllegalArgumentException if there is no accessible field named
-    //     *         {@link #DEFAULT_FIELD}.
-    //     */
-    //    static public Class<? extends Signature> getDefault(Class<? extends Signature> signature)
-    //        throws IllegalArgumentException {
-    //        try {
-    //            @SuppressWarnings("unchecked")
-    //            Class<? extends Signature> result = (Class<? extends Signature>) signature.getField(DEFAULT_FIELD).get(null);
-    //            if (result == null) {
-    //                throw new IllegalArgumentException();
-    //            }
-    //            return result;
-    //        } catch (SecurityException e) {
-    //            throw new IllegalArgumentException(e);
-    //        } catch (IllegalAccessException e) {
-    //            throw new IllegalArgumentException(e);
-    //        } catch (NoSuchFieldException e) {
-    //            throw new IllegalArgumentException(e);
-    //        }
-    //    }
-    
-        /** Returns the signature implemented by a given algebra class. */
-        @SuppressWarnings("unchecked")
-        static private Class<Signature> getSignature(Algebra algebra) {
-            Class<? extends Algebra> algebraClass = algebra.getClass();
-            if (algebraClass.isInterface()) {
-                throw new IllegalArgumentException(String.format("Algebra %s should be a concrete class", algebra.getName()));
-            }
-            // find the implemented signature
-            Class<?> signature = algebraClass.getSuperclass();
-    //        for (int i = 0; signature == null && i < interfaces.length; i++) {
-                if (!Signature.class.isAssignableFrom(signature)) {
-    //                signature = interfaces[i];
-    //            }
-    //        }
-    //        if (signature == null) {
-                throw new IllegalArgumentException(String.format("Algebra '%s' is not a subclass of '%s'", algebra.getName(), Signature.class));
-            }
-            int algebraModifiers = algebraClass.getModifiers();
-            if (Modifier.isInterface(algebraModifiers) || Modifier.isAbstract(algebraModifiers)) {
-                throw new IllegalArgumentException(String.format("Signature '%s' is not an abstract class", signature.getClass(), Signature.class));
-            }
-            return (Class<Signature>) signature;
+    /** Returns the signature implemented by a given algebra. */
+    @SuppressWarnings("unchecked")
+    static private Class<Signature> getSignature(Algebra algebra) {
+        Class<? extends Algebra> algebraClass = algebra.getClass();
+        if (algebraClass.isInterface()) {
+            throw new IllegalArgumentException(String.format(
+                "Algebra %s should be a concrete class", algebra.getName()));
         }
+        // find the implemented signature
+        Class<?> signature = algebraClass.getSuperclass();
+        // for (int i = 0; signature == null && i < interfaces.length; i++) {
+        if (!Signature.class.isAssignableFrom(signature)) {
+            throw new IllegalArgumentException(String.format(
+                "Algebra '%s' is not a subclass of '%s'", algebra.getName(),
+                Signature.class));
+        }
+        int algebraModifiers = algebraClass.getModifiers();
+        if (Modifier.isInterface(algebraModifiers)
+            || Modifier.isAbstract(algebraModifiers)) {
+            throw new IllegalArgumentException(String.format(
+                "Signature '%s' is not an abstract class",
+                signature.getClass(), Signature.class));
+        }
+        return (Class<Signature>) signature;
+    }
 
     static private void checkSignatureConsistency() {
         for (Class<? extends Signature> signature: signatureMap.values()) {
@@ -453,6 +429,7 @@ public class AlgebraRegister {
      */
     static private final Map<String,Class<? extends Signature>> signatureMap =
         new TreeMap<String,Class<? extends Signature>>();
+    /** Map from signature and method names to operators. */
     static private final Map<String,Map<String,Operator>> operatorsMap;
     static {
         addSignature(BoolSignature.class);
@@ -488,7 +465,10 @@ public class AlgebraRegister {
         Operation(AlgebraRegister register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
-            this.returnType = register.carrierToAlgebraMap.get(method.getReturnType());
+            String returnTypeName =
+                operatorsMap.get(getSignatureName(algebra)).get(
+                    method.getName()).getResultType();
+            this.returnType = register.getImplementation(returnTypeName);
         }
         
         public Object apply(List<Object> args) throws IllegalArgumentException {

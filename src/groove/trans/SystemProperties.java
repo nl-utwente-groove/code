@@ -1,5 +1,6 @@
 package groove.trans;
 
+import groove.algebra.AlgebraRegister;
 import groove.util.Groove;
 import groove.util.Property;
 
@@ -136,6 +137,19 @@ public class SystemProperties extends java.util.Properties {
         return result != null && new Boolean(result);
     }
 
+    /**
+     * Sets the algebra family to a given value.
+     */
+    public void setAlgebra(String family) {
+        setProperty(ALGEBRA_KEY, family);
+    }
+    
+    /** Returns the selected algebra family. */
+    public String getAlgebraFamily() {
+        String result = getProperty(ALGEBRA_KEY);
+        return result == null ? AlgebraRegister.DEFAULT_ALGEBRAS : result;
+    }
+    
     /**
      * Sets the creator edge check to a certain value.
      * @param check if <code>true</code>, creator edges are treated as
@@ -407,6 +421,10 @@ public class SystemProperties extends java.util.Properties {
      */
     static public final String REMARK_KEY = "remark";
     /**
+     * Property name for the algebra to be used during simulation.
+     */
+    static public final String ALGEBRA_KEY = "algebraFamily";
+    /**
      * List of system-defined keys, in the order in which they are to appear in
      * a properties editor.
      */
@@ -417,23 +435,10 @@ public class SystemProperties extends java.util.Properties {
             new LinkedHashMap<String,Property<String>>();
         defaultKeys.put(REMARK_KEY, new Property.True<String>(
             "A one-line description of the graph production system"));
-        // String attributesDescription = String.format("'%s' for default
-        // attributes", ATTRIBUTES_YES);
-        // StringBuilder attributesCommentBuilder = new StringBuilder();
-        // attributesCommentBuilder.append("Indicates whether the graphs and
-        // rules are attributed\n");
-        // attributesCommentBuilder.append(String.format("Use '%s' for default
-        // attributes, '%s' or empty for no attributes",
-        // ATTRIBUTES_YES, ATTRIBUTES_NO));
-        // String attributesComment =
-        // Converter.HTML_TAG.on(Converter.toHtml(attributesCommentBuilder)).toString();
-        // defaultKeys.put(ATTRIBUTES_KEY, new
-        // Property<String>(attributesDescription, attributesComment) {
-        // @Override
-        // public boolean isSatisfied(String value) {
-        // return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
-        // }
-        // });
+        defaultKeys.put(
+            ALGEBRA_KEY,
+            new Property.Choice<String>("Algebra family that should be used in simulation (empty for default)",
+                AlgebraRegister.DEFAULT_ALGEBRAS, AlgebraRegister.POINT_ALGEBRAS));
         defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean(
             "Flag controlling if matches should be injective", true));
         defaultKeys.put(

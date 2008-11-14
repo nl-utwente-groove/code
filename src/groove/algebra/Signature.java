@@ -29,6 +29,7 @@ package groove.algebra;
  * parameters
  * <li> For each such additional type parameter <code>Yyy</code>, there
  * should be a corresponding class <code>YyySignature</code>
+ * <li> There is no overloading of the methods in a signature
  * </ul>
  * @author Arend Rensink
  * @version $Revision $
