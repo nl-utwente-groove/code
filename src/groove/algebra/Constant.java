@@ -17,13 +17,15 @@
 package groove.algebra;
 
 /**
- * Interface extending the {@link groove.algebra.Operation}-interface without
+ * Interface extending the {@link groove.algebra.OldOperation}-interface without
  * adding more functionality.
  * 
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-29 11:02:18 $
+ * @deprecated Superseded by the new algebra implementation
  */
-public interface Constant extends Operation {
+@Deprecated
+public interface Constant extends OldOperation {
     /**
      * Returns the value of this constant.
      */

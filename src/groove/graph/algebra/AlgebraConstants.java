@@ -16,9 +16,6 @@
  */
 package groove.graph.algebra;
 
-import groove.algebra.Algebra;
-import groove.algebra.Operation;
-import groove.algebra.UnknownSymbolException;
 import groove.graph.Label;
 import groove.util.Groove;
 
@@ -141,42 +138,5 @@ public class AlgebraConstants {
         }
         // no role prefix recognised: take default
         return AlgebraConstants.NO_TYPE;
-    }
-
-    /**
-     * Returns the text of a label as minus its role prefix.
-     * @param label the label whose text prefix is to be cut off
-     * @return label text without its role prefix
-     */
-    static private String labelText(Label label) {
-        int type = labelType(label);
-        if (type == AlgebraConstants.NO_TYPE) {
-            return label.text();
-        } else {
-            return label.text().substring(TYPE_PREFIX[type].length());
-        }
-    }
-
-    /**
-     * Returns the operation this label is encoding.
-     * 
-     * @param label the label from which to determine the encoded operation
-     * @return the operation encoded by the given label, or <tt>null</tt> if
-     *         the label is not encoding an algebraic operation
-     */
-    public static Operation toOperation(Label label)
-        throws UnknownSymbolException {
-        // try {
-        Operation result = null;
-        int type = labelType(label);
-        if (type != NO_TYPE) {
-            Algebra algebra = AlgebraGraph.getInstance().getAlgebra(type);
-            result = algebra.getOperation(AlgebraConstants.labelText(label));
-        }
-        return result;
-        // } catch (UnknownSymbolException use) {
-        // use.printStackTrace();
-        // }
-        // return null;
     }
 }

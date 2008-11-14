@@ -18,6 +18,8 @@ package groove.algebra;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.TypeVariable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,27 +34,17 @@ import java.util.TreeMap;
  * @version $Revision $
  */
 public class AlgebraRegister {
-    /** Constructs a new register, initially loaded with all known signatures. */
-    public AlgebraRegister(Set<NewAlgebra<?>> algebras) {
-        for (NewAlgebra<?> algebra: algebras) {
-            addSignature(getSignature(algebra.getClass()));
+    /** 
+     * Constructs a new register, loaded with a given set of algebras.
+     * @throws IllegalArgumentException if there is an algebra for which there is no known signature,
+     * or more than one algebra for the same signature
+     * @throws IllegalStateException if there are signatures without algebras
+     */
+    public AlgebraRegister(Set<Algebra<?>> algebras) throws IllegalArgumentException, IllegalStateException {
+        for (Algebra<?> algebra: algebras) {
             setImplementation(algebra);
         }
-    }
-
-    /**
-     * Adds a signature class to the register.
-     * @throws IllegalArgumentException if the signature class does not have
-     *         accessible fields called {@link #NAME_FIELD} or
-     *         {@link #DEFAULT_FIELD}.
-     */
-    private void addSignature(Class<? extends Signature> signature)
-        throws IllegalArgumentException {
-        String name = getName(signature);
-        if (this.signatureMap.put(name, signature) != null) {
-            throw new IllegalArgumentException(String.format(
-                "Signature named %s already registered", name));
-        }
+        checkCompleteness();
     }
 
     /**
@@ -60,16 +52,21 @@ public class AlgebraRegister {
      * The algebra must implement an already known signature.
      * @param algebra the algebra to be added
      */
-    private void setImplementation(NewAlgebra<?> algebra) {
-        String signatureName = getName(getSignature(algebra.getClass()));
-        NewAlgebra<?> oldAlgebra = this.algebraMap.put(signatureName, algebra);
+    private void setImplementation(Algebra<?> algebra) {
+        String signatureName = getSignatureName(algebra);
+        if (!signatureMap.containsKey(signatureName)) {
+            throw new IllegalArgumentException(String.format(
+                "Algebra '%s' implements unknown signature '%s'",
+                algebra.getName(), signatureName));
+        }
+        Algebra<?> oldAlgebra = this.algebraMap.put(signatureName, algebra);
         if (oldAlgebra != null) {
             throw new IllegalArgumentException(String.format(
                 "Signature '%s' already implemented by '%s'", signatureName,
                 oldAlgebra.getName()));
         }
         try {
-            Class<?> carrierType = algebra.getClass().getMethod("getValue").getReturnType();
+            Class<?> carrierType = algebra.getClass().getMethod("getValue", String.class).getReturnType();
             oldAlgebra = this.carrierToAlgebraMap.put(carrierType, algebra);
             if (oldAlgebra != null) {
                 throw new IllegalArgumentException(String.format(
@@ -83,20 +80,27 @@ public class AlgebraRegister {
         }
     }
     
-    /** Returns the signature class registered for a given name, if any. */
-    public Class<? extends Signature> getSignature(String signatureName) {
-        return this.signatureMap.get(signatureName);
+    /**
+     * Checks for the completeness of the register.
+     * @throws IllegalStateException if there is an implementation missing for some signature.
+     */
+    private void checkCompleteness() throws IllegalStateException {
+        for (String signatureName: getSignatureNames()) {
+            if (!this.algebraMap.containsKey(signatureName)) {
+                throw new IllegalStateException(String.format("Implementation of signature '%s' is missing", signatureName));
+            }
+        }
     }
     
     /** Returns the algebra class registered for a given named signature, if any. */
-    public NewAlgebra<?> getImplementation(String signatureName) {
+    public Algebra<?> getImplementation(String signatureName) {
         return this.algebraMap.get(signatureName);
     }
 
-    /** Returns an unmodifiable map from names to registered signature classes. */
-    public Map<String,Class<? extends Signature>> getSignatureMap() {
-        return Collections.unmodifiableMap(this.signatureMap);
-    }
+//    /** Returns an unmodifiable map from names to registered signature classes. */
+//    public Map<String,Class<? extends Signature>> getSignatureMap() {
+//        return Collections.unmodifiableMap(this.signatureMap);
+//    }
 //
 //    public boolean isFixed() {
 //        return this.fixed;
@@ -157,43 +161,43 @@ public class AlgebraRegister {
 
     /** 
      * Returns the constant value associated with a certain signature name and constant symbol.
-     * @throws IllegalArgumentException if the signature name does not exist,
+     * @throws UnknownSymbolException if the signature name does not exist,
      * or the constant symbol does not denote a value of this signature. 
      */
-    public Object getConstant(String signatureName, String constant) throws IllegalArgumentException {
-        NewAlgebra<?> algebra = getImplementation(signatureName);
+    public Object getConstant(String signatureName, String constant) throws UnknownSymbolException {
+        Algebra<?> algebra = getImplementation(signatureName);
         if (algebra == null) {
-            throw new IllegalArgumentException(String.format(
+            throw new UnknownSymbolException(String.format(
                 "No algebra registered for signature '%s'", signatureName));
         }
-        Object result = algebra.getValue(constant);
-        if (result == null) {
-            throw new IllegalArgumentException(String.format(
+        if (algebra.isValue(constant)) {
+            return algebra.getValue(constant);
+        } else {
+            throw new UnknownSymbolException(String.format(
                 "Constant '%s' does not occur in algebra '%s'", constant,
                 algebra.getName()));
         }
-        return result;
     }
 
     /** 
      * Returns the method associated with a certain signature name and operation name.
-     * @throws IllegalArgumentException if the signature name does not exist,
+     * @throws UnknownSymbolException if the signature name does not exist,
      * or the operation name does not occur in the signature.
      */
-    public NewAlgebra.Operation getMethod(String signatureName, String operation) throws IllegalArgumentException {
-        NewAlgebra<?> algebra = getImplementation(signatureName);
+    public Operation getOperation(String signatureName, String operation) throws UnknownSymbolException {
+        Algebra<?> algebra = getImplementation(signatureName);
         if (algebra == null) {
-            throw new IllegalArgumentException(String.format(
+            throw new UnknownSymbolException(String.format(
                 "No algebra registered for signature '%s'", signatureName));
         }
-        Map<String,NewAlgebra.Operation> operations = this.operationsMap.get(algebra);
+        Map<String,Operation> operations = this.operationsMap.get(algebra);
         if (operations == null) {
             operations = createOperationsMap(algebra);
             this.operationsMap.put(algebra,operations);
         }
-        NewAlgebra.Operation result = operations.get(operation);
+        Operation result = operations.get(operation);
         if (result == null) {
-            throw new IllegalArgumentException(String.format(
+            throw new UnknownSymbolException(String.format(
                 "Operation '%s' does not occur in signature '%s'", operation,
                 signatureName));
         }
@@ -201,11 +205,11 @@ public class AlgebraRegister {
     }
     
     /** Returns a mapping from operation names to operations for a given algebra. */
-    private Map<String,NewAlgebra.Operation> createOperationsMap(NewAlgebra<?> algebra) {
-        Map<String,NewAlgebra.Operation> result = new HashMap<String,NewAlgebra.Operation>();
+    private Map<String,Operation> createOperationsMap(Algebra<?> algebra) {
+        Map<String,Operation> result = new HashMap<String,Operation>();
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<String>();
-        Method[] signatureMethods = getSignature(algebra.getClass()).getDeclaredMethods();
+        Method[] signatureMethods = getSignature(algebra).getDeclaredMethods();
         for (Method method: signatureMethods) {
             methodNames.add(method.getName());
         }
@@ -220,84 +224,18 @@ public class AlgebraRegister {
     }
 
     /** Returns a new algebra operation object for the given method (from a given algebra). */
-    private NewAlgebra.Operation createOperation(NewAlgebra<?> algebra, Method method) {
+    private Operation createOperation(Algebra<?> algebra, Method method) {
         return new Operation(this, algebra, method);
     }
 
-    /** The map of registered signatures. */
-    private final Map<String,Class<? extends Signature>> signatureMap =
-        new TreeMap<String,Class<? extends Signature>>();
     /** A map from signature names to algebras registered for that name. */
-    private final Map<String,NewAlgebra<?>> algebraMap = new TreeMap<String,NewAlgebra<?>>();
+    private final Map<String,Algebra<?>> algebraMap = new TreeMap<String,Algebra<?>>();
     /** A map from carrier set types to the defining algebras. */
-    private final Map<Class<?>,NewAlgebra<?>> carrierToAlgebraMap = new HashMap<Class<?>,NewAlgebra<?>>();
+    private final Map<Class<?>,Algebra<?>> carrierToAlgebraMap = new HashMap<Class<?>,Algebra<?>>();
     /** Store of operations created from the algebras. */
-    private final Map<NewAlgebra<?>,Map<String,NewAlgebra.Operation>> operationsMap =
-        new HashMap<NewAlgebra<?>,Map<String,NewAlgebra.Operation>>();
+    private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
+        new HashMap<Algebra<?>,Map<String,Operation>>();
 
-    //    /** Flag to indicate that the register has been fixed. */
-//    private boolean fixed;
-    /**
-     * Looks up the name of a signature or algebra class. The name should be available as
-     * the value of a field of the signature named {@link #NAME_FIELD}.
-     * @throws IllegalArgumentException if there is no accessible field named
-     *         {@link #NAME_FIELD}.
-     */
-    static public String getName(Class<? extends Signature> signature)
-        throws IllegalArgumentException {
-        try {
-            return (String) signature.getField(NAME_FIELD).get(null);
-        } catch (SecurityException e) {
-            throw new IllegalArgumentException(e);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(e);
-        } catch (NoSuchFieldException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-//
-//    /**
-//     * Looks up the default implementation of a signature class. The name should
-//     * be available as the value of a field of the signature named
-//     * {@link #DEFAULT_FIELD}.
-//     * @throws IllegalArgumentException if there is no accessible field named
-//     *         {@link #DEFAULT_FIELD}.
-//     */
-//    static public Class<? extends Signature> getDefault(Class<? extends Signature> signature)
-//        throws IllegalArgumentException {
-//        try {
-//            @SuppressWarnings("unchecked")
-//            Class<? extends Signature> result = (Class<? extends Signature>) signature.getField(DEFAULT_FIELD).get(null);
-//            if (result == null) {
-//                throw new IllegalArgumentException();
-//            }
-//            return result;
-//        } catch (SecurityException e) {
-//            throw new IllegalArgumentException(e);
-//        } catch (IllegalAccessException e) {
-//            throw new IllegalArgumentException(e);
-//        } catch (NoSuchFieldException e) {
-//            throw new IllegalArgumentException(e);
-//        }
-//    }
-
-    /** Returns the signature implemented by a given algebra class. */
-    @SuppressWarnings("unchecked")
-    static public Class<Signature> getSignature(Class<? extends NewAlgebra> algebra) {
-        if (algebra.isInterface()) {
-            throw new IllegalArgumentException(String.format("Algebra %s should be a concrete class", algebra.getName()));
-        }
-        // find the implemented signature
-        Class<?> signature = algebra;
-        while (!signature.isInterface()) {
-            signature = signature.getSuperclass();
-        }
-        if (signature.equals(Signature.class)) {
-            throw new IllegalArgumentException(String.format("Algebra %s should implement a sub-interface of %s", algebra.getName(), Signature.class.getName()));
-        }
-        return (Class<Signature>) signature;
-    }
-    
     /** Returns the algebra register with the family of default algebras. */
     static public AlgebraRegister getInstance() {
         return defaultRegister;
@@ -311,30 +249,243 @@ public class AlgebraRegister {
         return result;
     }
     
+    /** Returns the set of all known signature names. */
+    static public Set<String> getSignatureNames() {
+        return Collections.unmodifiableSet(signatureMap.keySet());
+    }
+    
+    /** Returns the signature name for a given algebra. */
+    static public String getSignatureName(Algebra<?> algebra) {
+        return getName(getSignature(algebra));
+    }
+    
+    /**
+     * Returns the operator for a given signature name and operator name.
+     * @throws UnknownSymbolException if the signature or operator does not exist
+     */
+    static public Operator getOperator(String signature, String operator) throws UnknownSymbolException {
+        Map<String,Operator> operators = operatorsMap.get(signature);
+        if (operators == null) {
+            throw new UnknownSymbolException(String.format("No such signature '%s'", signature));
+        }
+        Operator result = operators.get(operator);
+        if (result == null) {
+            throw new UnknownSymbolException(String.format("No such operator '%s' in signature '%s'", operator, signature));
+        }
+        return result;
+    }
+    
+    /**
+     * Tests if a string represents a constant in a given (named) signature.
+     * @throws UnknownSymbolException if the signature does not exist
+     */
+    static public boolean isConstant(String signatureName, String constant) throws UnknownSymbolException {
+        Class<? extends Signature> signature = signatureMap.get(signatureName);
+        if (signature == null) {
+            throw new UnknownSymbolException(String.format("No such signature '%s'", signature));
+        }
+        Method isValueMethod = getIsValueMethod(signature);
+        try {
+            return (Boolean) isValueMethod.invoke(getInstance().getImplementation(signatureName),constant);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException();
+        } catch (InvocationTargetException e) {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    /**
+     * Adds a signature class to the register.
+     * @throws IllegalArgumentException if a signature with the same name is already registered.
+     */
+    static private void addSignature(Class<? extends Signature> signature)
+        throws IllegalArgumentException {
+        String signatureName = getName(signature);
+        int sigModifiers = signature.getModifiers();
+        if (Modifier.isInterface(sigModifiers)
+            || !Modifier.isAbstract(sigModifiers)) {
+            throw new IllegalArgumentException(String.format(
+                "Signature '%s' should be an abstract class", signature));
+        }
+        // test if the class has a public final method isValue
+        Method isValueMethod = getIsValueMethod(signature);
+        if (isValueMethod == null) {
+            throw new IllegalArgumentException(String.format(
+                "Signature '%s' should implement '%s'", signature,
+                IS_VALUE_NAME));
+        }
+        int methodModifiers = isValueMethod.getModifiers();
+        if (Modifier.isAbstract(methodModifiers)
+            || !Modifier.isFinal(methodModifiers)) {
+            throw new IllegalArgumentException(String.format(
+                "Method '%s' in signature '%s' should be final",
+                isValueMethod.getName(), signature));
+        }
+        if (signatureMap.put(signatureName, signature) != null) {
+            throw new IllegalArgumentException(String.format(
+                "Signature named %s already registered", signatureName));
+        }
+    }
+
+    private static Method getIsValueMethod(
+            Class<? extends Signature> signature) {
+        for (Method method : signature.getMethods()) {
+            if (method.getName().equals(IS_VALUE_NAME)) {
+                Class<?>[] parTypes = method.getParameterTypes();
+                if (parTypes.length == 1 && parTypes[0].equals(String.class)) {
+                    return method;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Looks up the name of a signature or algebra class. The name is taken to be the first 
+     * part of the interface name, after which only {@link #SIGNATURE_SUFFIX} follows.
+     */
+    static private String getName(Class<? extends Signature> signature)
+        throws IllegalArgumentException {
+        String interfaceName = signature.getName();
+        // take off qualification
+        if (interfaceName.indexOf('.') >= 0) {
+            interfaceName = interfaceName.substring(interfaceName.lastIndexOf('.')+1);
+        }
+        if (!interfaceName.endsWith(SIGNATURE_SUFFIX)) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "Signature name '%s' should by convention end on \"%s\"",
+                    interfaceName, SIGNATURE_SUFFIX));
+        }
+        String result = interfaceName.substring(0,interfaceName.length()-SIGNATURE_SUFFIX.length());
+        return result.toLowerCase();
+    }
+
+    //
+    //    /**
+    //     * Looks up the default implementation of a signature class. The name should
+    //     * be available as the value of a field of the signature named
+    //     * {@link #DEFAULT_FIELD}.
+    //     * @throws IllegalArgumentException if there is no accessible field named
+    //     *         {@link #DEFAULT_FIELD}.
+    //     */
+    //    static public Class<? extends Signature> getDefault(Class<? extends Signature> signature)
+    //        throws IllegalArgumentException {
+    //        try {
+    //            @SuppressWarnings("unchecked")
+    //            Class<? extends Signature> result = (Class<? extends Signature>) signature.getField(DEFAULT_FIELD).get(null);
+    //            if (result == null) {
+    //                throw new IllegalArgumentException();
+    //            }
+    //            return result;
+    //        } catch (SecurityException e) {
+    //            throw new IllegalArgumentException(e);
+    //        } catch (IllegalAccessException e) {
+    //            throw new IllegalArgumentException(e);
+    //        } catch (NoSuchFieldException e) {
+    //            throw new IllegalArgumentException(e);
+    //        }
+    //    }
+    
+        /** Returns the signature implemented by a given algebra class. */
+        @SuppressWarnings("unchecked")
+        static private Class<Signature> getSignature(Algebra algebra) {
+            Class<? extends Algebra> algebraClass = algebra.getClass();
+            if (algebraClass.isInterface()) {
+                throw new IllegalArgumentException(String.format("Algebra %s should be a concrete class", algebra.getName()));
+            }
+            // find the implemented signature
+            Class<?> signature = algebraClass.getSuperclass();
+    //        for (int i = 0; signature == null && i < interfaces.length; i++) {
+                if (!Signature.class.isAssignableFrom(signature)) {
+    //                signature = interfaces[i];
+    //            }
+    //        }
+    //        if (signature == null) {
+                throw new IllegalArgumentException(String.format("Algebra '%s' is not a subclass of '%s'", algebra.getName(), Signature.class));
+            }
+            int algebraModifiers = algebraClass.getModifiers();
+            if (Modifier.isInterface(algebraModifiers) || Modifier.isAbstract(algebraModifiers)) {
+                throw new IllegalArgumentException(String.format("Signature '%s' is not an abstract class", signature.getClass(), Signature.class));
+            }
+            return (Class<Signature>) signature;
+        }
+
+    static private void checkSignatureConsistency() {
+        for (Class<? extends Signature> signature: signatureMap.values()) {
+            for (TypeVariable<?> type: signature.getTypeParameters()) {
+                String typeName = type.getName().toLowerCase();
+                if (!signatureMap.containsKey(typeName)) {
+                    throw new IllegalArgumentException(String.format("Type '%s' not declared by any signature", typeName));
+                }
+            }
+        }
+    }
+
+    static private Map<String, Map<String,Operator>> createOperatorsMap() {
+        Map<String, Map<String,Operator>> result = new HashMap<String, Map<String,Operator>>();
+        for (Map.Entry<String,Class<? extends Signature>> signatureEntry: signatureMap.entrySet()) {
+            Map<String,Operator> operators = new HashMap<String,Operator>();
+            Method[] methods = signatureEntry.getValue().getDeclaredMethods();
+            for (Method method: methods) {
+                if (Modifier.isAbstract(method.getModifiers())) {
+                    Operator oldOperator =
+                        operators.put(method.getName(), new Operator(method));
+                    if (oldOperator != null) {
+                        throw new IllegalArgumentException(
+                            String.format(
+                                "Operator overloading for '%s' (signature '%s') not allowed",
+                                method.getName(), signatureEntry.getKey()));
+                    }
+                }
+            }
+            result.put(signatureEntry.getKey(), operators);
+        }
+        return result;
+    }
+
     /** Name of the default algebra family. */
     static public final String DEFAULT_ALGEBRAS = "default";
     /** Name of the point algebra family. */
     static public final String POINT_ALGEBRAS = "point";
+    /**
+     * The map of registered signatures. 
+     */
+    static private final Map<String,Class<? extends Signature>> signatureMap =
+        new TreeMap<String,Class<? extends Signature>>();
+    static private final Map<String,Map<String,Operator>> operatorsMap;
+    static {
+        addSignature(BoolSignature.class);
+        addSignature(IntSignature.class);
+        addSignature(RealSignature.class);
+        addSignature(StringSignature.class);
+        checkSignatureConsistency();
+        operatorsMap = createOperatorsMap();
+    }
+    
     /** The default algebra register. */
     static private final AlgebraRegister defaultRegister;
     /** Default algebra register. */
     static private final Map<String,AlgebraRegister> registerMap;
     static {
-        Set<NewAlgebra<?>> defaultAlgebraFamily =  new HashSet<NewAlgebra<?>>();
+        Set<Algebra<?>> defaultAlgebraFamily =  new HashSet<Algebra<?>>();
         defaultAlgebraFamily.add(new JavaIntAlgebra());
+        defaultAlgebraFamily.add(new BoolAlgebra());
+        defaultAlgebraFamily.add(new StringAlgebra());
+        defaultAlgebraFamily.add(new JavaDoubleAlgebra());
         defaultRegister = new AlgebraRegister(defaultAlgebraFamily);
         registerMap = new HashMap<String,AlgebraRegister>();
         registerMap.put(DEFAULT_ALGEBRAS, defaultRegister);
     }
 
-    /** The name of the field containing the signature name. */
-    static private final String NAME_FIELD = "NAME";
-    /** The name of the field containing the default implementation. */
-    static private final String DEFAULT_FIELD = "DEFAULT";
+    /** Required last part of the interface name of signatures. */
+    static private final String SIGNATURE_SUFFIX = "Signature";
+    /** Name of the {@link Signature#isValue(String)} method */
+    static private final String IS_VALUE_NAME = "isValue";
     
     /** Implementation of an algebra operation. */
-    private static class Operation implements NewAlgebra.Operation {
-        Operation(AlgebraRegister register, NewAlgebra<?> algebra, Method method) {
+    private static class Operation implements groove.algebra.Operation {
+        Operation(AlgebraRegister register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
             this.returnType = register.carrierToAlgebraMap.get(method.getReturnType());
@@ -350,7 +501,7 @@ public class AlgebraRegister {
             }
         }
 
-        public NewAlgebra<?> getDefiningAlgebra() {
+        public Algebra<?> getAlgebra() {
             return this.algebra;
         }
 
@@ -358,7 +509,7 @@ public class AlgebraRegister {
             return this.method.getParameterTypes().length;
         }
 
-        public NewAlgebra<?> getResultAlgebra() {
+        public Algebra<?> getResultAlgebra() {
             return this.returnType;
         }
 
@@ -366,8 +517,8 @@ public class AlgebraRegister {
             return this.method.getName();
         }
         
-        private final NewAlgebra<?> algebra;
-        private final NewAlgebra<?> returnType;
+        private final Algebra<?> algebra;
+        private final Algebra<?> returnType;
         private final Method method;
     }
 }

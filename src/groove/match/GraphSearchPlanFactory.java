@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.algebra.Constant;
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
@@ -38,8 +37,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -342,10 +341,7 @@ public class GraphSearchPlanFactory {
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem((BinaryEdge) edge);
             } else if (edge instanceof OperatorEdge) {
-                // constants are more efficiently matched as ValueNodes
-                if (!(((OperatorEdge) edge).getOperation() instanceof Constant)) {
-                    return new OperatorEdgeSearchItem((OperatorEdge) edge);
-                }
+                return new OperatorEdgeSearchItem((OperatorEdge) edge);
             } else if (edge instanceof ArgumentEdge) {
                 return null;
             } else if (edge instanceof BinaryEdge) {

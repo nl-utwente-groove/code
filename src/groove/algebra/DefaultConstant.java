@@ -24,11 +24,13 @@ import java.util.List;
  * 
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2007-08-28 22:02:00 $
+ * @deprecated Superseded by the new algebra implementation
  */
+@Deprecated
 abstract public class DefaultConstant extends DefaultOperation implements
         Constant {
     /** Constructs a constant with a given algebra and string description. */
-    public DefaultConstant(Algebra algebra, String symbol) {
+    public DefaultConstant(OldAlgebra algebra, String symbol) {
         super(algebra, symbol, 0);
     }
 

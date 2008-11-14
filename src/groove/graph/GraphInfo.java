@@ -21,7 +21,6 @@ import groove.util.Groove;
 import groove.util.Version;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -321,7 +320,7 @@ public class GraphInfo {
     /**
      * Convenience method to retrieve the file of a graph.
      */
-    public static File getFile(GraphShape graph) throws IOException {
+    public static File getFile(GraphShape graph) {
         GraphInfo graphInfo = graph.getInfo();
         return new File(graphInfo.getFile());
     }

@@ -37,9 +37,6 @@ public class AllGraphTests {
         suite.addTest(new TestSuite(AdjacencyMapGraphTest.class));
         suite.addTest(new TestSuite(NodeSetEdgeMapGraphTest.class));
         suite.addTest(new TestSuite(NodeSetEdgeSetGraphTest.class));
-
-        // all kinds of graph elements
-        suite.addTest(new TestSuite(OperationNodeTest.class));
         // $JUnit-END$
         return suite;
     }

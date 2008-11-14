@@ -17,7 +17,6 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
-import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -261,8 +260,9 @@ public class AspectualGraphView extends AspectualView<Graph> {
      * Tests if a certain attribute edge is of the type allowed in graphs.
      */
     private boolean isAllowedEdge(Edge edge) {
-        return edge instanceof OperatorEdge
-            && ((OperatorEdge) edge).getOperation() instanceof Constant;
+        return false;
+//        return edge instanceof OperatorEdge
+//            && ((OperatorEdge) edge).getOperation() instanceof Constant;
     }
 
     /**

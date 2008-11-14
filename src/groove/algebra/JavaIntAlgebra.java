@@ -16,32 +16,91 @@
  */
 package groove.algebra;
 
+import java.math.BigInteger;
+
 
 /**
  * Integer algebra based on the java type {@link Integer}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JavaIntAlgebra implements IntSignature<Integer,Boolean>, NewAlgebra<Integer> {
+public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> implements Algebra<Integer> {
+    @Override
     public Integer add(Integer arg0, Integer arg1) {
         return arg0 + arg1;
     }
 
+    @Override
+    public Integer div(Integer arg0, Integer arg1) {
+        return arg0/arg1;
+    }
+
+    @Override
+    public Boolean eq(Integer arg0, Integer arg1) {
+        return arg0.equals(arg1);
+    }
+
+    @Override
+    public Boolean ge(Integer arg0, Integer arg1) {
+        return arg0 >= arg1;
+    }
+
+    @Override
+    public Boolean gt(Integer arg0, Integer arg1) {
+        return arg0 > arg1;
+    }
+
+    @Override
+    public Boolean le(Integer arg0, Integer arg1) {
+        return arg0 <= arg1;
+    }
+
+    @Override
+    public Boolean lt(Integer arg0, Integer arg1) {
+        return arg0 < arg1;
+    }
+
+    @Override
+    public Integer max(Integer arg0, Integer arg1) {
+        return Math.max(arg0,arg1);
+    }
+
+    @Override
+    public Integer min(Integer arg0, Integer arg1) {
+        return Math.min(arg0,arg1);
+    }
+
+    @Override
+    public Integer mod(Integer arg0, Integer arg1) {
+        return arg0 % arg1;
+    }
+
+    @Override
+    public Integer mul(Integer arg0, Integer arg1) {
+        return arg0 * arg1;
+    }
+
+    @Override
+    public Integer neg(Integer arg) {
+        return -arg;
+    }
+
+    @Override
+    public Integer sub(Integer arg0, Integer arg1) {
+        return arg0-arg1;
+    }
+
     /**
-     * Delegates to {@link Integer#parseInt(String)}.
+     * Delegates to {@link BigInteger#intValue()}.
      */
     public Integer getValue(String symbol) {
-        try {
-            return Integer.parseInt(symbol);
-        } catch (NumberFormatException exc) {
-            return null;
-        }
+        return new BigInteger(symbol).intValue();
     }
     
     /**
      * Delegates to {@link Integer#toString()}.
      */
-    public String getSymbol(Integer value) {
+    public String getSymbol(Object value) {
         return value.toString();
     }
 

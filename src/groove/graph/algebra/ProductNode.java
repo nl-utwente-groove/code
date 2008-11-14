@@ -16,7 +16,6 @@
  */
 package groove.graph.algebra;
 
-import groove.algebra.Constant;
 import groove.graph.DefaultNode;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import java.util.List;
  * Instances of this class represent tuples of data values on which one can
  * perform algebraic operations. A product node has <i>arguments</i>, which are
  * the {@link ValueNode}s attached to it through {@link ArgumentEdge}s, and
- * <i>operands</i>, which are the corresponding {@link Constant}s on those
+ * <i>operands</i>, which are the corresponding constants on those
  * nodes.
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-02-12 15:15:32 $

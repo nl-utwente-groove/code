@@ -21,15 +21,17 @@ package groove.algebra;
  * 
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2007-07-21 20:07:43 $
+ * @deprecated Superseded by the new algebra implementation
  */
-abstract public class DefaultOperation implements Operation {
+@Deprecated
+abstract public class DefaultOperation implements OldOperation {
     /**
      * Constructor.
      * @param algebra the algebra for this operation
      * @param symbol the symbol representing this operation
      * @param arity the arity of this operation
      */
-    public DefaultOperation(Algebra algebra, String symbol, int arity) {
+    public DefaultOperation(OldAlgebra algebra, String symbol, int arity) {
         this(algebra, symbol, arity, algebra);
     }
 
@@ -40,8 +42,8 @@ abstract public class DefaultOperation implements Operation {
      * @param symbol the symbol representing this operation
      * @param arity the arity of this operation
      */
-    public DefaultOperation(Algebra algebra, String symbol, int arity,
-            Algebra resultType) {
+    public DefaultOperation(OldAlgebra algebra, String symbol, int arity,
+            OldAlgebra resultType) {
         this.algebra = algebra;
         this.symbol = symbol;
         this.arity = arity;
@@ -49,11 +51,11 @@ abstract public class DefaultOperation implements Operation {
         assert algebra != null;
     }
 
-    public Algebra algebra() {
+    public OldAlgebra algebra() {
         return this.algebra;
     }
 
-    public Algebra getResultType() {
+    public OldAlgebra getResultType() {
         return this.resultType;
     }
 
@@ -86,7 +88,7 @@ abstract public class DefaultOperation implements Operation {
         if (object == null) {
             return false;
         } else {
-            Operation operation = (Operation) object;
+            OldOperation operation = (OldOperation) object;
             if (!(this.algebra.equals(operation.algebra()))) {
                 return false;
             } else if (!(this.symbol.equals(operation.symbol()))) {
@@ -114,11 +116,11 @@ abstract public class DefaultOperation implements Operation {
     }
 
     /** the algebra to which this operation belongs */
-    private final Algebra algebra;
+    private final OldAlgebra algebra;
     /** the symbol of the operation. */
     private final String symbol;
     /** the arity of the operation. */
     private final int arity;
     /** The result algebra of the operation. */
-    private final Algebra resultType;
+    private final OldAlgebra resultType;
 }

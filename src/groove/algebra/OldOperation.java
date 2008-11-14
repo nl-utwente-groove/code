@@ -24,12 +24,14 @@ import java.util.List;
  * should. Let's include this when refactoring the signature/algebra core.
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2007-07-21 20:07:43 $
+ * @deprecated Superseded by the new algebra implementation
  */
-public interface Operation {
+@Deprecated
+public interface OldOperation {
     /**
      * Apply this operation on the list of operands and return the result.
      * @param args the operands on which this operation operates
-     * @return the resulting {@link groove.algebra.Operation} when applying this
+     * @return the resulting {@link groove.algebra.OldOperation} when applying this
      *         operation on its <tt>operands</tt>
      * @throws IllegalArgumentException if the operation cannot be performed,
      *         due to typing errors of the operands or zero division
@@ -49,11 +51,11 @@ public interface Operation {
     /**
      * @return the algebra to which this operation belongs
      */
-    public Algebra algebra();
+    public OldAlgebra algebra();
 
     /**
      * Returns the algebra to which the result of the operation belongs. Note
      * that this may differ from the algebra in which the operation is defined!
      */
-    public Algebra getResultType();
+    public OldAlgebra getResultType();
 }

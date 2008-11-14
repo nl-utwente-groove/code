@@ -16,7 +16,6 @@
  */
 package groove.graph.algebra;
 
-import groove.algebra.Constant;
 import groove.algebra.Operation;
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.DefaultLabel;
@@ -33,15 +32,6 @@ import groove.graph.DefaultLabel;
 public class OperatorEdge extends
         AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
     /**
-     * Constructs a product edge for a constant, which is always a self-edge.
-     * @param target the source and target of the edge
-     * @param operation the constant associated with the edge
-     */
-    public OperatorEdge(ValueNode target, Constant operation) {
-        this(target, target, operation);
-    }
-
-    /**
      * Constructs an edge for a given operation.
      * @param source the product node that is the source of the edge
      * @param target the target node for the edge
@@ -49,7 +39,7 @@ public class OperatorEdge extends
      */
     public OperatorEdge(ProductNode source, ValueNode target,
             Operation operation) {
-        super(source, DefaultLabel.createLabel(operation.symbol()), target);
+        super(source, DefaultLabel.createLabel(operation.getSymbol()), target);
         this.operation = operation;
     }
 

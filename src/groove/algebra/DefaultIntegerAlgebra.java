@@ -26,8 +26,10 @@ import java.util.List;
  * 
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-01-26 09:47:32 $
+ * @deprecated Superseded by the new algebra implementation
  */
-public class DefaultIntegerAlgebra extends Algebra {
+@Deprecated
+public class DefaultIntegerAlgebra extends OldAlgebra {
     /**
      * Constructs the (singleton) instance of this class.
      */
@@ -142,7 +144,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer addition operation.
      */
-    private static final Operation ADD_OPERATION =
+    private static final OldOperation ADD_OPERATION =
         new IntInt2IntOperation(ADD_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -152,7 +154,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer subtraction operation.
      */
-    private static final Operation SUB_OPERATION =
+    private static final OldOperation SUB_OPERATION =
         new IntInt2IntOperation(SUB_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -162,7 +164,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer multiplication operation.
      */
-    private static final Operation MUL_OPERATION =
+    private static final OldOperation MUL_OPERATION =
         new IntInt2IntOperation(MUL_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -172,7 +174,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer division operation.
      */
-    private static final Operation DIV_OPERATION =
+    private static final OldOperation DIV_OPERATION =
         new IntInt2IntOperation(DIV_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -182,7 +184,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer modulus operation.
      */
-    private static final Operation MOD_OPERATION =
+    private static final OldOperation MOD_OPERATION =
         new IntInt2IntOperation(MOD_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -192,7 +194,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer less than operation.
      */
-    private static final Operation LT_OPERATION =
+    private static final OldOperation LT_OPERATION =
         new IntInt2BoolOperation(LT_SYMBOL) {
             @Override
             boolean apply(int arg1, int arg2) {
@@ -202,7 +204,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer less-or-equal operation.
      */
-    private static final Operation LE_OPERATION =
+    private static final OldOperation LE_OPERATION =
         new IntInt2BoolOperation(LE_SYMBOL) {
             @Override
             boolean apply(int arg1, int arg2) {
@@ -212,7 +214,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer greater than operation.
      */
-    private static final Operation GT_OPERATION =
+    private static final OldOperation GT_OPERATION =
         new IntInt2BoolOperation(GT_SYMBOL) {
             @Override
             boolean apply(int arg1, int arg2) {
@@ -222,7 +224,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer greater-or-equal operation.
      */
-    private static final Operation GE_OPERATION =
+    private static final OldOperation GE_OPERATION =
         new IntInt2BoolOperation(GE_SYMBOL) {
             @Override
             boolean apply(int arg1, int arg2) {
@@ -232,7 +234,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer equals operation.
      */
-    private static final Operation EQ_OPERATION =
+    private static final OldOperation EQ_OPERATION =
         new IntInt2BoolOperation(EQ_SYMBOL) {
             @Override
             boolean apply(int arg1, int arg2) {
@@ -243,7 +245,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer minimum operation.
      */
-    private static final Operation MIN_OPERATION =
+    private static final OldOperation MIN_OPERATION =
         new IntInt2IntOperation(MIN_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -253,7 +255,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer subtraction operation.
      */
-    private static final Operation MAX_OPERATION =
+    private static final OldOperation MAX_OPERATION =
         new IntInt2IntOperation(MAX_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
@@ -264,7 +266,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer-to-string coercion operation.
      */
-    private static final Operation TO_STRING_OPERATION =
+    private static final OldOperation TO_STRING_OPERATION =
         new Int2StringOperation(TO_STRING_SYMBOL) {
             @Override
             String apply(int arg1) {
@@ -275,7 +277,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     /**
      * Integer opposite/negation operation.
      */
-    private static final Operation NEG_OPERATION =
+    private static final OldOperation NEG_OPERATION =
         new Int2IntOperation(NEG_SYMBOL) {
             @Override
             int apply(int arg1) {

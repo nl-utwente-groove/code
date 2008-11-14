@@ -18,16 +18,63 @@ package groove.algebra;
 
 import java.math.BigInteger;
 
+
 /**
  * Interface for integer algebras.
- * The normalised Java implementation of integers is {@link BigInteger}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface IntSignature<I,B> extends Signature {
+@SuppressWarnings("hiding")
+public abstract class IntSignature<Int,Bool,String> implements Signature {
     /** Addition of two integers. */
-    I add(I arg1, I arg2);
+    public abstract Int add(Int arg0, Int arg1);
 
-    /** Name of this signature. */
-    static final String NAME = "int";
+    /** Subtraction of two integers. */
+    public abstract Int sub(Int arg0, Int arg1);
+
+    /** Multiplication of two integers. */
+    public abstract Int mul(Int arg0, Int arg1);
+
+    /** Division of two integers. */
+    public abstract Int div(Int arg0, Int arg1);
+
+    /** Modulo of two integers. */
+    public abstract Int mod(Int arg0, Int arg1);
+
+    /** Minimum of two integers. */
+    public abstract Int min(Int arg0, Int arg1);
+
+    /** Maximum of two integers. */
+    public abstract Int max(Int arg0, Int arg1);
+
+    /** Lesser-than comparison. */
+    public abstract Bool lt(Int arg0, Int arg1);
+
+    /** Lesser-or-equal comparison. */
+    public abstract Bool le(Int arg0, Int arg1);
+
+    /** Greater-than comparison. */
+    public abstract Bool gt(Int arg0, Int arg1);
+
+    /** Greater-or-equal comparison. */
+    public abstract Bool ge(Int arg0, Int arg1);
+
+    /** Equality test. */
+    public abstract Bool eq(Int arg0, Int arg1);
+
+    /** Inversion. */
+    public abstract Int neg(Int arg);
+    
+    /** 
+     * Tests if the number can be parsed as a {@link BigInteger}.
+     * This means that a number of any length is accepted.
+     */
+    final public boolean isValue(java.lang.String value) {
+        try {
+            new BigInteger(value);
+            return true;
+        } catch (NumberFormatException exc) {
+            return false;
+        }
+    }
 }

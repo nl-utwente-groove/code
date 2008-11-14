@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
 import groove.abs.AbstrGraph;
-import groove.algebra.Algebra;
 import groove.control.Location;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -341,7 +340,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * node. This method returns <code>null</code> if and only if
      * {@link #hasValue()} holds.
      */
-    Algebra getAlgebra() {
+    groove.algebra.Algebra<?> getAlgebra() {
         if (getActualNode() instanceof ValueNode) {
             return ((ValueNode) getActualNode()).getAlgebra();
         } else {

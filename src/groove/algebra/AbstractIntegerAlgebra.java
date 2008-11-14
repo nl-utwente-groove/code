@@ -25,8 +25,10 @@ import groove.util.Groove;
  * 
  * @author Harmen Kastenberg
  * @version $Revision$
+ * @deprecated Superseded by the new algebra implementation
  */
-public class AbstractIntegerAlgebra extends Algebra {
+@Deprecated
+public class AbstractIntegerAlgebra extends OldAlgebra {
     /** representing the abstract integer value <tt>zero</tt> */
     public static final String ZERO = "zero";
     /** representing the abstract integer value <tt>pos</tt> */
@@ -83,7 +85,7 @@ public class AbstractIntegerAlgebra extends Algebra {
     /**
      * Integer addition operation.
      */
-    private static final Operation ADD_OPERATION =
+    private static final OldOperation ADD_OPERATION =
         new IntInt2IntOperation(ADD_SYMBOL) {
             @Override
             int apply(int arg1, int arg2) {
