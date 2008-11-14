@@ -17,6 +17,9 @@
 package groove.util;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Interface to wrap a simple condition on a subject type.
@@ -242,6 +245,34 @@ abstract public class Property<S> {
             }
             return result;
         }
+    }
+    
+    /**
+     * Property that is satisfied by any of the values from a given predetermined set.
+     */
+    static public class Choice<S> extends Property<S> {
+        /** Constructs a choice based on a given set of values, and a given description. */
+        public Choice(String comment, S... values) {
+            this.values = new HashSet<S>(Arrays.asList(values));
+            this.comment = comment;
+        }
+        
+        @Override
+        public String getComment() {
+            return this.comment;
+        }
 
+        @Override
+        public String getDescription() {
+            return String.format("one of %s", this.values);
+        }
+
+        @Override
+        public boolean isSatisfied(S value) {
+            return this.values.contains(value);
+        }
+
+        private final String comment;
+        private final Set<S> values;
     }
 }
