@@ -16,23 +16,26 @@
  */
 package groove.algebra;
 
-
 /**
- * Interface of an algebra (a class implementing a {@link Signature}).
+ * Interface for integer algebras.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision: 1577 $
  */
-public interface Algebra<T> extends Signature {
-    /** 
-     * Conversion of string constants to algebra values.
-     * May throw an exception if the string constant
-     * does not satisfy {@link Signature#isValue(String)}. 
-     */
-    T getValue(String constant);
-
-    /** Conversion of the normalised implementation to algebra values. */
-    String getSymbol(Object value);
+public abstract class BoolSignature<Bool> implements Signature {
+    /** Negation. */
+    public abstract Bool not(Bool arg);
     
-    /** Returns the name of the algebra. */
-    String getName();
+    /** Conjunction. */
+    public abstract Bool and(Bool arg0, Bool arg1);
+    
+    /** Disjunction. */
+    public abstract Bool or(Bool arg0, Bool arg1);
+    
+    /** Equality test. */
+    public abstract Bool eq(Bool arg0, Bool arg1);
+
+    /** Only <code>true</code> and <code>false</code> are legal values. */
+    final public boolean isValue(String value) {
+        return value.equals("true") || value.equals("false");
+    }
 }

@@ -34,8 +34,10 @@ import java.util.List;
  * 
  * @author Christian Soltenborn
  * @version $Revision$ $Date$
+ * @deprecated Superseded by the new algebra implementation
  */
-public class DefaultRealAlgebra extends Algebra {
+@Deprecated
+public class DefaultRealAlgebra extends OldAlgebra {
 
     /**
      * Used to compare real numbers: Two doubles are equal if the absolute value
@@ -168,7 +170,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real addition operation.
      */
-    private static final Operation ADD_OPERATION =
+    private static final OldOperation ADD_OPERATION =
         new RealReal2RealOperation(ADD_SYMBOL) {
             @Override
             double apply(double arg1, double arg2) {
@@ -179,7 +181,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real subtraction operation.
      */
-    private static final Operation SUB_OPERATION =
+    private static final OldOperation SUB_OPERATION =
         new RealReal2RealOperation(SUB_SYMBOL) {
             @Override
             double apply(double arg1, double arg2) {
@@ -190,7 +192,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real multiplication operation.
      */
-    private static final Operation MUL_OPERATION =
+    private static final OldOperation MUL_OPERATION =
         new RealReal2RealOperation(MUL_SYMBOL) {
             @Override
             double apply(double arg1, double arg2) {
@@ -201,7 +203,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real division operation.
      */
-    private static final Operation DIV_OPERATION =
+    private static final OldOperation DIV_OPERATION =
         new RealReal2RealOperation(DIV_SYMBOL) {
             @Override
             double apply(double arg1, double arg2) {
@@ -212,7 +214,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real less than operation.
      */
-    private static final Operation LT_OPERATION =
+    private static final OldOperation LT_OPERATION =
         new RealReal2BoolOperation(LT_SYMBOL) {
             @Override
             boolean apply(double arg1, double arg2) {
@@ -223,7 +225,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real less-or-equal operation.
      */
-    private static final Operation LE_OPERATION =
+    private static final OldOperation LE_OPERATION =
         new RealReal2BoolOperation(LE_SYMBOL) {
             @Override
             boolean apply(double arg1, double arg2) {
@@ -234,7 +236,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real greater than operation.
      */
-    private static final Operation GT_OPERATION =
+    private static final OldOperation GT_OPERATION =
         new RealReal2BoolOperation(GT_SYMBOL) {
             @Override
             boolean apply(double arg1, double arg2) {
@@ -245,7 +247,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real greater-or-equal operation.
      */
-    private static final Operation GE_OPERATION =
+    private static final OldOperation GE_OPERATION =
         new RealReal2BoolOperation(GE_SYMBOL) {
             @Override
             boolean apply(double arg1, double arg2) {
@@ -256,7 +258,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real equals operation.
      */
-    private static final Operation EQ_OPERATION =
+    private static final OldOperation EQ_OPERATION =
         new RealReal2BoolOperation(EQ_SYMBOL) {
             @Override
             boolean apply(double arg1, double arg2) {
@@ -271,7 +273,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real minimum operation.
      */
-    private static final Operation MIN_OPERATION =
+    private static final OldOperation MIN_OPERATION =
         new RealReal2RealOperation(MIN_SYMBOL) {
             @Override
             double apply(double arg1, double arg2) {
@@ -282,7 +284,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real subtraction operation.
      */
-    private static final Operation MAX_OPERATION =
+    private static final OldOperation MAX_OPERATION =
         new RealReal2RealOperation(MAX_SYMBOL) {
             @Override
             double apply(double arg1, double arg2) {
@@ -293,7 +295,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real-to-string coercion operation.
      */
-    private static final Operation TO_STRING_OPERATION =
+    private static final OldOperation TO_STRING_OPERATION =
         new Double2StringOperation(TO_STRING_SYMBOL) {
             @Override
             String apply(double arg1) {
@@ -305,7 +307,7 @@ public class DefaultRealAlgebra extends Algebra {
     /**
      * Real opposite/negation operation.
      */
-    private static final Operation NEG_OPERATION =
+    private static final OldOperation NEG_OPERATION =
         new Double2DoubleOperation(NEG_SYMBOL) {
             @Override
             double apply(double arg1) {

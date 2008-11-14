@@ -17,11 +17,6 @@
 package groove.graph.algebra;
 
 import groove.algebra.Algebra;
-import groove.algebra.Constant;
-import groove.algebra.DefaultBooleanAlgebra;
-import groove.algebra.DefaultIntegerAlgebra;
-import groove.algebra.DefaultRealAlgebra;
-import groove.algebra.DefaultStringAlgebra;
 import groove.graph.DefaultGraph;
 
 import java.util.HashMap;
@@ -32,7 +27,9 @@ import java.util.Map;
  * Mapping from algebra values to {@link ValueNode}s encoding those values.
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-22 13:02:47 $
+ * @deprecated functionality re-implemented in {@link ValueNode}
  */
+@Deprecated
 public class AlgebraGraph extends DefaultGraph {
     /**
      * The constructor may not be accessible for other classes because of the
@@ -41,17 +38,17 @@ public class AlgebraGraph extends DefaultGraph {
     private AlgebraGraph() {
         // empty constructor
     }
-
-    /**
-     * Gets the {@link ValueNode} representing a given {@link Constant},
-     * creating it if necessary.
-     * @param constant the <code>Constant</code> for which to get the
-     *        <code>ValueNode</code>
-     * @return the unique <code>ValueNode</code> for the given constant.
-     */
-    public ValueNode getValueNode(Constant constant) {
-        return getValueNode(constant.algebra(), constant.getValue());
-    }
+//
+//    /**
+//     * Gets the {@link ValueNode} representing a given {@link Constant},
+//     * creating it if necessary.
+//     * @param constant the <code>Constant</code> for which to get the
+//     *        <code>ValueNode</code>
+//     * @return the unique <code>ValueNode</code> for the given constant.
+//     */
+//    public ValueNode getValueNode(Constant constant) {
+//        return getValueNode(constant.algebra(), constant.getValue());
+//    }
 
     /**
      * Gets the {@link ValueNode} representing a given algebra value, creating
@@ -62,7 +59,7 @@ public class AlgebraGraph extends DefaultGraph {
      * 
      * @return the only <code>ValueNode</code>
      */
-    public ValueNode getValueNode(Algebra algebra, Object value) {
+    public ValueNode getValueNode(Algebra<?> algebra, Object value) {
         ValueNode result = this.valueToNodeMap.get(value);
         if (result == null) {
             result = createValueNode(algebra, value);
@@ -72,30 +69,30 @@ public class AlgebraGraph extends DefaultGraph {
     }
 
     /** Creates a value node for a given value of a given algebra. */
-    protected ValueNode createValueNode(Algebra algebra, Object value) {
-        return new ValueNode(algebra, value);
+    protected ValueNode createValueNode(Algebra<?> algebra, Object value) {
+        return ValueNode.createValueNode(algebra, value);
     }
-
-    /**
-     * Returns the algebra that corresponds to the given type.
-     * 
-     * @param type the type of the algebra to be returned
-     * @return the algebra of the given type
-     */
-    public Algebra getAlgebra(int type) {
-        switch (type) {
-        case AlgebraConstants.INTEGER:
-            return DefaultIntegerAlgebra.getInstance();
-        case AlgebraConstants.STRING:
-            return DefaultStringAlgebra.getInstance();
-        case AlgebraConstants.BOOLEAN:
-            return DefaultBooleanAlgebra.getInstance();
-        case AlgebraConstants.REAL:
-            return DefaultRealAlgebra.getInstance();
-        default:
-            return null;
-        }
-    }
+//
+//    /**
+//     * Returns the algebra that corresponds to the given type.
+//     * 
+//     * @param type the type of the algebra to be returned
+//     * @return the algebra of the given type
+//     */
+//    public Algebra getAlgebra(int type) {
+//        switch (type) {
+//        case AlgebraConstants.INTEGER:
+//            return DefaultIntegerAlgebra.getInstance();
+//        case AlgebraConstants.STRING:
+//            return DefaultStringAlgebra.getInstance();
+//        case AlgebraConstants.BOOLEAN:
+//            return DefaultBooleanAlgebra.getInstance();
+//        case AlgebraConstants.REAL:
+//            return DefaultRealAlgebra.getInstance();
+//        default:
+//            return null;
+//        }
+//    }
 //
 //    /** 
 //     * Converts a graph with {@link VariableNode}s to a graph

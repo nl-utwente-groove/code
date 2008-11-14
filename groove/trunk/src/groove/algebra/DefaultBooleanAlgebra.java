@@ -25,8 +25,10 @@ import java.util.List;
  * 
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2007-12-22 10:11:21 $
+ * @deprecated Superseded by the new algebra implementation
  */
-public class DefaultBooleanAlgebra extends Algebra {
+@Deprecated
+public class DefaultBooleanAlgebra extends OldAlgebra {
     /**
      * Constructor.
      */
@@ -146,7 +148,7 @@ public class DefaultBooleanAlgebra extends Algebra {
         /**
          * Returns the singleton instance of this operator.
          */
-        public static Operation getInstance() {
+        public static OldOperation getInstance() {
             return instance;
         }
 
@@ -174,7 +176,7 @@ public class DefaultBooleanAlgebra extends Algebra {
         /**
          * Returns the singleton instance of this operation.
          */
-        public static Operation getInstance() {
+        public static OldOperation getInstance() {
             return instance;
         }
 
@@ -201,7 +203,7 @@ public class DefaultBooleanAlgebra extends Algebra {
         /**
          * Returns the singleton instance of this operation.
          */
-        public static Operation getInstance() {
+        public static OldOperation getInstance() {
             return instance;
         }
 
@@ -229,7 +231,7 @@ public class DefaultBooleanAlgebra extends Algebra {
         /**
          * Returns the singleton instance of this operation.
          */
-        public static Operation getInstance() {
+        public static OldOperation getInstance() {
             return instance;
         }
 

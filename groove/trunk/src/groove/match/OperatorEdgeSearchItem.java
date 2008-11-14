@@ -18,7 +18,6 @@ package groove.match;
 
 import groove.algebra.Operation;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
@@ -196,8 +195,8 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                 result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage =
-                    AlgebraGraph.getInstance().getValueNode(
-                        OperatorEdgeSearchItem.this.operation.getResultType(),
+                    ValueNode.createValueNode(
+                        OperatorEdgeSearchItem.this.operation.getResultAlgebra(),
                         outcome);
                 result =
                     this.search.putNode(OperatorEdgeSearchItem.this.targetIx,

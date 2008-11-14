@@ -16,13 +16,10 @@
  */
 package groove.view.aspect;
 
-import groove.algebra.AbstractIntegerAlgebra;
+import groove.algebra.AlgebraRegister;
 import groove.algebra.Algebra;
-import groove.algebra.DefaultBooleanAlgebra;
-import groove.algebra.DefaultIntegerAlgebra;
-import groove.algebra.DefaultRealAlgebra;
-import groove.algebra.DefaultStringAlgebra;
 import groove.algebra.Operation;
+import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Element;
 import groove.graph.algebra.ArgumentEdge;
@@ -96,8 +93,8 @@ public class AttributeAspect extends AbstractAspect {
                     arguments);
             }
             for (AspectEdge edge : edges) {
-                Operation operation = getOperation(edge);
-                if (operation != null && operation.arity() != arity) {
+                Operator operation = getOperation(edge);
+                if (operation != null && operation.getArity() != arity) {
                     throw new FormatException(
                         "Operation '%s' is incompatible with product node arity %d",
                         operation, arity);
@@ -105,21 +102,26 @@ public class AttributeAspect extends AbstractAspect {
             }
         } else {
             // the value is VALUE; try to establish the algebra
-            Algebra type = null;
+            String type = null;
             for (AspectEdge edge : edges) {
                 if (!NestingAspect.isMetaElement(edge)) {
-                    // we don't check for outgoing non-algebra edges
+                    // we don't check for outgoing non-attribute edges
                     // since these may be injectivity constraints
                     // real outgoing edges can never be matched, but that's a
                     // type error
-                    // if (!edge.target().equals(node)) {
-                    // throw new FormatException("Outgoing %s-labelled edge on
-                    // value node %s",
-                    // edge, node);
-                    // }
-                    Operation operation = getOperation(edge);
-                    if (operation != null) {
-                        Algebra edgeType = operation.getResultType();
+                    
+                    // if edge edge represents a constant or operator,
+                    // establish its (result) type
+                    String edgeType = null;
+                    if (isConstant(edge)) {
+                        edgeType = getAttributeValue(edge).getName();
+                    } else {
+                        Operator operation = getOperation(edge);
+                        if (operation != null) {
+                            edgeType = operation.getResultType();
+                        }
+                    }
+                    if (edgeType != null) {
                         if (type == null) {
                             type = edgeType;
                         } else if (!type.equals(edgeType)) {
@@ -402,8 +404,8 @@ public class AttributeAspect extends AbstractAspect {
     /**
      * Returns the aspect value corresponding to a given signature.
      */
-    public static AspectValue getAttributeValueFor(Algebra algebra) {
-        return aspectValueMap.get(algebra);
+    public static AspectValue getAttributeValueFor(Algebra<?> algebra) {
+        return aspectValueMap.get(AlgebraRegister.getSignatureName(algebra));
     }
 
     /**
@@ -426,14 +428,14 @@ public class AttributeAspect extends AbstractAspect {
             return ARGUMENT;
         } else if (elem instanceof OperatorEdge) {
             Operation operation = ((OperatorEdge) elem).getOperation();
-            return getAttributeValueFor(operation.algebra());
+            return getAttributeValueFor(operation.getAlgebra());
         } else {
             return null;
         }
     }
 
     /** Returns the algebra associated with a given aspect value. */
-    static public Algebra getAlgebra(AspectValue aspectValue) {
+    static public String getAlgebra(AspectValue aspectValue) {
         return algebraMap.get(aspectValue);
     }
 
@@ -441,8 +443,8 @@ public class AttributeAspect extends AbstractAspect {
      * Adds a pair of algebra and aspect value to the internal maps
      * {@link #algebraMap} and {@link #aspectValueMap}.
      */
-    private static void addAlgebra(Algebra algebra, AspectValue value) {
-        Algebra oldAlgebra = algebraMap.put(value, algebra);
+    private static void addSignature(String algebra, AspectValue value) {
+        String oldAlgebra = algebraMap.put(value, algebra);
         AspectValue oldValue = aspectValueMap.put(algebra, value);
         if (oldAlgebra != null || oldValue != null) {
             throw new IllegalStateException(String.format(
@@ -455,8 +457,23 @@ public class AttributeAspect extends AbstractAspect {
      * Extracts an algebra operation from an aspect edge. Returns
      * <code>null</code> if the edge is not a (valid) operation edge.
      */
-    public static Operation getOperation(AspectEdge edge) {
-        Operation result = null;
+    public static boolean isConstant(AspectEdge edge) {
+        AspectValue edgeValue = getAttributeValue(edge);
+        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
+            OperationLabelParser parser =
+                (OperationLabelParser) edgeValue.getLabelParser();
+            return parser.isConstant(edge.label().text());
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Extracts an algebra operation from an aspect edge. Returns
+     * <code>null</code> if the edge is not a (valid) operation edge.
+     */
+    public static Operator getOperation(AspectEdge edge) {
+        Operator result = null;
         AspectValue edgeValue = getAttributeValue(edge);
         if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
             OperationLabelParser parser =
@@ -496,41 +513,41 @@ public class AttributeAspect extends AbstractAspect {
     /** The product aspect value. */
     public static final AspectValue PRODUCT;
     /** Name of the integer aspect value. */
-    public static final String INTEGER_NAME =
-        Groove.getXMLProperty("label.integer.prefix");
-    /** The integer aspect value. */
-    public static final AspectValue INTEGER;
-    /** Name of the real aspect value. */
-    public static final String REAL_NAME =
-        Groove.getXMLProperty("label.real.prefix");
-    /** The real aspect value. */
-    public static final AspectValue REAL;
-    /** Name of the integer aspect value. */
-    public static final String ABSTRACT_INTEGER_NAME =
-        Groove.getXMLProperty("label.abstract.integer.prefix");
-    /** The integer aspect value. */
-    public static final AspectValue ABSTRACT_INTEGER;
-    /** Name of the boolean aspect value. */
-    public static final String BOOLEAN_NAME =
-        Groove.getXMLProperty("label.boolean.prefix");
-    /** The boolean aspect value. */
-    public static final AspectValue BOOLEAN;
-    /** Name of the string aspect value. */
-    public static final String STRING_NAME =
-        Groove.getXMLProperty("label.string.prefix");
-    /** The string aspect value. */
-    public static final AspectValue STRING;
+//    public static final String INTEGER_NAME =
+//        Groove.getXMLProperty("label.integer.prefix");
+//    /** The integer aspect value. */
+//    public static final AspectValue INTEGER;
+//    /** Name of the real aspect value. */
+//    public static final String REAL_NAME =
+//        Groove.getXMLProperty("label.real.prefix");
+//    /** The real aspect value. */
+//    public static final AspectValue REAL;
+//    /** Name of the integer aspect value. */
+//    public static final String ABSTRACT_INTEGER_NAME =
+//        Groove.getXMLProperty("label.abstract.integer.prefix");
+//    /** The integer aspect value. */
+//    public static final AspectValue ABSTRACT_INTEGER;
+//    /** Name of the boolean aspect value. */
+//    public static final String BOOLEAN_NAME =
+//        Groove.getXMLProperty("label.boolean.prefix");
+//    /** The boolean aspect value. */
+//    public static final AspectValue BOOLEAN;
+//    /** Name of the string aspect value. */
+//    public static final String STRING_NAME =
+//        Groove.getXMLProperty("label.string.prefix");
+//    /** The string aspect value. */
+//    public static final AspectValue STRING;
 
     /**
      * Map from aspect values to those algebras that they represent.
      */
-    private static final Map<AspectValue,Algebra> algebraMap =
-        new HashMap<AspectValue,Algebra>();
+    private static final Map<AspectValue,String> algebraMap =
+        new HashMap<AspectValue,String>();
     /**
      * Map from algebras to aspect values that represent them.
      */
-    private static final Map<Algebra,AspectValue> aspectValueMap =
-        new HashMap<Algebra,AspectValue>();
+    private static final Map<String,AspectValue> aspectValueMap =
+        new HashMap<String,AspectValue>();
 
     static {
         try {
@@ -538,28 +555,33 @@ public class AttributeAspect extends AbstractAspect {
             ARGUMENT.setLabelParser(NumberLabelParser.getInstance());
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
-            INTEGER = instance.addEdgeValue(INTEGER_NAME);
-            ABSTRACT_INTEGER = instance.addEdgeValue(ABSTRACT_INTEGER_NAME);
-            REAL = instance.addEdgeValue(REAL_NAME);
-            BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
-            STRING = instance.addEdgeValue(STRING_NAME);
+            for (String signatureName: AlgebraRegister.getSignatureNames()) {
+                AspectValue value = instance.addEdgeValue(signatureName);
+                value.setEdgeToTarget(VALUE);
+                addSignature(signatureName, value);
+            }
+//            INTEGER = instance.addEdgeValue(INTEGER_NAME);
+//            ABSTRACT_INTEGER = instance.addEdgeValue(ABSTRACT_INTEGER_NAME);
+//            REAL = instance.addEdgeValue(REAL_NAME);
+//            BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
+//            STRING = instance.addEdgeValue(STRING_NAME);
+//            // initialise the algebra map
+//            addSignature(DefaultIntegerAlgebra.getInstance(), INTEGER);
+//            addSignature(DefaultRealAlgebra.getInstance(), REAL);
+//            addSignature(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
+//            addSignature(DefaultStringAlgebra.getInstance(), STRING);
+//            addSignature(AbstractIntegerAlgebra.getInstance(), ABSTRACT_INTEGER);
             ARGUMENT.setEdgeToSource(PRODUCT);
             ARGUMENT.setEdgeToTarget(VALUE);
-            INTEGER.setEdgeToTarget(VALUE);
-            ABSTRACT_INTEGER.setEdgeToTarget(VALUE);
-            REAL.setEdgeToTarget(VALUE);
-            BOOLEAN.setEdgeToTarget(VALUE);
-            STRING.setEdgeToTarget(VALUE);
+//            INTEGER.setEdgeToTarget(VALUE);
+//            ABSTRACT_INTEGER.setEdgeToTarget(VALUE);
+//            REAL.setEdgeToTarget(VALUE);
+//            BOOLEAN.setEdgeToTarget(VALUE);
+//            STRING.setEdgeToTarget(VALUE);
             // incompatibilities
             instance.setIncompatible(RuleAspect.CREATOR);
             instance.setIncompatible(RuleAspect.ERASER);
             instance.setIncompatible(NestingAspect.getInstance());
-            // initialise the algebra map
-            addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
-            addAlgebra(DefaultRealAlgebra.getInstance(), REAL);
-            addAlgebra(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
-            addAlgebra(DefaultStringAlgebra.getInstance(), STRING);
-            addAlgebra(AbstractIntegerAlgebra.getInstance(), ABSTRACT_INTEGER);
         } catch (FormatException exc) {
             throw new Error("Aspect '" + ATTRIBUTE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
@@ -572,8 +594,8 @@ public class AttributeAspect extends AbstractAspect {
      */
     private static class OperationLabelParser extends FreeLabelParser {
         /** Constructs an instance of this parser class for a given algebra. */
-        OperationLabelParser(Algebra algebra) {
-            this.algebra = algebra;
+        OperationLabelParser(String algebra) {
+            this.signature = algebra;
         }
 
         /**
@@ -583,8 +605,12 @@ public class AttributeAspect extends AbstractAspect {
         @Override
         protected boolean isCorrect(String text) {
             try {
-                getOperation(text);
-                return true;
+                if (isConstant(text)) {
+                    return true;
+                } else {
+                    getOperation(text);
+                    return true;
+                }
             } catch (FormatException e) {
                 return false;
             }
@@ -604,21 +630,33 @@ public class AttributeAspect extends AbstractAspect {
             }
         }
 
+        /** 
+         * Tests if a certain string is a constant of the signature
+         * wrapped in this parser.
+         */
+        public boolean isConstant(String text) {
+            try {
+                return AlgebraRegister.isConstant(this.signature, text);
+            } catch (UnknownSymbolException e) {
+                return false;
+            }
+        }
+        
         /**
          * Extracts an operation of this algebra from a given string, if the
          * string indeed represents such an operation.
          * @throws FormatException if <code>text</code> does not represent an
          *         operation of this algebra.
          */
-        public Operation getOperation(String text) throws FormatException {
+        public Operator getOperation(String text) throws FormatException {
             try {
-                return this.algebra.getOperation(text);
+                return AlgebraRegister.getOperator(this.signature, text);
             } catch (UnknownSymbolException exc) {
                 throw new FormatException(exc.getMessage());
             }
         }
 
         /** The algebra that should understand the operation. */
-        private final Algebra algebra;
+        private final String signature;
     }
 }

@@ -28,8 +28,10 @@ import java.util.List;
  * 
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-01-16 08:40:00 $
+ * @deprecated Superseded by the new algebra implementation
  */
-public class DefaultStringAlgebra extends Algebra {
+@Deprecated
+public class DefaultStringAlgebra extends OldAlgebra {
     /**
      * Constructor.
      */
@@ -107,7 +109,7 @@ public class DefaultStringAlgebra extends Algebra {
     /**
      * String less than operation.
      */
-    private static final Operation LT_OPERATION =
+    private static final OldOperation LT_OPERATION =
         new StringString2BoolOperation(LT_SYMBOL) {
             @Override
             boolean apply(String arg1, String arg2) {
@@ -117,7 +119,7 @@ public class DefaultStringAlgebra extends Algebra {
     /**
      * String less-or-equal operation.
      */
-    private static final Operation LE_OPERATION =
+    private static final OldOperation LE_OPERATION =
         new StringString2BoolOperation(LE_SYMBOL) {
             @Override
             boolean apply(String arg1, String arg2) {
@@ -127,7 +129,7 @@ public class DefaultStringAlgebra extends Algebra {
     /**
      * String greater than operation.
      */
-    private static final Operation GT_OPERATION =
+    private static final OldOperation GT_OPERATION =
         new StringString2BoolOperation(GT_SYMBOL) {
             @Override
             boolean apply(String arg1, String arg2) {
@@ -138,7 +140,7 @@ public class DefaultStringAlgebra extends Algebra {
     /**
      * String greater-or-equal operation.
      */
-    private static final Operation GE_OPERATION =
+    private static final OldOperation GE_OPERATION =
         new StringString2BoolOperation(GE_SYMBOL) {
             @Override
             boolean apply(String arg1, String arg2) {
@@ -149,7 +151,7 @@ public class DefaultStringAlgebra extends Algebra {
     /**
      * String equals operation.
      */
-    private static final Operation EQ_OPERATION =
+    private static final OldOperation EQ_OPERATION =
         new StringString2BoolOperation(EQ_SYMBOL) {
             @Override
             boolean apply(String arg1, String arg2) {
@@ -231,7 +233,7 @@ public class DefaultStringAlgebra extends Algebra {
         /**
          * @return the singleton instance
          */
-        public static Operation getInstance() {
+        public static OldOperation getInstance() {
             if (operation == null) {
                 operation = new ConcatOperation();
             }

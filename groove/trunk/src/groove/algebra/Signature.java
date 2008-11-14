@@ -17,13 +17,26 @@
 package groove.algebra;
 
 /**
- * General interface for data signatures.
- * All data interfaces should implement this, and
- * all implementing interfaces should define a {@link String} field <code>NAME</code>
- * and a field <code>DEFAULT</code> providing a default class implementing themselves.
+ * General interface for attribute data signatures. All data signatures should
+ * be abstract classes implementing 
+ * this, and in addition adhere to the following conventions:
+ * <ul>
+ * <li> For a signature named "zzz", the Java interface name should be
+ * <code>ZzzSignature</code>
+ * <li> The signature should define a single sort <code>Zzz</code>; the sort
+ * name should be a type parameter
+ * <li> If other data sorts are needed, they should also be declared as type
+ * parameters
+ * <li> For each such additional type parameter <code>Yyy</code>, there
+ * should be a corresponding class <code>YyySignature</code>
+ * </ul>
  * @author Arend Rensink
  * @version $Revision $
  */
 public interface Signature {
-	// empty interface
+    /** 
+     * Tests if a given string is a representation of a value of the signature.
+     * This should be implemented in the concrete signature, not in the algebra. 
+     */
+    public boolean isValue(String value);
 }

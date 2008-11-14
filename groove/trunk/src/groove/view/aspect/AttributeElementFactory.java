@@ -16,24 +16,20 @@
  */
 package groove.view.aspect;
 
-import groove.algebra.Algebra;
-import groove.algebra.Constant;
+import static groove.view.aspect.AttributeAspect.ARGUMENT;
+import static groove.view.aspect.AttributeAspect.PRODUCT;
+import static groove.view.aspect.AttributeAspect.VALUE;
+import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import groove.algebra.AlgebraRegister;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.view.FormatException;
-import static groove.view.aspect.AttributeAspect.getAttributeValue;
-import static groove.view.aspect.AttributeAspect.getAlgebra;
-import static groove.view.aspect.AttributeAspect.getOperation;
-import static groove.view.aspect.AttributeAspect.VALUE;
-import static groove.view.aspect.AttributeAspect.PRODUCT;
-import static groove.view.aspect.AttributeAspect.ARGUMENT;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,7 +98,7 @@ public class AttributeElementFactory {
             }
         }
         if (attributeEdges.isEmpty()) {
-            result = new ValueNode();
+            result = ValueNode.createVariableNode();
         } else if (attributeEdges.size() > 1) {
             throw new FormatException("Too many edges on constant node: %s",
                 attributeEdges);
@@ -114,21 +110,15 @@ public class AttributeElementFactory {
                     "Label %s on value node should be a constant",
                     attributeEdge.getLabelText());
             }
-            Algebra algebra = getAlgebra(algebraValue);
-            if (algebra == null) {
-                throw new FormatException(
-                    "Label %s on value node should be a constant",
-                    attributeEdge.getLabelText());
-            }
             try {
-                Operation nodeValue =
-                    algebra.getOperation(attributeEdge.label().text());
-                if (!(nodeValue instanceof Constant)) {
-                    throw new FormatException(
-                        "Operation %s on value node should be a constant",
-                        attributeEdge.label());
-                }
-                result = AlgebraGraph.getInstance().getValueNode((Constant) nodeValue);
+                String signature = algebraValue.getName();
+                Object nodeValue =
+                    AlgebraRegister.getInstance().getConstant(
+                        signature, attributeEdge.label().text());
+                result =
+                    ValueNode.createValueNode(
+                        AlgebraRegister.getInstance().getImplementation(
+                            signature), nodeValue);
             } catch (UnknownSymbolException exc) {
                 throw new FormatException(exc.getMessage());
             }
@@ -210,12 +200,14 @@ public class AttributeElementFactory {
             ArgumentEdge argEdge = createArgumentEdge(argNumber, ends);
             result = argEdge;
         } else {
-            Operation operation = getOperation(edge);
-            if (operation == null) {
-                throw new FormatException("Unknown operator in edge label %s",
-                    edge.getLabelText());
+            try {
+                Operation operation =
+                    AlgebraRegister.getInstance().getOperation(
+                        attributeValue.getName(), edge.label().text());
+                result = createOperatorEdge(operation, ends);
+            } catch (UnknownSymbolException e) {
+                throw new FormatException(e.getMessage());
             }
-            result = createOperatorEdge(operation, ends);
         }
         return result;
     }
@@ -239,9 +231,9 @@ public class AttributeElementFactory {
         if (!(source instanceof ProductNode)) {
             throw new FormatException(
                 "Source of '%s'-edge should be a product node", operator);
-        } else if (operator.arity() != ((ProductNode) source).arity()) {
+        } else if (operator.getArity() != ((ProductNode) source).arity()) {
             throw new FormatException("Source arity of '%s'-edge should be %d",
-                operator, operator.arity());
+                operator, operator.getArity());
         }
         if (!(target instanceof ValueNode)) {
             throw new FormatException(
