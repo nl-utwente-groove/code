@@ -45,6 +45,9 @@ public interface Strategy {
     /**
      * Sets the GTS and start state to be explored. This is done in preparation
      * to a call of {@link #next()}.
+     * @param gts the GTS to be explored
+     * @param state the start state for the exploration; if <code>null</code>,
+     * the GTS start state is used
      */
     public void prepare(GTS gts, GraphState state);
 

@@ -101,7 +101,7 @@ public class DefaultScenario implements Scenario {
     }
 
     public void prepare(GTS gts) {
-        prepare(gts, gts.startState());
+        prepare(gts, null);
     }
 
     public void prepare(GTS gts, GraphState state) {
