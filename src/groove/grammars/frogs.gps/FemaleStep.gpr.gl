@@ -1,8 +1,0 @@
-# Layout information for C:\local\eclipse\workspace\groove\samples\frogs.gps\FemaleStep.gpr
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n139 212 59 18 18 
-n n136 19 55 18 18 
-n n138 21 133 18 18 
-n n137 207 135 18 18 
