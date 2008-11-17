@@ -105,7 +105,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.properties = rule.getProperties();
         this.viewToRuleMap = new NodeEdgeHashMap();
         this.graph = computeAspectGraph(rule, this.viewToRuleMap);
-        this.attributeFactory = new AttributeElementFactory(this.graph);
+        this.attributeFactory = new AttributeElementFactory(this.graph, this.properties);
     }
 
     /**
@@ -133,7 +133,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
-        this.attributeFactory = new AttributeElementFactory(graph);
+        this.attributeFactory = new AttributeElementFactory(graph, properties);
         if (!graph.getErrors().isEmpty()) {
             this.errors = graph.getErrors();
         }

@@ -120,7 +120,7 @@ abstract public class AspectualView<Model> implements View<Model> {
             return new AspectualRuleView(aspectGraph, new RuleNameLabel(
                 GraphInfo.getName(aspectGraph)));
         } else {
-            return new AspectualGraphView(aspectGraph);
+            return new AspectualGraphView(aspectGraph, null);
         }
     }
 }

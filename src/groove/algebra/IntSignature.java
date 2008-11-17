@@ -64,6 +64,9 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
 
     /** Inversion. */
     public abstract Int neg(Int arg);
+
+    /** String representation. */
+    public abstract String toString(Int arg);
     
     /** 
      * Tests if the number can be parsed as a {@link BigInteger}.

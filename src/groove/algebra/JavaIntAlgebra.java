@@ -90,6 +90,11 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> impleme
         return arg0-arg1;
     }
 
+    @Override
+    public String toString(Integer arg) {
+        return arg.toString();
+    }
+
     /**
      * Delegates to {@link BigInteger#intValue()}.
      */

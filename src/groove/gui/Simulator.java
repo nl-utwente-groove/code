@@ -886,7 +886,7 @@ public class Simulator {
             AspectGraph aspectStartGraph =
                 this.graphLoader.unmarshalGraph(file);
             AspectualGraphView startGraph =
-                new AspectualGraphView(aspectStartGraph);
+                new AspectualGraphView(aspectStartGraph, getCurrentGrammar().getProperties());
             getCurrentGrammar().setStartGraph(startGraph);
             setGrammar(getCurrentGrammar());
         } catch (IOException exc) {
@@ -1048,7 +1048,7 @@ public class Simulator {
                     if (currentStateFile != null) {
                         AspectGraph aspectStartGraph =
                             this.graphLoader.unmarshalGraph(currentStateFile);
-                        startGraph = new AspectualGraphView(aspectStartGraph);
+                        startGraph = new AspectualGraphView(aspectStartGraph, grammar.getProperties());
                         grammar.setStartGraph(startGraph);
                     }
                     if (currentControlFile != null) {

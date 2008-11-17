@@ -381,7 +381,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
                                 tmp.addEdge(image);
                         }
 
-                                AspectualGraphView view = new AspectualGraphView(tmp);
+                                AspectualGraphView view = new AspectualGraphView(tmp, null);
                                 e.showPreviewDialog(view, name);
                 }
         };

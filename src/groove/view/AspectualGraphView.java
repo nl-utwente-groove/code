@@ -26,6 +26,7 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
+import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -56,9 +57,9 @@ public class AspectualGraphView extends AspectualView<Graph> {
      * Constructs an instance from a given aspect graph view.
      * @see GraphInfo#getName(groove.graph.GraphShape)
      */
-    public AspectualGraphView(AspectGraph view) {
+    public AspectualGraphView(AspectGraph view, SystemProperties properties) {
         this.view = view;
-        this.attributeFactory = new AttributeElementFactory(view);
+        this.attributeFactory = new AttributeElementFactory(view, properties);
         // we fix the view; is it conceptually right to do that here?
         view.setFixed();
         String name = GraphInfo.getName(view);

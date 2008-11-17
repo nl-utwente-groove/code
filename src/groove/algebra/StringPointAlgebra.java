@@ -17,14 +17,17 @@
 package groove.algebra;
 
 /**
- * Implementation of booleans consisting of a singleton value.
+ * Implementation of strings consisting of a singleton value.
+ * To be used in conjunction with {@link BoolPointAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BoolPointAlgebra extends BoolSignature<Object> implements Algebra<Object> {
+public class StringPointAlgebra extends StringSignature<Object,Object>
+        implements Algebra<Object> {
+
     @Override
-    public Object and(Object arg0, Object arg1) {
-        return singleBool;
+    public Object concat(Object arg0, Object arg1) {
+        return singleString;
     }
 
     @Override
@@ -33,12 +36,22 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements Algebra<O
     }
 
     @Override
-    public Object not(Object arg) {
+    public Object ge(Object arg0, Object arg1) {
         return singleBool;
     }
 
     @Override
-    public Object or(Object arg0, Object arg1) {
+    public Object gt(Object arg0, Object arg1) {
+        return singleBool;
+    }
+
+    @Override
+    public Object le(Object arg0, Object arg1) {
+        return singleBool;
+    }
+
+    @Override
+    public Object lt(Object arg0, Object arg1) {
         return singleBool;
     }
 
@@ -51,11 +64,18 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements Algebra<O
     }
 
     public Object getValue(String constant) {
-        return singleBool;
+        return singleString;
     }
 
     /** Name of this algebra. */
-    public static final String NAME = "pbool";
-    /** Singleton object of this algebra. */
-    public static final Object singleBool = "B";
+    public static final String NAME = "pstring";
+    
+    /** 
+     * Representation of the point value of the boolean algebra;
+     * redefined literally to avoid class loading dependencies.
+     * @see BoolPointAlgebra#singleBool
+     */
+    public static final String singleBool = "B";
+    /** Point value of the string algebra. */
+    public static final String singleString = "S";
 }
