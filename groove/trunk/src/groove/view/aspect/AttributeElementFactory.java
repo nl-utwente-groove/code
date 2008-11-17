@@ -29,6 +29,7 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.trans.SystemProperties;
 import groove.view.FormatException;
 
 import java.util.Arrays;
@@ -43,9 +44,12 @@ import java.util.Set;
  * @version $Revision $
  */
 public class AttributeElementFactory {
-    /** Constructs a factory for a given aspect graph. */
-    public AttributeElementFactory(AspectGraph graph) {
+    /** Constructs a factory for a given aspect graph. 
+     * @param properties TODO*/
+    public AttributeElementFactory(AspectGraph graph, SystemProperties properties) {
         this.graph = graph;
+        String registerName = properties == null ? AlgebraRegister.DEFAULT_ALGEBRAS : properties.getAlgebraFamily();
+        this.register = AlgebraRegister.getInstance(registerName);
     }
     /**
      * Creates an attribute-related node from a given {@link AspectNode} found
@@ -113,11 +117,11 @@ public class AttributeElementFactory {
             try {
                 String signature = algebraValue.getName();
                 Object nodeValue =
-                    AlgebraRegister.getInstance().getConstant(
+                    this.register.getConstant(
                         signature, attributeEdge.label().text());
                 result =
                     ValueNode.createValueNode(
-                        AlgebraRegister.getInstance().getImplementation(
+                        this.register.getImplementation(
                             signature), nodeValue);
             } catch (UnknownSymbolException exc) {
                 throw new FormatException(exc.getMessage());
@@ -202,7 +206,7 @@ public class AttributeElementFactory {
         } else {
             try {
                 Operation operation =
-                    AlgebraRegister.getInstance().getOperation(
+                    this.register.getOperation(
                         attributeValue.getName(), edge.label().text());
                 result = createOperatorEdge(operation, ends);
             } catch (UnknownSymbolException e) {
@@ -277,4 +281,6 @@ public class AttributeElementFactory {
     
     /** Aspect graph on which this factory works. */
     private final AspectGraph graph;
+    /** Algebra registry to use in creating the algebra values and operations. */
+    private final AlgebraRegister register;
 }

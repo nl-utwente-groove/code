@@ -163,7 +163,8 @@ public abstract class AspectualViewGps extends Observable implements
     }
 
     /**
-     * 
+     * Loads in a graph and adds a view for that graph to a given grammar view.
+     * It is assumed that the grammar properties are already loaded.
      */
     protected void loadStartGraph(DefaultGrammarView result,
             URL startGraphSource) throws IOException {
@@ -180,7 +181,7 @@ public abstract class AspectualViewGps extends Observable implements
                 unmarshalGraph(startGraphSource);
 
             AspectualGraphView startGraph =
-                new AspectualGraphView(unmarshalledStartGraph);
+                new AspectualGraphView(unmarshalledStartGraph, result.getProperties());
 
             startGraph.getName();
 

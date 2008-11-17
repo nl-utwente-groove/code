@@ -65,19 +65,6 @@ public class AlgebraRegister {
                 "Signature '%s' already implemented by '%s'", signatureName,
                 oldAlgebra.getName()));
         }
-        try {
-            Class<?> carrierType = algebra.getClass().getMethod("getValue", String.class).getReturnType();
-            oldAlgebra = this.carrierToAlgebraMap.put(carrierType, algebra);
-            if (oldAlgebra != null) {
-                throw new IllegalArgumentException(String.format(
-                    "Carrier type '%s' already used in algebra '%s'", carrierType.getName(),
-                    oldAlgebra.getName()));
-            }
-        } catch (SecurityException e) {
-            throw new IllegalArgumentException();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException();
-        }
     }
     
     /**
@@ -230,8 +217,6 @@ public class AlgebraRegister {
 
     /** A map from signature names to algebras registered for that name. */
     private final Map<String,Algebra<?>> algebraMap = new TreeMap<String,Algebra<?>>();
-    /** A map from carrier set types to the defining algebras. */
-    private final Map<Class<?>,Algebra<?>> carrierToAlgebraMap = new HashMap<Class<?>,Algebra<?>>();
     /** Store of operations created from the algebras. */
     private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
         new HashMap<Algebra<?>,Map<String,Operation>>();
@@ -439,20 +424,29 @@ public class AlgebraRegister {
         checkSignatureConsistency();
         operatorsMap = createOperatorsMap();
     }
-    
+
     /** The default algebra register. */
     static private final AlgebraRegister defaultRegister;
+    /** The point algebra register. */
+    static private final AlgebraRegister pointRegister;
     /** Default algebra register. */
     static private final Map<String,AlgebraRegister> registerMap;
     static {
+        registerMap = new HashMap<String,AlgebraRegister>();
         Set<Algebra<?>> defaultAlgebraFamily =  new HashSet<Algebra<?>>();
         defaultAlgebraFamily.add(new JavaIntAlgebra());
         defaultAlgebraFamily.add(new BoolAlgebra());
         defaultAlgebraFamily.add(new StringAlgebra());
         defaultAlgebraFamily.add(new JavaDoubleAlgebra());
         defaultRegister = new AlgebraRegister(defaultAlgebraFamily);
-        registerMap = new HashMap<String,AlgebraRegister>();
         registerMap.put(DEFAULT_ALGEBRAS, defaultRegister);
+        Set<Algebra<?>> pointAlgebraFamily =  new HashSet<Algebra<?>>();
+        pointAlgebraFamily.add(new IntPointAlgebra());
+        pointAlgebraFamily.add(new BoolPointAlgebra());
+        pointAlgebraFamily.add(new StringPointAlgebra());
+        pointAlgebraFamily.add(new RealPointAlgebra());
+        pointRegister = new AlgebraRegister(pointAlgebraFamily);
+        registerMap.put(POINT_ALGEBRAS, pointRegister);
     }
 
     /** Required last part of the interface name of signatures. */
