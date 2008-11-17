@@ -41,14 +41,13 @@ import java.util.Iterator;
  */
 public abstract class AbstractStrategy implements Strategy {
     final public void prepare(GTS gts) {
-        this.prepare(gts, gts.startState());
+        this.prepare(gts, null);
     }
 
     public void prepare(GTS gts, GraphState state) {
         this.gts = gts;
         this.generator = gts.getRecord().getStateGenerator(gts);
-        this.startState = state;
-        this.atState = state;
+        this.atState = this.startState = state == null ? gts.startState() : state;
         this.applier = new MatchApplier(gts);
     }
 

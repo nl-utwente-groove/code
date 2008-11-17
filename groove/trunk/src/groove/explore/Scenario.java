@@ -59,8 +59,8 @@ public interface Scenario {
      * result is done (according to {@link Result#done()}), or when the thread
      * is interrupted.
      * @param gts the GTS to play the scenario on
-     * @param state the start state for the scenario; must be in
-     *        <code>gts</code>
+     * @param state the start state for the scenario; if <code>null</code>,
+     * the GTS start state is used
      * @see Result#done()
      * @see #isInterrupted()
      */
