@@ -91,11 +91,28 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 
     @Override
     public boolean isVisible() {
-        boolean result = !hasValue() || this.jModel.isShowValueNodes();
+        // first test if the node has unfiltered self-edges
+        boolean result =
+            hasValue() && this.jModel.isShowValueNodes() || !isFiltered();
         Iterator<?> jEdgeIter = getPort().edges();
         while (!result && jEdgeIter.hasNext()) {
             GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
-            result = jEdge.getSource() == this || !jEdge.isSourceLabel();
+            result =
+                !jEdge.isFiltered()
+                    && (jEdge.getSource() == this || !jEdge.isSourceLabel());
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if all self-edges on this node are filtered (and therefore
+     * invisible).
+     */
+    private boolean isFiltered() {
+        boolean result = !getSelfEdges().isEmpty();
+        Iterator<? extends Edge> listLabelIter = getSelfEdges().iterator();
+        while (result && listLabelIter.hasNext()) {
+            result = this.jModel.isFiltering(getLabel(listLabelIter.next()).text());
         }
         return result;
     }

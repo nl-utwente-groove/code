@@ -352,8 +352,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 }
                 getModel().removeGraphModelListener(this);
             }
-            super.setModel(jModel);
             jModel.setFilteredLabels(getFilteredLabels());
+            super.setModel(jModel);
             getLabelList().updateModel();
             jModel.addGraphModelListener(this);
             // jModel.refresh();
