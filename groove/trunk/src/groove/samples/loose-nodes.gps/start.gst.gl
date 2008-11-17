@@ -1,7 +1,0 @@
-# Layout information for C:\Eclipse-3\groove\samples\loose-nodes.gps\start.gst
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n20 155 162 18 18 
-n n19 114 79 18 18 
-n n21 212 93 18 18 
