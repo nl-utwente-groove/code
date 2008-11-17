@@ -421,7 +421,7 @@ public class LabelList extends JList implements GraphModelListener,
         new TreeMap<String,Set<JCell>>();
 
     /** Set of filtered labels. */
-    final ObservableSet<String> filteredLabels;
+    private final ObservableSet<String> filteredLabels;
 
     /**
      * The background colour of this component when it is enabled.
