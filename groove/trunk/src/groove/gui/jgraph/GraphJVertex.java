@@ -93,7 +93,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public boolean isVisible() {
         // first test if the node has unfiltered self-edges
         boolean result =
-            hasValue() && this.jModel.isShowValueNodes() || !isFiltered();
+            !hasValue()
+                || (isDataNode() ? this.jModel.isShowValueNodes()
+                        : !isFiltered());
         Iterator<?> jEdgeIter = getPort().edges();
         while (!result && jEdgeIter.hasNext()) {
             GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
@@ -112,7 +114,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         boolean result = !getSelfEdges().isEmpty();
         Iterator<? extends Edge> listLabelIter = getSelfEdges().iterator();
         while (result && listLabelIter.hasNext()) {
-            result = this.jModel.isFiltering(getLabel(listLabelIter.next()).text());
+            result =
+                this.jModel.isFiltering(getLabel(listLabelIter.next()).text());
         }
         return result;
     }
@@ -128,7 +131,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         List<StringBuilder> result = new LinkedList<StringBuilder>();
         // show the node identity if required
         if (this.jModel.isShowNodeIdentities()) { // IOVKA showing node
-                                                    // identity
+            // identity
             String id = getNodeIdentity();
             if (id != null) {
                 result.add(ITALIC_TAG.on(new StringBuilder(id)));
