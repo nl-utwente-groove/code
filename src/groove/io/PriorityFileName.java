@@ -83,7 +83,7 @@ public class PriorityFileName {
      * @param url
      */
     public PriorityFileName(URL url) {
-        this(new File(url.getFile()));
+        this(FileGps.toFile(url));
     }
 
     /**
