@@ -794,7 +794,7 @@ public class Simulator {
         };
         dialog.activate(1000);
         grammarLoader.addObserver(loadListener);
-        new Thread() {
+        SwingUtilities.invokeLater(new Thread() {
             @Override
             public void run() {
                 try {
@@ -837,7 +837,7 @@ public class Simulator {
                 dialog.deactivate();
                 grammarLoader.deleteObserver(loadListener);
             }
-        }.start();
+        });
 
         // updating history
         this.history.updateLoadGrammar(grammarURL);
