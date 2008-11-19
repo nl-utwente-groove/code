@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,7 +146,7 @@ public class FileGps extends AspectualViewGps {
     @Override
     public DefaultGrammarView unmarshal(URL location, String startGraphName,
             String controlName) throws IOException {
-        return unmarshal(new File(location.getFile()), startGraphName,
+        return unmarshal(toFile(location), startGraphName,
             controlName);
     }
 
@@ -268,6 +270,19 @@ public class FileGps extends AspectualViewGps {
             //
         }
         return url;
+    }
+    
+    /**
+     * Convenience method for converting URL's to Files without %20 for spaces
+     */
+    public static File toFile(URL url) {
+        try {
+            URI uri = new URI(url.toString());
+            return new File(uri.getPath());
+        }
+        catch(URISyntaxException e) {
+            return null;
+        }
     }
 
     @Override
