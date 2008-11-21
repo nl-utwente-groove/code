@@ -363,10 +363,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                         // SwingUtilities.invokeLater(new Runnable() {
                         // public void run() {
                         this.layouter.start(false);
-                        new Timer().schedule(new TimerTask() {
+                        final Timer timer = new Timer();
+                        timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
                                 JGraph.this.layouter.stop();
+                                // cancel the timer, because it may otherwise
+                                // keep the entire program from terminating
+                                timer.cancel();
                             }
                         }, MAX_LAYOUT_DURATION);
                     }

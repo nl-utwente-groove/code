@@ -144,7 +144,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
                 // include the node in the model if it is not virtual
                 if (nodeInModel) {
                     Node nodeImage =
-                        createAttributeNode(view, viewNode);
+                        this.attributeFactory.createAttributeNode(viewNode);
                     if (nodeImage == null) {
                         nodeImage = model.addNode();
                     } else if (isAllowedNode(nodeImage)) {
@@ -163,38 +163,43 @@ public class AspectualGraphView extends AspectualView<Graph> {
         }
         elementMap.nodeMap().putAll(viewToModelMap);
         // copy the edges from view to model
+        edgeLoop:
         for (AspectEdge viewEdge : view.edgeSet()) {
-            boolean edgeInModel = true;
+            if (AttributeAspect.isConstant(viewEdge)) {
+                continue edgeLoop;
+            }
             for (AspectValue value : viewEdge.getAspectMap().values()) {
                 if (isVirtualValue(value)) {
-                    edgeInModel = false;
-                } else if (!isAllowedValue(value)) {
+                    continue edgeLoop;
+                }
+                if (!isAllowedValue(value)) {
                     throw new FormatException(
                         "Edge aspect value '%s' not allowed in graphs", value);
                 }
             }
             // include the edge in the model if it is not virtual
             Node[] endImages = new Node[viewEdge.endCount()];
-            for (int i = 0; edgeInModel && i < endImages.length; i++) {
+            for (int i = 0; i < endImages.length; i++) {
                 endImages[i] = viewToModelMap.get(viewEdge.end(i));
-                edgeInModel = endImages[i] != null;
-            }
-            if (edgeInModel) {
-                try {
-                    // create an image for the view edge
-                    Edge edgeImage =
-                        this.attributeFactory.createAttributeEdge(viewEdge, endImages);
-                    if (edgeImage == null) {
-                        edgeImage = model.addEdge(endImages, parse(viewEdge));
-                    } else if (!isAllowedEdge(edgeImage)) {
-                        throw new FormatException(
-                            "Edge aspect value '%s' not allowed in graphs",
-                            getAttributeValue(viewEdge));
-                    }
-                    elementMap.putEdge(viewEdge, edgeImage);
-                } catch (FormatException exc) {
-                    errors.addAll(exc.getErrors());
+                if (endImages[i] == null) {
+                    continue edgeLoop;
                 }
+            }
+            try {
+                // create an image for the view edge
+                Edge edgeImage =
+                    this.attributeFactory.createAttributeEdge(viewEdge,
+                        endImages);
+                if (edgeImage == null) {
+                    edgeImage = model.addEdge(endImages, parse(viewEdge));
+                } else if (!isAllowedEdge(edgeImage)) {
+                    throw new FormatException(
+                        "Edge aspect value '%s' not allowed in graphs",
+                        getAttributeValue(viewEdge));
+                }
+                elementMap.putEdge(viewEdge, edgeImage);
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
             }
         }
         // remove isolated variable nodes from the result graph
@@ -231,24 +236,17 @@ public class AspectualGraphView extends AspectualView<Graph> {
             throw new FormatException(new ArrayList<String>(errors));
         }
     }
-
-    /**
-     * Attempts to create an attribute node from a given aspect node.
-     * @return null if the aspect node is not an attribute node.
-     * @throws FormatException if the aspect value is wrongly formatted
-     */
-    private Node createAttributeNode(AspectGraph view, AspectNode viewNode)
-        throws FormatException {
-        Node result = this.attributeFactory.createAttributeNode(viewNode);
-//        if (result instanceof VariableNode) {
-//            if (((VariableNode) result).isConstant()) {
-//                result = AlgebraGraph.getInstance().getValueNode(((VariableNode) result).getConstant());
-//            } else {
-//                throw new FormatException("Variable node %s should be a constant", result);
-//            }
-//        }
-        return result;
-    }
+//
+//    /**
+//     * Attempts to create an attribute node from a given aspect node.
+//     * @return null if the aspect node is not an attribute node.
+//     * @throws FormatException if the aspect value is wrongly formatted
+//     */
+//    private Node createAttributeNode(AspectGraph view, AspectNode viewNode)
+//        throws FormatException {
+//        Node result = this.attributeFactory.createAttributeNode(viewNode);
+//        return result;
+//    }
 
     /**
      * Tests if a certain attribute node is of the type allowed in graphs.
