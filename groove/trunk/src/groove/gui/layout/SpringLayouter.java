@@ -126,11 +126,6 @@ public class SpringLayouter extends AbstractLayouter {
             if (DEBUG) {
                 System.out.println("Stopping automatic layout");
             }
-            // stop the layout process and make sure it is indeed stopped
-            if (this.stopTask != null) {
-                this.stopTask.cancel();
-                this.stopTask = null;
-            }
             this.relaxer.interrupt();
             boolean joined = false;
             while (!joined) {
@@ -480,12 +475,6 @@ public class SpringLayouter extends AbstractLayouter {
      */
     private float rigidity = DEFAULT_RIGIDITY;
 
-    /**
-     * Timer task for ending the current layout process. If null, no such task
-     * is scheduled.
-     * @invariant stopTask == null || running
-     */
-    private transient TimerTask stopTask;
     /** Name of this layouter. */
     public static final String ACTION_NAME = "Spring layout";
 

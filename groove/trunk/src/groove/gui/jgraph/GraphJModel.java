@@ -133,8 +133,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * the sake of efficiency.
      */
     public void reload() {
-        // add the model as a graph listener
-
+        // temporarily remove the model as a graph listener
         this.graph.removeGraphListener(this);
         // add nodes from Graph to GraphModel
         initializeTransients();

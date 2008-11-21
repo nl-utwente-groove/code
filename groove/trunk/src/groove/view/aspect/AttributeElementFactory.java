@@ -44,13 +44,21 @@ import java.util.Set;
  * @version $Revision $
  */
 public class AttributeElementFactory {
-    /** Constructs a factory for a given aspect graph. 
-     * @param properties TODO*/
+    /** 
+     * Constructs a factory for a given aspect graph.
+     * System properties may be passed in to determine the algebra family from which to take the
+     * values and operations.
+     * @param graph the aspect graph for which the attribute elements are to be created
+     * @param properties source of the algebra family to be used; if <code>null</code>, the
+     * {@link AlgebraRegister#DEFAULT_ALGEBRAS} is used.
+     * @see SystemProperties#getAlgebraFamily()
+     */
     public AttributeElementFactory(AspectGraph graph, SystemProperties properties) {
         this.graph = graph;
         String registerName = properties == null ? AlgebraRegister.DEFAULT_ALGEBRAS : properties.getAlgebraFamily();
         this.register = AlgebraRegister.getInstance(registerName);
     }
+    
     /**
      * Creates an attribute-related node from a given {@link AspectNode} found
      * in a given {@link AspectGraph}. The type of the resulting node depends
@@ -71,10 +79,10 @@ public class AttributeElementFactory {
         AspectValue attributeValue = getAttributeValue(node);
         if (attributeValue == null) {
             result = null;
-        } else if (attributeValue == VALUE) {
-            result = createVariableNode(node);
+        } else if (attributeValue.equals(VALUE)) {
+            result = createValueNode(node);
         } else {
-            assert attributeValue == PRODUCT : String.format(
+            assert attributeValue.equals(PRODUCT) : String.format(
                 "Illegal attribute aspect value: %s", attributeValue);
             result = createProductNode(node);
         }
@@ -90,7 +98,7 @@ public class AttributeElementFactory {
      * @throws FormatException if the outgoing edges of <code>node</code> are
      *         incorrect
      */
-    private ValueNode createVariableNode(AspectNode node)
+    private ValueNode createValueNode(AspectNode node)
         throws FormatException {
         ValueNode result;
         // check if there is a single constant edge on this node

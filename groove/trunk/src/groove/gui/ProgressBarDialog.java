@@ -57,6 +57,13 @@ public class ProgressBarDialog extends JDialog {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         setVisible(true);
+                        // cancel the timer because it may otherwise go on running,
+                        // keeping the entire program from terminating
+                        synchronized (ProgressBarDialog.this) {
+                            if (ProgressBarDialog.this.activation != null) {
+                                ProgressBarDialog.this.activation.cancel();
+                            }
+                        }
                     }
                 });
             }
