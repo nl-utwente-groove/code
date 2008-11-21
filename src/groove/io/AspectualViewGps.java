@@ -233,10 +233,9 @@ public abstract class AspectualViewGps extends Observable implements
 
     /**
      * Stores a given rule in a given directory.
-     * @param rule
-     * @param dir
+     * @param location
      */
-<<<<<<< .mine
+    @SuppressWarnings("unused")
     private boolean deleteRecursive(File location) {
         if (location.isDirectory()) {
             for (File file : location.listFiles()) {
@@ -248,17 +247,19 @@ public abstract class AspectualViewGps extends Observable implements
         return location.delete();
     }
 
-=======
+    /**
+     * Save a rule in the dir argument that is the location of the grammar.
+     * @param rule
+     * @param dir
+     * @throws IOException
+     */
     @SuppressWarnings("unused")
     public void marshalRule(AspectualRuleView rule, File dir)
         throws IOException {
         throw new UnsupportedOperationException(
             "Current grammar does not support saving.");
     }
->>>>>>> .r1596
 
-<<<<<<< .mine
-=======
     /**
      * Deletes a rule given a grammar directory
      */
@@ -266,9 +267,6 @@ public abstract class AspectualViewGps extends Observable implements
         throw new UnsupportedOperationException(
             "Current grammar does not support deleting.");
     }
->>>>>>> .r1596
-
-
 
     /**
      * Retrieves the current graph loader. The graph loader is used to read in
