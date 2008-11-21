@@ -77,9 +77,6 @@ public class PriorityFileName {
         this(ExtensionFilter.getPureName(file));
         this.extension = file.getName().substring(this.ruleName.length());
     }
-<<<<<<< .mine
-    
-=======
     
     /**
      * Convenience method to create a PriorityFileName for a URL.
@@ -88,8 +85,6 @@ public class PriorityFileName {
     public PriorityFileName(URL url) {
         this(FileGps.toFile(url));
     }
->>>>>>> .r1596
-
 
     /**
      * Creates a file name from a given rule name and (possibly explicit)
