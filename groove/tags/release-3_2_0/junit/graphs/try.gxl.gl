@@ -1,0 +1,10 @@
+# Layout information for C:\Eclipse\groove\samples\test\try.gxl
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n12 129 75 18 18 
+e n13 n12 "c" 736 230 258 186 126 186 138 84 12
+e n14 n13 "b" 1210 490 258 72 258 186 11
+n n14 249 63 18 18 
+e n13 n13 "d" 825 418 258 186 264 282 11
+n n13 249 177 18 18 
