@@ -1,0 +1,5 @@
+alap {
+  alap { exit; }
+  alap { enter; }
+  move; 
+}
