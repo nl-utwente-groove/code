@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="move" role="rule" edgeids="false" edgemode="directed">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n1282"/>
+        <node id="n1283"/>
+        <node id="n1284"/>
+        <edge from="n1282" to="n1283">
+            <attr name="label">
+                <string>new:at</string>
+            </attr>
+        </edge>
+        <edge from="n1282" to="n1282">
+            <attr name="label">
+                <string>Train</string>
+            </attr>
+        </edge>
+        <edge from="n1282" to="n1284">
+            <attr name="label">
+                <string>del:at</string>
+            </attr>
+        </edge>
+        <edge from="n1283" to="n1283">
+            <attr name="label">
+                <string>Station</string>
+            </attr>
+        </edge>
+        <edge from="n1284" to="n1283">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n1284" to="n1284">
+            <attr name="label">
+                <string>Station</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
