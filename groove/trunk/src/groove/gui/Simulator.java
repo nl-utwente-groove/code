@@ -57,9 +57,11 @@ import groove.io.ExtensionFilter;
 import groove.io.FileGps;
 import groove.io.GrammarViewXml;
 import groove.io.GrooveFileChooser;
+import groove.io.JarGps;
 import groove.io.LayedOutXml;
 import groove.io.URLLoaderFactory;
 import groove.io.Xml;
+import groove.io.ZipGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -823,7 +825,8 @@ public class Simulator {
                                 grammar.getControl().getName());
                         getControlFileChooser().setSelectedFile(controlFile);
                     } else {
-                        getControlFileChooser().setCurrentDirectory(FileGps.toFile(grammarURL));
+                        getControlFileChooser().setCurrentDirectory(
+                            FileGps.toFile(grammarURL));
                     }
                     getGrammarFileChooser().setSelectedFile(
                         FileGps.toFile(grammarURL));
@@ -886,7 +889,8 @@ public class Simulator {
             AspectGraph aspectStartGraph =
                 this.graphLoader.unmarshalGraph(file);
             AspectualGraphView startGraph =
-                new AspectualGraphView(aspectStartGraph, getCurrentGrammar().getProperties());
+                new AspectualGraphView(aspectStartGraph,
+                    getCurrentGrammar().getProperties());
             getCurrentGrammar().setStartGraph(startGraph);
             setGrammar(getCurrentGrammar());
         } catch (IOException exc) {
@@ -1048,7 +1052,9 @@ public class Simulator {
                     if (currentStateFile != null) {
                         AspectGraph aspectStartGraph =
                             this.graphLoader.unmarshalGraph(currentStateFile);
-                        startGraph = new AspectualGraphView(aspectStartGraph, grammar.getProperties());
+                        startGraph =
+                            new AspectualGraphView(aspectStartGraph,
+                                grammar.getProperties());
                         grammar.setStartGraph(startGraph);
                     }
                     if (currentControlFile != null) {
@@ -1867,10 +1873,14 @@ public class Simulator {
         if (this.grammarFileChooser == null) {
             this.grammarFileChooser = new GrooveFileChooser();
             this.grammarFileChooser.setAcceptAllFileFilterUsed(false);
+            FileFilter firstFilter = null;
             for (FileFilter filter : this.grammarLoaderMap.keySet()) {
                 this.grammarFileChooser.addChoosableFileFilter(filter);
+                if( firstFilter == null ) {
+                    firstFilter = filter;
+                }
             }
-            this.grammarFileChooser.setFileFilter(this.gpsLoader.getExtensionFilter());
+            this.grammarFileChooser.setFileFilter(firstFilter);
             this.grammarFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         }
         return this.grammarFileChooser;
@@ -1934,11 +1944,20 @@ public class Simulator {
      */
     protected void initGrammarLoaders() {
         this.grammarLoaderMap.clear();
-        this.gpsLoader = new FileGps(true);
-        // gpsLoader = new GpsGrammar(graphLoader,
-        // DefaultRuleFactory.getInstance());
-        this.grammarLoaderMap.put(this.gpsLoader.getExtensionFilter(),
-            this.gpsLoader);
+        AspectualViewGps gpsLoader;
+        
+        // loader for directories representing grammars
+        gpsLoader = new FileGps(true);
+        this.grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
+
+        // loader for archives (jar/zip) containing directories representing grammmars
+        gpsLoader = new JarGps(true);
+        this.grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
+
+        gpsLoader = new ZipGps(true);
+        this.grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
+
+        
         // ggxLoader = new GgxGrammar();
         // grammarLoaderMap.put(ggxLoader.getExtensionFilter(), ggxLoader);
     }
@@ -2399,8 +2418,7 @@ public class Simulator {
     /**
      * The loader used for unmarshalling gps-formatted graph grammars.
      */
-    private AspectualViewGps gpsLoader;
-
+    // private AspectualViewGps gpsLoader;
     /**
      * A mapping from extension filters (recognizing the file formats from the
      * names) to the corresponding grammar loaders.
@@ -3076,7 +3094,8 @@ public class Simulator {
                         Groove.createPropertyFilter().addExtension(
                             grammar.getName());
                     File outputFile =
-                        new File(FileGps.toFile(Simulator.this.currentGrammarURL),
+                        new File(
+                            FileGps.toFile(Simulator.this.currentGrammarURL),
                             outputFileName);
                     outputFile.createNewFile();
                     OutputStream writer = new FileOutputStream(outputFile);
@@ -3500,14 +3519,9 @@ public class Simulator {
                     FileFilter filterUsed =
                         getGrammarFileChooser().getFileFilter();
 
-                    try {
-                        URL grammarURL = FileGps.toURL(selectedFile);
-                        doLoadGrammar(getGrammarLoaderMap().get(filterUsed),
-                            grammarURL);
-                    } catch (Exception e) {
-                        showErrorDialog(
-                            "Can't load grammar: " + e.getMessage(), e);
-                    }
+                    AspectualViewGps loader = getGrammarLoaderMap().get(filterUsed);
+                    URL grammarURL = loader.createURL(selectedFile);
+                    doLoadGrammar(loader, grammarURL);
                 }
             }
         }
@@ -3577,8 +3591,7 @@ public class Simulator {
                     newGrammar = new File(NEW_GRAMMAR_NAME);
                 } else {
                     newGrammar =
-                        new File(
-                            FileGps.toFile(grammarFile).getParentFile(),
+                        new File(FileGps.toFile(grammarFile).getParentFile(),
                             NEW_GRAMMAR_NAME);
                 }
                 getGrammarFileChooser().setSelectedFile(newGrammar);

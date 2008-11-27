@@ -259,6 +259,9 @@ public class Generator extends CommandLineTool {
         } else {
             try {
                 url = new URL(this.grammarLocation);
+                if( this.startStateName != null ) {
+                    url = new URL(url.toExternalForm() + "?" + this.startStateName);
+                }
             } catch (MalformedURLException e) {
                 printError("Can't load grammar: " + e.getMessage());
                 return;
@@ -272,7 +275,7 @@ public class Generator extends CommandLineTool {
             
             AspectualViewGps loader = URLLoaderFactory.getLoader(url, false);
             loader.addObserver(loadObserver);    
-            this.grammar = loader.unmarshal(url, this.startStateName).toGrammar();
+            this.grammar = loader.unmarshal(url).toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
             printError("Can't load grammar: " + exc.getMessage());
