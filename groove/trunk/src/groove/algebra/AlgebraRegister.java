@@ -405,10 +405,12 @@ public class AlgebraRegister {
         return result;
     }
 
-    /** Name of the default algebra family. */
+    /** Name of the default (Java) algebra family. */
     static public final String DEFAULT_ALGEBRAS = "default";
     /** Name of the point algebra family. */
     static public final String POINT_ALGEBRAS = "point";
+    /** Name of the point algebra family. */
+    static public final String BIG_ALGEBRAS = "big";
     /**
      * The map of registered signatures. 
      */
@@ -429,6 +431,8 @@ public class AlgebraRegister {
     static private final AlgebraRegister defaultRegister;
     /** The point algebra register. */
     static private final AlgebraRegister pointRegister;
+    /** The big algebra register. */
+    static private final AlgebraRegister bigRegister;
     /** Default algebra register. */
     static private final Map<String,AlgebraRegister> registerMap;
     static {
@@ -447,6 +451,13 @@ public class AlgebraRegister {
         pointAlgebraFamily.add(new RealPointAlgebra());
         pointRegister = new AlgebraRegister(pointAlgebraFamily);
         registerMap.put(POINT_ALGEBRAS, pointRegister);
+        Set<Algebra<?>> bigAlgebraFamily =  new HashSet<Algebra<?>>();
+        bigAlgebraFamily.add(new IntPointAlgebra());
+        bigAlgebraFamily.add(new BoolPointAlgebra());
+        bigAlgebraFamily.add(new StringPointAlgebra());
+        bigAlgebraFamily.add(new RealPointAlgebra());
+        bigRegister = new AlgebraRegister(bigAlgebraFamily);
+        registerMap.put(BIG_ALGEBRAS, bigRegister);
     }
 
     /** Required last part of the interface name of signatures. */

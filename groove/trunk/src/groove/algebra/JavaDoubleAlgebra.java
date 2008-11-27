@@ -110,7 +110,7 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(double d1, double d2) {
-        return Math.abs(d1 - d2) < TOLERANCE;
+        return Math.abs(d1 - d2) < (Math.abs(d1) + Math.abs(d2))*TOLERANCE;
     }
 
     /**
