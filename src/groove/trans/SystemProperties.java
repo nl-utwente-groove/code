@@ -438,7 +438,7 @@ public class SystemProperties extends java.util.Properties {
         defaultKeys.put(
             ALGEBRA_KEY,
             new Property.Choice<String>("Algebra family that should be used in simulation (empty for default)",
-                AlgebraRegister.DEFAULT_ALGEBRAS, AlgebraRegister.POINT_ALGEBRAS));
+                AlgebraRegister.DEFAULT_ALGEBRAS, AlgebraRegister.POINT_ALGEBRAS, AlgebraRegister.BIG_ALGEBRAS));
         defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean(
             "Flag controlling if matches should be injective", true));
         defaultKeys.put(
