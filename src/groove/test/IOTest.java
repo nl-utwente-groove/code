@@ -91,7 +91,6 @@ public class IOTest extends TestCase {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void testLoadAltControl() {

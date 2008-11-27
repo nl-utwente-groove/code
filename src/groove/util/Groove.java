@@ -469,7 +469,7 @@ public class Groove {
      * @throws IOException if <code>dirname</code> does not exist or is
      *         wrongly formatted
      */
-    static public GrammarView<?,?> loadGrammar(String dirname)
+    static public DefaultGrammarView loadGrammar(String dirname)
         throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshal(dir);
