@@ -126,7 +126,9 @@ public class MatchSetCollector {
      */
     private boolean collectEvents(Rule rule, Collection<RuleEvent> result) {
         boolean hasMatched = collectVirtualEvents(rule, result);
-        if (this.enabledRules == null || this.enabledRules.contains(rule)) {
+        // AREND: I added here a check so that new matches are also added when the cache is a locationcache
+        // because the parent state may (regardless enabledRules) have no matches in the parent due to control.
+        if (this.enabledRules == null || this.enabledRules.contains(rule) || cache instanceof LocationCache) {
             // the rule was possible enabled afresh, so we have to add the fresh
             // matches
             for (RuleMatch match : rule.getMatches(this.state.getGraph(), null)) {
