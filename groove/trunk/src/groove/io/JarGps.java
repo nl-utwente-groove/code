@@ -37,7 +37,6 @@ public class JarGps extends ArchiveGps {
         super(layouted);
     }
 
-    @Override
     public ExtensionFilter getExtensionFilter() {
         return GRAMMAR_FILTER;
     }
