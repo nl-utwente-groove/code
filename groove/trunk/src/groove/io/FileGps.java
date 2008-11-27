@@ -154,8 +154,7 @@ public class FileGps extends AspectualViewGps {
      * For backwards compatibility, this creates a grammarsource first
      */
     public DefaultGrammarView unmarshal(File location) throws IOException {
-        return unmarshal(location, DEFAULT_START_GRAPH_NAME,
-            DEFAULT_CONTROL_NAME);
+        return unmarshal(location, null, null);
     }
 
     /**
@@ -163,17 +162,14 @@ public class FileGps extends AspectualViewGps {
      */
     public DefaultGrammarView unmarshal(File location, String startGraphName)
         throws IOException {
-        if (startGraphName == null) {
-            startGraphName = DEFAULT_START_GRAPH_NAME;
-        }
-        return unmarshal(location, startGraphName, DEFAULT_CONTROL_NAME);
+        return unmarshal(location, startGraphName, null);
     }
 
     /**
      * unmarshals a grammar for a gps directory with a specific start graph name
      * and a specific control name.
      */
-    public DefaultGrammarView unmarshal(File location, String startGraphName,
+    protected DefaultGrammarView unmarshal(File location, String startGraphName,
             String controlName) throws IOException {
 
         if (startGraphName == null) {
@@ -277,7 +273,7 @@ public class FileGps extends AspectualViewGps {
      */
     public static File toFile(URL url) {
         try {
-            URI uri = new URI(url.toString());
+            URI uri = new URI(url.getPath());
             return new File(uri.getPath());
         }
         catch(URISyntaxException e) {
@@ -393,6 +389,11 @@ public class FileGps extends AspectualViewGps {
                 new File(location, RULE_FILTER.addExtension(remainingName));
         }
         return result;
+    }
+    
+    @Override
+    public URL createURL(File file) {
+        return toURL(file);
     }
 
     /** File filter for graph grammars in the GPS format. */

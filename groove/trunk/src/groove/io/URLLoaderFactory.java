@@ -34,10 +34,14 @@ public class URLLoaderFactory {
         if( url.getProtocol().equals("file")) {
             return new FileGps(layouted);
         } else if( url.getProtocol().equals("jar")) {
-            return new JarGps(layouted);
-        } else {
-            throw new MalformedURLException("Unrecognized protocol: " + url.getProtocol());
+            if( url.toExternalForm().contains(".jar")) {
+                return new JarGps(layouted);
+            }
+            else if(url.toExternalForm().contains(".zip")) {
+                return new ZipGps(layouted);
+            } 
         }
+        throw new MalformedURLException("Unrecognized protocol or format: " + url.toExternalForm());
     }
     
     /** returns the loader for the url, that - by default - does not load layouts */
