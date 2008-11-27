@@ -32,6 +32,7 @@ import groove.view.aspect.AspectGraph;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Observable;
@@ -70,30 +71,36 @@ public abstract class AspectualViewGps extends Observable implements
     }
 
     /**
-     * Loads the grammar from the given url with the given startGraphName.
-     * @param location
-     * @param startGraphName
+     * Fixed handler method for unmarshalling using an url. If available, a
+     * startgraph name and a controlname are extracted from the url. default
+     * names are used otherwise. The method is then dispatched to
+     * {@link #unmarshal(URL, String, String)}, which are implemented by the
+     * subclasses.
      */
-    public DefaultGrammarView unmarshal(URL location, String startGraphName)
-        throws IOException {
-        
-        if( startGraphName == null ) {
+    public final DefaultGrammarView unmarshal(URL url) throws IOException {
+
+        String startGraphName = url.getQuery();
+        if (startGraphName == null) {
             startGraphName = DEFAULT_START_GRAPH_NAME;
         }
-        
-        return unmarshal(location, startGraphName, DEFAULT_CONTROL_NAME);
-    }
 
-    public DefaultGrammarView unmarshal(URL location) throws IOException {
-        return unmarshal(location, DEFAULT_START_GRAPH_NAME,
-            DEFAULT_CONTROL_NAME);
+        String controlName = url.getRef();
+        if (controlName == null) {
+            controlName = DEFAULT_CONTROL_NAME;
+        }
+        URL newURL =
+            new URL(url.getProtocol(), url.getHost(), url.getPort(),
+                url.getPath());
+        // extract the path of the grammar from the jar file
+
+        return unmarshal(newURL, startGraphName, controlName);
     }
 
     /**
      * Loads the grammar from the given url with the given startGraphName and
      * controlName.
      */
-    public abstract DefaultGrammarView unmarshal(URL location,
+    protected abstract DefaultGrammarView unmarshal(URL location,
             String startGraphName, String controlName) throws IOException;
 
     /**
@@ -181,7 +188,8 @@ public abstract class AspectualViewGps extends Observable implements
                 unmarshalGraph(startGraphSource);
 
             AspectualGraphView startGraph =
-                new AspectualGraphView(unmarshalledStartGraph, result.getProperties());
+                new AspectualGraphView(unmarshalledStartGraph,
+                    result.getProperties());
 
             startGraph.getName();
 
@@ -314,7 +322,17 @@ public abstract class AspectualViewGps extends Observable implements
     public boolean canWrite() {
         return false;
     }
-    
+
+    /**
+     * This method should be implemented when the unmarshaller has an
+     * extensionfilter. In this case, a file can be selected that can be
+     * unmarshalled. The unmarshaller should create a URL such that the
+     * URLLoaderFactory can delegate the URL to this loader.
+     * @param file
+     * @return URL 
+     */
+    public abstract URL createURL(File file);
+
     /**
      * The xml reader used to unmarshal graphs.
      */
