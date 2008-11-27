@@ -74,6 +74,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -323,7 +324,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         SPORule rule;
         NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
         // ParameterAspect map with id's bound to nodes
-        Map<Integer,Node> parameterMap = new HashMap<Integer,Node>();
+        SortedMap<Integer,Node> parameterMap = new TreeMap<Integer,Node>();
 
         Set<String> errors = new TreeSet<String>(this.graph.getErrors());
         if (TO_RULE_DEBUG) {
@@ -400,16 +401,36 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     nodeLevelMap.put(node, level);
                     Node nodeImage = computeNodeImage(node);
-                    // if the node is a valuenode, check if it has an id
-                    // if( nodeImage instanceof ValueNode ) {
+                    // check if the node is a parameter
                     Integer id = ParameterAspect.getID(node);
                     if (id != null) {
+                        if (id == 0) {
+                            throw new FormatException("Invalid parameter number %d", id);
+                        }
+                        if (!RuleAspect.inLHS(node)) {
+                            throw new FormatException("Rule parameter %d only allowed on LHS nodes", id);
+                        }
+                        if (!level.isTopLevel()) {
+                            throw new FormatException("Rule parameter %d only allowed on top existential level", id);
+                        }
                         // store the node w.r.t the ID
-                        parameterMap.put(id, nodeImage);
+                        Node oldValue = parameterMap.put(id, nodeImage);
+                        if (oldValue != null) {
+                            throw new FormatException("Parameter number %d occurs more than once", id);
+                        }
                     }
-                    // }
                     viewToRuleMap.putNode(node, nodeImage);
                 }
+            }
+            Iterator<Integer> parameterNrIter = parameterMap.keySet().iterator();
+            int nr = 0;
+            while (parameterNrIter.hasNext()) {
+                int nextNr = parameterNrIter.next();
+                if (nextNr != nr + 1) {
+                    throw new FormatException("Parameter number %d missing",
+                        nr + 1);
+                }
+                nr = nextNr;
             }
             // add edges to nesting data structures
             for (AspectEdge edge : this.graph.edgeSet()) {
