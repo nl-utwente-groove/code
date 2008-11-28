@@ -11,6 +11,7 @@ tokens {
 	FUNCTIONS;
 	FUNCTION;
 	CALL;
+	DO;
 }
 
 @lexer::header {
@@ -54,15 +55,14 @@ condition
 	
 statement 
 	: ALAP block -> ^(ALAP block)
-	| WHILE '(' condition ')' DO block -> ^(WHILE condition block)
+	| WHILE '(' condition ')' DO? block -> ^(WHILE condition block)
+	| UNTIL '(' condition ')' DO? block -> ^(UNTIL condition block)
 	| DO block WHILE '(' condition ')' -> ^(DO block condition)
-	| UNTIL '(' condition ')' DO block -> ^(UNTIL condition block)
 	| TRY block (ELSE block)? -> ^(TRY block+)
 	| IF '(' condition ')' block (ELSE block)? -> ^(IF condition block+)
     | CHOICE block (CH_OR block)* -> ^(CHOICE block+)
 	| expression ';' -> expression
     ;
-
 
 conditionliteral
 	: TRUE | rule ;

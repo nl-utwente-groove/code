@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLBuilder.g 2008-10-15 14:57:02
+// $ANTLR 3.1b1 GCLBuilder.g 2008-11-28 11:20:24
 
 package groove.control.parse;
 import groove.control.*;
@@ -12,18 +12,18 @@ import java.util.ArrayList;
 @SuppressWarnings("all")              
 public class GCLBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "IDENTIFIER", "OR", "ALAP", "WHILE", "DO", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
     public static final int FUNCTION=7;
     public static final int STAR=22;
     public static final int SHARP=23;
     public static final int OTHER=25;
     public static final int FUNCTIONS=6;
-    public static final int WHILE=12;
+    public static final int WHILE=13;
     public static final int ELSE=16;
-    public static final int DO=13;
+    public static final int DO=9;
     public static final int NOT=29;
-    public static final int ALAP=11;
+    public static final int ALAP=12;
     public static final int AND=26;
     public static final int EOF=-1;
     public static final int TRUE=20;
@@ -38,9 +38,9 @@ public class GCLBuilder extends TreeParser {
     public static final int T__35=35;
     public static final int COMMA=27;
     public static final int UNTIL=14;
-    public static final int IDENTIFIER=9;
+    public static final int IDENTIFIER=10;
     public static final int BLOCK=5;
-    public static final int OR=10;
+    public static final int OR=11;
     public static final int CH_OR=19;
     public static final int PROGRAM=4;
     public static final int PLUS=21;
@@ -299,7 +299,7 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start statement
-    // GCLBuilder.g:80:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( UNTIL condition block ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression );
+    // GCLBuilder.g:80:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression );
     public final void statement() throws RecognitionException {
         
         	ControlState start = builder.getStart();
@@ -308,7 +308,7 @@ public class GCLBuilder extends TreeParser {
         	ControlTransition fail;
 
         try {
-            // GCLBuilder.g:86:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( DO block condition ) | ^( UNTIL condition block ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression )
+            // GCLBuilder.g:86:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression )
             int alt6=8;
             switch ( input.LA(1) ) {
             case ALAP:
@@ -321,12 +321,12 @@ public class GCLBuilder extends TreeParser {
                 alt6=2;
                 }
                 break;
-            case DO:
+            case UNTIL:
                 {
                 alt6=3;
                 }
                 break;
-            case UNTIL:
+            case DO:
                 {
                 alt6=4;
                 }
@@ -431,45 +431,9 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLBuilder.g:108:5: ^( DO block condition )
+                    // GCLBuilder.g:108:5: ^( UNTIL condition block )
                     {
-                    match(input,DO,FOLLOW_DO_in_statement181); 
-
-                    
-                    		newState = builder.newState(); 
-                    		builder.restore(newState, end); 
-                    		fail = builder.addElse(); 
-                    		builder.restore(start, newState);
-                    	
-
-                    match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_block_in_statement185);
-                    block();
-
-                    state._fsp--;
-
-                    
-                    		builder.restore(newState, start);
-                    	
-                    pushFollow(FOLLOW_condition_in_statement189);
-                    condition();
-
-                    state._fsp--;
-
-                    
-                    		builder.fail(newState,fail);
-                    		builder.tagDelta(newState);
-                    		builder.deltaInitCopy(newState, start);
-                    	
-
-                    match(input, Token.UP, null); 
-
-                    }
-                    break;
-                case 4 :
-                    // GCLBuilder.g:120:5: ^( UNTIL condition block )
-                    {
-                    match(input,UNTIL,FOLLOW_UNTIL_in_statement198); 
+                    match(input,UNTIL,FOLLOW_UNTIL_in_statement181); 
 
                     
                     		newState = builder.newState(); 
@@ -477,7 +441,7 @@ public class GCLBuilder extends TreeParser {
                     	
 
                     match(input, Token.DOWN, null); 
-                    pushFollow(FOLLOW_condition_in_statement202);
+                    pushFollow(FOLLOW_condition_in_statement185);
                     condition();
 
                     state._fsp--;
@@ -488,7 +452,7 @@ public class GCLBuilder extends TreeParser {
                     		builder.fail(start, fail); 
                     		builder.restore(newState,start);
                     	
-                    pushFollow(FOLLOW_block_in_statement206);
+                    pushFollow(FOLLOW_block_in_statement189);
                     block();
 
                     state._fsp--;
@@ -496,6 +460,42 @@ public class GCLBuilder extends TreeParser {
                     
                     		builder.tagDelta(newState); 
                     		builder.deltaInitCopy(newState, start); 
+                    	
+
+                    match(input, Token.UP, null); 
+
+                    }
+                    break;
+                case 4 :
+                    // GCLBuilder.g:120:5: ^( DO block condition )
+                    {
+                    match(input,DO,FOLLOW_DO_in_statement198); 
+
+                    
+                    		newState = builder.newState(); 
+                    		builder.restore(newState, end); 
+                    		fail = builder.addElse(); 
+                    		builder.restore(start, newState);
+                    	
+
+                    match(input, Token.DOWN, null); 
+                    pushFollow(FOLLOW_block_in_statement202);
+                    block();
+
+                    state._fsp--;
+
+                    
+                    		builder.restore(newState, start);
+                    	
+                    pushFollow(FOLLOW_condition_in_statement206);
+                    condition();
+
+                    state._fsp--;
+
+                    
+                    		builder.fail(newState,fail);
+                    		builder.tagDelta(newState);
+                    		builder.deltaInitCopy(newState, start);
                     	
 
                     match(input, Token.UP, null); 
@@ -1026,12 +1026,12 @@ public class GCLBuilder extends TreeParser {
     public static final BitSet FOLLOW_WHILE_in_statement164 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_condition_in_statement168 = new BitSet(new long[]{0x0000000000000020L});
     public static final BitSet FOLLOW_block_in_statement172 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DO_in_statement181 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_block_in_statement185 = new BitSet(new long[]{0x0000000003F6FF08L});
-    public static final BitSet FOLLOW_condition_in_statement189 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_UNTIL_in_statement198 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_statement202 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_block_in_statement206 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_UNTIL_in_statement181 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_statement185 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_block_in_statement189 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DO_in_statement198 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_block_in_statement202 = new BitSet(new long[]{0x0000000003F6FF08L});
+    public static final BitSet FOLLOW_condition_in_statement206 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_TRY_in_statement215 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_block_in_statement223 = new BitSet(new long[]{0x0000000000000028L});
     public static final BitSet FOLLOW_block_in_statement229 = new BitSet(new long[]{0x0000000000000008L});
