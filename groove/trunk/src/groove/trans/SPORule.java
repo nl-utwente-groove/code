@@ -199,6 +199,29 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return this.directSubRules;
     }
 
+    /** 
+     * Sets the parameters of this rule.
+     * The rule can have numbered and anonymous parameters.
+     * Numbered parameters are visible on the transition label.
+     * @param visibleParameters an ordered list of numbered parameter nodes
+     * @param allParameters the set of all parameter nodes (including the visible ones)
+     */
+    public void setParameters(List<Node> visibleParameters, Set<Node> allParameters) {
+        testFixed(false);
+        this.visibleParameters = visibleParameters;
+        this.allParameters = allParameters;
+    }
+
+    /** Returns the ordered list of visible (i.e., numbered) parameters. */
+    public List<Node> getVisibleParameters() {
+        return this.visibleParameters;
+    }
+
+    /** Returns the set of all parameter nodes of this rule. */
+    public Set<Node> getAllParameters() {
+        return this.allParameters;
+    }
+    
     /** Creates the search plan using the rule's search plan factory. */
     public MatchStrategy<VarNodeEdgeMap> getEventMatcher() {
         if (this.eventMatcher == null) {
@@ -1117,6 +1140,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * The priority of this rule.
      */
     private int priority;
+    /**
+     * List of numbered parameters.
+     */
+    private List<Node> visibleParameters;
+    /**
+     * Set of anonymous (unnumbered) parameters.
+     */
+    private Set<Node> allParameters;
     /** The matcher for events of this rule. */
     private MatchStrategy<VarNodeEdgeMap> eventMatcher;
 
@@ -1139,21 +1170,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     static public long getMatchingTime() {
         return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
-    }
-
-    /**
-     * Implementation of ParameterAspect stuff
-     */
-    private Map<Integer,Node> parameterNodeMap;
-
-    /** set map containing param_ids and the nodes * */
-    public void setParameterMap(Map<Integer,Node> map) {
-        this.parameterNodeMap = map;
-    }
-
-    /** Let RuleEvent deal with this map being <code>null</code> * */
-    public Map<Integer,Node> getParameterNodeMap() {
-        return this.parameterNodeMap;
     }
 
     /**

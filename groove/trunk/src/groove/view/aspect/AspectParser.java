@@ -172,7 +172,7 @@ public class AspectParser {
     }
 
     /**
-     * Adds a parsed aspect value to an already exiosting aspect map, while
+     * Adds a parsed aspect value to an already existing aspect map, while
      * testing for duplicates. If {@link #isLenient()} is set, a duplicate
      * results in a return value <code>true</code>, otherwise it results in a
      * {@link FormatException}.

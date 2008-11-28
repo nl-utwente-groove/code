@@ -173,10 +173,10 @@ final public class SPOEvent extends
     public String getParameterString() {
         StringBuilder result = new StringBuilder();
         result.append('(');
-        Map<Integer,Node> map = getRule().getParameterNodeMap();
+        List<Node> map = getRule().getVisibleParameters();
         if (map != null) {
             for (int i = 0; i < map.size(); i++) {
-                Node node = getAnchorMap().getNode(map.get(new Integer(i + 1)));
+                Node node = getAnchorMap().getNode(map.get(i));
                 if (node != null && node instanceof ValueNode) {
                     result.append(((ValueNode) node).getSymbol());
                 } else {

@@ -62,6 +62,15 @@ abstract public class ContentAspectValue<C> extends AspectValue {
         return this.content;
     }
 
+    /** 
+     * Returns a string description of this aspect value's content.
+     * Returns <code>null</code> is the value has no content. 
+     */
+    public final String getContentString() {
+        C content = getContent();
+        return content == null ? null : getParser().toString(content);
+    }
+    
     /**
      * Returns the parser for content values.
      * @return the parser passed in at construction time, if this instance acts
@@ -94,7 +103,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder(super.toString());
-        String content = getParser().toString(getContent());
+        String content = getContentString();
         if (content != null && content.length() != 0) {
             result.append(CONTENT_ASSIGN);
             result.append(content);

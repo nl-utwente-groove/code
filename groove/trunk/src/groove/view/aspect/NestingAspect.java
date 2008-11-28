@@ -288,7 +288,7 @@ public class NestingAspect extends AbstractAspect {
     public static final String IN_LABEL = "in";
     /** Label used for level edges (from rule nodes to meta-nodes). */
     public static final String AT_LABEL = "at";
-    /** Label used for the to-level meta-node. */
+    /** Label used for the top-level meta-node. */
     public static final String TOP_LABEL = "top";
     /** The set of all allowed nesting labels. */
     static final Set<String> ALLOWED_LABELS = new HashSet<String>();
@@ -301,8 +301,7 @@ public class NestingAspect extends AbstractAspect {
     }
 
     /**
-     * Class that attempts to parse a string as the operation of a given
-     * algebra, and returns the result as a DefaultLabel if successful.
+     * Parser that establishes whether a nesting edge label is a known label.
      */
     private static class NestingLabelParser extends FreeLabelParser {
         /** Empty constructor with the correct visibility. */
@@ -311,18 +310,14 @@ public class NestingAspect extends AbstractAspect {
         }
 
         /**
-         * This implementation tests if the text corresponds to an operation of
-         * the associated algebra.
+         * This implementation tests if the text is among the known labels.
+         * @see #ALLOWED_LABELS
          */
         @Override
         protected boolean isCorrect(String text) {
             return ALLOWED_LABELS.contains(text);
         }
 
-        /**
-         * This implementation tests if the text corresponds to an operation of
-         * the associated algebra.
-         */
         @Override
         protected String getExceptionText(String text) {
             return String.format(

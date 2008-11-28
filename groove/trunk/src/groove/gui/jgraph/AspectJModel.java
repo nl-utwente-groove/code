@@ -376,15 +376,15 @@ public class AspectJModel extends GraphJModel {
         @Override
         public List<StringBuilder> getLines() {
             List<StringBuilder> result = super.getLines();
+            // adds a quantor if the node is a nesting node
             AspectValue nesting = getNestingValue(getNode());
             if (nesting != null) {
                 result.add(0, getQuantifierLine((NamedAspectValue) nesting));
             }
-            AspectValue param =
-                getNode().getValue(ParameterAspect.getInstance());
-            if (param != null && param instanceof NamedAspectValue) {
-                result.add(new StringBuilder(
-                    ((NamedAspectValue) param).getContent()));
+            // adds a parameter string if the node is a rule parameter
+            String parString = ParameterAspect.getParString(getNode());
+            if (parString != null) {
+                result.add(new StringBuilder(parString));
             }
             return result;
         }

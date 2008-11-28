@@ -67,8 +67,8 @@ public class MinimalAnchorFactory implements AnchorFactory {
         Set<Element> anchors =
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
 
-        if (rule.getParameterNodeMap() != null) {
-            anchors.addAll(rule.getParameterNodeMap().values());
+        if (rule.getAllParameters() != null) {
+            anchors.addAll(rule.getAllParameters());
         }
 
         Set<? extends Node> creatorNodes = rule.getCreatorGraph().nodeSet();
