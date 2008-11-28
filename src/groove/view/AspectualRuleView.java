@@ -325,6 +325,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
         // ParameterAspect map with id's bound to nodes
         SortedMap<Integer,Node> parameterMap = new TreeMap<Integer,Node>();
+        Set<Node> parameters = new HashSet<Node>();
 
         Set<String> errors = new TreeSet<String>(this.graph.getErrors());
         if (TO_RULE_DEBUG) {
@@ -402,26 +403,29 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     nodeLevelMap.put(node, level);
                     Node nodeImage = computeNodeImage(node);
                     // check if the node is a parameter
-                    Integer id = ParameterAspect.getID(node);
-                    if (id != null) {
-                        if (id == 0) {
-                            throw new FormatException("Invalid parameter number %d", id);
-                        }
+                    Integer nr = ParameterAspect.getParNumber(node);
+                    if (nr != null) {
                         if (!RuleAspect.inLHS(node)) {
-                            throw new FormatException("Rule parameter %d only allowed on LHS nodes", id);
+                            throw new FormatException("Rule parameter %d only allowed on LHS nodes", nr);
                         }
                         if (!level.isTopLevel()) {
-                            throw new FormatException("Rule parameter %d only allowed on top existential level", id);
+                            throw new FormatException("Rule parameter %d only allowed on top existential level", nr);
                         }
-                        // store the node w.r.t the ID
-                        Node oldValue = parameterMap.put(id, nodeImage);
-                        if (oldValue != null) {
-                            throw new FormatException("Parameter number %d occurs more than once", id);
+                        parameters.add(nodeImage);
+                        if (!nr.equals(0)) {
+                            // store the node w.r.t the ID
+                            Node oldValue = parameterMap.put(nr, nodeImage);
+                            if (oldValue != null) {
+                                throw new FormatException(
+                                    "Parameter number %d occurs more than once",
+                                    nr);
+                            }
                         }
                     }
                     viewToRuleMap.putNode(node, nodeImage);
                 }
             }
+            // test if the parameter nodes form a consecutive sequence, starting at 1
             Iterator<Integer> parameterNrIter = parameterMap.keySet().iterator();
             int nr = 0;
             while (parameterNrIter.hasNext()) {
@@ -537,11 +541,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             }
             rule = (SPORule) levelRuleMap.get(topLevel);
             rule.setPriority(this.priority);
+            rule.setParameters(new ArrayList<Node>(parameterMap.values()), parameters);
             rule.setFixed();
-
-            if (parameterMap.size() > 0) {
-                rule.setParameterMap(parameterMap);
-            }
 
             if (TO_RULE_DEBUG) {
                 System.out.println("Constructed rule: " + rule);
