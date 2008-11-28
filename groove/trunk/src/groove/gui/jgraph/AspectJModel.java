@@ -653,7 +653,8 @@ public class AspectJModel extends GraphJModel {
         boolean isDataEdgeSourceLabel() {
             return super.isDataEdgeSourceLabel()
                 && getEdge().getAspectMap().equals(
-                    getSourceNode().getAspectMap());
+                    getSourceNode().getAspectMap())
+                && !RuleAspect.isRemark(getSourceNode());
         }
 
         private final AspectValue role;
