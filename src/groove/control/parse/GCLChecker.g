@@ -39,8 +39,8 @@ block
 statement
   : ^(ALAP block)
   | ^(WHILE condition block)
-  | ^(DO block condition)
   | ^(UNTIL condition block)
+  | ^(DO block condition)
   | ^(TRY block (block)?)
   | ^(IF condition block (block)?)
   | ^(CHOICE block+)

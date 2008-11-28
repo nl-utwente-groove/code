@@ -105,18 +105,6 @@ statement
 		builder.deltaInitCopy(newState, start); 
 		builder.tagDelta(start);
 	}
-) | ^(DO {
-		newState = builder.newState(); 
-		builder.restore(newState, end); 
-		fail = builder.addElse(); 
-		builder.restore(start, newState);
-	} block	{
-		builder.restore(newState, start);
-	} condition {
-		builder.fail(newState,fail);
-		builder.tagDelta(newState);
-		builder.deltaInitCopy(newState, start);
-	}
 ) | ^(UNTIL {
 		newState = builder.newState(); 
 		builder.restore(start, end);
@@ -128,6 +116,18 @@ statement
 	} block	{
 		builder.tagDelta(newState); 
 		builder.deltaInitCopy(newState, start); 
+	}
+) | ^(DO {
+		newState = builder.newState(); 
+		builder.restore(newState, end); 
+		fail = builder.addElse(); 
+		builder.restore(start, newState);
+	} block	{
+		builder.restore(newState, start);
+	} condition {
+		builder.fail(newState,fail);
+		builder.tagDelta(newState);
+		builder.deltaInitCopy(newState, start);
 	}
 ) | ^(TRY
     { 

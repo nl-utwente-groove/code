@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCL.g 2008-10-15 14:55:26
+// $ANTLR 3.1b1 GCL.g 2008-11-28 11:20:12
 
 package groove.control.parse;
 import groove.control.*;
@@ -6,7 +6,6 @@ import java.util.LinkedList;
 
 
 import org.antlr.runtime.*;
-//
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
@@ -18,11 +17,11 @@ public class GCLLexer extends Lexer {
     public static final int SHARP=23;
     public static final int OTHER=25;
     public static final int FUNCTIONS=6;
-    public static final int WHILE=12;
+    public static final int WHILE=13;
     public static final int ELSE=16;
-    public static final int DO=13;
+    public static final int DO=9;
     public static final int NOT=29;
-    public static final int ALAP=11;
+    public static final int ALAP=12;
     public static final int AND=26;
     public static final int EOF=-1;
     public static final int TRUE=20;
@@ -37,9 +36,9 @@ public class GCLLexer extends Lexer {
     public static final int T__35=35;
     public static final int COMMA=27;
     public static final int UNTIL=14;
-    public static final int IDENTIFIER=9;
+    public static final int IDENTIFIER=10;
     public static final int BLOCK=5;
-    public static final int OR=10;
+    public static final int OR=11;
     public static final int CH_OR=19;
     public static final int PROGRAM=4;
     public static final int PLUS=21;

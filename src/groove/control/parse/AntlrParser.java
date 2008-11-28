@@ -51,9 +51,9 @@ public class AntlrParser {
     }
 
     static private void printUsageMessage() {
-        System.out.printf("Usage: AntlrParser <option>%n");
-        System.out.printf("Option values: 0 for lexer/parser generation");
-        System.out.printf("               1 for checker generation");
-        System.out.printf("               2 for builder generation");
+        System.err.printf("Usage: AntlrParser <option>%n");
+        System.err.printf("Option values: 0 for lexer/parser generation%n");
+        System.err.printf("               1 for checker generation%n");
+        System.err.printf("               2 for builder generation%n");
     }
 }
