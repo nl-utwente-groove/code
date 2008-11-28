@@ -3595,6 +3595,7 @@ public class Simulator {
                             NEW_GRAMMAR_NAME);
                 }
                 getGrammarFileChooser().setSelectedFile(newGrammar);
+                getGrammarFileChooser().setFileFilter(new FileGps(true).getExtensionFilter());
                 boolean ok = false;
                 while (!ok) {
                     if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
