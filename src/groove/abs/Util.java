@@ -132,7 +132,10 @@ public class Util {
         }
     }
 
-    /** Returns a total morhphism of the given morphism. AREND: check this comment. */
+    /** 
+     * Returns a total morphism of the given morphism.
+     * Throws an exception if the morphism does not have a total extension.
+     */
     public static Morphism getTotalExtension(Morphism morph) {
         SearchPlanStrategy mstr =
             GraphSearchPlanFactory.getInstance().createMatcher(morph.dom(),

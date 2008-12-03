@@ -41,11 +41,7 @@ public class DefaultNode implements Node {
     }
 
     /**
-     * FIXME: added this method as a temporary solution as there is no viable
-     * constructor (super()) while subclassing DefaultNode except by having your
-     * own node counter.
-     * 
-     * See also: new DefaultEdge()
+     * Constructor for subclasses that do not have their own node counter.
      */
     protected DefaultNode() {
         this.nodeNr = DefaultNode.nextExtNodeNr();

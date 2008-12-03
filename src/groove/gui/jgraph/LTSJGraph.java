@@ -225,8 +225,6 @@ public class LTSJGraph extends JGraph {
         }
 
         @Override
-        // FIXME: temp edit from mousePressed to mouseClicked to be able to drag
-        // LTS nodes
         public void mouseClicked(MouseEvent evt) {
             if (evt.getButton() == MouseEvent.BUTTON1) {
                 // scale from screen to model

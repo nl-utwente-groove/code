@@ -90,7 +90,4 @@ public class MergeEmbargo extends NotCondition {
     private final Node node1;
     /** Second node whose merging this embargo forbids. */
     private final Node node2;
-    
-    // tom removed this classvariable, seems unused (AREND?)
-    // public int attribute_0 = 0;
 }
