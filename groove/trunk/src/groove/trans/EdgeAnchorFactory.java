@@ -30,9 +30,6 @@ public class EdgeAnchorFactory implements AnchorFactory {
     /** The singleton instance of this class. */
     static private AnchorFactory instance = new EdgeAnchorFactory();
 
-    // Commented this classvariable, seems unused (AREND)
-    // private int attribute_0 = 0;
-
     /** Private empty constructor to make this a singleton class. */
     private EdgeAnchorFactory() {
         // empty constructor

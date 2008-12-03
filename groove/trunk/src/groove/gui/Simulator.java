@@ -2039,9 +2039,7 @@ public class Simulator {
      * currently registered listeners. This method should not be called
      * directly: use {@link #setEvent(RuleEvent)} instead.
      * 
-     * @see SimulationListener#setTransitionUpdate(GraphTransition)
-     * @see #setEvent(RuleEvent) TODO above "see" should be updated to
-     *      setMatchAndTransition
+     * @see SimulationListener#setMatchUpdate(RuleMatch)
      */
     protected synchronized void fireSetMatch(RuleMatch match) {
         if (!this.updating) {
@@ -3479,7 +3477,7 @@ public class Simulator {
 
     /**
      * Action for loading a new rule system.
-     * @see Simulator#doLoadGrammar(AspectualViewGps, File, String)
+     * @see Simulator#doLoadGrammar(AspectualViewGps, URL)
      */
     private class LoadGrammarAction extends AbstractAction {
 

@@ -72,7 +72,7 @@ public class GrooveFileChooser extends JFileChooser {
     @Override
     public File getSelectedFile() {
         File result = super.getSelectedFile();
-        if (result != null && getFileFilter() instanceof ExtensionFilter) {
+        if (result != null && !result.exists() && getFileFilter() instanceof ExtensionFilter) {
             ExtensionFilter fileFilter = (ExtensionFilter) getFileFilter();
             String resultName = fileFilter.addExtension(result.getName());
             result = new File(result.getParentFile(), resultName);
