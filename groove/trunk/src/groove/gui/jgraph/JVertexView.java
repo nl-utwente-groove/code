@@ -626,6 +626,19 @@ public class JVertexView extends VertexView {
             AttributeMap attributes = view.getAllAttributes();
             this.dash = GraphConstants.getDashPattern(attributes);
             this.lineColor = GraphConstants.getLineColor(attributes);
+            
+            AttributeMap secondMap = (AttributeMap) attributes.get("line2map");
+            if( secondMap != null ) { 
+                twoLines = true;
+                line2color = GraphConstants.getLineColor(secondMap);
+                line2width = GraphConstants.getLineWidth(secondMap);
+                line2dash = GraphConstants.getDashPattern(secondMap);
+            } else {
+                twoLines = false;
+            }
+            
+            
+            
             setOpaque(GraphConstants.isOpaque(attributes));
             Color foreground = GraphConstants.getForeground(attributes);
             setForeground((foreground != null) ? foreground
@@ -694,6 +707,11 @@ public class JVertexView extends VertexView {
             g.setColor(this.lineColor);
             g.setStroke(JAttr.createStroke(this.view.getLinewidth(), this.dash));
             g.draw(shape);
+            if( twoLines ) {
+                g.setColor(this.line2color);
+                g.setStroke(JAttr.createStroke(line2width, line2dash));
+                g.draw(shape);
+            }
         }
 
         /**
@@ -862,5 +880,12 @@ public class JVertexView extends VertexView {
         private Color lineColor;
         /** Dash pattern for the border. */
         private float[] dash;
+        
+        // secondary options for drawing another line over the primary line
+        private boolean twoLines = false;
+        private Color line2color;
+        private float[] line2dash;
+        private float line2width;
+        
     }
 }

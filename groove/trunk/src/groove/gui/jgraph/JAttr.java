@@ -593,6 +593,7 @@ public class JAttr {
         RULE_PREFIXES.put(RuleAspect.EMBARGO, "embargo.");
         RULE_PREFIXES.put(RuleAspect.ERASER, "eraser.");
         RULE_PREFIXES.put(RuleAspect.CREATOR, "creator.");
+        RULE_PREFIXES.put(RuleAspect.CNEW, "cnew.");
         RULE_PREFIXES.put(RuleAspect.REMARK, "remark.");
         // RULE_PREFIXES.put(RuleAspect.RULE, "rule.");
         for (AspectValue role : RuleAspect.getInstance().getValues()) {
@@ -684,6 +685,25 @@ public class JAttr {
                 JAttr.RULE_EMPH_BORDER.get(role));
             RULE_NODE_EMPH_CHANGE.put(role, nodeEmphChange);
         }
+
+        // override edge styles for cnew from embargo and creator
+        AttributeMap cnewMap = RULE_EDGE_ATTR.get(RuleAspect.EMBARGO).clone();
+        AttributeMap creatorMap = RULE_EDGE_ATTR.get(RuleAspect.CREATOR).clone();
+        GraphConstants.setForeground(cnewMap, GraphConstants.getForeground(creatorMap));
+//        GraphConstants.setFont(cnewMap, GraphConstants.getFont(creatorMap));
+        GraphConstants.setLineWidth(cnewMap, 6);
+        cnewMap.put("line2map", creatorMap);
+        RULE_EDGE_ATTR.put(RuleAspect.CNEW, cnewMap);
+        
+        // override node styles for cnew from embargo and creator
+        cnewMap = RULE_NODE_ATTR.get(RuleAspect.EMBARGO).clone();
+        creatorMap = RULE_NODE_ATTR.get(RuleAspect.CREATOR).clone();
+        GraphConstants.setLineWidth(cnewMap, 6);
+        GraphConstants.setBackground(cnewMap, GraphConstants.getBackground(creatorMap));
+        GraphConstants.setForeground(cnewMap, GraphConstants.getForeground(creatorMap));
+        cnewMap.put("line2map", creatorMap);
+        RULE_NODE_ATTR.put(RuleAspect.CNEW, cnewMap);
+        
         NESTING_NODE_ATTR = JAttr.DEFAULT_NODE_ATTR.clone();
         GraphConstants.setBorder(NESTING_NODE_ATTR, JAttr.NESTED_BORDER);
         GraphConstants.setDashPattern(NESTING_NODE_ATTR, JAttr.NESTED_DASH);

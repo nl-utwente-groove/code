@@ -580,6 +580,7 @@ public class AttributeAspect extends AbstractAspect {
 //            STRING.setEdgeToTarget(VALUE);
             // incompatibilities
             instance.setIncompatible(RuleAspect.CREATOR);
+            instance.setIncompatible(RuleAspect.CNEW);
             instance.setIncompatible(RuleAspect.ERASER);
             instance.setIncompatible(NestingAspect.getInstance());
         } catch (FormatException exc) {
