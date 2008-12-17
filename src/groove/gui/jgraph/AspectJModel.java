@@ -25,6 +25,7 @@ import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import static groove.view.aspect.NestingAspect.getNestingValue;
 import static groove.view.aspect.RuleAspect.CREATOR;
+import static groove.view.aspect.RuleAspect.CNEW;
 import static groove.view.aspect.RuleAspect.EMBARGO;
 import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
@@ -304,6 +305,7 @@ public class AspectJModel extends GraphJModel {
         ROLE_NAMES.put(EMBARGO, "Embargo");
         ROLE_NAMES.put(READER, "Reader");
         ROLE_NAMES.put(CREATOR, "Creator");
+        ROLE_NAMES.put(CNEW, "Cnew");
         ROLE_NAMES.put(ERASER, "Eraser");
         ROLE_NAMES.put(REMARK, "Remark");
         // ROLE_NAMES.put(RULE,"Rule");
@@ -312,6 +314,9 @@ public class AspectJModel extends GraphJModel {
             "Must be absent from a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(READER, "Must be matched for this rule to apply");
         ROLE_DESCRIPTIONS.put(CREATOR, "Will be created by applying this rule");
+        ROLE_DESCRIPTIONS.put(
+            CNEW,
+            "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
         ROLE_DESCRIPTIONS.put(ERASER, "Will be deleted by applying this rule");
         ROLE_DESCRIPTIONS.put(REMARK,
             "Has no effect on the execution of the rule");

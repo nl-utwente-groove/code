@@ -17,8 +17,13 @@
 package groove.gui.jgraph;
 
 import groove.gui.Options;
+import groove.gui.jgraph.JAttr.AttributeMap;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
@@ -596,5 +601,67 @@ public class JEdgeView extends EdgeView {
             }
             return null;
         }
+
+        // properties for drawing a second line
+        private boolean twoLines = false;
+        private Color line2color;
+        private float line2width;
+        private float[] line2dash;
+        private AttributeMap line2map;
+
+        @Override
+        public Component getRendererComponent(org.jgraph.JGraph arg0,
+                CellView arg1, boolean arg2, boolean arg3, boolean arg4) {
+
+            assert arg1 instanceof JEdgeView : String.format(
+                "This renderer is only meant for %s", JVertexView.class);
+
+            JEdgeView theView = (JEdgeView) arg1;
+            AttributeMap secondMap =
+                (AttributeMap) theView.getAllAttributes().get("line2map");
+            if (secondMap != null) {
+                this.twoLines = true;
+                this.line2color = GraphConstants.getLineColor(secondMap);
+                this.line2width = GraphConstants.getLineWidth(secondMap);
+                this.line2dash = GraphConstants.getDashPattern(secondMap);
+                this.line2map = secondMap;
+            } else {
+                this.twoLines = false;
+            }
+
+            return super.getRendererComponent(arg0, arg1, arg2, arg3, arg4);
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            // TODO Auto-generated method stub
+            super.paint(g);
+
+            if (twoLines) {
+                // draw the second line
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(this.line2color);
+                g2.setStroke(JAttr.createStroke(line2width, line2dash));
+                g2.draw(view.lineShape);
+                g2.fill(view.endShape);
+                g2.draw(view.endShape);
+
+                // write text again
+
+                g2.setStroke(new BasicStroke(1));
+                g.setFont(GraphConstants.getFont(this.line2map));
+                
+                JGraph graph = (JGraph) this.graph.get();
+                if (graph.getEditingCell() != view.getCell()) {
+                    Object label = graph.convertValueToString(view);
+                    if (label != null) {
+                        paintLabel(g, label.toString(), getLabelPosition(view),
+                            true);
+                    }
+                }
+
+            }
+        }
+
     }
 }

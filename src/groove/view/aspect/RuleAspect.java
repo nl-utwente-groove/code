@@ -182,7 +182,7 @@ public class RuleAspect extends AbstractAspect {
      */
     public static boolean inRHS(AspectElement element) {
         AspectValue role = getRuleValue(element);
-        return (READER.equals(role) || CREATOR.equals(role))
+        return (READER.equals(role) || CREATOR.equals(role) || CNEW.equals(role))
             && hasRole(element);
     }
 
@@ -203,7 +203,7 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #EMBARGO}.
      */
     public static boolean inNAC(AspectElement element) {
-        return hasRole(element) && (EMBARGO.equals(getRuleValue(element)));
+        return hasRole(element) && (EMBARGO.equals(getRuleValue(element))) || isCNEW(element);
     }
 
     /**
@@ -214,9 +214,18 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #CREATOR}.
      */
     public static boolean isCreator(AspectElement element) {
-        return hasRole(element) && CREATOR.equals(getRuleValue(element));
+        return hasRole(element) && CREATOR.equals(getRuleValue(element)) || isCNEW(element);
     }
 
+    
+    /**
+     * Tests if a given aspect element is an embargo creator. This is the case if there
+     * is an aspect value in the element which equals {@link #EMBARGOCREATOR}.
+     */
+    public static boolean isCNEW(AspectElement element) {
+        return hasRole(element) && CNEW.equals(getRuleValue(element));
+    }
+    
     /**
      * Tests if a given aspect element is an eraser. This is the case if there
      * is an aspect value in the element which equals {@link #ERASER}.
@@ -309,6 +318,11 @@ public class RuleAspect extends AbstractAspect {
         Groove.getXMLProperty("label.embargo.prefix");
     /** The embargo aspect value. */
     public static final AspectValue EMBARGO;
+    /** Name of the embargo creator aspect value. */
+    public static final String CNEW_NAME =
+        Groove.getXMLProperty("label.embargocreator.prefix");
+    /** The embargo creator aspect value. */
+    public static final AspectValue CNEW;
     /** The total number of roles. */
     public static final int VALUE_COUNT;
     /** Name of the remark aspect value. */
@@ -331,11 +345,13 @@ public class RuleAspect extends AbstractAspect {
             ERASER = instance.addValue(ERASER_NAME);
             CREATOR = instance.addValue(CREATOR_NAME);
             EMBARGO = instance.addValue(EMBARGO_NAME);
+            CNEW = instance.addValue(CNEW_NAME);
             READER = instance.addValue(READER_NAME);
             REMARK = instance.addValue(REMARK_NAME);
             ERASER.setLabelParser(EraserParser.getInstance());
             CREATOR.setLabelParser(CreatorParser.getInstance());
             EMBARGO.setLabelParser(RegExprLabelParser.getInstance());
+            CNEW.setLabelParser(CNewParser.getInstance());
             READER.setLabelParser(RegExprLabelParser.getInstance());
             REMARK.setLabelParser(FreeLabelParser.getInstance());
             // instance.addNodeValue(REMARK);
@@ -347,6 +363,8 @@ public class RuleAspect extends AbstractAspect {
             CREATOR.setTargetToEdge(CREATOR);
             ERASER.setSourceToEdge(ERASER);
             ERASER.setTargetToEdge(ERASER);
+            CNEW.setSourceToEdge(CNEW);
+            CNEW.setTargetToEdge(CNEW);
             EMBARGO.setSourceToEdge(EMBARGO);
             EMBARGO.setTargetToEdge(EMBARGO);
             REMARK.setSourceToEdge(REMARK);
@@ -512,6 +530,9 @@ public class RuleAspect extends AbstractAspect {
         static private EraserParser instance = new EraserParser();
     }
 
+    
+    
+    
     /**
      * Label parser for creator edges. Recognises atoms, named unguarded
      * wildcards, and mergers.
@@ -570,5 +591,65 @@ public class RuleAspect extends AbstractAspect {
 
         /** Singleton instance of this class. */
         static private CreatorParser instance = new CreatorParser();
+    }
+
+    /**
+     * Label parser for creator edges. Recognises atoms, named unguarded
+     * wildcards, and mergers.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static private class CNewParser implements LabelParser {
+        /** Empty constructor to ensure a singleton class. */
+        private CNewParser() {
+            // empty
+        }
+    
+        /**
+         * This implementation tries to parse the label text as a regular
+         * expression, but throws an exception if the result is anything other
+         * than an unguarded named wildcard, a merger, or an atom.
+         */
+        public Label parse(DefaultLabel label) throws FormatException {
+            Label result = this.preParser.parse(label);
+            boolean allowed;
+            if (result instanceof DefaultLabel) {
+                allowed = true;
+            } else {
+                RegExpr expr = ((RegExprLabel) result).getRegExpr();
+                allowed =
+                    expr.getWildcardId() != null
+                        && expr.getWildcardGuard() == null || expr.isEmpty();
+            }
+            if (!allowed) {
+                throw new FormatException(
+                    "Creator label %s should be named unguarded wildcard, merger or atom",
+                    label);
+            }
+            return result;
+        }
+    
+        /** This implementation returns a default label based on the label text. */
+        public DefaultLabel unparse(Label label) {
+            if (label instanceof DefaultLabel) {
+                return (DefaultLabel) label;
+            } else {
+                return DefaultLabel.createLabel(label.text());
+            }
+        }
+    
+        /**
+         * The parser used to decompose the label, after which a selection
+         * follows.
+         */
+        private final LabelParser preParser = RegExprLabelParser.getInstance();
+    
+        /** Returns the singleton instance of this class. */
+        static public CNewParser getInstance() {
+            return instance;
+        }
+    
+        /** Singleton instance of this class. */
+        static private CNewParser instance = new CNewParser();
     }
 }

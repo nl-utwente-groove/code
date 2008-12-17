@@ -45,7 +45,7 @@ public class JCellViewFactory extends DefaultCellViewFactory {
     protected VertexView createVertexView(Object cell) {
         if (cell instanceof JVertex) {
             JVertexView result = new JVertexView((JVertex) cell, this.jGraph);
-            result.refresh(this.jGraph.getGraphLayoutCache(),
+           result.refresh(this.jGraph.getGraphLayoutCache(),
                 this.jGraph.getGraphLayoutCache(), false);
             this.jGraph.updateAutoSize(result);
             return result;

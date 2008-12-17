@@ -10,6 +10,7 @@ import groove.lts.GraphTransition;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class MaximalStateCondition extends ExploreCondition<GraphState> {
     
     @Override
