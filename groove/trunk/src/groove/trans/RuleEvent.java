@@ -25,7 +25,6 @@ import groove.lts.GraphTransitionStub;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -78,11 +77,13 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub {
     public Set<Edge> getSimpleCreatedEdges();
 
     /**
-     * Returns a list of created nodes of this event, given a set of nodes
+     * Returns a set of created nodes of this event, given a set of nodes
      * already existing in the graph (i.e., which may not be used).
+     * An iterator over the set returns the created nodes in the order
+     * of the creator nodes.
      * @param hostNodes set of nodes not available as fresh nodes
      */
-    public List<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes);
+    public Set<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes);
 
     /**
      * Returns the set of explicitly created edges of which at least one end is

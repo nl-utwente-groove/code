@@ -357,7 +357,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     public Element[] anchor() {
         if (this.anchor == null) {
-            getTop().setAnchor(null);
+//            getTop().setAnchor(null);
+            setAnchor(null);
         }
         return this.anchor;
     }
@@ -371,33 +372,33 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private void setAnchor(Collection<Element> parentAnchor) {
         Collection<Element> myAnchor =
             new TreeSet<Element>(Arrays.asList(computeNestedAnchor()));
-        for (SPORule subRule : getSubRules(false)) {
-            subRule.setAnchor(myAnchor);
-        }
-        if (parentAnchor != null) {
-            for (Map.Entry<Node,Node> rootNodeEntry : getRootMap().nodeMap().entrySet()) {
-                // TODO the following selects a node in the universal condition,
-                // not the parent rule!
-                // This goes right because node identities are actually the
-                // same, but...
-                Node myNode = rootNodeEntry.getValue();
-                Node parentNode = rootNodeEntry.getKey();
-                if (myAnchor.contains(myNode)
-                    && getParent().lhs().containsElement(parentNode)
-                    && isAnchorable(myNode)) {
-                    parentAnchor.add(parentNode);
-                }
-            }
-            for (Map.Entry<Edge,Edge> rootEdgeEntry : getRootMap().edgeMap().entrySet()) {
-                Edge myEdge = rootEdgeEntry.getValue();
-                Edge parentEdge = rootEdgeEntry.getKey();
-                if (myAnchor.contains(myEdge)
-                    && getParent().lhs().containsElement(parentEdge)
-                    && isAnchorable(myEdge)) {
-                    parentAnchor.add(parentEdge);
-                }
-            }
-        }
+//        for (SPORule subRule : getSubRules(false)) {
+//            subRule.setAnchor(myAnchor);
+//        }
+//        if (parentAnchor != null) {
+//            for (Map.Entry<Node,Node> rootNodeEntry : getRootMap().nodeMap().entrySet()) {
+//                // TODO the following selects a node in the universal condition,
+//                // not the parent rule!
+//                // This goes right because node identities are actually the
+//                // same, but...
+//                Node myNode = rootNodeEntry.getValue();
+//                Node parentNode = rootNodeEntry.getKey();
+//                if (myAnchor.contains(myNode)
+//                    && getParent().lhs().containsElement(parentNode)
+//                    && isAnchorable(myNode)) {
+//                    parentAnchor.add(parentNode);
+//                }
+//            }
+//            for (Map.Entry<Edge,Edge> rootEdgeEntry : getRootMap().edgeMap().entrySet()) {
+//                Edge myEdge = rootEdgeEntry.getValue();
+//                Edge parentEdge = rootEdgeEntry.getKey();
+//                if (myAnchor.contains(myEdge)
+//                    && getParent().lhs().containsElement(parentEdge)
+//                    && isAnchorable(myEdge)) {
+//                    parentAnchor.add(parentEdge);
+//                }
+//            }
+//        }
         this.anchor = myAnchor.toArray(new Element[0]);
     }
 
@@ -718,6 +719,65 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return eraserNodeSet.toArray(new Node[0]);
     }
 
+    /**
+     * Returns an array of LHS nodes that are endpoints of eraser edges,
+     * creator edges or mergers, either in this rule or one of its sub-rules.
+     */
+    final Set<Node> getModifierEnds() {
+        if (this.modifierEnds == null) {
+            this.modifierEnds = computeModifierEnds();
+        }
+        return this.modifierEnds;
+    }
+
+    /**
+     * Computes the array of LHS nodes that are endpoints of eraser edges,
+     * creator edges or mergers, either in this rule or one of its sub-rules.
+     */
+    private Set<Node> computeModifierEnds() {
+        Set<Node> result = new HashSet<Node>();
+        // add the end nodes of creator edges
+        Set<? extends Node> creatorNodes = getCreatorGraph().nodeSet();
+        for (Map.Entry<Node,Node> ruleMorphNodeEntry : getMorphism().nodeMap().entrySet()) {
+            if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
+                result.add(ruleMorphNodeEntry.getKey());
+            }
+        }
+        // add the end nodes of eraser edges
+        for (Edge eraserEdge: getEraserEdges()) {
+            for (Node end: eraserEdge.ends()) {
+                if (getMorphism().containsKey(end)) {
+                    result.add(end);
+                }
+            }
+        }
+        // add merged nodes
+        result.addAll(getMergeMap().keySet());
+        // add inverse images of subrule modifier ends
+        for (AbstractCondition<?> condition : getSubConditions()) {
+            Set<Node> childResult = new HashSet<Node>();
+            for (AbstractCondition<?> subCondition : condition.getSubConditions()) {
+                if (subCondition instanceof SPORule) {
+                    Set<Node> grandchildResult = ((SPORule) subCondition).getModifierEnds();
+                    Map<Node,Node> grandchildRootMap = subCondition.getRootMap().nodeMap();
+                    for (Map.Entry<Node,Node> rootEntry: grandchildRootMap.entrySet()) {
+                        if (grandchildResult.contains(rootEntry.getValue())) {
+                            childResult.add(rootEntry.getKey());
+                        }
+                    }
+                }
+            }
+            Map<Node,Node> childRootMap = condition.getRootMap().nodeMap();
+            for (Map.Entry<Node,Node> rootEntry: childRootMap.entrySet()) {
+                if (childResult.contains(rootEntry.getValue())) {
+                    result.add(rootEntry.getKey());
+                }
+            }
+        }
+        assert lhs().nodeSet().containsAll(result) : String.format("LHS node set %s does not contain all anchors in %s", lhs().nodeSet(), result);
+        return result;
+    }
+
     NodeEdgeMap getCoRootMap() {
         if (this.coRootMap == null) {
             testFixed(true);
@@ -1008,6 +1068,24 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         return result;
     }
+//
+//    /** 
+//     * Initialises the parameter map.
+//     * @see #getParameterMap()
+//     */
+//    public void setParameterMap(Map<Integer,Node> map) {
+//        this.parameterNodeMap = map;
+//    }
+//
+//    /** 
+//     * Returns the parameter map of this rule. This is a map from parameter numbers
+//     * (in a consecutive range starting at 0) to parameter nodes, which
+//     * are nodes in the LHS.
+//     * @return the parameter map of this rule; may be <code>null</code>
+//     */
+//    public Map<Integer,Node> getParameterMap() {
+//        return this.parameterNodeMap;
+//    }
 
     /**
      * The parent rule of this rule; may be <code>null</code>, if this is a
@@ -1096,14 +1174,17 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private Element[] anchor;
     /**
      * The lhs edges that are not ruleMorph keys and are not anchors
-     * @invariant lhsOnlyEdgeSet \subseteq lhs.edgeSet()
      */
     private Edge[] eraserNonAnchorEdges;
     /**
      * The lhs edges containing bound variables.
-     * @invariant lhsOnlyNonAnchorEdges = lhsOnlyEdgeSet \setminus anchors
      */
     private Edge[] varEdges;
+    /**
+     * The lhs nodes that are end points of eraser edges,
+     * either in this rule or one of its sub-rules.
+     */
+    private Set<Node> modifierEnds;
     /**
      * The LHS nodes that do not have any incident edges in the LHS.
      */
@@ -1150,9 +1231,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private Set<Node> allParameters;
     /** The matcher for events of this rule. */
     private MatchStrategy<VarNodeEdgeMap> eventMatcher;
+//
+//    /**
+//     * Implementation of ParameterAspect stuff
+//     */
+//    private Map<Integer,Node> parameterNodeMap;
 
     /** Returns the current anchor factory for all rules. */
-    public static AnchorFactory getAnchorFactory() {
+    public static AnchorFactory<SPORule> getAnchorFactory() {
         return anchorFactory;
     }
 
@@ -1160,7 +1246,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Sets the anchor factory for all rules. Only affects rules created from
      * this moment on.
      */
-    public static void setAnchorFactory(AnchorFactory anchorFactory) {
+    public static void setAnchorFactory(AnchorFactory<SPORule> anchorFactory) {
         SPORule.anchorFactory = anchorFactory;
     }
 
@@ -1175,7 +1261,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * The factory used for creating rule anchors.
      */
-    private static AnchorFactory anchorFactory =
+    private static AnchorFactory<SPORule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;

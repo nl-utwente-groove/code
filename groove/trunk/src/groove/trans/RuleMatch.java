@@ -44,8 +44,8 @@ public class RuleMatch extends CompositeMatch {
      */
     public RuleEvent newEvent(SystemRecord nodeFactory) {
         // the event set used to be a sorted set, but I think this is wrong
-        // because the sorting will not respect the desired event hierarchy
-        // and in fact events may actually occur more than once (?)
+        // because the sorting will not respect the desired event hierarchy.
+        // and in fact events may actually occur more than once.
         // SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
         Collection<SPOEvent> eventSet = new ArrayList<SPOEvent>();
         collectEvents(eventSet, nodeFactory);

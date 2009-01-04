@@ -24,9 +24,9 @@ import groove.graph.Element;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AnchorFactory {
+public interface AnchorFactory<R extends Rule> {
     /**
      * Factory method to create the anchors for a given rule.
      */
-    public Element[] newAnchors(Rule rule);
+    public Element[] newAnchors(R rule);
 }

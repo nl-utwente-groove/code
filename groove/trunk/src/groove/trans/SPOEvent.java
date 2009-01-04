@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -562,13 +563,13 @@ final public class SPOEvent extends
         return result;
     }
 
-    public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
-        List<Node> result = computeCreatedNodes(hostNodes);
+    public Set<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes) {
+        Set<Node> result = computeCreatedNodes(hostNodes);
         if (isReuse()) {
             if (this.coanchorImageMap == null) {
-                this.coanchorImageMap = new HashMap<List<Node>,List<Node>>();
+                this.coanchorImageMap = new HashMap<Set<Node>,Set<Node>>();
             }
-            List<Node> existingResult = this.coanchorImageMap.get(result);
+            Set<Node> existingResult = this.coanchorImageMap.get(result);
             if (existingResult == null) {
                 this.coanchorImageMap.put(result, result);
                 coanchorImageCount++;
@@ -580,13 +581,13 @@ final public class SPOEvent extends
         return result;
     }
 
-    private List<Node> computeCreatedNodes(Set<? extends Node> currentNodes) {
-        List<Node> result;
+    private Set<Node> computeCreatedNodes(Set<? extends Node> currentNodes) {
+        Set<Node> result;
         int coanchorSize = getRule().getCreatorNodes().length;
         if (coanchorSize == 0) {
             result = EMPTY_COANCHOR_IMAGE;
         } else {
-            result = new ArrayList<Node>(coanchorSize);
+            result = new LinkedHashSet<Node>(coanchorSize);
             collectCreatedNodes(currentNodes, result);
         }
         return result;
@@ -599,17 +600,17 @@ final public class SPOEvent extends
      * @param currentNodes the set of currently existing nodes
      * @param result list of created nodes to be extended by this method
      */
-    void collectCreatedNodes(Set<? extends Node> currentNodes, List<Node> result) {
+    void collectCreatedNodes(Set<? extends Node> currentNodes, Set<Node> result) {
         Node[] creatorNodes = getRule().getCreatorNodes();
         int creatorNodeCount = creatorNodes.length;
         for (int i = 0; i < creatorNodeCount; i++) {
-            Node createdNode = getFreshNode(i, currentNodes);
-            result.add(createdNode);
+            addFreshNode(i, currentNodes, result);
         }
     }
 
     /**
-     * Returns a node that is fresh with respect to a given graph. The
+     * Adds a node that is fresh with respect to a given graph to a 
+     * collection of already added node. The
      * previously created fresh nodes are tried first (see
      * {@link SPOEvent#getFreshNodes(int)}; only if all of those are already in
      * the graph, a new fresh node is created using {@link #createNode()}.
@@ -617,26 +618,26 @@ final public class SPOEvent extends
      *        of the rule for which a new image is to be created
      * @param currentNodes the existing nodes, which should not contain the
      *        fresh node
+     * @param result the collection of already added nodes; the newly 
+     * added node is guaranteed to be fresh with respect to these
      */
-    public Node getFreshNode(int creatorIndex, Set<? extends Node> currentNodes) {
-        Node result = null;
+    public void addFreshNode(int creatorIndex, Set<? extends Node> currentNodes, Set<Node> result) {
+        boolean added = false;
         Collection<Node> currentFreshNodes = getFreshNodes(creatorIndex);
         if (currentFreshNodes != null) {
             Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
-            while (result == null && freshNodeIter.hasNext()) {
+            while (!added && freshNodeIter.hasNext()) {
                 Node freshNode = freshNodeIter.next();
-                if (!currentNodes.contains(freshNode)) {
-                    result = freshNode;
-                }
+                added = !currentNodes.contains(freshNode) && result.add(freshNode);
             }
         }
-        if (result == null) {
-            result = createNode();
+        if (!added) {
+            Node addedNode = createNode();
+            result.add(addedNode);
             if (currentFreshNodes != null) {
-                currentFreshNodes.add(result);
+                currentFreshNodes.add(addedNode);
             }
         }
-        return result;
     }
 
     /**
@@ -695,7 +696,7 @@ final public class SPOEvent extends
      */
     private List<List<Node>> freshNodeList;
     /** Store of previously used coanchor images. */
-    private Map<List<Node>,List<Node>> coanchorImageMap;
+    private Map<Set<Node>,Set<Node>> coanchorImageMap;
 
     /**
      * Reports the number of times a stored coanchor image has been recomputed
@@ -735,8 +736,8 @@ final public class SPOEvent extends
     static private final Set<Node> EMPTY_NODE_SET =
         Collections.<Node>emptySet();
     /** Global empty list of nodes. */
-    static private final List<Node> EMPTY_COANCHOR_IMAGE =
-        Collections.emptyList();
+    static private final Set<Node> EMPTY_COANCHOR_IMAGE =
+        Collections.emptySet();
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference =
         CacheReference.<SPOEventCache>newInstance(false);

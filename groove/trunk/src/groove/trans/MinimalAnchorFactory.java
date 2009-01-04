@@ -19,16 +19,11 @@ package groove.trans;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,17 +35,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MinimalAnchorFactory implements AnchorFactory {
-    /**
-     * Returns the singleton instance of this class.
-     */
-    static public AnchorFactory getInstance() {
-        return prototype;
-    }
-
-    /** The singleton instance of this class. */
-    static private MinimalAnchorFactory prototype = new MinimalAnchorFactory();
-
+public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
     /** Private empty constructor to make this a singleton class. */
     private MinimalAnchorFactory() {
         // empty constructor
@@ -62,22 +47,20 @@ public class MinimalAnchorFactory implements AnchorFactory {
      * initialised already.
      * @require <tt>rule instanceof SPORule</tt>
      */
-    public Element[] newAnchors(Rule generalRule) {
-        SPORule rule = (SPORule) generalRule;
+    public Element[] newAnchors(SPORule rule) {
         Set<Element> anchors =
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
-
         if (rule.getAllParameters() != null) {
             anchors.addAll(rule.getAllParameters());
         }
-
-        Set<? extends Node> creatorNodes = rule.getCreatorGraph().nodeSet();
-        for (Map.Entry<Node,Node> ruleMorphNodeEntry : rule.getMorphism().nodeMap().entrySet()) {
-            if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
-                anchors.add(ruleMorphNodeEntry.getKey());
-            }
-        }
-        addRootImageNodes(rule, anchors);
+//        // add end nodes of creator edges
+//        Set<? extends Node> creatorNodes = rule.getCreatorGraph().nodeSet();
+//        for (Map.Entry<Node,Node> ruleMorphNodeEntry : rule.getMorphism().nodeMap().entrySet()) {
+//            if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
+//                anchors.add(ruleMorphNodeEntry.getKey());
+//            }
+//        }
+//        addRootImageNodes(rule, anchors);
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
         for (Edge lhsVarEdge : rule.getSimpleVarEdges()) {
@@ -95,59 +78,69 @@ public class MinimalAnchorFactory implements AnchorFactory {
                 removableEnds.addAll(eraserEdgeEnds);
             }
         }
-        addRootImageEdges(rule, anchors, removableEnds);
-        anchors.addAll(rule.getMergeMap().keySet());
+//        addRootImageEdges(rule, anchors, removableEnds);
+        anchors.addAll(rule.getModifierEnds());
+//        anchors.addAll(rule.getMergeMap().keySet());
         anchors.removeAll(removableEnds);
         return anchors.toArray(new Element[0]);
     }
-
-    /** Adds the node images of the root map to the anchors. */
-    private void addRootImageNodes(SPORule rule, Set<Element> anchors) {
-        // why do we need the root images, if this rule doesn't do anything with
-        // them?
-        if (false) {
-            for (Node rootImage : rule.getRootMap().nodeMap().values()) {
-                if (isAnchorable(rootImage)) {
-                    anchors.add(rootImage);
-                }
-            }
-        }
-    }
-
-    /** Adds the edge images of the root map to the anchors. */
-    private void addRootImageEdges(SPORule rule, Set<Element> anchors,
-            Set<Node> removableEnds) {
-        // why do we need the root images, if this rule doesn't do anything with
-        // them?
-        if (false) {
-            for (Edge rootEdge : rule.getRootMap().edgeMap().values()) {
-                if (isAnchorable(rootEdge)) {
-                    Collection<Node> rootEdgeEnds =
-                        Arrays.asList(rootEdge.ends());
-                    if (!anchors.containsAll(rootEdgeEnds)) {
-                        anchors.add(rootEdge);
-                        // if we have the edge in the anchors, its end nodes
-                        // need not be there
-                        removableEnds.addAll(rootEdgeEnds);
-                    }
-                }
-            }
-        }
-    }
-
+//
+//    /** Adds the node images of the root map to the anchors. */
+//    private void addRootImageNodes(SPORule rule, Set<Element> anchors) {
+//        // why do we need the root images, if this rule doesn't do anything with
+//        // them?
+//        if (false) {
+//            for (Node rootImage : rule.getRootMap().nodeMap().values()) {
+//                if (isAnchorable(rootImage)) {
+//                    anchors.add(rootImage);
+//                }
+//            }
+//        }
+//    }
+//
+//    /** Adds the edge images of the root map to the anchors. */
+//    private void addRootImageEdges(SPORule rule, Set<Element> anchors,
+//            Set<Node> removableEnds) {
+//        // why do we need the root images, if this rule doesn't do anything with
+//        // them?
+//        if (false) {
+//            for (Edge rootEdge : rule.getRootMap().edgeMap().values()) {
+//                if (isAnchorable(rootEdge)) {
+//                    Collection<Node> rootEdgeEnds =
+//                        Arrays.asList(rootEdge.ends());
+//                    if (!anchors.containsAll(rootEdgeEnds)) {
+//                        anchors.add(rootEdge);
+//                        // if we have the edge in the anchors, its end nodes
+//                        // need not be there
+//                        removableEnds.addAll(rootEdgeEnds);
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    /**
+//     * Tests if a given node can be an anchor. This fails to hold for
+//     * {@link ProductNode}s that are not {@link ValueNode}s.
+//     */
+//    private boolean isAnchorable(Node node) {
+//        return !(node instanceof ProductNode) || node instanceof ValueNode;
+//    }
+//
+//    /**
+//     * Tests if a given edge can be an anchor. This fails to hold for
+//     * {@link OperatorEdge}s that are not {@link ArgumentEdge}s.
+//     */
+//    private boolean isAnchorable(Edge edge) {
+//        return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
+//    }
     /**
-     * Tests if a given node can be an anchor. This fails to hold for
-     * {@link ProductNode}s that are not {@link ValueNode}s.
+     * Returns the singleton instance of this class.
      */
-    private boolean isAnchorable(Node node) {
-        return !(node instanceof ProductNode) || node instanceof ValueNode;
+    static public MinimalAnchorFactory getInstance() {
+        return prototype;
     }
 
-    /**
-     * Tests if a given edge can be an anchor. This fails to hold for
-     * {@link OperatorEdge}s that are not {@link ArgumentEdge}s.
-     */
-    private boolean isAnchorable(Edge edge) {
-        return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
-    }
+    /** The singleton instance of this class. */
+    static private MinimalAnchorFactory prototype = new MinimalAnchorFactory();
 }
