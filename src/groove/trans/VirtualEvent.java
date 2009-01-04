@@ -25,7 +25,6 @@ import groove.lts.GraphTransition;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -89,7 +88,7 @@ public class VirtualEvent<C> implements RuleEvent {
      * Delegated to the wrapped event.
      * @see #getInnerEvent()
      */
-    public List<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes) {
+    public Set<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes) {
         return this.innerEvent.getCreatedNodes(hostNodes);
     }
 

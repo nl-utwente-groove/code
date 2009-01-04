@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,8 +74,8 @@ public class CompositeEvent extends
         return Arrays.toString(eventLabels.toArray());
     }
 
-    public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
-        List<Node> result = new ArrayList<Node>(this.eventArray.length);
+    public Set<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes) {
+        Set<Node> result = new LinkedHashSet<Node>(this.eventArray.length);
         for (SPOEvent event : this.eventArray) {
             event.collectCreatedNodes(hostNodes, result);
         }

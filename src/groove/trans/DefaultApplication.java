@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -195,7 +194,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     // protected to allow subclassing by AliasSPOApplication
     protected Node[] computeCreatedNodes() {
         Node[] result;
-        List<? extends Node> createdNodes =
+        Set<? extends Node> createdNodes =
             getEvent().getCreatedNodes(this.source.nodeSet());
         if (createdNodes.size() == 0) {
             result = EMPTY_COANCHOR_IMAGE;
