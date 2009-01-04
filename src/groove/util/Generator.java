@@ -259,9 +259,14 @@ public class Generator extends CommandLineTool {
         } else {
             try {
                 url = new URL(this.grammarLocation);
-                if( this.startStateName != null ) {
-                    url = new URL(url.toExternalForm() + "?" + this.startStateName);
-                }
+            } catch (MalformedURLException e) {
+                printError("Can't load grammar: " + e.getMessage());
+                return;
+            }
+        }
+        if (this.startStateName != null) {
+            try {
+                url = new URL(url.toExternalForm() + "?" + this.startStateName);
             } catch (MalformedURLException e) {
                 printError("Can't load grammar: " + e.getMessage());
                 return;
