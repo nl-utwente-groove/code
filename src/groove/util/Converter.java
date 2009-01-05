@@ -16,8 +16,10 @@
  */
 package groove.util;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.NodeSet;
@@ -25,6 +27,10 @@ import groove.lts.AbstractGraphState;
 import groove.lts.State;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -102,11 +108,58 @@ public class Converter {
         writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(),
             graph.nodeCount());
         for (Edge edge : graph.edgeSet()) {
-            writer.printf("(%d, \"%s\", %d)%n", nodeNrMap.get(edge.source()),
+            String format;
+            if (edge.label().text().indexOf(',') >= 0) {
+                format = "(%d,\"%s\",%d)%n";
+            } else {
+                format = "(%d,%s,%d)%n";
+            }
+            writer.printf(format, nodeNrMap.get(edge.source()),
                 edge.label(), nodeNrMap.get(edge.opposite()));
         }
     }
 
+    /** Reads in a graph from CADP .aut format. */
+    static public Map<String,Node> autToGraph(InputStream reader, Graph graph) throws IOException {
+        Map<String,Node> result = new HashMap<String,Node>();
+        BufferedReader in = new BufferedReader(new InputStreamReader(reader));
+        int linenr = 0;
+        try {
+            String line = in.readLine();
+            linenr++;
+            int rootStart = line.indexOf('(')+1;
+            int edgeCountStart = line.indexOf(',')+1;
+            int root = Integer.parseInt(line.substring(rootStart, edgeCountStart-1).trim());
+            Node rootNode = DefaultNode.createNode(root);
+            result.put(""+root, rootNode);
+            graph.addEdge(DefaultEdge.createEdge(rootNode, ROOT_LABEL, rootNode));
+            for (line = in.readLine(); line != null; line = in.readLine()) {
+                linenr++;
+                if (line.trim().length() > 0) {
+                    int sourceStart = line.indexOf('(') + 1;
+                    int labelStart = line.indexOf(',') + 1;
+                    int targetStart = line.lastIndexOf(',') + 1;
+                    int source =
+                        Integer.parseInt(line.substring(sourceStart,
+                            labelStart - 1).trim());
+                    String label = line.substring(labelStart, targetStart - 1);
+                    int target =
+                        Integer.parseInt(line.substring(targetStart,
+                            line.lastIndexOf(')')).trim());
+                    Node sourceNode = DefaultNode.createNode(source);
+                    Node targetNode = DefaultNode.createNode(target);
+                    result.put("" + source, sourceNode);
+                    result.put("" + target, targetNode);
+                    graph.addEdge(DefaultEdge.createEdge(sourceNode, label,
+                        targetNode));
+                }
+            }
+        } catch (Exception e) {
+            throw new IOException(String.format("Format error in line %d: %s", linenr, e.getMessage()));
+        }
+        return result;
+    }
+    
     /** Writes a graph in LaTeX <code>tikz</code> format to a print writer. */
     static public void graphToTikz(GraphShape graph, PrintWriter writer) {
         // to be implemented
@@ -280,6 +333,9 @@ public class Converter {
     /** The maximum alpha value according to {@link Color#getAlpha()}. */
     private static final int MAX_ALPHA = 255;
 
+    /** Label used to identify the start state, when reading in from .aut */
+    private static final String ROOT_LABEL = "$ROOT$";
+    
     /**
      * Class that allows some handling of HTML text.
      */
