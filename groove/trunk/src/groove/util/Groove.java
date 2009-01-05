@@ -25,6 +25,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.gui.Exporter;
 import groove.gui.Exporter.StructuralFormat;
+import groove.io.Aut;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.FileGps;
@@ -36,7 +37,6 @@ import groove.trans.SystemProperties;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
-import groove.view.GrammarView;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -98,6 +98,8 @@ public class Groove {
     public static final String PNG_EXTENSION = ".png";
     /** Extension for EPS (Embedded PostScript) files. */
     public static final String EPS_EXTENSION = ".eps";
+    /** Extension for CADP <code>.aut</code> files. */
+    public static final String AUT_EXTENSION = ".aut";
     /** Extension for Graph Layout files. */
     public static final String LAYOUT_EXTENSION = ".gl";
 
@@ -182,6 +184,14 @@ public class Groove {
      * flag is intended to be used globally.
      */
     static public final boolean GATHER_STATISTICS = true;
+
+    /**
+     * Returns a fresh extension filter for {@link #AUT_EXTENSION}.
+     * @see #AUT_EXTENSION
+     */
+    public static ExtensionFilter createAutFilter() {
+        return getFilter("CADP .aut files", AUT_EXTENSION, true);
+    }
 
     /**
      * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>. By
@@ -344,9 +354,12 @@ public class Groove {
      */
     static public Graph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
-        File file = new File(createGxlFilter().addExtension(filename));
-        if (!file.exists()) {
-            file = new File(createStateFilter().addExtension(filename));
+        File file = new File(filename);
+        if (!(createAutFilter().accept(file) || createGxlFilter().accept(file) || createStateFilter().accept(file))) {
+            file = new File(createGxlFilter().addExtension(filename));
+            if (!file.exists()) {
+                file = new File(createStateFilter().addExtension(filename));
+            }
         }
         return loadGraph(file);
     }
@@ -359,7 +372,13 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public Graph loadGraph(File file) throws IOException {
-        return graphLoader.unmarshalGraph(file.toURI().toURL());
+        Xml<Graph> marshaller;
+        if (createAutFilter().accept(file)) {
+            marshaller = autGraphLoader;
+        } else {
+            marshaller = gxlGraphLoader;
+        }
+        return marshaller.unmarshalGraph(file.toURI().toURL());
     }
 
     /**
@@ -408,7 +427,7 @@ public class Groove {
         }
         File file = new File(filename);
         System.err.println("Storing graph as " + file.getAbsolutePath());
-        graphLoader.marshalGraph(graph, file);
+        gxlGraphLoader.marshalGraph(graph, file);
     }
 
     /**
@@ -854,9 +873,13 @@ public class Groove {
     static private final Map<String,Pair<ExtensionFilter,ExtensionFilter>> extensionFilterMap =
         new HashMap<String,Pair<ExtensionFilter,ExtensionFilter>>();
     /**
-     * The fixed graph loader.
+     * The fixed GXL graph loader.
      */
-    static private final Xml<Graph> graphLoader = new DefaultGxl();
+    static private final Xml<Graph> gxlGraphLoader = new DefaultGxl();
+    /**
+     * The fixed AUT graph loader.
+     */
+    static private final Xml<Graph> autGraphLoader = new Aut();
     /**
      * The fixed grammar loader.
      */

@@ -253,28 +253,22 @@ public class Generator extends CommandLineTool {
 
         URL url;
 
-        File f = new File(this.ruleSystemFilter.addExtension(this.grammarLocation));
-        if( f.exists() ) {
-            url = FileGps.toURL(f);
-        } else {
-            try {
+        File f =
+            new File(this.ruleSystemFilter.addExtension(this.grammarLocation));
+        try {
+            if (f.exists()) {
+                url = FileGps.toURL(f);
+            } else {
                 url = new URL(this.grammarLocation);
-            } catch (MalformedURLException e) {
-                printError("Can't load grammar: " + e.getMessage());
-                return;
             }
-        }
-        if (this.startStateName != null) {
-            try {
+            if (this.startStateName != null) {
                 url = new URL(url.toExternalForm() + "?" + this.startStateName);
-            } catch (MalformedURLException e) {
-                printError("Can't load grammar: " + e.getMessage());
-                return;
             }
+        } catch (MalformedURLException e) {
+            printError("Can't load grammar: " + e.getMessage());
+            return;
         }
         // now we are guarenteed to have a URL
-        
-        
         
         try {
             
