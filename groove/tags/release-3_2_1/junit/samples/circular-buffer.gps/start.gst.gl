@@ -1,0 +1,9 @@
+# Layout information for C:\Program Files\Groove\samples\circular-buffer.gps\start.gst
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n8 137 212 30 18 
+n n6 139 23 30 18 
+n n4 245 128 30 18 
+n n7 132 126 40 18 
+n n5 16 126 30 18 
