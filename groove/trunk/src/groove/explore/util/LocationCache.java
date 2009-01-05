@@ -73,7 +73,7 @@ public class LocationCache implements ExploreCache {
             this.iterator = null;
             return null;
         } else {
-            Rule last = this.iterator.next();
+            this.last = this.iterator.next();
             return last;
         }
     }
