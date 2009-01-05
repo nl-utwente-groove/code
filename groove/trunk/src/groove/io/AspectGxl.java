@@ -56,11 +56,6 @@ public class AspectGxl implements Xml<AspectGraph> {
         return unmarshalGraph(FileGps.toURL(file));
     }
 
-    // /** Calls {@link #deleteGraph(File)} on the internal marshaller. */
-    // public void deleteGraph(File file) {
-    // this.marshaller.deleteGraph(file);
-    // }
-
     /**
      * The marshaller to get and store graphs, which are then converted to
      * aspect graphs.

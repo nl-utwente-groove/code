@@ -32,7 +32,6 @@ import groove.view.aspect.AspectGraph;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Observable;
@@ -60,7 +59,8 @@ public abstract class AspectualViewGps extends Observable implements
      * @param graphFactory the graph format reader
      */
     private AspectualViewGps(GraphFactory graphFactory, boolean layouted) {
-        this.graphMarshaller = createGraphMarshaller(graphFactory, layouted);
+        this.gxlGraphMarshaller = createGraphMarshaller(graphFactory, layouted);
+        this.autGraphMarshaller = new AspectGxl(new Aut());
     }
 
     /**
@@ -159,7 +159,7 @@ public abstract class AspectualViewGps extends Observable implements
             SystemProperties properties) throws IOException {
 
         AspectGraph unmarshalledRule =
-            getGraphMarshaller().unmarshalGraph(location);
+            getGxlGraphMarshaller().unmarshalGraph(location);
 
         GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
 
@@ -208,10 +208,15 @@ public abstract class AspectualViewGps extends Observable implements
      * @throws IOException
      */
     public AspectGraph unmarshalGraph(URL graph) throws IOException {
-        AspectGraph unmarshalledStartGraph =
-            getGraphMarshaller().unmarshalGraph(graph);
+        Xml<AspectGraph> marshaller;
+        AspectGraph unmarshalledStartGraph;
+        if (graph.getFile().endsWith(Groove.AUT_EXTENSION)) {
+            marshaller = getAutGraphMarshaller();
+        } else {
+            marshaller = getGxlGraphMarshaller();
+        }
+        unmarshalledStartGraph = marshaller.unmarshalGraph(graph);
         GraphInfo.setRole(unmarshalledStartGraph, Groove.GRAPH_ROLE);
-
         return unmarshalledStartGraph;
     }
 
@@ -280,8 +285,16 @@ public abstract class AspectualViewGps extends Observable implements
      * Retrieves the current graph loader. The graph loader is used to read in
      * all rule and state graphs. Set during construction.
      */
-    protected Xml<AspectGraph> getGraphMarshaller() {
-        return this.graphMarshaller;
+    protected Xml<AspectGraph> getGxlGraphMarshaller() {
+        return this.gxlGraphMarshaller;
+    }
+
+    /**
+     * Retrieves the current graph loader. The graph loader is used to read in
+     * all rule and state graphs. Set during construction.
+     */
+    protected Xml<AspectGraph> getAutGraphMarshaller() {
+        return this.autGraphMarshaller;
     }
 
     /** Callback factory method for creating a graph marshaller. */
@@ -336,7 +349,11 @@ public abstract class AspectualViewGps extends Observable implements
     /**
      * The xml reader used to unmarshal graphs.
      */
-    private final Xml<AspectGraph> graphMarshaller;
+    private final Xml<AspectGraph> gxlGraphMarshaller;
+    /**
+     * The xml reader used to unmarshal graphs.
+     */
+    private final Xml<AspectGraph> autGraphMarshaller;
 
     /** Notification text for the rule loading phase. */
     static public final String LOADING_RULES = "Loading rules";

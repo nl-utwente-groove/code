@@ -632,7 +632,7 @@ public class Exporter {
          * Extension filter used for exporting graphs in aut format.
          */
         private final ExtensionFilter autFilter =
-            new ExtensionFilter("CADP .aut files", ".aut");
+            new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
