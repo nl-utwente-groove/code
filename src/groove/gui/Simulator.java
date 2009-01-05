@@ -53,6 +53,7 @@ import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
 import groove.io.AspectualViewGps;
+import groove.io.Aut;
 import groove.io.ExtensionFilter;
 import groove.io.FileGps;
 import groove.io.GrammarViewXml;
@@ -887,7 +888,7 @@ public class Simulator {
     void doLoadStartGraph(File file) {
         try {
             AspectGraph aspectStartGraph =
-                this.graphLoader.unmarshalGraph(file);
+                unmarshalGraph(file);
             AspectualGraphView startGraph =
                 new AspectualGraphView(aspectStartGraph,
                     getCurrentGrammar().getProperties());
@@ -1051,7 +1052,7 @@ public class Simulator {
                         this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
                     if (currentStateFile != null) {
                         AspectGraph aspectStartGraph =
-                            this.graphLoader.unmarshalGraph(currentStateFile);
+                            unmarshalGraph(currentStateFile);
                         startGraph =
                             new AspectualGraphView(aspectStartGraph,
                                 grammar.getProperties());
@@ -1081,7 +1082,7 @@ public class Simulator {
                 showErrorDialog("Errors in graph", new FormatException(
                     saveGraph.getErrors()));
             } else {
-                this.graphLoader.marshalGraph(saveGraph, file);
+                marshalGraph(saveGraph, file);
             }
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
@@ -1096,6 +1097,22 @@ public class Simulator {
         }
     }
 
+    private void marshalGraph(AspectGraph graph, File file) throws IOException {
+        getGraphLoader(file).marshalGraph(graph, file);
+    }
+    
+    private AspectGraph unmarshalGraph(File file) throws IOException {
+        return getGraphLoader(file).unmarshalGraph(file);
+    }
+    
+    private Xml<AspectGraph> getGraphLoader(File file) {
+        if (this.autFilter.accept(file)) {
+            return this.autLoader;
+        } else {
+            return this.graphLoader;
+        }
+    }
+    
     /**
      * Sets a new graph transition system. Invokes
      * {@link #fireSetGrammar(DefaultGrammarView)} to notify all observers of
@@ -1905,6 +1922,7 @@ public class Simulator {
             this.stateFileChooser = new GrooveFileChooser();
             this.stateFileChooser.addChoosableFileFilter(this.stateFilter);
             this.stateFileChooser.addChoosableFileFilter(this.gxlFilter);
+            this.stateFileChooser.addChoosableFileFilter(this.autFilter);
             this.stateFileChooser.setFileFilter(this.stateFilter);
         }
         return this.stateFileChooser;
@@ -2429,6 +2447,12 @@ public class Simulator {
      */
     private final Xml<AspectGraph> graphLoader =
         new AspectGxl(new LayedOutXml());
+    
+    /**
+     * The graph loader used for graphs in .aut format
+     */
+    private final Xml<AspectGraph> autLoader =
+        new AspectGxl(new Aut());
 
     /**
      * File chooser for grammar files.
@@ -2459,6 +2483,11 @@ public class Simulator {
      * Extension filter for state files.
      */
     private final ExtensionFilter stateFilter = Groove.createStateFilter();
+
+    /**
+     * Extension filter for CADP <code>.aut</code> files.
+     */
+    private final ExtensionFilter autFilter = new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
 
     /**
      * Extension filter for control files.

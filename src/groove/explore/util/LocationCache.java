@@ -60,7 +60,7 @@ public class LocationCache implements ExploreCache {
     }
 
     public Rule next() {
-        // TODO: FIX THIS for interuptable
+        // TODO: FIX THIS for interruptible
         if (this.iterator == null) {
             return null;
         }
@@ -74,7 +74,7 @@ public class LocationCache implements ExploreCache {
             return null;
         } else {
             this.last = this.iterator.next();
-            return last;
+            return this.last;
         }
     }
 

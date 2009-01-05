@@ -81,7 +81,7 @@ public class FileGps extends AspectualViewGps {
     @Override
     public void marshalRule(AspectualRuleView ruleGraph, File location)
         throws IOException {
-        this.getGraphMarshaller().marshalGraph(ruleGraph.getAspectGraph(),
+        this.getGxlGraphMarshaller().marshalGraph(ruleGraph.getAspectGraph(),
             getFile(location, ruleGraph, true));
     }
 
@@ -90,7 +90,7 @@ public class FileGps extends AspectualViewGps {
      */
     @Override
     public void deleteRule(AspectualRuleView ruleGraph, File location) {
-        this.getGraphMarshaller().deleteGraph(
+        this.getGxlGraphMarshaller().deleteGraph(
             getFile(location, ruleGraph, false));
     }
 
@@ -122,7 +122,7 @@ public class FileGps extends AspectualViewGps {
             File startGraphLocation =
                 new File(location,
                     STATE_FILTER.addExtension(startGraph.getName()));
-            getGraphMarshaller().marshalGraph(startGraph.getAspectGraph(),
+            getGxlGraphMarshaller().marshalGraph(startGraph.getAspectGraph(),
                 startGraphLocation);
         }
     }
@@ -215,8 +215,11 @@ public class FileGps extends AspectualViewGps {
 
         // START GRAPH
         File startGraphFile;
+        if (!hasRecognisedExtension(startGraphName)) {
+            startGraphName = STATE_FILTER.addExtension(startGraphName);
+        }
         startGraphFile =
-            new File(location, STATE_FILTER.addExtension(startGraphName));
+            new File(location, startGraphName);
         if (startGraphFile.exists()) {
             loadStartGraph(result, toURL(startGraphFile));
         }
@@ -237,6 +240,11 @@ public class FileGps extends AspectualViewGps {
         return result;
     }
 
+    private boolean hasRecognisedExtension(String filename) {
+        File file = new File(filename);
+        return AUT_FILTER.accept(file) || STATE_FILTER.accept(file);
+    }
+    
     /**
      * Loads a control program for the given grammar from the given control
      * File.
@@ -252,33 +260,6 @@ public class FileGps extends AspectualViewGps {
     /** returns the extension filter for directory grammars */
     public ExtensionFilter getExtensionFilter() {
         return GRAMMAR_FILTER;
-    }
-
-    /**
-     * Convenience method for backwards compatibility. Converts a File to an
-     * URL, discarding any exceptions since it is well-formed
-     */
-    public static URL toURL(File file) {
-        URL url = null;
-        try {
-            url = file.toURI().toURL();
-        } catch (Exception e) {
-            //
-        }
-        return url;
-    }
-    
-    /**
-     * Convenience method for converting URL's to Files without %20 for spaces
-     */
-    public static File toFile(URL url) {
-        try {
-            URI uri = new URI(url.getPath());
-            return new File(uri.getPath());
-        }
-        catch(URISyntaxException e) {
-            return null;
-        }
     }
 
     @Override
@@ -344,6 +325,11 @@ public class FileGps extends AspectualViewGps {
         }
     }
 
+    @Override
+    public URL createURL(File file) {
+        return toURL(file);
+    }
+
     private static File getFile(File location, AspectualRuleView ruleGraph,
             boolean create) {
         File result = null;
@@ -391,9 +377,31 @@ public class FileGps extends AspectualViewGps {
         return result;
     }
     
-    @Override
-    public URL createURL(File file) {
-        return toURL(file);
+    /**
+     * Convenience method for backwards compatibility. Converts a File to an
+     * URL, discarding any exceptions since it is well-formed
+     */
+    public static URL toURL(File file) {
+        URL url = null;
+        try {
+            url = file.toURI().toURL();
+        } catch (Exception e) {
+            //
+        }
+        return url;
+    }
+
+    /**
+     * Convenience method for converting URL's to Files without %20 for spaces
+     */
+    public static File toFile(URL url) {
+        try {
+            URI uri = new URI(url.getPath());
+            return new File(uri.getPath());
+        }
+        catch(URISyntaxException e) {
+            return null;
+        }
     }
 
     /** File filter for graph grammars in the GPS format. */
@@ -407,6 +415,10 @@ public class FileGps extends AspectualViewGps {
     /** File filter for state files. */
     static protected final ExtensionFilter STATE_FILTER =
         Groove.createStateFilter();
+
+    /** File filter for state files. */
+    static protected final ExtensionFilter AUT_FILTER =
+        new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
 
     /** File filter for property files. */
     static protected final ExtensionFilter PROPERTIES_FILTER =

@@ -54,7 +54,6 @@ public abstract class AbstractXml implements Xml<Graph> {
      */
     public final void deleteGraph(File file) {
         deleteFile(file);
-        // deleteVariants(file);
     }
 
     /** Deletes a given file, storing a graph, and possible auxiliary files. */
@@ -63,7 +62,7 @@ public abstract class AbstractXml implements Xml<Graph> {
     }
 
     /**
-     * Reads a graph from an XML formatted file and returns it. Also constructs
+     * Reads a graph from an XML formatted URL and returns it. Also constructs
      * a map from node identities in the XML file to graph nodes. This can be
      * used to connect with layout information.
      * @param url the URL to be read from

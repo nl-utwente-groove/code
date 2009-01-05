@@ -31,7 +31,7 @@ import java.net.URL;
  */
 public interface Xml<G extends GraphShape> {
     /**
-     * Writes a graph to an outputstream, in XML format.
+     * Writes a graph to an output stream, in XML format.
      * @param graph the graph to be marshalled
      * @param file the file to write to
      * @throws IOException if an error occurred during file output
@@ -39,17 +39,16 @@ public interface Xml<G extends GraphShape> {
     public void marshalGraph(G graph, File file) throws IOException;
 
     /**
-     * Converts an XML formatted inputstream into a graph, and returns the
-     * graph. Convenience method for <code>unmarshal(file, null)</code>.
+     * Converts an XML URL into a graph, and returns the graph.
      * @param url the URL to be read from
      * @return the unmarshalled graph
-     * @throws IOException if an error occurred during file input
+     * @throws IOException if an error occurred during input from the URL
      */
     public G unmarshalGraph(URL url) throws IOException;
 
     /**
      * Backwards compatibility method for unmarshalling from files.
-     * @throws IOException
+     * @throws IOException if an error occurred during file input
      */
     public G unmarshalGraph(File file) throws IOException;
 
