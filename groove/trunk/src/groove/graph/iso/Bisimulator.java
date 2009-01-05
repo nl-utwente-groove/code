@@ -340,7 +340,7 @@ public class Bisimulator implements CertificateStrategy {
         IntSet certStore = Bisimulator.certStore;
         int nodeCertCount = this.nodeCertCount;
         int partitionCount = 0;
-        int certificateValue;
+        long certificateValue;
         // collect and then count the number of certificates
         boolean goOn;
         int iterateCount = 0;
@@ -547,7 +547,7 @@ public class Bisimulator implements CertificateStrategy {
     /** Handle to profile {@link #getGraphCertificate()}. */
     static protected final int GET_GRAPH_CERTIFICATE =
         reporter.newMethod("getGraphCertificate()");
-
+    /** Flag to turn on more time profiling. */
     static private final boolean TIME = false;
 
     /**

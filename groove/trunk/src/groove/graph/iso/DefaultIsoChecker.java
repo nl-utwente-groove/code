@@ -23,10 +23,12 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.util.Bag;
+import groove.util.Groove;
 import groove.util.HashBag;
 import groove.util.Reporter;
 import groove.util.SmallCollection;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -870,6 +872,28 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     static public int getDistinctSimCount() {
         return distinctSimCount;
+    }
+    
+    /** 
+     * If called with two file names, compares the graphs stored in those files
+     * and reports whether they are isomorphic.
+     */
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Usage: DefaultIsoChecker file1 file2");
+        } else {
+            try {
+                Graph graph1 = Groove.loadGraph(args[0]);
+                Graph graph2 = Groove.loadGraph(args[1]);
+                System.out.printf("Graphs '%s' and '%s' isomorphic?%n", args[0], args[1]);
+                System.out.printf("Done. Result: %b%n",
+                    new DefaultIsoChecker(true).areIsomorphic(graph1, graph2));
+                System.out.printf("Certification time: %d%n", getCertifyingTime());
+                System.out.printf("Simulation time: %d%n", getSimCheckTime());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /** The singleton strong instance of this class. */
