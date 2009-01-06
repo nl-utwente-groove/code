@@ -673,7 +673,7 @@ public class PartitionRefiner implements CertificateStrategy {
     /** Flag to turn on more time profiling. */
     static private final boolean TIME = false;
     /** Flag to turn on System.out-tracing. */
-    static private final boolean TRACE = true;
+    static private final boolean TRACE = false;
 
     /**
      * Superclass of graph element certificates.
