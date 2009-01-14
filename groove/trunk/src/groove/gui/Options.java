@@ -194,7 +194,7 @@ public class Options {
     /** Load control file action name */
     public static final String LOAD_CONTROL_FILE_ACTION_NAME =
         "Load Control ...";
-    /** Load rule action name -mzimakova*/
+    /** Load rule action name -mzimakova */
     public static final String LOAD_RULE_ACTION_NAME = "Import Rule ...";
     /** Load start state action name */
     public static final String LOAD_START_STATE_ACTION_NAME =
@@ -202,7 +202,8 @@ public class Options {
     /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
     /** Load grammar from url action name */
-    public static final String LOAD_URL_GRAMMAR_ACTION_NAME = "Load Grammar from URL ...";
+    public static final String LOAD_URL_GRAMMAR_ACTION_NAME =
+        "Load Grammar from URL ...";
 
     /** Name for the model checking action. */
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
@@ -244,7 +245,7 @@ public class Options {
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
     /** Delete action name */
-    public static final String RENAME_ACTION_NAME = "Rename";
+    public static final String REPLACE_ACTION_NAME = "Replace Label";
     /** Delete action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /** Edit properties action name */

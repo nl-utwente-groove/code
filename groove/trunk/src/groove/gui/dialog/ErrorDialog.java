@@ -14,7 +14,7 @@
  * 
  * $Id: ErrorDialog.java,v 1.5 2008-01-30 09:33:36 iovka Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

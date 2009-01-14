@@ -14,7 +14,7 @@
  * 
  * $Id: PropertiesDialog.java,v 1.11 2008-01-30 09:33:37 iovka Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import groove.graph.GraphProperties;
 import groove.util.ListComparator;

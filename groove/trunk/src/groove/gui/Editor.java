@@ -19,6 +19,8 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Node;
+import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.PropertiesDialog;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
