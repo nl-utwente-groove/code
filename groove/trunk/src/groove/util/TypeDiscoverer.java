@@ -153,11 +153,11 @@ public class TypeDiscoverer {
             new GraphGrammar(introduceSystem, typeStartGraph);
         newGrammar.setFixed();
 
-        GraphState introduced = new DefaultGraphCalculator(newGrammar).getMax();
+        GraphState introduced = new DefaultGraphCalculator(newGrammar).getFinal();
         GraphState merged =
-            new DefaultGraphCalculator(mergeSystem, introduced.getGraph()).getMax();
+            new DefaultGraphCalculator(mergeSystem, introduced.getGraph()).getFinal();
         GraphState deleted =
-            new DefaultGraphCalculator(deleteSystem, merged.getGraph()).getMax();
+            new DefaultGraphCalculator(deleteSystem, merged.getGraph()).getFinal();
 
         return deleted.getGraph();
     }

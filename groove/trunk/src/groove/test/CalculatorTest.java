@@ -25,7 +25,7 @@ public class CalculatorTest extends TestCase {
         GraphGrammar gg = view.toGrammar();
 
         GraphCalculator calc = new DefaultGraphCalculator(gg);
-        GraphState result = calc.getMax();
+        GraphState result = calc.getFinal();
         assertNull(result);
     }
 
