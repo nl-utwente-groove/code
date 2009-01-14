@@ -80,12 +80,10 @@ public class StateJList extends JList implements SimulationListener {
 
     }
 
-    @Override
     public void applyTransitionUpdate(GraphTransition transition) {
         // TODO Auto-generated method stub
     }
 
-    @Override
     public void setGrammarUpdate(DefaultGrammarView grammar) {
         this.removeAll();
         this.setEnabled(false);
@@ -100,31 +98,26 @@ public class StateJList extends JList implements SimulationListener {
         }
     }
 
-    @Override
     public void setMatchUpdate(RuleMatch match) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void setRuleUpdate(NameLabel name) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void setStateUpdate(GraphState state) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void setTransitionUpdate(GraphTransition transition) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void startSimulationUpdate(GTS gts) {
         // TODO Auto-generated method stub
 
