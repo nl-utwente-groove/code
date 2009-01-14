@@ -78,10 +78,15 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return scenario;
     }
 
-    /**
-     * Beware, maximal != final, maximal can have self-transitions
-     */
+    @Deprecated
     public GraphState getMax() {
+        return getFinal();
+    }
+    
+    /**
+     *  Final states are all states with only transitions of unmodifying rules.
+     */
+    public GraphState getFinal() {
         testPrototype();
 
         GraphState result = null;
@@ -136,12 +141,18 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return result;
     }
 
-    public Collection<GraphState> getAllMax() {
+    public Collection<GraphState> getAllFinal() {
         testPrototype();
         Scenario scenario =
             createScenario(new BFSStrategy(), new FinalStateAcceptor());
         scenario.prepare(getGTS());
         return scenario.play().getValue();
+        
+    }
+    
+    @Deprecated
+    public Collection<GraphState> getAllMax() {
+        return getAllFinal();
     }
 
     public Collection<GraphState> getAll(String conditionName) {

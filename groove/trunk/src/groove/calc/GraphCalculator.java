@@ -33,7 +33,7 @@ import java.util.Collection;
  */
 public interface GraphCalculator {
     /**
-     * Returns the (presumably only) "maximal" graph, i.e., that cannot evolve
+     * Returns the (presumably only) "final" graph, i.e., that cannot evolve
      * further. The assumption that there is a unique such state allows a linear
      * exploration strategy. The method will fail to terminate if there is no
      * graph meeting the requirements.
@@ -41,7 +41,7 @@ public interface GraphCalculator {
      *         itself, or <code>null</code> if there is no such graph.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    public GraphState getMax();
+    public GraphState getFinal();
 
     /**
      * Returns the set of all maximal graphs, i.e., that cannot evolve further.
@@ -49,7 +49,7 @@ public interface GraphCalculator {
      * @return The set of all graphs that cannot evolve further.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    public Collection<GraphState> getAllMax();
+    public Collection<GraphState> getAllFinal();
 
     /**
      * Returns the first graph satisfying a named condition. The name refers to
