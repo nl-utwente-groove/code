@@ -637,14 +637,14 @@ public class JEdgeView extends EdgeView {
             // TODO Auto-generated method stub
             super.paint(g);
 
-            if (twoLines) {
+            if (this.twoLines) {
                 // draw the second line
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setColor(this.line2color);
-                g2.setStroke(JAttr.createStroke(line2width, line2dash));
-                g2.draw(view.lineShape);
-                g2.fill(view.endShape);
-                g2.draw(view.endShape);
+                g2.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
+                g2.draw(this.view.lineShape);
+                g2.fill(this.view.endShape);
+                g2.draw(this.view.endShape);
 
                 // write text again
 
@@ -652,10 +652,10 @@ public class JEdgeView extends EdgeView {
                 g.setFont(GraphConstants.getFont(this.line2map));
                 
                 JGraph graph = (JGraph) this.graph.get();
-                if (graph.getEditingCell() != view.getCell()) {
-                    Object label = graph.convertValueToString(view);
+                if (graph.getEditingCell() != this.view.getCell()) {
+                    Object label = graph.convertValueToString(this.view);
                     if (label != null) {
-                        paintLabel(g, label.toString(), getLabelPosition(view),
+                        paintLabel(g, label.toString(), getLabelPosition(this.view),
                             true);
                     }
                 }

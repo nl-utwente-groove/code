@@ -53,7 +53,6 @@ public class TestingPatternFamily extends junit.framework.TestCase {
 
     private boolean init;
 
-    @SuppressWarnings("unqualified-field-access")
     @Override
     public void setUp() {
         if (this.init) {
@@ -99,7 +98,6 @@ public class TestingPatternFamily extends junit.framework.TestCase {
     /**
      * @throws ExceptionIncompatibleWithMaxIncidence
      */
-    @SuppressWarnings("unqualified-field-access")
     public void testGraphPattern() throws ExceptionIncompatibleWithMaxIncidence {
         // 
         PatternFamily pf = new PatternFamily(1, 10);

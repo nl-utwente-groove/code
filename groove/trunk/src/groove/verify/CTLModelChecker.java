@@ -57,7 +57,7 @@ public class CTLModelChecker extends CommandLineTool {
 
     /** Usage message for the generator. */
     static public final String USAGE_MESSAGE =
-        "Usage: ModelChecker <grammar-location> [<property>]";
+        "Usage: ModelChecker <grammar-location> <property>";
     /** Extension for graph files */
     static public final String GRAPH_FILE_EXTENSION = ".graphs";
     /** QUIT option */

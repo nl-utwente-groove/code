@@ -98,7 +98,6 @@ public class TestingAbstGraph extends TestCase {
     private boolean init = false;
 
     /** Initialises the graphs. */
-    @SuppressWarnings("unqualified-field-access")
     @Override
     public void setUp() throws IOException,
         ExceptionIncompatibleWithMaxIncidence {
@@ -182,7 +181,6 @@ public class TestingAbstGraph extends TestCase {
     }
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     public void testIsomorphism() throws AssertionError {
 
         // TODO needs more test cases
@@ -203,7 +201,6 @@ public class TestingAbstGraph extends TestCase {
     }
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     public void testIsInjectiveMap() throws AssertionError {
         // find the nodes of s_l4_2 and s_l4_1
         Node first2 = firstInList(this.s_l4_2);
@@ -262,7 +259,6 @@ public class TestingAbstGraph extends TestCase {
     }
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     public void testNodeFor() throws AssertionError {
         Set<GraphPattern> thePatterns = new HashSet<GraphPattern>(10);
         for (GraphPattern p : this.pf) {
@@ -277,7 +273,6 @@ public class TestingAbstGraph extends TestCase {
     }
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     public void testAddRemove() throws ExceptionRemovalImpossible,
         AssertionError {
         // this method modifies some of the abstract graphs, so initialisation
@@ -305,7 +300,6 @@ public class TestingAbstGraph extends TestCase {
     }
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     public void testCompare() throws ExceptionRemovalImpossible, AssertionError {
 
         assertEquals(AbstrGraphsRelation.EQUAL, this.s_l4_1.compare(
@@ -346,7 +340,6 @@ public class TestingAbstGraph extends TestCase {
     }
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     public void testMisc() throws AssertionError {
         // get the middle and first nodes of s_l4_2, s_l5_1
         Node middle4_2 = middleInList(this.s_l4_2);
@@ -368,7 +361,6 @@ public class TestingAbstGraph extends TestCase {
      * Determines the first node in an abstract graph for a list.
      * @param list should be one of the precomputed lists.
      */
-    @SuppressWarnings("unqualified-field-access")
     private Node firstInList(AbstrGraph list) {
         Node result = null;
         for (Node node : list.nodeSet()) {
@@ -395,7 +387,6 @@ public class TestingAbstGraph extends TestCase {
      * Determines the middle node in an abstract graph for a list.
      * @param list should be one of the precomputed lists.
      */
-    @SuppressWarnings("unqualified-field-access")
     private Node middleInList(AbstrGraph list) {
         Node result = null;
         for (Node node : list.nodeSet()) {
@@ -422,7 +413,6 @@ public class TestingAbstGraph extends TestCase {
      * Determines the last node in an abstract graph for a list.
      * @param list should be one of the precomputed lists.
      */
-    @SuppressWarnings("unqualified-field-access")
     private Node lastInList(AbstrGraph list) {
         Node result = null;
         for (Node node : list.nodeSet()) {

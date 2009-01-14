@@ -132,7 +132,6 @@ public class IOTest extends TestCase {
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    @SuppressWarnings("unchecked")
     protected GTS testExploration(DefaultGrammarView view, String grammarName,
             String startName, String controlName, int rulecount, int nodeCount,
             int edgeCount) {

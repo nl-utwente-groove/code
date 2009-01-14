@@ -629,12 +629,12 @@ public class JVertexView extends VertexView {
             
             AttributeMap secondMap = (AttributeMap) attributes.get("line2map");
             if( secondMap != null ) { 
-                twoLines = true;
-                line2color = GraphConstants.getLineColor(secondMap);
-                line2width = GraphConstants.getLineWidth(secondMap);
-                line2dash = GraphConstants.getDashPattern(secondMap);
+                this.twoLines = true;
+                this.line2color = GraphConstants.getLineColor(secondMap);
+                this.line2width = GraphConstants.getLineWidth(secondMap);
+                this.line2dash = GraphConstants.getDashPattern(secondMap);
             } else {
-                twoLines = false;
+                this.twoLines = false;
             }
             
             
@@ -707,9 +707,9 @@ public class JVertexView extends VertexView {
             g.setColor(this.lineColor);
             g.setStroke(JAttr.createStroke(this.view.getLinewidth(), this.dash));
             g.draw(shape);
-            if( twoLines ) {
+            if( this.twoLines ) {
                 g.setColor(this.line2color);
-                g.setStroke(JAttr.createStroke(line2width, line2dash));
+                g.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
                 g.draw(shape);
             }
         }
