@@ -21,6 +21,7 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.util.Bag;
 import groove.util.Groove;
@@ -879,20 +880,50 @@ public class DefaultIsoChecker implements IsoChecker {
      * and reports whether they are isomorphic.
      */
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.err.println("Usage: DefaultIsoChecker file1 file2");
+        if (args.length == 1) {
+            testIso(args[0]);
+        } else if (args.length == 2) {
+            compareGraphs(args[0],args[1]);
         } else {
-            try {
-                Graph graph1 = Groove.loadGraph(args[0]);
-                Graph graph2 = Groove.loadGraph(args[1]);
-                System.out.printf("Graphs '%s' and '%s' isomorphic?%n", args[0], args[1]);
-                System.out.printf("Done. Result: %b%n",
-                    new DefaultIsoChecker(true).areIsomorphic(graph1, graph2));
-                System.out.printf("Certification time: %d%n", getCertifyingTime());
-                System.out.printf("Simulation time: %d%n", getSimCheckTime());
-            } catch (IOException e) {
-                e.printStackTrace();
+            System.err.println("Usage: DefaultIsoChecker file1 file2");
+            return;
+        }
+    }
+
+    private static void testIso(String name) {
+        try {
+            Graph graph1 = Groove.loadGraph(name);
+            IsoChecker checker = new DefaultIsoChecker(true);
+            for (int i = 0; i < 1000; i++) {
+                Graph graph2 = new NodeSetEdgeSetGraph();
+                NodeEdgeMap nodeMap = new NodeEdgeHashMap();
+                for (Node node: graph1.nodeSet()) {
+                    nodeMap.putNode(node,graph2.addNode());
+                }
+                for (Edge edge: graph1.edgeSet()) {
+                    graph2.addEdge(nodeMap.mapEdge(edge));
+                }
+                if (!checker.areIsomorphic(graph1, graph2)) {
+                    System.err.println("Error! Graph not isomorphic to itself");
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void compareGraphs(String name1, String name2) {
+        try {
+            Graph graph1 = Groove.loadGraph(name1);
+            Graph graph2 = Groove.loadGraph(name2);
+            System.out.printf("Graphs '%s' and '%s' isomorphic?%n", name1,
+                name2);
+            System.out.printf("Done. Result: %b%n",
+                new DefaultIsoChecker(true).areIsomorphic(graph1, graph2));
+            System.out.printf("Certification time: %d%n", getCertifyingTime());
+            System.out.printf("Simulation time: %d%n", getSimCheckTime());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
