@@ -805,26 +805,26 @@ public class PartitionRefiner implements CertificateStrategy {
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof NodeCertificate && this.singularRound == ((NodeCertificate) obj).singularRound) {
-                if (this.singularRound == 0) {
-                    return this.value == ((NodeCertificate) obj).value;
-                } else {
-                    return this.singularValue == ((NodeCertificate) obj).singularValue
-                        && this.singularRound == ((NodeCertificate) obj).singularRound;
-                }
-            } else {
-                return false;
-            }
+//            if (obj instanceof NodeCertificate && this.singularRound == ((NodeCertificate) obj).singularRound) {
+//                if (this.singularRound == 0) {
+                    return obj instanceof NodeCertificate && this.value == ((NodeCertificate) obj).value;
+//                } else {
+//                    return this.singularValue == ((NodeCertificate) obj).singularValue
+//                        && this.singularRound == ((NodeCertificate) obj).singularRound;
+//                }
+//            } else {
+//                return false;
+//            }
         }
-
-        @Override
-        public int hashCode() {
-            if (this.singularRound == 0) {
-                return super.hashCode();
-            } else {
-                return this.singularValue + this.singularRound;
-            }
-        }
+//
+//        @Override
+//        public int hashCode() {
+//            if (this.singularRound == 0) {
+//                return super.hashCode();
+//            } else {
+//                return this.singularValue + this.singularRound;
+//            }
+//        }
 
         /**
          * Change the certificate value predictably to break symmetry.
@@ -865,61 +865,65 @@ public class PartitionRefiner implements CertificateStrategy {
          *        <code>0</code>, it is still duplicate.
          */
         protected void setSingular(int round) {
-            this.singularRound = round;
-            this.singularValue = getValue();
+            this.singular = round > 0;
+//            this.singularRound = round;
+//            this.singularValue = getValue();
         }
 
         /**
          * Signals if the certificate is singular or duplicate.
          */
         protected boolean isSingular() {
-            return this.singularRound > 0;
+            return this.singular;
+//            return this.singularRound > 0;
         }
-        
-        /** We also have to checkpoint the singularity information. */
-        @Override
-        public void setCheckpoint() {
-            super.setCheckpoint();
-            this.checkpointSingularRound = this.singularRound;
-            this.checkpointSingularValue = this.singularValue;
-        }
-
-        /** We also have to roll back the singularity information. */
-        @Override
-        public void rollBack() {
-            super.rollBack();
-            if (this.cumulativeSingularRound == 0) {
-                this.cumulativeSingularRound = this.singularRound;
-            }
-            this.singularRound = this.checkpointSingularRound;
-            this.singularValue = this.checkpointSingularValue;
-        }
-
-        @Override
-        public void accumulate(int round) {
-            super.accumulate(round);
-            this.singularRound = this.cumulativeSingularRound;
-        }
+//        
+//        /** We also have to checkpoint the singularity information. */
+//        @Override
+//        public void setCheckpoint() {
+//            super.setCheckpoint();
+//            this.checkpointSingularRound = this.singularRound;
+//            this.checkpointSingularValue = this.singularValue;
+//        }
+//
+//        /** We also have to roll back the singularity information. */
+//        @Override
+//        public void rollBack() {
+//            super.rollBack();
+//            if (this.cumulativeSingularRound == 0) {
+//                this.cumulativeSingularRound = this.singularRound;
+//            }
+//            this.singularRound = this.checkpointSingularRound;
+//            this.singularValue = this.checkpointSingularValue;
+//        }
+//
+//        @Override
+//        public void accumulate(int round) {
+//            super.accumulate(round);
+//            this.singularRound = this.cumulativeSingularRound;
+//        }
 
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
-        /**
-         * Round at which the certificate has been set to singular; if <code>0</code>,
-         * it is duplicate.
-         */
-        private int singularRound;
-        /** 
-         * Frozen certificate value when the certificate was set to singular.
-         * If the certificate is singular, this is the value that will be used
-         * as a criterion for equality. 
-         */
-        private int singularValue;
-        /** The value of {@link #singularRound} as frozen at the last checkpoint. */
-        private int checkpointSingularRound;
-        /** The value of {@link #singularValue} as frozen at the last checkpoint. */
-        private int checkpointSingularValue;
-        /** Stores the first round in which the certificate became singuler (if any). */
-        private int cumulativeSingularRound;
+        /** Records if the certificate has become singular at some point of the calculation. */
+        boolean singular;
+//        /**
+//         * Round at which the certificate has been set to singular; if <code>0</code>,
+//         * it is duplicate.
+//         */
+//        private int singularRound;
+//        /** 
+//         * Frozen certificate value when the certificate was set to singular.
+//         * If the certificate is singular, this is the value that will be used
+//         * as a criterion for equality. 
+//         */
+//        private int singularValue;
+//        /** The value of {@link #singularRound} as frozen at the last checkpoint. */
+//        private int checkpointSingularRound;
+//        /** The value of {@link #singularValue} as frozen at the last checkpoint. */
+//        private int checkpointSingularValue;
+//        /** Stores the first round in which the certificate became singuler (if any). */
+//        private int cumulativeSingularRound;
     }
 
     /**
