@@ -127,10 +127,12 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -830,7 +832,10 @@ public class Simulator {
                                 grammar.getStartGraph().getName());
                         getStateFileChooser().setSelectedFile(startFile);
                     } else {
+                        // make sure the selected file from an old grammar is unselected
                         getStateFileChooser().setSelectedFile(null);
+                        // make sure the dialog for open state opens at the grammar location
+                        getStateFileChooser().setCurrentDirectory(FileGps.toFile(grammarURL));
                     }
                     if (grammar.getControl() != null) {
                         File controlFile =
@@ -838,6 +843,9 @@ public class Simulator {
                                 grammar.getControl().getName());
                         getControlFileChooser().setSelectedFile(controlFile);
                     } else {
+                        // make sure the selected file from an old grammar is unselected
+                        getControlFileChooser().setSelectedFile(null);
+                        // make sure the dialog for open control opens at the grammar location
                         getControlFileChooser().setCurrentDirectory(
                             FileGps.toFile(grammarURL));
                     }
@@ -961,6 +969,7 @@ public class Simulator {
         getStateFileChooser().setSelectedFile(new File(""));
         getGrammarFileChooser().setSelectedFile(grammarFile);
         setGrammar(grammar);
+        this.history.updateLoadGrammar(FileGps.toURL(grammarFile));
     }
 
     RuleNameLabel generateNewRuleName(String basis) {
@@ -1421,7 +1430,16 @@ public class Simulator {
             // with the rule directory to the left and a desktop pane to the
             // right
             JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-            splitPane.setLeftComponent(getRuleJTreePanel());
+//            splitPane.setLeftComponent(getRuleJTreePanel());
+            
+            JPanel leftPanel = new JPanel();
+            leftPanel.setLayout(new BorderLayout());
+            leftPanel.add(getRuleJTreePanel(), BorderLayout.CENTER);
+            leftPanel.add(new JScrollPane(getStateList()), BorderLayout.SOUTH);
+            
+            
+            splitPane.setLeftComponent(leftPanel);
+            
             splitPane.setRightComponent(getGraphViewsPanel());
 
             Container contentPane = this.frame.getContentPane();
@@ -1551,6 +1569,14 @@ public class Simulator {
         return this.typePanel;
     }
 
+    
+    JList getStateList() {
+        if( this.stateJList == null ) {
+            this.stateJList = new StateJList(this);
+        }
+        return this.stateJList;
+    }
+    
     /**
      * Returns the tree of rules and matches displayed in the simulator.
      */
@@ -2567,6 +2593,9 @@ public class Simulator {
     /** Production rule directory. */
     private JTree ruleJTree;
 
+    /** Production system graph list */
+    private JList stateJList;
+    
     /** Production rule display panel. */
     private RulePanel rulePanel;
 
@@ -3657,6 +3686,11 @@ public class Simulator {
             this.toOpen = toOpen;
         }
 
+        LoadURLAction(URL toOpen, String displayName) {
+            super(displayName);
+            this.toOpen = toOpen;
+        }
+        
         public void actionPerformed(ActionEvent evt) {
 
             if (this.toOpen != null) {
@@ -4198,7 +4232,11 @@ public class Simulator {
             this.menu.removeAll();
             for (String s : this.history) {
                 try {
-                    this.menu.add(new LoadURLAction(new URL(s)));
+                    URL url = new URL(s);
+                    AspectualViewGps avg = URLLoaderFactory.getLoader(url);
+                    String name = avg.grammarName(url);
+                    String location = avg.grammarLocation(url);
+                    this.menu.add( new LoadURLAction(url, name + " - " + location));
                 } catch (MalformedURLException e) {
                     // url should never be malformed, since it appears only in
                     // the history when we could previously load a grammar from

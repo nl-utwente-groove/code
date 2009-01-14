@@ -24,8 +24,11 @@ import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -301,4 +304,17 @@ public class DefaultGrammarView implements
     private List<String> errors;
     /** The graph grammar derived from the rule views. */
     private GraphGrammar grammar;
+    
+    /** Contains the list of states found in the grammar location **/
+    private Map<String,File> graphs = new HashMap<String,File>(); 
+    
+    /** Adds a graph to the list of graphs belonging to this grammar */
+    public void addGraph(String name, File file) {
+        this.graphs.put(name, file);
+    }
+    
+    /** Returns the graphs found during loading of the grammar */
+    public Map<String,File> getGraphs() {
+        return this.graphs;
+    }
 }

@@ -120,7 +120,7 @@ public abstract class ArchiveGps extends AspectualViewGps {
 
         for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
             JarEntry entry = entries.nextElement();
-            if (entry.getName().startsWith(dir) 
+            if (entry.getName().startsWith(dir)
                 && FileGps.RULE_FILTER.hasExtension(entry.getName())) {
                 String path =
                     FileGps.RULE_FILTER.stripExtension(entry.getName());
@@ -197,8 +197,57 @@ public abstract class ArchiveGps extends AspectualViewGps {
     public URL createURL(File file) {
         try {
             return new URL("jar:" + FileGps.toURL(file) + "!/");
-        } catch(MalformedURLException e) {
+        } catch (MalformedURLException e) {
             return null;
         }
     }
+
+    @Override
+    public String grammarName(URL grammarURL) {
+        // the path in the jar of the gps
+        String dir =
+            grammarURL.getPath().substring(
+                grammarURL.getPath().indexOf("!") + 2);
+
+        if (!dir.endsWith("/")) {
+            dir += "/";
+        }
+
+        // connection to the file index in the jar file
+        try {
+            // if there is no dir, find it in the jarfile
+            if (dir.equals("/")) {
+                JarFile jarFile =
+                    ((JarURLConnection) grammarURL.openConnection()).getJarFile();
+                dir = findGrammar(jarFile);
+                if (dir == null) {
+                    throw new IOException("No grammar found in "
+                        + jarFile.getName());
+                }
+            }
+
+            // create the result
+            return FileGps.GRAMMAR_FILTER.stripExtension(new File(dir).getName());
+
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    @Override
+    public String grammarLocation(URL grammarURL) {
+        String file = grammarURL.getFile();
+        file = file.substring(0,file.indexOf("!"));
+        if( file.startsWith("file://")) {
+            try {
+                File local = FileGps.toFile(new URL(file));
+                return local.getAbsolutePath();
+            } catch(MalformedURLException e) {
+                return file;
+            }
+        } else {
+            return file;
+        }
+    }
+
 }

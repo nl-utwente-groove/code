@@ -25,6 +25,7 @@ import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
+import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -64,9 +65,26 @@ public class FileGps extends AspectualViewGps {
             // turn the rule into a rule graph
             marshalRule(gg.getRule(ruleName), location);
         }
-        saveStartGraph(gg.getStartGraph(), location);
+
+        /** Saves all graphs, so no needs to also save the current startgraph */
+        // saveStartGraph(gg.getStartGraph(), location);
+        saveGraphs(gg.getGraphs(), location);
+
         saveProperties(gg, location);
         saveControl(gg.getControl(), location);
+    }
+
+    private void saveGraphs(Map<String,File> graphs, File location) throws IOException {
+        for( String name : graphs.keySet() ) {
+            File file = graphs.get(name);
+            AspectGraph graph = this.unmarshalGraph(file.toURI().toURL());
+            File newLocation =
+                new File(location,
+                    STATE_FILTER.addExtension(name));
+            getGxlGraphMarshaller().marshalGraph(graph,
+                newLocation);
+        }
+
     }
 
     /**
@@ -146,8 +164,7 @@ public class FileGps extends AspectualViewGps {
     @Override
     public DefaultGrammarView unmarshal(URL location, String startGraphName,
             String controlName) throws IOException {
-        return unmarshal(toFile(location), startGraphName,
-            controlName);
+        return unmarshal(toFile(location), startGraphName, controlName);
     }
 
     /**
@@ -169,8 +186,8 @@ public class FileGps extends AspectualViewGps {
      * unmarshals a grammar for a gps directory with a specific start graph name
      * and a specific control name.
      */
-    protected DefaultGrammarView unmarshal(File location, String startGraphName,
-            String controlName) throws IOException {
+    protected DefaultGrammarView unmarshal(File location,
+            String startGraphName, String controlName) throws IOException {
 
         if (startGraphName == null) {
             startGraphName = DEFAULT_START_GRAPH_NAME;
@@ -208,18 +225,25 @@ public class FileGps extends AspectualViewGps {
         }
 
         Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
+
         collectRuleNames(ruleMap, location, null);
 
         // RULES
         loadRules(result, ruleMap);
+
+        // GRAPHS
+        Map<String,File> graphMap = new HashMap<String,File>();
+        collectGraphNames(graphMap, location);
+        for (String graphName : graphMap.keySet()) {
+            result.addGraph(graphName, graphMap.get(graphName));
+        }
 
         // START GRAPH
         File startGraphFile;
         if (!hasRecognisedExtension(startGraphName)) {
             startGraphName = STATE_FILTER.addExtension(startGraphName);
         }
-        startGraphFile =
-            new File(location, startGraphName);
+        startGraphFile = new File(location, startGraphName);
         if (startGraphFile.exists()) {
             loadStartGraph(result, toURL(startGraphFile));
         }
@@ -244,7 +268,7 @@ public class FileGps extends AspectualViewGps {
         File file = new File(filename);
         return AUT_FILTER.accept(file) || STATE_FILTER.accept(file);
     }
-    
+
     /**
      * Loads a control program for the given grammar from the given control
      * File.
@@ -293,7 +317,7 @@ public class FileGps extends AspectualViewGps {
     public boolean canWrite() {
         return true;
     }
-    
+
     /**
      * Prepares a location for marshalling a graph grammar.
      */
@@ -328,8 +352,8 @@ public class FileGps extends AspectualViewGps {
             File directory, RuleNameLabel rulePath) throws IOException {
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
-             throw new IOException(LOAD_ERROR + ": no files found at "
-             + directory);
+            throw new IOException(LOAD_ERROR + ": no files found at "
+                + directory);
         } else {
             // read in production rules
             for (File file : files) {
@@ -348,6 +372,24 @@ public class FileGps extends AspectualViewGps {
                     throw new IOException(LOAD_ERROR
                         + ": duplicate rule name \"" + ruleName + "\"");
                 }
+            }
+        }
+    }
+
+    /**
+     * Collects all graphs (states) found directly in the given directly (no
+     * subdirectories)
+     */
+    private void collectGraphNames(Map<String,File> result, File directory) {
+        File[] files = directory.listFiles(STATE_FILTER);
+        // read in production rules
+        for (File file : files) {
+            String fileName = RULE_FILTER.stripExtension(file.getName());
+            PriorityFileName priorityFileName = new PriorityFileName(fileName);
+
+            // check for overlapping rule and directory names
+            if (!file.isDirectory()) {
+                result.put(STATE_FILTER.stripExtension(file.getName()), file);
             }
         }
     }
@@ -403,7 +445,7 @@ public class FileGps extends AspectualViewGps {
         }
         return result;
     }
-    
+
     /**
      * Convenience method for backwards compatibility. Converts a File to an
      * URL, discarding any exceptions since it is well-formed
@@ -425,8 +467,7 @@ public class FileGps extends AspectualViewGps {
         try {
             URI uri = new URI(url.getPath());
             return new File(uri.getPath());
-        }
-        catch(URISyntaxException e) {
+        } catch (URISyntaxException e) {
             return null;
         }
     }
@@ -454,5 +495,18 @@ public class FileGps extends AspectualViewGps {
     /** File filter for control files. */
     static protected final ExtensionFilter CONTROL_FILTER =
         Groove.createControlFilter();
+
+    /** Returns the name of the grammar located at the given URL * */
+    public String grammarName(URL grammarURL) {
+        return GRAMMAR_FILTER.stripExtension(toFile(grammarURL).getName());
+    }
+
+    /**
+     * Returns a string that should explain where the grammar was found. For a
+     * FileGps, this is the absolute path of the parent directory.
+     */
+    public String grammarLocation(URL grammarURL) {
+        return toFile(grammarURL).getParent();
+    }
 
 }
