@@ -211,13 +211,15 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     // - without location, and then no outgoing transitions
     private boolean determineIsFinal(GraphState state) {
         if (state.getLocation() == null) {
-            return !state.getTransitionIter().hasNext(); // TODO this can
-                                                            // probably be
-                                                            // optimised, with
-                                                            // e.g. an
-                                                            // additional
-                                                            // function for a
-                                                            // GTS
+
+            // only states without applications of unmodifying rules are final
+            for (GraphTransition trans : state.getTransitionSet()) {
+                if (trans.getEvent().getRule().isModifying()) {
+                    return false;
+                }
+            }
+            return true;
+
         } else {
             Set<Rule> rulesFound = new HashSet<Rule>();
             for (GraphTransition trans : state.getTransitionSet()) {
@@ -239,7 +241,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     @Override
     public int edgeCount() {
-    	assert this.transitionCount == edgeSet().size();
+        assert this.transitionCount == edgeSet().size();
         return this.transitionCount;
     }
 
@@ -279,11 +281,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return new StateSet(getCollapse());
     }
 
-    /** 
-     * Method to determine the collapse strategy of the state set.
-     * This is determined by {@link SystemRecord#isCollapse()} and
-     * {@link SystemRecord#isCheckIso()}. 
-     */ 
+    /**
+     * Method to determine the collapse strategy of the state set. This is
+     * determined by {@link SystemRecord#isCollapse()} and
+     * {@link SystemRecord#isCheckIso()}.
+     */
     protected int getCollapse() {
         int collapse;
         if (!getRecord().isCollapse()) {
@@ -295,7 +297,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
         return collapse;
     }
-    
+
     @Override
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
@@ -431,8 +433,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         public StateSet(int collapse) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
-            this.collapse = collapse;  
-            this.checker = DefaultIsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
+            this.collapse = collapse;
+            this.checker =
+                DefaultIsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
         }
 
         /**
@@ -502,22 +505,29 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         private final IsoChecker checker;
         /** The value of the collapse property. */
         private final int collapse;
-        
-        /** Value for the state collapse property indicating that no states should be collapsed. */
+
+        /**
+         * Value for the state collapse property indicating that no states
+         * should be collapsed.
+         */
         static public final int COLLAPSE_NONE = 0;
-        /** Value for the state collapse property indicating that only states with equal graphs should be collapsed. */
+        /**
+         * Value for the state collapse property indicating that only states
+         * with equal graphs should be collapsed.
+         */
         static public final int COLLAPSE_EQUAL = 1;
-        /** 
-         * Value for the state collapse property indicating that states with isomorphic graphs
-         * should be collapsed, where isomorphism is only weakly tested.
-         * A weak isomorphism test could yield false negatives.
+        /**
+         * Value for the state collapse property indicating that states with
+         * isomorphic graphs should be collapsed, where isomorphism is only
+         * weakly tested. A weak isomorphism test could yield false negatives.
          * @see IsoChecker#isStrong()
          */
         static public final int COLLAPSE_ISO_WEAK = 2;
-        /** 
-         * Value for the state collapse property indicating that states with isomorphic graphs
-         * should be collapsed, where isomorphism is strongly tested.
-         * A strong isomorphism test is more costly than a weak one but will never yield false negatives.
+        /**
+         * Value for the state collapse property indicating that states with
+         * isomorphic graphs should be collapsed, where isomorphism is strongly
+         * tested. A strong isomorphism test is more costly than a weak one but
+         * will never yield false negatives.
          * @see IsoChecker#isStrong()
          */
         static public final int COLLAPSE_ISO_STRONG = 3;
