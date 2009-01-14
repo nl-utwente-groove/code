@@ -523,6 +523,18 @@ public class Simulator {
         return this.loadControlFileAction;
     }
 
+    /**  mzimakova
+     * Returns the rule load action permanently associated with this
+     * simulator.
+     */
+    public LoadRuleAction getLoadRuleAction() {
+        // lazily create the action
+        if (this.loadRuleAction == null) {
+            this.loadRuleAction = new LoadRuleAction();
+        }
+        return this.loadRuleAction;
+    }
+
     /**
      * Returns the grammar load action permanently associated with this
      * simulator.
@@ -831,7 +843,8 @@ public class Simulator {
                     }
                     getGrammarFileChooser().setSelectedFile(
                         FileGps.toFile(grammarURL));
-                } catch (final IOException exc) {
+                    getRuleFileChooser().setCurrentDirectory(FileGps.toFile(grammarURL));//mzimakova
+               } catch (final IOException exc) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             showErrorDialog(exc.getMessage(), exc.getCause());
@@ -911,6 +924,20 @@ public class Simulator {
             setTitle();
         } catch (IOException e) {
             this.showErrorDialog("Error loading control file", e);
+        }
+    }
+
+    /**  mzimakova
+     * Sets the contents of a given file as start state. 
+     */
+    void doLoadRule(File file) {
+        try {
+            new FileGps(true).loadRule(this.currentGrammar, file);
+            setGrammar(getCurrentGrammar());
+            setTitle();
+            doSaveGrammar(this.currentGrammarLoader, FileGps.toFile(this.currentGrammarURL));
+       } catch (IOException e) {
+            this.showErrorDialog("Error loading rule", e);
         }
     }
 
@@ -1659,6 +1686,7 @@ public class Simulator {
         result.add(new JMenuItem(new LoadURLAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getLoadControlFileAction()));
+        result.add(new JMenuItem(getLoadRuleAction()));/**mzimakova**/
         result.add(new JMenuItem(getRefreshGrammarAction()));
         result.add(createOpenRecentMenu());
         result.addSeparator();
@@ -1940,6 +1968,19 @@ public class Simulator {
             this.controlFileChooser.setFileFilter(this.controlFilter);
         }
         return this.controlFileChooser;
+    }
+
+    /**   mzimakova
+     * Returns the file chooser for rule (GPR) files, lazily creating it
+     * first.
+     */
+    JFileChooser getRuleFileChooser() {
+        if (this.ruleFileChooser == null) {
+            this.ruleFileChooser = new GrooveFileChooser();
+            this.ruleFileChooser.addChoosableFileFilter(this.ruleFilter);
+            this.ruleFileChooser.setFileFilter(this.ruleFilter);
+        }
+        return this.ruleFileChooser;
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */
@@ -2469,6 +2510,11 @@ public class Simulator {
      */
     private JFileChooser controlFileChooser;
 
+    /** mzimakova
+     * File chooser for control files.
+     */
+    private JFileChooser ruleFileChooser;
+
     /**
      * Dialog for entering temporal formulae.
      */
@@ -2493,6 +2539,11 @@ public class Simulator {
      * Extension filter for control files.
      */
     private final ExtensionFilter controlFilter = Groove.createControlFilter();
+
+    /**  mzimakova
+     * Extension filter for rule files.
+     */
+    private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
 
     /**
      * Extension filter used for exporting the LTS in jpeg format.
@@ -2604,6 +2655,9 @@ public class Simulator {
 
     /** The control file load action permanently associated with this simulator. */
     private LoadControlFileAction loadControlFileAction;
+
+    /** The rule load action permanently associated with this simulator. --mzimakova*/
+    private LoadRuleAction loadRuleAction;
 
     /** The start state load action permanently associated with this simulator. */
     private LoadStartGraphAction loadStartGraphAction;
@@ -3502,6 +3556,35 @@ public class Simulator {
         public void refresh() {
             setEnabled(getCurrentGrammar() != null);
         }
+    }
+
+    /**    mzimakova
+     * Action for loading and setting a different control program.
+     * @see Simulator#doLoadControlFile(File)
+     */
+     private class LoadRuleAction extends AbstractAction implements
+                 Refreshable {
+             /** Constructs an instance of the action. */
+             LoadRuleAction() {
+                 super(Options.LOAD_RULE_ACTION_NAME);
+                 addRefreshable(this);
+             }
+
+             public void actionPerformed(ActionEvent evt) {
+                 int result = getRuleFileChooser().showOpenDialog(getFrame());
+                 // now load, if so required
+                 if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+                     doLoadRule(getRuleFileChooser().getSelectedFile());
+                 }
+             }
+
+             /**
+              * Sets the enabling status of this action, depending on whether a
+              * grammar is currently loaded.
+              */
+             public void refresh() {
+                 setEnabled(getCurrentGrammar() != null);
+             }
     }
 
     /**

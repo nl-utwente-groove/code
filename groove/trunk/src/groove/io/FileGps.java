@@ -257,6 +257,33 @@ public class FileGps extends AspectualViewGps {
 
     }
 
+    /**    mzimakova
+     * Loads a control program for the given grammar from the given control
+     * File.
+     */
+    public void loadRule(DefaultGrammarView grammar, File ruleFile)
+        throws IOException {
+        Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
+        if (ruleFile == null) {
+             throw new IOException(LOAD_ERROR + ": no files found");
+        } else {
+            // read in production rule
+                String fileName = RULE_FILTER.stripExtension(ruleFile.getName());
+                PriorityFileName priorityFileName =
+                    new PriorityFileName(fileName);
+                RuleNameLabel ruleName =
+                    new RuleNameLabel(null,
+                        priorityFileName.getActualName());
+                
+                // check for overlapping rule and directory names
+                if (ruleMap.put(ruleName, ruleFile.toURI().toURL()) != null) {
+                    throw new IOException(LOAD_ERROR
+                        + ": duplicate rule name \"" + ruleName + "\"");
+                }
+        }
+        loadRules(grammar, ruleMap);
+    }
+
     /** returns the extension filter for directory grammars */
     public ExtensionFilter getExtensionFilter() {
         return GRAMMAR_FILTER;
