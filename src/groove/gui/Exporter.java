@@ -534,8 +534,13 @@ public class Exporter {
         }
 
         public void export(JGraph jGraph, File file) throws IOException {
-            ImageIO.write(jGraph.toImage(),
-                this.pngFilter.getExtension().substring(1), file);
+            BufferedImage image = jGraph.toImage();
+            String format = this.pngFilter.getExtension().substring(1);
+            ImageIO.write(image, format, file);
+            
+            
+//            ImageIO.write(jGraph.toImage(),
+//                this.pngFilter.getExtension().substring(1), file);
         }
 
         /**

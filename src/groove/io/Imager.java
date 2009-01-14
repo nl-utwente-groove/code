@@ -155,6 +155,14 @@ public class Imager extends CommandLineTool {
                         new File(
                             new ExtensionFilter(this.imageFormat).addExtension(outFileName));
                     GraphShape graph = graphLoader.unmarshalGraph(inFile);
+                    
+                    if( graph.size() == 0 ) {
+                        // fix to skip empty graphs and rules, since
+                        // they cause a nullpointer
+                        printlnMedium("Skpping empty graph " + inFile);
+                        return;
+                    }
+                    
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
                         String ruleName =
@@ -167,10 +175,12 @@ public class Imager extends CommandLineTool {
                     } else {
                         model = GraphJModel.newInstance(graph, new Options());
                     }
+                    
                     JGraph jGraph = new JGraph(model, false);
                     jGraph.setModel(model);
                     jGraph.setSize(jGraph.getPreferredSize());
                     printlnMedium("Imaging " + inFile + " as " + outFile);
+                    
                     this.exporter.export(jGraph, outFile);
                     Thread.yield();
                 } catch (FileNotFoundException fnfe) {
