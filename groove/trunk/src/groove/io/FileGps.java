@@ -246,6 +246,8 @@ public class FileGps extends AspectualViewGps {
         startGraphFile = new File(location, startGraphName);
         if (startGraphFile.exists()) {
             loadStartGraph(result, toURL(startGraphFile));
+        } else {
+            throw new IOException(String.format("Start graph '%s' does not exist", startGraphName));
         }
 
         // CONTROL
