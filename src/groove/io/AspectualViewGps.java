@@ -360,4 +360,10 @@ public abstract class AspectualViewGps extends Observable implements
     static public final String LOADING_START_GRAPH = "Loading start graph";
     /** Error message if a grammar cannot be loaded. */
     static protected final String LOAD_ERROR = "Can't load graph grammar";
+    
+    /** Returns the name of the grammar found at the given URL */
+    public abstract String grammarName(URL grammarURL);
+    
+    /** Returns a String representation of the location where the grammar is found */
+    public abstract String grammarLocation(URL grammarURL);
 }
