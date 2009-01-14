@@ -33,12 +33,12 @@ import groove.rel.VarSupport;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeAnchorFactory implements AnchorFactory {
+public class NodeAnchorFactory implements AnchorFactory<Rule> {
     /**
      * Returns a prototype matching, to be used as an anchor and matching
      * factory in a production rule.
      */
-    static public AnchorFactory getPrototype() {
+    static public AnchorFactory<Rule> getPrototype() {
         return prototype;
     }
 

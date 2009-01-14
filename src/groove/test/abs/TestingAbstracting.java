@@ -45,7 +45,6 @@ public class TestingAbstracting extends TestCase {
     private boolean init = false;
 
     /** */
-    @SuppressWarnings("unqualified-field-access")
     @Override
     public void setUp() {
         if (this.init) {
@@ -61,7 +60,6 @@ public class TestingAbstracting extends TestCase {
      * Abstracting a list.
      * @throws ExceptionIncompatibleWithMaxIncidence
      */
-    @SuppressWarnings("unqualified-field-access")
     public void testAbstrList() throws ExceptionIncompatibleWithMaxIncidence,
         AssertionError {
         Graph list4 = new DefaultGraph();

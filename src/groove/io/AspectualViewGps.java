@@ -266,7 +266,6 @@ public abstract class AspectualViewGps extends Observable implements
      * @param dir
      * @throws IOException
      */
-    @SuppressWarnings("unused")
     public void marshalRule(AspectualRuleView rule, File dir)
         throws IOException {
         throw new UnsupportedOperationException(

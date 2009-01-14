@@ -375,10 +375,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         }
         Set<Label> initPosLabelSet = new HashSet<Label>();
         Set<Label> initInvLabelSet = new HashSet<Label>();
-        @SuppressWarnings("unchecked")
         Map<Label,Set<Edge>>[][] nodeInvLabelEdgeMap =
             new Map[2][indexedNodeCount()];
-        @SuppressWarnings("unchecked")
         Map<Label,Set<Edge>>[][] nodePosLabelEdgeMap =
             new Map[2][indexedNodeCount()];
         for (Edge edge : edgeSet()) {

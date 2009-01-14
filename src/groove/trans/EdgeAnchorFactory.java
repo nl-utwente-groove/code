@@ -19,16 +19,16 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EdgeAnchorFactory implements AnchorFactory {
+public class EdgeAnchorFactory implements AnchorFactory<Rule> {
     /**
      * Returns the singleton instance of this class.
      */
-    static public AnchorFactory getInstance() {
+    static public AnchorFactory<Rule> getInstance() {
         return instance;
     }
 
     /** The singleton instance of this class. */
-    static private AnchorFactory instance = new EdgeAnchorFactory();
+    static private AnchorFactory<Rule> instance = new EdgeAnchorFactory();
 
     /** Private empty constructor to make this a singleton class. */
     private EdgeAnchorFactory() {

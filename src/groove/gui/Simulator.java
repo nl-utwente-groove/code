@@ -740,7 +740,7 @@ public class Simulator {
         ControlView cv = getCurrentGrammar().getControl();
 
         File controlFile =
-            new File(FileGps.toFile(currentGrammarURL), cv.getName()
+            new File(FileGps.toFile(this.currentGrammarURL), cv.getName()
                 + Groove.CONTROL_EXTENSION);
 
         doSaveControl(program, controlFile);
