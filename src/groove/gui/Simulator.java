@@ -46,6 +46,12 @@ import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
+import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.FormulaDialog;
+import groove.gui.dialog.ProgressBarDialog;
+import groove.gui.dialog.PropertiesDialog;
+import groove.gui.dialog.ReplaceLabelDialog;
+import groove.gui.dialog.RuleNameDialog;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
@@ -75,6 +81,7 @@ import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.GrooveModules;
+import groove.util.Pair;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
@@ -105,6 +112,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -525,8 +533,8 @@ public class Simulator {
         return this.loadControlFileAction;
     }
 
-    /**  mzimakova
-     * Returns the rule load action permanently associated with this
+    /**
+     * mzimakova Returns the rule load action permanently associated with this
      * simulator.
      */
     public LoadRuleAction getLoadRuleAction() {
@@ -637,6 +645,18 @@ public class Simulator {
             this.refreshGrammarAction = new RefreshGrammarAction();
         }
         return this.refreshGrammarAction;
+    }
+
+    /**
+     * Returns the rule renaming action permanently associated with this
+     * simulator.
+     */
+    public ReplaceLabelAction getRenameLabelAction() {
+        // lazily create the action
+        if (this.renameLabelAction == null) {
+            this.renameLabelAction = new ReplaceLabelAction();
+        }
+        return this.renameLabelAction;
     }
 
     /**
@@ -832,10 +852,13 @@ public class Simulator {
                                 grammar.getStartGraph().getName());
                         getStateFileChooser().setSelectedFile(startFile);
                     } else {
-                        // make sure the selected file from an old grammar is unselected
+                        // make sure the selected file from an old grammar is
+                        // unselected
                         getStateFileChooser().setSelectedFile(null);
-                        // make sure the dialog for open state opens at the grammar location
-                        getStateFileChooser().setCurrentDirectory(FileGps.toFile(grammarURL));
+                        // make sure the dialog for open state opens at the
+                        // grammar location
+                        getStateFileChooser().setCurrentDirectory(
+                            FileGps.toFile(grammarURL));
                     }
                     if (grammar.getControl() != null) {
                         File controlFile =
@@ -843,16 +866,19 @@ public class Simulator {
                                 grammar.getControl().getName());
                         getControlFileChooser().setSelectedFile(controlFile);
                     } else {
-                        // make sure the selected file from an old grammar is unselected
+                        // make sure the selected file from an old grammar is
+                        // unselected
                         getControlFileChooser().setSelectedFile(null);
-                        // make sure the dialog for open control opens at the grammar location
+                        // make sure the dialog for open control opens at the
+                        // grammar location
                         getControlFileChooser().setCurrentDirectory(
                             FileGps.toFile(grammarURL));
                     }
                     getGrammarFileChooser().setSelectedFile(
                         FileGps.toFile(grammarURL));
-                    getRuleFileChooser().setCurrentDirectory(FileGps.toFile(grammarURL));//mzimakova
-               } catch (final IOException exc) {
+                    getRuleFileChooser().setCurrentDirectory(
+                        FileGps.toFile(grammarURL));// mzimakova
+                } catch (final IOException exc) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             showErrorDialog(exc.getMessage(), exc.getCause());
@@ -908,8 +934,7 @@ public class Simulator {
      */
     void doLoadStartGraph(File file) {
         try {
-            AspectGraph aspectStartGraph =
-                unmarshalGraph(file);
+            AspectGraph aspectStartGraph = unmarshalGraph(file);
             AspectualGraphView startGraph =
                 new AspectualGraphView(aspectStartGraph,
                     getCurrentGrammar().getProperties());
@@ -935,16 +960,17 @@ public class Simulator {
         }
     }
 
-    /**  mzimakova
-     * Sets the contents of a given file as start state. 
+    /**
+     * mzimakova Sets the contents of a given file as start state.
      */
     void doLoadRule(File file) {
         try {
             new FileGps(true).loadRule(this.currentGrammar, file);
             setGrammar(getCurrentGrammar());
             setTitle();
-            doSaveGrammar(this.currentGrammarLoader, FileGps.toFile(this.currentGrammarURL));
-       } catch (IOException e) {
+            doSaveGrammar(this.currentGrammarLoader,
+                FileGps.toFile(this.currentGrammarURL));
+        } catch (IOException e) {
             this.showErrorDialog("Error loading rule", e);
         }
     }
@@ -1133,14 +1159,19 @@ public class Simulator {
         }
     }
 
+    /** Renames all instances of a given label by another. */
+    void doRenameLabel(String original, String replacement) {
+        // does nothing for now
+    }
+
     private void marshalGraph(AspectGraph graph, File file) throws IOException {
         getGraphLoader(file).marshalGraph(graph, file);
     }
-    
+
     private AspectGraph unmarshalGraph(File file) throws IOException {
         return getGraphLoader(file).unmarshalGraph(file);
     }
-    
+
     private Xml<AspectGraph> getGraphLoader(File file) {
         if (this.autFilter.accept(file)) {
             return this.autLoader;
@@ -1148,7 +1179,7 @@ public class Simulator {
             return this.graphLoader;
         }
     }
-    
+
     /**
      * Sets a new graph transition system. Invokes
      * {@link #fireSetGrammar(DefaultGrammarView)} to notify all observers of
@@ -1430,16 +1461,15 @@ public class Simulator {
             // with the rule directory to the left and a desktop pane to the
             // right
             JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-//            splitPane.setLeftComponent(getRuleJTreePanel());
-            
+            // splitPane.setLeftComponent(getRuleJTreePanel());
+
             JPanel leftPanel = new JPanel();
             leftPanel.setLayout(new BorderLayout());
             leftPanel.add(getRuleJTreePanel(), BorderLayout.CENTER);
             leftPanel.add(new JScrollPane(getStateList()), BorderLayout.SOUTH);
-            
-            
+
             splitPane.setLeftComponent(leftPanel);
-            
+
             splitPane.setRightComponent(getGraphViewsPanel());
 
             Container contentPane = this.frame.getContentPane();
@@ -1569,14 +1599,13 @@ public class Simulator {
         return this.typePanel;
     }
 
-    
     JList getStateList() {
-        if( this.stateJList == null ) {
+        if (this.stateJList == null) {
             this.stateJList = new StateJList(this);
         }
         return this.stateJList;
     }
-    
+
     /**
      * Returns the tree of rules and matches displayed in the simulator.
      */
@@ -1712,7 +1741,8 @@ public class Simulator {
         result.add(new JMenuItem(new LoadURLAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getLoadControlFileAction()));
-        result.add(new JMenuItem(getLoadRuleAction()));/**mzimakova**/
+        result.add(new JMenuItem(getLoadRuleAction()));
+        /** mzimakova* */
         result.add(new JMenuItem(getRefreshGrammarAction()));
         result.add(createOpenRecentMenu());
         result.addSeparator();
@@ -1747,7 +1777,7 @@ public class Simulator {
     }
 
     /**
-     * Creates and returns a file menu for the menu bar.
+     * Creates and returns an edit menu for the menu bar.
      */
     private JMenu createEditMenu() {
         JMenu result = new JMenu(Options.EDIT_MENU_NAME);
@@ -1759,6 +1789,8 @@ public class Simulator {
         result.add(getCopyRuleAction());
         result.add(getDeleteRuleAction());
         result.add(getRenameRuleAction());
+        result.addSeparator();
+        result.add(getRenameLabelAction());
         result.addSeparator();
         result.add(getEditRuleAction());
         result.add(getEditGraphAction());
@@ -1947,7 +1979,7 @@ public class Simulator {
             FileFilter firstFilter = null;
             for (FileFilter filter : this.grammarLoaderMap.keySet()) {
                 this.grammarFileChooser.addChoosableFileFilter(filter);
-                if( firstFilter == null ) {
+                if (firstFilter == null) {
                     firstFilter = filter;
                 }
             }
@@ -1996,9 +2028,9 @@ public class Simulator {
         return this.controlFileChooser;
     }
 
-    /**   mzimakova
-     * Returns the file chooser for rule (GPR) files, lazily creating it
-     * first.
+    /**
+     * mzimakova Returns the file chooser for rule (GPR) files, lazily creating
+     * it first.
      */
     JFileChooser getRuleFileChooser() {
         if (this.ruleFileChooser == null) {
@@ -2030,19 +2062,19 @@ public class Simulator {
     protected void initGrammarLoaders() {
         this.grammarLoaderMap.clear();
         AspectualViewGps gpsLoader;
-        
+
         // loader for directories representing grammars
         gpsLoader = new FileGps(true);
         this.grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
 
-        // loader for archives (jar/zip) containing directories representing grammmars
+        // loader for archives (jar/zip) containing directories representing
+        // grammmars
         gpsLoader = new JarGps(true);
         this.grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
 
         gpsLoader = new ZipGps(true);
         this.grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
 
-        
         // ggxLoader = new GgxGrammar();
         // grammarLoaderMap.put(ggxLoader.getExtensionFilter(), ggxLoader);
     }
@@ -2406,6 +2438,24 @@ public class Simulator {
     }
 
     /**
+     * Enters a dialog that asks for a label to be renamed, and its the
+     * replacement.
+     * @return A pair consisting of the label to be replaced and its
+     *         replacement, neither of which can be <code>null</code>; or
+     *         <code>null</code> if the dialog was cancelled.
+     */
+    Pair<String,String> askReplacement() {
+        ReplaceLabelDialog dialog =
+            new ReplaceLabelDialog(Collections.<String>emptySet(), null);
+        if (dialog.showDialog(getFrame(), null)) {
+            return new Pair<String,String>(dialog.getOriginal(),
+                dialog.getReplacement());
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Checks if a given option is confirmed. The question can be set
      * explicitly.
      */
@@ -2514,12 +2564,11 @@ public class Simulator {
      */
     private final Xml<AspectGraph> graphLoader =
         new AspectGxl(new LayedOutXml());
-    
+
     /**
      * The graph loader used for graphs in .aut format
      */
-    private final Xml<AspectGraph> autLoader =
-        new AspectGxl(new Aut());
+    private final Xml<AspectGraph> autLoader = new AspectGxl(new Aut());
 
     /**
      * File chooser for grammar files.
@@ -2536,8 +2585,8 @@ public class Simulator {
      */
     private JFileChooser controlFileChooser;
 
-    /** mzimakova
-     * File chooser for control files.
+    /**
+     * mzimakova File chooser for control files.
      */
     private JFileChooser ruleFileChooser;
 
@@ -2559,15 +2608,16 @@ public class Simulator {
     /**
      * Extension filter for CADP <code>.aut</code> files.
      */
-    private final ExtensionFilter autFilter = new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
+    private final ExtensionFilter autFilter =
+        new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
 
     /**
      * Extension filter for control files.
      */
     private final ExtensionFilter controlFilter = Groove.createControlFilter();
 
-    /**  mzimakova
-     * Extension filter for rule files.
+    /**
+     * mzimakova Extension filter for rule files.
      */
     private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
 
@@ -2595,7 +2645,7 @@ public class Simulator {
 
     /** Production system graph list */
     private JList stateJList;
-    
+
     /** Production rule display panel. */
     private RulePanel rulePanel;
 
@@ -2685,7 +2735,10 @@ public class Simulator {
     /** The control file load action permanently associated with this simulator. */
     private LoadControlFileAction loadControlFileAction;
 
-    /** The rule load action permanently associated with this simulator. --mzimakova*/
+    /**
+     * The rule load action permanently associated with this simulator.
+     * --mzimakova
+     */
     private LoadRuleAction loadRuleAction;
 
     /** The start state load action permanently associated with this simulator. */
@@ -2728,6 +2781,10 @@ public class Simulator {
      * The rule renaming action permanently associated with this simulator.
      */
     private RenameRuleAction renameRuleAction;
+    /**
+     * The label renaming action permanently associated with this simulator.
+     */
+    private ReplaceLabelAction renameLabelAction;
     /**
      * The state save action permanently associated with this simulator.
      */
@@ -3587,33 +3644,32 @@ public class Simulator {
         }
     }
 
-    /**    mzimakova
-     * Action for loading and setting a different control program.
+    /**
+     * mzimakova Action for loading and setting a different control program.
      * @see Simulator#doLoadControlFile(File)
      */
-     private class LoadRuleAction extends AbstractAction implements
-                 Refreshable {
-             /** Constructs an instance of the action. */
-             LoadRuleAction() {
-                 super(Options.LOAD_RULE_ACTION_NAME);
-                 addRefreshable(this);
-             }
+    private class LoadRuleAction extends AbstractAction implements Refreshable {
+        /** Constructs an instance of the action. */
+        LoadRuleAction() {
+            super(Options.LOAD_RULE_ACTION_NAME);
+            addRefreshable(this);
+        }
 
-             public void actionPerformed(ActionEvent evt) {
-                 int result = getRuleFileChooser().showOpenDialog(getFrame());
-                 // now load, if so required
-                 if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                     doLoadRule(getRuleFileChooser().getSelectedFile());
-                 }
-             }
+        public void actionPerformed(ActionEvent evt) {
+            int result = getRuleFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+                doLoadRule(getRuleFileChooser().getSelectedFile());
+            }
+        }
 
-             /**
-              * Sets the enabling status of this action, depending on whether a
-              * grammar is currently loaded.
-              */
-             public void refresh() {
-                 setEnabled(getCurrentGrammar() != null);
-             }
+        /**
+         * Sets the enabling status of this action, depending on whether a
+         * grammar is currently loaded.
+         */
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
     }
 
     /**
@@ -3658,7 +3714,8 @@ public class Simulator {
                     FileFilter filterUsed =
                         getGrammarFileChooser().getFileFilter();
 
-                    AspectualViewGps loader = getGrammarLoaderMap().get(filterUsed);
+                    AspectualViewGps loader =
+                        getGrammarLoaderMap().get(filterUsed);
                     URL grammarURL = loader.createURL(selectedFile);
                     doLoadGrammar(loader, grammarURL);
                 }
@@ -3690,7 +3747,7 @@ public class Simulator {
             super(displayName);
             this.toOpen = toOpen;
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
 
             if (this.toOpen != null) {
@@ -3739,7 +3796,8 @@ public class Simulator {
                             NEW_GRAMMAR_NAME);
                 }
                 getGrammarFileChooser().setSelectedFile(newGrammar);
-                getGrammarFileChooser().setFileFilter(new FileGps(true).getExtensionFilter());
+                getGrammarFileChooser().setFileFilter(
+                    new FileGps(true).getExtensionFilter());
                 boolean ok = false;
                 while (!ok) {
                     if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
@@ -4014,6 +4072,28 @@ public class Simulator {
         }
     }
 
+    /** Action that renames all instances of a given label into another. */
+    private class ReplaceLabelAction extends AbstractAction implements
+            Refreshable {
+        ReplaceLabelAction() {
+            super(Options.REPLACE_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(true)) {
+                Pair<String,String> renaming = askReplacement();
+                if (renaming != null) {
+                    doRenameLabel(renaming.first(), renaming.second());
+                }
+            }
+        }
+    }
+
     /**
      * Action for saving a rule system. Currently not enabled.
      */
@@ -4236,7 +4316,8 @@ public class Simulator {
                     AspectualViewGps avg = URLLoaderFactory.getLoader(url);
                     String name = avg.grammarName(url);
                     String location = avg.grammarLocation(url);
-                    this.menu.add( new LoadURLAction(url, name + " - " + location));
+                    this.menu.add(new LoadURLAction(url, name + " - "
+                        + location));
                 } catch (MalformedURLException e) {
                     // url should never be malformed, since it appears only in
                     // the history when we could previously load a grammar from

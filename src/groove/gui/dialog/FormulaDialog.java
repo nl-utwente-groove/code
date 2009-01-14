@@ -14,7 +14,7 @@
  * 
  * $Id: FormulaDialog.java,v 1.9 2008-02-04 08:50:00 kastenberg Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

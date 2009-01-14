@@ -14,7 +14,7 @@
  * 
  * $Id: ProgressBarDialog.java,v 1.3 2008-01-30 09:33:37 iovka Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import java.awt.Dimension;
 import java.util.Timer;

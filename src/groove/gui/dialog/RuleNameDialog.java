@@ -14,7 +14,7 @@
  * 
  * $Id: RuleNameDialog.java,v 1.6 2008-01-30 09:33:36 iovka Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import groove.trans.RuleNameLabel;
 
@@ -36,14 +36,15 @@ import javax.swing.event.DocumentListener;
  * @author Arend Rensink
  * @version $Revision $
  */
-class RuleNameDialog {
+public class RuleNameDialog {
     /**
      * Constructs a dialog instance, given a set of existing names (that should
      * not be used) as well as a suggested value for the new rule name.
      * @param existingNames the set of already existing rule names
      * @param suggestion the suggested name to start with
      */
-    RuleNameDialog(Set<RuleNameLabel> existingNames, RuleNameLabel suggestion) {
+    public RuleNameDialog(Set<RuleNameLabel> existingNames,
+            RuleNameLabel suggestion) {
         this.existingNames = new HashSet<RuleNameLabel>(existingNames);
         this.suggestion = suggestion;
     }
