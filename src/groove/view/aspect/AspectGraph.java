@@ -46,12 +46,12 @@ import java.util.Set;
  * @version $Revision $
  */
 public class AspectGraph extends NodeSetEdgeSetGraph {
-    /**
-     * Constructor that returns an empty graph.
-     */
-    public AspectGraph() {
-        this.errors = Collections.emptyList();
-    }
+    // /**
+    // * Constructor that returns an empty graph.
+    // */
+    // public AspectGraph() {
+    // this.errors = Collections.emptyList();
+    // }
 
     /**
      * Specialises the return type.
@@ -101,12 +101,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     /**
      * Returns the list of format errors in this graph. If the list is empty,
      * the graph has no errors.
-     * @return a possubly empty, non-<code>null</code> list of format errors
+     * @return a possibly empty, non-<code>null</code> list of format errors
      *         in this aspect graph
      */
     public List<String> getErrors() {
-        Collections.sort(this.errors);
-        return Collections.unmodifiableList(this.errors);
+        List<String> result = getInfo().getErrors();
+        return result == null ? Collections.<String>emptyList() : result;
     }
 
     /**
@@ -115,12 +115,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @return <code>true</code> if this aspect graph has format errors
      */
     public boolean hasErrors() {
-        return !this.errors.isEmpty();
+        return !getErrors().isEmpty();
     }
 
-    /** Sets the list of errors to a opy of a given list. */
+    /** Sets the list of errors to a copy of a given list. */
     private void setErrors(List<String> errors) {
-        this.errors = new ArrayList<String>(errors);
+        errors = new ArrayList<String>(errors);
+        Collections.sort(errors);
+        getInfo().setErrors(errors);
     }
 
     /**
@@ -410,8 +412,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         return result;
     }
 
-    /** Format errors in this aspect graph. */
-    private List<String> errors;
+    //
+    // /** Format errors in this aspect graph. */
+    // private List<String> errors;
 
     /**
      * Returns a factory for {@link AspectGraph}s, i.e., an object to invoke
