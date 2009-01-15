@@ -338,6 +338,7 @@ public class FileGps extends AspectualViewGps {
     /**
      * Recursively traverses all subdirectories and deletes all files and
      * directories.
+     * TOM: changing this to only delete the rules recursively
      */
     private boolean deleteRecursive(File location) {
         if (location.isDirectory()) {
@@ -346,8 +347,26 @@ public class FileGps extends AspectualViewGps {
                     return false;
                 }
             }
+            // after deleting rules, try if it is empty; if so, delete 
+            if( location.listFiles().length == 0 ) {
+                return location.delete();
+            } else {
+                return true;
+            }
         }
-        return location.delete();
+        else {
+            // this is a file. Only delete it if it is a rule or a rule layout
+            
+            if( RULE_FILTER.accept(location)) {
+                location.delete();
+                File layout = new File( location , ".gl");
+                if( layout.exists() ) {
+                    layout.delete();
+                }
+            }
+            // TOM: this should probably reflect whether it succeeded to delete the rule...
+            return true;        
+        }
     }
 
     private void collectRuleNames(Map<RuleNameLabel,URL> result,
