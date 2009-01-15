@@ -25,6 +25,7 @@ import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
 import groove.gui.BoundedModelCheckingDialog;
 import groove.gui.Simulator;
+import groove.gui.dialog.FormulaDialog;
 
 /**
  * A factory for creating scenario handlers by composing a scenario from its
@@ -99,7 +100,7 @@ public class ScenarioFactory {
         return new ModelCheckingScenario(strategy, name, description) {
             @Override
             protected String getProperty() {
-                groove.gui.FormulaDialog dialog = sim.getFormulaDialog();
+                FormulaDialog dialog = sim.getFormulaDialog();
                 dialog.showDialog(sim.getFrame());
                 return dialog.getProperty();
             }
@@ -122,7 +123,7 @@ public class ScenarioFactory {
         return new ModelCheckingScenario(strategy, name, description) {
             @Override
             protected String getProperty() {
-                groove.gui.FormulaDialog dialog = sim.getFormulaDialog();
+                FormulaDialog dialog = sim.getFormulaDialog();
                 dialog.showDialog(sim.getFrame());
                 return dialog.getProperty();
             }
