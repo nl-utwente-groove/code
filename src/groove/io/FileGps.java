@@ -188,10 +188,7 @@ public class FileGps extends AspectualViewGps {
      */
     protected DefaultGrammarView unmarshal(File location,
             String startGraphName, String controlName) throws IOException {
-
-        if (startGraphName == null) {
-            startGraphName = DEFAULT_START_GRAPH_NAME;
-        }
+        String actualStartGraphName = startGraphName == null ? DEFAULT_START_GRAPH_NAME : startGraphName;
         if (controlName == null) {
             controlName = DEFAULT_CONTROL_NAME;
         }
@@ -240,13 +237,14 @@ public class FileGps extends AspectualViewGps {
 
         // START GRAPH
         File startGraphFile;
-        if (!hasRecognisedExtension(startGraphName)) {
-            startGraphName = STATE_FILTER.addExtension(startGraphName);
+        if (!hasRecognisedExtension(actualStartGraphName)) {
+            actualStartGraphName = STATE_FILTER.addExtension(actualStartGraphName);
         }
-        startGraphFile = new File(location, startGraphName);
+        startGraphFile = new File(location, actualStartGraphName);
         if (startGraphFile.exists()) {
             loadStartGraph(result, toURL(startGraphFile));
-        } else {
+        } else if (startGraphName != null) {
+            // if there was an explicit name given, throw an exception
             throw new IOException(String.format("Start graph '%s' does not exist", startGraphName));
         }
 
