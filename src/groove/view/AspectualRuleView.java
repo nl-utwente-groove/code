@@ -700,7 +700,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                         coRootMap.putEdge(edgeImage, rhsEdgeImage);
                     }
                 }
-                if (RuleAspect.inNAC(edge)) {
+                if (edgeImage != null && RuleAspect.inNAC(edge)) {
                     nacEdgeSet.add(edgeImage);
                 }
             }
