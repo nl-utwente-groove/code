@@ -16,6 +16,7 @@
  */
 package groove.graph.iso;
 
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -115,7 +116,9 @@ public class DefaultIsoChecker implements IsoChecker {
             if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
                 result = hasIsomorphism(domCertifier, codCertifier);
             } else {
-                System.err.println("Unequal node partition counts");
+                if (ISO_PRINT) {
+                    System.err.println("Unequal node partition counts");
+                }
                 result = false;
             }
             reporter.stop();
@@ -635,7 +638,7 @@ public class DefaultIsoChecker implements IsoChecker {
         }
         if (ISO_PRINT) {
             if (!result) {
-                System.err.printf("Graphs have distinct distinct but unequal certificates");
+                System.err.printf("Graphs have distinct but unequal certificates%n");
             }
         }
         return result;
@@ -893,12 +896,15 @@ public class DefaultIsoChecker implements IsoChecker {
     private static void testIso(String name) {
         try {
             Graph graph1 = Groove.loadGraph(name);
+            System.out.printf("Graph certificate: %s%n", graph1.getCertifier(true).getGraphCertificate());
             IsoChecker checker = new DefaultIsoChecker(true);
             for (int i = 0; i < 1000; i++) {
                 Graph graph2 = new NodeSetEdgeSetGraph();
                 NodeEdgeMap nodeMap = new NodeEdgeHashMap();
                 for (Node node: graph1.nodeSet()) {
-                    nodeMap.putNode(node,graph2.addNode());
+                    Node newNode = DefaultNode.createNode();
+                    graph2.addNode(newNode);
+                    nodeMap.putNode(node,newNode);
                 }
                 for (Edge edge: graph1.edgeSet()) {
                     graph2.addEdge(nodeMap.mapEdge(edge));
