@@ -16,7 +16,6 @@
  */
 package groove.graph.iso;
 
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -28,11 +27,13 @@ import groove.util.Reporter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.TreeSet;
 
 /**
  * Implements an algorithm to partition a given graph into sets of symmetric
@@ -218,6 +219,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     synchronized private void computeCertificates() {
         // we compute the certificate map
         Queue<Block> splitters = initCertificates();
+        this.nodePartitionCount = splitters.size();
         // first iteration
         split(splitters);
         if (TRACE) {
@@ -299,6 +301,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             if (block == null) {
                 result.put(nodeCert.getValue(), block =
                     new Block(nodeCert.getValue()));
+                block.setSplitter(true);
             }
             block.append(nodeCert);
         }
@@ -427,39 +430,38 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     }
 
     private void splitNext(Block splitter, Queue<Block> splitterList) {
-        // mark and update the node certificates related to the splitter nodes
-        List<NodeCertificate> markedNodes = new ArrayList<NodeCertificate>();
-        for (NodeCertificate splitterNode : splitter.toArray()) {
+        // update the node certificates related to the splitter nodes
+        Collection<Block> splitBlocks = new TreeSet<Block>();
+        for (NodeCertificate splitterNode : splitter.getNodes()) {
             for (Edge2Certificate outEdge : splitterNode.outEdges) {
-                if (outEdge.targetCert.remove()) {
-                    markedNodes.add(outEdge.targetCert);
+                Block splitBlock = outEdge.getTarget().getBlock();
+                if (splitBlock.startSplit()) {
+                    splitBlocks.add(splitBlock);
                 }
                 outEdge.updateTarget();
             }
             for (Edge2Certificate inEdge : splitterNode.inEdges) {
-                if (inEdge.getSource().remove()) {
-                    markedNodes.add(inEdge.getSource());
+                Block splitBlock = inEdge.getSource().getBlock();
+                if (splitBlock.startSplit()) {
+                    splitBlocks.add(splitBlock);
                 }
                 inEdge.updateSource();
             }
         }
-        // put the marked nodes into new blocks
-        Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
-        for (NodeCertificate node : markedNodes) {
-            node.setNewValue();
-            Block block = blockMap.get(node.getValue());
-            if (block == null) {
-                blockMap.put(node.getValue(), block =
-                    new Block(node.getValue()));
+        splitter.setSplitter(false);
+        // process the split blocks
+        for (Block block : splitBlocks) {
+            Block[] newBlocks = block.split();
+            int last = block.isSplitter() ? newBlocks.length : newBlocks.length - 1;
+            for (int i = 0; i < last; i++) {
+                splitterList.add(newBlocks[i]);
+                newBlocks[i].setSplitter(true);
+                this.graphCertificate += newBlocks[i].hashCode();
             }
-            block.append(node);
-        }
-        // append all but the largest of the new blocks to the splitters
-        Block[] newBlocks = new Block[blockMap.size()];
-        blockMap.values().toArray(newBlocks);
-        Arrays.sort(newBlocks);
-        for (int i = 0; i < newBlocks.length - 1; i++) {
-            splitterList.add(newBlocks[i]);
+            if (last < newBlocks.length) {
+                this.graphCertificate += newBlocks[last].hashCode();
+            }
+            this.nodePartitionCount += newBlocks.length - 1;
         }
     }
 
@@ -645,18 +647,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
          */
         public NodeCertificate(Node node) {
             this.element = node;
-            this.previous = this;
-            this.next = this;
             this.value = INIT_NODE_VALUE;
-        }
-
-        /**
-         * Constructs a dummy head node for the list of node certificates in a
-         * block.
-         */
-        public NodeCertificate(Block block) {
-            this((Node) null);
-            this.container = block;
         }
 
         @Override
@@ -674,23 +665,23 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             return obj instanceof NodeCertificate
                 && this.value == ((NodeCertificate) obj).value;
         }
-
-        /**
-         * Change the certificate value predictably to break symmetry.
-         */
-        public void breakSymmetry() {
-            this.value ^= this.value << 5 ^ this.value >> 3;
-        }
-
-        /**
-         * The new value for this certificate node is the sum of the values of
-         * the incident certificate edges.
-         */
-        protected int computeNewValue() {
-            int result = this.nextValue ^ this.value;
-            this.nextValue = 0;
-            return result;
-        }
+//
+//        /**
+//         * Change the certificate value predictably to break symmetry.
+//         */
+//        public void breakSymmetry() {
+//            this.value ^= this.value << 5 ^ this.value >> 3;
+//        }
+//
+//        /**
+//         * The new value for this certificate node is the sum of the values of
+//         * the incident certificate edges.
+//         */
+//        protected int computeNewValue() {
+//            int result = this.nextValue ^ this.value;
+//            this.nextValue = 0;
+//            return result;
+//        }
 
         //
         // /**
@@ -700,13 +691,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         // protected void addValue(int inc) {
         // this.value += inc;
         // }
-
-        /**
-         * Adds a certain value to {@link #nextValue}.
-         */
-        protected void addNextValue(int value) {
-            this.nextValue += value;
-        }
 
         /**
          * Returns the certificate value. Note that this means the hash code is
@@ -727,14 +711,44 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             return this.value;
         }
 
+        //
+        //        /**
+        //         * Change the certificate value predictably to break symmetry.
+        //         */
+        //        public void breakSymmetry() {
+        //            this.value ^= this.value << 5 ^ this.value >> 3;
+        //        }
+        //
+        //        /**
+        //         * The new value for this certificate node is the sum of the values of
+        //         * the incident certificate edges.
+        //         */
+        //        protected int computeNewValue() {
+        //            int result = this.nextValue ^ this.value;
+        //            this.nextValue = 0;
+        //            return result;
+        //        }
         /**
-         * Computes, stores and returns a new value for this certificate. The
-         * computation is done by invoking {@link #computeNewValue()}.
-         * @return the freshly computed new value
-         * @see #computeNewValue()
+         * Adds a certain value to {@link #nextValue}.
          */
-        protected int setNewValue() {
-            return this.value = computeNewValue();
+        void addNextValue(int value) {
+            this.nextValue += value;
+        }
+
+        /**
+         * Computes, stores and returns a new value for this certificate.
+         */
+        void setNewValue() {
+            this.value = computeNewValue();
+        }
+
+        /**
+         * Computes, stores and returns a new value for this certificate.
+         */
+        int computeNewValue() {
+            int result = this.nextValue ^ this.value;
+            this.nextValue = 0;
+            return result;
         }
 
         /** Returns the element of which this is a certificate. */
@@ -742,64 +756,92 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             return this.element;
         }
 
+        /** Adds a self-edge certificate to this node certificate. */
         void addSelf(EdgeCertificate edgeCert) {
             this.value += edgeCert.getValue();
         }
 
+        /** Adds an outgoing edge certificate to this node certificate. */
         void addOutgoing(Edge2Certificate edgeCert) {
             this.outEdges.add(edgeCert);
             this.value += edgeCert.getValue();
         }
 
+        /** Adds an incoming edge certificate to this node certificate. */
         void addIncoming(Edge2Certificate edgeCert) {
             this.inEdges.add(edgeCert);
             this.value += edgeCert.getValue() ^ TARGET_MASK;
         }
+//
+//        /** 
+//         * Marks this node as having been affected by a splitter.
+//         * This entails removing it from its current block, if it is in one,
+//         * and moving it to the marked nodes of that block.
+//         * @return the containing block of this node, if that was freshly split
+//         * by the mark action
+//         */
+//        Block mark() {
+//            Block result = null;
+//            Block container = remove();
+//            if (container != null) {
+//                if (container.startSplit()) {
+//                    result = container;
+//                }
+//                container.addMarkedNode(this);
+//            }
+//            return result;
+//        }
+//        
+//        /**
+//         * Removes this node from its current position in the containing block, if it
+//         * is in one; does nothing otherwise.
+//         * @return <code>true</code> if the node was not currently in a block
+//         */
+//        Block remove() {
+//            Block result = this.container;
+//            if (result != null) {
+//                this.previous.next = this.next;
+//                this.next.previous = this.previous;
+//                this.container.dec();
+//                this.container = null;
+//            }
+//            return result;
+//        }
+//
+//        /** Inserts this node after a given node in a block. */
+//        void insertAfter(NodeCertificate pred) {
+//            remove();
+//            this.next = pred.next;
+//            this.next.previous = this;
+//            this.previous = pred;
+//            this.previous.next = this;
+//            this.container = pred.container;
+//            this.container.inc();
+//        }
 
-        /**
-         * Removes this cell from its current position in the linked list, if it
-         * is in a linked list; does nothing otherwise.
-         * @return <code>true</code> if the cell was currently in a list
-         */
-        boolean remove() {
-            if (this.container != null) {
-                this.previous.next = this.next;
-                this.next.previous = this.previous;
-                this.container.dec();
-                this.container = null;
-                return true;
-            } else {
-                return false;
-            }
+        final Block getBlock() {
+            return this.container;
         }
 
-        /** Inserts this cell after a given cell in a linked list. */
-        void insertAfter(NodeCertificate pred) {
-            remove();
-            this.next = pred.next;
-            this.next.previous = this;
-            this.previous = pred;
-            this.previous.next = this;
-            this.container = pred.container;
-            this.container.inc();
+        final void setBlock(Block container) {
+            this.container = container;
         }
-
+        
         /** The value for the next invocation of {@link #computeNewValue()} */
-        int nextValue;
+        private int nextValue;
         /** The current value, which determines the hash code. */
         int value;
         /** The element for which this is a certificate. */
         private final Node element;
         /** List of certificates of incoming edges. */
-        List<Edge2Certificate> inEdges = new ArrayList<Edge2Certificate>();
+        private List<Edge2Certificate> inEdges = new ArrayList<Edge2Certificate>();
         /** List of certificates of outgoing edges. */
-        List<Edge2Certificate> outEdges = new ArrayList<Edge2Certificate>();
+        private List<Edge2Certificate> outEdges = new ArrayList<Edge2Certificate>();
         /** Current enclosing block. */
-        Block container;
-        /** The previous and next block in a doubly linked list. */
-        NodeCertificate previous, next;
+        private Block container;
 
         static final int TARGET_MASK = 0x5555;
+
     }
 
     /**
@@ -830,17 +872,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 && this.node.equals(((ValueNodeCertificate) obj).node);
         }
 
-        /**
-         * The new value for this certificate node is the sum of the values of
-         * the incident certificate edges.
-         */
-        @Override
-        protected int computeNewValue() {
-            int result = this.nextValue ^ this.value;
-            this.nextValue = 0;
-            return result;
-        }
-
         private final ValueNode node;
     }
 
@@ -849,6 +880,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             this.edge = edge;
             this.sourceCert = sourceCert;
             this.value = edge.label().hashCode();
+            sourceCert.addSelf(this);
         }
 
         final public Edge getElement() {
@@ -866,6 +898,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 && ((EdgeCertificate) obj).sourceCert.equals(this.sourceCert)
                 && ((EdgeCertificate) obj).edge.label().equals(
                     this.edge.label());
+        }
+
+        @Override
+        public String toString() {
+            return "[" + getSource() + "," + getElement().label() + "("
+                + this.edge.label().hashCode() + ")]";
         }
 
         final int getValue() {
@@ -886,7 +924,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 NodeCertificate targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
-            this.labelIndex = ((DefaultLabel) edge.label()).hashCode();
+            this.labelIndex = edge.label().hashCode();
             sourceCert.addOutgoing(this);
             targetCert.addIncoming(this);
             // PaigeTarjanMcKay.this.setIndex(getElement().label());
@@ -911,6 +949,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         public boolean equals(Object obj) {
             return obj instanceof Edge2Certificate && super.equals(obj)
                 && ((Edge2Certificate) obj).getTarget().equals(getTarget());
+        }
+
+        @Override
+        public String toString() {
+            return "[" + getSource() + "," + getElement().label() + "("
+                + this.labelIndex + ")," + getTarget() + "]";
         }
 
         private NodeCertificate getTarget() {
@@ -946,82 +990,164 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     /** Represents a block of nodes in some partition. */
     class Block implements Comparable<Block> {
         Block(int value) {
-            this.head = new NodeCertificate(this);
+//            this.head = new NodeCertificate(this);
+            this.nodes = new LinkedList<NodeCertificate>();
             this.value = value;
         }
 
-        /** Indicates if this block is currently being split. */
-        final boolean isSplit() {
-            return this.isSplit;
+        /** Indicates if this block is in the list of splitters. */
+        boolean isSplitter() {
+            return this.splitter;
         }
 
-        /** Sets the split status of this block. */
-        final void setSplit(boolean isSplit) {
-            this.isSplit = isSplit;
+        /** Records that this block has been inserted in the list of splitters. */
+        void setSplitter(boolean splitter) {
+            this.splitter = splitter;
         }
 
-        /** Returns the head of the node certificate list in this block. */
-        final NodeCertificate getHead() {
-            return this.head;
+        /** 
+         * Starts splitting this block.
+         * @return <code>true</code> if the split has just started, <code>false</code> if
+         * splitting had already started before.
+         */
+        final boolean startSplit() {
+            if (!this.splitting) {
+                return this.splitting = true;
+            } else {
+                return false;
+            }
         }
 
+        /** 
+         * Divides all the nodes in this block over new blocks,
+         * depending on their value, and returns an array of all the new blocks.
+         */
+        Block[] split() {
+            Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
+//            if (size() > 0) {
+//                // copy all remaining nodes of the current block
+//                Block copy = new Block(this.value);
+//                blockMap.put(this.value, copy);
+//                NodeCertificate unmarkedNode = this.head.next;
+//                while (unmarkedNode != this.head) {
+//                    // move to the next node because the next action
+//                    // will detach this one from the list
+//                    unmarkedNode = unmarkedNode.next;
+//                    copy.append(unmarkedNode.previous);
+//                }
+//            }
+            for (NodeCertificate node: this.nodes) {
+                node.setNewValue();
+                Block block = blockMap.get(node.getValue());
+                if (block == null) {
+                    blockMap.put(node.getValue(), block =
+                        new Block(node.getValue()));
+                }
+                block.append(node);
+            }
+            this.nodes.clear();
+            // collect and order the sub-blocks
+            Block[] result = new Block[blockMap.size()];
+            blockMap.values().toArray(result);
+            Arrays.sort(result);
+            return result;
+        }
+//        
+//        final void addMarkedNode(NodeCertificate node) {
+//            this.nodes.add(node);
+//        }
+        
+        /** 
+         * Appends a given node certificate to this block,
+         * and sets the certificate's block to this.
+         */
         final void append(NodeCertificate node) {
-            node.insertAfter(this.head.previous);
+            this.nodes.add(node);
+            node.setBlock(this);
         }
 
         /** Returns the current size of the block. */
         final int size() {
-            return this.size;
+            return this.nodes.size();
+        }
+        
+        List<NodeCertificate> getNodes() {
+            return this.nodes;
         }
 
-        /** Increments the block size by one. */
-        final void inc() {
-            if (this.size == 0) {
-                PaigeTarjanMcKay.this.nodePartitionCount++;
-            }
-            this.size++;
-        }
+//
+//        /** Increments the block size by one. */
+//        final void inc() {
+////            if (this.size == 0) {
+////                PaigeTarjanMcKay.this.nodePartitionCount++;
+////            }
+//            this.size++;
+//        }
+//
+//        /** Decrements the block size by one. */
+//        final void dec() {
+//            this.size--;
+////            if (this.size == 0) {
+////                PaigeTarjanMcKay.this.nodePartitionCount--;
+////            }
+//        }
+//
+//        /** Returns an array containing the node certificates in this block. */
+//        final NodeCertificate[] toArray() {
+//            NodeCertificate[] result = new NodeCertificate[size()];
+//            int i = 0;
+//            for (NodeCertificate node = this.head.next; node != this.head; node =
+//                node.next) {
+//                result[i] = node;
+//                i++;
+//            }
+//            return result;
+//        }
 
-        /** Decrements the block size by one. */
-        final void dec() {
-            this.size--;
-            if (this.size == 0) {
-                PaigeTarjanMcKay.this.nodePartitionCount--;
-            }
-        }
-
-        /** Returns an array containing the node certificates in this block. */
-        final NodeCertificate[] toArray() {
-            NodeCertificate[] result = new NodeCertificate[size()];
-            int i = 0;
-            for (NodeCertificate node = this.head.next; node != this.head; node =
-                node.next) {
-                result[i] = node;
-                i++;
-            }
-            return result;
-        }
-
-        public int compareTo(Block arg0) {
-            int result = size() - arg0.size();
+        /** A block is smaller than another if it has fewer nodes,
+         * or a smaller hash value.
+         */
+        public int compareTo(Block other) {
+            int result = size() - other.size();
             if (result != 0) {
                 return result;
             }
-            return this.value - arg0.value;
+            // test for signs first to prevent overflow
+            result = sign(this.value) - sign(other.value);
+            if (result != 0) {
+                return result;
+            }
+            return this.value - other.value;
+        }
+        
+        private int sign(int number) {
+            return number < 0 ? -1 : number == 0 ? 0 : 1;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Block && ((Block) obj).value == this.value;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.value;
         }
 
         @Override
         public String toString() {
-            return Arrays.toString(toArray());
+            return this.nodes.toString();
         }
 
-        /** Dummy head node of a doubly linked list of node certificates. */
-        private final NodeCertificate head;
-        /** Flag to indicate that this block is currently being split. */
-        private boolean isSplit;
-        /** Size of the block. */
-        private int size;
+//        /** Dummy head node of a doubly linked list of node certificates. */
+//        private final NodeCertificate head;
         /** The distinguishing value of this block. */
         private final int value;
+        /** List of marked nodes, in case the block is currently being split. */
+        private List<NodeCertificate> nodes;
+        /** Flag indicating if this block is in the list of splitters. */
+        private boolean splitter;
+        /** Flag indicating if this block is currently splitting. */
+        private boolean splitting;
     }
 }
