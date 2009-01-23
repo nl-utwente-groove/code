@@ -418,7 +418,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @param certificateFactory the new strategy
      * @see #getCertifier(boolean)
      */
-    static protected void setCertificateFactory(
+    static public void setCertificateFactory(
             CertificateStrategy certificateFactory) {
         AbstractGraph.certificateFactory = certificateFactory;
     }
@@ -427,7 +427,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * Returns the strategy for computing isomorphism certificates.
      * @return the strategy for computing isomorphism certificates
      */
-    static protected CertificateStrategy getCertificateFactory() {
+    static public CertificateStrategy getCertificateFactory() {
         return certificateFactory;
     }
 

@@ -355,7 +355,8 @@ public class Groove {
     static public Graph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
         File file = new File(filename);
-        if (!(createAutFilter().accept(file) || createGxlFilter().accept(file) || createStateFilter().accept(file))) {
+        if (!(createAutFilter().accept(file) || createGxlFilter().accept(file) || createStateFilter().accept(
+            file))) {
             file = new File(createGxlFilter().addExtension(filename));
             if (!file.exists()) {
                 file = new File(createStateFilter().addExtension(filename));
@@ -420,7 +421,7 @@ public class Groove {
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
      */
-    static public void saveGraph(Graph graph, String filename)
+    static public File saveGraph(Graph graph, String filename)
         throws IOException {
         if (!createStateFilter().hasExtension(filename)) {
             filename = createGxlFilter().addExtension(filename);
@@ -428,6 +429,7 @@ public class Groove {
         File file = new File(filename);
         System.err.println("Storing graph as " + file.getAbsolutePath());
         gxlGraphLoader.marshalGraph(graph, file);
+        return file;
     }
 
     /**

@@ -16,12 +16,13 @@
  */
 package groove.test;
 
+import groove.util.TreeHashSet;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import groove.util.TreeHashSet;
 import junit.framework.TestCase;
 
 /**
@@ -129,6 +130,24 @@ public class TreeHashSetTest extends TestCase {
             assertEquals(testSet, this.defaultSet);
         }
         assertEquals(testSet, new HashSet<Object>(Arrays.asList(this.intList1)));
+    }
+
+    /*
+     * Test method for 'groove.util.TreeStoreSet.iterator()'
+     */
+    public void testSortedIterator() {
+        for (int i = INT_LIST_COUNT - 1; i >= 0; i--) {
+            this.defaultSet.add(this.intList1[i]);
+        }
+        Iterator<Object> iter = this.defaultSet.sortedIterator();
+        Integer first = (Integer) iter.next();
+        assertNotNull(first);
+        while (iter.hasNext()) {
+            Integer next = (Integer) iter.next();
+            assertNotNull(next);
+            // assertTrue(next > first);
+            first = next;
+        }
     }
 
     /*
