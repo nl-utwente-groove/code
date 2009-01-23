@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Set implementation that uses a search tree over "hash" code. If the number of
@@ -262,6 +263,104 @@ public class TreeHashSet<T> extends AbstractSet<T> {
              * The number of remaining elements.
              */
             private int remainingCount = TreeHashSet.this.size;
+            /** Modifi8cation count at construction time of this iterator. */
+            private final int expectedModCount = TreeHashSet.this.modCount;
+        };
+    }
+
+    /**
+     * Returns an iterator that goes over the values in the in-order of the tree
+     * of hash codes. This order is guaranteed to be stable for the same set.
+     */
+    public Iterator<T> sortedIterator() {
+        return new Iterator<T>() {
+            @SuppressWarnings("unchecked")
+            public boolean hasNext() {
+                if (this.expectedModCount != TreeHashSet.this.modCount) {
+                    throw new ConcurrentModificationException();
+                }
+                int[] tree = TreeHashSet.this.tree;
+                Object next = this.next;
+                if (next == null && !this.atEnd) {
+                    int nextKeyIx = -1;
+                    if (this.lastEntry == null) {
+                        while (!this.atEnd && nextKeyIx < 0) {
+                            this.lastTreeIx++;
+                            if (this.lastTreeIx > this.maxTreeIx) {
+                                // go back to the parent record
+                                if (this.treeIxStack.isEmpty()) {
+                                    this.atEnd = true;
+                                } else {
+                                    this.lastTreeIx = this.treeIxStack.pop();
+                                    this.maxTreeIx = this.maxIxStack.pop();
+                                }
+                            } else {
+                                int treeValue = tree[this.lastTreeIx];
+                                if (treeValue < 0) {
+                                    nextKeyIx = -treeValue - 1;
+                                } else if (treeValue > 0) {
+                                    // go one level deeper into the tree
+                                    this.treeIxStack.push(this.lastTreeIx);
+                                    this.maxIxStack.push(this.maxTreeIx);
+                                    this.lastTreeIx = treeValue - 1;
+                                    this.maxTreeIx =
+                                        treeValue + TreeHashSet.this.mask;
+                                }
+                            }
+                        }
+                    } else {
+                        nextKeyIx = this.lastEntry.getNext();
+                    }
+                    if (nextKeyIx >= 0) {
+                        next = TreeHashSet.this.keys[nextKeyIx];
+                        if (next instanceof MyListEntry) {
+                            this.lastEntry = (MyListEntry<T>) next;
+                            next = ((MyListEntry<?>) next).getValue();
+                        }
+                    }
+                    this.next = (T) next;
+                }
+                return next != null;
+            }
+
+            public T next() {
+                if (hasNext()) {
+                    T result = this.next;
+                    this.next = null;
+                    return result;
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            public void remove() {
+                // since removing a key may mean that the next element of
+                // the key chain is moved to the position of the removed key,
+                // which the iterator has already passed by, we don't allow it.
+                throw new UnsupportedOperationException();
+            }
+
+            /** Tree index where the last key was taken from. */
+            private int lastTreeIx = -1;
+            /** Stack of parent indices. */
+            private final Stack<Integer> treeIxStack = new Stack<Integer>();
+            /** Maximum tree index of the current record. */
+            private int maxTreeIx = TreeHashSet.this.rootMask;
+            /** Stack of parent index bounds. */
+            private final Stack<Integer> maxIxStack = new Stack<Integer>();
+            /**
+             * Points to the entry where last next value of #next was be taken
+             * from, if any.
+             */
+            private MyListEntry<T> lastEntry;
+            /** The object to be returned at the next invocation of #next(). */
+            private T next;
+            /**
+             * Flag set to <code>true</code> when it is clear no more elements
+             * will be found.
+             */
+            private boolean atEnd;
+
             /** Modifi8cation count at construction time of this iterator. */
             private final int expectedModCount = TreeHashSet.this.modCount;
         };

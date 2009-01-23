@@ -24,12 +24,14 @@ import groove.graph.Node;
 import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
 import groove.util.Reporter;
+import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -228,49 +230,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 "First iteration done; %d partitions for %d nodes in %d iterations%n",
                 this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
-        // // check if duplicate
-        // if ((this.strong || BREAK_DUPLICATES)
-        // && this.nodePartitionCount < this.nodeCertCount) {
-        // // now look for smallest unbroken duplicate certificate (if any)
-        // int oldPartitionCount;
-        // do {
-        // oldPartitionCount = this.nodePartitionCount;
-        // List<NodeCertificate> duplicates = getSmallestDuplicates();
-        // if (duplicates.isEmpty()) {
-        // if (TRACE) {
-        // System.out.printf("All duplicate certificates broken%n");
-        // }
-        // break;
-        // }
-        // checkpointCertificates();
-        // // successively break the symmetry at each of these
-        // for (NodeCertificate duplicate : duplicates) {
-        // duplicate.breakSymmetry();
-        // iterateCertificates();
-        // rollBackCertificates();
-        // this.nodePartitionCount = oldPartitionCount;
-        // }
-        // accumulateCertificates();
-        // // calculate the edge and node certificates once more
-        // // to push out the accumulated node values and get the correct
-        // // node partition count
-        // advanceEdgeCerts();
-        // advanceNodeCerts(true);
-        // if (TRACE) {
-        // System.out.printf(
-        // "Next iteration done; %d partitions for %d nodes in %d iterations%n",
-        // this.nodePartitionCount, this.nodeCertCount,
-        // this.iterateCount);
-        // }
-        // } while (true);// this.nodePartitionCount < this.nodeCertCount &&
-        // // this.nodePartitionCount > oldPartitionCount);
-        // }
-        // // so far we have done nothing with the self-edges, so
-        // // give them a chance to get their value right
-        // int edgeCount = this.edgeCerts.length;
-        // for (int i = this.edge2CertCount; i < edgeCount; i++) {
-        // this.edgeCerts[i].setNewValue();
-        // }
         reporter.stop();
     }
 
@@ -296,21 +255,28 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         for (Edge edge : this.graph.edgeSet()) {
             initEdgeCert(edge);
         }
-        Map<Integer,Block> result = new HashMap<Integer,Block>();
+        // create the splitter array
+        certStore.clear();
         for (NodeCertificate nodeCert : this.nodeCerts) {
-            Block block = result.get(nodeCert.getValue());
-            if (block == null) {
-                result.put(nodeCert.getValue(), block =
-                    new Block(nodeCert.getValue()));
-                block.setSplitter(true);
+            NodeCertificate previous = certStore.put(nodeCert);
+            Block block;
+            if (previous == null) {
+                block = new Block(nodeCert.getValue());
+            } else {
+                block = previous.getBlock();
             }
             block.append(nodeCert);
         }
-        Block[] resultArray = new Block[result.size()];
-        result.values().toArray(resultArray);
-        Arrays.sort(resultArray);
+        Queue<Block> result = new LinkedList<Block>();
+        Iterator<NodeCertificate> iter = certStore.sortedIterator();
+        while (iter.hasNext()) {
+            result.add(iter.next().getBlock());
+        }
+        // Block[] resultArray = new Block[result.size()];
+        // result.values().toArray(resultArray);
+        // Arrays.sort(resultArray);
         reporter.stop();
-        return new LinkedList<Block>(Arrays.asList(resultArray));
+        return result;
     }
 
     /**
@@ -552,6 +518,30 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         }
         iterateCountArray[count]++;
     }
+
+    /**
+     * The resolution of the tree-based certificate store.
+     */
+    static private final int TREE_RESOLUTION = 3;
+    /**
+     * Store for node certificates, to count the number of partitions
+     */
+    static private final TreeHashSet<NodeCertificate> certStore =
+        new TreeHashSet<NodeCertificate>(TREE_RESOLUTION) {
+            /**
+             * For the purpose of this set, only the certificate value is of
+             * importance.
+             */
+            @Override
+            protected boolean allEqual() {
+                return true;
+            }
+
+            @Override
+            protected int getCode(NodeCertificate key) {
+                return key.getValue();
+            }
+        };
 
     /** Debug flag to switch the use of duplicate breaking on and off. */
     static private final boolean BREAK_DUPLICATES = true;
