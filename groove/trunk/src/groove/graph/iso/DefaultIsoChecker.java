@@ -88,18 +88,10 @@ public class DefaultIsoChecker implements IsoChecker {
                     certificateFactory.newInstance(dom, this.strong);
                 CertificateStrategy altCodCert =
                     certificateFactory.newInstance(cod, this.strong);
-                if (!altDomCert.getGraphCertificate().equals(
-                    altCodCert.getGraphCertificate())) {
+                if (!areIsomorphic(altDomCert, altCodCert)) {
                     System.err.printf(
                         "Certifier '%s' gives a false negative on%n%s%n%s%n",
                         altDomCert.getClass(), dom, cod);
-                    // the following construct the data structures in the
-                    // certifiers,
-                    // for debugging purposes
-                    altDomCert.getNodePartitionMap();
-                    altDomCert.getEdgePartitionMap();
-                    altCodCert.getNodePartitionMap();
-                    altCodCert.getEdgePartitionMap();
                     if (SAVE_FALSE_NEGATIVES) {
                         try {
                             File file1 = Groove.saveGraph(dom, "graph1");
