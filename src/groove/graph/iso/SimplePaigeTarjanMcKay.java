@@ -28,18 +28,13 @@ import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.TreeMap;
-
-import javax.naming.OperationNotSupportedException;
 
 /**
  * Implements an algorithm to partition a given graph into sets of symmetric
@@ -51,7 +46,7 @@ import javax.naming.OperationNotSupportedException;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class PaigeTarjanMcKay implements CertificateStrategy {
+public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * The strategy checks for isomorphism weakly, meaning that it might yield
@@ -59,7 +54,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PaigeTarjanMcKay(Graph graph) {
+    public SimplePaigeTarjanMcKay(Graph graph) {
         this(graph, false);
     }
 
@@ -70,7 +65,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PaigeTarjanMcKay(Graph graph, boolean strong) {
+    public SimplePaigeTarjanMcKay(Graph graph, boolean strong) {
         this.graph = graph;
         this.strong = strong;
     }
@@ -192,7 +187,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     }
 
     public CertificateStrategy newInstance(Graph graph, boolean strong) {
-        return new PaigeTarjanMcKay(graph);
+        return new SimplePaigeTarjanMcKay(graph);
     }
 
     /**
@@ -414,16 +409,10 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         }
         // update the node certificates related to the splitter nodes
         TreeHashSet<Block> splitBlocks = new TreeHashSet<Block>();
-        // copy the splitter nodes to avoid ConcurrentModificationExceptions
-        Collection<NodeCertificate> splitterNodes = new ArrayList<NodeCertificate>(splitter.size());
         for (NodeCertificate splitterNode : splitter.getNodes()) {
-            splitterNodes.add(splitterNode);
-        }
-        for (NodeCertificate splitterNode : splitterNodes) {
             for (Edge2Certificate outEdge : splitterNode.outEdges) {
-                NodeCertificate target = outEdge.getTarget();
-                Block splitBlock = target.mark();
-                if (splitBlock != null) {
+                Block splitBlock = outEdge.getTarget().getBlock();
+                if (splitBlock.startSplit()) {
                     // add the new split block to the set
                     Block oldSplitBlock = splitBlocks.put(splitBlock);
                     // if another (different) block with the same value was already in the set
@@ -436,9 +425,8 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 outEdge.updateTarget();
             }
             for (Edge2Certificate inEdge : splitterNode.inEdges) {
-                NodeCertificate source = inEdge.getSource();
-                Block splitBlock = source.mark();
-                if (splitBlock != null) {
+                Block splitBlock = inEdge.getSource().getBlock();
+                if (splitBlock.startSplit()) {
                     // add the new split block to the set
                     Block oldSplitBlock = splitBlocks.put(splitBlock);
                     // if another (different) block with the same value was already in the set
@@ -464,7 +452,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         Iterator<Block> splitBlockIter = splitBlocks.sortedIterator();
         while (splitBlockIter.hasNext()) {
             Block block = splitBlockIter.next();
-            Collection<Block> newBlocks = block.split();
+            Block[] newBlocks = block.split();
             if (RECORD) {
                 Queue<Block> clone = new LinkedList<Block>();
                 for (Block newBlock: newBlocks) {
@@ -472,8 +460,16 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 }
                 this.partitionRecord.add(clone);
             }
-            splitterList.addAll(newBlocks);
-            this.nodePartitionCount += newBlocks.size() - 1;
+            if (newBlocks.length > 0) {
+                int last =
+                    block.isSplitter() ? newBlocks.length
+                            : newBlocks.length - 1;
+                for (int i = 0; i < last; i++) {
+                    splitterList.add(newBlocks[i]);
+                    newBlocks[i].setSplitter(true);
+                }
+                this.nodePartitionCount += newBlocks.length - 1;
+            }
         }
     }
 
@@ -606,11 +602,15 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     static private final float GROWTH_FACTOR = 1.5f;
     /** Number of bits in an int. */
     static private final int INT_WIDTH = 32;
+
+    /** Static empty list, to be shared among split blocks. */
+    private static final List<NodeCertificate> EMPTY_NODE_LIST =
+        Collections.emptyList();
     /**
-     * Static empty collection of blocks, to be returned in case of singular split
+     * Static empty array of blocks, to be returned in case of singular split
      * blocks.
      */
-    private static final Collection<Block> EMPTY_BLOCK_SET = Collections.<Block>emptySet();
+    private static final Block[] EMPTY_BLOCK_ARRAY = new Block[0];
 
     // --------------------------- reporter definitions ---------------------
     /** Reporter instance to profile methods of this class. */
@@ -642,24 +642,18 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     /** Flag to turn on System.out-tracing. */
     static private final boolean TRACE = false;
     /** Flag to turn on partition recording. */
-    static private final boolean RECORD = true;
+    static private final boolean RECORD = false;
     /**
      * Class of nodes that carry (and are identified with) an integer
      * certificate value.
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class NodeCertificate implements Certificate<Node> {
+    static class NodeCertificate // extends LinkedListCell<NodeCertificate>
+            implements Certificate<Node> {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
-        /** Creates a dummy certificate to serve as a head node for a list. */
-        NodeCertificate(Block block) {
-            this((Node) null);
-            this.block = block;
-            this.value = block.value;
-        }
-        
         /**
          * Constructs a new certificate node. The incidence count (i.e., the
          * number of incident edges) is passed in as a parameter. The initial
@@ -668,8 +662,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         public NodeCertificate(Node node) {
             this.element = node;
             this.value = INIT_NODE_VALUE;
-            this.next = this;
-            this.prev = this;
         }
 
         @Override
@@ -717,10 +709,9 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         /**
          * Computes, stores and returns a new value for this certificate.
          */
-        int setNewValue() {
+        void setNewValue() {
             this.value += this.nextValue;
             this.nextValue = 0;
-            return this.value;
         }
 
         /** Returns the element of which this is a certificate. */
@@ -746,53 +737,14 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         }
 
         final Block getBlock() {
-            return this.block;
+            return this.container;
         }
 
         final void setBlock(Block container) {
-            this.block = container;
+            this.container = container;
         }
 
-        /** Removes this node certificate from the list it is currently in. */
-        void remove() {
-            this.block = null;
-            this.prev.next = this.next;
-            this.next.prev = this.prev;
-        }
-
-        /** 
-         * Inserts this node certificate after another one. 
-         * Removes the node from its current position first.
-         */
-        void insertAfter(NodeCertificate other) {
-            remove();
-            this.block = other.getBlock();
-            this.prev = other;
-            this.next = other.next;
-            other.next = this;
-            this.next.prev = this;
-        }
-        
-        /**
-         * Marks this node for changing its value.
-         * Also calls {@link Block#markNode(NodeCertificate)}.
-         * @return the containing block, if that block had not been marked before.
-         */
-        Block mark() {
-            if (this.marked) {
-                return null;
-            } else {
-                this.marked = true;
-                return (getBlock().markNode(this)) ? getBlock() : null;
-            }
-        }
-        
-        /** Unmarks this node for changing value. */
-        void unmark() {
-            this.marked = false;
-        }
-        
-        /** The value for the next invocation of {@link #setNewValue()} */
+        /** The value for the next invocation of {@link #computeNewValue()} */
         private int nextValue;
         /** The current value, which determines the hash code. */
         int value;
@@ -805,11 +757,8 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         private final List<Edge2Certificate> outEdges =
             new ArrayList<Edge2Certificate>();
         /** Current enclosing block. */
-        private Block block;
-        /** Next and previous node certificates in the list. */
-        NodeCertificate next, prev;
-        /** Flag to indicate that this certificate has been marked for change. */
-        private boolean marked;
+        private Block container;
+
         static final int TARGET_MASK = 0x5555;
 
     }
@@ -939,7 +888,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
                     + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift)))
                     + this.labelIndex;
-            PaigeTarjanMcKay.this.graphCertificate += result;
+            SimplePaigeTarjanMcKay.this.graphCertificate += result;
             return result;
         }
         
@@ -951,53 +900,13 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         private final int labelIndex;
     }
 
-    /** An iterator over node certificates, based on a doubly linked list with a dummy head node. */
-    private class NodeCertificateList extends NodeCertificate implements Iterable<NodeCertificate> {
-        NodeCertificateList(Block block) {
-            super(block);
-        }
-        
-        public Iterator<NodeCertificate> iterator() {
-            return new Iterator<NodeCertificate>() {
-                public boolean hasNext() {
-                    if (this.next == null) {
-                        this.next = NodeCertificateList.this.next;
-                    }
-                    return this.next != NodeCertificateList.this;
-                }
-
-                public NodeCertificate next() {
-                    if (hasNext()) {
-                        NodeCertificate result = this.next;
-                        this.next = this.next.next;
-                        return result;
-                    } else {
-                        throw new NoSuchElementException();
-                    }
-                }
-
-                public void remove() {
-                    throw new UnsupportedOperationException();
-                }
-
-                /** Node to be returned by the next invocation of {@link #next()}. */
-                private NodeCertificate next;
-            };
-        }
-        
-        /** Returns the first certificate in the list. */
-        NodeCertificate first() {
-            return this.next == this ? null : this.next;
-        }
-    }
-    
     /** Represents a block of nodes in some partition. */
-    private class Block implements Comparable<Block>, Cloneable {
+    class Block implements Comparable<Block>, Cloneable {
         Block(int value) {
+            // this.head = new NodeCertificate(this);
+            this.nodes = new LinkedList<NodeCertificate>();
             this.value = value;
-            this.nodes = new NodeCertificateList(this);
-            this.markedNodes = new NodeCertificateList(this);
-            PaigeTarjanMcKay.this.graphCertificate += value;
+            SimplePaigeTarjanMcKay.this.graphCertificate += value;
         }
 
         /** Indicates if this block is in the list of splitters. */
@@ -1009,86 +918,68 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         void setSplitter(boolean splitter) {
             this.splitter = splitter;
         }
-        
-        NodeCertificateList getNodes() {
-            return this.nodes;
+
+        /**
+         * Starts splitting this block.
+         * @return <code>true</code> if the split has just started,
+         *         <code>false</code> if splitting had already started before.
+         */
+        final boolean startSplit() {
+            if (!this.splitting) {
+                return this.splitting = true;
+            } else {
+                return false;
+            }
         }
 
         /**
-         * Divides all the marked nodes in this block over new blocks, depending on
-         * their value, and returns an ordered array of all the new splitters.
+         * Divides all the nodes in this block over new blocks, depending on
+         * their value, and returns an array of all the new blocks.
          */
-        Collection<Block> split() {
-            if (this.size == 0 && this.markedSize == 1) {
-                NodeCertificate node = this.markedNodes.first();
-                node.unmark();
-                append(node);
-                this.markedSize = 0;
-                this.value = node.setNewValue();
-                PaigeTarjanMcKay.this.graphCertificate += this.value;
-                return EMPTY_BLOCK_SET;
+        Block[] split() {
+            if (size() == 1) {
+                NodeCertificate node = this.nodes.get(0);
+                node.setNewValue();
+                this.value = node.getValue();
+                SimplePaigeTarjanMcKay.this.graphCertificate += this.value;
+                this.splitting = false;
+                return EMPTY_BLOCK_ARRAY;
             } else {
-                Map<Integer,Block> blockMap = new TreeMap<Integer,Block>();
-                Block lastBlock = null;
-                // keep track of the largest block
-                Block largestBlock = null;
-                int largestSize = 0;
-                for (NodeCertificate markedNode : this.markedNodes) {
-                    markedNode.unmark();
-                    int newValue = markedNode.setNewValue();
-                    if (lastBlock == null || lastBlock.value != newValue) {
-                        lastBlock = blockMap.get(newValue);
-                        if (lastBlock == null) {
-                            blockMap.put(newValue, lastBlock = new Block(newValue));
-                            lastBlock.setSplitter(true);
+            Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
+                Block block = null;
+                for (NodeCertificate node : this.nodes) {
+                    node.setNewValue();
+                    if (block == null || block.value != node.getValue()) {
+                        block = blockMap.get(node.getValue());
+                        if (block == null) {
+                            blockMap.put(node.getValue(), block =
+                                new Block(node.getValue()));
                         }
                     }
-                    lastBlock.append(markedNode);
-                    if (lastBlock.size() > largestSize) {
-                        largestSize = lastBlock.size();
-                        largestBlock = lastBlock;
-                    }
+                    block.append(node);
                 }
-                this.markedSize = 0;
-                // if this block is not a splitter and not the largest, add it to the split blocks,
-                // remove the largest block and set it to non-splitter
-                if (!isSplitter() && size() < largestSize) {
-                    largestBlock.setSplitter(false);
-                    blockMap.remove(largestBlock.value);
-                    if (size() > 0) {
-                        this.setSplitter(true);
-                        blockMap.put(this.value, this);
-                    }
+                this.nodes = EMPTY_NODE_LIST;
+                if (blockMap.size() == 1) {
+                    // the one block is given by block
+                    return new Block[] {block};
+                } else {
+                    // collect and order the sub-blocks
+                    Block[] result = new Block[blockMap.size()];
+                    blockMap.values().toArray(result);
+                    Arrays.sort(result);
+                    return result;
                 }
-                return blockMap.values();
             }
         }
 
-        /** 
-         * Merges this block with another with the same hash code.
-         * The other block will be discarded afterwards, so may be left in an inconsistent state. 
-         * The other block may not have marked nodes.
-         */
+        /** Merges this block with another with the same hash code. */
         void merge(Block other) {
-            assert this.value == other.value : String.format(
-                "Merging blocks %s and %s with distinct hash codes", this,
-                other);
-            assert other.markedNodes.next == other.markedNodes : String.format("Other block contains marked nodes while merging.");
-            // set the block of the nodes of the other block
-            for (NodeCertificate otherNode : other.getNodes()) {
+            assert this.value == other.value : String.format("Merging blocks %s and %s with distinct hash codes", this, other);
+            for (NodeCertificate otherNode: other.getNodes()) {
                 otherNode.setBlock(this);
+                this.nodes.add(otherNode);
             }
-            // put the nodes list of the other block behind mine
-            NodeCertificate myLastNode = this.nodes.prev;
-            NodeCertificate otherFirstNode = other.nodes.next;
-            NodeCertificate otherLastNode = other.nodes.prev;
-            myLastNode.next = otherFirstNode;
-            otherFirstNode.prev = myLastNode;
-            this.nodes.prev = otherLastNode;
-            otherLastNode.next = this.nodes;
-            // adapt the size of this block
-            this.size += other.size();
-            PaigeTarjanMcKay.mergedBlockCount++;
+            SimplePaigeTarjanMcKay.mergedBlockCount++;
         }
         
         /**
@@ -1096,31 +987,19 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
          * certificate's block to this.
          */
         final void append(NodeCertificate node) {
-            node.insertAfter(this.nodes);
-            this.size++;
+            this.nodes.add(node);
+            node.setBlock(this);
         }
 
         /** Returns the current size of the block. */
         final int size() {
-            return this.size;
+            return this.nodes.size();
         }
 
-        /** 
-         * Transfers a node to the list of marked nodes.
-         * This means the block should be split.
-         * @param node the node to be marked
-         * @return <code>true</code> if the block had not been selected for
-         * splitting before.
-         */
-        boolean markNode(NodeCertificate node) {
-            assert node.getBlock() == this;
-            boolean result = this.markedSize == 0;
-            node.insertAfter(this.markedNodes);
-            this.size--;
-            this.markedSize++;
-            return result;
+        List<NodeCertificate> getNodes() {
+            return this.nodes;
         }
-        
+
         /**
          * A block is smaller than another if it has fewer nodes, or a smaller
          * hash value.
@@ -1147,42 +1026,30 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         @Override
         public String toString() {
             List<Node> content = new ArrayList<Node>();
-            for (NodeCertificate nodeCert: getNodes()) {
+            for (NodeCertificate nodeCert: this.nodes) {
                 content.add(nodeCert.getElement());
             }
-            return String.format("B%dx%d%s", this.size, this.value, content);
+            return String.format("B%dx%d%s", this.nodes.size(), this.value, content);
         }
 
-        /** 
-         * This implementation copies the node certificates as well.
-         * This does not result in a true clone as the in- and out-edges of
-         * the copied node certificates are not set. 
-         */
         @Override
         public Block clone() {
-            Block result = new Block(this.value);
-            for (NodeCertificate node: getNodes()) {
-                NodeCertificate nodeClone = new NodeCertificate(node.getElement());
-                nodeClone.addNextValue(node.getValue());
-                nodeClone.setNewValue();
-                result.append(nodeClone);
+            try {
+                Block result = (Block) super.clone();
+                result.nodes = new ArrayList<NodeCertificate>(this.nodes);
+                return result;
+            } catch (CloneNotSupportedException e) {
+                return null;
             }
-            return result;
         }
         
         /** The distinguishing value of this block. */
         private int value;
-        /** Dummy head node of the list of nodes in this block. */
-        private final NodeCertificateList nodes;
-        /** Size of the list of nodes. */
-        private int size;
-        /** Dummy head node of the list of marked nodes in this block. */
-        private final NodeCertificateList markedNodes;
-        /** Size of the list of marked nodes. */
-        private int markedSize;
+        /** List of marked nodes, in case the block is currently being split. */
+        private List<NodeCertificate> nodes;
         /** Flag indicating if this block is in the list of splitters. */
         private boolean splitter;
-//        /** Flag indicating if this block is currently splitting. */
-//        private boolean splitting;
+        /** Flag indicating if this block is currently splitting. */
+        private boolean splitting;
     }
 }
