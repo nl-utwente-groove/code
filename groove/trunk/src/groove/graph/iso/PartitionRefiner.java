@@ -38,7 +38,7 @@ import java.util.Map;
  * graph elements (i.e., nodes and edges). The result is available as a mapping
  * from graph elements to "certificate" objects; two edges are predicted to be
  * symmetric if they map to the same (i.e., <tt>equal</tt>) certificate. This
- * strategy goes beyond bisimulation in that it breaks all apparent symmetries 
+ * strategy goes beyond bisimulation in that it breaks all apparent symmetries
  * in all possible ways and accumulates the results.
  * @author Arend Rensink
  * @version $Revision: 1529 $
@@ -46,20 +46,21 @@ import java.util.Map;
 public class PartitionRefiner implements CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
-     * The strategy checks for isomorphism weakly, meaning that it might yield false negatives.
+     * The strategy checks for isomorphism weakly, meaning that it might yield
+     * false negatives.
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
     public PartitionRefiner(Graph graph) {
-        this(graph,false);
+        this(graph, false);
     }
 
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
-     * @param strong if <code>true</code>, the strategy puts more effort into getting
-     * distinct certificates.
+     * @param strong if <code>true</code>, the strategy puts more effort into
+     *        getting distinct certificates.
      */
     public PartitionRefiner(Graph graph, boolean strong) {
         this.graph = graph;
@@ -224,7 +225,8 @@ public class PartitionRefiner implements CertificateStrategy {
                 this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
         // check if duplicate
-        if ((this.strong || BREAK_DUPLICATES) && this.nodePartitionCount < this.nodeCertCount) {
+        if ((this.strong || BREAK_DUPLICATES)
+            && this.nodePartitionCount < this.nodeCertCount) {
             // now look for smallest unbroken duplicate certificate (if any)
             int oldPartitionCount;
             do {
@@ -238,7 +240,7 @@ public class PartitionRefiner implements CertificateStrategy {
                 }
                 checkpointCertificates();
                 // successively break the symmetry at each of these
-                for (NodeCertificate duplicate: duplicates) {
+                for (NodeCertificate duplicate : duplicates) {
                     duplicate.breakSymmetry();
                     iterateCertificates();
                     rollBackCertificates();
@@ -256,7 +258,8 @@ public class PartitionRefiner implements CertificateStrategy {
                         this.nodePartitionCount, this.nodeCertCount,
                         this.iterateCount);
                 }
-            } while (true);//this.nodePartitionCount < this.nodeCertCount && this.nodePartitionCount > oldPartitionCount);
+            } while (true);// this.nodePartitionCount < this.nodeCertCount &&
+                            // this.nodePartitionCount > oldPartitionCount);
         }
         // so far we have done nothing with the self-edges, so
         // give them a chance to get their value right
@@ -399,7 +402,7 @@ public class PartitionRefiner implements CertificateStrategy {
         }
     }
 
-    /** 
+    /**
      * Iterates node certificates until this results in a stable partitioning.
      */
     private void iterateCertificates() {
@@ -412,7 +415,8 @@ public class PartitionRefiner implements CertificateStrategy {
             int oldPartitionCount = this.nodePartitionCount;
             // first compute the new edge certificates
             advanceEdgeCerts();
-            advanceNodeCerts(this.iterateCount > 0 && this.nodePartitionCount < nodeCertCount);
+            advanceNodeCerts(this.iterateCount > 0
+                && this.nodePartitionCount < nodeCertCount);
             // we stop the iteration when the number of partitions has not grown
             // moreover, when the number of partitions equals the number of
             // nodes then
@@ -428,7 +432,7 @@ public class PartitionRefiner implements CertificateStrategy {
         recordIterateCount(this.iterateCount);
     }
 
-    /** 
+    /**
      * Calls {@link Certificate#setNewValue()} on all edge certificates.
      */
     private void advanceEdgeCerts() {
@@ -438,10 +442,11 @@ public class PartitionRefiner implements CertificateStrategy {
         }
     }
 
-    /** 
-     * Calls {@link Certificate#setNewValue()} on all node certificates.
-     * Also calculates the certificate store on demand. 
-     * @param store if <code>true</code>, {@link #certStore} and {@link #nodePartitionCount} are recalculated
+    /**
+     * Calls {@link Certificate#setNewValue()} on all node certificates. Also
+     * calculates the certificate store on demand.
+     * @param store if <code>true</code>, {@link #certStore} and
+     *        {@link #nodePartitionCount} are recalculated
      */
     private void advanceNodeCerts(boolean store) {
         certStore.clear();
@@ -466,9 +471,12 @@ public class PartitionRefiner implements CertificateStrategy {
         }
     }
 
-    /** Calls {@link Certificate#setCheckpoint()} on all node and edge certificates. */
+    /**
+     * Calls {@link Certificate#setCheckpoint()} on all node and edge
+     * certificates.
+     */
     private void checkpointCertificates() {
-        for (NodeCertificate nodeCert: this.nodeCerts) {
+        for (NodeCertificate nodeCert : this.nodeCerts) {
             nodeCert.setCheckpoint();
         }
         for (int i = 0; i < this.edge2CertCount; i++) {
@@ -479,7 +487,7 @@ public class PartitionRefiner implements CertificateStrategy {
 
     /** Calls {@link Certificate#rollBack()} on all node and edge certificates. */
     private void rollBackCertificates() {
-        for (NodeCertificate nodeCert: this.nodeCerts) {
+        for (NodeCertificate nodeCert : this.nodeCerts) {
             nodeCert.rollBack();
         }
         for (int i = 0; i < this.edge2CertCount; i++) {
@@ -488,9 +496,12 @@ public class PartitionRefiner implements CertificateStrategy {
         }
     }
 
-    /** Calls {@link Certificate#accumulate(int)} on all node and edge certificates. */
+    /**
+     * Calls {@link Certificate#accumulate(int)} on all node and edge
+     * certificates.
+     */
     private void accumulateCertificates() {
-        for (NodeCertificate nodeCert: this.nodeCerts) {
+        for (NodeCertificate nodeCert : this.nodeCerts) {
             nodeCert.accumulate(this.iterateCount);
         }
         for (int i = 0; i < this.edge2CertCount; i++) {
@@ -503,7 +514,7 @@ public class PartitionRefiner implements CertificateStrategy {
     private List<NodeCertificate> getSmallestDuplicates() {
         List<NodeCertificate> result = new LinkedList<NodeCertificate>();
         NodeCertificate minCert = null;
-        for (NodeCertificate cert: this.nodeCerts) {
+        for (NodeCertificate cert : this.nodeCerts) {
             if (!cert.isSingular()) {
                 if (minCert == null) {
                     minCert = cert;
@@ -520,12 +531,12 @@ public class PartitionRefiner implements CertificateStrategy {
         assert result.size() != 1;
         return result;
     }
-    
+
     /** The underlying graph */
     private final Graph graph;
-    /** 
-     * Flag to indicate that more effort should be put into 
-     * obtaining distinct certificates.
+    /**
+     * Flag to indicate that more effort should be put into obtaining distinct
+     * certificates.
      */
     private final boolean strong;
     /** The pre-computed graph certificate, if any. */
@@ -563,8 +574,9 @@ public class PartitionRefiner implements CertificateStrategy {
     private int edge1CertCount;
     /** Map from nodes that are not {@link DefaultNode}s to node certificates. */
     private Map<Node,NodeCertificate> otherNodeCertMap;
-    /** Total number of iterations in {@link #iterateCertificates()}. */ 
+    /** Total number of iterations in {@link #iterateCertificates()}. */
     private int iterateCount;
+
     /** Array of default node certificates. */
 
     /**
@@ -628,9 +640,9 @@ public class PartitionRefiner implements CertificateStrategy {
                 return key.getValue();
             }
         };
-        
+
     /** Debug flag to switch the use of duplicate breaking on and off. */
-    static private final boolean BREAK_DUPLICATES = true; 
+    static private final boolean BREAK_DUPLICATES = true;
     /**
      * Array to record the number of iterations done in computing certificates.
      */
@@ -734,14 +746,14 @@ public class PartitionRefiner implements CertificateStrategy {
         public E getElement() {
             return this.element;
         }
-        
-        /** 
+
+        /**
          * Sets a checkpoint that we can later roll back to.
          */
         public void setCheckpoint() {
             this.checkpointValue = this.value;
         }
-        
+
         /**
          * Rolls back the value to that frozen at the latest checkpoint.
          */
@@ -750,21 +762,21 @@ public class PartitionRefiner implements CertificateStrategy {
             this.value = this.checkpointValue;
         }
 
-        /** 
-         * Combines the accumulated intermediate values collected 
-         * at rollback, and adds them to the actual value.
+        /**
+         * Combines the accumulated intermediate values collected at rollback,
+         * and adds them to the actual value.
          * @param round the iteration round
          */
         public void accumulate(int round) {
             this.value += this.cumulativeValue;
             this.cumulativeValue = 0;
         }
-        
+
         /** The current value, which determines the hash code. */
         protected int value;
         /** The value as frozen at the last call of {@link #setCheckpoint()}. */
         private int checkpointValue;
-        /** 
+        /**
          * The cumulative values as calculated during the {@link #rollBack()}s
          * after the last {@link #setCheckpoint()}.
          */
@@ -805,26 +817,30 @@ public class PartitionRefiner implements CertificateStrategy {
          */
         @Override
         public boolean equals(Object obj) {
-//            if (obj instanceof NodeCertificate && this.singularRound == ((NodeCertificate) obj).singularRound) {
-//                if (this.singularRound == 0) {
-                    return obj instanceof NodeCertificate && this.value == ((NodeCertificate) obj).value;
-//                } else {
-//                    return this.singularValue == ((NodeCertificate) obj).singularValue
-//                        && this.singularRound == ((NodeCertificate) obj).singularRound;
-//                }
-//            } else {
-//                return false;
-//            }
+            // if (obj instanceof NodeCertificate && this.singularRound ==
+            // ((NodeCertificate) obj).singularRound) {
+            // if (this.singularRound == 0) {
+            return obj instanceof NodeCertificate
+                && this.value == ((NodeCertificate) obj).value;
+            // } else {
+            // return this.singularValue == ((NodeCertificate)
+            // obj).singularValue
+            // && this.singularRound == ((NodeCertificate) obj).singularRound;
+            // }
+            // } else {
+            // return false;
+            // }
         }
-//
-//        @Override
-//        public int hashCode() {
-//            if (this.singularRound == 0) {
-//                return super.hashCode();
-//            } else {
-//                return this.singularValue + this.singularRound;
-//            }
-//        }
+
+        //
+        // @Override
+        // public int hashCode() {
+        // if (this.singularRound == 0) {
+        // return super.hashCode();
+        // } else {
+        // return this.singularValue + this.singularRound;
+        // }
+        // }
 
         /**
          * Change the certificate value predictably to break symmetry.
@@ -861,13 +877,13 @@ public class PartitionRefiner implements CertificateStrategy {
 
         /**
          * Signals that the certificate has become singular at a certain round.
-         * @param round the round at which the certificate is set to singular; if
-         *        <code>0</code>, it is still duplicate.
+         * @param round the round at which the certificate is set to singular;
+         *        if <code>0</code>, it is still duplicate.
          */
         protected void setSingular(int round) {
             this.singular = round > 0;
-//            this.singularRound = round;
-//            this.singularValue = getValue();
+            // this.singularRound = round;
+            // this.singularValue = getValue();
         }
 
         /**
@@ -875,55 +891,63 @@ public class PartitionRefiner implements CertificateStrategy {
          */
         protected boolean isSingular() {
             return this.singular;
-//            return this.singularRound > 0;
+            // return this.singularRound > 0;
         }
-//        
-//        /** We also have to checkpoint the singularity information. */
-//        @Override
-//        public void setCheckpoint() {
-//            super.setCheckpoint();
-//            this.checkpointSingularRound = this.singularRound;
-//            this.checkpointSingularValue = this.singularValue;
-//        }
-//
-//        /** We also have to roll back the singularity information. */
-//        @Override
-//        public void rollBack() {
-//            super.rollBack();
-//            if (this.cumulativeSingularRound == 0) {
-//                this.cumulativeSingularRound = this.singularRound;
-//            }
-//            this.singularRound = this.checkpointSingularRound;
-//            this.singularValue = this.checkpointSingularValue;
-//        }
-//
-//        @Override
-//        public void accumulate(int round) {
-//            super.accumulate(round);
-//            this.singularRound = this.cumulativeSingularRound;
-//        }
+
+        //        
+        // /** We also have to checkpoint the singularity information. */
+        // @Override
+        // public void setCheckpoint() {
+        // super.setCheckpoint();
+        // this.checkpointSingularRound = this.singularRound;
+        // this.checkpointSingularValue = this.singularValue;
+        // }
+        //
+        // /** We also have to roll back the singularity information. */
+        // @Override
+        // public void rollBack() {
+        // super.rollBack();
+        // if (this.cumulativeSingularRound == 0) {
+        // this.cumulativeSingularRound = this.singularRound;
+        // }
+        // this.singularRound = this.checkpointSingularRound;
+        // this.singularValue = this.checkpointSingularValue;
+        // }
+        //
+        // @Override
+        // public void accumulate(int round) {
+        // super.accumulate(round);
+        // this.singularRound = this.cumulativeSingularRound;
+        // }
 
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
-        /** Records if the certificate has become singular at some point of the calculation. */
+        /**
+         * Records if the certificate has become singular at some point of the
+         * calculation.
+         */
         boolean singular;
-//        /**
-//         * Round at which the certificate has been set to singular; if <code>0</code>,
-//         * it is duplicate.
-//         */
-//        private int singularRound;
-//        /** 
-//         * Frozen certificate value when the certificate was set to singular.
-//         * If the certificate is singular, this is the value that will be used
-//         * as a criterion for equality. 
-//         */
-//        private int singularValue;
-//        /** The value of {@link #singularRound} as frozen at the last checkpoint. */
-//        private int checkpointSingularRound;
-//        /** The value of {@link #singularValue} as frozen at the last checkpoint. */
-//        private int checkpointSingularValue;
-//        /** Stores the first round in which the certificate became singuler (if any). */
-//        private int cumulativeSingularRound;
+        // /**
+        // * Round at which the certificate has been set to singular; if
+        // <code>0</code>,
+        // * it is duplicate.
+        // */
+        // private int singularRound;
+        // /**
+        // * Frozen certificate value when the certificate was set to singular.
+        // * If the certificate is singular, this is the value that will be used
+        // * as a criterion for equality.
+        // */
+        // private int singularValue;
+        // /** The value of {@link #singularRound} as frozen at the last
+        // checkpoint. */
+        // private int checkpointSingularRound;
+        // /** The value of {@link #singularValue} as frozen at the last
+        // checkpoint. */
+        // private int checkpointSingularValue;
+        // /** Stores the first round in which the certificate became singuler
+        // (if any). */
+        // private int cumulativeSingularRound;
     }
 
     /**

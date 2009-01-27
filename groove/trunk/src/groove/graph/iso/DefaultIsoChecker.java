@@ -1017,7 +1017,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * Flag to check for false negatives in the certification, for debugging
      * purposes.
      */
-    static private final boolean TEST_FALSE_NEGATIVES = true;
+    static private final boolean TEST_FALSE_NEGATIVES = false;
     /**
      * Flag to save false negatives and exit
      */
