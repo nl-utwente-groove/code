@@ -57,7 +57,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      *        not be <tt>null</tt>
      */
     public PaigeTarjanMcKay(Graph graph) {
-        this(graph, false);
+        this(graph, true);
     }
 
     /**
@@ -176,9 +176,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         // check if the certificate has been computed before
         if (this.graphCertificate == 0) {
             computeCertificates();
-            if (this.graphCertificate == 0) {
-                this.graphCertificate = 1;
-            }
         }
         reporter.stop();
         if (TRACE) {
@@ -189,7 +186,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     }
 
     public CertificateStrategy newInstance(Graph graph, boolean strong) {
-        return new PaigeTarjanMcKay(graph);
+        return new PaigeTarjanMcKay(graph, strong);
     }
 
     /**
@@ -236,7 +233,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             splitters.add(block);
         }
         if (RECORD) {
-            this.partitionRecord = new ArrayList<Queue<Block>>();
+            this.partitionRecord = new ArrayList<List<Block>>();
         }
         // first iteration
         split(splitters);
@@ -282,6 +279,9 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                         this.iterateCount, this.graphCertificate);
                 }
             } while (true);
+        }
+        if (this.graphCertificate == 0) {
+            this.graphCertificate = 1;
         }
         reporter.stop();
     }
@@ -434,11 +434,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         // && !splitterList.isEmpty()) {
         while (!splitterList.isEmpty()) {
             // find the first non-empty splitter in the queue
-            Block splitter = splitterList.poll();
-            if (splitter.size() > 0) {
-                splitNext(splitter, splitterList);
+            if (splitterList.peek().size() > 0) {
+                splitNext(splitterList);
+                this.iterateCount++;
+            } else {
+                splitterList.poll();
             }
-            this.iterateCount++;
             // attempt to improve the graph certificate
             // int shift = this.iterateCount & 0x1F;
             // this.graphCertificate +=
@@ -454,11 +455,10 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         recordIterateCount(this.iterateCount);
     }
 
-    private void splitNext(Block splitter, Queue<Block> splitterList) {
+    private void splitNext(Queue<Block> splitterList) {
         reporter.start(SPLIT);
         if (RECORD) {
-            Queue<Block> clone = new LinkedList<Block>();
-            clone.add(splitter.clone());
+            List<Block> clone = new ArrayList<Block>();
             for (Block block : splitterList) {
                 clone.add(block.clone());
             }
@@ -467,30 +467,15 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         // update the node certificates related to the splitter nodes
         // and collect the ensuing split blocks
         NodePartition splitBlocks = new NodePartition();
-        for (NodeCertificate splitterNode : splitter.getNodes().toArray()) {
-            for (Edge2Certificate outEdge : splitterNode.outEdges) {
-                outEdge.updateTarget();
-                Block splitBlock = outEdge.getTarget().mark();
-                if (splitBlock != null) {
-                    // add the new split block to the set
-                    boolean isNew = splitBlocks.add(splitBlock);
-                    assert isNew;
-                }
-            }
-            for (Edge2Certificate inEdge : splitterNode.inEdges) {
-                inEdge.updateSource();
-                Block splitBlock = inEdge.getSource().mark();
-                if (splitBlock != null) {
-                    // add the new split block to the set
-                    boolean isNew = splitBlocks.add(splitBlock);
-                    assert isNew;
-                }
+        markNodes(splitterList.poll(), splitBlocks);
+        if (!SPLIT_ONE_AT_A_TIME) {
+            while (!splitterList.isEmpty()) {
+                markNodes(splitterList.poll(), splitBlocks);
             }
         }
-        splitter.setSplitter(false);
         // process the split blocks
         if (RECORD) {
-            Queue<Block> clone = new LinkedList<Block>();
+            List<Block> clone = new ArrayList<Block>();
             Iterator<Block> splitBlockIter = splitBlocks.sortedIterator();
             while (splitBlockIter.hasNext()) {
                 clone.add(splitBlockIter.next());
@@ -502,7 +487,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             Block block = splitBlockIter.next();
             Collection<Block> newBlocks = block.split();
             if (RECORD) {
-                Queue<Block> clone = new LinkedList<Block>();
+                List<Block> clone = new ArrayList<Block>();
                 for (Block newBlock : newBlocks) {
                     clone.add(newBlock.clone());
                 }
@@ -511,6 +496,38 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             splitterList.addAll(newBlocks);
         }
         reporter.stop();
+    }
+
+    /** 
+     * Goes over the nodes in a given block, and updates and marks all its adjacent nodes.
+     * The affected blocks (containing the marked nodes) are collected.
+     * @param splitter the block of which the adjacent nodes are to be marked
+     * @param splitBlocks the collection of affected blocks
+     */
+    private void markNodes(Block splitter, NodePartition splitBlocks) {
+        // first we copy the splitter's nodes into an array, to prevent
+        // concurrent modifications due to the marking of nodes
+        for (NodeCertificate splitterNode : splitter.getNodes().toArray()) {
+            for (Edge2Certificate outEdge : splitterNode.getOutEdges()) {
+                outEdge.updateTarget();
+                Block splitBlock = outEdge.getTarget().mark();
+                if (splitBlock != null) {
+                    // add the new split block to the set
+                    boolean isNew = splitBlocks.add(splitBlock);
+                    assert isNew;
+                }
+            }
+            for (Edge2Certificate inEdge : splitterNode.getInEdges()) {
+                inEdge.updateSource();
+                Block splitBlock = inEdge.getSource().mark();
+                if (splitBlock != null) {
+                    // add the new split block to the set
+                    boolean isNew = splitBlocks.add(splitBlock);
+                    assert isNew;
+                }
+            }
+        }
+        splitter.setSplitter(false);
     }
 
     //
@@ -637,7 +654,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * List of splitter lists generated during the algorithm. Only used when
      * {@link #RECORD} is set to <code>true</code>.
      */
-    private List<Queue<Block>> partitionRecord;
+    private List<List<Block>> partitionRecord;
 
     /** Array of default node certificates. */
 
@@ -682,6 +699,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      */
     static private final int TREE_RESOLUTION = 3;
 
+    /** 
+     * Flag controlling the behaviour of the {@link #splitNext(Queue)} method.
+     * If <code>true</code>, a single element of the splitter list is processed at a time;
+     * otherwise, the entire list is processed.
+     */
+    static private final boolean SPLIT_ONE_AT_A_TIME = true;
     /** Debug flag to switch the use of duplicate breaking on and off. */
     static private final boolean BREAK_DUPLICATES = true;
     /**
@@ -838,15 +861,25 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         }
 
         /** Adds an outgoing edge certificate to this node certificate. */
-        void addOutgoing(Edge2Certificate edgeCert) {
+        void addOutEdge(Edge2Certificate edgeCert) {
             this.outEdges.add(edgeCert);
             this.value += edgeCert.getValue();
         }
 
         /** Adds an incoming edge certificate to this node certificate. */
-        void addIncoming(Edge2Certificate edgeCert) {
+        void addInEdge(Edge2Certificate edgeCert) {
             this.inEdges.add(edgeCert);
             this.value += edgeCert.getValue() ^ TARGET_MASK;
+        }
+        
+        /** Returns the list of incoming edge certificates. */
+        List<Edge2Certificate> getInEdges() {
+            return this.inEdges;
+        }
+        
+        /** Returns the list of outgoing edge certificates. */
+        List<Edge2Certificate> getOutEdges() {
+            return this.outEdges;
         }
 
         /** Returns the containing block of this certificate. */
@@ -1051,8 +1084,8 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             super(edge, sourceCert);
             this.targetCert = targetCert;
             this.labelIndex = edge.label().hashCode();
-            sourceCert.addOutgoing(this);
-            targetCert.addIncoming(this);
+            sourceCert.addOutEdge(this);
+            targetCert.addInEdge(this);
         }
 
         @Override
@@ -1159,7 +1192,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             // this implementation works under the assumption
             // that this is the array of nodes in the container block.
             assert this == getBlock().getNodes();
-            NodeCertificate[] result = new NodeCertificate[getBlock().size()];
+            NodeCertificate[] result = new NodeCertificate[getBlock().size() - getBlock().markedSize()];
             int i = 0;
             for (NodeCertificate cert = this.next; cert != this; cert =
                 cert.next, i++) {
@@ -1260,8 +1293,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
 
         /**
          * Divides all the marked nodes in this block over new blocks, depending
-         * on their value, and returns an ordered array of all the new
-         * splitters.
+         * on their value, and returns an ordered array of new splitters.
          */
         Collection<Block> split() {
             if (this.size == 1) {
@@ -1371,6 +1403,13 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
          */
         final int size() {
             return this.size;
+        }
+
+        /**
+         * Returns the number of marked nodes.
+         */
+        final int markedSize() {
+            return this.markedSize;
         }
 
         /**
