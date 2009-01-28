@@ -184,7 +184,7 @@ public class PartitionRefiner implements CertificateStrategy {
     }
 
     public CertificateStrategy newInstance(Graph graph, boolean strong) {
-        return new PartitionRefiner(graph);
+        return new PartitionRefiner(graph, strong);
     }
 
     /**

@@ -739,8 +739,8 @@ public class DefaultIsoChecker implements IsoChecker {
     /** Method to be used in an assert on the correctness of isomorphism. */
     private boolean checkBisimulator(Graph dom, Graph cod, boolean result) {
         if (result && isStrong()) {
-            CertificateStrategy domBis = new PartitionRefiner(dom);
-            CertificateStrategy codBis = new PartitionRefiner(cod);
+            CertificateStrategy domBis = new PartitionRefiner(dom, isStrong());
+            CertificateStrategy codBis = new PartitionRefiner(cod, isStrong());
             Bag<Certificate<Node>> domNodes =
                 new HashBag<Certificate<Node>>(
                     Arrays.asList(domBis.getNodeCertificates()));
