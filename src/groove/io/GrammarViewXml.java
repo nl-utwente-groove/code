@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.util.Groove;
 import groove.view.GrammarView;
 
 import java.io.File;
@@ -30,11 +31,6 @@ import java.net.URL;
  */
 public interface GrammarViewXml<GG extends GrammarView<?,?>> extends
         ViewXml<GG> {
-    /**
-     * The default name of the start state of a grammar.
-     */
-    static public final String DEFAULT_START_GRAPH_NAME = "start";
-
     /**
      * Returns the extension filter associated with this grammar loader.
      */
@@ -69,4 +65,8 @@ public interface GrammarViewXml<GG extends GrammarView<?,?>> extends
      */
     public GG unmarshal(URL url) throws IOException;
 
-}
+    /** Aliases the default control name from the constants in {@link Groove}. */
+    public final String DEFAULT_CONTROL_NAME = Groove.DEFAULT_CONTROL_NAME;
+    /** Aliases the default start graph name from the constants in {@link Groove}. */
+    public final String DEFAULT_START_GRAPH_NAME = Groove.DEFAULT_START_GRAPH_NAME;
+    }
