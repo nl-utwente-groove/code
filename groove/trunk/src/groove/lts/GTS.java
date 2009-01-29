@@ -23,6 +23,7 @@ import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
+import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
@@ -491,8 +492,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                     result =
                         graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 } else {
-                    result =
-                        stateKey.getGraph().getCertifier(true).getGraphCertificate().hashCode();
+                    CertificateStrategy certifier = stateKey.getGraph().getCertifier(true);
+                    Object certificate = certifier.getGraphCertificate();
+                    result = certificate.hashCode();
                 }
                 Object control = stateKey.getLocation();
                 result +=
