@@ -122,14 +122,15 @@ public class DefaultIsoChecker implements IsoChecker {
             }
             intCertOverlap++;
             result = false;
-        } else if (hasDistinctCerts(codCertifier)) {
+        } else if (hasDiscreteCerts(codCertifier)) {
             reporter.start(ISO_CERT_CHECK);
-            if (hasDistinctCerts(domCertifier)) {
+            if (hasDiscreteCerts(domCertifier)) {
                 result = areCertEqual(domCertifier, codCertifier);
             } else {
                 if (ISO_PRINT) {
-                    System.err.println("Codomain has distinct certs but domain has not");
+                    System.err.println("Codomain has discrete partition but domain has not");
                 }
+                distinctCertsCount++;
                 result = false;
             }
             reporter.stop();
@@ -146,6 +147,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 if (ISO_PRINT) {
                     System.err.println("Unequal node partition counts");
                 }
+                distinctCertsCount++;
                 result = false;
             }
             reporter.stop();
@@ -608,7 +610,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * @return <code>true</code> if <code>graph</code> has distinct
      *         certificates
      */
-    private boolean hasDistinctCerts(CertificateStrategy certifier) {
+    private boolean hasDiscreteCerts(CertificateStrategy certifier) {
         return certifier.getNodePartitionMap().isOneToOne();
     }
 
