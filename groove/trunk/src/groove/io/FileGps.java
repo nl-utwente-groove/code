@@ -16,7 +16,6 @@
  */
 package groove.io;
 
-import static groove.util.Groove.DEFAULT_CONTROL_NAME;
 import groove.control.ControlView;
 import groove.graph.GraphShape;
 import groove.trans.RuleNameLabel;
@@ -185,6 +184,10 @@ public class FileGps extends AspectualViewGps {
     /**
      * unmarshals a grammar for a gps directory with a specific start graph name
      * and a specific control name.
+     * @param location the file to load from (not <code>null</code>)
+     * @param startGraphName the name of the start graph; if <code>null</code>, {@link #DEFAULT_START_GRAPH_NAME} is chosen
+     * @param controlName the name of the control program; if <code>null</code>, {@link #DEFAULT_CONTROL_NAME} is chosen
+     * @throws IOException if one or more resources were not found or could not be loaded
      */
     protected DefaultGrammarView unmarshal(File location,
             String startGraphName, String controlName) throws IOException {
@@ -418,6 +421,22 @@ public class FileGps extends AspectualViewGps {
         return toURL(file);
     }
 
+    /** Returns the name of the grammar located at the given URL. */
+    @Override
+    public String grammarName(URL grammarURL) {
+        return GRAMMAR_FILTER.stripExtension(toFile(grammarURL).getName());
+    }
+
+    /**
+     * Returns a string that should explain where the grammar was found. For a
+     * FileGps, this is the absolute path of the parent directory.
+     */
+    @Override
+    public String grammarLocation(URL grammarURL) {
+        return toFile(grammarURL).getParent();
+    }
+
+
     private static File getFile(File location, AspectualRuleView ruleGraph,
             boolean create) {
         File result = null;
@@ -514,18 +533,4 @@ public class FileGps extends AspectualViewGps {
     /** File filter for control files. */
     static protected final ExtensionFilter CONTROL_FILTER =
         Groove.createControlFilter();
-
-    /** Returns the name of the grammar located at the given URL * */
-    public String grammarName(URL grammarURL) {
-        return GRAMMAR_FILTER.stripExtension(toFile(grammarURL).getName());
-    }
-
-    /**
-     * Returns a string that should explain where the grammar was found. For a
-     * FileGps, this is the absolute path of the parent directory.
-     */
-    public String grammarLocation(URL grammarURL) {
-        return toFile(grammarURL).getParent();
-    }
-
 }

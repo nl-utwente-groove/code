@@ -17,7 +17,6 @@
 
 package groove.io;
 
-import static groove.util.Groove.DEFAULT_CONTROL_NAME;
 import groove.control.ControlView;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -78,16 +77,8 @@ public abstract class AspectualViewGps extends Observable implements
      * subclasses.
      */
     public final DefaultGrammarView unmarshal(URL url) throws IOException {
-
         String startGraphName = url.getQuery();
-        if (startGraphName == null) {
-            startGraphName = DEFAULT_START_GRAPH_NAME;
-        }
-
         String controlName = url.getRef();
-        if (controlName == null) {
-            controlName = DEFAULT_CONTROL_NAME;
-        }
         URL newURL =
             new URL(url.getProtocol(), url.getHost(), url.getPort(),
                 url.getPath());
@@ -97,8 +88,11 @@ public abstract class AspectualViewGps extends Observable implements
     }
 
     /**
-     * Loads the grammar from the given url with the given startGraphName and
-     * controlName.
+     * Loads the grammar from the given url with the given start graph name and
+     * control name.
+     * @param location the URL to load from (not <code>null</code>)
+     * @param startGraphName the name of the start graph; if <code>null</code>, {@link #DEFAULT_START_GRAPH_NAME} is chosen
+     * @param controlName the name of the control program; if <code>null</code>, {@link #DEFAULT_CONTROL_NAME} is chosen
      */
     protected abstract DefaultGrammarView unmarshal(URL location,
             String startGraphName, String controlName) throws IOException;

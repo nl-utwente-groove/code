@@ -134,6 +134,9 @@ public abstract class ArchiveGps extends AspectualViewGps {
         loadRules(result, ruleMap);
 
         // init start graph url
+        if (startGraphName == null) {
+            startGraphName = DEFAULT_START_GRAPH_NAME;
+        }
         JarEntry je =
             jarFile.getJarEntry(dir + startGraphName + Groove.STATE_EXTENSION);
 
@@ -144,6 +147,9 @@ public abstract class ArchiveGps extends AspectualViewGps {
 
         // control
 
+        if (controlName == null) {
+            controlName = DEFAULT_CONTROL_NAME;
+        }
         JarEntry ce =
             jarFile.getJarEntry(dir + controlName + Groove.CONTROL_EXTENSION);
         if (ce != null) {
