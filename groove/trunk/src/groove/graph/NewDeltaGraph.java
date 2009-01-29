@@ -312,12 +312,12 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public CertificateStrategy getCertifier(boolean strong) {
-        if (this.certifier == null || this.certifier.get() == null || this.certifier.get().getStrength() != strong) {
-            this.certifier =
-                new WeakReference<CertificateStrategy>(
-                    AbstractGraph.getCertificateFactory().newInstance(this, strong));
+        CertificateStrategy result = this.certifier == null ? null : this.certifier.get();
+        if (result == null || result.getStrength() != strong) {
+            result = AbstractGraph.getCertificateFactory().newInstance(this, strong);
+            this.certifier = new WeakReference<CertificateStrategy>(result);
         }
-        return this.certifier.get();
+        return result;
     }
 
     /** The fixed (possibly <code>null</code> basis of this graph. */
