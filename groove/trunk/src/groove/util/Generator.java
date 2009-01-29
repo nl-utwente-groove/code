@@ -43,7 +43,7 @@ import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.PartitionRefiner;
+import groove.graph.iso.PaigeTarjanMcKay;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
 import groove.io.FileGps;
@@ -269,11 +269,11 @@ public class Generator extends CommandLineTool {
             return;
         }
         // now we are guarenteed to have a URL
-        
+
         try {
-            
+
             AspectualViewGps loader = URLLoaderFactory.getLoader(url, false);
-            loader.addObserver(loadObserver);    
+            loader.addObserver(loadObserver);
             this.grammar = loader.unmarshal(url).toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
@@ -295,7 +295,7 @@ public class Generator extends CommandLineTool {
         super.processArguments();
         List<String> argsList = getArgs();
         if (argsList.size() > 0) {
-                setGrammarLocation(argsList.remove(0));
+            setGrammarLocation(argsList.remove(0));
         }
         if (argsList.size() > 0) {
             setStartGraph(argsList.remove(0));
@@ -568,25 +568,26 @@ public class Generator extends CommandLineTool {
      */
     private void reportIsomorphism() {
         int predicted = DefaultIsoChecker.getTotalCheckCount();
-        int distinctCount =
-            DefaultIsoChecker.getDistinctSizeCount()
-                + DefaultIsoChecker.getDistinctCertsCount()
-                + DefaultIsoChecker.getDistinctSimCount();
+        int falsePos2 = DefaultIsoChecker.getDistinctSimCount();
+        int falsePos1 =
+            falsePos2 + DefaultIsoChecker.getDistinctSizeCount()
+                + DefaultIsoChecker.getDistinctCertsCount();
         int equalGraphCount = DefaultIsoChecker.getEqualGraphsCount();
         int equalCertsCount = DefaultIsoChecker.getEqualCertsCount();
         int equalSimCount = DefaultIsoChecker.getEqualSimCount();
         int intCertOverlap = DefaultIsoChecker.getIntCertOverlap();
-        println("\tIsomorphism:\tPredicted:\t" + predicted);
-        println("\t\tFalse positives:\t" + distinctCount);
-        println("\t\tFraction:\t"
-            + percentage((double) distinctCount / predicted));
-        println("\t\tInt cert overlap:\t" + intCertOverlap);
+        printf("\tIsomorphism:\tPredicted:\t%d (-%d)%n", predicted,
+            intCertOverlap);
+        printf("\t\tFalse pos 1:\t%d (%s)%n", falsePos1,
+            percentage((double) falsePos1 / (predicted - intCertOverlap)));
+        printf("\t\tFalse pos 2:\t%d (%s)%n", falsePos2,
+            percentage((double) falsePos2 / (predicted - intCertOverlap)));
         println("\t\tEqual graphs:\t" + equalGraphCount);
         println("\t\tEqual certificates:\t" + equalCertsCount);
         println("\t\tEqual simulation:\t" + equalSimCount);
-        println("\t\tIterations:\t" + PartitionRefiner.getIterateCount());
+        println("\t\tIterations:\t" + PaigeTarjanMcKay.getIterateCount());
         println("\t\tSymmetry breaking:\t"
-            + PartitionRefiner.getSymmetryBreakCount());
+            + PaigeTarjanMcKay.getSymmetryBreakCount());
     }
 
     /**
