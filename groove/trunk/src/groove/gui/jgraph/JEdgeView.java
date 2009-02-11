@@ -109,12 +109,14 @@ public class JEdgeView extends EdgeView {
     public void refresh(GraphLayoutCache cache, CellMapper mapper,
             boolean createDependentViews) {
         super.refresh(cache, mapper, createDependentViews);
-        assert this.target != null : "Target port of " + this
-            + " is null despite our best efforts";
-        if (this.source == this.target) {
-            routeSelfEdge();
-        } else if (getPointCount() <= 2) {
-            routeParallelEdge(mapper);
+        // target could be null, if we are dealing with a temporary cache that just
+        // contains a mapping for the edge
+        if (this.target != null) {
+            if (this.source == this.target) {
+                routeSelfEdge();
+            } else if (getPointCount() <= 2) {
+                routeParallelEdge(mapper);
+            }
         }
     }
 
