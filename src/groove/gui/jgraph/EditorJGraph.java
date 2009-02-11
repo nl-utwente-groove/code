@@ -156,6 +156,7 @@ public class EditorJGraph extends JGraph {
         assert fromPortView != null : "addEdge should not be called with dangling source "
             + from;
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
+        // if toPortView is null, we're drawing a self-edge
         DefaultPort toPort =
             toPortView == null ? fromPort : (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
@@ -164,13 +165,14 @@ public class EditorJGraph extends JGraph {
         // define connections between edge and nodes, if any
         ConnectionSet cs = new ConnectionSet();
         cs.connect(newEdge, fromPort, true);
-        // if toPortView is null, we're drawing a self-edge
         cs.connect(newEdge, toPort, false);
-        // if we're dreaving a self-edge, provide some intermediate points
+        // if we're drawing a self-edge, provide some intermediate points
         if (toPort == fromPort) {
             AttributeMap edgeAttr = newEdge.getAttributes();
             ArrayList<Point2D> endpointList = new ArrayList<Point2D>(4);
             endpointList.add(from);
+            // this middle point is there to provide a vector for
+            // the direction and size of the self-loop
             endpointList.add(to);
             endpointList.add(to);
             GraphConstants.setPoints(edgeAttr, endpointList);
