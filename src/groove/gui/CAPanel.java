@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.control.parse.GCLTokenMaker;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
 import groove.lts.GTS;
@@ -36,8 +37,12 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.JTextPane;
 import javax.swing.JToolBar;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
  * The Simulator panel that shows the control program, with a buttton that shows
@@ -50,7 +55,8 @@ public class CAPanel extends JPanel implements SimulationListener {
 
     Simulator simulator;
     // AutomatonPanel autPanel;
-    JTextPane textPanel;
+    RSyntaxTextArea textPanel;
+    RSyntaxDocument document;
     DefaultGrammarView grammar;
 
     JButton editButton, doneButton, viewButton; // , saveButton;
@@ -81,14 +87,26 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.viewButton.addActionListener(new ViewButtonListener());
         this.viewButton.setEnabled(false);
 
-        this.textPanel = new JTextPane();
+
+        RSyntaxDocument document = new RSyntaxDocument("gcl");
+        document.setSyntaxStyle(new GCLTokenMaker());
+        
+        this.textPanel = new RSyntaxTextArea(document);
+        
+        RTextScrollPane scroller = new RTextScrollPane(500,400, this.textPanel, true);
+        
+        // create editor and surrounding scrollpane
+//        this.textPanel = new JEditorPane();
+//        JScrollPane scroller = new JScrollPane(this.textPanel);
+        
+//        this.textPanel.setFont(this.textPanel.getFont().deriveFont((float) 16));
         this.textPanel.setText("");
-        this.textPanel.setFont(this.textPanel.getFont().deriveFont((float) 16));
         this.textPanel.setEditable(false);
         this.textPanel.setEnabled(false);
 
         this.add(toolBar, BorderLayout.NORTH);
-        this.add(this.textPanel, BorderLayout.CENTER);
+        this.add(scroller, BorderLayout.CENTER);
+        
         simulator.addSimulationListener(this);
     }
 
@@ -239,5 +257,5 @@ class AutomatonPanel extends JGraphPanel<ControlJGraph> {
      * A specialization of the forest layouter that takes the LTS start graph as
      * its suggested root.
      */
-
 }
+
