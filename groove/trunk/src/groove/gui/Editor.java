@@ -13,12 +13,9 @@
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
-import groove.graph.DefaultEdge;
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.graph.Node;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.jgraph.AspectJModel;
@@ -53,7 +50,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
@@ -363,34 +359,17 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     /**
      * Preview the given graph (e.g., for debugging purposes).
      * @param graph the graph to preview
-     * @param name title of the preview-window
+     * @param option the label in the action button
+     * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
      */
-    public static void previewGraph(final Graph graph, final String name) {
-        Runnable runLater = new Runnable() {
-                public void run() {
-                        Editor e = new Editor();
-                        
-                        AspectGraph tmp = new AspectGraph();
-                        Map<Node, Node> toNew = new HashMap<Node, Node> ();
-                        for( Node node : graph.nodeSet() ) {
-                                Node image = tmp.createNode();
-                                tmp.addNode(image);
-                                toNew.put(node, image);
-                        }
-                        for( Edge edge : graph.edgeSet() ) {
-                                Edge image;
-                                image = DefaultEdge.createEdge(edge.end(Edge.SOURCE_INDEX), edge.label(), edge.end(Edge.TARGET_INDEX));
-                                tmp.addEdge(image);
-                        }
-
-                                AspectualGraphView view = new AspectualGraphView(tmp, null);
-                                e.showPreviewDialog(view, name);
-                }
-        };
-        Thread t = new Thread(runLater);
-        t.start();
+    public static boolean previewGraph(final Graph graph, final String option) {
+        Editor e = new Editor();
+        AspectGraph result = AspectGraph.getFactory().fromPlainGraph(graph);
+        result.setFixed();
+        AspectualGraphView view = new AspectualGraphView(result, null);
+        return e.showPreview(view, option);
     }
-
+    
     /**
      * If the editor has unsaved changes, asks if these should be abandoned;
      * then calls {@link #doQuit()}.
@@ -1463,6 +1442,37 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         return okOption.equals(response) ? previewModel : null;
     }
 
+    /**
+     * Creates a preview of an aspect graph, without properties.
+     * @param view the view to show
+     * @param okOption the label in the action button
+     * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
+     */
+    private boolean showPreview(AspectualView<?> view, String okOption) {
+        if (this.previewSize == null) {
+            this.previewSize = DEFAULT_PREVIEW_SIZE;
+        }
+        AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
+        JGraph jGraph = new JGraph(previewModel, false);
+        jGraph.setToolTipEnabled(true);
+        JScrollPane jGraphPane = new JScrollPane(jGraph);
+        jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        JComponent previewContent = new JPanel(false);
+        previewContent.setLayout(new BorderLayout());
+        previewContent.add(jGraphPane);
+        JOptionPane previewPane = new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
+        if (okOption != null) {
+            previewPane.setOptions(new String[] {okOption, Options.CANCEL_BUTTON});
+        } else {
+            okOption = Options.OK_BUTTON;
+        }
+        JDialog dialog = previewPane.createDialog(getFrame(), String.format("%s preview", getRole(true)));
+        dialog.setSize(this.previewSize);
+        dialog.setResizable(true);
+        dialog.setVisible(true);
+        return okOption.equals(previewPane.getValue());
+    }
+    
     /**
      * Returns the options object associated with the simulator.
      */

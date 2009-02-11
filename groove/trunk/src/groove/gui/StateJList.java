@@ -24,7 +24,6 @@ import groove.trans.RuleMatch;
 import groove.view.AspectualGraphView;
 import groove.view.DefaultGrammarView;
 
-import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
