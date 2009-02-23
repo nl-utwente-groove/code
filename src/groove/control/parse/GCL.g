@@ -117,6 +117,9 @@ SHARP 	:	 '#' ;
 PLUS 	:	 '+' ;
 STAR 	:	 '*' ;
 
+ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
+SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };
+
 WS  :   (   ' '
         |   '\t'
         |   '\r'
