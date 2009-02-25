@@ -1457,20 +1457,14 @@ public class Simulator {
             // frame.setContentPane(splitPane);
             this.frame.setJMenuBar(createMenuBar());
 
+            JSplitPane leftPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                getRuleJTreePanel(), getStartStatesListPanel());
+
             // set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
             // right
-            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-            // splitPane.setLeftComponent(getRuleJTreePanel());
-
-            JPanel leftPanel = new JPanel();
-            leftPanel.setLayout(new BorderLayout());
-            leftPanel.add(getRuleJTreePanel(), BorderLayout.CENTER);
-            leftPanel.add(new JScrollPane(getStateList()), BorderLayout.SOUTH);
-
-            splitPane.setLeftComponent(leftPanel);
-
-            splitPane.setRightComponent(getGraphViewsPanel());
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                leftPanel, getGraphViewsPanel());
 
             Container contentPane = this.frame.getContentPane();
             contentPane.setLayout(new BorderLayout());
@@ -1530,11 +1524,30 @@ public class Simulator {
                 }
             };
             this.ruleJTreePanel.setMinimumSize(new Dimension(
-                RULE_TREE_MINIMUM_WIDTH, 0));
+                RULE_TREE_MINIMUM_WIDTH, RULE_TREE_MINIMUM_HEIGHT));
         }
         return this.ruleJTreePanel;
     }
 
+    /**
+     * Creates and returns the panel with the start states list.
+     */
+    JPanel getStartStatesListPanel() {
+        JPanel labelPane = new JPanel(new BorderLayout(), false);
+        labelPane.add(new JLabel(" " + Options.STATES_PANE_TITLE + " "),
+            BorderLayout.NORTH);
+        JScrollPane startGraphsPane = new JScrollPane(this.getStateList()) {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension superSize = super.getPreferredSize();
+                return new Dimension((int)superSize.getWidth(),
+                    START_LIST_MINIMUM_HEIGHT);
+            }
+        };
+        labelPane.add(startGraphsPane, BorderLayout.CENTER);
+        return labelPane;
+    }
+    
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
@@ -2867,6 +2880,16 @@ public class Simulator {
      * Minimum width of the rule tree component.
      */
     static private final int RULE_TREE_MINIMUM_WIDTH = 100;
+    
+    /**
+     * Minimum height of the rule tree component.
+     */
+    static private final int RULE_TREE_MINIMUM_HEIGHT = 500;
+    
+    /**
+     * Minimum height of the rule tree component.
+     */
+    static private final int START_LIST_MINIMUM_HEIGHT = 130;
 
     /**
      * Preferred width of the graph view.
