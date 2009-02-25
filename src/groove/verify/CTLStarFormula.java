@@ -825,8 +825,8 @@ public class CTLStarFormula {
      * Comment for <code>prototypes</code>
      */
     protected final TemporalFormula[] prototypes =
-        new TemporalFormula[] {new Exists(), new All(), new Finally(),
-            new Globally(), new And(), new Or(), new Next(), new Until(),
+        new TemporalFormula[] {new And(), new Or(), new Exists(), new All(), new Finally(),
+            new Globally(), new Next(), new Until(),
             new Neg(), new Atom()};
 
     /**

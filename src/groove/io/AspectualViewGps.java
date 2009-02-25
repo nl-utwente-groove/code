@@ -120,9 +120,12 @@ public abstract class AspectualViewGps extends Observable implements
      */
     protected void loadControl(DefaultGrammarView result, URL controlURL,
             String controlName) throws IOException {
-        if (controlURL != null) {
-            ControlView cv = new ControlView(result, controlURL, controlName);
-            result.setControl(cv);
+        
+        if( result.getProperties().isUseControl() ) {
+            if (controlURL != null) {
+                ControlView cv = new ControlView(result, controlURL, controlName);
+                result.setControl(cv);
+            }
         }
     }
 

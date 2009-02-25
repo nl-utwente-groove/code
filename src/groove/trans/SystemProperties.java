@@ -39,6 +39,16 @@ public class SystemProperties extends java.util.Properties {
             && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));
     }
 
+    
+    /**
+     * Indicates if control is used and that the system will look for a control program.
+     * Default value: <code>true</code>
+     */
+    public boolean isUseControl() {
+        String control = getProperty(SystemProperties.CONTROL_KEY);
+        return control == null || (new Boolean(control) || control.equals(SystemProperties.CONTROL_YES));
+    }
+    
     /**
      * Indicates if the LTS labels should be surrounded by angular brackets.
      * Default value: <code>false</code>.
@@ -371,6 +381,18 @@ public class SystemProperties extends java.util.Properties {
     static public final String PARAMETERS_NO = "0";
 
     /**
+     * Property that determines if control is used
+     */
+    static public final String CONTROL_KEY = "enableControl";
+    
+    /** Value of {@link #CONTROL_KEY} that means control is used */
+    static public final String CONTROL_YES = "1";
+    
+    /** Value of {@link #CONTROL_KEY} that means control is not used */
+    static public final String CONTROL_NO = "0";
+    
+    
+    /**
      * Property that determines if transition parameters are included in the LTS
      * transition labels
      */
@@ -461,6 +483,10 @@ public class SystemProperties extends java.util.Properties {
                 true));
         defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean(
             "Flag controlling if transition labels should be bracketed"));
+        
+        defaultKeys.put(
+            CONTROL_KEY
+            , new IsExtendedBoolean("Flag controlling if a control program is used"));
         defaultKeys.put(
             PARAMETERS_KEY,
             new IsExtendedBoolean(

@@ -70,6 +70,12 @@ public class ModelCheckingTest extends TestCase {
             modelChecker.verify();
             assertEquals(0, property.getCounterExamples().size());
 
+            // all states satisfy the following property
+            property = CTLFormula.parseFormula("!put | EX(get)");
+            modelChecker = new CTLModelChecker(gts, property);
+            modelChecker.verify();
+            assertEquals(0, property.getCounterExamples().size());
+            
             // not a single state satisfies the following property
             property = CTLFormula.parseFormula("AG(put)");
             modelChecker = new CTLModelChecker(gts, property);
