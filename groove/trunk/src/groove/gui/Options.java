@@ -136,6 +136,8 @@ public class Options {
     // Titles
     /** Label pane title */
     public static final String LABEL_PANE_TITLE = "Labels";
+    /** States pane title */
+    public static final String STATES_PANE_TITLE = "Start Graphs";
 
     // Actions
     /**
@@ -223,9 +225,7 @@ public class Options {
     public static final String OPEN_ACTION_NAME = "Open ...";
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
-    /**
-     * Preview action name
-     */
+    /** Preview action name */
     public static final String PREVIEW_ACTION_NAME = "Preview ...";
     /** Provide ctl formula action name */
     public static final String PROVIDE_CTL_FORMULA_ACTION_NAME =
@@ -251,6 +251,8 @@ public class Options {
     /** Edit properties action name */
     public static final String RULE_PROPERTIES_ACTION_NAME =
         "Rule Properties ...";
+    /** Use as start graph action name */
+    public static final String START_GRAPH_ACTION_NAME = "Use as start graph";
     /**
      * Start simulation action name
      */

@@ -400,7 +400,7 @@ public class LabelList extends JList implements GraphModelListener,
     protected final DefaultListModel listModel;
 
     /**
-     * The popup menu for this label list.
+     * The pop-up menu for this label list.
      * @invariant popupMenu != null
      */
     protected final JPopupMenu popupMenu;

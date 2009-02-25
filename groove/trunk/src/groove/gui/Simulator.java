@@ -1457,7 +1457,7 @@ public class Simulator {
             // frame.setContentPane(splitPane);
             this.frame.setJMenuBar(createMenuBar());
 
-            // set up the content pane of the frame as a splt pane,
+            // set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
             // right
             JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -1663,7 +1663,7 @@ public class Simulator {
             if (enabled) {
                 text = "Labelled transition system";
             } else if (getCurrentGrammar() == null) {
-                text = "Currently distabled; load grammar";
+                text = "Currently disabled; load grammar";
             } else if (getCurrentGrammar().getErrors().isEmpty()) {
                 text =
                     String.format(

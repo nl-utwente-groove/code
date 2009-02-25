@@ -28,6 +28,7 @@ import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
+import groove.io.Xml;
 import groove.util.Groove;
 import groove.util.Version;
 import groove.view.AspectualGraphView;
@@ -358,7 +359,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
 
     /**
      * Preview the given graph (e.g., for debugging purposes).
-     * @param graph the graph to preview
+     * @param graph the plain graph to preview
      * @param option the label in the action button
      * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
      */
@@ -367,6 +368,25 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         AspectGraph result = AspectGraph.getFactory().fromPlainGraph(graph);
         result.setFixed();
         AspectualGraphView view = new AspectualGraphView(result, null);
+        return e.showPreview(view, option);
+    }
+    
+    /**
+     * Preview the given graph (e.g., for debugging purposes).
+     * @param file the file which contains the graph to preview
+     * @param option the label in the action button
+     * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
+     */
+    public static boolean previewGraph(final File file, final String option) {
+        Editor e = new Editor();
+        Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
+        AspectGraph graph;
+        try {
+            graph = graphLoader.unmarshalGraph(file);
+        } catch (IOException exception) {
+            return false;
+        }
+        AspectualGraphView view = new AspectualGraphView(graph, null);
         return e.showPreview(view, option);
     }
     
