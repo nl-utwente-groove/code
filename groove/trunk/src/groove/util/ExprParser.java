@@ -348,7 +348,11 @@ public class ExprParser {
      */
     static public Pair<String,List<String>> parseExpr(String expr)
         throws FormatException {
-        return prototype.parse(expr);
+        
+        ExprParser p = ExprParser.prototype;
+        
+        
+        return p.parse(expr);
     }
 
     /**

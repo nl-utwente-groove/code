@@ -26,6 +26,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 
@@ -41,7 +42,6 @@ import javax.swing.JToolBar;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
@@ -60,6 +60,7 @@ public class CAPanel extends JPanel implements SimulationListener {
     DefaultGrammarView grammar;
 
     JButton editButton, doneButton, viewButton; // , saveButton;
+    JButton toggleButton;
 
     /**
      * @param simulator The Simulator the panel is added to.
@@ -87,6 +88,12 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.viewButton.addActionListener(new ViewButtonListener());
         this.viewButton.setEnabled(false);
 
+        
+        // 
+        this.toggleButton = new JButton("<Toggle>");
+        toolBar.add(this.toggleButton);
+        this.toggleButton.setEnabled(false);
+        this.toggleButton.addActionListener(new ToggleButtonListener());
 
         RSyntaxDocument document = new RSyntaxDocument("gcl");
         document.setSyntaxStyle(new GCLTokenMaker());
@@ -125,6 +132,14 @@ public class CAPanel extends JPanel implements SimulationListener {
         // autPanel.setEnabled(false);
         this.textPanel.setText("");
 
+        this.toggleButton.setEnabled(true);
+
+        if( grammar.getProperties().isUseControl() ) {
+            this.toggleButton.setText("Disable Control");
+        } else {
+            this.toggleButton.setText("Enable Control");
+        }
+        
         if (grammar.getControl() != null) {
             ControlView cv = grammar.getControl();
             // in any case display the program
@@ -137,6 +152,9 @@ public class CAPanel extends JPanel implements SimulationListener {
         } else {
             this.viewButton.setEnabled(false);
             this.editButton.setEnabled(false);
+            if( grammar.getProperties().isUseControl()) {
+                this.textPanel.setText("No program found. Go to File->New->Control to create a control program.");
+            }
         }
     }
 
@@ -186,6 +204,25 @@ public class CAPanel extends JPanel implements SimulationListener {
             // CAPanel.this.saveButton.setEnabled(true);
             // }
         }
+    }
+    
+    class ToggleButtonListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            if( CAPanel.this.simulator.getCurrentGrammar().getProperties().isUseControl() ) {
+                // disabling control
+                CAPanel.this.simulator.getCurrentGrammar().getProperties().setProperty(SystemProperties.CONTROL_KEY, SystemProperties.CONTROL_NO);
+                CAPanel.this.simulator.doSaveProperties();
+                CAPanel.this.simulator.doRefreshGrammar();
+            } else {
+                // enabling control
+                CAPanel.this.simulator.getCurrentGrammar().getProperties().setProperty(SystemProperties.CONTROL_KEY, SystemProperties.CONTROL_YES);
+                CAPanel.this.simulator.doSaveProperties();
+                CAPanel.this.simulator.doRefreshGrammar();
+            }
+        }
+        
     }
 
     class EditButtonListener implements ActionListener {
