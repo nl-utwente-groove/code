@@ -47,6 +47,7 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.ExportDialog;
 import groove.gui.dialog.FormulaDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
@@ -1159,6 +1160,28 @@ public class Simulator {
         }
     }
 
+    void doSaveProperties() {
+        DefaultGrammarView grammar = this.getCurrentGrammar();
+        Properties properties = grammar.getProperties();
+        try {
+            String outputFileName =
+                Groove.createPropertyFilter().addExtension(
+                    grammar.getName());
+            File outputFile =
+                new File(
+                    FileGps.toFile(Simulator.this.currentGrammarURL),
+                    outputFileName);
+            outputFile.createNewFile();
+            OutputStream writer = new FileOutputStream(outputFile);
+            properties.store(writer, String.format(
+                SystemProperties.DESCRIPTION, grammar.getName()));
+            grammar.setProperties(properties);
+            setGrammar(grammar);
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving edited properties", exc);
+        }
+    }
+    
     /** Renames all instances of a given label by another. */
     void doRenameLabel(String original, String replacement) {
         // does nothing for now
@@ -1410,6 +1433,7 @@ public class Simulator {
             }
         } catch (FormatException efe) {
             showErrorDialog("Format error in temporal formula", efe);
+            efe.printStackTrace();
         }
     }
 
@@ -1762,6 +1786,7 @@ public class Simulator {
         result.add(new JMenuItem(getSaveGrammarAction()));
         result.add(new JMenuItem(getSaveGraphAction()));
         result.add(new JMenuItem(getExportGraphAction()));
+//        result.add(new JMenuItem(new ExportAction()));
         result.addSeparator();
         result.add(getEditItem());
         result.add(new JMenuItem(getEditSystemPropertiesAction()));
@@ -4216,6 +4241,31 @@ public class Simulator {
         }
     }
 
+    private class ExportAction extends AbstractAction implements Refreshable {
+
+        ExportAction() {
+            super("Export LTS...");
+            addRefreshable(this);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            ExportDialog dialog = new ExportDialog(Simulator.this);
+            
+            dialog.setCurrentDirectory(FileGps.toFile(Simulator.this.currentGrammarURL).getAbsolutePath());
+            
+            if( dialog.showDialog(getFrame())) {
+                System.out.println("Clicked OK");
+            }
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(getCurrentGTS() != null);
+        }
+    }
+    
+    
     /**
      * A variant of {@link Simulator.StartSimulationAction} for abstract
      * simulation.
