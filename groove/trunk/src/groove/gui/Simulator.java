@@ -1845,9 +1845,10 @@ public class Simulator {
     JMenuItem getEditItem() {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
-            // load the rule edit action, even though it is not user here
+            // load the graph edit action as default
+            this.editGraphItem.setAction(getEditGraphAction());
+            // give the rule edit action a chance to replace the graph edit action
             getEditRuleAction();
-            getEditGraphAction();
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
