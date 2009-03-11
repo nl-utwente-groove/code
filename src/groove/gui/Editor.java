@@ -1489,6 +1489,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         JDialog dialog = previewPane.createDialog(getFrame(), String.format("%s preview", getRole(true)));
         dialog.setSize(this.previewSize);
         dialog.setResizable(true);
+        dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
         return okOption.equals(previewPane.getValue());
     }
