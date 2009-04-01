@@ -17,20 +17,23 @@
 package groove.gui.dialog;
 
 import groove.gui.Simulator;
+import groove.io.ExtensionFilter;
 
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 /**
@@ -39,57 +42,70 @@ import javax.swing.JTextField;
  */
 public class ExportDialog {
 
-    /** The current Grammar Directory*/
+    /** The current Grammar Directory */
     private String currentDirectory;
-    
-    /** The formula label */
-    private JLabel formulaLabel;
-    /** The formula field */
-    JTextField formulaField;
-    /** The history box */
-    JComboBox historyBox;
+
     /** The OK button on the option pane. */
     private JButton okButton;
     /** The CANCEL button on the option pane. */
     private JButton cancelButton;
+
     /** Title of the dialog. */
-    public static final String DIALOG_TITLE = "Enter Temporal Formula";
+    public static final String DIALOG_TITLE = "LTS Exporter";
 
     /** The option pane creating the dialog. */
     private JOptionPane pane;
     /** The dialog */
     private JDialog dialog;
-    /** The simulator */
+    /** The simulator, for fetching the frame instance */
     private Simulator simulator;
 
+    // directory to export to
+    private JTextField dirField;
+    // label start states
+    private JCheckBox startCheck;
+    // label final states
+    private JCheckBox finalCheck;
+    // label open states
+    private JCheckBox openCheck;
+    // add state names
+    private JCheckBox nameCheck;
+
+    // export no states
+    JRadioButton list0;
+    // export all states
+    JRadioButton list1;
+    // export final states only
+    JRadioButton list2;
+
+    /** Value that indicates no states are exported **/ 
+    public static final int STATES_NONE = 0;
+    /** Value that indicates only final states are exported **/
+    public static final int STATES_FINAL = 1;
+    /** Value that indicates all states are exported **/
+    public static final int STATES_ALL = 2;
+
+    /** Creates a new dialog for options to export the LTS * */
     public ExportDialog(Simulator simulator) {
-        this.simulator = simulator;
+        // nothing to do
     }
 
+    /** Sets the directoy to initialize the file directoy browser at * */
     public void setCurrentDirectory(String value) {
         this.currentDirectory = value;
     }
-    
-    public boolean showDialog(Component frame) {
-        boolean result;
-        boolean stopDialog;
-        do {
-            getContentPane().setValue(null);
-            getContentPane().setVisible(true);
-            JDialog dialog =
-                getContentPane().createDialog(frame, createTitle());
-            dialog.setResizable(true);
-            dialog.setVisible(true);
-            dialog.dispose();
-            Object selectedValue = getContentPane().getValue();
-            if (selectedValue == getOkButton()) {
-                result = stopDialog = true;
-            } else {
-                result = false;
-                stopDialog = true;
-            }
-        } while (!stopDialog);
-        return result;
+
+    /**
+     * Shows the dialog. The passed frame is locked until the dialog is closed.
+     * Returns true if the dialog was closed with ok, false in case of cancel.
+     */
+    public boolean showDialog(Simulator simulator) {
+        this.simulator = simulator;
+        this.getContentPane().setVisible(true);
+        this.dialog =
+            getContentPane().createDialog(simulator.getFrame(), createTitle());
+        this.dialog.setVisible(true);
+        return (getContentPane().getValue() == getOkButton());
     }
 
     /**
@@ -97,10 +113,14 @@ public class ExportDialog {
      */
     JOptionPane getContentPane() {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
-        this.pane =
-            new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.OK_CANCEL_OPTION, null, buttons);
-        this.pane.setSize(200, 300);
+        if (this.pane == null) {
+            this.pane =
+                new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION, null, buttons);
+
+            // new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
+            // JOptionPane.OK_CANCEL_OPTION, null, buttons);
+        }
         return this.pane;
     }
 
@@ -111,33 +131,55 @@ public class ExportDialog {
     private JPanel createPanel() {
         JPanel result = new JPanel();
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 1));
         JPanel buttons = new JPanel();
 
+        panel.setLayout(new GridLayout(0, 1));
+
         // editing formula
-        
-        panel.add(new JLabel("Exporting directory:"));
-        
-        JTextField dirField = new JTextField(this.currentDirectory);
-        panel.add(dirField);
-        
+
+        JLabel exportLabel = new JLabel("Exporting directory:");
+        panel.add(exportLabel);
+
+        JPanel filePanel = new JPanel();
+        filePanel.setLayout(new FlowLayout());
+        this.dirField = new JTextField(this.currentDirectory);
+        filePanel.add(this.dirField);
+        JButton browseButton = new JButton("Browse");
+        browseButton.addActionListener(new BrowseButtonListener());
+        filePanel.add(browseButton);
+        panel.add(filePanel);
+
+        panel.add(new JLabel(" "));
         panel.add(new JLabel("LTS Exporting options:"));
 
-        JCheckBox startCheck = new JCheckBox("Label start state");
-        JCheckBox finalCheck = new JCheckBox("Label final states");
-        JCheckBox openCheck = new JCheckBox("Label open states");
-        JCheckBox nameCheck = new JCheckBox("Export state names");
-        
-        panel.add(startCheck);
-        panel.add(finalCheck);
-        panel.add(openCheck);
-        panel.add(nameCheck);
-        
-        panel.add(new JLabel("Export States"));
-        JOptionPane list = new JOptionPane(new String[]{"None","All states","Final states"});
-        
-        panel.add(list);
-        
+        this.startCheck = new JCheckBox("Label start state");
+        this.finalCheck = new JCheckBox("Label final states");
+        this.openCheck = new JCheckBox("Label open states");
+        this.nameCheck = new JCheckBox("Export state names");
+
+        panel.add(this.startCheck);
+        panel.add(this.finalCheck);
+        panel.add(this.openCheck);
+        panel.add(this.nameCheck);
+
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Export States:"));
+
+        this.list0 = new JRadioButton("None", true);
+        this.list1 = new JRadioButton("All states", false);
+        this.list2 = new JRadioButton("Final states", false);
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(this.list0);
+        group.add(this.list1);
+        group.add(this.list2);
+
+        panel.add(this.list0);
+        panel.add(this.list1);
+        panel.add(this.list2);
+
+        panel.add(new JLabel(" "));
+
         // OK or CANCEL
         this.okButton = getOkButton();
         this.cancelButton = getCancelButton();
@@ -146,6 +188,7 @@ public class ExportDialog {
 
         result.add(panel);
         result.add(buttons);
+        result.add(panel);
 
         return result;
     }
@@ -194,14 +237,72 @@ public class ExportDialog {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == getOkButton()) {
-                // 
-            } else if (e.getSource() == getCancelButton()) {
-                //
-            }
-
+            Object value = e.getSource();
+            getContentPane().setValue(value);
             getContentPane().setVisible(false);
-            ExportDialog.this.dialog.dispose();
+            // ExportDialog.this.dialog.setVisible(false);
+
         }
     }
+
+    /** Retuns the current selection for exporting the individual states * */
+    public int getExportStates() {
+        if (this.list0.isSelected()) {
+            return STATES_NONE;
+        } else if (this.list1.isSelected()) {
+            return STATES_ALL;
+        } else if (this.list2.isSelected()) {
+            return STATES_FINAL;
+        }
+        return -1;
+    }
+
+    /** Returns an absolute path of the directory to export to * */
+    public String getDirectory() {
+        return this.dirField.getText();
+    }
+
+    /** Returns if open states should be labeled with "open" * */
+    public boolean showOpen() {
+        return this.openCheck.isSelected();
+    }
+
+    /** Returns if final states should be labeled with "final" * */
+    public boolean showFinal() {
+        return this.finalCheck.isSelected();
+    }
+
+    /** Returns if states should be labeled with their name * */
+    public boolean showNames() {
+        return this.nameCheck.isSelected();
+    }
+
+    /** Returns if the start state should be labeled with "start" * */
+    public boolean showStart() {
+        return this.startCheck.isSelected();
+    }
+
+    class BrowseButtonListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser chooser =
+                new JFileChooser(ExportDialog.this.dirField.getText());
+            chooser.setMultiSelectionEnabled(false);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+            int result =
+                chooser.showOpenDialog(ExportDialog.this.simulator.getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION) {
+                ExportDialog.this.dirField.setText(chooser.getSelectedFile().getAbsolutePath());
+            }
+            if (result == JFileChooser.CANCEL_OPTION) {
+                System.out.println("Cancelled");
+            }
+            if (result == JFileChooser.ERROR_OPTION) {
+                System.out.println("Whooops");
+            }
+
+        }
+    }
+
 }

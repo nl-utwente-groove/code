@@ -27,18 +27,28 @@ import groove.graph.NodeSetEdgeSetGraph;
  */
 public class LTSGraph extends NodeSetEdgeSetGraph {
     /** Constructs a graph from a given LTS. */
+    
     public LTSGraph(LTS lts) {
+        this(lts, true, true, true, false);
+    }
+    
+    public LTSGraph(LTS lts, boolean showFinal, boolean showStart, boolean showOpen, boolean showNames) {
         for (State state : lts.nodeSet()) {
             addNode(state);
-            if (lts.isFinal(state)) {
+            if (showFinal && lts.isFinal(state)) {
                 addEdge(state, DefaultLabel.createLabel(LTS.FINAL_LABEL_TEXT),
                     state);
-            } else if (lts.startState().equals(state)) {
+            }
+            if (showStart && lts.startState().equals(state)) {
                 addEdge(state, DefaultLabel.createLabel(LTS.START_LABEL_TEXT),
                     state);
-            } else if (!state.isClosed()) {
+            }
+            if (showOpen && !state.isClosed()) {
                 addEdge(state, DefaultLabel.createLabel(LTS.OPEN_LABEL_TEXT),
                     state);
+            }
+            if( showNames ) {
+                addEdge(state, DefaultLabel.createLabel(state.toString()),state);
             }
         }
         addEdgeSet(lts.edgeSet());

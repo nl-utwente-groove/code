@@ -73,6 +73,7 @@ import groove.io.ZipGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.lts.StateGenerator;
 import groove.trans.NameLabel;
@@ -498,6 +499,17 @@ public class Simulator {
         return this.exportGraphAction;
     }
 
+    /**
+     * Returns the LTS export action permanently associated with this simulator. 
+     */
+    public ExportAction getExportAction() {
+        // lazily create the action
+        if( this.exportAction == null ) {
+            this.exportAction = new ExportAction();
+        }
+        return this.exportAction;
+    }
+    
     /**
      * Returns the go-to start state action permanently associated with this
      * simulator.
@@ -1786,7 +1798,7 @@ public class Simulator {
         result.add(new JMenuItem(getSaveGrammarAction()));
         result.add(new JMenuItem(getSaveGraphAction()));
         result.add(new JMenuItem(getExportGraphAction()));
-//        result.add(new JMenuItem(new ExportAction()));
+        result.add(new JMenuItem(getExportAction()));
         result.addSeparator();
         result.add(getEditItem());
         result.add(new JMenuItem(getEditSystemPropertiesAction()));
@@ -2766,6 +2778,9 @@ public class Simulator {
     /** The state export action permanently associated with this simulator. */
     private ExportGraphAction exportGraphAction;
 
+    /** The LTS export action permanently associated with this simulator. */
+    private ExportAction exportAction;
+    
     /**
      * The go-to start state action permanently associated with this simulator.
      */
@@ -4245,18 +4260,53 @@ public class Simulator {
     private class ExportAction extends AbstractAction implements Refreshable {
 
         ExportAction() {
-            super("Export LTS...");
+            super("Export Simulation ...");
             addRefreshable(this);
         }
         
         @Override
         public void actionPerformed(ActionEvent arg0) {
             ExportDialog dialog = new ExportDialog(Simulator.this);
-            
             dialog.setCurrentDirectory(FileGps.toFile(Simulator.this.currentGrammarURL).getAbsolutePath());
             
-            if( dialog.showDialog(getFrame())) {
-                System.out.println("Clicked OK");
+            if( dialog.showDialog(Simulator.this)) {
+                
+                File file = new File(dialog.getDirectory());
+                int exportStates = dialog.getExportStates();
+                boolean showFinal = dialog.showFinal();
+                boolean showNames = dialog.showNames();
+                boolean showStart = dialog.showStart();
+                boolean showOpen = dialog.showOpen();
+                
+                GTS gts = Simulator.this.getCurrentGTS();
+                
+                LTSGraph lts = new LTSGraph(gts, showFinal, showStart, showOpen, showNames);
+
+                Collection<GraphState> export = new HashSet<GraphState>(0);
+                
+                if( exportStates == ExportDialog.STATES_ALL) {
+                    export = gts.getStateSet();
+                } else if( exportStates == ExportDialog.STATES_FINAL ) {
+                    export = gts.getFinalStates();
+                }
+
+                
+                try {
+                    File ltsOut = Groove.saveGraph(lts, new File(file, "lts.gxl").getAbsolutePath());
+//                    System.out.println("LTS exported to " + ltsOut);
+                    for( GraphState state : export ) 
+                    {
+                        String name = state.toString();
+                        File stateOut = Groove.saveGraph(state.getGraph(),new File(file,name + ".gst").getAbsolutePath());
+//                        System.out.println("State " + name + " exported to " + stateOut);
+                    }
+                
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+                
+                    
+                
             }
         }
 
