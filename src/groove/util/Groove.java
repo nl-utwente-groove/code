@@ -427,7 +427,7 @@ public class Groove {
             filename = createGxlFilter().addExtension(filename);
         }
         File file = new File(filename);
-        System.err.println("Storing graph as " + file.getAbsolutePath());
+//        System.err.println("Storing graph as " + file.getAbsolutePath());
         gxlGraphLoader.marshalGraph(graph, file);
         return file;
     }
