@@ -148,7 +148,7 @@ public class CTLStarFormula {
      */
     static public final String FALSE = "false";
 
-    /** Interface for temporal operators */ 
+    /** Interface for temporal operators */
     public interface TemporalOperator {
         // empty interface
     }
@@ -179,9 +179,15 @@ public class CTLStarFormula {
         @Override
         protected TemporalFormula parseOperator(String expr)
             throws FormatException {
-            String[] operands =
-                ExprParser.splitExpr(expr, getOperator(),
-                    ExprParser.PREFIX_POSITION);
+            String[] operands = null;
+            try {
+                operands =
+                    ExprParser.splitExpr(expr, getOperator(),
+                        ExprParser.PREFIX_POSITION);
+            } catch (FormatException fe) {
+                // ignore format exception, the operator is probably used in a
+                // terminal
+            }
             if (operands == null) {
                 return null;
             }
@@ -825,9 +831,9 @@ public class CTLStarFormula {
      * Comment for <code>prototypes</code>
      */
     protected final TemporalFormula[] prototypes =
-        new TemporalFormula[] {new And(), new Or(), new Exists(), new All(), new Finally(),
-            new Globally(), new Next(), new Until(),
-            new Neg(), new Atom()};
+        new TemporalFormula[] {new And(), new Or(), new Exists(), new All(),
+            new Finally(), new Globally(), new Next(), new Until(), new Neg(),
+            new Atom()};
 
     /**
      * Parses the string given to this method. It throws a
