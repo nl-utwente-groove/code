@@ -43,7 +43,7 @@ public interface MatchStrategy<Result> {
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
      * @return the set of all mappings to the elements of <code>host</code>
-     *         that augment <code>preMatch</code> and fulfil the requirements
+     *         that augment <code>preMatch</code> and fulfill the requirements
      *         to be total matches
      */
     public Collection<Result> getMatchSet(Graph host, NodeEdgeMap anchorMap);
@@ -59,7 +59,7 @@ public interface MatchStrategy<Result> {
      *        <code>null</code> if there is no predefined mapping
      * @return an iterator over all mappings to the elements of
      *         <code>host</code> that augment <code>preMatch</code> and
-     *         fulfil the requirements to be total matches
+     *         fulfill the requirements to be total matches
      */
     public Iterator<Result> getMatchIter(GraphShape host, NodeEdgeMap anchorMap);
 
@@ -72,7 +72,7 @@ public interface MatchStrategy<Result> {
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
      * @return the set of all mappings to the elements of <code>host</code>
-     *         that augment <code>preMatch</code> and fulfil the requirements
+     *         that augment <code>preMatch</code> and fulfill the requirements
      *         to be total matches
      */
     public Iterable<Result> getMatches(Graph host, NodeEdgeMap anchorMap);

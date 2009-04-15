@@ -97,7 +97,7 @@ public class PropertiesDialog {
      * Makes the dialog visible and awaits the user's response. Since the dialog
      * is modal, this method returns only when the user closes the dialog. The
      * return value indicates if the properties have changed.
-     * @param frame the frame on which the fialog is to be displayed
+     * @param frame the frame on which the dialog is to be displayed
      * @return <code>true</code> if the properties have changed during the
      *         time the dialog was visible.
      */
@@ -258,14 +258,14 @@ public class PropertiesDialog {
             };
             this.table.setIntercellSpacing(new Dimension(2, -2));
             this.table.setPreferredScrollableViewportSize(new Dimension(300,
-                Math.max(model.getRowCount() * ROW_HEIGHT, 70)));
+                Math.max(model.getRowCount() * ROW_HEIGHT, 80)));
             this.table.setDefaultRenderer(
                 this.table.getColumnClass(PROPERTY_COLUMN), new CellRenderer());
         }
         return this.table;
     }
 
-    /** Creates an instanceof {@link TableModel}. */
+    /** Creates an instance of {@link TableModel}. */
     private TableModel getTableModel() {
         if (this.tableModel == null) {
             this.tableModel = new TableModel();
@@ -287,8 +287,7 @@ public class PropertiesDialog {
 
     /**
      * Returns a (fixed) editor that tests if the value entered is a well-formed
-     * property key. This is the case if and only if it matches
-     * {@link #IDENTIFIER_REGEXPR}.
+     * property key.
      */
     CellEditor getKeyEditor() {
         if (this.cellEditor == null) {
@@ -319,8 +318,7 @@ public class PropertiesDialog {
 
     /**
      * Creates an editor that tests if the value entered is a well-formed
-     * property key. This is the case if and only if it matches
-     * {@link #IDENTIFIER_REGEXPR}.
+     * property key.
      */
     CellEditor createCellEditor() {
         return new CellEditor();
@@ -358,8 +356,6 @@ public class PropertiesDialog {
     private static final int VALUE_COLUMN = 1;
     /** Height of a row in the dialog. */
     private static final int ROW_HEIGHT = 15;
-    /** Regular expression for matching property keys. */
-    private static final String IDENTIFIER_REGEXPR = "(\\p{Alpha}\\p{Alnum}*)?";
 
     /**
      * Action listener that closes the dialog and sets the option pane's value
