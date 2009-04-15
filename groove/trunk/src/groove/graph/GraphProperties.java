@@ -165,6 +165,43 @@ public class GraphProperties extends Properties {
     }
 
     /**
+    * Returns the confluency status stored in this properties object, if any.
+    * The status is stored under key {@link #CONFLUENT_KEY}.
+    * @return The stored confluency status, or <code>false</code> if there is
+    *         none
+    */
+   public boolean isConfluent() {
+       String result = getProperty(CONFLUENT_KEY);
+       if (result == null) {
+           return false;
+       } else {
+           return Boolean.parseBoolean(result);
+       }
+   }
+
+   /**
+    * Sets the confluency status in this property object. The status is stored
+    * under key {@link #CONFLUENT_KEY}.
+    * @param confluent the confluency status to be stored
+    * @return the previously stored status, or <code>false</code> if there was
+    *         none
+    */
+   public boolean setConfluent(boolean confluent) {
+       String result;
+       // if the new value is false (the default value), remove the key instead
+       if (!confluent) {
+           result = (String) remove(CONFLUENT_KEY);
+       } else {
+           result = (String) setProperty(CONFLUENT_KEY, "" + confluent);
+       }
+       if (result == null) {
+           return false;
+       } else {
+           return Boolean.parseBoolean(result);
+       }
+   }
+    
+    /**
      * Retrieves the {@link #REMARK_KEY} value in this properties object.
      * @return the current value for {@link #REMARK_KEY}; may be
      *         <code>null</code>
@@ -303,6 +340,10 @@ public class GraphProperties extends Properties {
      */
     static public final String REMARK_KEY = "remark";
     /**
+     * Rule confluency key. The corresponding value should be a boolean.
+     */
+    static public final String CONFLUENT_KEY = "confluent";
+    /**
      * Start character that distinguishes user-defined property keys from system
      * keys. Any string starting with this character is a system key.
      */
@@ -371,6 +412,23 @@ public class GraphProperties extends Properties {
             @Override
             public String getComment() {
                 return "Disabled rules are never evaluated";
+            }
+        });
+        defaultKeys.put(CONFLUENT_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.equals("" + true) || value.equals("" + false);
+            }
+
+            @Override
+            public String getDescription() {
+                return "a boolean indicating if the rule is confluent";
+            }
+
+            @Override
+            public String getComment() {
+                return "Confluent rules have the same effect, regardless of " +
+                       "their matching";
             }
         });
         DEFAULT_USER_KEYS = Collections.unmodifiableMap(defaultKeys);

@@ -184,7 +184,7 @@ public class EditorJGraph extends JGraph {
             startEditingAtCell(newEdge);
         }
     }
-
+    
     /**
      * Callback method to determine whether an event concerns edge creation. To
      * be overridden by subclasses.
