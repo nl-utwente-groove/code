@@ -800,7 +800,7 @@ public class Simulator {
         AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
         GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
         properties.setEnabled(!properties.isEnabled());
-        doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
+        doAddRule(getCurrentRule().getNameLabel(), ruleGraph);       
     }
 
     void doLoadGrammar(URL url) {

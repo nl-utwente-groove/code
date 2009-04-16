@@ -23,6 +23,7 @@ import groove.util.Property;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -46,7 +47,7 @@ public class GraphProperties extends Properties {
     public GraphProperties(Map<? extends Object,? extends Object> properties) {
         putAll(properties);
     }
-
+    
     /**
      * Before calling the super method, tests if the key is an allowed user
      * property key.
