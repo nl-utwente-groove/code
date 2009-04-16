@@ -179,7 +179,7 @@ public class TypeDiscoverer {
     /** Callback factory method to create a rule. */
     protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name,
             RuleSystem ruleSystem) {
-        return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY,
+        return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, false,
             ruleSystem.getProperties());
     }
 

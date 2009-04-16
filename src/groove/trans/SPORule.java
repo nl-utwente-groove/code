@@ -61,10 +61,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      *        classes
      */
     public SPORule(Morphism morph, RuleNameLabel name, int priority,
-            SystemProperties properties) {
+            boolean confluent, SystemProperties properties) {
         super(morph.dom(), name, properties);
         this.morphism = morph;
         this.priority = priority;
+        this.confluent = confluent;
     }
 
     /**
@@ -96,6 +97,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.priority = priority;
     }
 
+    /** Sets the confluency of this rule. */
+    public void setConfluent(boolean confluent) {
+        testFixed(false);
+        this.confluent = confluent;
+    }
+    
     /**
      * Sets the parent rule of this rule, together with the nesting level and
      * the co-root map.
@@ -487,6 +494,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     public int getPriority() {
         return this.priority;
+    }
+    
+    @Override
+    public boolean isConfluent() {
+        return this.confluent;
     }
 
     /**
@@ -1222,6 +1234,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private int priority;
     /**
+     * The confluency property of this rule.
+     */
+    private boolean confluent;
+    /**
      * List of numbered parameters.
      */
     private List<Node> visibleParameters;
@@ -1265,4 +1281,5 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
+
 }

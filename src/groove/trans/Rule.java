@@ -70,6 +70,13 @@ public interface Rule extends Comparable<Rule>, Condition {
      * condition.
      */
     public boolean isModifying();
+    
+    /**
+     * Indicates if this rule has a confluency property. If this method returns
+     * <code>true</code>, this means the rule can be applied only once, to an
+     * arbitrary match.
+     */
+    public boolean isConfluent();
 
     /** Indicates if the rule has (node or edge) creators. */
     public boolean hasCreators();

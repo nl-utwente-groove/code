@@ -23,7 +23,6 @@ import groove.util.Property;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -279,6 +278,21 @@ public class GraphProperties extends Properties {
             return true;
         } else {
             return properties.isEnabled();
+        }
+    }
+    
+    /**
+     * Returns the confluency property from a given graph. The property is
+     * stored under {@link #CONFLUENT_KEY}. Yields <code>false</code> if the
+     * graph has no properties.
+     * @see #isConfluent()
+     */
+    static public boolean isConfluent(GraphShape graph) {
+        GraphProperties properties = GraphInfo.getProperties(graph, false);
+        if (properties == null) {
+            return false;
+        } else {
+            return properties.isConfluent();
         }
     }
 

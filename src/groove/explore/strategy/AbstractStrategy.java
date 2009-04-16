@@ -170,7 +170,7 @@ public abstract class AbstractStrategy implements Strategy {
         // Two cases where an alias iterator may be returned :
         // the parent is closed, or one of the successors is closed
 
-        /* Un ugly hack to forbid aliasing for cases when it does not work */
+        /* An ugly hack to forbid aliasing for cases when it does not work */
         boolean aliasingNotAllowed =
             cache instanceof LocationCache
                 || getAtState() instanceof AbstrGraphState;
@@ -238,16 +238,28 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /**
+     * Enable useConfluentProperty, to explore confluent rules in a linear way.
+     */
+    public void enableUseConfluentProperty() {
+        this.useConfluentProperty = true;
+    }
+
+    /** Return the current value of the confluency setting */
+    public boolean useConfluentProperty() {
+        return this.useConfluentProperty;
+    }
+    
+    /** Return the current value of the "close on exit" setting */
+    public boolean closeExit() {
+        return this.closeExit;
+    }
+    
+    /**
      * Enable closeExit, to close states when a strategy changes its atState.
      * This can save memory when using linear strategies.
      */
     public void enableCloseExit() {
         this.closeExit = true;
-    }
-
-    /** Return the current value of the "close on exit" setting */
-    public boolean closeExit() {
-        return this.closeExit;
     }
 
     /** Convenience method to retrieve the GTS' system record. */
@@ -280,5 +292,11 @@ public abstract class AbstractStrategy implements Strategy {
      * states asap *
      */
     protected boolean closeExit = false;
+    
+    /**
+     * Flag to indicate if the confluency property of a rule should be
+     * considered during the exploration. 
+     */
+    protected boolean useConfluentProperty = false;
 
 }

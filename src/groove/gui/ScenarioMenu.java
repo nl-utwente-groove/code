@@ -28,6 +28,7 @@ import groove.explore.result.Result;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
+import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.GraphShape;
@@ -128,7 +129,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
         scenario =
             ScenarioFactory.getScenario(
-                new LinearStrategy(),
+                new LinearConfluentRules(),
                 new Acceptor(),
                 "Explores the state space and uses linear exploration for confluent rules.",
                 "Full exploration (linear confluent rules)");

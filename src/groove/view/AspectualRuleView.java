@@ -92,6 +92,7 @@ import java.util.TreeSet;
  * @version $Revision$
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
+
     /**
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be
@@ -102,6 +103,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.name = rule.getName();
         this.priority = rule.getPriority();
         this.enabled = true;
+        this.confluent = rule.isConfluent();
         this.rule = rule;
         this.properties = rule.getProperties();
         this.viewToRuleMap = new NodeEdgeHashMap();
@@ -132,6 +134,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.name = name;
         this.priority = GraphProperties.getPriority(graph);
         this.enabled = GraphProperties.isEnabled(graph);
+        this.confluent = GraphProperties.isConfluent(graph);
         this.properties = properties;
         this.graph = graph;
         this.attributeFactory = new AttributeElementFactory(graph, properties);
@@ -541,6 +544,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             }
             rule = (SPORule) levelRuleMap.get(topLevel);
             rule.setPriority(this.priority);
+            rule.setConfluent(this.confluent);
             rule.setParameters(new ArrayList<Node>(parameterMap.values()), parameters);
             rule.setFixed();
 
@@ -1006,8 +1010,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the fresh rule created by the factory
      */
     protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name,
-            int priority) {
-        return new SPORule(ruleMorphism, name, priority, getProperties());
+            int priority, boolean confluent) {
+        return new SPORule(ruleMorphism, name, priority, confluent, getProperties());
     }
 
     /**
@@ -1338,6 +1342,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * The enabledness of the rule view.
      */
     protected final boolean enabled;
+    /**
+     * The confluency of the rule view.
+     */
+    protected final boolean confluent;
 
     /** The aspect graph representation of the rule. */
     private final AspectGraph graph;
