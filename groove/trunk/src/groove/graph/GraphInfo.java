@@ -186,7 +186,7 @@ public class GraphInfo {
         }
         return result;
     }
-
+  
     /**
      * Copies the properties in a given map to this info object (key
      * {@link #PROPERTIES_KEY}).
@@ -200,6 +200,16 @@ public class GraphInfo {
                 currentProperties.putAll(properties);
             }
         }
+    }
+
+    /**
+     * Clones a GraphProperties object and inserts(overwrites) it in the
+     * hash map of the GraphInfo.
+     * @param properties is the GraphProperties object to be cloned
+     */
+    public void newProperties(GraphProperties properties) {
+        GraphProperties result = new GraphProperties(properties);
+        this.data.put(PROPERTIES_KEY, result);
     }
 
     /** Tests if this info object has a value for the {@link #ROLE_KEY}. */
@@ -500,7 +510,7 @@ public class GraphInfo {
     public static void setGraphRole(GraphShape graph) {
         setRole(graph, Groove.GRAPH_ROLE);
     }
-
+      
     /**
      * Transfers all available graph information from one graph to another,
      * modulo a given element map. The element map may be null if the node and
@@ -523,8 +533,9 @@ public class GraphInfo {
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties(false);
+             
             if (properties != null) {
-                target.getInfo().setProperties(new GraphProperties(properties));
+                target.getInfo().newProperties(properties);
             }
         }
     }
