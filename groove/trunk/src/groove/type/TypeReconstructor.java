@@ -191,7 +191,7 @@ public class TypeReconstructor {
         try {
             result =
                 new SPORule(rule.getMorphism(), rule.getName(),
-                    rule.getPriority(), rule.getProperties());
+                    rule.getPriority(), rule.isConfluent(), rule.getProperties());
             result.setFixed();
         } catch (FormatException fe) {
             return rule;

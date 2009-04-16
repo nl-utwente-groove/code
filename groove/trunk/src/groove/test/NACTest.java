@@ -97,7 +97,7 @@ public class NACTest extends TestCase {
         ruleMorphism.cod().addNode(this.n[1][0]);
         ruleMorphism.putNode(this.n[0][0], this.n[1][0]);
         this.rule =
-            new SPORule(ruleMorphism, new RuleNameLabel("test"), 0,
+            new SPORule(ruleMorphism, new RuleNameLabel("test"), 0, false,
                 SystemProperties.DEFAULT_PROPERTIES);
 
         this.NACs[0] =

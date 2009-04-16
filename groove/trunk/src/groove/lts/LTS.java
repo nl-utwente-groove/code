@@ -42,7 +42,7 @@ public interface LTS extends groove.graph.GraphShape {
     public State startState();
 
     /**
-     * Indicates whether we have found a final state during explodation.
+     * Indicates whether we have found a final state during exploration.
      * Convenience method for <tt>! getFinalStates().isEmpty()</tt>.
      */
     public boolean hasFinalStates();
