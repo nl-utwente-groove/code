@@ -498,9 +498,10 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         reporter.stop();
     }
 
-    /** 
-     * Goes over the nodes in a given block, and updates and marks all its adjacent nodes.
-     * The affected blocks (containing the marked nodes) are collected.
+    /**
+     * Goes over the nodes in a given block, and updates and marks all its
+     * adjacent nodes. The affected blocks (containing the marked nodes) are
+     * collected.
      * @param splitter the block of which the adjacent nodes are to be marked
      * @param splitBlocks the collection of affected blocks
      */
@@ -699,12 +700,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      */
     static private final int TREE_RESOLUTION = 3;
 
-    /** 
+    /**
      * Flag controlling the behaviour of the {@link #splitNext(Queue)} method.
-     * If <code>true</code>, a single element of the splitter list is processed at a time;
-     * otherwise, the entire list is processed.
+     * If <code>true</code>, a single element of the splitter list is
+     * processed at a time; otherwise, the entire list is processed.
      */
-    static private final boolean SPLIT_ONE_AT_A_TIME = true;
+    static private final boolean SPLIT_ONE_AT_A_TIME = false;
     /** Debug flag to switch the use of duplicate breaking on and off. */
     static private final boolean BREAK_DUPLICATES = true;
     /**
@@ -871,12 +872,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             this.inEdges.add(edgeCert);
             this.value += edgeCert.getValue() ^ TARGET_MASK;
         }
-        
+
         /** Returns the list of incoming edge certificates. */
         List<Edge2Certificate> getInEdges() {
             return this.inEdges;
         }
-        
+
         /** Returns the list of outgoing edge certificates. */
         List<Edge2Certificate> getOutEdges() {
             return this.outEdges;
@@ -1192,7 +1193,8 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             // this implementation works under the assumption
             // that this is the array of nodes in the container block.
             assert this == getBlock().getNodes();
-            NodeCertificate[] result = new NodeCertificate[getBlock().size() - getBlock().markedSize()];
+            NodeCertificate[] result =
+                new NodeCertificate[getBlock().size() - getBlock().markedSize()];
             int i = 0;
             for (NodeCertificate cert = this.next; cert != this; cert =
                 cert.next, i++) {

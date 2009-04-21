@@ -207,8 +207,6 @@ public class CAPanel extends JPanel implements SimulationListener {
     }
     
     class ToggleButtonListener implements ActionListener {
-
-        @Override
         public void actionPerformed(ActionEvent arg0) {
             if( CAPanel.this.simulator.getCurrentGrammar().getProperties().isUseControl() ) {
                 // disabling control
