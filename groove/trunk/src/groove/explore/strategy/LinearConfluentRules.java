@@ -17,11 +17,11 @@
 
 package groove.explore.strategy;
 
-import java.util.Iterator;
-
 import groove.explore.util.ConfluentMatchesIterator;
 import groove.explore.util.ExploreCache;
 import groove.lts.GraphState;
+
+import java.util.Iterator;
 
 /**
  * At each step, either fully explores an open state if the rule to be applied
@@ -32,7 +32,7 @@ import groove.lts.GraphState;
 public class LinearConfluentRules extends AbstractStrategy {
 
     /**
-     * Default constructor that enables the use of the confluency property. 
+     * Default constructor that enables the use of the confluency property.
      */
     public LinearConfluentRules() {
         enableUseConfluentProperty();
@@ -48,13 +48,12 @@ public class LinearConfluentRules extends AbstractStrategy {
         }
     }
 
-    @Override
     public boolean next() {
         if (getAtState() == null) {
             return false;
         }
         ExploreCache cache = getCache(true, false);
-        ConfluentMatchesIterator matchesIter = 
+        ConfluentMatchesIterator matchesIter =
             new ConfluentMatchesIterator(getAtState(), cache, getRecord());
 
         while (matchesIter.hasNext()) {

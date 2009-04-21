@@ -297,9 +297,9 @@ public class Simulator {
     }
 
     /**
-     * Sets the current GTS to a given GTS, possibly <code>null</code>. If
-     * the new GTS is not <code>null</code>, also sets the current state to
-     * the GTS' start state. In any case, sets the current transition to
+     * Sets the current GTS to a given GTS, possibly <code>null</code>. If the
+     * new GTS is not <code>null</code>, also sets the current state to the GTS'
+     * start state. In any case, sets the current transition to
      * <code>null</code>.
      * @return <code>true</code> if the new GTS is different from the previous
      */
@@ -327,8 +327,7 @@ public class Simulator {
     /**
      * Sets the current state field to a given state, and the current transition
      * field to <code>null</code>.
-     * @return <code>true</code> if the new state is different from the
-     *         previous
+     * @return <code>true</code> if the new state is different from the previous
      */
     private boolean setCurrentState(GraphState state) {
         boolean result = this.currentState != state;
@@ -363,8 +362,8 @@ public class Simulator {
 
     /**
      * Sets the currently selected transition to a given value (possibly
-     * <code>null</code>). If the new transition is not <code>null</code>,
-     * also sets the current state to the new transition's source state.
+     * <code>null</code>). If the new transition is not <code>null</code>, also
+     * sets the current state to the new transition's source state.
      * @return <code>true</code> if the new transition is different from the
      *         previous
      */
@@ -389,8 +388,7 @@ public class Simulator {
     /**
      * Sets the currently selected rule to a given value (possibly
      * <code>null</code>).
-     * @return <code>true</code> if the new rule is different from the
-     *         previous
+     * @return <code>true</code> if the new rule is different from the previous
      */
     public boolean setCurrentRule(AspectualRuleView rule) {
         boolean result = this.currentRule != rule;
@@ -500,16 +498,16 @@ public class Simulator {
     }
 
     /**
-     * Returns the LTS export action permanently associated with this simulator. 
+     * Returns the LTS export action permanently associated with this simulator.
      */
     public ExportAction getExportAction() {
         // lazily create the action
-        if( this.exportAction == null ) {
+        if (this.exportAction == null) {
             this.exportAction = new ExportAction();
         }
         return this.exportAction;
     }
-    
+
     /**
      * Returns the go-to start state action permanently associated with this
      * simulator.
@@ -696,7 +694,9 @@ public class Simulator {
         return this.startSimulationAction;
     }
 
-    /** A variant of {@link #getStartSimulationAction()} for abstract simulation. */
+    /**
+     * A variant of {@link #getStartSimulationAction()} for abstract simulation.
+     */
     public Action getStartAbstrSimulationAction() {
         // lazily create the action
         if (this.startAbstrSimulationAction == null) {
@@ -705,7 +705,9 @@ public class Simulator {
         return this.startAbstrSimulationAction;
     }
 
-    /** Returns the graph save action permanently associated with this simulator. */
+    /**
+     * Returns the graph save action permanently associated with this simulator.
+     */
     public SaveGraphAction getSaveGraphAction() {
         // lazily create the action
         if (this.saveGraphAction == null) {
@@ -714,7 +716,9 @@ public class Simulator {
         return this.saveGraphAction;
     }
 
-    /** Returns the graph save action permanently associated with this simulator. */
+    /**
+     * Returns the graph save action permanently associated with this simulator.
+     */
     public SaveGrammarAction getSaveGrammarAction() {
         // lazily create the action
         if (this.saveGrammarAction == null) {
@@ -760,8 +764,8 @@ public class Simulator {
      * @param graph the j-model from which the graph is to be obtained
      * @param proposedName the proposed name for the graph, to be filled into
      *        the dialog
-     * @return the file to which the graph has been saved; <tt>null</tt> if
-     *         the graph has not been saved
+     * @return the file to which the graph has been saved; <tt>null</tt> if the
+     *         graph has not been saved
      */
     File handleSaveGraph(boolean state, Graph graph, String proposedName) {
         getStateFileChooser().setFileFilter(
@@ -800,7 +804,7 @@ public class Simulator {
         AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
         GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
         properties.setEnabled(!properties.isEnabled());
-        doAddRule(getCurrentRule().getNameLabel(), ruleGraph);       
+        doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
     }
 
     void doLoadGrammar(URL url) {
@@ -810,13 +814,13 @@ public class Simulator {
     /**
      * Loads in a grammar from a given grammar and start state file and using a
      * given loader. File and loader may not be <tt>null</tt>; if the start
-     * state file is <tt>null</tt>, the default start state name is used.
-     * Sets the current grammar and start state files and loader to the given
+     * state file is <tt>null</tt>, the default start state name is used. Sets
+     * the current grammar and start state files and loader to the given
      * parameters.
      * @param grammarLoader the loader to be used
      * @param grammarFile the grammar file to be used
-     * @param startStateName the name of the start state; if <tt>null</tt>,
-     *        the default start state name is used
+     * @param startStateName the name of the start state; if <tt>null</tt>, the
+     *        default start state name is used
      * @see GrammarViewXml#DEFAULT_START_GRAPH_NAME
      */
     void doLoadGrammar(final AspectualViewGps grammarLoader,
@@ -1177,11 +1181,9 @@ public class Simulator {
         Properties properties = grammar.getProperties();
         try {
             String outputFileName =
-                Groove.createPropertyFilter().addExtension(
-                    grammar.getName());
+                Groove.createPropertyFilter().addExtension(grammar.getName());
             File outputFile =
-                new File(
-                    FileGps.toFile(Simulator.this.currentGrammarURL),
+                new File(FileGps.toFile(Simulator.this.currentGrammarURL),
                     outputFileName);
             outputFile.createNewFile();
             OutputStream writer = new FileOutputStream(outputFile);
@@ -1193,7 +1195,7 @@ public class Simulator {
             showErrorDialog("Error while saving edited properties", exc);
         }
     }
-    
+
     /** Renames all instances of a given label by another. */
     void doRenameLabel(String original, String replacement) {
         // does nothing for now
@@ -1338,8 +1340,8 @@ public class Simulator {
     }
 
     /**
-     * Sets the current production rule. Invokes <tt>notifySetRule(name)</tt>
-     * to notify all observers of the change. The current derivation (if any) is
+     * Sets the current production rule. Invokes <tt>notifySetRule(name)</tt> to
+     * notify all observers of the change. The current derivation (if any) is
      * thereby deactivated.
      * @param name the name of the new rule
      * @require name != null
@@ -1356,8 +1358,7 @@ public class Simulator {
     /**
      * Activates a given derivation, given directly or via its corresponding
      * match. Adds the previous state or derivation to the history. Invokes
-     * <tt>notifySetTransition(edge)</tt> to notify all observers of the
-     * change.
+     * <tt>notifySetTransition(edge)</tt> to notify all observers of the change.
      * @param transition the derivation to be activated. May be null if
      *        <code>match</code> does not correspond to any transition in the
      *        LTS
@@ -1493,14 +1494,16 @@ public class Simulator {
             // frame.setContentPane(splitPane);
             this.frame.setJMenuBar(createMenuBar());
 
-            JSplitPane leftPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                getRuleJTreePanel(), getStartStatesListPanel());
+            JSplitPane leftPanel =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getRuleJTreePanel(),
+                    getStartStatesListPanel());
 
             // set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
             // right
-            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                leftPanel, getGraphViewsPanel());
+            JSplitPane splitPane =
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
+                    getGraphViewsPanel());
 
             Container contentPane = this.frame.getContentPane();
             contentPane.setLayout(new BorderLayout());
@@ -1576,14 +1579,14 @@ public class Simulator {
             @Override
             public Dimension getPreferredSize() {
                 Dimension superSize = super.getPreferredSize();
-                return new Dimension((int)superSize.getWidth(),
+                return new Dimension((int) superSize.getWidth(),
                     START_LIST_MINIMUM_HEIGHT);
             }
         };
         labelPane.add(startGraphsPane, BorderLayout.CENTER);
         return labelPane;
     }
-    
+
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
@@ -1859,7 +1862,8 @@ public class Simulator {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
             this.editGraphItem.setAction(getEditGraphAction());
-            // give the rule edit action a chance to replace the graph edit action
+            // give the rule edit action a chance to replace the graph edit
+            // action
             getEditRuleAction();
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
@@ -2132,9 +2136,9 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a new graph grammar. As a result,
-     * {@link SimulationListener#setGrammarUpdate(DefaultGrammarView)}is
-     * invoked on all currently registered listeners. This method should not be
-     * called directly: use {@link #setGrammar(DefaultGrammarView)}instead.
+     * {@link SimulationListener#setGrammarUpdate(DefaultGrammarView)}is invoked
+     * on all currently registered listeners. This method should not be called
+     * directly: use {@link #setGrammar(DefaultGrammarView)}instead.
      * @see SimulationListener#setGrammarUpdate(DefaultGrammarView)
      */
     protected synchronized void fireSetGrammar(DefaultGrammarView grammar) {
@@ -2221,9 +2225,9 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a new derivation. As a result,
-     * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is
-     * invoked on all currently registered listeners. This method should not be
-     * called directly: use {@link #setTransition(GraphTransition)} instead.
+     * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is invoked
+     * on all currently registered listeners. This method should not be called
+     * directly: use {@link #setTransition(GraphTransition)} instead.
      * 
      * @see SimulationListener#setTransitionUpdate(GraphTransition)
      * @see #setTransition(GraphTransition)
@@ -2240,9 +2244,9 @@ public class Simulator {
 
     /**
      * Notifies all listeners of the application of the current derivation. As a
-     * result, {@link SimulationListener#applyTransitionUpdate(GraphTransition)}is
-     * invoked on all currently registered listeners. This method should not be
-     * called directly: use {@link #applyMatch()}instead.
+     * result, {@link SimulationListener#applyTransitionUpdate(GraphTransition)}
+     * is invoked on all currently registered listeners. This method should not
+     * be called directly: use {@link #applyMatch()}instead.
      * @param transition the transition that has been applied
      * @see SimulationListener#applyTransitionUpdate(GraphTransition)
      * @see #applyMatch()
@@ -2470,11 +2474,10 @@ public class Simulator {
     /**
      * Enters a dialog that results in a name label that does not yet occur in
      * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is
-     *        used
+     * @param title dialog title; if <code>null</code>, a default title is used
      * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is
-     *        guaranteed to be distinct from the existing rule names
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing rule names
      * @return a rule name not occurring in the current grammar, or
      *         <code>null</code>
      */
@@ -2780,7 +2783,7 @@ public class Simulator {
 
     /** The LTS export action permanently associated with this simulator. */
     private ExportAction exportAction;
-    
+
     /**
      * The go-to start state action permanently associated with this simulator.
      */
@@ -2921,12 +2924,12 @@ public class Simulator {
      * Minimum width of the rule tree component.
      */
     static private final int RULE_TREE_MINIMUM_WIDTH = 100;
-    
+
     /**
      * Minimum height of the rule tree component.
      */
     static private final int RULE_TREE_MINIMUM_HEIGHT = 500;
-    
+
     /**
      * Minimum height of the rule tree component.
      */
@@ -3271,8 +3274,7 @@ public class Simulator {
 
         /**
          * Invokes the editor on the current rule. Handles the execution of an
-         * <code>EditGraphAction</code>, if the current panel is the rule
-         * panel.
+         * <code>EditGraphAction</code>, if the current panel is the rule panel.
          * 
          * @require <tt>getCurrentRule != null</tt>.
          */
@@ -4263,60 +4265,60 @@ public class Simulator {
             super("Export Simulation ...");
             addRefreshable(this);
         }
-        
-        @Override
+
         public void actionPerformed(ActionEvent arg0) {
             ExportDialog dialog = new ExportDialog(Simulator.this);
-            dialog.setCurrentDirectory(FileGps.toFile(Simulator.this.currentGrammarURL).getAbsolutePath());
-            
-            if( dialog.showDialog(Simulator.this)) {
-                
+            dialog.setCurrentDirectory(FileGps.toFile(
+                Simulator.this.currentGrammarURL).getAbsolutePath());
+
+            if (dialog.showDialog(Simulator.this)) {
+
                 File file = new File(dialog.getDirectory());
                 int exportStates = dialog.getExportStates();
                 boolean showFinal = dialog.showFinal();
                 boolean showNames = dialog.showNames();
                 boolean showStart = dialog.showStart();
                 boolean showOpen = dialog.showOpen();
-                
+
                 GTS gts = Simulator.this.getCurrentGTS();
-                
-                LTSGraph lts = new LTSGraph(gts, showFinal, showStart, showOpen, showNames);
+
+                LTSGraph lts =
+                    new LTSGraph(gts, showFinal, showStart, showOpen, showNames);
 
                 Collection<GraphState> export = new HashSet<GraphState>(0);
-                
-                if( exportStates == ExportDialog.STATES_ALL) {
+
+                if (exportStates == ExportDialog.STATES_ALL) {
                     export = gts.getStateSet();
-                } else if( exportStates == ExportDialog.STATES_FINAL ) {
+                } else if (exportStates == ExportDialog.STATES_FINAL) {
                     export = gts.getFinalStates();
                 }
 
-                
                 try {
-                    File ltsOut = Groove.saveGraph(lts, new File(file, "lts.gxl").getAbsolutePath());
-//                    System.out.println("LTS exported to " + ltsOut);
-                    for( GraphState state : export ) 
-                    {
+                    File ltsOut =
+                        Groove.saveGraph(lts,
+                            new File(file, "lts.gxl").getAbsolutePath());
+                    // System.out.println("LTS exported to " + ltsOut);
+                    for (GraphState state : export) {
                         String name = state.toString();
-                        File stateOut = Groove.saveGraph(state.getGraph(),new File(file,name + ".gst").getAbsolutePath());
-//                        System.out.println("State " + name + " exported to " + stateOut);
+                        File stateOut =
+                            Groove.saveGraph(state.getGraph(), new File(file,
+                                name + ".gst").getAbsolutePath());
+                        // System.out.println("State " + name + " exported to "
+                        // + stateOut);
                     }
-                
-                } catch(IOException e) {
+
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-                
-                    
-                
+
             }
         }
 
-        @Override
         public void refresh() {
             setEnabled(getCurrentGTS() != null);
         }
     }
-    
-    
+
     /**
      * A variant of {@link Simulator.StartSimulationAction} for abstract
      * simulation.
