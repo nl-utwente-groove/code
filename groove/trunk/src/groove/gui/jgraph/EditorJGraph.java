@@ -48,7 +48,8 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  */
 public class EditorJGraph extends JGraph {
     /**
-     * Constructs an editor j-graph with an initially empty {@link EditorJModel}.
+     * Constructs an editor j-graph with an initially empty {@link EditorJModel}
+     * .
      * @param editor the {@link IEditorModes} to which this j-graph is
      *        associated
      * @since june2005
@@ -57,7 +58,7 @@ public class EditorJGraph extends JGraph {
         super(new EditorJModel(editor.getOptions()), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
-        // getGraphLayoutCache().setSelectsLocalInsertedCells(true);
+        getGraphLayoutCache().setSelectsLocalInsertedCells(true);
     }
 
     @Override
@@ -71,8 +72,7 @@ public class EditorJGraph extends JGraph {
      * Adds all known general j-cell editing actions to a given popup menu.
      * (non-Javadoc)
      * @param menu the menu to which actions should be added
-     * @param always if <code>false</code>, only enabled actions should be
-     *        added
+     * @param always if <code>false</code>, only enabled actions should be added
      * @see groove.gui.jgraph.JGraph#fillOutEditMenu(javax.swing.JPopupMenu,
      *      boolean)
      */
@@ -101,8 +101,7 @@ public class EditorJGraph extends JGraph {
     }
 
     /**
-     * This implementation returns a {@link EditorMarqueeHandler}.
-     * (non-Javadoc)
+     * This implementation returns a {@link EditorMarqueeHandler}. (non-Javadoc)
      * @see groove.gui.jgraph.JGraph#createMarqueeHandler()
      */
     @Override
@@ -184,7 +183,7 @@ public class EditorJGraph extends JGraph {
             startEditingAtCell(newEdge);
         }
     }
-    
+
     /**
      * Callback method to determine whether an event concerns edge creation. To
      * be overridden by subclasses.

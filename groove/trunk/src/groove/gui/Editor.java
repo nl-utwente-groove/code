@@ -158,8 +158,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
 
     /**
      * Sets the graph to be edited
-     * @param graph the graph to be edited; if <code>null</code>, an empty
-     *        model is started.
+     * @param graph the graph to be edited; if <code>null</code>, an empty model
+     *        is started.
      */
     public void setPlainGraph(Graph graph) {
         if (graph == null) {
@@ -204,8 +204,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     }
 
     /**
-     * @return the j-model currently being edited, or <tt>null</tt> if no
-     *         editor model is set.
+     * @return the j-model currently being edited, or <tt>null</tt> if no editor
+     *         model is set.
      */
     public EditorJModel getModel() {
         return this.jgraph.getModel();
@@ -289,8 +289,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * model name, invokes a file chooser dialog. Calls
      * {@link #doSaveGraph(File)} if a file is selected. The return value is the
      * save file, or <code>null</code> if nothing was saved.
-     * @param as if <code>true</code>, the action was save-as and a save
-     *        dialog should always be shown
+     * @param as if <code>true</code>, the action was save-as and a save dialog
+     *        should always be shown
      */
     protected File handleSaveGraph(boolean as) {
         if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION)
@@ -361,7 +361,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * Preview the given graph (e.g., for debugging purposes).
      * @param graph the plain graph to preview
      * @param option the label in the action button
-     * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
+     * @return <code>true</code> if the action button was pressed,
+     *         <code>false</code> otherwise
      */
     public static boolean previewGraph(final Graph graph, final String option) {
         Editor e = new Editor();
@@ -370,12 +371,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         AspectualGraphView view = new AspectualGraphView(result, null);
         return e.showPreview(view, option);
     }
-    
+
     /**
      * Preview the given graph (e.g., for debugging purposes).
      * @param file the file which contains the graph to preview
      * @param option the label in the action button
-     * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
+     * @return <code>true</code> if the action button was pressed,
+     *         <code>false</code> otherwise
      */
     public static boolean previewGraph(final File file, final String option) {
         Editor e = new Editor();
@@ -389,7 +391,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         AspectualGraphView view = new AspectualGraphView(graph, null);
         return e.showPreview(view, option);
     }
-    
+
     /**
      * If the editor has unsaved changes, asks if these should be abandoned;
      * then calls {@link #doQuit()}.
@@ -487,12 +489,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     Action getCutAction() {
         if (this.cutAction == null) {
             Action action = TransferHandler.getCutAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(
-                Groove.getResource("cut.gif")));
             action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
             this.cutAction =
                 new TransferAction(action, Options.CUT_KEY,
                     Options.CUT_ACTION_NAME);
+            this.cutAction.putValue(Action.SMALL_ICON, new ImageIcon(
+                Groove.getResource("cut.gif")));
         }
         return this.cutAction;
     }
@@ -504,11 +506,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     Action getCopyAction() {
         if (this.copyAction == null) {
             Action action = TransferHandler.getCopyAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(
-                Groove.getResource("copy.gif")));
             this.copyAction =
                 new TransferAction(action, Options.COPY_KEY,
                     Options.COPY_ACTION_NAME);
+            this.copyAction.putValue(Action.SMALL_ICON, new ImageIcon(
+                Groove.getResource("copy.gif")));
         }
         return this.copyAction;
     }
@@ -615,11 +617,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     Action getPasteAction() {
         if (this.pasteAction == null) {
             Action action = TransferHandler.getPasteAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(
-                Groove.getResource("paste.gif")));
             this.pasteAction =
                 new TransferAction(action, Options.PASTE_KEY,
                     Options.PASTE_ACTION_NAME);
+            this.pasteAction.putValue(Action.SMALL_ICON, new ImageIcon(
+                Groove.getResource("paste.gif")));
+            this.pasteAction.setEnabled(true);
         }
         return this.pasteAction;
     }
@@ -861,8 +864,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     /**
      * Sets the edit role to {@link Groove#GRAPH_ROLE} or
      * {@link Groove#RULE_ROLE}.
-     * @param role the edit role to be set; if <code>null</code>, it is set
-     *        to {@link Groove#GRAPH_ROLE}.
+     * @param role the edit role to be set; if <code>null</code>, it is set to
+     *        {@link Groove#GRAPH_ROLE}.
      * @return <code>true</code> if the edit type was actually changed;
      *         <code>false</code> if it was already equal to <code>role</code>
      */
@@ -935,8 +938,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             modelName = hasGraphRole() ? NEW_GRAPH_TITLE : NEW_RULE_TITLE;
         }
         String title =
-            (this.currentGraphModified ? MODIFIED_INDICATOR : "")
-                + modelName + " - " + EDITOR_NAME;
+            (this.currentGraphModified ? MODIFIED_INDICATOR : "") + modelName
+                + " - " + EDITOR_NAME;
         Component window = getRootComponent();
         if (window instanceof JFrame) {
             ((JFrame) window).setTitle(title);
@@ -1323,7 +1326,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
     }
 
-    /** Updates the status bar with information about the currently edited graph. */
+    /**
+     * Updates the status bar with information about the currently edited graph.
+     */
     protected void updateStatus() {
         int elementCount =
             getModel().getRootCount() - getModel().getGrayedOut().size();
@@ -1466,13 +1471,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * Creates a preview of an aspect graph, without properties.
      * @param view the view to show
      * @param okOption the label in the action button
-     * @return <code>true</code> if the action button was pressed, <code>false</code> otherwise
+     * @return <code>true</code> if the action button was pressed,
+     *         <code>false</code> otherwise
      */
     private boolean showPreview(AspectualView<?> view, String okOption) {
         if (this.previewSize == null) {
             this.previewSize = DEFAULT_PREVIEW_SIZE;
         }
-        AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
+        AspectJModel previewModel =
+            AspectJModel.newInstance(view, getOptions());
         JGraph jGraph = new JGraph(previewModel, false);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
@@ -1480,20 +1487,24 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         JComponent previewContent = new JPanel(false);
         previewContent.setLayout(new BorderLayout());
         previewContent.add(jGraphPane);
-        JOptionPane previewPane = new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
+        JOptionPane previewPane =
+            new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
         if (okOption != null) {
-            previewPane.setOptions(new String[] {okOption, Options.CANCEL_BUTTON});
+            previewPane.setOptions(new String[] {okOption,
+                Options.CANCEL_BUTTON});
         } else {
             okOption = Options.OK_BUTTON;
         }
-        JDialog dialog = previewPane.createDialog(getFrame(), String.format("%s preview", getRole(true)));
+        JDialog dialog =
+            previewPane.createDialog(getFrame(), String.format("%s preview",
+                getRole(true)));
         dialog.setSize(this.previewSize);
         dialog.setResizable(true);
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
         return okOption.equals(previewPane.getValue());
     }
-    
+
     /**
      * Returns the options object associated with the simulator.
      */
@@ -1578,8 +1589,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     private String role;
 
     /**
-     * Collection of errors in the currently loaded graph; <code>null</code>
-     * if there are none.
+     * Collection of errors in the currently loaded graph; <code>null</code> if
+     * there are none.
      */
     private Collection<String> errors;
 
