@@ -27,7 +27,7 @@ public class JarGps extends ArchiveGps {
     /** File filter for jar files. */
     static protected final ExtensionFilter GRAMMAR_FILTER =
         Groove.getFilter("Jar-file containing Groove production system", ".jar",
-            true);
+            false);
     
     /**
      * Create a loader for loading grammars from Jar files.
