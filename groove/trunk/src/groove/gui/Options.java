@@ -177,6 +177,8 @@ public class Options {
     public static final String EDIT_ACTION_NAME = "Edit ...";
     /** Edit action name */
     public static final String ENABLE_ACTION_NAME = "Enable Rule";
+    /** Exploration dialog action name */
+    public static final String EXPLORATION_DIALOG_ACTION_NAME = "Exploration Dialog (work in progress)";   
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export rule action name */
