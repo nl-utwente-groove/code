@@ -720,5 +720,10 @@ public class JAttr {
         public AttributeMap clone() {
             return (AttributeMap) super.clone();
         }
+        @SuppressWarnings("unchecked")
+        @Override
+        public Object put(Object key, Object value) {
+            return super.put(key,value);
+        }
     }
 }

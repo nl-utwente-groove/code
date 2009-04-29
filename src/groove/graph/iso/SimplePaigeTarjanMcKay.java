@@ -479,6 +479,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * Flag to indicate that more effort should be put into obtaining distinct
      * certificates.
      */
+    @SuppressWarnings("unused")
     private final boolean strong;
     /** The pre-computed graph certificate, if any. */
     private long graphCertificate;
@@ -515,7 +516,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     private int edge1CertCount;
     /** Map from nodes that are not {@link DefaultNode}s to node certificates. */
     private Map<Node,NodeCertificate> otherNodeCertMap;
-    /** Total number of iterations in {@link #iterateCertificates()}. */
+    /** Total number of iterations in iterateCertificates(). */
     private int iterateCount;
 
     /** 
@@ -551,6 +552,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * number of iterations.
      * @param count the number of iterations
      */
+    @SuppressWarnings("unused")
     static private void recordIterateCount(int count) {
         if (iterateCountArray.length < count + 1) {
             int[] newIterateCount = new int[count + 1];
@@ -586,6 +588,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         };
 
     /** Debug flag to switch the use of duplicate breaking on and off. */
+    @SuppressWarnings("unused")
     static private final boolean BREAK_DUPLICATES = true;
     /**
      * Array to record the number of iterations done in computing certificates.
@@ -625,7 +628,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     static protected final int INIT_CERT_NODE = PartitionRefiner.INIT_CERT_NODE;
     /** Handle to profile {@link #initEdgeCert(Edge)}. */
     static protected final int INIT_CERT_EDGE = PartitionRefiner.INIT_CERT_EDGE;
-    /** Handle to profile {@link #iterateCertificates()}. */
+    /** Handle to profile iterateCertificates(). */
     static protected final int ITERATE_CERTIFICATES =
         PartitionRefiner.ITERATE_CERTIFICATES;
     /** Handle to profile {@link #getCertificateMap()}. */
@@ -744,7 +747,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
             this.container = container;
         }
 
-        /** The value for the next invocation of {@link #computeNewValue()} */
+        /** The value for the next invocation of computeNewValue() */
         private int nextValue;
         /** The current value, which determines the hash code. */
         int value;

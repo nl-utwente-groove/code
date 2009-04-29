@@ -38,6 +38,7 @@ import junit.framework.TestCase;
  * @author Tom Staijen
  * @version $Revision $
  */
+@SuppressWarnings("all")
 public class IOTest extends TestCase {
 
     static private final String DIRECTORY = "junit/samples/control.gps";
@@ -125,11 +126,8 @@ public class IOTest extends TestCase {
     /**
      * Tests exploration of a given grammar, saving the GTS if required.
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used,
-     *        in the format of {@link groove.util.Generator.ExploreOption}
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
-     * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
     protected GTS testExploration(DefaultGrammarView view, String grammarName,

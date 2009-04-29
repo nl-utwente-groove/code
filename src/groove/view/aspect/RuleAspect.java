@@ -220,7 +220,7 @@ public class RuleAspect extends AbstractAspect {
     
     /**
      * Tests if a given aspect element is an embargo creator. This is the case if there
-     * is an aspect value in the element which equals {@link #EMBARGOCREATOR}.
+     * is an aspect value in the element which equals EMBARGOCREATOR.
      */
     public static boolean isCNEW(AspectElement element) {
         return hasRole(element) && CNEW.equals(getRuleValue(element));

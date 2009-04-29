@@ -36,6 +36,7 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
  * @author Robert Futrell
  * @version 0.1
  */
+@SuppressWarnings("all")
 public class GCLTokenMaker extends AbstractTokenMaker {
 
     protected final String operators = "+-*/%!=<>^&|?:";

@@ -17,9 +17,7 @@
 package groove.gui.dialog;
 
 import groove.gui.Simulator;
-import groove.io.ExtensionFilter;
 
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;

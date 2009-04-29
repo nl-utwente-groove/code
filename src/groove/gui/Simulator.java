@@ -808,7 +808,7 @@ public class Simulator {
     }
 
     void doLoadGrammar(URL url) {
-
+        // empty
     }
 
     /**
@@ -818,9 +818,6 @@ public class Simulator {
      * the current grammar and start state files and loader to the given
      * parameters.
      * @param grammarLoader the loader to be used
-     * @param grammarFile the grammar file to be used
-     * @param startStateName the name of the start state; if <tt>null</tt>, the
-     *        default start state name is used
      * @see GrammarViewXml#DEFAULT_START_GRAPH_NAME
      */
     void doLoadGrammar(final AspectualViewGps grammarLoader,
@@ -3791,7 +3788,7 @@ public class Simulator {
 
     /**
      * Action for loading a new rule system.
-     * @see Simulator#doLoadGrammar(AspectualViewGps, File, String)
+     * @see Simulator#doLoadGrammar
      */
     private class LoadURLAction extends AbstractAction {
 
@@ -4294,17 +4291,12 @@ public class Simulator {
                 }
 
                 try {
-                    File ltsOut =
-                        Groove.saveGraph(lts,
-                            new File(file, "lts.gxl").getAbsolutePath());
-                    // System.out.println("LTS exported to " + ltsOut);
+                    Groove.saveGraph(lts,
+                        new File(file, "lts.gxl").getAbsolutePath());
                     for (GraphState state : export) {
                         String name = state.toString();
-                        File stateOut =
-                            Groove.saveGraph(state.getGraph(), new File(file,
-                                name + ".gst").getAbsolutePath());
-                        // System.out.println("State " + name + " exported to "
-                        // + stateOut);
+                    Groove.saveGraph(state.getGraph(), new File(file,
+                        name + ".gst").getAbsolutePath());
                     }
 
                 } catch (IOException e) {
@@ -4468,7 +4460,7 @@ public class Simulator {
          * MARIA: this method is never used locally (tom)
          * @param p_path
          */
-        private void openLastFile(String p_path) {
+        /*private void openLastFile(String p_path) {
             if (p_path != null) {
                 final File f = new File(p_path);
                 if (f.exists()) {
@@ -4484,7 +4476,7 @@ public class Simulator {
                     });
                 }
             }
-        }
+        }*/
 
     }
 }
