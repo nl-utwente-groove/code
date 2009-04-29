@@ -32,6 +32,13 @@ public class LTSGraph extends NodeSetEdgeSetGraph {
         this(lts, true, true, true, false);
     }
     
+    /**
+     * @param lts
+     * @param showFinal
+     * @param showStart
+     * @param showOpen
+     * @param showNames
+     */
     public LTSGraph(LTS lts, boolean showFinal, boolean showStart, boolean showOpen, boolean showNames) {
         for (State state : lts.nodeSet()) {
             addNode(state);

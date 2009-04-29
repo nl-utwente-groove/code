@@ -27,8 +27,12 @@ import java.net.URL;
  */
 public class URLLoaderFactory {
 
-    
-    
+    /**
+     * @param url
+     * @param layouted
+     * @return AspectualViewGps
+     * @throws MalformedURLException
+     */
     public static AspectualViewGps getLoader(URL url, boolean layouted) throws MalformedURLException {
         if( url.getProtocol().equals("file")) {
             return new FileGps(layouted);

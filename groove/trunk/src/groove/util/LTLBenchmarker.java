@@ -855,10 +855,12 @@ public class LTLBenchmarker extends CommandLineTool {
         return property;
     }
 
+    @SuppressWarnings("unused")
     private static void setProperty(List<String> arguments) {
         property = arguments.remove(0);
     }
 
+    @SuppressWarnings("unused")
     private static void setStrategyType(List<String> arguments) {
         strategyType = arguments.remove(0);
         if (strategyType.equals(STRATEGY_GRAPH_SIZE)) {
@@ -1367,6 +1369,7 @@ public class LTLBenchmarker extends CommandLineTool {
         writer.close();
     }
 
+    @SuppressWarnings("unused")
     private static void log(String message) {
         try {
             FileWriter logFileWriter = new FileWriter(logFileName, true);

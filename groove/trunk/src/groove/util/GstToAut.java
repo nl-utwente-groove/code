@@ -18,6 +18,10 @@ package groove.util;
 
 import java.io.IOException;
 
+/**
+ * @author Tom Staijen
+ * @version $Revision $
+ */
 public class GstToAut {
     /**
      * @param args

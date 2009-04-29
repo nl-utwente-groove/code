@@ -21,7 +21,6 @@ import groove.graph.GraphShape;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;

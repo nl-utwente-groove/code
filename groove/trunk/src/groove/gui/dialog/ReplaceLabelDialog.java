@@ -180,6 +180,7 @@ public class ReplaceLabelDialog {
     private JTextField replaceField;
 
     /** Set of existing rule names. */
+    @SuppressWarnings("unused")
     private final Set<String> existingLabels;
 
     /** Suggested name. */
