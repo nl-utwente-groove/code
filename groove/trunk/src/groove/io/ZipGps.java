@@ -27,7 +27,7 @@ public class ZipGps extends ArchiveGps {
     /** File filter for jar files. */
     static protected final ExtensionFilter GRAMMAR_FILTER =
         Groove.getFilter("Zip-file containing Groove production system", ".zip",
-            true);
+            false);
     
     /** create a new instance */
     public ZipGps(boolean layouted) {
