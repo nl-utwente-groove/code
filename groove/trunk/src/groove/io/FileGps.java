@@ -56,7 +56,12 @@ public class FileGps extends AspectualViewGps {
     @Override
     public void marshal(DefaultGrammarView gg, File location)
         throws IOException {
-        createLocation(location);
+
+        // first we load the graphs before we backup the old location
+        Map<String,AspectGraph> graphs = loadGraphs(gg.getGraphs(), location);
+
+        File backup = createLocation(location);
+
         String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
         gg.setName(grammarName);
         // iterate over rules and save them
@@ -67,21 +72,37 @@ public class FileGps extends AspectualViewGps {
 
         /** Saves all graphs, so no needs to also save the current startgraph */
         // saveStartGraph(gg.getStartGraph(), location);
-        saveGraphs(gg.getGraphs(), location);
+        saveGraphs(graphs, location);
 
         saveProperties(gg, location);
         saveControl(gg.getControl(), location);
+
+        if (backup != null) {
+            System.out.println("Now deleting backup " + backup);
+            deleteLocation(backup);
+        }
     }
 
-    private void saveGraphs(Map<String,File> graphs, File location) throws IOException {
-        for( String name : graphs.keySet() ) {
-            File file = graphs.get(name);
+    // load the named graphs from specific locations and retuns the
+    // correcsponding AspectGraphs
+    private Map<String,AspectGraph> loadGraphs(Map<String,File> graphsMap,
+            File location) throws IOException {
+        Map<String,AspectGraph> graphs = new HashMap<String,AspectGraph>();
+        for (String name : graphsMap.keySet()) {
+            File file = graphsMap.get(name);
             AspectGraph graph = this.unmarshalGraph(file.toURI().toURL());
+            graphs.put(name, graph);
+        }
+        return graphs;
+    }
+
+    private void saveGraphs(Map<String,AspectGraph> graphs, File location)
+        throws IOException {
+        for (String name : graphs.keySet()) {
+            AspectGraph graph = graphs.get(name);
             File newLocation =
-                new File(location,
-                    STATE_FILTER.addExtension(name));
-            getGxlGraphMarshaller().marshalGraph(graph,
-                newLocation);
+                new File(location, STATE_FILTER.addExtension(name));
+            getGxlGraphMarshaller().marshalGraph(graph, newLocation);
         }
 
     }
@@ -132,23 +153,6 @@ public class FileGps extends AspectualViewGps {
      * location, assumed to be a directory.
      * @see #DEFAULT_START_GRAPH_NAME
      */
-    private void saveStartGraph(AspectualGraphView startGraph, File location)
-        throws IOException {
-        if (startGraph != null) {
-            // save start graph
-            File startGraphLocation =
-                new File(location,
-                    STATE_FILTER.addExtension(startGraph.getName()));
-            getGxlGraphMarshaller().marshalGraph(startGraph.getAspectGraph(),
-                startGraphLocation);
-        }
-    }
-
-    /**
-     * Saves a graph as start graph (using the default name) in a given
-     * location, assumed to be a directory.
-     * @see #DEFAULT_START_GRAPH_NAME
-     */
     private void saveControl(ControlView control, File location)
         throws IOException {
         if (control != null) {
@@ -185,13 +189,17 @@ public class FileGps extends AspectualViewGps {
      * unmarshals a grammar for a gps directory with a specific start graph name
      * and a specific control name.
      * @param location the file to load from (not <code>null</code>)
-     * @param startGraphName the name of the start graph; if <code>null</code>, {@link #DEFAULT_START_GRAPH_NAME} is chosen
-     * @param controlName the name of the control program; if <code>null</code>, {@link #DEFAULT_CONTROL_NAME} is chosen
-     * @throws IOException if one or more resources were not found or could not be loaded
+     * @param startGraphName the name of the start graph; if <code>null</code>,
+     *        {@link #DEFAULT_START_GRAPH_NAME} is chosen
+     * @param controlName the name of the control program; if <code>null</code>,
+     *        {@link #DEFAULT_CONTROL_NAME} is chosen
+     * @throws IOException if one or more resources were not found or could not
+     *         be loaded
      */
     protected DefaultGrammarView unmarshal(File location,
             String startGraphName, String controlName) throws IOException {
-        String actualStartGraphName = startGraphName == null ? DEFAULT_START_GRAPH_NAME : startGraphName;
+        String actualStartGraphName =
+            startGraphName == null ? DEFAULT_START_GRAPH_NAME : startGraphName;
         if (controlName == null) {
             controlName = DEFAULT_CONTROL_NAME;
         }
@@ -241,14 +249,16 @@ public class FileGps extends AspectualViewGps {
         // START GRAPH
         File startGraphFile;
         if (!hasRecognisedExtension(actualStartGraphName)) {
-            actualStartGraphName = STATE_FILTER.addExtension(actualStartGraphName);
+            actualStartGraphName =
+                STATE_FILTER.addExtension(actualStartGraphName);
         }
         startGraphFile = new File(location, actualStartGraphName);
         if (startGraphFile.exists()) {
             loadStartGraph(result, toURL(startGraphFile));
         } else if (startGraphName != null) {
             // if there was an explicit name given, throw an exception
-            throw new IOException(String.format("Start graph '%s' does not exist", startGraphName));
+            throw new IOException(String.format(
+                "Start graph '%s' does not exist", startGraphName));
         }
 
         // CONTROL
@@ -284,29 +294,27 @@ public class FileGps extends AspectualViewGps {
 
     }
 
-    /**    mzimakova
-     * Loads a control program for the given grammar from the given control
-     * File.
+    /**
+     * mzimakova Loads a control program for the given grammar from the given
+     * control File.
      */
     public void loadRule(DefaultGrammarView grammar, File ruleFile)
         throws IOException {
         Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
         if (ruleFile == null) {
-             throw new IOException(LOAD_ERROR + ": no files found");
+            throw new IOException(LOAD_ERROR + ": no files found");
         } else {
             // read in production rule
-                String fileName = RULE_FILTER.stripExtension(ruleFile.getName());
-                PriorityFileName priorityFileName =
-                    new PriorityFileName(fileName);
-                RuleNameLabel ruleName =
-                    new RuleNameLabel(null,
-                        priorityFileName.getActualName());
-                
-                // check for overlapping rule and directory names
-                if (ruleMap.put(ruleName, ruleFile.toURI().toURL()) != null) {
-                    throw new IOException(LOAD_ERROR
-                        + ": duplicate rule name \"" + ruleName + "\"");
-                }
+            String fileName = RULE_FILTER.stripExtension(ruleFile.getName());
+            PriorityFileName priorityFileName = new PriorityFileName(fileName);
+            RuleNameLabel ruleName =
+                new RuleNameLabel(null, priorityFileName.getActualName());
+
+            // check for overlapping rule and directory names
+            if (ruleMap.put(ruleName, ruleFile.toURI().toURL()) != null) {
+                throw new IOException(LOAD_ERROR + ": duplicate rule name \""
+                    + ruleName + "\"");
+            }
         }
         loadRules(grammar, ruleMap);
     }
@@ -324,22 +332,36 @@ public class FileGps extends AspectualViewGps {
     /**
      * Prepares a location for marshalling a graph grammar.
      */
-    private void createLocation(File location) throws IOException {
+    private File createLocation(File location) {
         // delete existing file, if any
+
+        File tmpLocation = null;
+
+        if (location.exists()) {
+            tmpLocation =
+                new File(location.getParent(), "tmp." + location.getName());
+            if (!location.renameTo(tmpLocation)) {
+                tmpLocation = null;
+            }
+        }
+        // create location as directory
+        location.mkdirs();
+        return tmpLocation;
+    }
+
+    private void deleteLocation(File location) throws IOException {
+        // delete the directory recursively
         if (location.exists()) {
             if (!deleteRecursive(location)) {
                 throw new IOException("Existing location " + location
                     + " cannot be deleted");
             }
         }
-        // create location as directory
-        location.mkdirs();
     }
 
     /**
      * Recursively traverses all subdirectories and deletes all files and
-     * directories.
-     * TOM: changing this to only delete the rules recursively
+     * directories. TOM: changing this to only delete the rules recursively
      */
     private boolean deleteRecursive(File location) {
         if (location.isDirectory()) {
@@ -348,25 +370,25 @@ public class FileGps extends AspectualViewGps {
                     return false;
                 }
             }
-            // after deleting rules, try if it is empty; if so, delete 
-            if( location.listFiles().length == 0 ) {
+            // after deleting rules, try if it is empty; if so, delete
+            if (location.listFiles().length == 0) {
                 return location.delete();
             } else {
                 return true;
             }
-        }
-        else {
+        } else {
             // this is a file. Only delete it if it is a rule or a rule layout
-            
-            if( RULE_FILTER.accept(location)) {
+
+            if (RULE_FILTER.accept(location)) {
                 location.delete();
-                File layout = new File( location , ".gl");
-                if( layout.exists() ) {
+                File layout = new File(location, ".gl");
+                if (layout.exists()) {
                     layout.delete();
                 }
             }
-            // TOM: this should probably reflect whether it succeeded to delete the rule...
-            return true;        
+            // TOM: this should probably reflect whether it succeeded to delete
+            // the rule...
+            return true;
         }
     }
 
@@ -399,16 +421,13 @@ public class FileGps extends AspectualViewGps {
     }
 
     /**
-     * Collects all graphs (states) found directly in the given directly (no
+     * Collects all graphs (states) found directly in the given directory(no
      * subdirectories)
      */
     private void collectGraphNames(Map<String,File> result, File directory) {
         File[] files = directory.listFiles(STATE_FILTER);
         // read in production rules
         for (File file : files) {
-            String fileName = RULE_FILTER.stripExtension(file.getName());
-            PriorityFileName priorityFileName = new PriorityFileName(fileName);
-
             // check for overlapping rule and directory names
             if (!file.isDirectory()) {
                 result.put(STATE_FILTER.stripExtension(file.getName()), file);
@@ -435,7 +454,6 @@ public class FileGps extends AspectualViewGps {
     public String grammarLocation(URL grammarURL) {
         return toFile(grammarURL).getParent();
     }
-
 
     private static File getFile(File location, AspectualRuleView ruleGraph,
             boolean create) {
