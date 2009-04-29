@@ -210,7 +210,7 @@ public class Simulator {
             AspectualViewGps grammarLoader = null;
             for (Map.Entry<ExtensionFilter,AspectualViewGps> loaderEntry : this.grammarLoaderMap.entrySet()) {
                 ExtensionFilter filter = loaderEntry.getKey();
-                if (filter.accept(location)) {
+                if (grammarLoader == null && filter.accept(location)) {
                     grammarLoader = loaderEntry.getValue();
                 }
             }
