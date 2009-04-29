@@ -501,6 +501,13 @@ public class RuleDependencies {
     void addDisabling(Rule disabler, Rule disabled) {
         add(this.disablerMap, disabled, disabler);
         add(this.disabledMap, disabler, disabled);
+        // if the disabled rule has (universal) subrules, then its 
+        // events will be {@link CompositeEvents}, meaning that they will
+        // claim that they never match on the next state, even if they actually do.
+        // In order not to miss events, the disabled rule must be re-enabled as well.
+        if (disabled instanceof SPORule && ((SPORule) disabled).hasSubRules()) {
+        	addEnabling(disabler, disabled);
+        }
     }
 
     /**
