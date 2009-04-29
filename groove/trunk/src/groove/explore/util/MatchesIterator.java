@@ -194,7 +194,7 @@ public class MatchesIterator implements Iterator<RuleEvent> {
     /** Set to true when the last match for a given rule has been returned. */
     protected boolean isEndRule;
     /** System record to create {@link RuleEvent}s out of {@link RuleMatch}es. */
-    private final SystemRecord record;
+    protected final SystemRecord record;
 
     /** Flag to collect all matches at once, rather than doing a true iteration. */
     private final boolean COLLECT_ALL_MATCHES = true;

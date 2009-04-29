@@ -17,43 +17,49 @@
 package groove.explore.util;
 
 import groove.lts.GraphState;
+import groove.trans.Rule;
+import groove.trans.RuleEvent;
+import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
+ * Iterates over all matches of a collection of rules into a graph.
  * @author Eduardo Zambon
  */
 public class ConfluentMatchesIterator extends MatchesIterator {
 
     /**
-     * @param state
-     * @param rules
-     * @param record
+     * Constructs a new matches iterator for a given state.
      */
     public ConfluentMatchesIterator(GraphState state, ExploreCache rules,
             SystemRecord record) {
         super(state, rules, record);
     }
 
-    /**
-     * This method insures that eventIter is incremented until the next element
-     * to be returned, or set to null if no more elements are available.
+    /** 
+     * Call-back method to create an iterator over the matches of a given
+     * rule. For non-confluent rules the iterator of the super class is
+     * returned. For confluent rules an iterator with at most one arbitrary
+     * match is returned. 
      */
     @Override
-    protected void goToNext() {
-        if (this.currentRule.isConfluent()) {
-            if (this.eventIter != null && !this.eventIter.hasNext()) {
-                // We already applied a match of the confluent rule and
-                // there are more matches. Ignore them.
-                this.nextRule();
-            } else {
-                // This is a reentrant call. Ignore it.
+    protected Iterator<RuleEvent> createEventIter(Rule rule) {
+        if (rule.isConfluent()) {
+            List<RuleEvent> result = new ArrayList<RuleEvent>(1);
+            Iterator<RuleMatch> ruleMatchIter =
+                rule.getMatchIter(this.state.getGraph(), null);
+            if (ruleMatchIter.hasNext()) {
+                RuleMatch match = ruleMatchIter.next();
+                result.add(this.record.getEvent(match));
             }
-        } else { // Normal rule.
-            while (this.eventIter != null && !this.eventIter.hasNext()
-                    && this.nextRule()) {
-                // Empty, as in super implementation.
-            }
+            return result.iterator();
+        } else {
+            // Non-confluent rule, just use the method of super class.
+            return super.createEventIter(rule);
         }
     }
-    
 }

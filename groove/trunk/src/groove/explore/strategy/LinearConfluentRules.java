@@ -32,12 +32,8 @@ import java.util.Iterator;
 public class LinearConfluentRules extends AbstractStrategy {
 
     /**
-     * Default constructor that enables the use of the confluency property.
+     * Selects an open state of the GTS as the current state to be explored. 
      */
-    public LinearConfluentRules() {
-        enableUseConfluentProperty();
-    }
-
     @Override
     protected void updateAtState() {
         Iterator<GraphState> stateIter = getGTS().getOpenStateIter();
@@ -48,6 +44,13 @@ public class LinearConfluentRules extends AbstractStrategy {
         }
     }
 
+    /**
+     * A step of this strategy explores one state. All possible matches of
+     * non-confluent rules and an arbitrary match of confluent rules are
+     * explored.
+     * @return <code>true</code> if a state was successfully explored and
+     *         <code>false</code> otherwise.  
+     */
     public boolean next() {
         if (getAtState() == null) {
             return false;

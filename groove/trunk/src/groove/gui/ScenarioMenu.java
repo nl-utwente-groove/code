@@ -139,14 +139,6 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
             ScenarioFactory.getScenario(
                 new LinearStrategy(),
                 new Acceptor(),
-                "Explores the state space and uses random linear exploration for confluent rules.",
-                "Full exploration (random linear confluent rules)");
-        addScenarioHandler(scenario);
-        
-        scenario =
-            ScenarioFactory.getScenario(
-                new LinearStrategy(),
-                new Acceptor(),
                 "Explores one transition for each state until a final state or a loop is reached.",
                 "Linear exploration");
         addScenarioHandler(scenario);

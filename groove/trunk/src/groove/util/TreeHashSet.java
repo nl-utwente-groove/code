@@ -1232,7 +1232,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         /** The index of the next entry. */
         private final int next;
 
-        /** Number of {@link MyListEntry} instances. */
+        /** Number of {@link TreeHashSet.MyListEntry} instances. */
         static int instanceCount;
     }
 }

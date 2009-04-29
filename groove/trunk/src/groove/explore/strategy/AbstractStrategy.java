@@ -237,18 +237,6 @@ public abstract class AbstractStrategy implements Strategy {
         getGTS().removeGraphListener(listener);
     }
 
-    /**
-     * Enable useConfluentProperty, to explore confluent rules in a linear way.
-     */
-    public void enableUseConfluentProperty() {
-        this.useConfluentProperty = true;
-    }
-
-    /** Return the current value of the confluency setting */
-    public boolean useConfluentProperty() {
-        return this.useConfluentProperty;
-    }
-    
     /** Return the current value of the "close on exit" setting */
     public boolean closeExit() {
         return this.closeExit;
@@ -283,20 +271,11 @@ public abstract class AbstractStrategy implements Strategy {
      * Indicates whether the strategy should use aliasing or not. Default value
      * is true.
      */
-    // TODO this is set to false until the aliased matcher is debugged
     protected boolean aliasing = true;
 
-    /** Option to close states after a transition has been added from them * */
-    /**
-     * Can optionally be used by linear strategies to save memory by closing
-     * states asap *
+    /** 
+     * Option to close states after a transition has been added from them.
+     * Can be used by linear strategies to save memory by closing states ASAP.
      */
     protected boolean closeExit = false;
-    
-    /**
-     * Flag to indicate if the confluency property of a rule should be
-     * considered during the exploration. 
-     */
-    protected boolean useConfluentProperty = false;
-
 }
