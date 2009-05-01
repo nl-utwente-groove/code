@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.Strategy;
+import groove.gui.layout.SpringUtilities;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -32,6 +33,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SpringLayout;
 
 /**
  * @author Maarten de Mol
@@ -44,8 +46,9 @@ public class ExplorationDialog extends JDialog {
     // Initially, the BranchingStrategy is selected, along with the None acceptor.
     private Strategy selectedStrategy = new BranchingStrategy();
     private Acceptor selectedAcceptor = new Acceptor();
+    private Scenario selectedScenario = new Scenario();
     
-    ExplorationDialog(JFrame owner) {
+    public ExplorationDialog(JFrame owner) {
         // Open a non-resizable modal dialog which can be closed by the user.
         super(owner, "ExplorationDialog", true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -53,7 +56,7 @@ public class ExplorationDialog extends JDialog {
         
         // Create the content panel, which is laid out as a single column.
         // Add an empty space of 10 pixels between the dialog and the content panel.
-        JPanel dialogContent = new JPanel(new GridLayout(0,1));
+        JPanel dialogContent = new JPanel(new SpringLayout());
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         
         // Query for the exploration method (full or path).
@@ -68,7 +71,7 @@ public class ExplorationDialog extends JDialog {
         fullStrategySelection.addOption("Breadth-First",         "?");
         fullStrategySelection.addOption("Depth-First",           "?");
         fullStrategySelection.addOption("Lineair Confluence",    "?");
-        dialogContent.add(new JLabel(""));
+        dialogContent.add(new JLabel(" "));
         dialogContent.add(fullStrategySelection);
 
         // Query for the termination condition (Acceptor).
@@ -77,16 +80,19 @@ public class ExplorationDialog extends JDialog {
         acceptorSelection.addOption("Final State",               "stop as soon as a final state is encountered");
         acceptorSelection.addOption("Rule Match",                "stop as soon as the given rule matches");
         acceptorSelection.addOption("Rule Mismatch",             "stop as soon as the given rule stops matching");
-        dialogContent.add(new JLabel(""));
+        dialogContent.add(new JLabel(" "));
         dialogContent.add(acceptorSelection);
 
         // Create 'OK' and a 'Cancel' button.
         // These have to be laid out horizontally, so they need to be placed in a new JPanel.
-        dialogContent.add(new JLabel(""));
+        dialogContent.add(new JLabel(" "));
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(new JButton("Explore State Space"));
         buttonPanel.add(new JButton("Cancel"));
         dialogContent.add(buttonPanel);
+        
+        // Lay out the dialog as a single column.
+        SpringUtilities.makeCompactGrid(dialogContent, 7, 1, 0, 0, 0, 0);
       
         // Add the dialogContent to the dialog and finish the dialog.
         add(dialogContent);
@@ -111,7 +117,8 @@ public class ExplorationDialog extends JDialog {
     private class FormattedSelection extends JPanel implements ActionListener {
         private final ButtonGroup buttonGroup;
         private final ExplorationDialog dialog;
-        private boolean empty;
+        private String[] nameDatabase;
+        private Strategy[] strategyDatabase;
         
         // Creates an initially empty JPanel.
         // Add checkboxes by means of addCheckBox.
@@ -119,7 +126,7 @@ public class ExplorationDialog extends JDialog {
             super(new GridLayout(0,1));
             this.buttonGroup = new ButtonGroup();
             this.dialog = dialog;
-            this.empty = true;
+//            this.empty = true;
             this.add(new JLabel("<HTML><FONT color=green><B>" + title + "</B></FONT></HTML>"));
         }
         
@@ -127,16 +134,16 @@ public class ExplorationDialog extends JDialog {
             JCheckBox checkBox = new JCheckBox("<HTML>" + shortName + " <FONT color=669966>(" + explanation + ")</FONT></HTML>");
             this.add(checkBox);
             this.buttonGroup.add(checkBox);
-            if (this.empty) checkBox.setSelected(true);
-            this.empty = false;
+//            if (this.empty) checkBox.setSelected(true);
+//            this.empty = false;
         }
 
         public void addStrategyOption(String shortName, String explanation, Strategy strategy){
             JCheckBox checkBox = new JCheckBox("<HTML>" + shortName + " <FONT color=669966>(" + explanation + ")</FONT></HTML>");
             this.add(checkBox);
             this.buttonGroup.add(checkBox);
-            if (this.empty) checkBox.setSelected(true);
-            this.empty = false;
+ //           if (this.empty) checkBox.setSelected(true);
+ //           this.empty = false;
         }
         
         public void actionPerformed(ActionEvent e){

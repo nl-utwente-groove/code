@@ -47,6 +47,7 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
 import groove.gui.dialog.FormulaDialog;
 import groove.gui.dialog.ProgressBarDialog;
@@ -485,6 +486,19 @@ public class Simulator {
         return this.enableRuleAction;
     }
 
+    /**
+     * Returns the exploration dialog action permanently associated with this
+     * simulator.
+     */
+    public ExplorationDialogAction getExplorationDialogAction() {
+        // lazily create the action
+        if (this.explorationDialogAction == null) {
+            this.explorationDialogAction = new ExplorationDialogAction();
+        }
+        return this.explorationDialogAction;
+    }
+    
+    
     /**
      * Returns the graph export action permanently associated with this
      * simulator.
@@ -1930,7 +1944,9 @@ public class Simulator {
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
-        // copy the exploration meny
+        result.add(new JMenuItem(getExplorationDialogAction()));
+        result.addSeparator();
+        // copy the exploration menu
         for (Component menuComponent : exploreMenu.getMenuComponents()) {
             result.add(menuComponent);
         }
@@ -2775,6 +2791,9 @@ public class Simulator {
      */
     private EnableRuleAction enableRuleAction;
 
+    /** The exploration dialog action permanently associated with this simulator. */
+    private ExplorationDialogAction explorationDialogAction;
+    
     /** The state export action permanently associated with this simulator. */
     private ExportGraphAction exportGraphAction;
 
@@ -2893,7 +2912,7 @@ public class Simulator {
     // --------------------- INSTANCE DEFINITIONS -----------------------------
 
     /**
-     * Name of the LTS file, when it is isaved or exported.
+     * Name of the LTS file, when it is saved or exported.
      */
     static private final String LTS_FILE_NAME = "lts";
     /**
@@ -2957,7 +2976,7 @@ public class Simulator {
      */
     abstract private class CancellableThread extends Thread {
         /**
-         * Constructs an action that can be cancelled through a dialog.
+         * Constructs an action that can be canceled through a dialog.
          * @param parentComponent the parent for the cancel dialog
          * @param cancelDialogTitle the title of the cancel dialog
          */
@@ -3348,7 +3367,24 @@ public class Simulator {
                 && Simulator.this.currentGrammarLoader.canWrite());
         }
     }
+  
+    /** Action to open the Exploration Dialog. */
+    private class ExplorationDialogAction extends AbstractAction implements Refreshable {
+        /** Constructs an instance of the action. */
+        ExplorationDialogAction() {
+            super(Options.EXPLORATION_DIALOG_ACTION_NAME);
+            addRefreshable(this);
+        }
 
+        public void actionPerformed(ActionEvent evt) {
+            new ExplorationDialog(getFrame());
+        }
+        
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);     
+        }
+    }   
+  
     /**
      * Action to save the state, as a graph or in some export format.
      * @see Exporter#export(JGraph, File)
