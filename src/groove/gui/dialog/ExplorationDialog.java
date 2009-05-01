@@ -21,7 +21,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import groove.explore.result.Acceptor;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
+import groove.explore.strategy.ExploreRuleDFStrategy;
+import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.Strategy;
 import groove.gui.layout.SpringUtilities;
 
@@ -42,6 +45,13 @@ import javax.swing.SpringLayout;
  * combination of a Strategy and an Acceptor. 
  */
 public class ExplorationDialog extends JDialog implements ActionListener {
+    private final String        FULL_EXPLORATION        = "Full exploration";
+    private final String        PATH_EXPLORATION        = "Path exploration";
+    private final String        BRANCHING               = "Branching";
+    private final String        BREADTH_FIRST           = "Breadth First";
+    private final String        DEPTH_FIRST             = "Depth First";
+    private final String        LINEAIR_CONFLUENCE      = "Lineair Confluence";
+    
     // The current selection of the dialog.
     // Initially, the BranchingStrategy is selected, along with the None acceptor.
     // A scenario is conditional if the acceptor is either Rule Match or Rule Mismatch.
@@ -64,25 +74,25 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         
         // Query for the exploration method (full or path).
         FormattedSelection methodSelection = new FormattedSelection("Choose a method to explore the state space:", this);
-        methodSelection.addOption("Full exploration",            "explore all rule matches in each reached state");
-        methodSelection.addOption("Path exploration",            "explore exactly one rule match in each reached state");
+        methodSelection.addOption(this.FULL_EXPLORATION,            "explore all rule matches in each reached state");
+        methodSelection.addOption(this.PATH_EXPLORATION,            "explore exactly one rule match in each reached state");
         dialogContent.add(methodSelection);
         
         // Query for the exploration strategy (Strategy).
         FormattedSelection fullStrategySelection = new FormattedSelection("Choose a strategy for the full exploration:", this);
-        fullStrategySelection.addOption("Branching",             "?");
-        fullStrategySelection.addOption("Breadth-First",         "?");
-        fullStrategySelection.addOption("Depth-First",           "?");
-        fullStrategySelection.addOption("Lineair Confluence",    "?");
+        fullStrategySelection.addOption(this.BRANCHING,             "?");
+        fullStrategySelection.addOption(this.BREADTH_FIRST,         "?");
+        fullStrategySelection.addOption(this.DEPTH_FIRST,           "?");
+        fullStrategySelection.addOption(this.LINEAIR_CONFLUENCE,    "?");
         dialogContent.add(new JLabel(" "));
         dialogContent.add(fullStrategySelection);
 
         // Query for the termination condition (Acceptor).
         FormattedSelection acceptorSelection = new FormattedSelection("Choose an additional termination condition:", this);
-        acceptorSelection.addOption("None",                      "continue until no further matches are available");
-        acceptorSelection.addOption("Final State",               "stop as soon as a final state is encountered");
-        acceptorSelection.addOption("Rule Match",                "stop as soon as the given rule matches");
-        acceptorSelection.addOption("Rule Mismatch",             "stop as soon as the given rule stops matching");
+        acceptorSelection.addOption("None",                         "continue until no further matches are available");
+        acceptorSelection.addOption("Final State",                  "stop as soon as a final state is encountered");
+        acceptorSelection.addOption("Rule Match",                   "stop as soon as the given rule matches");
+        acceptorSelection.addOption("Rule Mismatch",                "stop as soon as the given rule stops matching");
         dialogContent.add(new JLabel(" "));
         dialogContent.add(acceptorSelection);
 
@@ -93,12 +103,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         buttonPanel.add(new JButton("Explore State Space"));
         buttonPanel.add(new JButton("Cancel"));
         dialogContent.add(buttonPanel);
-        
-        test = new JLabel("---");
-        dialogContent.add(test);
-        
+                
         // Lay out the dialog as a single column.
-        SpringUtilities.makeCompactGrid(dialogContent, 8, 1, 0, 0, 0, 0);
+        SpringUtilities.makeCompactGrid(dialogContent, 7, 1, 0, 0, 0, 0);
       
         // Add the dialogContent to the dialog and finish the dialog.
         add(dialogContent);
@@ -108,7 +115,38 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     }
     
     public void actionPerformed(ActionEvent event){
-        this.test.setText(event.getActionCommand());
+        if (event.getActionCommand() == this.BRANCHING) {
+            this.selectedStrategy = new BranchingStrategy();
+            return;
+        }
+
+        if (event.getActionCommand() == this.DEPTH_FIRST) {
+            this.selectedStrategy = new ExploreRuleDFStrategy();
+            return;
+        }
+
+        if (event.getActionCommand() == this.BREADTH_FIRST) {
+            this.selectedStrategy = new BFSStrategy();
+            return;
+        }
+
+        if (event.getActionCommand() == this.LINEAIR_CONFLUENCE) {
+            this.selectedStrategy = new LinearConfluentRules();
+            return;
+        }
+
+        if (event.getActionCommand() == "None") {
+            this.selectedAcceptor = new Acceptor();
+            this.conditionalScenario = false;
+            return;
+        }
+
+        if (event.getActionCommand() == "Final State") {
+            this.selectedAcceptor = new Acceptor();
+            this.conditionalScenario = false;
+            return;
+        }
+        
     }
     
     private class FormattedSelection extends JPanel {
@@ -128,7 +166,6 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         public void addOption(String shortName, String explanation){
             JPanel optionPanel = new JPanel(new SpringLayout());
             JCheckBox checkBox = new JCheckBox(shortName);
-//            JCheckBox checkBox = new JCheckBox("<HTML>" + shortName + " <FONT color=669966>(" + explanation + ")</FONT></HTML>");
             checkBox.addActionListener(this.listener);
             optionPanel.add(checkBox);
             optionPanel.add(new JLabel(" "));
