@@ -41,15 +41,18 @@ import javax.swing.SpringLayout;
  * Creates a dialog in which an exploration method can be composed out of an arbitrary
  * combination of a Strategy and an Acceptor. 
  */
-public class ExplorationDialog extends JDialog {
-    // Local copy of the state of the dialog.
+public class ExplorationDialog extends JDialog implements ActionListener {
+    // The current selection of the dialog.
     // Initially, the BranchingStrategy is selected, along with the None acceptor.
+    // A scenario is conditional if the acceptor is either Rule Match or Rule Mismatch.
     private Strategy selectedStrategy = new BranchingStrategy();
     private Acceptor selectedAcceptor = new Acceptor();
-    private Scenario selectedScenario = new Scenario();
+    private boolean conditionalScenario = false;
+    
+    private JLabel test;
     
     public ExplorationDialog(JFrame owner) {
-        // Open a non-resizable modal dialog which can be closed by the user.
+        // Open a modal dialog (cannot be resized) which can be closed by the user.
         super(owner, "ExplorationDialog", true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -67,7 +70,7 @@ public class ExplorationDialog extends JDialog {
         
         // Query for the exploration strategy (Strategy).
         FormattedSelection fullStrategySelection = new FormattedSelection("Choose a strategy for the full exploration:", this);
-        fullStrategySelection.addStrategyOption("Branching",             "?", new BranchingStrategy());
+        fullStrategySelection.addOption("Branching",             "?");
         fullStrategySelection.addOption("Breadth-First",         "?");
         fullStrategySelection.addOption("Depth-First",           "?");
         fullStrategySelection.addOption("Lineair Confluence",    "?");
@@ -91,8 +94,11 @@ public class ExplorationDialog extends JDialog {
         buttonPanel.add(new JButton("Cancel"));
         dialogContent.add(buttonPanel);
         
+        test = new JLabel("---");
+        dialogContent.add(test);
+        
         // Lay out the dialog as a single column.
-        SpringUtilities.makeCompactGrid(dialogContent, 7, 1, 0, 0, 0, 0);
+        SpringUtilities.makeCompactGrid(dialogContent, 8, 1, 0, 0, 0, 0);
       
         // Add the dialogContent to the dialog and finish the dialog.
         add(dialogContent);
@@ -101,52 +107,39 @@ public class ExplorationDialog extends JDialog {
         setVisible(true);
     }
     
-    public void listenToStrategy(Strategy newStrategy){
+    public void actionPerformed(ActionEvent event){
+        this.test.setText(event.getActionCommand());
     }
     
-    private void buildSelection(JPanel panel, String... options) {
-        ButtonGroup buttonGroup = new ButtonGroup();
-        for (int i = 0; i < options.length; i++) {
-            JCheckBox checkBox = new JCheckBox(options[i]);
-            if (i == 0) checkBox.setSelected(true);
-            buttonGroup.add(checkBox);
-            panel.add(checkBox);
-        }
-    }
-    
-    private class FormattedSelection extends JPanel implements ActionListener {
+    private class FormattedSelection extends JPanel {
         private final ButtonGroup buttonGroup;
-        private final ExplorationDialog dialog;
-        private String[] nameDatabase;
-        private Strategy[] strategyDatabase;
+        private final ActionListener listener;
+        private boolean noCheckBoxesCreatedYet = true;
         
         // Creates an initially empty JPanel.
         // Add checkboxes by means of addCheckBox.
-        FormattedSelection(String title, ExplorationDialog dialog){
+        FormattedSelection(String title, ActionListener listener){
             super(new GridLayout(0,1));
             this.buttonGroup = new ButtonGroup();
-            this.dialog = dialog;
-//            this.empty = true;
+            this.listener = listener;
             this.add(new JLabel("<HTML><FONT color=green><B>" + title + "</B></FONT></HTML>"));
         }
         
         public void addOption(String shortName, String explanation){
-            JCheckBox checkBox = new JCheckBox("<HTML>" + shortName + " <FONT color=669966>(" + explanation + ")</FONT></HTML>");
-            this.add(checkBox);
+            JPanel optionPanel = new JPanel(new SpringLayout());
+            JCheckBox checkBox = new JCheckBox(shortName);
+//            JCheckBox checkBox = new JCheckBox("<HTML>" + shortName + " <FONT color=669966>(" + explanation + ")</FONT></HTML>");
+            checkBox.addActionListener(this.listener);
+            optionPanel.add(checkBox);
+            optionPanel.add(new JLabel(" "));
+            optionPanel.add(new JLabel("<HTML><FONT color=669966>(" + explanation + ")</FONT></HTML>"));
             this.buttonGroup.add(checkBox);
-//            if (this.empty) checkBox.setSelected(true);
-//            this.empty = false;
-        }
-
-        public void addStrategyOption(String shortName, String explanation, Strategy strategy){
-            JCheckBox checkBox = new JCheckBox("<HTML>" + shortName + " <FONT color=669966>(" + explanation + ")</FONT></HTML>");
-            this.add(checkBox);
-            this.buttonGroup.add(checkBox);
- //           if (this.empty) checkBox.setSelected(true);
- //           this.empty = false;
-        }
-        
-        public void actionPerformed(ActionEvent e){
-        }
+            SpringUtilities.makeCompactGrid(optionPanel, 1, 3, 0, 0, 0, 0);
+            this.add(optionPanel);
+            if (this.noCheckBoxesCreatedYet){
+                checkBox.setSelected(true);
+                this.noCheckBoxesCreatedYet = false;
+            }
+        }      
     }   
 }
