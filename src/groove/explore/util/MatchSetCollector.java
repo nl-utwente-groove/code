@@ -124,7 +124,7 @@ public class MatchSetCollector {
      * @return <code>true</code> if any events for <code>rule</code> were
      *         added to <code>result</code>
      */
-    private boolean collectEvents(Rule rule, Collection<RuleEvent> result) {
+    protected boolean collectEvents(Rule rule, Collection<RuleEvent> result) {
         boolean hasMatched = collectVirtualEvents(rule, result);
         // AREND: I added here a check so that new matches are also added when the cache is a location cache
         // because the parent state may (regardless enabledRules) have no matches in the parent due to control.
@@ -155,7 +155,7 @@ public class MatchSetCollector {
     }
 
     /** Returns the virtual events for a given rule. */
-    private Collection<RuleEvent> getVirtualEvents(Rule rule) {
+    protected Collection<RuleEvent> getVirtualEvents(Rule rule) {
         // Create the virtual event map if it is not yet there.
         if (this.virtualEventMap == null && this.virtualEventSet != null) {
             this.virtualEventMap = computeVirtualEventMap();
@@ -197,7 +197,7 @@ public class MatchSetCollector {
      * Returns either the last (previously returned) rule from the
      * {@link ExploreCache}, or the first new rule if there is no last.
      */
-    private Rule firstRule() {
+    protected Rule firstRule() {
         Rule result = this.cache.last();
         if (result == null && this.cache.hasNext()) {
             // this means that the cache was freshly created and has never been
@@ -210,14 +210,17 @@ public class MatchSetCollector {
     /**
      * Increments the rule iterator, and returns the next rule.
      */
-    private Rule nextRule() {
+    protected Rule nextRule() {
         this.cache.updateExplored(this.cache.last());
         return this.cache.hasNext() ? this.cache.next() : null;
     }
 
-    private final GraphState state;
-    private final ExploreCache cache;
-    private final SystemRecord record;
+    /** The host graph we are working on. */
+    protected final GraphState state;
+    /** Matches cache. */
+    protected final ExploreCache cache;
+    /** The system record is set at construction. */
+    protected final SystemRecord record;
     private final Collection<VirtualEvent.GraphState> virtualEventSet;
     private Map<Rule,Collection<RuleEvent>> virtualEventMap;
     /** The rules that may be enabled. */
