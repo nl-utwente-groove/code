@@ -97,50 +97,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
     /** Internal editor implementation. */
     private class RealCellEditor extends AbstractCellEditor implements
             GraphCellEditor {
-//        /** Constructs a new instance of the editor. */
-//        public RealCellEditor() {
-//            this.editorComponent.setBorder(UIManager.getBorder("Tree.editorBorder"));
-//            // editorComponent.setLineWrap(true);
-//            this.editorComponent.setWrapStyleWord(true);
-//
-//            // substitute a JTextArea's VK_ENTER action with our own that will
-//            // stop an edit.
-//            InputMap focusedInputMap =
-//                this.editorComponent.getInputMap(JComponent.WHEN_FOCUSED);
-//            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-//                "enter");
-//            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-//                InputEvent.SHIFT_DOWN_MASK), "shiftEnter");
-//            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-//                InputEvent.CTRL_DOWN_MASK), "metaEnter");
-//            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-//                "enter");
-//            this.editorComponent.getActionMap().put("enter",
-//                new AbstractAction() {
-//                    public void actionPerformed(ActionEvent e) {
-//                        stopCellEditing();
-//                    }
-//                });
-//            // make the reaction to SHIFT+ENTER and META+ENTER so a newline is
-//            // added
-//            AbstractAction newLineAction = new AbstractAction() {
-//                /** Inserts a newline into the edited text. */
-//                public void actionPerformed(ActionEvent e) {
-//                    Document doc =
-//                        RealCellEditor.this.editorComponent.getDocument();
-//                    try {
-//                        doc.insertString(
-//                            RealCellEditor.this.editorComponent.getCaretPosition(),
-//                            "\n", null);
-//                    } catch (BadLocationException e1) {
-//                        e1.printStackTrace();
-//                    }
-//                }
-//            };
-//            this.editorComponent.getActionMap().put("shiftEnter", newLineAction);
-//            this.editorComponent.getActionMap().put("metaEnter", newLineAction);
-//        }
-
         /**
          * Initialises the editor component with the edit string of the user
          * object of <tt>value</tt> (which is required to be a {@link JCell}).
@@ -167,7 +123,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         private JTextArea computeEditorComponent() {
             final JTextArea result = new JTextArea();
             result.setBorder(UIManager.getBorder("Tree.editorBorder"));
-            // editorComponent.setLineWrap(true);
             result.setWrapStyleWord(true);
 
             // substitute a JTextArea's VK_ENTER action with our own that will
@@ -180,8 +135,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 InputEvent.SHIFT_DOWN_MASK), "shiftEnter");
             focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
                 InputEvent.CTRL_DOWN_MASK), "metaEnter");
-            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-                "enter");
             result.getActionMap().put("enter",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
@@ -206,6 +159,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             };
             result.getActionMap().put("shiftEnter", newLineAction);
             result.getActionMap().put("metaEnter", newLineAction);
+            
             return result;
         }
         
