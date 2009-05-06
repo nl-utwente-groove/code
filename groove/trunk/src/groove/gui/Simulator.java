@@ -3381,7 +3381,9 @@ public class Simulator {
         }
         
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);     
+            // Temporarily disable the dialog.
+            // setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);
+            setEnabled(false);
         }
     }   
   
