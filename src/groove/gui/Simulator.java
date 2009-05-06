@@ -3377,7 +3377,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            new ExplorationDialog(getFrame());
+            new ExplorationDialog(Simulator.this, getFrame());
         }
         
         public void refresh() {
@@ -3500,7 +3500,11 @@ public class Simulator {
         private final Scenario scenario;
     }
 
-    void doGenerate(Scenario scenario) {
+    /**
+     * Can be called from the ExplorationDialog.
+     * @param scenario
+     */
+    public void doGenerate(Scenario scenario) {
         scenario.prepare(getCurrentGTS(), getCurrentState());
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
