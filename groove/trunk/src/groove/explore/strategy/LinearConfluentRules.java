@@ -17,11 +17,14 @@
 
 package groove.explore.strategy;
 
-import groove.explore.util.ConfluentMatchesIterator;
+import groove.explore.util.ConfluentMatchSetCollector;
 import groove.explore.util.ExploreCache;
 import groove.lts.GraphState;
+import groove.trans.RuleEvent;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * At each step, either fully explores an open state if the rule to be applied
@@ -56,9 +59,12 @@ public class LinearConfluentRules extends AbstractStrategy {
             return false;
         }
         ExploreCache cache = getCache(true, false);
-        ConfluentMatchesIterator matchesIter =
-            new ConfluentMatchesIterator(getAtState(), cache, getRecord());
-
+        ConfluentMatchSetCollector collector =
+            new ConfluentMatchSetCollector(getAtState(), cache, getRecord(), null);
+        // collect all matches
+        List<RuleEvent> matches = new ArrayList<RuleEvent>();
+        collector.collectMatchSet(matches);
+        Iterator<RuleEvent> matchesIter = matches.iterator();
         while (matchesIter.hasNext()) {
             getGenerator().applyMatch(getAtState(), matchesIter.next(), cache);
         }
