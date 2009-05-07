@@ -179,6 +179,9 @@ public class Groove {
     public static final ImageIcon GROOVE_BLUE_ICON_32x32 =
         new ImageIcon(getResource("groove-blue-g-32x32.gif"));
 
+    /** The file containing the configuration for allowed scenarios. */
+    public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE = "configuration";
+    
     /**
      * Flag to indicate if variaous types of statistics should be computed. This
      * flag is intended to be used globally.
