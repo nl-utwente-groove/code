@@ -57,7 +57,7 @@ public class CTLModelChecker extends CommandLineTool {
 
     /** Usage message for the generator. */
     static public final String USAGE_MESSAGE =
-        "Usage: ModelChecker <grammar-location> <property>";
+        "Usage: ModelChecker <grammar-location> [property] [-g [generator-options]]";
     /** Extension for graph files */
     static public final String GRAPH_FILE_EXTENSION = ".graphs";
     /** QUIT option */
@@ -74,16 +74,29 @@ public class CTLModelChecker extends CommandLineTool {
      */
     public static void main(String args[]) {
         List<String> argList = new LinkedList<String>(Arrays.asList(args));
-        CTLModelChecker verifier = new CTLModelChecker(argList);
+        List<String> checkerArgs;
+        List<String> genArgs;
+        if (argList.contains("-g")) {
+            int splitPoint = argList.indexOf("-g");
+            checkerArgs = new LinkedList<String>(argList.subList(0, splitPoint));
+            genArgs = new LinkedList<String>(argList.subList(splitPoint + 1, argList.size()));
+        } else {
+            checkerArgs = argList;
+            genArgs = null;
+        }
+        CTLModelChecker verifier = new CTLModelChecker(checkerArgs, genArgs);
         verifier.start();
     }
 
     /**
      * Constructor.
-     * @param args the command line arguments for the generator.
+     * @param checkerArgs the command line arguments for the model checker.
+     * @param genArgs the command line arguments for the generator.
      */
-    public CTLModelChecker(List<String> args) {
-        super(args);
+    public CTLModelChecker(List<String> checkerArgs, List<String> genArgs) {
+        super(checkerArgs);
+        this.genArgs = genArgs;
+        this.properties = new LinkedList<TemporalFormula>();
     }
 
     /** Constructs a model checker for a given LTS and property. */
@@ -106,12 +119,12 @@ public class CTLModelChecker extends CommandLineTool {
      */
     public void start() {
         processArguments();
-        this.generator = new Generator(getArgs());
+        this.generator = new Generator(this.genArgs);
         this.generator.start();
         this.gts = this.generator.getGTS();
         this.grammar = this.generator.getGrammar();
         this.marker = new CTLTransitionMarker();
-        if (this.checkSingleProperty) {
+        /*if (this.checkSingleProperty) {
             this.marker.mark(this.marking, getProperty(), this.gts, this);
             if (this.property.getCounterExamples().contains(
                 this.gts.startState())) {
@@ -131,6 +144,17 @@ public class CTLModelChecker extends CommandLineTool {
                     System.out.println("The model satisfies the given property.");
                 }
             }
+        }*/
+        while (this.properties.size() > 0) {
+            this.setProperty(this.properties.remove(0));
+            System.out.println("Checking CTL formula: " + this.property);
+            this.marker.mark(this.marking, getProperty(), this.gts, this);
+            if (this.property.getCounterExamples().contains(
+                this.gts.startState())) {
+                System.err.println("The model violates the given property.");
+            } else {
+                System.out.println("The model satisfies the given property.");
+            }
         }
         if (REPORT) {
             report();
@@ -145,13 +169,12 @@ public class CTLModelChecker extends CommandLineTool {
      */
     @Override
     public void processArguments() {
-        super.processArguments();
         List<String> argsList = getArgs();
-        if (argsList.size() == 2) {
-            setProperty(argsList.remove(1));
-            this.checkSingleProperty = true;
-        } else if (argsList.size() == 0) {
-            printError("No grammar location specified");
+        while (argsList.size() > 1) {
+            this.addProperty(argsList.remove(1));
+        }
+        if (argsList.size() == 0) {
+            this.printError("No grammar location specified");
         }
     }
 
@@ -219,6 +242,15 @@ public class CTLModelChecker extends CommandLineTool {
         }
     }
 
+    /** Adds the string property to the list of properties to be checked. */
+    public void addProperty(String property) {
+        try {
+            this.properties.add(CTLFormula.parseFormula(property));
+        } catch (FormatException efe) {
+            print("Format error in property: " + efe.getMessage());
+        }
+    }
+    
     /**
      * Ordinary set-method.
      * @param property the property to be checked
@@ -414,11 +446,13 @@ public class CTLModelChecker extends CommandLineTool {
      * Flag to indicate whether to check a single property or to ask for
      * properties interactively.
      */
-    private boolean checkSingleProperty = false;
+    //private boolean checkSingleProperty = false;
     /**
      * The generator used for generating the state space.
      */
     private Generator generator;
+    /** The list of options to the generator. */
+    private List<String> genArgs = null;
     /**
      * The state space (with graphs as states) to be model-checked.
      */
@@ -449,6 +483,11 @@ public class CTLModelChecker extends CommandLineTool {
      */
     private TemporalFormula property;
 
+    /**
+     * The list of CTL formulas to be checked.
+     */
+    private List<TemporalFormula> properties;
+    
     /**
      * 
      */
