@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2008-11-28 11:20:19
+// $ANTLR 3.1b1 GCLChecker.g 2009-05-19 17:13:53
 
 package groove.control.parse;
 import groove.control.*;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 @SuppressWarnings("all")              
 public class GCLChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "AND", "COMMA", "DOT", "NOT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "AND", "COMMA", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
     public static final int FUNCTION=7;
     public static final int STAR=22;
@@ -30,18 +30,20 @@ public class GCLChecker extends TreeParser {
     public static final int TRUE=20;
     public static final int TRY=15;
     public static final int IF=17;
-    public static final int T__31=31;
-    public static final int T__32=32;
+    public static final int ML_COMMENT=30;
     public static final int T__33=33;
     public static final int ANY=24;
-    public static final int WS=30;
+    public static final int WS=32;
     public static final int T__34=34;
     public static final int T__35=35;
+    public static final int T__36=36;
+    public static final int T__37=37;
     public static final int COMMA=27;
     public static final int UNTIL=14;
     public static final int IDENTIFIER=10;
     public static final int BLOCK=5;
     public static final int OR=11;
+    public static final int SL_COMMENT=31;
     public static final int CH_OR=19;
     public static final int PROGRAM=4;
     public static final int PLUS=21;
