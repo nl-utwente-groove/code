@@ -26,6 +26,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
+import groove.io.GrooveFileChooser;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
@@ -35,6 +36,11 @@ import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -101,6 +107,8 @@ public class ShowHideMenu extends JMenu {
     static public final String CONTEXT_ACTION_NAME = "Context";
     /** Name of the action to process elements according to a regular expression. */
     static public final String REGEXPR_ACTION_NAME = "Pattern...";
+    /** Name of the action to process elements from a file. */
+    static public final String FILE_ACTION_NAME = "All From File...";
     /** Name of the action to process elements by label. */
     static public final String LABEL_MENU_NAME = "Label";
 
@@ -140,6 +148,7 @@ public class ShowHideMenu extends JMenu {
         if (this.jgraph.getModel() instanceof GraphJModel) {
             menu.add(createShowRegExprAction(ONLY_MODE));
         }
+        menu.add(createFromFileAction(ONLY_MODE));
         menu.addSeparator();
         menu.add(createEmphasizedAction(ADD_MODE));
         if (this.jgraph.getModel() instanceof GraphJModel) {
@@ -208,6 +217,13 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
+     * Factory method for {@link ShowHideMenu.FromFileAction}s.
+     */
+    protected ShowHideAction createFromFileAction(int showMode) {
+        return new FromFileAction(this.jgraph, showMode);
+    }
+    
+    /**
      * Factory method for <tt>LabelAction</tt>s.
      */
     protected ShowHideAction createLabelAction(int showMode, String label) {
@@ -245,6 +261,8 @@ public class ShowHideMenu extends JMenu {
     private static int CONTEXT_MNEMONIC = KeyEvent.VK_C;
     /** Mnemonic key for the {@link RegExprAction} */
     private static int REG_EXPR_MNEMONIC = KeyEvent.VK_P;
+    /** Mnemonic key for the {@link FromFileAction} */
+    private static int FILE_MNEMONIC = KeyEvent.VK_F;
     /** Mnemonic key for the menu. */
     private static int MENU_MNEMONIC = KeyEvent.VK_S;
 
@@ -262,7 +280,7 @@ public class ShowHideMenu extends JMenu {
      */
     static abstract protected class ShowHideAction extends AbstractAction {
         /**
-         * Constructs a nemeless action.
+         * Constructs a nameless action.
          * @param jgraph the jgraph upon which this action works
          * @param showMode the show mode: one of {@link #ADD_MODE},
          *        {@link #HIDE_MODE} or {@link #ONLY_MODE}
@@ -356,7 +374,7 @@ public class ShowHideMenu extends JMenu {
         }
 
         /**
-         * Convenienct method to indicate if a jcell is set to hidden in the
+         * Convenience method to indicate if a jcell is set to hidden in the
          * underlying jgraph.
          * @param jCell the jcell to be tested
          * @return <tt>true</tt> if jcell is hidden in the underlying jgraph
@@ -736,6 +754,58 @@ public class ShowHideMenu extends JMenu {
         }
     }
 
+    /**
+     * @author Eduardo Zambon
+     */
+    static protected class FromFileAction extends ShowHideAction {
+        /**
+         * @param jgraph the underlying j-graph
+         * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
+         *        {@link #ONLY_MODE}
+         */
+        public FromFileAction(JGraph jgraph, int showMode) {
+            super(jgraph, showMode, FILE_ACTION_NAME);
+            putValue(MNEMONIC_KEY, FILE_MNEMONIC);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            GrooveFileChooser fileChooser = new GrooveFileChooser();
+            fileChooser.showOpenDialog(this.jgraph);
+            File labelsFile = fileChooser.getSelectedFile();
+            String fileLine;
+            ArrayList<String> labelsList = new ArrayList<String>();
+            try {    
+                BufferedReader in = new BufferedReader(new FileReader(labelsFile));
+                if (!in.ready()) {
+                    throw new IOException();
+                }
+                while ((fileLine = in.readLine()) != null) {
+                    labelsList.add(fileLine);
+                }
+                in.close();
+            } catch (IOException e) {
+                // Should do something here. Let's ignore it for now...
+            }
+            this.labels = labelsList;
+            super.actionPerformed(evt);
+        }
+        
+        @Override
+        protected boolean isInvolved(JCell jCell) {
+            boolean result = false;
+            for (String label : this.labels) {
+                result |= jCell.getListLabels().contains(label);
+                if (result) {
+                    break;
+                }
+            }
+            return result;
+        }
+        
+        private ArrayList<String> labels;
+    }
+    
     /**
      * A menu that creates, when it is selected, sub-items for all the labels
      * currently in the graph. The sub-items are <tt>LabelAction</tt>
