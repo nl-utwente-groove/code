@@ -59,6 +59,8 @@ import javax.swing.ImageIcon;
 public class Groove {
     /** The working directory of the application. */
     public static final String WORKING_DIR = System.getProperty("user.dir");
+    /** The last accessed working directory. */
+    public static String CURRENT_WORKING_DIR = WORKING_DIR;
     /** The user's home directory. */
     public static final String HOME = System.getProperty("user.home");
     /** The system's file separator. */
@@ -102,6 +104,8 @@ public class Groove {
     public static final String AUT_EXTENSION = ".aut";
     /** Extension for Graph Layout files. */
     public static final String LAYOUT_EXTENSION = ".gl";
+    /** Extension for text files. */
+    public static final String TEXT_EXTENSION = ".txt";
 
     /** Default name for the start graph. */
     public static final String DEFAULT_START_GRAPH_NAME = "start";
@@ -247,7 +251,7 @@ public class Groove {
     /**
      * Returns a fresh an extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>.
      * A switch controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directries.
+     * @param acceptDirectories if true, the filter accepts directories.
      * @see #RULE_SYSTEM_EXTENSION
      */
     public static ExtensionFilter createRuleSystemFilter(
@@ -283,6 +287,14 @@ public class Groove {
     }
 
     /**
+     * Returns a fresh extension filer for <tt>TEXT_EXTENSION</tt>. By
+     * default, the filter accepts directories.
+     */
+    public static ExtensionFilter createTextFilter() {
+        return new ExtensionFilter("Text files", TEXT_EXTENSION);
+    }
+    
+    /**
      * Returns a fresh extension filter for <tt>PROPERTIES_EXTENSION</tt>. By
      * default, the filter accepts directories.
      * @see #STATE_EXTENSION
@@ -294,7 +306,7 @@ public class Groove {
     /**
      * Returns a fresh an extension filter for <tt>STATE_EXTENSION</tt>. A
      * switch controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directries.
+     * @param acceptDirectories if true, the filter accepts directories.
      * @see #STATE_EXTENSION
      */
     public static ExtensionFilter createStateFilter(boolean acceptDirectories) {

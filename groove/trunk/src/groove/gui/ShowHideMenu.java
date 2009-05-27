@@ -31,6 +31,7 @@ import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
+import groove.util.Groove;
 import groove.util.KeyPartition;
 import groove.view.FormatException;
 
@@ -48,6 +49,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -755,10 +757,13 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
+     * Show/hide action based on a set of labels read from a text file.
+     * The text file format is one label per line.
      * @author Eduardo Zambon
      */
     static protected class FromFileAction extends ShowHideAction {
         /**
+         * Constructs an instance of the action for a given j-graph.
          * @param jgraph the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
@@ -771,26 +776,33 @@ public class ShowHideMenu extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             GrooveFileChooser fileChooser = new GrooveFileChooser();
-            fileChooser.showOpenDialog(this.jgraph);
-            File labelsFile = fileChooser.getSelectedFile();
-            String fileLine;
-            ArrayList<String> labelsList = new ArrayList<String>();
-            try {    
-                BufferedReader in = new BufferedReader(new FileReader(labelsFile));
-                if (!in.ready()) {
-                    throw new IOException();
+            fileChooser.addChoosableFileFilter(Groove.createTextFilter());
+            int result = fileChooser.showOpenDialog(this.jgraph);
+            if (result == JFileChooser.APPROVE_OPTION) { 
+                File labelsFile = fileChooser.getSelectedFile();
+                String fileLine;
+                ArrayList<String> labelsList = new ArrayList<String>();
+                try {    
+                    BufferedReader in = new BufferedReader(new FileReader(labelsFile));
+                    if (!in.ready()) {
+                        throw new IOException();
+                    }
+                    while ((fileLine = in.readLine()) != null) {
+                        labelsList.add(fileLine);
+                    }
+                    in.close();
+                } catch (IOException e) {
+                    // Well, bad things can happen... :P Carry on.
                 }
-                while ((fileLine = in.readLine()) != null) {
-                    labelsList.add(fileLine);
-                }
-                in.close();
-            } catch (IOException e) {
-                // Should do something here. Let's ignore it for now...
+                this.labels = labelsList;
+                super.actionPerformed(evt);
             }
-            this.labels = labelsList;
-            super.actionPerformed(evt);
         }
         
+        /**
+         * A cell is involved if it contains a label that is on the list of
+         * labels read from the file.
+         */
         @Override
         protected boolean isInvolved(JCell jCell) {
             boolean result = false;

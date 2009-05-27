@@ -3814,7 +3814,7 @@ public class Simulator {
                     && confirmAbandon(false)) {
                     File selectedFile =
                         getGrammarFileChooser().getSelectedFile();
-                    // when dealing with the open File dialog we ccan use the
+                    // when dealing with the open File dialog we can use the
                     // extension filters to find the correct loader
                     FileFilter filterUsed =
                         getGrammarFileChooser().getFileFilter();

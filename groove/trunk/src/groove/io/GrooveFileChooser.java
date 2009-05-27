@@ -33,7 +33,7 @@ import javax.swing.filechooser.FileView;
 public class GrooveFileChooser extends JFileChooser {
     /** File chooser with initial directory {@link Groove#WORKING_DIR}. */
     public GrooveFileChooser() {
-        this(Groove.WORKING_DIR);
+        this(Groove.CURRENT_WORKING_DIR);
     }
 
     /**
@@ -71,6 +71,12 @@ public class GrooveFileChooser extends JFileChooser {
      */
     @Override
     public File getSelectedFile() {
+        // Set the current directory to be reused later
+        File currDir = super.getCurrentDirectory();
+        if (currDir != null) {
+            Groove.CURRENT_WORKING_DIR = currDir.getAbsolutePath();
+        }
+        
         File result = super.getSelectedFile();
         if (result != null && !result.exists() && getFileFilter() instanceof ExtensionFilter) {
             ExtensionFilter fileFilter = (ExtensionFilter) getFileFilter();
