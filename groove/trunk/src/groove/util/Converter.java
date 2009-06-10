@@ -273,19 +273,20 @@ public class Converter {
     }
 
     /** HTML greater than symbol. */
-    static public final String HTML_GT = "&gt;";
+    // The readable codes do not work on the Mac in some situations. Replaced them with the numeric codes - this fixes it. -- Maarten 
+    static public final String HTML_GT = "&#62;"; // &gt;
     /** HTML forall symbol. */
-    static public final String HTML_FORALL = "&forall;";
+    static public final String HTML_FORALL = "&#8704;"; // &forall;
     /** HTML exists symbol. */
-    static public final String HTML_EXISTS = "&exist;";
+    static public final String HTML_EXISTS = "&#8707;"; // &exist;
     /** HTML negation symbol. */
-    static public final String HTML_NOT = "&not;";
+    static public final String HTML_NOT = "&#172;"; // &not;
     /** HTML lambda symbol. */
-    static public final String HTML_LAMBDA = "&lambda;";
+    static public final String HTML_LAMBDA = "&#955;"; // &lambda;
     /** HTML tau symbol. */
-    static public final String HTML_TAU = "&tau;";
+    static public final String HTML_TAU = "&#932;"; // &tau;
     /** HTML epsilon symbol. */
-    static public final String HTML_EPSILON = "&epsilon;";
+    static public final String HTML_EPSILON = "&#949;"; // &epsilon;
     /** Name of the HTML tag (<code>html</code>). */
     static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */
