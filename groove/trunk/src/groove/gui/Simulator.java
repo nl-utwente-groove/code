@@ -46,6 +46,7 @@ import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
+import groove.gui.chscenar.ScenarioSelectionDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
@@ -1535,7 +1536,7 @@ public class Simulator {
             this.graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON,
                 getRulePanel(), "Selected rule");
             this.graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON,
-                getLtsPanel(), "Labelled transition system");
+                getConditionalLTSPanel(), "Labelled transition system");
             this.graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON,
                 getControlPanel(), "Control specification");
             // graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
@@ -1636,8 +1637,9 @@ public class Simulator {
     }
 
     /**
-     * Returns the simulator panel on which the LTS. Note that this panel may
-     * currently not be visible.
+     * Returns the simulator panel on which the LTS. Note that:
+     * - this panel may currently not be visible.
+     * - this panel is always contained in the ConditionalLTSPanel.
      * @see #setGraphPanel(JGraphPanel)
      */
     LTSPanel getLtsPanel() {
@@ -1648,6 +1650,18 @@ public class Simulator {
         return this.ltsPanel;
     }
 
+    /**
+     * Returns the LTSOptions panel on the simulator. Note that this panel may
+     * currently not be visible.
+     */
+    ConditionalLTSPanel getConditionalLTSPanel() {
+        if (this.conditionalLTSPanel == null) {
+            this.conditionalLTSPanel = new ConditionalLTSPanel(this.getLtsPanel());
+        }
+        return this.conditionalLTSPanel;
+    }
+   
+    
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
@@ -1685,41 +1699,61 @@ public class Simulator {
     }
 
     /**
-     * Returns the currently selected graph view component. This is be the
+     * Returns the currently selected graph view component. This can be the
      * state, rule or LTS view.
+     * In case the LTS is active, the inner LTSPanel is returned instead of the outer
+     * ConditionalLTSPanel.
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
+     * @see #getConditionalLTSPanel()
      * @see #setGraphPanel(JGraphPanel)
      */
     JGraphPanel<?> getGraphPanel() {
-        if (!(getGraphViewsPanel().getSelectedComponent() instanceof JGraphPanel)) {
+        Component selectedComponent = getGraphViewsPanel().getSelectedComponent();
+        
+        if (selectedComponent == getConditionalLTSPanel())
+            return getLtsPanel();
+        
+        if (!(selectedComponent instanceof JGraphPanel))
             return null;
-        } else {
-            return (JGraphPanel<?>) getGraphViewsPanel().getSelectedComponent();
-        }
+        else
+            return (JGraphPanel<?>) selectedComponent;
     }
 
     /**
      * Brings one of the graph view components to the foreground. This should be
      * the state, rule or LTS view.
      * @param component the graph view component to bring to the foreground
+     *          (in case the LTS panel should be made active, this is expected to be the
+     *           inner LTSPanel, instead of the outer ConditionalLTSPanel)
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
+     * @see #getConditionalLTSPanel()
      * @see #getGraphPanel()
      */
     void setGraphPanel(JGraphPanel<?> component) {
-        getGraphViewsPanel().setSelectedComponent(component);
+        if (component == getLtsPanel())
+            getGraphViewsPanel().setSelectedComponent(getConditionalLTSPanel());
+        else
+            getGraphViewsPanel().setSelectedComponent(component);
     }
 
     /**
      * Changes the enabledness of one of the graph panels
      * @param component the panel to change
+     *          (again, the inner LTSPanel is expected instead of the outer ConditionalLTSPanel) 
      * @param enabled the new enabledness status
      */
     void setGraphPanelEnabled(JGraphPanel<?> component, boolean enabled) {
-        int index = getGraphViewsPanel().indexOfComponent(component);
+        int index;
+        
+        if (component == getLtsPanel())
+            index = getGraphViewsPanel().indexOfComponent(getConditionalLTSPanel());
+        else
+            index = getGraphViewsPanel().indexOfComponent(component);
+
         getGraphViewsPanel().setEnabledAt(index, enabled);
         if (component == getLtsPanel()) {
             String text;
@@ -1945,6 +1979,9 @@ public class Simulator {
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
         result.add(new JMenuItem(getExplorationDialogAction()));
+        // BEGIN_IOVKA
+        result.add(new JMenuItem(getChooseCustomScenarioAction()));
+        // END_IOVKA
         result.addSeparator();
         // copy the exploration menu
         for (Component menuComponent : exploreMenu.getMenuComponents()) {
@@ -2722,9 +2759,12 @@ public class Simulator {
     /** Control display panel. */
     private CAPanel controlPanel;
 
-    /** LTS display panel. */
+    /** LTS display panel. (which is contained in the ConditionalLTSPanel) */
     private LTSPanel ltsPanel;
 
+    /** Conditional LTS display panel. */
+    private ConditionalLTSPanel conditionalLTSPanel;
+    
     /** Type graph display panel. */
     private TypePanel typePanel;
 
@@ -4383,6 +4423,35 @@ public class Simulator {
         }
     }
 
+    // BEGIN_IOVKA
+    /** Allows to select a custom scenario and run it. */
+    private class ChooseCustomScenarioAction extends AbstractAction implements Refreshable {
+         ChooseCustomScenarioAction() {
+             super("Run a custom scenario (work in progress)");
+             addRefreshable(this);
+         }
+         
+         public void actionPerformed(ActionEvent e) {
+             ScenarioSelectionDialog sd = new ScenarioSelectionDialog(getFrame(), getCurrentGTS().getGrammar());
+             Scenario customScenario = sd.showDialog();
+             if (customScenario != null) {
+                 LaunchScenarioAction action = createLaunchScenarioAction(customScenario);
+                 action.actionPerformed(e);
+             }
+         }
+         
+         public void refresh() {
+             // Temporarily disable the dialog.
+             // setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);
+             setEnabled(false);
+         }
+    }
+
+    private ChooseCustomScenarioAction getChooseCustomScenarioAction () {
+        return new ChooseCustomScenarioAction();
+    }
+    // END_IOVKA
+    
     ExploreStateStrategy exploreState;
 
     /**
