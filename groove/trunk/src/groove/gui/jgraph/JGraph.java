@@ -173,7 +173,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Convenience method te retrieve a j-edge view as a {@link JEdgeView}.
+     * Convenience method to retrieve a j-edge view as a {@link JEdgeView}.
      * @param jEdge the JEdge for which to retrieve the JEdgeView
      * @return the JEdgeView corresponding to <code>jEdge</code>
      */
@@ -182,7 +182,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Convenience method te retrieve a j-node view as a {@link JVertexView}.
+     * Convenience method to retrieve a j-node view as a {@link JVertexView}.
      * @param jNode the JVertex for which to retrieve the JVertexView
      * @return the JVertexView corresponding to <code>jNode</code>
      */
@@ -319,7 +319,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * This method rturns the port of the topmost vertex.
+     * This method returns the port of the topmost vertex.
      */
     @Override
     public PortView getPortViewAt(double x, double y) {

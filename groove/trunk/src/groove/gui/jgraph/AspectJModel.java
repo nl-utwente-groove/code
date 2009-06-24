@@ -662,6 +662,11 @@ public class AspectJModel extends GraphJModel {
                 && !RuleAspect.isRemark(getSourceNode());
         }
 
+        @Override
+        public String getRole() {
+            return this.role.getName();
+        }
+        
         private final AspectValue role;
 
         /** Separator between level name and edge label. */

@@ -295,6 +295,14 @@ public class GraphJEdge extends JEdge implements GraphJCell {
         }
     }
 
+    /**
+     * Method to get the role of the edge.
+     * @return a string description of the role of the edge
+     */
+    public String getRole() {
+        return "Edge";
+    }
+    
     /** Underlying {@link JModel} of this edge. */
     private final GraphJModel jModel;
     /** Source node of the underlying graph edges. */

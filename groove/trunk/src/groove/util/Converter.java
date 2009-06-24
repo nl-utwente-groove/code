@@ -20,9 +20,17 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.NodeSet;
+import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
+import groove.gui.layout.LayoutMap;
 import groove.lts.AbstractGraphState;
 import groove.lts.State;
 
@@ -160,9 +168,20 @@ public class Converter {
         return result;
     }
     
-    /** Writes a graph in LaTeX <code>tikz</code> format to a print writer. */
-    static public void graphToTikz(GraphShape graph, PrintWriter writer) {
-        // to be implemented
+    /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
+    static public void graphToTikz(JGraph graph, PrintWriter writer) {
+        JModel model = graph.getModel();
+        GraphShape shape = ((GraphJModel) model).getGraph();
+        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(shape);
+        writer.print(GraphToTikz.beginTikzFig());
+        for (Object root : model.getRoots()) {
+            if (root instanceof GraphJVertex) {
+                writer.print(GraphToTikz.convertNodeToTikzStr((GraphJVertex) root, layoutMap));
+            } else if (root instanceof JEdge) {
+                writer.print(GraphToTikz.convertEdgeToTikzStr((GraphJEdge) root, layoutMap));
+            }
+        }
+        writer.print(GraphToTikz.endTikzFig());
     }
 
     // html defs
