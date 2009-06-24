@@ -614,12 +614,12 @@ public class Exporter {
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-        	GraphShape graph;
-        	if (jGraph.getModel() instanceof GraphJModel) {
-        		graph = ((GraphJModel) jGraph.getModel()).getGraph();
-        	} else {
-        		graph = jGraph.getModel().toPlainGraph();
-        	}
+            GraphShape graph;
+            if (jGraph.getModel() instanceof GraphJModel) {
+                graph = ((GraphJModel) jGraph.getModel()).getGraph();
+            } else {
+                graph = jGraph.getModel().toPlainGraph();
+            }
             export(graph, file);
         }
 
@@ -648,8 +648,8 @@ public class Exporter {
         private static final Format instance = new AutFormat();
     }
 
-    /** Class implementing the LaTeX <code>tikz</code> export format. */
-    private static class TikzFormat implements StructuralFormat {
+    /** Class implementing the LaTeX <code>Tikz</code> export format. */
+    private static class TikzFormat implements Format {
         /** Empty constructor to ensure singleton usage of the class. */
         private TikzFormat() {
             // empty
@@ -660,26 +660,17 @@ public class Exporter {
         }
 
         /**
-         * Exports the jgraph by calling
-         * {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)} on
-         * the graph contained therein.
+         * Exports the graph by calling
+         * {@link Converter#graphToTikz(JGraph, PrintWriter)}.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            export(jGraph.getModel().toPlainGraph(), file);
-        }
-
-        /**
-         * Exports the graph by calling
-         * {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}.
-         */
-        public void export(GraphShape graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToTikz(graph, writer);
+            Converter.graphToTikz(jGraph, writer);
             writer.close();
         }
 
         /**
-         * Extension filter used for exporting graphs in aut format.
+         * Extension filter used for exporting graphs in Tikz format.
          */
         private final ExtensionFilter tikzFilter =
             new ExtensionFilter("LaTeX tikz files", ".tikz");
