@@ -162,7 +162,7 @@ public class LTSJGraph extends JGraph {
     }
 
     /** Returns the simulator of this LTS jgraph. */
-    Simulator getSimulator() {
+    public Simulator getSimulator() {
         return this.simulator;
     }
 

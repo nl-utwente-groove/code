@@ -1,0 +1,46 @@
+% Includes for Tikz
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata,positioning,er}
+
+% Set the font to \footnotesize and \sf
+\tikzstyle every node=[font=\footnotesize\sffamily,inner sep=2.5pt]
+
+% Colours
+\newcommand{\red}{red}
+\newcommand{\redfill}{\red!10}
+\newcommand{\green}{green!75!black}
+\newcommand{\greenfill}{\green!10}
+\newcommand{\blue}{blue!75!white}
+\newcommand{\bluefill}{blue!10}
+\newcommand{\grey}{black!8}
+\tikzstyle{whitefill}=[fill=white]
+
+% Readers
+\tikzstyle{node}=[draw=black,fill=\grey,shape=rectangle]
+\tikzstyle{edge}=[-stealth']
+\tikzstyle{lab}=[midway,fill=white,inner sep=2pt]
+
+% Erasers
+\tikzstyle{delnode}=[draw=\blue,fill=\bluefill,text=\blue,shape=rectangle,densely dashed]
+\tikzstyle{deledge}=[draw=\blue,fill=\blue,densely dashed,-stealth']
+\tikzstyle{dellab}=[text=\blue,midway,fill=white,inner sep=2pt]
+
+% Creators
+\tikzstyle{newnode}=[draw=\green,fill=\greenfill,very thick,text=\green,shape=rectangle]
+\tikzstyle{newedge}=[draw=\green,fill=\green,very thick,-stealth']
+\tikzstyle{newlab}=[text=\green,midway,fill=white,inner sep=2pt]
+
+% NACs
+\tikzstyle{nacnode}=[draw=\red,fill=\redfill,text=\red,line width=2pt,dotted,shape=rectangle]
+\tikzstyle{nacedge}=[draw=\red,fill=\red,line width=2pt,dotted,-stealth']
+\tikzstyle{naclab}=[text=\red,midway,fill=white,inner sep=2pt]
+
+% Special styles (can be combined with the above)
+\tikzstyle{attr}=[shape=circle,inner sep=1pt]
+\tikzstyle{prod}=[shape=diamond,inner sep=1pt]
+\tikzstyle{quant}=[dotted,fill=white]
+
+% Ugly hack to allow nodes with multiple lines
+\newcommand{\ml}[1]{
+\begin{tabular}{@{}l@{}}#1\vspace{-2pt}\end{tabular}
+}

@@ -70,7 +70,7 @@ public class AspectJGraph extends JGraph {
     /**
      * @return Returns the simulator.
      */
-    final Simulator getSimulator() {
+    public Simulator getSimulator() {
         return this.simulator;
     }
 
