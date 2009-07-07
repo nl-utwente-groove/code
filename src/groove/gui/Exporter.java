@@ -208,7 +208,7 @@ public class Exporter {
             writer.close();
         }
 
-        /** Writes a graph to a writer in the requried format. */
+        /** Writes a graph to a writer in the required format. */
         private void convert(AspectGraph graph, PrintWriter writer) {
             this.writer = writer;
             this.indent = 0;

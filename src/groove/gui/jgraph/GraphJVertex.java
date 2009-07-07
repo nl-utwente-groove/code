@@ -378,7 +378,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @return A node descriptor, or <code>null</code> if the node has no
      *         proper identity
      */
-    String getNodeIdentity() {
+    public String getNodeIdentity() {
         // if (isConstant()) {
         // return getConstant().toString();
         // } else

@@ -24,14 +24,8 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.NodeSet;
-import groove.gui.Options;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.gui.layout.LayoutMap;
 import groove.lts.AbstractGraphState;
 import groove.lts.State;
@@ -172,23 +166,9 @@ public class Converter {
     
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public void graphToTikz(JGraph graph, PrintWriter writer) {
-        JModel model = graph.getModel();
-        GraphShape shape = ((GraphJModel) model).getGraph();
-        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(shape);
-        Options options = ((AspectJGraph) graph).getSimulator().getOptions();
-        boolean showNodeId = options.getValue(Options.SHOW_NODE_IDS_OPTION) == 0 ? false : true;
-        boolean showBackground = options.getValue(Options.SHOW_BACKGROUND_OPTION) == 0 ? false : true;
-
-        writer.print(GraphToTikz.beginTikzFig());
-        for (Object root : model.getRoots()) {
-            if (root instanceof GraphJVertex) {
-                writer.print(GraphToTikz.convertNodeToTikzStr(
-                    (GraphJVertex) root, layoutMap, showNodeId, showBackground));
-            } else if (root instanceof JEdge) {
-                writer.print(GraphToTikz.convertEdgeToTikzStr((GraphJEdge) root, layoutMap));
-            }
-        }
-        writer.print(GraphToTikz.endTikzFig());
+        GraphJModel model = (GraphJModel) graph.getModel();
+        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(model.getGraph());
+        writer.print(GraphToTikz.convertGraphToTikzStr(model, layoutMap));
     }
 
     // html defs
