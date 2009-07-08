@@ -85,7 +85,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * node. For this implementation this is the same as {@link #getNode()}.
      * @see #getNode()
      */
-    Node getActualNode() {
+    public Node getActualNode() {
         return getNode();
     }
 
@@ -329,6 +329,20 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             || getActualNode() instanceof ProductNode;
     }
 
+    /**
+     * @return true if this node is a value node, false otherwise.
+     */
+    public boolean isValueNode() {
+        return getActualNode() instanceof ValueNode;
+    }
+    
+    /**
+     * @return true if this node is a product node, false otherwise.
+     */
+    public boolean isProductNode() {
+        return getActualNode() instanceof ProductNode;
+    }
+    
     /**
      * Callback method to determine whether the underlying graph node stores a
      * constant value.
