@@ -345,7 +345,7 @@ public class AspectJModel extends GraphJModel {
          * @see #getModelNode(AspectNode)
          */
         @Override
-        Node getActualNode() {
+        public Node getActualNode() {
             return getModelNode(getNode());
         }
 

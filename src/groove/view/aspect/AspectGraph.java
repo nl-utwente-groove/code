@@ -105,10 +105,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      *         in this aspect graph
      */
     public List<String> getErrors() {
-        List<String> result = getInfo().getErrors();
-        return result == null ? Collections.<String>emptyList() : result;
+        List<String> result;
+        if (getInfo() == null) {
+            result = Collections.<String>emptyList();
+        } else {
+            result = getInfo().getErrors();
+            if (result == null) {
+                result = Collections.<String>emptyList();
+            }
+        }
+        return result;
     }
-
+    
     /**
      * Indicates if this aspect graph has format errors. Convenience method for
      * <code>! getErrors().isEmpty()</code>.
@@ -120,11 +128,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 
     /** Sets the list of errors to a copy of a given list. */
     private void setErrors(List<String> errors) {
-        errors = new ArrayList<String>(errors);
-        Collections.sort(errors);
-        getInfo().setErrors(errors);
+        if (errors == null || errors.isEmpty()) {
+            return;
+        } else {
+            errors = new ArrayList<String>(errors);
+            Collections.sort(errors);
+            GraphInfo.getInfo(this, true).setErrors(errors);
+        }
     }
-
+    
     /**
      * Method that returns an {@link AspectGraph} based on a graph whose edges
      * are interpreted as aspect value prefixed. This means that nodes with
