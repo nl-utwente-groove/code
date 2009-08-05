@@ -357,7 +357,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         // see if isomorphic graph is already in the LTS
         GraphState result = getStateSet().put(newState);
         if (result == null) {
-            ((AbstractGraphState) newState).setStateNumber(nodeCount());
+            ((AbstractGraphState) newState).setNumber(nodeCount());
             fireAddNode(newState);
         }
         reporter.stop();

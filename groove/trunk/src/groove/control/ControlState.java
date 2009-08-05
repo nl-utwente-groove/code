@@ -49,6 +49,11 @@ public class ControlState implements Node {
         return hashCode() - ((ControlState) obj).hashCode();
     }
 
+    @Override
+    public int getNumber() {
+        return this.stateNumber;
+    }
+
     /**
      * Add an outgoing transition to this control state.
      * @param transition

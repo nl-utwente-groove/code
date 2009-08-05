@@ -110,7 +110,7 @@ public class AttributeElementFactory {
             }
         }
         if (attributeEdges.isEmpty()) {
-            result = ValueNode.createVariableNode();
+            result = ValueNode.createVariableNode(node.getNumber());
         } else if (attributeEdges.size() > 1) {
             throw new FormatException("Too many edges on constant node: %s",
                 attributeEdges);
@@ -128,9 +128,9 @@ public class AttributeElementFactory {
                     this.register.getConstant(
                         signature, attributeEdge.label().text());
                 result =
-                    ValueNode.createValueNode(
-                        this.register.getImplementation(
-                            signature), nodeValue);
+                    ValueNode.createValueNode(this.register.getImplementation(
+                        signature),
+                        nodeValue);
             } catch (UnknownSymbolException exc) {
                 throw new FormatException(exc.getMessage());
             }
@@ -148,7 +148,7 @@ public class AttributeElementFactory {
      *         incorrect
      */
     private ProductNode createProductNode(AspectNode node) throws FormatException {
-        return new ProductNode(arity(node));
+        return new ProductNode(node.getNumber(), arity(node));
     }
 
     /**

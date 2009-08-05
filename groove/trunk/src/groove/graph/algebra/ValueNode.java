@@ -23,10 +23,8 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.view.aspect.AttributeAspect;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,22 +35,23 @@ import java.util.Map;
  */
 public class ValueNode extends ProductNode {
     /**
-     * Constructs a node for a given algebra and value of that algebra.
-     * @param algebra the algebra that the value belongs to
-     * @param value the value to create a graph node for
+     * Constructs a (numbered) node for a given algebra and value of that algebra.
+     * @param nr the number for the new node.
+     * @param algebra the algebra that the value belongs to; non-null
+     * @param value the value to create a graph node for; non-null
      */
-    private ValueNode(Algebra<?> algebra, Object value) {
-        super(EMPTY_ARGUMENT_LIST);
+    private ValueNode(int nr, Algebra<?> algebra, Object value) {
+        super(nr, 0);
         this.algebra = algebra;
         this.value = value;
         assert value == null || algebra != null;
     }
 
     /**
-     * Constructs a value node for a variable.
+     * Constructs a (numbered) value node for a variable.
      */
-    private ValueNode() {
-        this(null, null);
+    private ValueNode(int nr) {
+        this(nr, null, null);
     }
 
     /**
@@ -99,7 +98,7 @@ public class ValueNode extends ProductNode {
     @Override
     public String toString() {
         if (!hasValue()) {
-            return "x" + (getNumber() - DefaultNode.MAX_NODE_NUMBER);
+            return "x" + getNumber();
         } else {
             String algebraName =
                 AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
@@ -119,7 +118,7 @@ public class ValueNode extends ProductNode {
     private final Object value;
 
     /** 
-     * Returns a value node for a given algebra and value.
+     * Returns a (numbered) value node for a given algebra and value.
      * Stores previously generated instances for reuse. 
      */
     static public ValueNode createValueNode(Algebra<?> algebra, Object value) {
@@ -130,15 +129,23 @@ public class ValueNode extends ProductNode {
         }
         ValueNode result = nodeMap.get(value);
         if (result == null) {
-            result = new ValueNode(algebra,value);
+            valueNodeCount++;
+            result = new ValueNode(valueNodeCount, algebra, value);
             nodeMap.put(value,result);
         }
         return result;
     }
     
-    /** Returns a new value node, without predefined value. */
-    static public ValueNode createVariableNode() {
-        return new ValueNode();
+    /** 
+     * Returns a new value node, with a given number but without predefined value.
+     * Reuses a previously created variable node with the same number, if any.
+     */
+    static public ValueNode createVariableNode(int nr) {
+        ValueNode result = variableNodeStore.get(nr);
+        if (result == null) {
+            variableNodeStore.put(nr, result = new ValueNode(nr));
+        }
+        return result;
     }
     
     /** Tests if a given graph contains value nodes. */
@@ -153,6 +160,8 @@ public class ValueNode extends ProductNode {
     
     /** Internal store of previously generated value nodes. */
     static private final Map<String,Map<Object,ValueNode>> valueNodeStore = new HashMap<String,Map<Object,ValueNode>>();
-    /** Empty list of value nodes, to be passed to the super constructor. */
-    static private final List<ValueNode> EMPTY_ARGUMENT_LIST = Arrays.asList();
+    /** Maximum value node number */
+    static private int valueNodeCount;
+    /** Store of previously created variable nodes. */
+    static private final Map<Integer,ValueNode> variableNodeStore = new HashMap<Integer,ValueNode>();
 }

@@ -166,8 +166,6 @@ public class SystemRecord implements NodeFactory {
                 result = Math.max(result, ((DefaultNode) node).getNumber());
             }
         }
-        assert result <= DefaultNode.MAX_NODE_NUMBER : String.format(
-            "Node number %d too high for a default node", result);
         return result;
     }
 

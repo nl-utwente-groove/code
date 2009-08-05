@@ -1,5 +1,7 @@
 package groove.algebra;
 
+import groove.util.Groove;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -25,7 +27,7 @@ public class Operator {
         this.name = method.getName();
         this.parameterTypes = new ArrayList<String>();
         for (int i = 0; i < this.arity; i++) {
-            if (!(methodParameterTypes[i] instanceof TypeVariable)) {
+            if (!(methodParameterTypes[i] instanceof TypeVariable<?>)) {
                 throw new IllegalArgumentException(String.format(
                     "Method '%s' should only have generic parameter types",
                     method.getName()));
@@ -70,6 +72,11 @@ public class Operator {
         return this.returnType;
     }
     
+    @Override
+    public String toString() {
+        return this.returnType+":"+this.name+Groove.toString(this.parameterTypes.toArray(),"(",")",",");
+    }
+
     private final int arity;
     private final List<String> parameterTypes;
     private final String returnType;

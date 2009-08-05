@@ -354,9 +354,8 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      */
     private NodeCertificate getNodeCert(final Node node) {
         NodeCertificate result;
-        int nodeNr = DefaultNode.getNodeNr(node);
-        if (nodeNr != DefaultNode.NO_NODE_NUMBER) {
-            result = defaultNodeCerts[nodeNr];
+        if (node.getClass() == DefaultNode.class) {
+            result = defaultNodeCerts[((DefaultNode) node).getNumber()];
         } else {
             result = this.otherNodeCertMap.get(node);
         }
@@ -371,8 +370,8 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      */
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
-        int nodeNr = DefaultNode.getNodeNr(node);
-        if (nodeNr != DefaultNode.NO_NODE_NUMBER) {
+        if (node.getClass() == DefaultNode.class) {
+            int nodeNr = ((DefaultNode) node).getNumber();
             if (defaultNodeCerts.length <= nodeNr) {
                 NodeCertificate[] newNodeCerts =
                     new NodeCertificate[1 + (int) (nodeNr * GROWTH_FACTOR)];

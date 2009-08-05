@@ -300,7 +300,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      */
     @Override
     public int hashCode() {
-        return source().getStateNumber() + getEvent().identityHashCode();
+        return source().getNumber() + getEvent().identityHashCode();
     }
 
     /**

@@ -19,6 +19,7 @@ package groove.graph.algebra;
 import groove.graph.DefaultNode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,27 +33,35 @@ import java.util.List;
  */
 public class ProductNode extends DefaultNode {
     /**
-     * Constructor.
+     * Returns a fresh product node with a given node number and arity.
+     * The arguments are initially set to <code>null</code>.
      */
-    public ProductNode(int arity) {
-        super();
-        this.arguments = new ArrayList<ValueNode>(arity);
+    public ProductNode(int nr, int arity) {
+        super(nr);
+        this.arguments = arity == 0 ? EMPTY_ARGUMENT_LIST : new ArrayList<ValueNode>(arity);
         for (int i = 0; i < arity; i++) {
             this.arguments.add(null);
         }
         this.argCount = 0;
     }
-
-    /**
-     * Constructor.
-     */
-    public ProductNode(List<ValueNode> arguments) {
-        super();
-        this.arguments = new ArrayList<ValueNode>(arguments);
-        assert !this.arguments.contains(null) : "Null argument not allowed";
-        this.argCount = arguments.size();
-    }
-
+//    
+//    /**
+//     * Returns a fresh product node with a given arity and a fresh node number.
+//     * The arguments are initially set to <code>null</code>.
+//     */
+//    protected ProductNode(int arity) {
+//        this(DefaultNode.nextExtNodeNr(), arity);
+//    }
+//
+//    /**
+//     * Constructor for a nullary product node.
+//     * A nullary product node is the same as a value node;
+//     * this constructor is only there for the {@link ValueNode} subclass.
+//     */
+//    protected ProductNode() {
+//        this(0);
+//        
+//    }
     /**
      * Sets one of the arguments of the product node.
      * @throws IllegalArgumentException if argument number <code>i</code> has
@@ -87,7 +96,7 @@ public class ProductNode extends DefaultNode {
 
     @Override
     public String toString() {
-        return "p" + (getNumber() - DefaultNode.MAX_NODE_NUMBER);
+        return "p" + getNumber();
     }
 
     /**
@@ -100,5 +109,6 @@ public class ProductNode extends DefaultNode {
      * have already been set.
      */
     private int argCount;
-    /** the list of operands contained in this <code>ProductNode</code> */
+    /** Empty list of value nodes, to be passed to the super constructor. */
+    static private final List<ValueNode> EMPTY_ARGUMENT_LIST = Arrays.asList();
 }

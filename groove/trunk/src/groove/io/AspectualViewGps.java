@@ -343,11 +343,11 @@ public abstract class AspectualViewGps extends Observable implements
     public abstract URL createURL(File file);
 
     /**
-     * The xml reader used to unmarshal graphs.
+     * The xml reader used to unmarshal graphs in GXL format.
      */
     private final Xml<AspectGraph> gxlGraphMarshaller;
     /**
-     * The xml reader used to unmarshal graphs.
+     * The reader used to unmarshal graphs in the CADP aut format.
      */
     private final Xml<AspectGraph> autGraphMarshaller;
 

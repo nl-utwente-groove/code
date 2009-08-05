@@ -93,7 +93,7 @@ public class Converter {
             if ((node instanceof DefaultNode)) {
                 nodeNr = ((DefaultNode) node).getNumber();
             } else if (node instanceof State) {
-                nodeNr = ((AbstractGraphState) node).getStateNumber();
+                nodeNr = ((AbstractGraphState) node).getNumber();
             }
             if (nodeNr >= 0 && nodeNr < nodeCount) {
                 nodeList.set(nodeNr);
