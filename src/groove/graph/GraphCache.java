@@ -59,7 +59,7 @@ public class GraphCache extends GraphShapeCache {
     public void addUpdate(GraphShape graph, Node node) {
         super.addUpdate(graph, node);
         DefaultDispenser nodeCounter = getNodeCounter();
-        int nodeNr = DefaultNode.getNodeNr(node);
+        int nodeNr = node.getClass() == DefaultNode.class ? node.getNumber() : 0;
         if (nodeCounter.getCount() <= nodeNr) {
             nodeCounter.setCount(nodeNr + 1);
         }
@@ -71,7 +71,7 @@ public class GraphCache extends GraphShapeCache {
             this.nodeCounter = new DefaultDispenser();
             // make sure all existing node numbers are accounted for
             for (Node node : getGraph().nodeSet()) {
-                int nodeNr = DefaultNode.getNodeNr(node);
+                int nodeNr = node.getClass() == DefaultNode.class ? node.getNumber() : 0;
                 if (nodeNr >= this.nodeCounter.getCount()) {
                     this.nodeCounter.setCount(nodeNr + 1);
                 }

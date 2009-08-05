@@ -22,5 +22,11 @@ package groove.graph;
  * @version $Revision$ $Date: 2008-01-30 09:32:58 $
  */
 public interface Node extends Element {
-    // does not extend the functionality
+    /**
+     * Returns the number of this node.
+     * Within a graph, a node is uniquely identified by the combination of 
+     * its (precise) class and its number.
+     * This means that different implementations can reuse the same range of numbers.
+     */
+    int getNumber();
 }

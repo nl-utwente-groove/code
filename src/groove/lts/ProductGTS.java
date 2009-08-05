@@ -99,7 +99,7 @@ public class ProductGTS implements LTS {
     public BuchiGraphState addState(BuchiGraphState newState) {
         // reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the GTS
-        ((AbstractGraphState) newState).setStateNumber(nodeCount());
+        ((AbstractGraphState) newState).setNumber(nodeCount());
         BuchiGraphState result = this.stateSet.put(newState);
         // new states are first considered open
         if (result == null) {

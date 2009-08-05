@@ -251,6 +251,11 @@ public class AbstrGraphStateImpl implements AbstrGraphState {
         return this.location;
     }
 
+    @Override
+    public int getNumber() {
+        return this.nr;
+    }
+
     /** The internally stored (optional) control location. */
     private Location location;
 

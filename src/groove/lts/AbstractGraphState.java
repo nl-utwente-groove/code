@@ -282,11 +282,11 @@ abstract public class AbstractGraphState extends
      */
     public int compareTo(Element obj) {
         if (obj instanceof AbstractGraphState) {
-            return getStateNumber()
-                - ((AbstractGraphState) obj).getStateNumber();
+            return getNumber()
+                - ((AbstractGraphState) obj).getNumber();
         } else if (obj instanceof DefaultGraphTransition) {
-            return getStateNumber()
-                - ((AbstractGraphState) ((DefaultGraphTransition) obj).source()).getStateNumber();
+            return getNumber()
+                - ((AbstractGraphState) ((DefaultGraphTransition) obj).source()).getNumber();
         } else {
             throw new UnsupportedOperationException(String.format(
                 "Classes %s and %s cannot be compared", getClass(),
@@ -302,8 +302,8 @@ abstract public class AbstractGraphState extends
      */
     @Override
     public String toString() {
-        if (hasStateNumber()) {
-            return "s" + getStateNumber();
+        if (hasNumber()) {
+            return "s" + getNumber();
         } else {
             return "s??";
         }
@@ -330,18 +330,18 @@ abstract public class AbstractGraphState extends
     }
 
     /** Indicates whether the state has already been assigned a number. */
-    protected boolean hasStateNumber() {
+    protected boolean hasNumber() {
         return this.nr >= 0;
     }
 
     /**
      * Returns the number of this state. The number is meant to be unique for
      * each state in a given transition system.
-     * @throws IllegalStateException if {@link #hasStateNumber()} returns
+     * @throws IllegalStateException if {@link #hasNumber()} returns
      *         <code>false</code> at the time of calling
      */
-    public int getStateNumber() {
-        if (!hasStateNumber()) {
+    public int getNumber() {
+        if (!hasNumber()) {
             throw new IllegalStateException("State number not set");
         }
         return this.nr;
@@ -350,13 +350,13 @@ abstract public class AbstractGraphState extends
     /**
      * Sets the state number. This method should be called only once, with a
      * non-negative number.
-     * @throws IllegalStateException if {@link #hasStateNumber()} returns
+     * @throws IllegalStateException if {@link #hasNumber()} returns
      *         <code>true</code>
      * @throws IllegalArgumentException if <code>nr</code> is illegal (i.e.,
      *         negative)
      */
-    protected void setStateNumber(int nr) {
-        if (hasStateNumber()) {
+    protected void setNumber(int nr) {
+        if (hasNumber()) {
             throw new IllegalStateException(String.format(
                 "State number already set to %s", this.nr));
         }

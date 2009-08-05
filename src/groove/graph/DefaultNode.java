@@ -39,14 +39,13 @@ public class DefaultNode implements Node {
         this.nodeNr = nr;
         this.hashCode = computeHashCode();
     }
-
-    /**
-     * Constructor for subclasses that do not have their own node counter.
-     */
-    protected DefaultNode() {
-        this.nodeNr = DefaultNode.nextExtNodeNr();
-        this.hashCode = computeHashCode();
-    }
+//
+//    /**
+//     * Constructor for subclasses that do not have their own node counter.
+//     */
+//    protected DefaultNode() {
+//        this(nextExtNodeNr());
+//    }
 
     // ----------------------------- OBJECT OVERRIDES
     // -----------------------------
@@ -80,7 +79,7 @@ public class DefaultNode implements Node {
     @Override
     public boolean equals(Object obj) {
         boolean result = (obj == this);
-        assert result || !(obj instanceof DefaultNode)
+        assert result || obj.getClass() != this.getClass()
             || (this.nodeNr != ((DefaultNode) obj).nodeNr) : String.format(
             "Distinct nodes with number %d: " + this + " & " + obj + ", "
                 + obj.getClass().getName(), this.nodeNr);
@@ -165,10 +164,6 @@ public class DefaultNode implements Node {
      * equality.
      */
     static public DefaultNode createNode(int nr) {
-        if (nr > MAX_NODE_NUMBER) {
-            throw new IllegalArgumentException(String.format(
-                "Node number %s too high", nr));
-        }
         if (nr >= nodes.length) {
             int newSize =
                 Math.max((int) (nodes.length * GROWTH_FACTOR), nr + 1);
@@ -213,22 +208,22 @@ public class DefaultNode implements Node {
     static public int getHighestNodeNr() {
         return nextNodeNr;
     }
-
-    /**
-     * Extracts a node number from a node. The node number is assumed to exist
-     * only if the node is a {@link DefaultNode} Returns {@link #NO_NODE_NUMBER}
-     * if the number does not exist.
-     * @param node the node of which to get the number
-     * @return the number of the given node
-     */
-    static public int getNodeNr(Node node) {
-        if (node instanceof DefaultNode) {
-            int result = ((DefaultNode) node).getNumber();
-            return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
-        } else {
-            return NO_NODE_NUMBER;
-        }
-    }
+//
+//    /**
+//     * Extracts a node number from a node. The node number is assumed to exist
+//     * only if the node is a {@link DefaultNode}, and not a subclass.
+//     * Returns {@link #NO_NODE_NUMBER} otherwise.
+//     * @param node the node of which to get the number
+//     * @return the number of the given node
+//     */
+//    static public int getNodeNr(Node node) {
+//        if (node instanceof DefaultNode) {
+//            int result = node.getNumber();
+//            return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
+//        } else {
+//            return NO_NODE_NUMBER;
+//        }
+//    }
 
     /**
      * Returns the next free node number, according to the static counter.
@@ -240,14 +235,14 @@ public class DefaultNode implements Node {
         }
         return nextNodeNr;
     }
-
-    /**
-     * Returns the fresh node number for subclasses of DefaultNode, and
-     * increments the counter.
-     */
-    static private int nextExtNodeNr() {
-        return ++nextNodeNrExt;
-    }
+//
+//    /**
+//     * Returns the fresh node number for subclasses of DefaultNode, and
+//     * increments the counter.
+//     */
+//    static protected int nextExtNodeNr() {
+//        return ++nextNodeNrExt;
+//    }
 
     /**
      * The total number of nodes in the {@link #nodes} array.
@@ -268,17 +263,17 @@ public class DefaultNode implements Node {
      * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
      */
     static private DefaultNode[] nodes = new DefaultNode[INIT_CAPACITY];
-
-    /**
-     * The maximal number for {@link DefaultNode}s.
-     */
-
-    public static final int MAX_NODE_NUMBER = 999999999;
-
-    /**
-     * First fresh node number for subclasses van DefaultNode.
-     */
-    static private int nextNodeNrExt = MAX_NODE_NUMBER + 1;
+//
+//    /**
+//     * The maximal number for {@link DefaultNode}s.
+//     */
+//
+//    public static final int MAX_NODE_NUMBER = 999999999;
+//
+//    /**
+//     * First fresh node number for subclasses van DefaultNode.
+//     */
+//    static private int nextNodeNrExt = MAX_NODE_NUMBER + 1;
 
     /**
      * Value indicating an invalid node number.

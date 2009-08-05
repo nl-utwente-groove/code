@@ -17,6 +17,7 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -146,7 +147,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
                     Node nodeImage =
                         this.attributeFactory.createAttributeNode(viewNode);
                     if (nodeImage == null) {
-                        nodeImage = model.addNode();
+                        nodeImage = DefaultNode.createNode(viewNode.getNumber());
+                        model.addNode(nodeImage);
                     } else if (isAllowedNode(nodeImage)) {
                         model.addNode(nodeImage);
                     } else {
