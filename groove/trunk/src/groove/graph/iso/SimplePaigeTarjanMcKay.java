@@ -355,7 +355,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     private NodeCertificate getNodeCert(final Node node) {
         NodeCertificate result;
         if (node.getClass() == DefaultNode.class) {
-            result = defaultNodeCerts[((DefaultNode) node).getNumber()];
+            result = this.defaultNodeCerts[((DefaultNode) node).getNumber()];
         } else {
             result = this.otherNodeCertMap.get(node);
         }
@@ -372,14 +372,10 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         Node node = nodeCert.getElement();
         if (node.getClass() == DefaultNode.class) {
             int nodeNr = ((DefaultNode) node).getNumber();
-            if (defaultNodeCerts.length <= nodeNr) {
-                NodeCertificate[] newNodeCerts =
-                    new NodeCertificate[1 + (int) (nodeNr * GROWTH_FACTOR)];
-                System.arraycopy(defaultNodeCerts, 0, newNodeCerts, 0,
-                    defaultNodeCerts.length);
-                defaultNodeCerts = newNodeCerts;
-            }
-            defaultNodeCerts[nodeNr] = nodeCert;
+            assert nodeNr < this.defaultNodeCerts.length : String.format(
+                "Node nr %d higher than maximum %d", nodeNr,
+                this.defaultNodeCerts.length);
+            this.defaultNodeCerts[nodeNr] = nodeCert;
         } else {
             Object oldObject = this.otherNodeCertMap.put(node, nodeCert);
             assert oldObject == null : "Certificate node " + nodeCert + " for "
@@ -594,14 +590,12 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      */
     static private int[] iterateCountArray = new int[0];
     /** Array for storing default node certificates. */
-    static private NodeCertificate[] defaultNodeCerts =
-        new NodeCertificate[DefaultNode.getNodeCount()];
+    private NodeCertificate[] defaultNodeCerts =
+        new NodeCertificate[DefaultNode.getHighestNodeNr()+1];
     /** Total number of times the symmetry was broken. */
     static private int totalSymmetryBreakCount;
     /** Total number of times the symmetry was broken. */
     static private int mergedBlockCount;
-    /** Growth factor for the length of #defaultNodeCerts. */
-    static private final float GROWTH_FACTOR = 1.5f;
     /** Number of bits in an int. */
     static private final int INT_WIDTH = 32;
 
