@@ -51,7 +51,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * Returns the union of the inner condition's needed and bound nodes.
+     * Returns the inner condition's needed nodes.
      */
     @Override
     public Collection<Node> needsNodes() {
@@ -59,7 +59,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * Returns the union of the inner condition's needed and bound variables.
+     * Returns the inner condition's needed variables.
      */
     @Override
     public Collection<String> needsVars() {
