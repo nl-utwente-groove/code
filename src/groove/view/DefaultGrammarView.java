@@ -181,6 +181,16 @@ public class DefaultGrammarView implements
         return this.controlView;
     }
 
+    /** Adds a graph to the list of graphs belonging to this grammar */
+    public void addGraph(String name, File file) {
+        this.graphs.put(name, file);
+    }
+
+    /** Returns the graphs found during loading of the grammar */
+    public Map<String,File> getGraphs() {
+        return this.graphs;
+    }
+
     /** Delegates to {@link #toGrammar()}. */
     public GraphGrammar toModel() throws FormatException {
         return toGrammar();
@@ -306,14 +316,4 @@ public class DefaultGrammarView implements
 
     /** Contains the list of states found in the grammar location * */
     private final Map<String,File> graphs = new HashMap<String,File>();
-
-    /** Adds a graph to the list of graphs belonging to this grammar */
-    public void addGraph(String name, File file) {
-        this.graphs.put(name, file);
-    }
-
-    /** Returns the graphs found during loading of the grammar */
-    public Map<String,File> getGraphs() {
-        return this.graphs;
-    }
 }

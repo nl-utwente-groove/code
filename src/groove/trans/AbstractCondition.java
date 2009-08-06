@@ -208,7 +208,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     public void addSubCondition(Condition condition) {
         testFixed(false);
-        assert condition instanceof AbstractCondition : String.format(
+        assert condition instanceof AbstractCondition<?> : String.format(
             "Condition %s should be an AbstractCondition", condition);
         getSubConditions().add((AbstractCondition<?>) condition);
     }

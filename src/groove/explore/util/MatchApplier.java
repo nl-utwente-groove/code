@@ -63,7 +63,7 @@ public class MatchApplier {
         if (source.getLocation() == targetLocation
             && !event.getRule().isModifying()) {
             transition = createTransition(event, source, source, false);
-        } else if (targetLocation == null && event instanceof VirtualEvent) {
+        } else if (targetLocation == null && event instanceof VirtualEvent<?>) {
             assert source instanceof GraphNextState;
             VirtualEvent.GraphState virtual = (VirtualEvent.GraphState) event;
             GraphState target =

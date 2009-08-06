@@ -105,7 +105,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         boolean result;
         if (obj == this) {
             result = true;
-        } else if (obj instanceof VirtualEvent) {
+        } else if (obj instanceof VirtualEvent<?>) {
             result = equals(((VirtualEvent<?>) obj).getInnerEvent());
         } else if (obj instanceof RuleEvent) {
             reporter.start(EQUALS);

@@ -34,7 +34,6 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements
      * Constructs a new set of sets. It is required that the underlying sets are
      * disjoint. If this is violated, the set iterator will return the same
      * value more than once, and the size of the set will be wrong.
-     * @require <tt>collections \subseteq Collection</tt>
      */
     public SetOfDisjointSets(Collection<? extends Collection<T>> collections) {
         super(collections);
@@ -46,7 +45,7 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements
      */
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Set)) {
+        if (!(other instanceof Set<?>)) {
             return false;
         } else {
             @SuppressWarnings("unchecked")
@@ -58,5 +57,15 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements
             }
             return true;
         }
+    }
+
+    /** The hashcode is the sum of the hashcodes of the set's elements. */
+    @Override
+    public int hashCode() {
+        int result = 0;
+        for (T elem: this) {
+            result += elem.hashCode();
+        }
+        return result;
     }
 }

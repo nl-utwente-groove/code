@@ -57,7 +57,7 @@ public class StateJList extends JList implements SimulationListener {
     
     /**
      * In addition to delegating the method to <tt>super</tt>, sets the
-     * background color to <tt>null</tt> when disabled and back to the default
+     * background colour to <tt>null</tt> when disabled and back to the default
      * when enabled.
      */
     @Override
@@ -93,6 +93,7 @@ public class StateJList extends JList implements SimulationListener {
                 StateJList.this.doPreviewGraph();
               }
             });
+        result.add(this.simulator.getDeleteGraphAction());
         return result;
     }
     
@@ -110,7 +111,7 @@ public class StateJList extends JList implements SimulationListener {
     // -----------------------------------------
     
     public void applyTransitionUpdate(GraphTransition transition) {
-        // TODO Auto-generated method stub
+        // does nothing
     }
 
     public void setGrammarUpdate(DefaultGrammarView grammar) {
@@ -130,28 +131,23 @@ public class StateJList extends JList implements SimulationListener {
     }
 
     public void setMatchUpdate(RuleMatch match) {
-        // TODO Auto-generated method stub
-
+        // does nothing
     }
 
     public void setRuleUpdate(NameLabel name) {
-        // TODO Auto-generated method stub
-
+        // does nothing
     }
 
     public void setStateUpdate(GraphState state) {
-        // TODO Auto-generated method stub
-
+        // does nothing
     }
 
     public void setTransitionUpdate(GraphTransition transition) {
-        // TODO Auto-generated method stub
-
+        // does nothing
     }
 
     public void startSimulationUpdate(GTS gts) {
-        // TODO Auto-generated method stub
-
+        // does nothing
     }
 
     // --------------
@@ -162,7 +158,7 @@ public class StateJList extends JList implements SimulationListener {
      * The simulator to which this directory belongs.
      * @invariant simulator != null
      */
-    protected final Simulator simulator;
+    private final Simulator simulator;
 
     /**
      * The background colour of this component when it is enabled.
@@ -173,7 +169,7 @@ public class StateJList extends JList implements SimulationListener {
      * The pop-up menu for this states list.
      * @invariant popupMenu != null
      */
-    protected final JPopupMenu popupMenu;
+    private final JPopupMenu popupMenu;
 
     // -----------------------------------------
     // MyMouseListener Class

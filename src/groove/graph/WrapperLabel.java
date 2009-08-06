@@ -62,7 +62,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof WrapperLabel) {
+        if (obj instanceof WrapperLabel<?>) {
             return getContent().equals(((WrapperLabel<?>) obj).getContent());
         } else {
             return false;

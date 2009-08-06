@@ -503,7 +503,7 @@ public class DeltaGraphCache extends GraphCache {
      * {@link DeltaGraph#setFixed()}.
      */
     protected void notifySetFixed() {
-        if (this.nodeSet instanceof DeltaSet) {
+        if (this.nodeSet instanceof DeltaSet<?>) {
             reporter.start(NODESET_LOWER);
             this.nodeSet = ((DeltaSet<Node>) this.nodeSet).lower();
             this.edgeSet = ((DeltaSet<Edge>) this.edgeSet).lower();

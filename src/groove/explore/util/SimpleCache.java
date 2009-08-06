@@ -43,7 +43,7 @@ public class SimpleCache implements ExploreCache {
     }
 
     public void updateExplored(Rule rule) {
-        if (this.internalIterator instanceof RandomizedIterator) {
+        if (this.internalIterator instanceof RandomizedIterator<?>) {
             ((RandomizedIterator<Rule>) this.internalIterator).removeFromIterator(rule);
         } else {
             // we can advance the iterator to rule, if that rule was not

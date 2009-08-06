@@ -82,8 +82,9 @@ public class FileGps extends AspectualViewGps {
         }
     }
 
-    // load the named graphs from specific locations and retuns the
-    // correcsponding AspectGraphs
+    /** Loads the named graphs from specified location and returns the
+     * corresponding AspectGraphs
+     */
     private Map<String,AspectGraph> loadGraphs(Map<String,File> graphsMap,
             File location) throws IOException {
         Map<String,AspectGraph> graphs = new HashMap<String,AspectGraph>();

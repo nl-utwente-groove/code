@@ -159,8 +159,10 @@ public class Options {
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
-    /** Delete action name */
+    /** Delete rule action name */
     public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
+    /** Delete graph action name */
+    public static final String DELETE_GRAPH_ACTION_NAME = "Delete Graph";
     /** Edit action name */
     public static final String DISABLE_ACTION_NAME = "Disable Rule";
     /** Edit graph action name */
@@ -462,6 +464,8 @@ public class Options {
         "Stop current simulation?";
     /** Always delete rules without confirmation. */
     static public final String DELETE_RULE_OPTION = "Delete rule?";
+    /** Always delete graphs without confirmation. */
+    static public final String DELETE_GRAPH_OPTION = "Delete graph?";
     /** Show preview before close. */
     static public final String PREVIEW_ON_CLOSE_OPTION = "Show preview on OK";
     /** Show preview before save. */
@@ -494,6 +498,7 @@ public class Options {
         intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
         intOptionDefaults.put(STOP_SIMULATION_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
     }
@@ -613,6 +618,7 @@ public class Options {
         addBehaviour(STOP_SIMULATION_OPTION, 2);
         addBehaviour(START_SIMULATION_OPTION, 3);
         addBehaviour(DELETE_RULE_OPTION, 2);
+        addBehaviour(DELETE_GRAPH_OPTION, 2);
         addBehaviour(REPLACE_RULE_OPTION, 3);
         addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
     }

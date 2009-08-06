@@ -36,7 +36,7 @@ import java.util.Set;
 public class VirtualEvent<C> implements RuleEvent {
     /** Constructs an instance with a given event and content. */
     public VirtualEvent(RuleEvent event, C content) {
-        assert !(event instanceof VirtualEvent);
+        assert !(event instanceof VirtualEvent<?>);
         this.innerTarget = content;
         this.innerEvent = event;
     }

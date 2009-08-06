@@ -1460,11 +1460,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             // empty
         }
 
-        /** Constructs a tree index of a single level. */
-        public TreeIndex(int top) {
-            add(top);
-        }
-
         /**
          * Constructs a copy of a given tree index.
          * @param level the index to be copied

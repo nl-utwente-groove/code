@@ -38,7 +38,7 @@ public class PriorityCache implements ExploreCache {
         while (this.ruleIterator != null && !this.ruleIterator.hasNext()) {
             decrementPriority();
             this.ruleIterator =
-                createRuleIterator(this.ruleIterator instanceof RandomizedIterator);
+                createRuleIterator(this.ruleIterator instanceof RandomizedIterator<?>);
         }
     }
 
@@ -77,7 +77,7 @@ public class PriorityCache implements ExploreCache {
      * currently considered by the cache. [IOVKA The effect of this method is
      * not the same as the same method for a {@link SimpleCache}. For a
      * {@link SimpleCache}, the iterator always guarantees that rule won't be
-     * returned in the future. If the iterator is not randomized, it turns out
+     * returned in the future. If the iterator is not randomised, it turns out
      * to advance it through all "previous" rules in the pre-defined rules'
      * order. For a priority cache, this is guaranteed only if the iterator
      * currently points to a rule with same priority as rule. This is always the
@@ -86,7 +86,7 @@ public class PriorityCache implements ExploreCache {
      */
     public void updateExplored(Rule rule) {
         if (rule.getPriority() == getPriority()) {
-            if (this.ruleIterator instanceof RandomizedIterator) {
+            if (this.ruleIterator instanceof RandomizedIterator<?>) {
                 ((RandomizedIterator<Rule>) this.ruleIterator).removeFromIterator(rule);
             } else {
                 // one can advance the iterator if rule was not yet returned
@@ -121,7 +121,7 @@ public class PriorityCache implements ExploreCache {
         if (getPriority() > p) {
             setPriority(p);
             this.ruleIterator =
-                createRuleIterator(this.ruleIterator instanceof RandomizedIterator);
+                createRuleIterator(this.ruleIterator instanceof RandomizedIterator<?>);
             assureNext();
         }
         setLastPriority();
@@ -168,7 +168,7 @@ public class PriorityCache implements ExploreCache {
         if (this.priority > 0) {
             this.priority--;
         } else {
-            assert true : "Should never happen";
+            assert false : "Should never happen";
         }
         // currPriority--;
     }

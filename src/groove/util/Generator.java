@@ -431,7 +431,7 @@ public class Generator extends CommandLineTool {
             final Runtime runTime = Runtime.getRuntime();
             // clear all caches to see all available memory
             for (GraphState state : getGTS().nodeSet()) {
-                if (state instanceof AbstractCacheHolder) {
+                if (state instanceof AbstractCacheHolder<?>) {
                     ((AbstractCacheHolder<?>) state).clearCache();
                 }
                 if (state instanceof GraphNextState) {
@@ -950,7 +950,6 @@ public class Generator extends CommandLineTool {
         /**
          * Constructs a parser that can recognise all implemented exploration
          * strategies.
-         * @param closeFast TODO
          */
         public ExploreStrategyParser(boolean closeFast) {
             addStrategy(GeneratorScenarioFactory.getScenarioHandler(
@@ -1041,7 +1040,7 @@ public class Generator extends CommandLineTool {
             for (Map.Entry<String,Scenario> strategyEntry : this.strategies.entrySet()) {
                 Scenario strategy = strategyEntry.getValue();
                 String name = strategyEntry.getKey();
-                if (strategy instanceof ConditionalScenario) {
+                if (strategy instanceof ConditionalScenario<?>) {
                     ConditionalScenario<?> condStrategy =
                         (ConditionalScenario<?>) strategy;
                     if (condStrategy.getConditionType().equals(Integer.class)) {
@@ -1055,7 +1054,7 @@ public class Generator extends CommandLineTool {
                         name +=
                             CONDITION_SEPARATOR + "<key=value>{,<key=value>}*";
                     } else {
-                        assert true : "Unknown condition type "
+                        assert false : "Unknown condition type "
                             + condStrategy.getConditionType();
                     }
                 }
@@ -1150,7 +1149,7 @@ public class Generator extends CommandLineTool {
                             ((ConditionalScenario<Map<Label,Integer>>) condStrategy).setCondition(
                                 explCond, "");
                         } else {
-                            assert true : "Unknown condition type "
+                            assert false : "Unknown condition type "
                                 + condStrategy.getConditionType();
                         }
 

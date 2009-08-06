@@ -431,6 +431,18 @@ public class Simulator {
     }
 
     /**
+     * Returns the graph deletion action permanently associated with this
+     * simulator.
+     */
+    public DeleteGraphAction getDeleteGraphAction() {
+        // lazily create the action
+        if (this.deleteGraphAction == null) {
+            this.deleteGraphAction = new DeleteGraphAction();
+        }
+        return this.deleteGraphAction;
+    }
+
+    /**
      * Lazily creates and returns the graph edit action permanently associated
      * with this simulator.
      */
@@ -1163,6 +1175,13 @@ public class Simulator {
     }
 
     /**
+     * Deletes a graph from the start graph view.
+     */
+    void doDeleteGraph(String name) {
+        deleteGraph(new File(FileGps.toFile(this.currentGrammarURL), Groove.createStateFilter().addExtension(name)));
+    }
+
+    /**
      * Saves the contents of a given j-model to a given file.
      */
     void doSaveGraph(Graph graph, File file) {
@@ -1193,7 +1212,7 @@ public class Simulator {
         Properties properties = grammar.getProperties();
         try {
             String outputFileName =
-                Groove.createPropertyFilter().addExtension(grammar.getName());
+                Groove.createPropertyFilter().addExtension(Groove.PROPERTY_NAME);
             File outputFile =
                 new File(FileGps.toFile(Simulator.this.currentGrammarURL),
                     outputFileName);
@@ -1221,6 +1240,10 @@ public class Simulator {
         return getGraphLoader(file).unmarshalGraph(file);
     }
 
+    private void deleteGraph(File file) {
+        getGraphLoader(file).deleteGraph(file);
+    }
+    
     private Xml<AspectGraph> getGraphLoader(File file) {
         if (this.autFilter.accept(file)) {
             return this.autLoader;
@@ -1715,7 +1738,7 @@ public class Simulator {
         if (selectedComponent == getConditionalLTSPanel())
             return getLtsPanel();
         
-        if (!(selectedComponent instanceof JGraphPanel))
+        if (!(selectedComponent instanceof JGraphPanel<?>))
             return null;
         else
             return (JGraphPanel<?>) selectedComponent;
@@ -2039,7 +2062,7 @@ public class Simulator {
     public void addExternalAction(Action action) {
         JMenu externalMenu = getExternalActionsMenu();
         // remove the dummy action if it is still there
-        if (externalMenu.getItem(0) == this.dummyExternalAction) {
+        if (externalMenu.getItem(0).getAction() == this.dummyExternalAction) {
             externalMenu.remove(0);
         }
         getExternalActionsMenu().add(action);
@@ -2806,6 +2829,10 @@ public class Simulator {
      */
     private DeleteRuleAction deleteRuleAction;
     /**
+     * The graph deletion action permanently associated with this simulator.
+     */
+    private DeleteGraphAction deleteGraphAction;
+    /**
      * The state and rule edit action permanently associated with this
      * simulator.
      */
@@ -3211,9 +3238,31 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             RuleNameLabel ruleName = getCurrentRule().getNameLabel();
-            String question = String.format("Delete rule %s?", ruleName);
+            String question = String.format("Delete rule '%s'?", ruleName);
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
                 doDeleteRule(ruleName);
+            }
+        }
+    }
+
+    private class DeleteGraphAction extends AbstractAction implements
+            Refreshable {
+        DeleteGraphAction() {
+            super(Options.DELETE_GRAPH_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
+            addAccelerator(this);
+        }
+
+        public void refresh() {
+            JList graphList = Simulator.this.stateJList;
+            setEnabled(graphList != null && !graphList.isSelectionEmpty());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String graphName = (String) Simulator.this.stateJList.getSelectedValue();
+            String question = String.format("Delete graph '%s'?", graphName);
+            if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
+                doDeleteGraph(graphName);
             }
         }
     }
@@ -4332,10 +4381,6 @@ public class Simulator {
                     && getCurrentGrammar().getErrors().isEmpty();
             setEnabled(enabled);
         }
-
-        String getKeyText() {
-            return KeyEvent.getKeyText(Options.START_SIMULATION_KEY.getKeyCode());
-        }
     }
 
     private class ExportAction extends AbstractAction implements Refreshable {
@@ -4416,10 +4461,6 @@ public class Simulator {
                 getCurrentGrammar() != null
                     && getCurrentGrammar().getErrors().isEmpty();
             setEnabled(enabled);
-        }
-
-        String getKeyText() {
-            return null;
         }
     }
 
@@ -4566,28 +4607,5 @@ public class Simulator {
             }
             return ret;
         }
-
-        /**
-         * MARIA: this method is never used locally (tom)
-         * @param p_path
-         */
-        /*private void openLastFile(String p_path) {
-            if (p_path != null) {
-                final File f = new File(p_path);
-                if (f.exists()) {
-                    FileFilter filterUsed =
-                        getGrammarFileChooser().getFileFilter();
-                    final AspectualViewGps loader =
-                        getGrammarLoaderMap().get(filterUsed);
-
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            doLoadGrammar(loader, FileGps.toURL(f));
-                        }
-                    });
-                }
-            }
-        }*/
-
     }
 }

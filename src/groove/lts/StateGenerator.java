@@ -185,7 +185,7 @@ public class StateGenerator {
     public Set<? extends GraphTransition> applyMatch(GraphState source,
             RuleEvent event, ExploreCache cache) {
         RuleApplication appl;
-        if (event instanceof VirtualEvent) {
+        if (event instanceof VirtualEvent<?>) {
             @SuppressWarnings("unchecked")
             VirtualEvent<GraphTransitionStub> virtualEvent =
                 (VirtualEvent) event;

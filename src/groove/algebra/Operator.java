@@ -37,7 +37,7 @@ public class Operator {
             this.parameterTypes.add(typeName.toLowerCase());
         }
         Type returnType = method.getGenericReturnType();
-        if (!(returnType instanceof TypeVariable)) {
+        if (!(returnType instanceof TypeVariable<?>)) {
             throw new IllegalArgumentException(String.format(
                 "Method '%s' should have generic return type",
                 method.getName()));

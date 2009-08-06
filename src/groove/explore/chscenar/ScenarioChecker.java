@@ -80,17 +80,13 @@ public class ScenarioChecker {
 	
 	/** 
 	 * @param <T> The type for the result and the acceptor (should be the same).
-	 * @param str 
-	 * @param res
-	 * @param acc
-	 * @return
 	 */
 	public <T> boolean isAllowed (Strategy str, Result res, Acceptor acc) {
-		return allowed.isAllowedConfiguration(str.getClass(), res.getClass(), acc.getClass());
+		return this.allowed.isAllowedConfiguration(str.getClass(), res.getClass(), acc.getClass());
 	}
 	
 	public boolean isAllowed (Class<?> strClass, Class<?> resClass, Class<?> accClass) {
-		return allowed.isAllowedConfiguration(strClass, resClass, accClass);
+		return this.allowed.isAllowedConfiguration(strClass, resClass, accClass);
 	}
 	
 	// --------------------------------------------------------------------------
@@ -119,7 +115,7 @@ public class ScenarioChecker {
 
 		try {
 			// System.out.println("START PARSING");
-			allowed = parser.prog().value;
+		    this.allowed = parser.prog().value;
 			// System.out.println("STOP PARSING");
 			// System.out.print("PARSE RESULT : ");
 			// if (allowed == null) {
@@ -137,7 +133,7 @@ public class ScenarioChecker {
 	
 	@Override
 	public String toString () {
-		return allowed.toString();
+		return this.allowed.toString();
 	}
 	
 }

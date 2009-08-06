@@ -97,7 +97,7 @@ public class RelationEdge<V> extends AbstractBinaryEdge<Node,Label,Node> {
      */
     @Override
     protected boolean isTypeEqual(Object obj) {
-        return obj instanceof RelationEdge;
+        return obj instanceof RelationEdge<?>;
     }
 
     /** Callback method for testing equality of type and value. */
