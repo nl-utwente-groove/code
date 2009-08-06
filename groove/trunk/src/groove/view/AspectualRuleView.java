@@ -82,11 +82,11 @@ import java.util.TreeSet;
  * Provides a graph view upon a production rule. The nodes and edges are divided
  * into embargoes, erasers, readers and creators, with the following intuition:
  * <ul>
- * <li> Maximal connected embargo subgraphs correspond to negative application
+ * <li>Maximal connected embargo subgraphs correspond to negative application
  * conditions.
- * <li> Erasers correspond to LHS elements that are not RHS.
- * <li> Readers (the default) are elements that are both LHS and RHS.
- * <li> Creators are RHS elements that are not LHS.
+ * <li>Erasers correspond to LHS elements that are not RHS.
+ * <li>Readers (the default) are elements that are both LHS and RHS.
+ * <li>Creators are RHS elements that are not LHS.
  * </ul>
  * @author Arend Rensink
  * @version $Revision$
@@ -108,7 +108,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.properties = rule.getProperties();
         this.viewToRuleMap = new NodeEdgeHashMap();
         this.graph = computeAspectGraph(rule, this.viewToRuleMap);
-        this.attributeFactory = new AttributeElementFactory(this.graph, this.properties);
+        this.attributeFactory =
+            new AttributeElementFactory(this.graph, this.properties);
     }
 
     /**
@@ -150,8 +151,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * cover all variables used in the right hand side and the NACs.
      * @throws FormatException if there is a free variable in the rhs or NAC
      */
-    protected void testVariableBinding()
-        throws FormatException {
+    protected void testVariableBinding() throws FormatException {
         Set<String> boundVars = getVars(READER, true);
         boundVars.addAll(getVars(ERASER, true));
         Set<String> rhsOnlyVars = getVars(CREATOR, false);
@@ -305,11 +305,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     protected final SystemProperties getProperties() {
         return this.properties;
     }
-    
-    /** 
-     * Indicates if the rule is to be matched injectively.
-     * If so, all context nodes should be part of the root map,
-     * otherwise injectivity cannot be checked. 
+
+    /**
+     * Indicates if the rule is to be matched injectively. If so, all context
+     * nodes should be part of the root map, otherwise injectivity cannot be
+     * checked.
      * @return <code>true</code> if the rule is to be matched injectively.
      */
     protected final boolean isInjective() {
@@ -332,8 +332,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
      * Callback method to compute a rule from an aspect graph.
      */
-    private Pair<Rule,NodeEdgeMap> computeRule()
-        throws FormatException {
+    private Pair<Rule,NodeEdgeMap> computeRule() throws FormatException {
         SPORule rule;
         NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
         // ParameterAspect map with id's bound to nodes
@@ -398,20 +397,18 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     // add the node to the appropriate level where it should be
                     // processed
-                    boolean isNextLevelCreator =
-                        RuleAspect.isCreator(node) && level.isUniversal();
-                    if (!isNextLevelCreator) {
-                        nestedNodesMap.get(level).put(node, true);
-                    }
-                    // now correct for NACs
                     if (RuleAspect.inNAC(node)) {
+                        // correct level for NACs
                         level = level.getNegated();
-                    } else if (level.isUniversal()) {
-                        // add the node as stale to all next (rule) levels
+                    } else if (RuleAspect.isCreator(node)
+                        && level.isUniversal()) {
                         for (int child = 0; child < subLevelCountMap.get(level); child++) {
-                            nestedNodesMap.get(level.getChild(child)).put(node,
-                                isNextLevelCreator);
+                            addNodeToLevel(node, true, level.getChild(child),
+                                nestedNodesMap, subLevelCountMap);
                         }
+                    } else {
+                        addNodeToLevel(node, true, level, nestedNodesMap,
+                            subLevelCountMap);
                     }
                     nodeLevelMap.put(node, level);
                     Node nodeImage = computeNodeImage(node);
@@ -419,10 +416,14 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     Integer nr = ParameterAspect.getParNumber(node);
                     if (nr != null) {
                         if (!RuleAspect.inLHS(node)) {
-                            throw new FormatException("Rule parameter %d only allowed on LHS nodes", nr);
+                            throw new FormatException(
+                                "Rule parameter %d only allowed on LHS nodes",
+                                nr);
                         }
                         if (!level.isTopLevel()) {
-                            throw new FormatException("Rule parameter %d only allowed on top existential level", nr);
+                            throw new FormatException(
+                                "Rule parameter %d only allowed on top existential level",
+                                nr);
                         }
                         parameters.add(nodeImage);
                         if (!nr.equals(0)) {
@@ -438,8 +439,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     viewToRuleMap.putNode(node, nodeImage);
                 }
             }
-            // test if the parameter nodes form a consecutive sequence, starting at 1
-            Iterator<Integer> parameterNrIter = parameterMap.keySet().iterator();
+            // test if the parameter nodes form a consecutive sequence, starting
+            // at 1
+            Iterator<Integer> parameterNrIter =
+                parameterMap.keySet().iterator();
             int nr = 0;
             while (parameterNrIter.hasNext()) {
                 int nextNr = parameterNrIter.next();
@@ -487,17 +490,25 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     boolean isNextLevelCreator =
                         RuleAspect.isCreator(edge) && level.isUniversal();
-                    if (level.isUniversal() && hasConcreteImage(edge.label())) { // createRuleLabel(edge.label())))
-                        // {
-                        // add the edge and its end nodes as stale to the next
-                        // (rule) level
+                    // if (level.isUniversal() &&
+                    // hasConcreteImage(edge.label())) { //
+                    // createRuleLabel(edge.label())))
+                    // // {
+                    // // add the edge and its end nodes as stale to the next
+                    // // (rule) level
+                    // for (int child = 0; child < subLevelCountMap.get(level);
+                    // child++) {
+                    // addEdgeToLevel(edge, isNextLevelCreator,
+                    // level.getChild(child), nestedNodesMap,
+                    // nestedEdgesMap);
+                    // }
+                    // }
+                    if (isNextLevelCreator) {
                         for (int child = 0; child < subLevelCountMap.get(level); child++) {
-                            addEdgeToLevel(edge, isNextLevelCreator,
-                                level.getChild(child), nestedNodesMap,
-                                nestedEdgesMap);
+                            addEdgeToLevel(edge, true, level.getChild(child),
+                                nestedNodesMap, nestedEdgesMap);
                         }
-                    }
-                    if (!isNextLevelCreator) {
+                    } else {
                         if (level.isNegated()) {
                             // this is an artificial (auxiliary) level
                             // the matching detects negative application
@@ -555,7 +566,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             rule = (SPORule) levelRuleMap.get(topLevel);
             rule.setPriority(this.priority);
             rule.setConfluent(this.confluent);
-            rule.setParameters(new ArrayList<Node>(parameterMap.values()), parameters);
+            rule.setParameters(new ArrayList<Node>(parameterMap.values()),
+                parameters);
             rule.setFixed();
 
             if (TO_RULE_DEBUG) {
@@ -569,6 +581,24 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             return new Pair<Rule,NodeEdgeMap>(rule, viewToRuleMap);
         } else {
             throw new FormatException(new ArrayList<String>(errors));
+        }
+    }
+
+    /**
+     * Adds a node to a nesting level, as well as to all sub-levels if the rule
+     * is injective.
+     */
+    private void addNodeToLevel(AspectNode node, boolean fresh,
+            TreeIndex level,
+            Map<TreeIndex,Map<AspectNode,Boolean>> nestedNodesMap,
+            Map<TreeIndex,Integer> subLevelCountMap) {
+        nestedNodesMap.get(level).put(node, fresh);
+        if (isInjective()) {
+            // add the node as stale to all next (rule) levels
+            for (int child = 0; child < subLevelCountMap.get(level); child++) {
+                addNodeToLevel(node, false, level.getChild(child),
+                    nestedNodesMap, subLevelCountMap);
+            }
         }
     }
 
@@ -870,11 +900,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Creates an image for a given aspect node. Node numbers are copied.
      * @param node the node to be copied
      * @return the fresh node
-     * @throws FormatException if <code>node</code> does not occur in a
-     *         correct way in <code>context</code>
+     * @throws FormatException if <code>node</code> does not occur in a correct
+     *         way in <code>context</code>
      */
-    protected Node computeNodeImage(AspectNode node)
-        throws FormatException {
+    protected Node computeNodeImage(AspectNode node) throws FormatException {
         if (getAttributeValue(node) == null) {
             return DefaultNode.createNode(node.getNumber());
         } else {
@@ -888,8 +917,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param edge the edge for which an image is to be created
      * @param elementMap the mapping of the end nodes
      * @return the newly added edge, if any
-     * @throws FormatException if <code>edge</code> does not occur in a
-     *         correct way in <code>context</code>
+     * @throws FormatException if <code>edge</code> does not occur in a correct
+     *         way in <code>context</code>
      */
     protected Edge computeEdgeImage(AspectEdge edge,
             Map<? extends Node,Node> elementMap) throws FormatException {
@@ -944,7 +973,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             nacTarget.addNodeSet(nacNodeSet);
             // if the rule is injective, add all lhs nodes to the pattern map
             if (isInjective()) {
-                for (Node node: lhs.nodeSet()) {
+                for (Node node : lhs.nodeSet()) {
                     nacTarget.addNode(node);
                     nacPatternMap.putNode(node, node);
                 }
@@ -1028,7 +1057,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      */
     protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name,
             int priority, boolean confluent) {
-        return new SPORule(ruleMorphism, name, priority, confluent, getProperties());
+        return new SPORule(ruleMorphism, name, priority, confluent,
+            getProperties());
     }
 
     /**
@@ -1057,16 +1087,17 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             RuleNameLabel name) {
         return new ForallCondition(target, rootMap, name, getProperties());
     }
-//
-//    /**
-//     * Factory method for negative conditions.
-//     * @param target target graph of the new condition
-//     * @param rootMap root map of the new condition
-//     * @return the fresh condition
-//     */
-//    protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) {
-//        return new NotCondition(target, rootMap, getProperties());
-//    }
+
+    //
+    // /**
+    // * Factory method for negative conditions.
+    // * @param target target graph of the new condition
+    // * @param rootMap root map of the new condition
+    // * @return the fresh condition
+    // */
+    // protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) {
+    // return new NotCondition(target, rootMap, getProperties());
+    // }
 
     /**
      * Callback method to create an ordinary graph morphism.
