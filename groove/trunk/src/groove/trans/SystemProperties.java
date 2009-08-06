@@ -386,10 +386,10 @@ public class SystemProperties extends java.util.Properties {
     static public final String CONTROL_KEY = "enableControl";
     
     /** Value of {@link #CONTROL_KEY} that means control is used */
-    static public final String CONTROL_YES = "1";
+    static public final String CONTROL_YES = "true";
     
     /** Value of {@link #CONTROL_KEY} that means control is not used */
-    static public final String CONTROL_NO = "0";
+    static public final String CONTROL_NO = "false";
     
     
     /**
@@ -540,7 +540,7 @@ public class SystemProperties extends java.util.Properties {
         @Override
         public boolean isSatisfied(String value) {
             try {
-                return super.isSatisfied(value) || Integer.parseInt(value) > 0;
+                return super.isSatisfied(value) || Integer.parseInt(value) >= 0;
             } catch (NumberFormatException exc) {
                 return false;
             }

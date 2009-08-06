@@ -308,7 +308,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Bag && ((TreeBag<?>) obj).bag.equals(this.bag);
+        return obj instanceof Bag<?> && ((TreeBag<?>) obj).bag.equals(this.bag);
     }
 
     /**

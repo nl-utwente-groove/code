@@ -22,21 +22,21 @@ public class SRASetImpl implements SRASet {
 	
 	
 	/** Adds a strategy to the set of strategies. 
-	 * No effect if <code>s</code> is not a subclass of {@link ScenarioChecker.STRATEGY_CLASS}. 
+	 * No effect if <code>s</code> is not a subclass of {@link ScenarioChecker#STRATEGY_CLASS}. 
 	 */
 	public void addStrategy (Class<?> s) {
 		addComponent (s, this.ss, ScenarioChecker.STRATEGY_CLASS);
 	}
 
 	/** Adds a result to the set of results. 
-	 * No effect if <code>r</code> is not a subclass of {@link ScenarioChecker.RESULT_CLASS}. 
+	 * No effect if <code>r</code> is not a subclass of {@link ScenarioChecker#RESULT_CLASS}. 
 	 */
 	public void addResult (Class<?> r) {
 		addComponent (r, this.rs, ScenarioChecker.RESULT_CLASS);
 	}
 	
 	/** Adds an acceptor to the set of acceptors. 
-	 * No effect if <code>r</code> is not a subclass of {@link ScenarioChecker.RESULT_CLASS}. 
+	 * No effect if <code>r</code> is not a subclass of {@link ScenarioChecker#RESULT_CLASS}. 
 	 */
 	public void addAcceptor (Class<?> a) {
 		addComponent (a, this.as, ScenarioChecker.ACCEPTOR_CLASS);
@@ -55,15 +55,15 @@ public class SRASetImpl implements SRASet {
 	}
 
 	private boolean isInStrategies (Class<?> strategy) {
-		return isSubclassInSet (strategy, ss);
+		return isSubclassInSet (strategy, this.ss);
 	}
 
 	private boolean isInResults (Class<?> result) {
-		return isSubclassInSet (result, rs);
+		return isSubclassInSet (result, this.rs);
 	}
 	
 	private boolean isInAcceptors (Class<?> acceptor) {
-		return isSubclassInSet (acceptor, as);
+		return isSubclassInSet (acceptor, this.as);
 	}
 	
 	/** Checks whether a class is subclass of some of the classes
@@ -82,13 +82,13 @@ public class SRASetImpl implements SRASet {
 	public String toString() {
 		String result = new String();
 		result += ":STRATEGY\t";
-		result += listToString(ss) + "\n";
+		result += listToString(this.ss) + "\n";
 
 		result += ":RESULT\t\t";
-		result += listToString(rs) + "\n";
+		result += listToString(this.rs) + "\n";
 		
 		result += ":ACCEPTOR\t";
-		result += listToString(as) + "\n";
+		result += listToString(this.as) + "\n";
 		
 		return result;
 	}

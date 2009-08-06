@@ -15,7 +15,7 @@ public class ASTtoTreeModelAdapter implements TreeModel {
 	CommonTree m_tree = null;
 
 	public ASTtoTreeModelAdapter(CommonTree t) {
-		m_tree = t;
+	    this.m_tree = t;
 	}
 
 	/*
@@ -70,7 +70,7 @@ public class ASTtoTreeModelAdapter implements TreeModel {
 	 * @see javax.swing.tree.TreeModel#getRoot()
 	 */
 	public Object getRoot() {
-		return m_tree;
+		return this.m_tree;
 	}
 
 	/*

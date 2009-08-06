@@ -17,7 +17,7 @@ public class AllowRuleImpl implements AllowRule {
         if (!this.allowedSet.contains(strategy, result, acceptor)) {
             return false;
         }
-        for (SRASet forbid : forbidden) {
+        for (SRASet forbid : this.forbidden) {
             if (forbid.contains(strategy, result, acceptor)) {
                 return false;
             }
@@ -39,9 +39,9 @@ public class AllowRuleImpl implements AllowRule {
 	public String toString() {
 		String result = new String();
 		result += "::ALLOW\n";
-		result += allowedSet.toString();
+		result += this.allowedSet.toString();
 		
-		for (SRASet set : forbidden) {
+		for (SRASet set : this.forbidden) {
 			result += "::DENY\n";
 			result += set.toString();
 		}

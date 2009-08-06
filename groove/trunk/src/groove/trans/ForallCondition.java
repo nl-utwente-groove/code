@@ -82,7 +82,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             VarNodeEdgeMap matchMap = matchMapIter.next();
             Collection<Match> subResults = new ArrayList<Match>();
             for (Condition subCondition : getSubConditions()) {
-                if (subCondition instanceof PositiveCondition) {
+                if (subCondition instanceof PositiveCondition<?>) {
                     Iterator<? extends Match> subResultIter =
                         subCondition.getMatchIter(host, matchMap);
                     while (subResultIter.hasNext()) {

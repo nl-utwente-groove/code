@@ -45,7 +45,6 @@ public class ControlledScenario extends DefaultScenario {
         if (this.str == null) {
             this.str = new ControlledStrategy();
         }
-        this.str.program = program;
         this.str.findAll = findAll;
         this.str.pc = program.iterator();
         this.str.nextRule();
@@ -104,7 +103,6 @@ public class ControlledScenario extends DefaultScenario {
             this.toExplore.setQueue(this.nextList);
         }
 
-        List<Rule> program;
         Iterator<Rule> pc;
         boolean findAll;
         Rule currRule;

@@ -197,7 +197,7 @@ public class AspectParser {
                 String.format(
                     "Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)",
                     valueText));
-        } else if (value instanceof ContentAspectValue) {
+        } else if (value instanceof ContentAspectValue<?>) {
             // use the value as a factory to get a correct instance
             value =
                 ((ContentAspectValue<?>) value).newValue(contentText == null

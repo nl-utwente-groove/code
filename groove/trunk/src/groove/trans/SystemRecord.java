@@ -118,7 +118,7 @@ public class SystemRecord implements NodeFactory {
     public RuleEvent normaliseEvent(RuleEvent event) {
         RuleEvent result;
         reporter.start(GET_EVENT);
-        if (isReuseEvents() && event instanceof AbstractEvent) {
+        if (isReuseEvents() && event instanceof AbstractEvent<?,?>) {
             result = this.eventMap.put((AbstractEvent<?,?>) event);
             if (result == null) {
                 // the event is new.

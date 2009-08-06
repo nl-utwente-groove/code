@@ -48,7 +48,7 @@ public class Pair<T,U> {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Pair && equalsFirst((Pair<?,?>) obj)
+        return obj instanceof Pair<?,?> && equalsFirst((Pair<?,?>) obj)
             && equalsSecond((Pair<?,?>) obj);
     }
 

@@ -49,7 +49,7 @@ public class LocationCache implements ExploreCache {
         } else {
             this.iterator =
                 createIterator(this.location,
-                    this.iterator instanceof RandomizedIterator);
+                    this.iterator instanceof RandomizedIterator<?>);
             if (this.iterator.hasNext()) {
                 return true;
             } else {
@@ -67,7 +67,7 @@ public class LocationCache implements ExploreCache {
         if (!this.iterator.hasNext()) {
             this.iterator =
                 createIterator(this.location,
-                    this.iterator instanceof RandomizedIterator);
+                    this.iterator instanceof RandomizedIterator<?>);
         }
         if (!this.iterator.hasNext()) {
             this.iterator = null;

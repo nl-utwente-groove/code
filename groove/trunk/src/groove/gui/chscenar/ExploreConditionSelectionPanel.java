@@ -195,7 +195,7 @@ private void exploreConditionComboBoxActionPerformed(java.awt.event.ActionEvent 
     
     private Component getRuleApplOptionsPanel () {
         if (ruleApplOptionsPanel == null) {
-            Rule[] rules = (Rule[]) getGrammar().getRules().toArray();
+            Rule[] rules = getGrammar().getRules().toArray(new Rule[0]);
             ruleApplOptionsPanel = new RuleApplOptionsPanel(rules);
         }
         return ruleApplOptionsPanel;

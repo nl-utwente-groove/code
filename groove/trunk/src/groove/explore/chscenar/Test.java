@@ -1,13 +1,12 @@
 package groove.explore.chscenar;
 
-import java.io.IOException;
-import java.net.URL;
-
 import groove.explore.chscenar.parser.ConfigLexer;
 import groove.explore.chscenar.parser.ConfigParser;
 import groove.util.Groove;
 
-import org.antlr.runtime.ANTLRFileStream;
+import java.io.IOException;
+import java.net.URL;
+
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;

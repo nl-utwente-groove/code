@@ -207,7 +207,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof HashBag
+        return obj instanceof HashBag<?>
             && ((HashBag<?>) obj).bag.equals(this.bag);
     }
 
@@ -327,7 +327,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof HashBag.MyMultiplicity
+            return obj instanceof HashBag<?>.MyMultiplicity
                 && ((MyMultiplicity) obj).value == this.value;
         }
 

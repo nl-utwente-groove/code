@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class AllowRuleUnion implements AllowRule {
 
 	public boolean isAllowedConfiguration(Class<?> strategy, Class<?> result, Class<?> acceptor) {
-		for (AllowRule rule : rules) {
+		for (AllowRule rule : this.rules) {
 			if (rule.isAllowedConfiguration(strategy, result, acceptor)) {
 				return true;
 			}
@@ -24,7 +24,7 @@ public class AllowRuleUnion implements AllowRule {
 	@Override
 	public String toString () {
 		String result = new String();
-		for (AllowRule rule : rules) {
+		for (AllowRule rule : this.rules) {
 			result += "RULE\n";
 			result += rule.toString();
 		}

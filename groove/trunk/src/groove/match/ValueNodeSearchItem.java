@@ -121,7 +121,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return ValueNodeRecord.this.toString();
+            return ValueNodeSearchItem.this.toString();
         }
     }
 }

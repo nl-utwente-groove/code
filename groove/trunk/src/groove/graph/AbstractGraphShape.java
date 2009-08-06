@@ -65,7 +65,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     public boolean containsElement(Element elem) {
         if (elem instanceof Node) {
             return nodeSet().contains(elem);
-        } else if (elem instanceof RelationEdge) {
+        } else if (elem instanceof RelationEdge<?>) {
             return nodeSet().containsAll(
                 Arrays.asList(((RelationEdge<?>) elem).ends()));
         } else {

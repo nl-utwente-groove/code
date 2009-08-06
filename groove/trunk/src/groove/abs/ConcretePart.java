@@ -246,7 +246,7 @@ public class ConcretePart {
             // Should never occur, as
             // in concrPart.graph() all nodes have exact neighbourhood or
             // incomplete neighbourhood
-            assert true : "Unexpected ExceptionIncompatibleWithMaxIncidence here.";
+            assert false : "Unexpected ExceptionIncompatibleWithMaxIncidence here.";
             e.printStackTrace();
         }
         NodeEdgeMap baseMatch;

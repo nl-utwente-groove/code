@@ -102,8 +102,11 @@ public class DefaultNode implements Node {
      */
     public int compareTo(Element obj) {
         int result;
-        if (obj instanceof DefaultNode) {
-            result = this.nodeNr - ((DefaultNode) obj).nodeNr;
+        if (obj instanceof Node) {
+            result = getNumber() - ((Node) obj).getNumber();
+            if (result == 0) {
+                result = getClass().getName().compareTo(obj.getClass().getName());
+            }
         } else if (obj instanceof Edge) {
             result = compareTo(((Edge) obj).source());
             if (result == 0) {
