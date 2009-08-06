@@ -305,6 +305,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     protected final SystemProperties getProperties() {
         return this.properties;
     }
+    
+    /** 
+     * Indicates if the rule is to be matched injectively.
+     * If so, all context nodes should be part of the root map,
+     * otherwise injectivity cannot be checked. 
+     * @return <code>true</code> if the rule is to be matched injectively.
+     */
+    protected final boolean isInjective() {
+        return getProperties().isInjective();
+    }
 
     @Override
     protected LabelParser getDefaultLabelParser() {
@@ -932,6 +942,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             NodeEdgeMap nacPatternMap = result.getRootMap();
             // add all nodes to nacTarget
             nacTarget.addNodeSet(nacNodeSet);
+            // if the rule is injective, add all lhs nodes to the pattern map
+            if (isInjective()) {
+                for (Node node: lhs.nodeSet()) {
+                    nacTarget.addNode(node);
+                    nacPatternMap.putNode(node, node);
+                }
+            }
             // add edges and embargoes to nacTarget
             for (Edge edge : nacEdgeSet) {
                 // for all variables in the edge, add a LHS edge to the nac that
@@ -1040,16 +1057,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             RuleNameLabel name) {
         return new ForallCondition(target, rootMap, name, getProperties());
     }
-
-    /**
-     * Factory method for universal conditions.
-     * @param target target graph of the new condition
-     * @param rootMap root map of the new condition
-     * @return the fresh condition
-     */
-    protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) {
-        return new NotCondition(target, rootMap, getProperties());
-    }
+//
+//    /**
+//     * Factory method for negative conditions.
+//     * @param target target graph of the new condition
+//     * @param rootMap root map of the new condition
+//     * @return the fresh condition
+//     */
+//    protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) {
+//        return new NotCondition(target, rootMap, getProperties());
+//    }
 
     /**
      * Callback method to create an ordinary graph morphism.
