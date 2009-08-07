@@ -313,7 +313,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return <code>true</code> if the rule is to be matched injectively.
      */
     protected final boolean isInjective() {
-        return getProperties().isInjective();
+        return getProperties() != null && getProperties().isInjective();
     }
 
     @Override
@@ -400,8 +400,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     if (RuleAspect.inNAC(node)) {
                         // correct level for NACs
                         level = level.getNegated();
-                    } else if (RuleAspect.isCreator(node)
-                        && level.isUniversal()) {
+                    } else if (RuleAspect.isCreator(node) && level.isUniversal()) {
                         for (int child = 0; child < subLevelCountMap.get(level); child++) {
                             addNodeToLevel(node, true, level.getChild(child),
                                 nestedNodesMap, subLevelCountMap);
@@ -490,25 +489,17 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     boolean isNextLevelCreator =
                         RuleAspect.isCreator(edge) && level.isUniversal();
-                    // if (level.isUniversal() &&
-                    // hasConcreteImage(edge.label())) { //
-                    // createRuleLabel(edge.label())))
-                    // // {
-                    // // add the edge and its end nodes as stale to the next
-                    // // (rule) level
-                    // for (int child = 0; child < subLevelCountMap.get(level);
-                    // child++) {
-                    // addEdgeToLevel(edge, isNextLevelCreator,
-                    // level.getChild(child), nestedNodesMap,
-                    // nestedEdgesMap);
-                    // }
-                    // }
-                    if (isNextLevelCreator) {
+                    if (level.isUniversal() && hasConcreteImage(edge.label())) { // createRuleLabel(edge.label())))
+                        // {
+                        // add the edge and its end nodes as stale to the next
+                        // (rule) level
                         for (int child = 0; child < subLevelCountMap.get(level); child++) {
-                            addEdgeToLevel(edge, true, level.getChild(child),
-                                nestedNodesMap, nestedEdgesMap);
+                            addEdgeToLevel(edge, isNextLevelCreator,
+                                level.getChild(child), nestedNodesMap,
+                                nestedEdgesMap);
                         }
-                    } else {
+                    }
+                    if (!isNextLevelCreator) {
                         if (level.isNegated()) {
                             // this is an artificial (auxiliary) level
                             // the matching detects negative application
