@@ -316,7 +316,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                     int i = getNodeIx(nodeEntry.getKey());
                     this.nodeImages[i] =
                         this.nodeAnchors[i] = nodeEntry.getValue();
-                    if (SearchPlanStrategy.this.injective) {
+                    if (isInjective()) {
                         getUsedNodes().add(nodeEntry.getValue());
                     }
                 }
@@ -436,7 +436,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             if (SearchPlanStrategy.this.nodeKeys[index] instanceof ValueNode != isValueNode) {
                 return false;
             }
-            if (SearchPlanStrategy.this.injective && !isValueNode) {
+            if (isInjective() && !isValueNode) {
                 Node oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
