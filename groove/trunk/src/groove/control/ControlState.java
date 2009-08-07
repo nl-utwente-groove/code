@@ -49,7 +49,6 @@ public class ControlState implements Node {
         return hashCode() - ((ControlState) obj).hashCode();
     }
 
-    @Override
     public int getNumber() {
         return this.stateNumber;
     }
