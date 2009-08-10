@@ -106,6 +106,18 @@ public class ValueNode extends ProductNode {
         }
     }
 
+    /** Value nodes with and without value may overlap in node number. */
+    @Override
+    protected boolean testDiffers(DefaultNode other) {
+        return super.testDiffers(other) || this.hasValue() != ((ValueNode) other).hasValue();
+    }
+
+    /** Modifies the super result by testing whether this is actually a variable node. */
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() * (hasValue() ? 1 : 3);
+    }
+
     /**
      * the algebra to which this value belongs; <code>null</code> if the node
      * stands for a variable.

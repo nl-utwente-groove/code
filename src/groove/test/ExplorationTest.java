@@ -210,6 +210,12 @@ public class ExplorationTest extends TestCase {
         testExploration(gg, null, 21, 56, 0);
     }
 
+    /** Tests the wildcards sample. */
+    public void testInjective() {
+        testExploration("injective-nac.gps", 2, 1);
+        testExploration("injective-forall.gps", 8, 12);
+    }
+
     /**
      * Reads and executes the test cases specified in a given named file. The
      * format is described in {@link #testExplorations(BufferedReader)}. Calls

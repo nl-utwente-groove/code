@@ -63,7 +63,7 @@ public class DefaultNode implements Node {
      * @see #computeHashCode()
      */
     @Override
-    public int hashCode() {
+    final public int hashCode() {
         return this.hashCode;
     }
 
@@ -77,10 +77,9 @@ public class DefaultNode implements Node {
      *         <tt>this</tt> and <tt>obj</tt> have the same node numbers
      */
     @Override
-    public boolean equals(Object obj) {
+    final public boolean equals(Object obj) {
         boolean result = (obj == this);
-        assert result || obj.getClass() != this.getClass()
-            || (this.nodeNr != ((DefaultNode) obj).nodeNr) : String.format(
+        assert result || !(obj instanceof DefaultNode) || testDiffers((DefaultNode) obj) : String.format(
             "Distinct nodes with number %d: " + this + " & " + obj + ", "
                 + obj.getClass().getName(), this.nodeNr);
         return result;
@@ -130,6 +129,14 @@ public class DefaultNode implements Node {
         return this.nodeNr;
     }
 
+    /** 
+     * Callback method to test if this node is distinguishable (content-wise) from another.
+     * Used to assert correctness of {@link #equals(Object)}.
+     * This implementation tests for distinctness of actual class or node number.
+     */
+    protected boolean testDiffers(DefaultNode other) {
+        return other.getClass() != this.getClass() || (this.getNumber() != other.getNumber());
+    }
     /**
      * Computes the hash code for this node.
      * @return the hashcode for this node.
@@ -142,7 +149,7 @@ public class DefaultNode implements Node {
         // code *= code-1;
         // return (code << 16) + 3*code;
         // the following is taken from java.util.HashMap
-        int h = this.nodeNr + 2;
+        int h = this.nodeNr + 2 + getClass().hashCode();
         h *= h;
         h += ~(h << 14);
         h ^= (h >>> 19);

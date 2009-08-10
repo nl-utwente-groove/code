@@ -168,7 +168,7 @@ public class PriorityCache implements ExploreCache {
         if (this.priority > 0) {
             this.priority--;
         } else {
-            assert false : "Should never happen";
+            assert this.priority != 0 : "Should not be called while priority = 0";
         }
         // currPriority--;
     }
