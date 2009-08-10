@@ -89,8 +89,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         getJGraph().getLabelList().addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
-                    if (getSelectedTransition() != null) {
-                        simulator.setRule(getSelectedTransition().getEvent().getRule().getName());
+                    if (getSelectedMatch() != null) {
+                        simulator.setRule(getSelectedMatch().getRule().getName());
                     }
                 }
             });
@@ -109,9 +109,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * new grammar.
      */
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+        clearSelectedMatch();
         this.stateJModelMap.clear();
-        // graphJModelMap.clear();
-        this.selectedTransition = null;
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraph() == null) {
             this.jGraph.setModel(this.startGraphJModel =
@@ -139,18 +138,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
 
     /**
      * Sets the underlying model of this state frame to a new graph. Creates a
-     * state model for the new graph, if it was not displayed before. Also stops
-     * and restarts the layouter as required.
-     * 
+     * state model for the new graph, if it was not displayed before. 
      * @param state the new underlying state graph
-     * @require state instanceof GraphState
      */
     public synchronized void setStateUpdate(GraphState state) {
-        // stop layouting of current model, if any
-        if (getJModel() != null && this.selectedTransition != null) {
-            getJModel().clearEmphasized();
-            this.selectedTransition = null;
-        }
+        clearSelectedMatch();
         // set the graph model to the new state
         this.jGraph.setModel(getStateJModel(state, true));
         refreshStatus();
@@ -160,42 +152,33 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Resets the emphasis in the state model and the current derivation.
      */
     public synchronized void setRuleUpdate(NameLabel rule) {
-        if (this.selectedTransition != null) {
+        if (clearSelectedMatch()) {
             refreshStatus();
-            // first clear the selected transition,
-            // as the line after that will cause reentrance of the method
-            this.selectedTransition = null;
-            getJModel().clearEmphasized();
         }
     }
 
     /**
-     * Changes the current state display by emphasizing the target of a given
+     * Changes the current state display by emphasising the match of a given
      * direct derivation. Emphasis is by fat lines.
      */
     public synchronized void setTransitionUpdate(GraphTransition trans) {
-        // jGraph.getLabelList().clearSelection();
-
-        if (this.selectedTransition != trans) {
-            this.selectedTransition = trans;
-            // check if we're in the right state to display the derivation
-            GraphJModel newJModel = getStateJModel(trans.source(), true);
-            if (getJModel() != newJModel) {
-                // get a model for the new graph and set it
-                this.jGraph.setModel(newJModel);
-            }
-            // now emphasise at will
-            RuleMatch match = this.selectedTransition.getMatch();
-            setMatchUpdate(match);
+        GraphJModel newJModel = getStateJModel(trans.source(), true);
+        if (getJModel() != newJModel) {
+            clearSelectedMatch();
+            // get a model for the new graph and set it
+            this.jGraph.setModel(newJModel);
         }
+        // now emphasise at will
+        RuleMatch match = trans.getMatch();
+        setMatchUpdate(match);
     }
 
     /**
      * Emphasise the given match.
+     * @param match the match to be emphasised (non-null)
      */
     public void setMatchUpdate(RuleMatch match) {
-        assert match != null : "Transition " + this.selectedTransition
-            + " should have valid matching";
+        assert match != null : "Match update should not be called with empty match";
         Set<Element> emphElems = new HashSet<Element>();
         for (Node matchedNode : match.getNodeValues()) {
             emphElems.add(matchedNode);
@@ -203,16 +186,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         for (Edge matchedEdge : match.getEdgeValues()) {
             emphElems.add(matchedEdge);
         }
-        // if (!emphElems.isEmpty()) {
-        // Rectangle scope =
-        // Groove.toRectangle(getJGraph().getElementBounds(emphElems));
-        // if (scope != null) {
-        // jGraph.scrollRectToVisible(scope);
-        // }
-        // }
-        refreshStatus();
         GraphJModel currentModel = getJModel();
         currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
+        this.selectedMatch = match;
+        refreshStatus();
     }
 
     /**
@@ -221,14 +198,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * created nodes.
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
-        // first normalize currently displayed graph
-        // (note that the requirements of this method guarantee that there is
-        // one)
-        // getJModel().clearEmphasized();
-        // get a graph model for the target state
+        clearSelectedMatch();
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState, false);
-
         if (!this.simulator.isAbstractSimulation()) {
             GraphState oldState = transition.source();
             Morphism morphism = transition.getMorphism();
@@ -237,17 +209,29 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
 
         // set the graph model to the new state
         this.jGraph.setModel(newModel);
-        this.selectedTransition = null;
         refreshStatus();
     }
 
     /**
      * @return Returns the selectedTransition.
      */
-    final GraphTransition getSelectedTransition() {
-        return this.selectedTransition;
+    final RuleMatch getSelectedMatch() {
+        return this.selectedMatch;
     }
 
+    /** 
+     * Clears the emphasis due to the currently selected match, if any.
+     * @return <code>true</code> if there was a match to be cleared. 
+     */
+    private boolean clearSelectedMatch() {
+        boolean result = this.selectedMatch != null;
+        if (result) {
+            this.selectedMatch = null;
+            getJModel().clearEmphasized();
+        }
+        return result;
+    }
+    
     /**
      * Text to indicate which state is chosen and which match is emphasised.
      */
@@ -405,11 +389,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * so that remarks can be displayed.
      */
     private AspectJModel startGraphJModel;
-    /**
-     * The currently activated transition.
-     * @invariant currentTransition.source() == stateJModel.graph()
-     */
-    private GraphTransition selectedTransition;
+    /** The currently emphasised match (nullable). */
+    private RuleMatch selectedMatch;
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;
 }
