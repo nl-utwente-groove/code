@@ -476,6 +476,8 @@ public class Options {
     /** Always replace edited rules. */
     static public final String REPLACE_START_GRAPH_OPTION =
         "Replace start graph?";
+    /** Always replace edited rules. */
+    static public final String VERIFY_ALL_STATES_OPTION = "Verify all states?";
 
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults =
@@ -501,6 +503,7 @@ public class Options {
         intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 
     /** The persistently stored user preferences. */
@@ -621,6 +624,7 @@ public class Options {
         addBehaviour(DELETE_GRAPH_OPTION, 2);
         addBehaviour(REPLACE_RULE_OPTION, 3);
         addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
+        addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
 
     /**

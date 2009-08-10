@@ -30,6 +30,7 @@ import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
+import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import groove.abs.AbstrSimulationProperties;
 import groove.abs.Abstraction;
 import groove.abs.lts.AGTS;
@@ -1980,6 +1981,7 @@ public class Simulator {
         result.add(getOptions().getItem(DELETE_RULE_OPTION));
         result.add(getOptions().getItem(REPLACE_RULE_OPTION));
         result.add(getOptions().getItem(REPLACE_START_GRAPH_OPTION));
+        result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
         return result;
     }
 
@@ -2343,31 +2345,36 @@ public class Simulator {
      *        property verified
      */
     protected synchronized void fireVerifyProperty(Set<State> counterExamples) {
-        if (counterExamples.isEmpty()) {
-            JOptionPane.showMessageDialog(getFrame(),
-                "There were no counter-examples.", "Verification results",
-                JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_ICON_32x32);
-        } else {
-            if (counterExamples.size() == 1) {
-                JOptionPane.showMessageDialog(getFrame(),
-                    "There was 1 counter-example.", "Verification results",
-                    JOptionPane.INFORMATION_MESSAGE,
-                    Groove.GROOVE_BLUE_ICON_32x32);
-            } else {
-                JOptionPane.showMessageDialog(getFrame(), "There were "
-                    + counterExamples.size() + " counter-examples.",
-                    "Verification results", JOptionPane.INFORMATION_MESSAGE,
-                    Groove.GROOVE_BLUE_ICON_32x32);
+        boolean reportForAllStates = confirmBehaviour(
+            VERIFY_ALL_STATES_OPTION,
+        "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
+        if (!reportForAllStates) {
+            State initial = getCurrentGTS().startState();
+            boolean initialIsCounterexample = counterExamples.contains(initial);
+            counterExamples = new HashSet<State>();
+            if (initialIsCounterexample) {
+                counterExamples.add(initial);
             }
-            // reset lts display visibility
-            setGraphPanel(getLtsPanel());
-            LTSJModel jModel = getLtsPanel().getJModel();
-            Set<JCell> jCells = new HashSet<JCell>();
-            for (State counterExample : counterExamples) {
-                jCells.add(jModel.getJCell(counterExample));
-            }
-            jModel.setEmphasized(jCells);
         }
+        String message;
+        if (counterExamples.isEmpty()) {
+            message = "There were no counter-examples.";
+        } else if (counterExamples.size() == 1) {
+            message = "There was 1 counter-example.";
+        } else {
+            message = String.format("There were %d counter-examples.", counterExamples.size());
+        }
+        JOptionPane.showMessageDialog(getFrame(), message, 
+            "Verification results", JOptionPane.INFORMATION_MESSAGE,
+            Groove.GROOVE_BLUE_ICON_32x32);        
+        // reset lts display visibility
+        setGraphPanel(getLtsPanel());
+        LTSJModel jModel = getLtsPanel().getJModel();
+        Set<JCell> jCells = new HashSet<JCell>();
+        for (State counterExample : counterExamples) {
+            jCells.add(jModel.getJCell(counterExample));
+        }
+        jModel.setEmphasized(jCells);
     }
 
     /**
