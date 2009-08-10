@@ -115,7 +115,7 @@ public class ForestLayouter extends AbstractLayouter {
     }
 
     /**
-     * Computes the full branching structore from the layout map, and stores it
+     * Computes the full branching structure from the layout map, and stores it
      * in {@link #branchMap}.
      */
     protected void computeBranchMap() {
@@ -132,7 +132,7 @@ public class ForestLayouter extends AbstractLayouter {
                 this.branchMap.put(cellLayoutable, branchSet);
             }
             if (key instanceof JVertex && ((JVertex) key).isVisible()) {
-                // initialize the incoming edge count
+                // Initialise the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
                 // iterate over the incident edges
@@ -187,7 +187,7 @@ public class ForestLayouter extends AbstractLayouter {
     /**
      * Computes a set of roots for the forest. The method takes a hint as to the
      * most suitable roots, and then continues with the layoutables with the
-     * least in-degree (according to {@link #inDegreeMap}). Calle
+     * least in-degree (according to {@link #inDegreeMap}). Call
      * {@link #getSuggestedRoots} for a hint as to the most appropriate roots;
      * disregarded if <tt>null</tt>
      * @return the collection of roots
@@ -195,7 +195,7 @@ public class ForestLayouter extends AbstractLayouter {
     protected Collection<Layoutable> computeRoots() {
         Iterator<Layoutable> rootIter =
             new CollectionOfCollections<Layoutable>(this.inDegreeMap.values()).iterator();
-        // transfor the suggested roots (if any) from j-cells to layoutables
+        // Transfer the suggested roots (if any) from j-cells to layoutables
         Collection<?> suggestedRoots = getSuggestedRoots();
         if (suggestedRoots != null) {
             Iterator<Layoutable> suggestedRootIter =
@@ -300,7 +300,7 @@ public class ForestLayouter extends AbstractLayouter {
                         leftRightIndent[level] + rightWidth - fit;
                 }
             }
-            // shift the right and left branches as required to accomodate the
+            // shift the right and left branches as required to accommodate the
             // fit
             width = leftWidth + rightWidth - fit;
             if (fit < leftWidth) {
