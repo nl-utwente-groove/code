@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -210,8 +211,8 @@ abstract public class AbstractLayouter implements Layouter {
     }
 
     /**
-     * Prepares the actual layout precess by calculating the information from
-     * the curent <tt>jmodel</tt>. This implementation calculates the
+     * Prepares the actual layout process by calculating the information from
+     * the current <tt>jmodel</tt>. This implementation calculates the
      * <tt>toLayoutableMap</tt>, and sets the line style to that preferred by
      * the layouter.
      */
@@ -337,21 +338,14 @@ abstract public class AbstractLayouter implements Layouter {
      * the point.
      */
     protected final Map<Object,Layoutable> toLayoutableMap =
-        new HashMap<Object,Layoutable>();
+        new LinkedHashMap<Object,Layoutable>();
 
     /**
-     * The subest of layoutables that should be immovable, according to the
-     * movability attribute of the corresponding jcell. Initisialized in
+     * The subset of layoutables that should be immovable, according to the
+     * movability attribute of the corresponding jcell. Initialised in
      * <tt>prepare()</tt>
      */
     protected final Set<Layoutable> immovableSet = new HashSet<Layoutable>();
-    //
-    // /**
-    // * Indicates whether the jgraph was tool tip enabled before layouting
-    // started; then it has to be
-    // * re-registered at finishing time.
-    // */
-    // private boolean jgraphWasToolTipEnabled;
     /** Profiling reporter. */
     static protected final Reporter reporter =
         Reporter.register(NoLayouter.class);
