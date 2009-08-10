@@ -1294,5 +1294,5 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private static AnchorFactory<SPORule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = true;
+    private static final boolean PRINT = false;
 }
