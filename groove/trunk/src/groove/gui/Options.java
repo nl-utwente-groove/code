@@ -153,8 +153,10 @@ public class Options {
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Copy action name */
     public static final String COPY_ACTION_NAME = "Copy";
-    /** Copy action name */
+    /** Copy rule action name */
     public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
+    /** Copy graph action name */
+    public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
@@ -180,7 +182,8 @@ public class Options {
     /** Edit action name */
     public static final String ENABLE_ACTION_NAME = "Enable Rule";
     /** Exploration dialog action name */
-    public static final String EXPLORATION_DIALOG_ACTION_NAME = "Exploration Dialog (work in progress)";   
+    public static final String EXPLORATION_DIALOG_ACTION_NAME =
+        "Exploration Dialog (work in progress)";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export rule action name */
@@ -248,15 +251,17 @@ public class Options {
     public static final String RESTART_ACTION_NAME = "Restart simulation";
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
-    /** Delete action name */
+    /** Label replace action name */
     public static final String REPLACE_ACTION_NAME = "Replace Label";
-    /** Delete action name */
+    /** Rule rename action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
+    /** Graph rename action name */
+    public static final String RENAME_GRAPH_ACTION_NAME = "Rename Graph";
     /** Edit properties action name */
     public static final String RULE_PROPERTIES_ACTION_NAME =
         "Rule Properties ...";
     /** Use as start graph action name */
-    public static final String START_GRAPH_ACTION_NAME = "Use as start graph";
+    public static final String START_GRAPH_ACTION_NAME = "Use as Start Graph";
     /**
      * Start simulation action name
      */

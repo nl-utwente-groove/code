@@ -52,10 +52,10 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
 import groove.gui.dialog.FormulaDialog;
+import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.ReplaceLabelDialog;
-import groove.gui.dialog.RuleNameDialog;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
@@ -511,8 +511,7 @@ public class Simulator {
         }
         return this.explorationDialogAction;
     }
-    
-    
+
     /**
      * Returns the graph export action permanently associated with this
      * simulator.
@@ -786,25 +785,26 @@ public class Simulator {
 
     /**
      * Handles the execution of a {@link SaveGraphAction}. Calls
-     * {@link #doSaveGraph(Graph, File)} for the actual saving.
+     * {@link #doAddGraph(Graph, File)} for the actual saving.
      * @param state <tt>true</tt> if it is a state that has to be saved
      *        (otherwise it is an LTS)
      * @param graph the j-model from which the graph is to be obtained
-     * @param proposedName the proposed name for the graph, to be filled into
-     *        the dialog
      * @return the file to which the graph has been saved; <tt>null</tt> if the
      *         graph has not been saved
      */
-    File handleSaveGraph(boolean state, Graph graph, String proposedName) {
+    File handleSaveGraph(boolean state, Graph graph) {
         getStateFileChooser().setFileFilter(
             state ? this.stateFilter : this.gxlFilter);
-        getStateFileChooser().setSelectedFile(new File(proposedName));
+        String name = state ? GraphInfo.getName(graph) : LTS_FILE_NAME;
+        getStateFileChooser().setSelectedFile(new File(name));
         File selectedFile =
             ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame(),
                 null);
         // now save, if so required
         if (selectedFile != null) {
-            doSaveGraph(graph, selectedFile);
+            name = this.stateFilter.stripExtension(selectedFile.getName());
+            GraphInfo.setName(graph, name);
+            doAddGraph(graph, selectedFile);
         }
         return selectedFile;
     }
@@ -833,6 +833,36 @@ public class Simulator {
         GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
         properties.setEnabled(!properties.isEnabled());
         doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
+    }
+
+    /**
+     * Can be called from the ExplorationDialog.
+     * @param scenario
+     */
+    public void doGenerate(Scenario scenario) {
+        scenario.prepare(getCurrentGTS(), getCurrentState());
+        GraphJModel ltsJModel = getLtsPanel().getJModel();
+        synchronized (ltsJModel) {
+            // unhook the lts' jmodel from the lts, for efficiency's sake
+            getCurrentGTS().removeGraphListener(ltsJModel);
+            // disable rule application for the time being
+            boolean applyEnabled = getApplyTransitionAction().isEnabled();
+            getApplyTransitionAction().setEnabled(false);
+            // create a thread to do the work in the background
+            Thread generateThread = new LaunchThread(scenario);
+            // go!
+            generateThread.start();
+            // get the lts' jmodel back on line and re-synchronize its state
+            ltsJModel.reload();
+            // re-enable rule application
+            getApplyTransitionAction().setEnabled(applyEnabled);
+            // reset lts display visibility
+            setGraphPanel(getLtsPanel());
+        }
+        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
+        if (ltsJGraph.getLayouter() != null) {
+            ltsJGraph.getLayouter().start(false);
+        }
     }
 
     void doLoadGrammar(URL url) {
@@ -982,6 +1012,7 @@ public class Simulator {
                     getCurrentGrammar().getProperties());
             getCurrentGrammar().setStartGraph(startGraph);
             setGrammar(getCurrentGrammar());
+            this.currentStartStateFile = file;
         } catch (IOException exc) {
             showErrorDialog(
                 "Could not load start graph from " + file.getName(), exc);
@@ -1040,16 +1071,6 @@ public class Simulator {
         this.history.updateLoadGrammar(FileGps.toURL(grammarFile));
     }
 
-    RuleNameLabel generateNewRuleName(String basis) {
-        RuleNameLabel result = new RuleNameLabel(basis);
-        Set<RuleNameLabel> existingNames =
-            getCurrentGrammar().getRuleMap().keySet();
-        for (int i = 1; existingNames.contains(result); i++) {
-            result = new RuleNameLabel(basis + i);
-        }
-        return result;
-    }
-
     /**
      * Ends the program.
      */
@@ -1084,6 +1105,27 @@ public class Simulator {
     }
 
     /**
+     * Saves a given graph to a given file.
+     */
+    void doAddGraph(Graph graph, File file) {
+        try {
+            AspectGraph saveGraph =
+                AspectGraph.getFactory().fromPlainGraph(graph);
+            if (saveGraph.hasErrors()) {
+                showErrorDialog("Errors in graph", new FormatException(
+                    saveGraph.getErrors()));
+            } else {
+                marshalGraph(saveGraph, file);
+                getCurrentGrammar().addGraph(saveGraph.getInfo().getName(),
+                    file);
+                setGrammar(getCurrentGrammar());
+            }
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving to " + file, exc);
+        }
+    }
+
+    /**
      * Saves an aspect graph as a rule under a given name, and puts the rule
      * into the current grammar view.
      * @param ruleName the name of the new rule
@@ -1105,6 +1147,15 @@ public class Simulator {
         } catch (UnsupportedOperationException u) {
             showErrorDialog("Current grammar is read-only", u);
         }
+    }
+
+    /**
+     * Deletes a graph from the start graph view.
+     */
+    void doDeleteGraph(String name) {
+        File graphFile = getCurrentGrammar().removeGraph(name);
+        deleteGraph(graphFile);
+        setGrammar(getCurrentGrammar());
     }
 
     /**
@@ -1145,8 +1196,7 @@ public class Simulator {
             try {
                 File currentControlFile =
                     getControlFileChooser().getSelectedFile();
-                File currentStateFile = getStateFileChooser().getSelectedFile();
-                if (startGraph != null && currentStateFile == null
+                if (startGraph != null && this.currentStartStateFile == null
                     && currentControlFile == null) {
                     setGrammar(this.currentGrammarLoader.unmarshal(this.currentGrammarURL));
                     // this.currentGrammarFile.toURI().toURL(),
@@ -1154,9 +1204,9 @@ public class Simulator {
                 } else {
                     DefaultGrammarView grammar =
                         this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
-                    if (currentStateFile != null) {
+                    if (this.currentStartStateFile != null) {
                         AspectGraph aspectStartGraph =
-                            unmarshalGraph(currentStateFile);
+                            unmarshalGraph(this.currentStartStateFile);
                         startGraph =
                             new AspectualGraphView(aspectStartGraph,
                                 grammar.getProperties());
@@ -1172,31 +1222,6 @@ public class Simulator {
                 showErrorDialog("Error while loading grammar from "
                     + this.currentGrammarURL, exc);
             }
-        }
-    }
-
-    /**
-     * Deletes a graph from the start graph view.
-     */
-    void doDeleteGraph(String name) {
-        deleteGraph(new File(FileGps.toFile(this.currentGrammarURL), Groove.createStateFilter().addExtension(name)));
-    }
-
-    /**
-     * Saves the contents of a given j-model to a given file.
-     */
-    void doSaveGraph(Graph graph, File file) {
-        try {
-            AspectGraph saveGraph =
-                AspectGraph.getFactory().fromPlainGraph(graph);
-            if (saveGraph.hasErrors()) {
-                showErrorDialog("Errors in graph", new FormatException(
-                    saveGraph.getErrors()));
-            } else {
-                marshalGraph(saveGraph, file);
-            }
-        } catch (IOException exc) {
-            showErrorDialog("Error while saving to " + file, exc);
         }
     }
 
@@ -1244,7 +1269,7 @@ public class Simulator {
     private void deleteGraph(File file) {
         getGraphLoader(file).deleteGraph(file);
     }
-    
+
     private Xml<AspectGraph> getGraphLoader(File file) {
         if (this.autFilter.accept(file)) {
             return this.autLoader;
@@ -1661,9 +1686,9 @@ public class Simulator {
     }
 
     /**
-     * Returns the simulator panel on which the LTS. Note that:
-     * - this panel may currently not be visible.
-     * - this panel is always contained in the ConditionalLTSPanel.
+     * Returns the simulator panel on which the LTS. Note that: - this panel may
+     * currently not be visible. - this panel is always contained in the
+     * ConditionalLTSPanel.
      * @see #setGraphPanel(JGraphPanel)
      */
     LTSPanel getLtsPanel() {
@@ -1680,12 +1705,12 @@ public class Simulator {
      */
     ConditionalLTSPanel getConditionalLTSPanel() {
         if (this.conditionalLTSPanel == null) {
-            this.conditionalLTSPanel = new ConditionalLTSPanel(this.getLtsPanel());
+            this.conditionalLTSPanel =
+                new ConditionalLTSPanel(this.getLtsPanel());
         }
         return this.conditionalLTSPanel;
     }
-   
-    
+
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
@@ -1724,9 +1749,8 @@ public class Simulator {
 
     /**
      * Returns the currently selected graph view component. This can be the
-     * state, rule or LTS view.
-     * In case the LTS is active, the inner LTSPanel is returned instead of the outer
-     * ConditionalLTSPanel.
+     * state, rule or LTS view. In case the LTS is active, the inner LTSPanel is
+     * returned instead of the outer ConditionalLTSPanel.
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
@@ -1734,23 +1758,26 @@ public class Simulator {
      * @see #setGraphPanel(JGraphPanel)
      */
     JGraphPanel<?> getGraphPanel() {
-        Component selectedComponent = getGraphViewsPanel().getSelectedComponent();
-        
-        if (selectedComponent == getConditionalLTSPanel())
+        Component selectedComponent =
+            getGraphViewsPanel().getSelectedComponent();
+
+        if (selectedComponent == getConditionalLTSPanel()) {
             return getLtsPanel();
-        
-        if (!(selectedComponent instanceof JGraphPanel<?>))
+        }
+
+        if (!(selectedComponent instanceof JGraphPanel<?>)) {
             return null;
-        else
+        } else {
             return (JGraphPanel<?>) selectedComponent;
+        }
     }
 
     /**
      * Brings one of the graph view components to the foreground. This should be
      * the state, rule or LTS view.
-     * @param component the graph view component to bring to the foreground
-     *          (in case the LTS panel should be made active, this is expected to be the
-     *           inner LTSPanel, instead of the outer ConditionalLTSPanel)
+     * @param component the graph view component to bring to the foreground (in
+     *        case the LTS panel should be made active, this is expected to be
+     *        the inner LTSPanel, instead of the outer ConditionalLTSPanel)
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
@@ -1758,25 +1785,28 @@ public class Simulator {
      * @see #getGraphPanel()
      */
     void setGraphPanel(JGraphPanel<?> component) {
-        if (component == getLtsPanel())
+        if (component == getLtsPanel()) {
             getGraphViewsPanel().setSelectedComponent(getConditionalLTSPanel());
-        else
+        } else {
             getGraphViewsPanel().setSelectedComponent(component);
+        }
     }
 
     /**
      * Changes the enabledness of one of the graph panels
-     * @param component the panel to change
-     *          (again, the inner LTSPanel is expected instead of the outer ConditionalLTSPanel) 
+     * @param component the panel to change (again, the inner LTSPanel is
+     *        expected instead of the outer ConditionalLTSPanel)
      * @param enabled the new enabledness status
      */
     void setGraphPanelEnabled(JGraphPanel<?> component, boolean enabled) {
         int index;
-        
-        if (component == getLtsPanel())
-            index = getGraphViewsPanel().indexOfComponent(getConditionalLTSPanel());
-        else
+
+        if (component == getLtsPanel()) {
+            index =
+                getGraphViewsPanel().indexOfComponent(getConditionalLTSPanel());
+        } else {
             index = getGraphViewsPanel().indexOfComponent(component);
+        }
 
         getGraphViewsPanel().setEnabledAt(index, enabled);
         if (component == getLtsPanel()) {
@@ -2345,9 +2375,10 @@ public class Simulator {
      *        property verified
      */
     protected synchronized void fireVerifyProperty(Set<State> counterExamples) {
-        boolean reportForAllStates = confirmBehaviour(
-            VERIFY_ALL_STATES_OPTION,
-        "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
+        boolean reportForAllStates =
+            confirmBehaviour(
+                VERIFY_ALL_STATES_OPTION,
+                "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
         if (!reportForAllStates) {
             State initial = getCurrentGTS().startState();
             boolean initialIsCounterexample = counterExamples.contains(initial);
@@ -2362,11 +2393,13 @@ public class Simulator {
         } else if (counterExamples.size() == 1) {
             message = "There was 1 counter-example.";
         } else {
-            message = String.format("There were %d counter-examples.", counterExamples.size());
+            message =
+                String.format("There were %d counter-examples.",
+                    counterExamples.size());
         }
-        JOptionPane.showMessageDialog(getFrame(), message, 
+        JOptionPane.showMessageDialog(getFrame(), message,
             "Verification results", JOptionPane.INFORMATION_MESSAGE,
-            Groove.GROOVE_BLUE_ICON_32x32);        
+            Groove.GROOVE_BLUE_ICON_32x32);
         // reset lts display visibility
         setGraphPanel(getLtsPanel());
         LTSJModel jModel = getLtsPanel().getJModel();
@@ -2521,7 +2554,7 @@ public class Simulator {
             return true;
         } else {
             String question =
-                String.format("Replace start graph with %s?", stateName);
+                String.format("Replace start graph with '%s'?", stateName);
             return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
         }
     }
@@ -2562,13 +2595,39 @@ public class Simulator {
      *         <code>null</code>
      */
     RuleNameLabel askNewRuleName(String title, String name, boolean mustBeFresh) {
-        RuleNameLabel suggestion =
-            mustBeFresh ? generateNewRuleName(name) : new RuleNameLabel(name);
-        RuleNameDialog ruleNameDialog =
-            new RuleNameDialog(getCurrentGrammar().getRuleMap().keySet(),
-                suggestion);
+        FreshNameDialog<RuleNameLabel> ruleNameDialog =
+            new FreshNameDialog<RuleNameLabel>(
+                getCurrentGrammar().getRuleMap().keySet(), name, mustBeFresh) {
+                @Override
+                protected RuleNameLabel createName(String name) {
+                    return new RuleNameLabel(name);
+                }
+            };
         ruleNameDialog.showDialog(getFrame(), title);
         return ruleNameDialog.getName();
+    }
+
+    /**
+     * Enters a dialog that results in a graph name that does not yet occur in
+     * the current grammar, or <code>null</code> if the dialog was cancelled.
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing graph names
+     * @return a graph name not occurring in the current grammar, or
+     *         <code>null</code>
+     */
+    String askNewGraphName(String title, String name, boolean mustBeFresh) {
+        Set<String> existingNames = getCurrentGrammar().getGraphs().keySet();
+        FreshNameDialog<String> nameDialog =
+            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
+                @Override
+                protected String createName(String name) {
+                    return name;
+                }
+            };
+        nameDialog.showDialog(getFrame(), title);
+        return nameDialog.getName();
     }
 
     /**
@@ -2665,6 +2724,8 @@ public class Simulator {
      */
     private RuleEvent currentEvent;
 
+    /** File from which the last start state was loaded. */
+    private File currentStartStateFile;
     /**
      * The file or directory containing the last loaded or saved grammar, or
      * <tt>null</tt> if no grammar was yet loaded.
@@ -2794,7 +2855,7 @@ public class Simulator {
 
     /** Conditional LTS display panel. */
     private ConditionalLTSPanel conditionalLTSPanel;
-    
+
     /** Type graph display panel. */
     private TypePanel typePanel;
 
@@ -2865,9 +2926,11 @@ public class Simulator {
      */
     private EnableRuleAction enableRuleAction;
 
-    /** The exploration dialog action permanently associated with this simulator. */
+    /**
+     * The exploration dialog action permanently associated with this simulator.
+     */
     private ExplorationDialogAction explorationDialogAction;
-    
+
     /** The state export action permanently associated with this simulator. */
     private ExportGraphAction exportGraphAction;
 
@@ -3252,21 +3315,16 @@ public class Simulator {
         }
     }
 
-    private class DeleteGraphAction extends AbstractAction implements
-            Refreshable {
+    private class DeleteGraphAction extends AbstractAction {
         DeleteGraphAction() {
             super(Options.DELETE_GRAPH_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
         }
 
-        public void refresh() {
-            JList graphList = Simulator.this.stateJList;
-            setEnabled(graphList != null && !graphList.isSelectionEmpty());
-        }
-
         public void actionPerformed(ActionEvent e) {
-            String graphName = (String) Simulator.this.stateJList.getSelectedValue();
+            String graphName =
+                (String) Simulator.this.stateJList.getSelectedValue();
             String question = String.format("Delete graph '%s'?", graphName);
             if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
                 doDeleteGraph(graphName);
@@ -3310,14 +3368,12 @@ public class Simulator {
          */
         public void actionPerformed(ActionEvent e) {
             GraphJModel stateModel = getStatePanel().getJModel();
-            final String stateName = stateModel.getName();
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(),
                     stateModel.toPlainGraph()) {
                     @Override
                     public void finish() {
-                        File saveFile =
-                            handleSaveGraph(true, toPlainGraph(), stateName);
+                        File saveFile = handleSaveGraph(true, toPlainGraph());
                         if (saveFile != null
                             && confirmLoadStartState(saveFile.getName())) {
                             doLoadStartGraph(saveFile);
@@ -3463,9 +3519,10 @@ public class Simulator {
                 && Simulator.this.currentGrammarLoader.canWrite());
         }
     }
-  
+
     /** Action to open the Exploration Dialog. */
-    private class ExplorationDialogAction extends AbstractAction implements Refreshable {
+    private class ExplorationDialogAction extends AbstractAction implements
+            Refreshable {
         /** Constructs an instance of the action. */
         ExplorationDialogAction() {
             super(Options.EXPLORATION_DIALOG_ACTION_NAME);
@@ -3475,14 +3532,15 @@ public class Simulator {
         public void actionPerformed(ActionEvent evt) {
             new ExplorationDialog(Simulator.this, getFrame());
         }
-        
+
         public void refresh() {
             // Temporarily disable the dialog.
-            // setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);
+            // setEnabled(getCurrentGrammar() != null &&
+            // getCurrentGrammar().getStartGraph() != null);
             setEnabled(false);
         }
-    }   
-  
+    }
+
     /**
      * Action to save the state, as a graph or in some export format.
      * @see Exporter#export(JGraph, File)
@@ -3596,36 +3654,6 @@ public class Simulator {
         }
 
         private final Scenario scenario;
-    }
-
-    /**
-     * Can be called from the ExplorationDialog.
-     * @param scenario
-     */
-    public void doGenerate(Scenario scenario) {
-        scenario.prepare(getCurrentGTS(), getCurrentState());
-        GraphJModel ltsJModel = getLtsPanel().getJModel();
-        synchronized (ltsJModel) {
-            // unhook the lts' jmodel from the lts, for efficiency's sake
-            getCurrentGTS().removeGraphListener(ltsJModel);
-            // disable rule application for the time being
-            boolean applyEnabled = getApplyTransitionAction().isEnabled();
-            getApplyTransitionAction().setEnabled(false);
-            // create a thread to do the work in the background
-            Thread generateThread = new LaunchThread(scenario);
-            // go!
-            generateThread.start();
-            // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.reload();
-            // re-enable rule application
-            getApplyTransitionAction().setEnabled(applyEnabled);
-            // reset lts display visibility
-            setGraphPanel(getLtsPanel());
-        }
-        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
-        if (ltsJGraph.getLayouter() != null) {
-            ltsJGraph.getLayouter().start(false);
-        }
     }
 
     /**
@@ -4053,11 +4081,11 @@ public class Simulator {
                     @Override
                     public void finish() {
                         Graph newGraph = toPlainGraph();
-                        File saveFile =
-                            handleSaveGraph(true, newGraph, NEW_GRAPH_NAME);
-                        if (saveFile != null
-                            && confirmLoadStartState(saveFile.getName())) {
-                            doLoadStartGraph(saveFile);
+                        File saveFile = handleSaveGraph(true, newGraph);
+                        if (saveFile != null) {
+                            if (confirmLoadStartState(newGraph.getInfo().getName())) {
+                                doLoadStartGraph(saveFile);
+                            }
                         }
                     }
                 };
@@ -4328,8 +4356,8 @@ public class Simulator {
 
     /**
      * Action to save the state or LTS as a graph.
-     * @see Simulator#handleSaveGraph(boolean, Graph, String)
-     * @see Simulator#doSaveGraph(Graph, File)
+     * @see Simulator#handleSaveGraph(boolean, Graph)
+     * @see Simulator#doAddGraph(Graph, File)
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
@@ -4342,9 +4370,9 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             Graph graph = getGraphPanel().getJModel().toPlainGraph();
             if (getGraphPanel() == getLtsPanel()) {
-                handleSaveGraph(false, graph, LTS_FILE_NAME);
+                handleSaveGraph(false, graph);
             } else {
-                handleSaveGraph(true, graph, getCurrentState().toString());
+                handleSaveGraph(true, graph);
             }
         }
 
@@ -4429,8 +4457,8 @@ public class Simulator {
                         new File(file, "lts.gxl").getAbsolutePath());
                     for (GraphState state : export) {
                         String name = state.toString();
-                    Groove.saveGraph(state.getGraph(), new File(file,
-                        name + ".gst").getAbsolutePath());
+                        Groove.saveGraph(state.getGraph(), new File(file, name
+                            + ".gst").getAbsolutePath());
                     }
 
                 } catch (IOException e) {
@@ -4473,33 +4501,39 @@ public class Simulator {
 
     // BEGIN_IOVKA
     /** Allows to select a custom scenario and run it. */
-    private class ChooseCustomScenarioAction extends AbstractAction implements Refreshable {
-         ChooseCustomScenarioAction() {
-             super("Run a custom scenario (work in progress)");
-             addRefreshable(this);
-         }
-         
-         public void actionPerformed(ActionEvent e) {
-             ScenarioSelectionDialog sd = new ScenarioSelectionDialog(getFrame(), getCurrentGTS().getGrammar());
-             Scenario customScenario = sd.showDialog();
-             if (customScenario != null) {
-                 LaunchScenarioAction action = createLaunchScenarioAction(customScenario);
-                 action.actionPerformed(e);
-             }
-         }
-         
-         public void refresh() {
-             // Temporarily disable the dialog.
-             // setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);
-             setEnabled(false);
-         }
+    private class ChooseCustomScenarioAction extends AbstractAction implements
+            Refreshable {
+        ChooseCustomScenarioAction() {
+            super("Run a custom scenario (work in progress)");
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ScenarioSelectionDialog sd =
+                new ScenarioSelectionDialog(getFrame(),
+                    getCurrentGTS().getGrammar());
+            Scenario customScenario = sd.showDialog();
+            if (customScenario != null) {
+                LaunchScenarioAction action =
+                    createLaunchScenarioAction(customScenario);
+                action.actionPerformed(e);
+            }
+        }
+
+        public void refresh() {
+            // Temporarily disable the dialog.
+            // setEnabled(getCurrentGrammar() != null &&
+            // getCurrentGrammar().getStartGraph() != null);
+            setEnabled(false);
+        }
     }
 
-    private ChooseCustomScenarioAction getChooseCustomScenarioAction () {
+    private ChooseCustomScenarioAction getChooseCustomScenarioAction() {
         return new ChooseCustomScenarioAction();
     }
+
     // END_IOVKA
-    
+
     ExploreStateStrategy exploreState;
 
     /**
