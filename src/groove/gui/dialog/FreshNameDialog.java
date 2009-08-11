@@ -16,8 +16,6 @@
  */
 package groove.gui.dialog;
 
-import groove.trans.RuleNameLabel;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
@@ -32,21 +30,41 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * Dialog class that lets the user choose a fresh rule name.
+ * Dialog class that lets the user choose a fresh name.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleNameDialog {
+abstract public class FreshNameDialog<Name> {
     /**
      * Constructs a dialog instance, given a set of existing names (that should
-     * not be used) as well as a suggested value for the new rule name.
-     * @param existingNames the set of already existing rule names
+     * not be used) as well as a suggested value for the new name.
+     * @param existingNames the set of already existing names
      * @param suggestion the suggested name to start with
+     * @param mustBeFresh flag indicating that the name to be chosen should not
+     *        be among the existing names
      */
-    public RuleNameDialog(Set<RuleNameLabel> existingNames,
-            RuleNameLabel suggestion) {
-        this.existingNames = new HashSet<RuleNameLabel>(existingNames);
-        this.suggestion = suggestion;
+    public FreshNameDialog(Set<Name> existingNames, String suggestion,
+            boolean mustBeFresh) {
+        this.existingNames = new HashSet<Name>(existingNames);
+        this.suggestion =
+            mustBeFresh ? generateNewName(suggestion, existingNames)
+                    : createName(suggestion);
+    }
+
+    /**
+     * Generates a fresh name by extending a given name so that it does not
+     * occur in a set of existing names.
+     * @param basis the name to be extended (non-null)
+     * @param existingNames the set of names that are forbidden (non-null)
+     * @return An extension of <code>basis</code> that is not in
+     *         <code>existingNames</code>
+     */
+    Name generateNewName(String basis, Set<Name> existingNames) {
+        Name result = createName(basis);
+        for (int i = 1; existingNames.contains(result); i++) {
+            result = createName(basis + i);
+        }
+        return result;
     }
 
     /**
@@ -61,7 +79,7 @@ public class RuleNameDialog {
     public boolean showDialog(JFrame frame, String title) {
         // set the suggested name in the name field
         JTextField nameField = getNameField();
-        nameField.setText(this.suggestion.name());
+        nameField.setText(this.suggestion.toString());
         nameField.setSelectionStart(0);
         nameField.setSelectionEnd(nameField.getText().length());
         getOkButton().setEnabled(isNameFieldValid());
@@ -125,8 +143,8 @@ public class RuleNameDialog {
     }
 
     /** Returns the rule name currently filled in in the name field. */
-    private RuleNameLabel getChosenName() {
-        return new RuleNameLabel(getNameField().getText());
+    private Name getChosenName() {
+        return createName(getNameField().getText());
     }
 
     /**
@@ -134,14 +152,14 @@ public class RuleNameDialog {
      * return value is guaranteed to be distinct from any of the existing names
      * entered at construction time.
      */
-    public final RuleNameLabel getName() {
+    public final Name getName() {
         return this.name;
     }
 
     /**
      * Sets the value of the chosen name field.
      */
-    private final void setName(RuleNameLabel name) {
+    private final void setName(Name name) {
         this.name = name;
     }
 
@@ -153,11 +171,17 @@ public class RuleNameDialog {
      *         correct value
      */
     boolean isNameFieldValid() {
-        RuleNameLabel label = getChosenName();
+        Name label = getChosenName();
         return this.suggestion.equals(label)
             || !this.existingNames.contains(label)
-            && label.name().length() != 0;
+            && label.toString().length() != 0;
     }
+
+    /**
+     * Callback method to create an object of the generic name type from a
+     * string.
+     */
+    abstract protected Name createName(String name);
 
     /** The option pane that is the core of the dialog. */
     private JOptionPane optionPane;
@@ -172,13 +196,13 @@ public class RuleNameDialog {
     private JTextField nameField;
 
     /** Set of existing rule names. */
-    private final Set<RuleNameLabel> existingNames;
+    private final Set<Name> existingNames;
 
     /** Suggested name. */
-    private final RuleNameLabel suggestion;
+    private final Name suggestion;
 
     /** The rule name selected by the user. */
-    private RuleNameLabel name;
+    private Name name;
 
     /**
      * Action listener that closes the dialog and sets the option pane's value
@@ -198,10 +222,6 @@ public class RuleNameDialog {
             }
         }
     }
-
-    /** Default dialog title. */
-
-    static private String DEFAULT_TITLE = "Select rule name";
 
     /**
      * Document listener that enables or disables the OK button, depending on
@@ -235,4 +255,8 @@ public class RuleNameDialog {
             getOkButton().setEnabled(isNameFieldValid());
         }
     }
+
+    /** Default dialog title. */
+    
+    static private String DEFAULT_TITLE = "Select rule name";
 }

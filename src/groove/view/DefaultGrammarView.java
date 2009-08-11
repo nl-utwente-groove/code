@@ -181,9 +181,23 @@ public class DefaultGrammarView implements
         return this.controlView;
     }
 
-    /** Adds a graph to the list of graphs belonging to this grammar */
+    /**
+     * Adds a graph to the list of graphs belonging to this grammar.
+     * @param name the name of the graph to be added
+     * @param file the file where the graph is actually stored
+     */
     public void addGraph(String name, File file) {
         this.graphs.put(name, file);
+    }
+
+    /**
+     * Removes a graph from the list of graphs belonging to this grammar.
+     * @param name The name of the graph to be removed (non-null)
+     * @return the file at which the graph with this name was stored;
+     *         <code>null</code> if there was no graph with this name.
+     */
+    public File removeGraph(String name) {
+        return this.graphs.remove(name);
     }
 
     /** Returns the graphs found during loading of the grammar */
@@ -283,9 +297,9 @@ public class DefaultGrammarView implements
     }
 
     /**
-     * Resets the internally stored graph grammar to <code>null</code>, so
-     * the next call to {@link #toGrammar()} will have to recompute it. This is
-     * done in reaction to a change in the rules, start graph or properties.
+     * Resets the internally stored graph grammar to <code>null</code>, so the
+     * next call to {@link #toGrammar()} will have to recompute it. This is done
+     * in reaction to a change in the rules, start graph or properties.
      */
     private void invalidateGrammar() {
         this.grammar = null;

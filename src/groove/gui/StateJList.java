@@ -24,15 +24,16 @@ import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Arrays;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 
@@ -51,10 +52,9 @@ public class StateJList extends JList implements SimulationListener {
         this.simulator.addSimulationListener(this);
         this.setEnabled(false);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.popupMenu = createPopupMenu();
         this.addMouseListener(new MyMouseListener());
     }
-    
+
     /**
      * In addition to delegating the method to <tt>super</tt>, sets the
      * background colour to <tt>null</tt> when disabled and back to the default
@@ -76,40 +76,69 @@ public class StateJList extends JList implements SimulationListener {
     /**
      * Creates a popup menu, consisting of "use as start graph" & "preview".
      */
-    protected JPopupMenu createPopupMenu() {
+    protected JPopupMenu createPopupMenu(Point atPoint) {
         JPopupMenu result = new JPopupMenu();
-        JMenuItem item;
-        result.add(item = new JMenuItem(Options.START_GRAPH_ACTION_NAME));
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                String selection = (String)StateJList.this.getSelectedValue();
-                File file = StateJList.this.simulator.getCurrentGrammar().getGraphs().get(selection);
-                StateJList.this.simulator.doLoadStartGraph(file);
-              }
-            });
-        result.add(item = new JMenuItem(Options.PREVIEW_ACTION_NAME));
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                StateJList.this.doPreviewGraph();
-              }
-            });
-        result.add(this.simulator.getDeleteGraphAction());
+        result.add(this.simulator.getNewGraphAction());
+        // add rest only if mouse is actually over a graph name
+        int index = locationToIndex(atPoint);
+        if (getCellBounds(index, index).contains(atPoint)) {
+            result.addSeparator();
+            result.add(getSetStartGraphAction());
+            result.add(this.simulator.getDeleteGraphAction());
+            result.addSeparator();
+            result.add(getPreviewGraphAction());
+        }
         return result;
     }
-    
+
+    private Action getSetStartGraphAction() {
+        if (this.setStartGraphAction == null) {
+            this.setStartGraphAction =
+                new AbstractAction(Options.START_GRAPH_ACTION_NAME) {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        String selection =
+                            (String) StateJList.this.getSelectedValue();
+                        File file =
+                            StateJList.this.simulator.getCurrentGrammar().getGraphs().get(
+                                selection);
+                        StateJList.this.simulator.doLoadStartGraph(file);
+                    }
+                };
+        }
+        return this.setStartGraphAction;
+    }
+
+    private Action getPreviewGraphAction() {
+        if (this.previewGraphAction == null) {
+            this.previewGraphAction =
+                new AbstractAction(Options.PREVIEW_ACTION_NAME) {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        StateJList.this.doPreviewGraph();
+                    }
+                };
+        }
+        return this.previewGraphAction;
+    }
+
     private void doPreviewGraph() {
-        String selection = (String)this.getSelectedValue();
-        File file = this.simulator.getCurrentGrammar().getGraphs().get(selection);
-        boolean load = Editor.previewGraph(file, Options.START_GRAPH_ACTION_NAME);
-        if (load) {
-            this.simulator.doLoadStartGraph(file);
+        if (!isSelectionEmpty()) {
+            String selection = (String) this.getSelectedValue();
+            File file =
+                this.simulator.getCurrentGrammar().getGraphs().get(selection);
+            boolean load =
+                Editor.previewGraph(file, Options.START_GRAPH_ACTION_NAME);
+            if (load) {
+                this.simulator.doLoadStartGraph(file);
+            }
         }
     }
 
     // -----------------------------------------
     // Methods from SimulationListener Interface
     // -----------------------------------------
-    
+
     public void applyTransitionUpdate(GraphTransition transition) {
         // does nothing
     }
@@ -153,47 +182,49 @@ public class StateJList extends JList implements SimulationListener {
     // --------------
     // Private fields
     // --------------
-    
+
     /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
      */
     private final Simulator simulator;
-
+    /** Action to set the start graph in the simulator. */
+    private Action setStartGraphAction;
+    /** Action to preview a graph. */
+    private Action previewGraphAction;
     /**
      * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
-    
-    /**
-     * The pop-up menu for this states list.
-     * @invariant popupMenu != null
-     */
-    private final JPopupMenu popupMenu;
 
     // -----------------------------------------
     // MyMouseListener Class
     // -----------------------------------------
-    
+
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
-        
+
         /** Empty constructor with the correct visibility. */
         MyMouseListener() {
             // empty
         }
-        
+
         @Override
         public void mouseClicked(MouseEvent evt) {
             int index = locationToIndex(evt.getPoint());
-            if (StateJList.this.isEnabled() && index >= 0) {
-                if (evt.getClickCount() == 2) { // Left double click
+            if (StateJList.this.isEnabled()) {
+                if (evt.getClickCount() == 2 && index >= 0) { // Left double
+                                                              // click
                     StateJList.this.doPreviewGraph();
-                } else if (evt.getClickCount() == 1 &&
-                           evt.getButton() == MouseEvent.BUTTON3) { // Right click
-                    // Adjust list selection accordingly.
-                    StateJList.this.setSelectedIndex(index);
-                    StateJList.this.popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                } else if (evt.getClickCount() == 1
+                    && evt.getButton() == MouseEvent.BUTTON3) { // Right click
+                    // Determine if index was really selected
+                    if (getCellBounds(index, index).contains(evt.getPoint())) {
+                        // Adjust list selection accordingly.
+                        StateJList.this.setSelectedIndex(index);
+                    }
+                    createPopupMenu(evt.getPoint()).show(evt.getComponent(),
+                        evt.getX(), evt.getY());
                 }
             }
         }
