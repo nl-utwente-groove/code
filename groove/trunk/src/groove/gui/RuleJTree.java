@@ -133,7 +133,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
-        Map<NameLabel,DirectoryTreeNode> dirNodeMap = new HashMap<NameLabel,DirectoryTreeNode>();
+        Map<NameLabel,DirectoryTreeNode> dirNodeMap =
+            new HashMap<NameLabel,DirectoryTreeNode>();
         this.ruleNodeMap.clear();
         this.matchNodeMap.clear();
         this.matchTransitionMap.clear();
@@ -260,7 +261,8 @@ public class RuleJTree extends JTree implements SimulationListener {
 
     /** Adds tree nodes for all levels of a structured rule name. */
     private DefaultMutableTreeNode addParentNode(
-            DefaultMutableTreeNode topNode, Map<NameLabel,DirectoryTreeNode> dirNodeMap, RuleNameLabel ruleName) {
+            DefaultMutableTreeNode topNode,
+            Map<NameLabel,DirectoryTreeNode> dirNodeMap, RuleNameLabel ruleName) {
         RuleNameLabel parent = ruleName.parent();
         if (parent == null) {
             // there is no parent rule name; the parent node is the top node
@@ -282,6 +284,10 @@ public class RuleJTree extends JTree implements SimulationListener {
         }
     }
 
+    /**
+     * Refreshes the selection in the tree, based on the current state of the
+     * Simulator.
+     */
     void refresh() {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
@@ -530,14 +536,15 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     protected final Map<NameLabel,RuleTreeNode> ruleNodeMap =
         new HashMap<NameLabel,RuleTreeNode>();
-//    /**
-//     * Mapping from rule names in the current grammar to rule nodes in the
-//     * current rule directory.
-//     * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
-//     *                                               \cup RuleTreeNode</tt>
-//     */
-//    protected final Map<Integer,Map<NameLabel,DirectoryTreeNode>> dirNodeMap =
-//        new HashMap<Integer,Map<NameLabel,DirectoryTreeNode>>();
+    // /**
+    // * Mapping from rule names in the current grammar to rule nodes in the
+    // * current rule directory.
+    // * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
+    // * \cup RuleTreeNode</tt>
+    // */
+    // protected final Map<Integer,Map<NameLabel,DirectoryTreeNode>> dirNodeMap
+    // =
+    // new HashMap<Integer,Map<NameLabel,DirectoryTreeNode>>();
 
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
@@ -610,17 +617,35 @@ public class RuleJTree extends JTree implements SimulationListener {
                 if (selectedNode instanceof RuleTreeNode) {
                     // selected tree node is a production rule (level 1 node)
                     RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getNameLabel());
+                    RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
                 } else if (selectedNode instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
                     RuleEvent event = ((MatchTreeNode) selectedNode).event();
                     GraphTransition trans =
                         RuleJTree.this.matchTransitionMap.get(event);
+                    if (trans == null) {
+                        // possibly there is a transition associated with this
+                        // event
+                        // that has not yet made it to the matchTransitionMap
+                        // because the refresh is only occurring after setting
+                        // the event; so look it up among the outgoing
+                        // transitions
+                        Iterator<GraphTransition> outTransitions =
+                            getCurrentState().getTransitionIter();
+                        while (outTransitions.hasNext()) {
+                            GraphTransition outTrans = outTransitions.next();
+                            if (outTrans.getEvent().equals(event)) {
+                                RuleJTree.this.matchTransitionMap.put(event,
+                                    trans = outTrans);
+                                break;
+                            }
+                        }
+                    }
                     if (trans != null) {
                         RuleJTree.this.simulator.setTransition(trans);
                     } else {
                         RuleJTree.this.simulator.setEvent(event);
                     }
-
                     if (RuleJTree.this.simulator.getGraphPanel() == RuleJTree.this.simulator.getRulePanel()) {
                         RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getStatePanel());
                     }
@@ -668,31 +693,31 @@ public class RuleJTree extends JTree implements SimulationListener {
                 return;
             }
             Object selectedNode = path.getLastPathComponent();
-            if (selectedNode instanceof RuleTreeNode) {
-                RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
-                return;
-            }
+            // if (selectedNode instanceof RuleTreeNode) {
+            // RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
+            // return;
+            // }
             if (selectedNode instanceof MatchTreeNode) {
-                RuleEvent event = ((MatchTreeNode) selectedNode).event();
-                GraphTransition trans =
-                    RuleJTree.this.matchTransitionMap.get(event);
-                if (trans == null) {
-                    Iterator<GraphTransition> outTransitions =
-                        getCurrentState().getTransitionIter();
-                    while (outTransitions.hasNext()) {
-                        GraphTransition t = outTransitions.next();
-                        if (t.getEvent().equals(event)) {
-                            trans = t;
-                            RuleJTree.this.matchTransitionMap.put(event, trans);
-                            break;
-                        }
-                    }
-                    RuleJTree.this.simulator.setEvent(event);
-                } else {
-                    // if trans is not null, it has been added to the
-                    // matchTransitionMap
-                    RuleJTree.this.simulator.setTransition(trans);
-                }
+                // RuleEvent event = ((MatchTreeNode) selectedNode).event();
+                // GraphTransition trans =
+                // RuleJTree.this.matchTransitionMap.get(event);
+                // if (trans == null) {
+                // Iterator<GraphTransition> outTransitions =
+                // getCurrentState().getTransitionIter();
+                // while (outTransitions.hasNext()) {
+                // GraphTransition t = outTransitions.next();
+                // if (t.getEvent().equals(event)) {
+                // trans = t;
+                // RuleJTree.this.matchTransitionMap.put(event, trans);
+                // break;
+                // }
+                // }
+                // RuleJTree.this.simulator.setEvent(event);
+                // } else {
+                // // if trans is not null, it has been added to the
+                // // matchTransitionMap
+                // RuleJTree.this.simulator.setTransition(trans);
+                // }
                 if (evt.getClickCount() == 2) {
                     RuleJTree.this.simulator.applyMatch();
                 }
