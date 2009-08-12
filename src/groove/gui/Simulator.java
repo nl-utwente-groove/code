@@ -1455,6 +1455,7 @@ public class Simulator {
         assert event != null : "The match and the transition cannot be both null.";
         RuleNameLabel ruleName = event.getRule().getName();
         setCurrentRule(getCurrentGrammar().getRule(ruleName));
+        setCurrentTransition(null);
         setCurrentEvent(event);
         fireSetMatch(event.getMatch(getCurrentState().getGraph()));
         // fireSetTransition(getCurrentTransition());

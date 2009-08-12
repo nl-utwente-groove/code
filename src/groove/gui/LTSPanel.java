@@ -130,12 +130,12 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     }
 
     /**
-     * The LTS does not change is a match (rather than a transition) is
-     * selected.
+     * Removes the emphasis from the currently emphasised edge, if any.
      */
     public void setMatchUpdate(RuleMatch match) {
-        // the LTS does not change is a match (rather than a transition) is
-        // selected
+        if (isGTSactivated()) {
+            getJModel().setActive(getJModel().getActiveState(), null);
+        }
     }
 
     /**
