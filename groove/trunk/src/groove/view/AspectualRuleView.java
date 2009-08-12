@@ -397,10 +397,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     // add the node to the appropriate level where it should be
                     // processed
-                    if (RuleAspect.inNAC(node)) {
-                        // correct level for NACs
-                        level = level.getNegated();
-                    } else if (RuleAspect.isCreator(node) && level.isUniversal()) {
+                    if (RuleAspect.isCreator(node) && level.isUniversal()) {
                         for (int child = 0; child < subLevelCountMap.get(level); child++) {
                             addNodeToLevel(node, true, level.getChild(child),
                                 nestedNodesMap, subLevelCountMap);
@@ -408,6 +405,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     } else {
                         addNodeToLevel(node, true, level, nestedNodesMap,
                             subLevelCountMap);
+                    }
+                    if (RuleAspect.inNAC(node)) {
+                        // correct level for NACs
+                        level = level.getNegated();
                     }
                     nodeLevelMap.put(node, level);
                     Node nodeImage = computeNodeImage(node);
