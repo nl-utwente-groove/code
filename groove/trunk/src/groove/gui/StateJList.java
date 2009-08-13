@@ -212,9 +212,8 @@ public class StateJList extends JList implements SimulationListener {
         @Override
         public void mouseClicked(MouseEvent evt) {
             int index = locationToIndex(evt.getPoint());
-            if (StateJList.this.isEnabled()) {
-                if (evt.getClickCount() == 2 && index >= 0) { // Left double
-                                                              // click
+            if (StateJList.this.isEnabled() && index >= 0) {
+                if (evt.getClickCount() == 2) { // Left double click
                     StateJList.this.doPreviewGraph();
                 } else if (evt.getClickCount() == 1
                     && evt.getButton() == MouseEvent.BUTTON3) { // Right click
