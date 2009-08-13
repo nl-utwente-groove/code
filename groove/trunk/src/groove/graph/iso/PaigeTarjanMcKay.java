@@ -1244,6 +1244,8 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 int newValue = block.getValue();
                 do {
                     newValue += incr;
+                    incr ++;
+                    block.setValue(newValue);
                     isNew = add(block);
                 } while (!isNew);
                 // we've found a new value, now updates the nodes
