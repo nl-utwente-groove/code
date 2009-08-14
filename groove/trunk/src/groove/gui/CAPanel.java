@@ -93,11 +93,6 @@ public class CAPanel extends JPanel implements SimulationListener {
         
         RTextScrollPane scroller = new RTextScrollPane(500,400, this.textPanel, true);
         
-        // create editor and surrounding scrollpane
-//        this.textPanel = new JEditorPane();
-//        JScrollPane scroller = new JScrollPane(this.textPanel);
-        
-//        this.textPanel.setFont(this.textPanel.getFont().deriveFont((float) 16));
         this.textPanel.setText("");
         this.textPanel.setEditable(false);
         this.textPanel.setEnabled(false);
@@ -116,17 +111,14 @@ public class CAPanel extends JPanel implements SimulationListener {
     }
 
     public void setGrammarUpdate(DefaultGrammarView grammar) {
-        this.grammar = grammar;
         this.textPanel.setText("");
 
         this.toggleButton.setEnabled(true);
-
         if( grammar.getProperties().isUseControl() ) {
             this.toggleButton.setText("Disable Control");
         } else {
             this.toggleButton.setText("Enable Control");
         }
-        this.toggleButton.setEnabled(CAPanel.this.simulator.getCurrentGrammar().getProperties().isFixed());
         
         if (grammar.getControl() != null) {
             ControlView cv = grammar.getControl();
@@ -175,7 +167,6 @@ public class CAPanel extends JPanel implements SimulationListener {
     private Simulator simulator;
     /** Panel showing the control program. */
     private RSyntaxTextArea textPanel;
-    private DefaultGrammarView grammar;
     /** Button to start editing the control program. */
     private JButton editButton;
     /** Button to stop editing the control program. */

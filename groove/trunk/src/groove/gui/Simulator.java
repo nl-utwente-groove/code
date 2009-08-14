@@ -902,11 +902,11 @@ public class Simulator {
 
             private int size;
         };
-        dialog.activate(1000);
-        grammarLoader.addObserver(loadListener);
         SwingUtilities.invokeLater(new Thread() {
             @Override
             public void run() {
+                dialog.activate(1000);
+                grammarLoader.addObserver(loadListener);
                 try {
                     final DefaultGrammarView grammar =
                         grammarLoader.unmarshal(grammarURL);
