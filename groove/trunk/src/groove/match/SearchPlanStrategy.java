@@ -23,6 +23,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.VarNodeEdgeLinkedHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
@@ -433,7 +434,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 this.nodeAnchors[index]);
             // value nodes only matched by value nodes
             boolean isValueNode = image instanceof ValueNode;
-            if (SearchPlanStrategy.this.nodeKeys[index] instanceof ValueNode != isValueNode) {
+            if (SearchPlanStrategy.this.nodeKeys[index] instanceof VariableNode != isValueNode) {
                 return false;
             }
             if (isInjective() && !isValueNode) {

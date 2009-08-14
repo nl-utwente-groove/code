@@ -254,7 +254,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
      * Tests if a certain attribute node is of the type allowed in graphs.
      */
     private boolean isAllowedNode(Node node) {
-        return node instanceof ValueNode && ((ValueNode) node).hasValue();
+        return node instanceof ValueNode;
     }
 
     /**

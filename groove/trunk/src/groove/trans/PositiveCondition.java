@@ -25,6 +25,7 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.view.FormatException;
 
@@ -86,30 +87,27 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private void testAlgebra() throws FormatException {
         // collect value and product nodes
-        Set<ValueNode> unresolvedValueNodes = new HashSet<ValueNode>();
+        Set<VariableNode> unresolvedVariableNodes = new HashSet<VariableNode>();
         Map<ProductNode,BitSet> unresolvedProductNodes =
             new HashMap<ProductNode,BitSet>();
         // test if product nodes have the required arguments
         for (Node node : getTarget().nodeSet()) {
-            if (node instanceof ValueNode) {
-                if (!((ValueNode) node).hasValue()) {
-                    boolean hasIncomingNonAttributeEdge = false;
-                    for (Edge edge : getTarget().edgeSet(node,
-                        Edge.TARGET_INDEX)) {
-                        if (edge instanceof DefaultEdge) {
-                            hasIncomingNonAttributeEdge = true;
-                        }
+            if (node instanceof VariableNode && !(node instanceof ValueNode)) {
+                boolean hasIncomingNonAttributeEdge = false;
+                for (Edge edge : getTarget().edgeSet(node, Edge.TARGET_INDEX)) {
+                    if (edge instanceof DefaultEdge) {
+                        hasIncomingNonAttributeEdge = true;
                     }
-                    if (!hasIncomingNonAttributeEdge) {
-                        unresolvedValueNodes.add((ValueNode) node);
-                    }
+                }
+                if (!hasIncomingNonAttributeEdge) {
+                    unresolvedVariableNodes.add((VariableNode) node);
                 }
             } else if (node instanceof ProductNode) {
                 ProductNode product = (ProductNode) node;
                 unresolvedProductNodes.put(product, new BitSet(product.arity()));
             }
         }
-        unresolvedValueNodes.removeAll(getRootMap().nodeMap().values());
+        unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
         // now resolve nodes until stable
         boolean stable = false;
         while (!stable) {
@@ -122,7 +120,7 @@ abstract public class PositiveCondition<M extends Match> extends
                 BitSet arguments = productEntry.getValue();
                 for (Edge edge : getTarget().outEdgeSet(product)) {
                     if (edge instanceof ArgumentEdge
-                        && !unresolvedValueNodes.contains(edge.opposite())) {
+                        && !unresolvedVariableNodes.contains(edge.opposite())) {
                         int argumentNumber = ((ArgumentEdge) edge).getNumber();
                         arguments.set(argumentNumber);
                     }
@@ -132,7 +130,7 @@ abstract public class PositiveCondition<M extends Match> extends
                     // the outgoing operations
                     for (Edge edge : getTarget().outEdgeSet(product)) {
                         if (edge instanceof OperatorEdge) {
-                            if (unresolvedValueNodes.remove(((OperatorEdge) edge).target())) {
+                            if (unresolvedVariableNodes.remove(((OperatorEdge) edge).target())) {
                                 stable = false;
                             }
                         }
@@ -141,9 +139,9 @@ abstract public class PositiveCondition<M extends Match> extends
                 }
             }
         }
-        if (!unresolvedValueNodes.isEmpty()) {
+        if (!unresolvedVariableNodes.isEmpty()) {
             throw new FormatException(
-                "Cannot resolve attribute value nodes %s", unresolvedValueNodes);
+                "Cannot resolve attribute value nodes %s", unresolvedVariableNodes);
         }
         if (!unresolvedProductNodes.isEmpty()) {
             Map.Entry<ProductNode,BitSet> productEntry =

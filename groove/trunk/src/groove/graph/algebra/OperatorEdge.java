@@ -24,20 +24,20 @@ import groove.graph.DefaultLabel;
  * This class represents the edges in attributed graphs which support the
  * application of algebra operations on tuples of data values. The source- node
  * should be an instance of {@link groove.graph.algebra.ProductNode} and the
- * target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
+ * target-node should be an instance of {@link groove.graph.algebra.VariableNode}.
  * 
  * @author Harmen Kastenberg
  * @version $Revision$
  */
 public class OperatorEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
+        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
     /**
      * Constructs an edge for a given operation.
      * @param source the product node that is the source of the edge
      * @param target the target node for the edge
      * @param operation the associated operation
      */
-    public OperatorEdge(ProductNode source, ValueNode target,
+    public OperatorEdge(ProductNode source, VariableNode target,
             Operation operation) {
         super(source, DefaultLabel.createLabel(operation.getSymbol()), target);
         this.operation = operation;

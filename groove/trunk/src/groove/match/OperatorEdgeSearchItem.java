@@ -21,6 +21,7 @@ import groove.graph.Node;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Arrays;
@@ -48,10 +49,10 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         this.arguments = edge.source().getArguments();
         this.target = edge.target();
         this.neededNodes = new HashSet<Node>(this.arguments);
-        if (this.target.hasValue()) {
+        if (this.target instanceof ValueNode) {
             this.boundNodes = Collections.<Node>emptySet();
             this.neededNodes.add(this.target);
-            this.value = this.target.getValue();
+            this.value = ((ValueNode) this.target).getValue();
         } else {
             this.boundNodes = Collections.<Node>singleton(this.target);
             this.value = null;
@@ -95,7 +96,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         int result = 0;
         if (other instanceof OperatorEdgeSearchItem) {
             OperatorEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
-            List<ValueNode> otherArguments = otherEdge.source().getArguments();
+            List<VariableNode> otherArguments = otherEdge.source().getArguments();
             result = this.edge.label().compareTo(otherEdge.label());
             for (int i = 0; result == 0 && i < this.arguments.size(); i++) {
                 result = this.arguments.get(i).compareTo(otherArguments.get(i));
@@ -138,9 +139,9 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     /** The operation of the product edge. */
     final Operation operation;
     /** List of operands of the product edge's source node. */
-    final List<ValueNode> arguments;
+    final List<VariableNode> arguments;
     /** The target node of the product edge. */
-    final ValueNode target;
+    final VariableNode target;
     /** The value of the target node, if it is a constant. */
     final Object value;
     /** Singleton set consisting of <code>target</code>. */

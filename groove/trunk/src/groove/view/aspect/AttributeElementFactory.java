@@ -29,6 +29,7 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 
@@ -63,12 +64,12 @@ public class AttributeElementFactory {
      * Creates an attribute-related node from a given {@link AspectNode} found
      * in a given {@link AspectGraph}. The type of the resulting node depends
      * on the {@link AttributeAspect} value of the given node and its incident
-     * edges. The result is a {@link ValueNode} or {@link ProductNode}, or
+     * edges. The result is a {@link VariableNode} or {@link ProductNode}, or
      * <code>null</code> if the node contains no special
      * {@link AttributeAspect} value. An exception is thrown if the context of
      * the node in the graph is incorrect.
      * @param node the node for which we want an attribute-related node
-     * @return a {@link ValueNode} or {@link ProductNode} corresponding to
+     * @return a {@link VariableNode} or {@link ProductNode} corresponding to
      *         <code>node</code>, or <code>null</code>
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
@@ -90,17 +91,17 @@ public class AttributeElementFactory {
     }
 
     /**
-     * Creates a {@link ValueNode} corresponding to a given aspect node whose
+     * Creates a {@link VariableNode} corresponding to a given aspect node whose
      * {@link AttributeAspect} value equals {@link #VALUE}. This is either a
-     * variable node (if the original node has no outgoing edges), or a constant
-     * node whose value depends on the label of the node's self-edge.
-     * @param node the node for which a {@link ValueNode} is to be created
+     * true variable node (if the original node has no outgoing edges), or a {@link ValueNode}
+     * whose value depends on the label of the node's self-edge.
+     * @param node the node for which a {@link VariableNode} is to be created
      * @throws FormatException if the outgoing edges of <code>node</code> are
      *         incorrect
      */
-    private ValueNode createValueNode(AspectNode node)
+    private VariableNode createValueNode(AspectNode node)
         throws FormatException {
-        ValueNode result;
+        VariableNode result;
         // check if there is a single constant edge on this node
         Collection<AspectEdge> outEdges = this.graph.outEdgeSet(node);
         Set<AspectEdge> attributeEdges = new HashSet<AspectEdge>();
@@ -110,7 +111,7 @@ public class AttributeElementFactory {
             }
         }
         if (attributeEdges.isEmpty()) {
-            result = ValueNode.createVariableNode(node.getNumber());
+            result = VariableNode.createVariableNode(node.getNumber());
         } else if (attributeEdges.size() > 1) {
             throw new FormatException("Too many edges on constant node: %s",
                 attributeEdges);
@@ -247,11 +248,11 @@ public class AttributeElementFactory {
             throw new FormatException("Source arity of '%s'-edge should be %d",
                 operator, operator.getArity());
         }
-        if (!(target instanceof ValueNode)) {
+        if (!(target instanceof VariableNode)) {
             throw new FormatException(
                 "Target of '%s'-edge should be a variable node", operator);
         }
-        return new OperatorEdge((ProductNode) source, (ValueNode) target,
+        return new OperatorEdge((ProductNode) source, (VariableNode) target,
             operator);
     }
 
@@ -277,12 +278,12 @@ public class AttributeElementFactory {
         if (target == null) {
             throw new FormatException("Target of '%d'-edge has no image",
                 argNumber);
-        } else if (!(target instanceof ValueNode)) {
+        } else if (!(target instanceof VariableNode)) {
             throw new FormatException(
                 "Target of '%d'-edge should be a variable node", argNumber);
         }
         ArgumentEdge result =
-            new ArgumentEdge((ProductNode) source, argNumber, (ValueNode) target);
+            new ArgumentEdge((ProductNode) source, argNumber, (VariableNode) target);
         result.source().setArgument(argNumber, result.target());
         return result;
     }

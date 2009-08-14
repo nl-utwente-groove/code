@@ -235,7 +235,7 @@ public class GraphSearchPlanFactory {
             Iterator<Node> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
                 Node node = unmatchedNodeIter.next();
-                if (node instanceof ValueNode && ((ValueNode) node).hasValue()) {
+                if (node instanceof ValueNode) {
                     result.add(createNodeSearchItem(node));
                     unmatchedNodeIter.remove();
                 }

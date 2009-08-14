@@ -149,7 +149,7 @@ public class DefaultNode implements Node {
         // code *= code-1;
         // return (code << 16) + 3*code;
         // the following is taken from java.util.HashMap
-        int h = this.nodeNr + 2 + getClass().hashCode();
+        int h = (this.nodeNr + 2) ^ getClass().hashCode();
         h *= h;
         h += ~(h << 14);
         h ^= (h >>> 19);

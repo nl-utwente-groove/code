@@ -23,15 +23,15 @@ import groove.util.Groove;
 /**
  * Instances of this class are edges between
  * {@link groove.graph.algebra.ProductNode}s and
- * {@link groove.graph.algebra.ValueNode}s.
+ * {@link groove.graph.algebra.VariableNode}s.
  * 
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
 public class ArgumentEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
+        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
     /** Constructs a fresh edge. */
-    public ArgumentEdge(ProductNode source, int number, ValueNode target) {
+    public ArgumentEdge(ProductNode source, int number, VariableNode target) {
         super(source, DefaultLabel.createLabel("" + Groove.LC_PI + number),
             target);
         this.number = number;

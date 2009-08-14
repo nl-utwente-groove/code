@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Instances of this class represent tuples of data values on which one can
  * perform algebraic operations. A product node has <i>arguments</i>, which are
- * the {@link ValueNode}s attached to it through {@link ArgumentEdge}s, and
+ * the {@link VariableNode}s attached to it through {@link ArgumentEdge}s, and
  * <i>operands</i>, which are the corresponding constants on those
  * nodes.
  * @author Harmen Kastenberg
@@ -38,7 +38,7 @@ public class ProductNode extends DefaultNode {
      */
     public ProductNode(int nr, int arity) {
         super(nr);
-        this.arguments = arity == 0 ? EMPTY_ARGUMENT_LIST : new ArrayList<ValueNode>(arity);
+        this.arguments = arity == 0 ? EMPTY_ARGUMENT_LIST : new ArrayList<VariableNode>(arity);
         for (int i = 0; i < arity; i++) {
             this.arguments.add(null);
         }
@@ -67,12 +67,12 @@ public class ProductNode extends DefaultNode {
      * @throws IllegalArgumentException if argument number <code>i</code> has
      *         already been set
      */
-    public void setArgument(int i, ValueNode arg) {
+    public void setArgument(int i, VariableNode arg) {
         if (arg == null) {
             throw new IllegalArgumentException(
                 String.format("Null argument not allowed"));
         }
-        ValueNode oldArg = this.arguments.set(i, arg);
+        VariableNode oldArg = this.arguments.set(i, arg);
         if (oldArg == null) {
             this.argCount++;
         } else if (!oldArg.equals(arg)) {
@@ -82,7 +82,7 @@ public class ProductNode extends DefaultNode {
     }
 
     /** Retrieves the list of arguments of the product node. */
-    public List<ValueNode> getArguments() {
+    public List<VariableNode> getArguments() {
         return this.arguments;
     }
 
@@ -103,12 +103,12 @@ public class ProductNode extends DefaultNode {
      * The list of arguments of this product node (which are the value nodes to
      * which an outgoing AlgebraEdge is pointing).
      */
-    private final List<ValueNode> arguments;
+    private final List<VariableNode> arguments;
     /**
      * The number of arguments (i.e., elements of <code>argument</code>) that
      * have already been set.
      */
     private int argCount;
     /** Empty list of value nodes, to be passed to the super constructor. */
-    static private final List<ValueNode> EMPTY_ARGUMENT_LIST = Arrays.asList();
+    static private final List<VariableNode> EMPTY_ARGUMENT_LIST = Arrays.asList();
 }

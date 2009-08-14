@@ -1,6 +1,7 @@
 package groove.trans;
 
 import groove.algebra.AlgebraRegister;
+import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
 
@@ -20,15 +21,7 @@ import java.util.Map.Entry;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemProperties extends java.util.Properties {
-    /**
-     * Freezes the properties object, after which changing any properties
-     * becomes illegal.
-     */
-    public void setFixed() {
-        this.fixed = true;
-    }
-
+public class SystemProperties extends java.util.Properties implements Fixable {
     /**
      * Indicates if the LTS labels should contain transition parameters. Default
      * value: <code>false</code>.
@@ -39,7 +32,6 @@ public class SystemProperties extends java.util.Properties {
             && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));
     }
 
-    
     /**
      * Indicates if control is used and that the system will look for a control program.
      * Default value: <code>true</code>
@@ -227,7 +219,7 @@ public class SystemProperties extends java.util.Properties {
      */
     @Override
     public synchronized Object setProperty(String key, String value) {
-        testFixed();
+        testFixed(true);
         return super.setProperty(key, value);
     }
 
@@ -239,7 +231,7 @@ public class SystemProperties extends java.util.Properties {
      */
     @Override
     public synchronized void load(InputStream inStream) throws IOException {
-        testFixed();
+        testFixed(true);
         super.load(inStream);
     }
 
@@ -252,7 +244,7 @@ public class SystemProperties extends java.util.Properties {
     @Override
     public synchronized void loadFromXML(InputStream in) throws IOException,
         InvalidPropertiesFormatException {
-        testFixed();
+        testFixed(true);
         super.loadFromXML(in);
     }
 
@@ -264,7 +256,7 @@ public class SystemProperties extends java.util.Properties {
      */
     @Override
     public synchronized void clear() {
-        testFixed();
+        testFixed(true);
         super.clear();
     }
 
@@ -276,7 +268,7 @@ public class SystemProperties extends java.util.Properties {
      */
     @Override
     public synchronized Object put(Object key, Object value) {
-        testFixed();
+        testFixed(true);
         return super.put(key, value);
     }
 
@@ -288,7 +280,7 @@ public class SystemProperties extends java.util.Properties {
      */
     @Override
     public synchronized Object remove(Object key) {
-        testFixed();
+        testFixed(true);
         return super.remove(key);
     }
 
@@ -305,12 +297,23 @@ public class SystemProperties extends java.util.Properties {
     }
 
     /**
-     * Tests if the graph has been fixed, and throws an exception if this is the
-     * case.
-     * @see #setFixed()
-     * @throws IllegalStateException if the graph has been fixed.
+     * Freezes the properties object, after which changing any properties
+     * becomes illegal.
      */
-    private void testFixed() throws IllegalStateException {
+    public void setFixed() {
+        this.fixed = true;
+    }
+
+    /** 
+     * Indicates if the properties are fixed.
+     * If so, any attempt to modify any of the properties will result in an {@link IllegalStateException}.
+     * @return <code>true</code> if the properties are fixed.
+     */
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    public void testFixed(boolean fixed) throws IllegalStateException {
         if (this.fixed) {
             throw new IllegalStateException("Cannot change fixed properties");
         }

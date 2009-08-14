@@ -21,7 +21,7 @@ import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.VarSupport;
 
@@ -110,10 +110,10 @@ class AnchorSearchItem extends AbstractSearchItem {
     /**
      * Tests is a give node can serve proper anchor, in the sense that it is
      * matched to an actual host graph node. This fails to hold for
-     * {@link ProductNode}s that are not {@link ValueNode}s.
+     * {@link ProductNode}s that are not {@link VariableNode}s.
      */
     private boolean isAnchorable(Node node) {
-        return !(node instanceof ProductNode) || node instanceof ValueNode;
+        return !(node instanceof ProductNode) || node instanceof VariableNode;
     }
 
     /**
