@@ -26,7 +26,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeHashMap;
@@ -158,22 +158,22 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         // }
         // }
     }
-
-    /**
-     * Returns <code>true</code> if the target graph of the condition contains
-     * {@link ValueNode}s, or the negative conjunct is attributed.
-     */
-    private boolean hasAttributes() {
-        boolean result = ValueNode.hasValueNodes(getTarget());
-        if (result) {
-            Iterator<AbstractCondition<?>> subConditionIter =
-                getSubConditions().iterator();
-            while (!result && subConditionIter.hasNext()) {
-                result = subConditionIter.next().hasAttributes();
-            }
-        }
-        return result;
-    }
+//
+//    /**
+//     * Returns <code>true</code> if the target graph of the condition contains
+//     * {@link ValueNode}s, or the negative conjunct is attributed.
+//     */
+//    private boolean hasAttributes() {
+//        boolean result = ValueNode.hasValueNodes(getTarget());
+//        if (result) {
+//            Iterator<AbstractCondition<?>> subConditionIter =
+//                getSubConditions().iterator();
+//            while (!result && subConditionIter.hasNext()) {
+//                result = subConditionIter.next().hasAttributes();
+//            }
+//        }
+//        return result;
+//    }
 
     /**
      * Tests if the target graph of the condition contains nodes without
@@ -339,10 +339,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Tests is a give node can serve proper anchor, in the sense that it is
      * matched to an actual host graph node. This fails to hold for
-     * {@link ProductNode}s that are not {@link ValueNode}s.
+     * {@link ProductNode}s that are not {@link VariableNode}s.
      */
     boolean isAnchorable(Node node) {
-        return !(node instanceof ProductNode) || node instanceof ValueNode;
+        return !(node instanceof ProductNode) || node instanceof VariableNode;
     }
 
     /**

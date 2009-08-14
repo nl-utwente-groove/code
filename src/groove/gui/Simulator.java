@@ -811,8 +811,9 @@ public class Simulator {
 
     /**
      * Does the actual saving of a control program in the current grammar.
-     * @param program
-     * @return the file to save control to.
+     * The target file will be derived from the current grammar location and control name.
+     * @param program the (parsable) control program to be saved (non-null)
+     * @return the target file used; <code>null</code> if saving failed due to some error
      */
     File handleSaveControl(String program) {
         // check if we had a control program
@@ -1225,11 +1226,21 @@ public class Simulator {
         }
     }
 
-    void doSaveControl(String controlProgram, File file) {
+    /** 
+     * Attempts to save a control program to a file.
+     * Failure to do so will be reported in an error dialog.
+     * The return value indicates if the attempt was successful.
+     * @param controlProgram string containing a (parsable) control program (non-null)
+     * @param file target file; will be overwritten if already existing (non-null)
+     * @return <code>true</code> if the program was successfully saved
+     */
+    boolean doSaveControl(String controlProgram, File file) {
         try {
             ControlView.store(controlProgram, new FileOutputStream(file));
+            return true;
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
+            return false;
         }
     }
 

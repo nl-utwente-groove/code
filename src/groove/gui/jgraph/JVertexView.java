@@ -22,6 +22,7 @@ import static groove.util.Converter.createSpanTag;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.util.Converter.HTMLTag;
 
 import java.awt.Color;
@@ -185,7 +186,7 @@ public class JVertexView extends VertexView {
     private int getVertexShape() {
         if (getCell() instanceof GraphJVertex) {
             Node actualNode = ((GraphJVertex) getCell()).getActualNode();
-            if (actualNode instanceof ValueNode) {
+            if (actualNode instanceof VariableNode) {
                 return ELLIPSE_SHAPE;
             } else if (actualNode instanceof ProductNode) {
                 return DIAMOND_SHAPE;

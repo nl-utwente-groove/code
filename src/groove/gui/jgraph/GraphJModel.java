@@ -30,6 +30,7 @@ import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
@@ -620,7 +621,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result = (AttributeMap) this.defaultNodeAttr.clone();
-        if (node instanceof ValueNode) {
+        if (node instanceof VariableNode) {
             result.applyMap(getJVertexDataAttr());
         }
         return result;

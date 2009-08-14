@@ -35,12 +35,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
      * @param node the node to be matched
      */
     public ValueNodeSearchItem(ValueNode node) {
-        if (!node.hasValue()) {
-            throw new IllegalArgumentException(String.format(
-                "Cannot search for variable node %s", node));
-        }
         this.node = node;
-//        this.nodeImage = AlgebraGraph.getInstance().getValueNode(node.getConstant());
         this.boundNodes = Collections.<Node>singleton(node);
     }
 

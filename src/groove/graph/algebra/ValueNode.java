@@ -18,13 +18,9 @@ package groove.graph.algebra;
 
 import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
-import groove.graph.DefaultNode;
-import groove.graph.Graph;
-import groove.graph.Node;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -33,7 +29,7 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
-public class ValueNode extends ProductNode {
+public class ValueNode extends VariableNode {
     /**
      * Constructs a (numbered) node for a given algebra and value of that algebra.
      * @param nr the number for the new node.
@@ -41,54 +37,42 @@ public class ValueNode extends ProductNode {
      * @param value the value to create a graph node for; non-null
      */
     private ValueNode(int nr, Algebra<?> algebra, Object value) {
-        super(nr, 0);
+        super(nr);
         this.algebra = algebra;
         this.value = value;
         assert value == null || algebra != null;
     }
 
     /**
-     * Constructs a (numbered) value node for a variable.
-     */
-    private ValueNode(int nr) {
-        this(nr, null, null);
-    }
-
-    /**
-     * Method returning the algebra to which the attribute node belongs.
-     * @return the algebra to which the attribute node belongs
+     * Method returning the (non-null) algebra to which the attribute node belongs.
+     * @return the (non-null) algebra to which the attribute node belongs
      */
     public Algebra<?> getAlgebra() {
         return this.algebra;
     }
 
     /**
-     * Returns the algebra value this value node is
-     * representing. May be <code>null</code> if the value node is
-     * a variable.
+     * Returns the (non-null) algebra value this value node is
+     * representing.
      */
     public Object getValue() {
         return this.value;
     }
-
-    /** 
-     * Returns <code>true</code> if this value node represents a variable.
-     * @see #getValue()
-     */
-    public boolean hasValue() {
-        return this.value != null;
-    }
-    
+//
+//    /** 
+//     * Returns <code>true</code> if this value node represents a variable.
+//     * @see #getValue()
+//     */
+//    public boolean hasValue() {
+//        return this.value != null;
+//    }
+//    
     /**
      * Returns a symbolic description of the value, which uniquely identifies
      * the value in the algebra.
      */
     public String getSymbol() {
-        if (hasValue()) {
-            return getAlgebra().getSymbol(getValue());
-        } else {
-            return null;
-        }
+        return getAlgebra().getSymbol(getValue());
     }
 
     /**
@@ -97,35 +81,29 @@ public class ValueNode extends ProductNode {
      */
     @Override
     public String toString() {
-        if (!hasValue()) {
-            return "x" + getNumber();
-        } else {
-            String algebraName =
-                AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
-            return algebraName + CONTENT_SEPARATOR + getSymbol();
-        }
+        String algebraName =
+            AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
+        return algebraName + CONTENT_SEPARATOR + getSymbol();
     }
-
-    /** Value nodes with and without value may overlap in node number. */
-    @Override
-    protected boolean testDiffers(DefaultNode other) {
-        return super.testDiffers(other) || this.hasValue() != ((ValueNode) other).hasValue();
-    }
-
-    /** Modifies the super result by testing whether this is actually a variable node. */
-    @Override
-    protected int computeHashCode() {
-        return super.computeHashCode() * (hasValue() ? 1 : 3);
-    }
+//
+//    /** Value nodes with and without value may overlap in node number. */
+//    @Override
+//    protected boolean testDiffers(DefaultNode other) {
+//        return super.testDiffers(other) || this.hasValue() != ((ValueNode) other).hasValue();
+//    }
+//
+//    /** Modifies the super result by testing whether this is actually a variable node. */
+//    @Override
+//    protected int computeHashCode() {
+//        return super.computeHashCode() * (hasValue() ? 1 : 3);
+//    }
 
     /**
-     * the algebra to which this value belongs; <code>null</code> if the node
-     * stands for a variable.
+     * The algebra to which this value belongs (non-null).
      */
     private final Algebra<?> algebra;
     /**
-     * the operation represented by this value node; <code>null</code> if the
-     * node stands for a variable.
+     * The operation represented by this value node (non-null).
      */
     private final Object value;
 
@@ -147,33 +125,33 @@ public class ValueNode extends ProductNode {
         }
         return result;
     }
-    
-    /** 
-     * Returns a new value node, with a given number but without predefined value.
-     * Reuses a previously created variable node with the same number, if any.
-     */
-    static public ValueNode createVariableNode(int nr) {
-        ValueNode result = variableNodeStore.get(nr);
-        if (result == null) {
-            variableNodeStore.put(nr, result = new ValueNode(nr));
-        }
-        return result;
-    }
-    
-    /** Tests if a given graph contains value nodes. */
-    static public boolean hasValueNodes(Graph graph) {
-        boolean result = false;
-        Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
-        while (!result && nodeIter.hasNext()) {
-            result = (nodeIter.next() instanceof ValueNode);
-        }
-        return result;
-    }
+//    
+//    /** 
+//     * Returns a new value node, with a given number but without predefined value.
+//     * Reuses a previously created variable node with the same number, if any.
+//     */
+//    static public ValueNode createVariableNode(int nr) {
+//        ValueNode result = variableNodeStore.get(nr);
+//        if (result == null) {
+//            variableNodeStore.put(nr, result = new ValueNode(nr));
+//        }
+//        return result;
+//    }
+//    
+//    /** Tests if a given graph contains value nodes. */
+//    static public boolean hasValueNodes(Graph graph) {
+//        boolean result = false;
+//        Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
+//        while (!result && nodeIter.hasNext()) {
+//            result = (nodeIter.next() instanceof ValueNode);
+//        }
+//        return result;
+//    }
     
     /** Internal store of previously generated value nodes. */
     static private final Map<String,Map<Object,ValueNode>> valueNodeStore = new HashMap<String,Map<Object,ValueNode>>();
     /** Maximum value node number */
     static private int valueNodeCount;
-    /** Store of previously created variable nodes. */
-    static private final Map<Integer,ValueNode> variableNodeStore = new HashMap<Integer,ValueNode>();
+//    /** Store of previously created variable nodes. */
+//    static private final Map<Integer,ValueNode> variableNodeStore = new HashMap<Integer,ValueNode>();
 }

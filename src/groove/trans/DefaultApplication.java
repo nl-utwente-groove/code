@@ -601,8 +601,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     }
 
     /**
-     * Returns the currently detected set of value nodes that have become
-     * isolated due to edge erasure.
+     * Returns the currently added set of value nodes.
      */
     private Set<ValueNode> getAddedValueNodes() {
         if (this.addedValueNodes == null) {
@@ -660,7 +659,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     private Set<ValueNode> isolatedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */
     private Set<ValueNode> addedValueNodes;
-    /** The set of value nodes that have been added due to edge creation. */
+    /** The set of value nodes that have been removed due to edge deletion. */
     private Set<ValueNode> removedValueNodes;
     /** The set of edges (to be) erased by this rule applications. */
     private Set<Edge> erasedEdges;

@@ -24,6 +24,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
 import groove.util.Converter;
 import groove.view.LabelParser;
@@ -325,15 +326,14 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * attribute-related.
      */
     boolean isDataNode() {
-        return getActualNode() instanceof ValueNode
-            || getActualNode() instanceof ProductNode;
+        return getActualNode() instanceof ProductNode;
     }
 
     /**
      * @return true if this node is a value node, false otherwise.
      */
     public boolean isValueNode() {
-        return getActualNode() instanceof ValueNode;
+        return getActualNode() instanceof VariableNode;
     }
     
     /**
@@ -351,14 +351,14 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @see #getValueSymbol()
      */
     boolean hasValue() {
-        return (getActualNode() instanceof ValueNode)
-            && ((ValueNode) getActualNode()).hasValue();
+        return (getActualNode() instanceof ValueNode);
     }
 
     /**
-     * Callback method to return the value stored in the underlying graph node,
-     * in case the graph node is a constant value node.
-     * @see ValueNode#getValue()
+     * Callback method to return the symbolic representation of 
+     * the value stored in the underlying graph node,
+     * in case the graph node is a value node.
+     * @see ValueNode#getSymbol()
      */
     String getValueSymbol() {
         if (getActualNode() instanceof ValueNode) {
@@ -409,11 +409,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         StringBuilder result = new StringBuilder();
         Node node = getActualNode();
         if (node instanceof ValueNode) {
-            if (((ValueNode) node).hasValue()) {
-                result.append("Constant");
-            } else {
-                result.append("Variable");
-            }
+            result.append("Constant");
+        } else if (node instanceof VariableNode) {
+            result.append("Variable");
         } else if (node instanceof ProductNode) {
             result.append("Product");
         }
