@@ -24,15 +24,19 @@ import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
@@ -52,6 +56,7 @@ public class StateJList extends JList implements SimulationListener {
         this.simulator.addSimulationListener(this);
         this.setEnabled(false);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.setCellRenderer(new MyCellRenderer());
         this.addMouseListener(new MyMouseListener());
     }
 
@@ -83,10 +88,13 @@ public class StateJList extends JList implements SimulationListener {
         int index = locationToIndex(atPoint);
         if (getCellBounds(index, index).contains(atPoint)) {
             result.addSeparator();
-            result.add(getSetStartGraphAction());
+            result.add(this.simulator.getCopyGraphAction());
             result.add(this.simulator.getDeleteGraphAction());
+            result.add(this.simulator.getRenameGraphAction());
             result.addSeparator();
+            result.add(getSetStartGraphAction());
             result.add(getPreviewGraphAction());
+            result.add(this.simulator.getEditGraphAction());
         }
         return result;
     }
@@ -146,15 +154,9 @@ public class StateJList extends JList implements SimulationListener {
     public void setGrammarUpdate(DefaultGrammarView grammar) {
         this.removeAll();
         this.setEnabled(false);
-
         if (grammar != null) {
-            Object grammarNames[] = grammar.getGraphs().keySet().toArray();
-            Arrays.sort(grammarNames);
-            this.setListData(grammarNames);
-            if (grammar.getStartGraph() != null) {
-                String startGraph = grammar.getStartGraph().getName();
-                this.setSelectedValue(startGraph, true);
-            }
+            refreshStartGraphName();
+            refreshList(false);
             this.setEnabled(true);
         }
     }
@@ -179,6 +181,58 @@ public class StateJList extends JList implements SimulationListener {
         // does nothing
     }
 
+    /**
+     * Refreshes the list of names by reloading it from the current grammar.
+     * Either the currently selected item is kept, or the start graph is
+     * selected (if it is among the graphs in the list).
+     * @param keepSelection keepSelection if <code>true</code>, attempts to
+     *        reselect the name selected before refreshing; otherwise, attempts
+     *        to select the start graph.
+     */
+    public void refreshList(boolean keepSelection) {
+        DefaultGrammarView grammar = this.simulator.getCurrentGrammar();
+        Map<String,File> graphs = grammar.getGraphs();
+        setList(graphs.keySet(), keepSelection);
+    }
+
+    /**
+     * Sets the {@link #startGraphName} field, based on the currently loaded
+     * grammar.
+     */
+    private void refreshStartGraphName() {
+        DefaultGrammarView grammar = this.simulator.getCurrentGrammar();
+        // test if start graph exists and is taken from this list
+        File startGraphFile = this.simulator.getCurrentStartGraphFile();
+        String startGraphName = grammar.getStartGraph().getName();
+        assert startGraphName != null;
+        if (startGraphFile == null
+            || startGraphFile.equals(grammar.getGraphs().get(startGraphName))) {
+            // emphasise the start graph name
+            this.startGraphName = startGraphName;
+        } else {
+            this.startGraphName = null;
+        }
+    }
+
+    /**
+     * Sets the list of names to a given set.
+     * @param names the set of names to be displayed; will be ordered before
+     *        display
+     * @param keepSelection if <code>true</code>, attempts to reselect the name
+     *        selected before refreshing.
+     */
+    private void setList(Set<String> names, boolean keepSelection) {
+        Object currentSelection = getSelectedValue();
+        Object[] sortedNames = names.toArray();
+        Arrays.sort(sortedNames);
+        this.setListData(sortedNames);
+        if (keepSelection) {
+            setSelectedValue(currentSelection, true);
+        } else if (this.startGraphName != null) {
+            setSelectedValue(this.startGraphName, true);
+        }
+    }
+
     // --------------
     // Private fields
     // --------------
@@ -188,6 +242,12 @@ public class StateJList extends JList implements SimulationListener {
      * @invariant simulator != null
      */
     private final Simulator simulator;
+    /**
+     * Name of the current start graph, if the start graph is taken from the
+     * list; <code>null</code> if there is no start graph or it is not taken
+     * from this list.
+     */
+    private String startGraphName;
     /** Action to set the start graph in the simulator. */
     private Action setStartGraphAction;
     /** Action to preview a graph. */
@@ -229,4 +289,34 @@ public class StateJList extends JList implements SimulationListener {
         }
     }
 
+    /**
+     * Cell renderer that distinguishes the name corresponding to the current
+     * start graph.
+     */
+    private class MyCellRenderer extends DefaultListCellRenderer {
+        // This is the only method defined by ListCellRenderer.
+        // We just reconfigure the JLabel each time we're called.
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, // cell index
+                boolean isSelected, // is the cell selected
+                boolean cellHasFocus) // the list and the cell have the focus
+        {
+            Component result =
+                super.getListCellRendererComponent(list, value, index,
+                    isSelected, hasFocus());
+            // first the default functionality
+            String s = value.toString();
+            if (s.equals(StateJList.this.startGraphName)) {
+                if (!isSelected) {
+                    // distinguish the current start graph name
+                    result.setBackground(Color.LIGHT_GRAY);
+                }
+                setToolTipText("Current start graph");
+            } else {
+                setToolTipText("Potential start graph (right-click to get options)");
+            }
+            return result;
+        }
+    }
 }
