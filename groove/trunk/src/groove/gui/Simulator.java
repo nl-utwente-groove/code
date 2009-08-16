@@ -140,7 +140,6 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -400,6 +399,29 @@ public class Simulator {
     }
 
     /**
+     * Returns the file from which the current start state has been loaded (if
+     * any).
+     * @return the file from which the current start state has been loaded, or
+     *         <code>null</code> if no start state is currently loaded.
+     */
+    public File getCurrentStartGraphFile() {
+        return this.currentStartGraphFile;
+    }
+
+    /**
+     * Sets the current start graph file to a given value (possibly
+     * <code>null</code>).
+     * @return <code>true</code> if the new file is different from the previous
+     */
+    public boolean setCurrentStartGraphFile(File file) {
+        boolean result =
+            (this.currentStartGraphFile == null) ? file != null
+                    : this.currentStartGraphFile.equals(file);
+        this.currentStartGraphFile = file;
+        return result;
+    }
+
+    /**
      * Returns the transition application action permanently associated with
      * this simulator.
      */
@@ -410,7 +432,22 @@ public class Simulator {
         return this.applyTransitionAction;
     }
 
-    /** Returns the edit action permanently associated with this simulator. */
+    /**
+     * Returns the graph copying action permanently associated with this
+     * simulator.
+     */
+    public CopyGraphAction getCopyGraphAction() {
+        // lazily create the action
+        if (this.copyGraphAction == null) {
+            this.copyGraphAction = new CopyGraphAction();
+        }
+        return this.copyGraphAction;
+    }
+
+    /**
+     * Returns the rule copying action permanently associated with this
+     * simulator.
+     */
     public CopyRuleAction getCopyRuleAction() {
         // lazily create the action
         if (this.copyRuleAction == null) {
@@ -465,6 +502,18 @@ public class Simulator {
             this.editRuleAction = new EditRuleAction();
         }
         return this.editRuleAction;
+    }
+
+    /**
+     * Lazily creates and returns the state edit action permanently associated
+     * with this simulator.
+     */
+    public EditStateAction getEditStateAction() {
+        // lazily create the action
+        if (this.editStateAction == null) {
+            this.editStateAction = new EditStateAction();
+        }
+        return this.editStateAction;
     }
 
     /**
@@ -701,6 +750,18 @@ public class Simulator {
      * Returns the rule renaming action permanently associated with this
      * simulator.
      */
+    public RenameGraphAction getRenameGraphAction() {
+        // lazily create the action
+        if (this.renameGraphAction == null) {
+            this.renameGraphAction = new RenameGraphAction();
+        }
+        return this.renameGraphAction;
+    }
+
+    /**
+     * Returns the rule renaming action permanently associated with this
+     * simulator.
+     */
     public RenameRuleAction getRenameRuleAction() {
         // lazily create the action
         if (this.renameRuleAction == null) {
@@ -810,10 +871,12 @@ public class Simulator {
     }
 
     /**
-     * Does the actual saving of a control program in the current grammar.
-     * The target file will be derived from the current grammar location and control name.
+     * Does the actual saving of a control program in the current grammar. The
+     * target file will be derived from the current grammar location and control
+     * name.
      * @param program the (parsable) control program to be saved (non-null)
-     * @return the target file used; <code>null</code> if saving failed due to some error
+     * @return the target file used; <code>null</code> if saving failed due to
+     *         some error
      */
     File handleSaveControl(String program) {
         // check if we had a control program
@@ -1012,8 +1075,8 @@ public class Simulator {
                 new AspectualGraphView(aspectStartGraph,
                     getCurrentGrammar().getProperties());
             getCurrentGrammar().setStartGraph(startGraph);
+            setCurrentStartGraphFile(file);
             setGrammar(getCurrentGrammar());
-            this.currentStartStateFile = file;
         } catch (IOException exc) {
             showErrorDialog(
                 "Could not load start graph from " + file.getName(), exc);
@@ -1106,6 +1169,17 @@ public class Simulator {
     }
 
     /**
+     * Adds a graph to the graph list, by saving it as a file to the current
+     * grammar location.
+     */
+    public void doAddGraph(Graph graph) {
+        File graphFile =
+            new File(FileGps.toFile(this.currentGrammarURL),
+                this.stateFilter.addExtension(GraphInfo.getName(graph)));
+        doAddGraph(graph, graphFile);
+    }
+
+    /**
      * Saves a given graph to a given file.
      */
     void doAddGraph(Graph graph, File file) {
@@ -1119,7 +1193,7 @@ public class Simulator {
                 marshalGraph(saveGraph, file);
                 getCurrentGrammar().addGraph(saveGraph.getInfo().getName(),
                     file);
-                setGrammar(getCurrentGrammar());
+                getStateList().refreshList(true);
             }
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
@@ -1154,9 +1228,18 @@ public class Simulator {
      * Deletes a graph from the start graph view.
      */
     void doDeleteGraph(String name) {
+        // test now if this is the start state, before it is deleted from the
+        // grammar
+        boolean isStartGraph = isStartGraph(name);
         File graphFile = getCurrentGrammar().removeGraph(name);
         deleteGraph(graphFile);
-        setGrammar(getCurrentGrammar());
+        if (isStartGraph) {
+            // reset the start graph to null
+            getCurrentGrammar().setStartGraph(null);
+            setGrammar(getCurrentGrammar());
+        } else {
+            this.stateJList.refreshList(true);
+        }
     }
 
     /**
@@ -1197,7 +1280,7 @@ public class Simulator {
             try {
                 File currentControlFile =
                     getControlFileChooser().getSelectedFile();
-                if (startGraph != null && this.currentStartStateFile == null
+                if (startGraph != null && getCurrentStartGraphFile() == null
                     && currentControlFile == null) {
                     setGrammar(this.currentGrammarLoader.unmarshal(this.currentGrammarURL));
                     // this.currentGrammarFile.toURI().toURL(),
@@ -1205,9 +1288,9 @@ public class Simulator {
                 } else {
                     DefaultGrammarView grammar =
                         this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
-                    if (this.currentStartStateFile != null) {
+                    if (getCurrentStartGraphFile() != null) {
                         AspectGraph aspectStartGraph =
-                            unmarshalGraph(this.currentStartStateFile);
+                            unmarshalGraph(getCurrentStartGraphFile());
                         startGraph =
                             new AspectualGraphView(aspectStartGraph,
                                 grammar.getProperties());
@@ -1226,12 +1309,38 @@ public class Simulator {
         }
     }
 
-    /** 
-     * Attempts to save a control program to a file.
-     * Failure to do so will be reported in an error dialog.
-     * The return value indicates if the attempt was successful.
-     * @param controlProgram string containing a (parsable) control program (non-null)
-     * @param file target file; will be overwritten if already existing (non-null)
+    /**
+     * Renames one of the graphs in the graph list. If the graph was the start
+     * graph, uses the renamed graph again as start graph.
+     */
+    void doRenameGraph(AspectGraph graph, String newName) {
+        String oldName = GraphInfo.getName(graph);
+        // test now if this is the start state, before it is deleted from the
+        // grammar
+        boolean isStartGraph = isStartGraph(oldName);
+        File graphFile = getCurrentGrammar().removeGraph(oldName);
+        deleteGraph(graphFile);
+        GraphInfo.setName(graph, newName);
+        doAddGraph(graph);
+        if (isStartGraph) {
+            // reset the start graph to the renamed graph
+            AspectualGraphView startGraph =
+                new AspectualGraphView(graph,
+                    getCurrentGrammar().getProperties());
+            getCurrentGrammar().setStartGraph(startGraph);
+        } else {
+            this.stateJList.refreshList(true);
+        }
+    }
+
+    /**
+     * Attempts to save a control program to a file. Failure to do so will be
+     * reported in an error dialog. The return value indicates if the attempt
+     * was successful.
+     * @param controlProgram string containing a (parsable) control program
+     *        (non-null)
+     * @param file target file; will be overwritten if already existing
+     *        (non-null)
      * @return <code>true</code> if the program was successfully saved
      */
     boolean doSaveControl(String controlProgram, File file) {
@@ -1737,7 +1846,7 @@ public class Simulator {
         return this.typePanel;
     }
 
-    JList getStateList() {
+    StateJList getStateList() {
         if (this.stateJList == null) {
             this.stateJList = new StateJList(this);
         }
@@ -1957,7 +2066,7 @@ public class Simulator {
         result.add(getRenameLabelAction());
         result.addSeparator();
         result.add(getEditRuleAction());
-        result.add(getEditGraphAction());
+        result.add(getEditStateAction());
         result.addSeparator();
         result.add(getEditRulePropertiesAction());
         result.add(getEditSystemPropertiesAction());
@@ -1972,7 +2081,7 @@ public class Simulator {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
-            this.editGraphItem.setAction(getEditGraphAction());
+            this.editGraphItem.setAction(getEditStateAction());
             // give the rule edit action a chance to replace the graph edit
             // action
             getEditRuleAction();
@@ -2698,6 +2807,19 @@ public class Simulator {
     }
 
     /**
+     * Tests if a graph with a given name (in the graph list) is the one
+     * currently being used as start graph.
+     * @param graphName the graph name to be tested; non-null
+     * @return <code>true</code> if <code>graphName</code> refers to the current
+     *         start graph file.
+     */
+    private boolean isStartGraph(String graphName) {
+        File graphFile = getCurrentGrammar().getGraphs().get(graphName);
+        return graphFile != null
+            && graphFile.equals(getCurrentStartGraphFile());
+    }
+
+    /**
      * The options object of this simulator.
      */
     private Options options;
@@ -2737,7 +2859,7 @@ public class Simulator {
     private RuleEvent currentEvent;
 
     /** File from which the last start state was loaded. */
-    private File currentStartStateFile;
+    private File currentStartGraphFile;
     /**
      * The file or directory containing the last loaded or saved grammar, or
      * <tt>null</tt> if no grammar was yet loaded.
@@ -2851,7 +2973,7 @@ public class Simulator {
     private JTree ruleJTree;
 
     /** Production system graph list */
-    private JList stateJList;
+    private StateJList stateJList;
 
     /** Production rule display panel. */
     private RulePanel rulePanel;
@@ -2900,6 +3022,10 @@ public class Simulator {
     private ApplyTransitionAction applyTransitionAction;
 
     /**
+     * The graph copying action permanently associated with this simulator.
+     */
+    private CopyGraphAction copyGraphAction;
+    /**
      * The rule copying action permanently associated with this simulator.
      */
     private CopyRuleAction copyRuleAction;
@@ -2913,10 +3039,13 @@ public class Simulator {
      */
     private DeleteGraphAction deleteGraphAction;
     /**
-     * The state and rule edit action permanently associated with this
-     * simulator.
+     * The graph edit action permanently associated with this simulator.
      */
     private EditGraphAction editGraphAction;
+    /**
+     * The state edit action permanently associated with this simulator.
+     */
+    private EditStateAction editStateAction;
 
     /**
      * The rule edit action permanently associated with this simulator.
@@ -2999,6 +3128,10 @@ public class Simulator {
     /** The grammar refresh action permanently associated with this simulator. */
     private RefreshGrammarAction refreshGrammarAction;
 
+    /**
+     * The graph renaming action permanently associated with this simulator.
+     */
+    private RenameGraphAction renameGraphAction;
     /**
      * The rule renaming action permanently associated with this simulator.
      */
@@ -3280,6 +3413,32 @@ public class Simulator {
         }
     }
 
+    private class CopyGraphAction extends AbstractAction {
+        CopyGraphAction() {
+            super(Options.COPY_GRAPH_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String oldGraphName =
+                (String) Simulator.this.stateJList.getSelectedValue();
+            if (oldGraphName != null) {
+                try {
+                    AspectGraph oldGraph =
+                        unmarshalGraph(getCurrentGrammar().getGraphs().get(
+                            oldGraphName));
+                    String newGraphName =
+                        askNewGraphName(null, oldGraphName, true);
+                    AspectGraph newGraph = oldGraph.clone();
+                    GraphInfo.setName(newGraph, newGraphName);
+                    doAddGraph(newGraph);
+                } catch (IOException exc) {
+                    new ErrorDialog(getFrame(), String.format(
+                        "Cannot load graph %s", oldGraphName), exc);
+                }
+            }
+        }
+    }
+
     private class CopyRuleAction extends AbstractAction implements Refreshable {
         CopyRuleAction() {
             super(Options.COPY_RULE_ACTION_NAME);
@@ -3299,6 +3458,28 @@ public class Simulator {
                         getCurrentRule().getNameLabel().name(), true);
                 if (newRuleName != null) {
                     doAddRule(newRuleName, oldRuleGraph.clone());
+                }
+            }
+        }
+    }
+
+    private class DeleteGraphAction extends AbstractAction {
+        DeleteGraphAction() {
+            super(Options.DELETE_GRAPH_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
+            addAccelerator(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String graphName =
+                (String) Simulator.this.stateJList.getSelectedValue();
+            if (graphName != null) {
+                String question =
+                    String.format(isStartGraph(graphName)
+                            ? "Delete start graph '%s'?" : "Delete graph '%s'",
+                        graphName);
+                if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
+                    doDeleteGraph(graphName);
                 }
             }
         }
@@ -3327,30 +3508,13 @@ public class Simulator {
         }
     }
 
-    private class DeleteGraphAction extends AbstractAction {
-        DeleteGraphAction() {
-            super(Options.DELETE_GRAPH_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
-            addAccelerator(this);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String graphName =
-                (String) Simulator.this.stateJList.getSelectedValue();
-            String question = String.format("Delete graph '%s'?", graphName);
-            if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
-                doDeleteGraph(graphName);
-            }
-        }
-    }
-
     /**
-     * Action for editing the current state or rule.
+     * Action for editing the current state.
      */
-    private class EditGraphAction extends AbstractAction implements Refreshable {
+    private class EditStateAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
-        EditGraphAction() {
-            super(Options.EDIT_GRAPH_ACTION_NAME);
+        EditStateAction() {
+            super(Options.EDIT_STATE_ACTION_NAME);
             addRefreshable(this);
         }
 
@@ -3393,6 +3557,56 @@ public class Simulator {
                     }
                 };
             dialog.start();
+        }
+    }
+
+    /**
+     * Action for editing the currently selected graph in the graph list.
+     */
+    private class EditGraphAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        EditGraphAction() {
+            super(Options.EDIT_GRAPH_ACTION_NAME);
+        }
+
+        /**
+         * Invokes the editor on the current state. Handles the execution of an
+         * <code>EditGraphAction</code>, if the current panel is the state
+         * panel.
+         */
+        public void actionPerformed(ActionEvent e) {
+            String oldGraphName =
+                (String) Simulator.this.stateJList.getSelectedValue();
+            if (oldGraphName != null) {
+                try {
+                    AspectGraph oldGraph =
+                        unmarshalGraph(getCurrentGrammar().getGraphs().get(
+                            oldGraphName));
+                    EditorDialog dialog =
+                        new EditorDialog(getFrame(), getOptions(),
+                            oldGraph.toPlainGraph()) {
+                            @Override
+                            public void finish() {
+                                File saveFile =
+                                    handleSaveGraph(true, toPlainGraph());
+                                if (saveFile != null
+                                    && confirmLoadStartState(saveFile.getName())) {
+                                    doLoadStartGraph(saveFile);
+                                }
+                            }
+                        };
+                    dialog.start();
+                    //
+                    // String newGraphName =
+                    // askNewGraphName(null, oldGraphName, true);
+                    // AspectGraph newGraph = oldGraph.clone();
+                    // GraphInfo.setName(newGraph, newGraphName);
+                    // doAddGraph(newGraph);
+                } catch (IOException exc) {
+                    new ErrorDialog(getFrame(), String.format(
+                        "Cannot load graph %s", oldGraphName), exc);
+                }
+            }
         }
     }
 
@@ -4280,6 +4494,38 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getCurrentGrammar() != null);
+        }
+    }
+
+    private class RenameGraphAction extends AbstractAction {
+        RenameGraphAction() {
+            super(Options.RENAME_GRAPH_ACTION_NAME);
+            /*
+             * The F2-accelerator is not working, but I do not know why
+             * putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
+             * addAccelerator(this);
+             */
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String oldGraphName =
+                (String) Simulator.this.stateJList.getSelectedValue();
+            if (oldGraphName != null) {
+                try {
+                    AspectGraph graph =
+                        unmarshalGraph(getCurrentGrammar().getGraphs().get(
+                            oldGraphName));
+                    assert graph != null : String.format("Graph '%s' in graph list but not in grammar");
+                    String newGraphName =
+                        askNewGraphName(null, oldGraphName, false);
+                    if (!oldGraphName.equals(newGraphName)) {
+                        doRenameGraph(graph, newGraphName);
+                    }
+                } catch (IOException exc) {
+                    new ErrorDialog(getFrame(), String.format(
+                        "Cannot load graph %s", oldGraphName), exc);
+                }
+            }
         }
     }
 
