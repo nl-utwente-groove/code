@@ -50,16 +50,16 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 public class ControlView {
     // /** File where the control program is stored. * */
     // private final File controlFile;
-
-    /** Grammar view to which this control view belongs. */
-    private final DefaultGrammarView grammarView;
+    //
+    // /** Grammar view to which this control view belongs. */
+    // private final DefaultGrammarView grammarView;
 
     /** The control program loaded at construction time. */
     private final String controlProgram;
 
     private ControlAutomaton automaton;
 
-    private String controlName;
+    private final String controlName;
 
     /**
      * Constructor, needs a grammar view and a filename to a control program.
@@ -71,7 +71,7 @@ public class ControlView {
      */
     public ControlView(DefaultGrammarView result, URL controlURL,
             String controlName) throws IOException {
-        this.grammarView = result;
+        // this.grammarView = result;
         // this.controlFile = controlProgramFile;
         this.controlName = controlName;
         InputStream s = controlURL.openStream();
@@ -101,7 +101,7 @@ public class ControlView {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
         return contents.toString();
     }
 
@@ -138,7 +138,7 @@ public class ControlView {
             throw new FormatException("Error in control:no program available ");
         }
         AutomatonBuilder builder = new AutomatonBuilder();
-        builder.setRuleNames(this.grammarView);
+        builder.setRuleNames(grammar.getRuleNames());
 
         try {
             GCLLexer lexer = new GCLLexer(new ANTLRStringStream(getProgram()));

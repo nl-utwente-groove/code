@@ -24,10 +24,10 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
-import groove.util.CollectionOfCollections;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.ActionMap;
@@ -139,40 +140,53 @@ public class RuleJTree extends JTree implements SimulationListener {
         this.matchNodeMap.clear();
         this.matchTransitionMap.clear();
         this.topDirectoryNode.removeAllChildren();
-
-        // if the rule system has multiple priorities, we want an extra level of
-        // nodes
-        // then we need to remember the last priority encountered
-        int lastPriority = Integer.MAX_VALUE;
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
-        boolean hasSpecialPriorities = grammar.getPriorityMap().size() > 1;
-        // get the rule names
-        for (RuleView rule : new CollectionOfCollections<RuleView>(
-            grammar.getPriorityMap().values())) {
-            RuleNameLabel ruleName = rule.getNameLabel();
-            // create new top node for the rule, if the rule has a different
-            // priority than the last
-            if (hasSpecialPriorities) {
-                int rulePriority = rule.getPriority();
-                if (lastPriority != rulePriority) {
-                    lastPriority = rulePriority;
-                    topNode = new PriorityTreeNode(lastPriority);
-                    this.topDirectoryNode.add(topNode);
-                    dirNodeMap.clear();
-                }
+        Map<Integer,Set<AspectualRuleView>> priorityMap =
+            getPriorityMap(grammar);
+        for (Map.Entry<Integer,Set<AspectualRuleView>> priorityEntry : priorityMap.entrySet()) {
+            // if the rule system has multiple priorities, we want an extra
+            // level of nodes
+            if (priorityMap.size() > 1) {
+                topNode = new PriorityTreeNode(priorityEntry.getKey());
+                this.topDirectoryNode.add(topNode);
+                dirNodeMap.clear();
             }
-            // recursively add parent directory nodes as required
-            DefaultMutableTreeNode parentNode =
-                addParentNode(topNode, dirNodeMap, ruleName);
-            // create the rule node and register it
-            AspectualRuleView ruleView = grammar.getRuleMap().get(ruleName);
-            RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
-            parentNode.add(ruleNode);
-            expandPath(new TreePath(ruleNode.getPath()));
-            this.ruleNodeMap.put(ruleName, ruleNode);
+            for (AspectualRuleView ruleView : priorityEntry.getValue()) {
+                RuleNameLabel ruleName = ruleView.getNameLabel();
+                // recursively add parent directory nodes as required
+                DefaultMutableTreeNode parentNode =
+                    addParentNode(topNode, dirNodeMap, ruleName);
+                // create the rule node and register it
+                RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
+                parentNode.add(ruleNode);
+                expandPath(new TreePath(ruleNode.getPath()));
+                this.ruleNodeMap.put(ruleName, ruleNode);
+            }
         }
         this.ruleDirectory.reload(this.topDirectoryNode);
         this.listenToSelectionChanges = oldListenToSelectionChanges;
+    }
+
+    /**
+     * Creates a map from priorities to nonempty sets of rules with that
+     * priority from the rule in a given grammar view.
+     * @param grammar the source of the rule map
+     */
+    private Map<Integer,Set<AspectualRuleView>> getPriorityMap(
+            DefaultGrammarView grammar) {
+        Map<Integer,Set<AspectualRuleView>> result =
+            new TreeMap<Integer,Set<AspectualRuleView>>(
+                Rule.PRIORITY_COMPARATOR);
+        for (AspectualRuleView rule : grammar.getRuleMap().values()) {
+            int priority = rule.getPriority();
+            Set<AspectualRuleView> priorityRules = result.get(priority);
+            if (priorityRules == null) {
+                result.put(priority, priorityRules =
+                    new TreeSet<AspectualRuleView>());
+            }
+            priorityRules.add(rule);
+        }
+        return result;
     }
 
     /** Refreshes the view, to add match nodes. */

@@ -43,8 +43,8 @@ public class LinearStrategy extends AbstractStrategy {
     /**
      * Constructs an instance of the strategy with control over the closing of
      * states.
-     * @param closeFast if <code>true</code>, close states immediately after
-     *        a single outgoing transition has been computed.
+     * @param closeFast if <code>true</code>, close states immediately after a
+     *        single outgoing transition has been computed.
      */
     public LinearStrategy(boolean closeFast) {
         if (closeFast) {

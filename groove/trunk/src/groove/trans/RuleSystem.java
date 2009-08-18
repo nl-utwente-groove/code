@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -106,26 +105,6 @@ public class RuleSystem {
      */
     public Set<NameLabel> getRuleNames() {
         return Collections.unmodifiableSet(this.nameRuleMap.keySet());
-    }
-
-    /**
-     * Returns all rules with a structured rule name that have a given parent
-     * rule name.
-     */
-    public Set<Rule> getChildRules(String parent) {
-        Set<Rule> result = new HashSet<Rule>();
-        for (Rule rule : getRules()) {
-            RuleNameLabel label = rule.getName().parent();
-            while (label != null) {
-                if (label.name().compareTo(parent) == 0) {
-                    result.add(rule);
-                    break;
-                } else {
-                    label = label.parent();
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -217,7 +196,7 @@ public class RuleSystem {
      * @throws IllegalStateException if the rule system is fixed
      * @see #isFixed()
      */
-    public Rule remove(NameLabel ruleName) {
+    private Rule remove(NameLabel ruleName) {
         testFixed(false);
         Rule result = this.nameRuleMap.remove(ruleName);
         // now remove the old rule with this name, if any
@@ -283,6 +262,7 @@ public class RuleSystem {
      * @param properties the new properties mapping
      */
     public void setProperties(java.util.Properties properties) {
+        testFixed(false);
         SystemProperties currentRuleProperties = getProperties();
         currentRuleProperties.clear();
         currentRuleProperties.putAll(properties);
@@ -388,7 +368,9 @@ public class RuleSystem {
      * The properties bundle of this rule system.
      */
     private SystemProperties properties;
-    /** Flag indicating that the rule system has been fixed and is ready for use. */
+    /**
+     * Flag indicating that the rule system has been fixed and is ready for use.
+     */
     private boolean fixed;
 
     /**
