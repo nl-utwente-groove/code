@@ -1256,52 +1256,28 @@ public class Simulator {
     }
 
     /**
-     * Saves a rule (without resetting the grammar) to freeze the layout.
-     */
-    void doSaveRule(RuleNameLabel name) {
-        AspectualRuleView rule = getCurrentGrammar().getRule(name);
-        if (rule != null) {
-            try {
-                this.currentGrammarLoader.marshalRule(rule,
-                    FileGps.toFile(this.currentGrammarURL));
-            } catch (IOException exc) {
-                showErrorDialog("Error while saving rule", exc);
-            }
-        }
-    }
-
-    /**
      * Refreshes the currently loaded grammar, if any. Does not ask for
      * confirmation. Has no effect if no grammar is currently loaded.
      */
     void doRefreshGrammar() {
         if (this.currentGrammarURL != null) {
-            AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
             try {
+                DefaultGrammarView grammar =
+                    this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
+                if (getCurrentStartGraphFile() != null) {
+                    AspectGraph aspectStartGraph =
+                        unmarshalGraph(getCurrentStartGraphFile());
+                    AspectualGraphView startGraph =
+                        new AspectualGraphView(aspectStartGraph,
+                            grammar.getProperties());
+                    grammar.setStartGraph(startGraph);
+                }
                 File currentControlFile =
                     getControlFileChooser().getSelectedFile();
-                if (startGraph != null && getCurrentStartGraphFile() == null
-                    && currentControlFile == null) {
-                    setGrammar(this.currentGrammarLoader.unmarshal(this.currentGrammarURL));
-                    // this.currentGrammarFile.toURI().toURL(),
-                    // startGraph.getName()));
-                } else {
-                    DefaultGrammarView grammar =
-                        this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
-                    if (getCurrentStartGraphFile() != null) {
-                        AspectGraph aspectStartGraph =
-                            unmarshalGraph(getCurrentStartGraphFile());
-                        startGraph =
-                            new AspectualGraphView(aspectStartGraph,
-                                grammar.getProperties());
-                        grammar.setStartGraph(startGraph);
-                    }
-                    if (currentControlFile != null) {
-                        new FileGps(false).loadControl(grammar,
-                            currentControlFile);
-                    }
-                    setGrammar(grammar);
+                if (currentControlFile != null) {
+                    new FileGps(false).loadControl(grammar, currentControlFile);
                 }
+                setGrammar(grammar);
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from "
                     + this.currentGrammarURL, exc);

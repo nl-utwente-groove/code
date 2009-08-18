@@ -41,10 +41,9 @@ import java.util.Properties;
  * individual files containing graph rules, from a given location --- presumably
  * the top level directory containing the rule files. The class is an observable
  * to enable the use of progress information. Updates consist of a
- * <code>String</code> update indicating the type of object loaded, followed
- * by an <code>Integer</code> indicating the number of number of objects of
- * this type, followed by a null update to indicate the end of this type of
- * load.
+ * <code>String</code> update indicating the type of object loaded, followed by
+ * an <code>Integer</code> indicating the number of number of objects of this
+ * type, followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -91,8 +90,10 @@ public abstract class AspectualViewGps extends Observable implements
      * Loads the grammar from the given url with the given start graph name and
      * control name.
      * @param location the URL to load from (not <code>null</code>)
-     * @param startGraphName the name of the start graph; if <code>null</code>, {@link #DEFAULT_START_GRAPH_NAME} is chosen
-     * @param controlName the name of the control program; if <code>null</code>, {@link #DEFAULT_CONTROL_NAME} is chosen
+     * @param startGraphName the name of the start graph; if <code>null</code>,
+     *        {@link #DEFAULT_START_GRAPH_NAME} is chosen
+     * @param controlName the name of the control program; if <code>null</code>,
+     *        {@link #DEFAULT_CONTROL_NAME} is chosen
      */
     protected abstract DefaultGrammarView unmarshal(URL location,
             String startGraphName, String controlName) throws IOException;
@@ -120,10 +121,11 @@ public abstract class AspectualViewGps extends Observable implements
      */
     protected void loadControl(DefaultGrammarView result, URL controlURL,
             String controlName) throws IOException {
-        
-        if( result.getProperties().isUseControl() ) {
+
+        if (result.getProperties().isUseControl()) {
             if (controlURL != null) {
-                ControlView cv = new ControlView(result, controlURL, controlName);
+                ControlView cv =
+                    new ControlView(result, controlURL, controlName);
                 result.setControl(cv);
             }
         }
@@ -218,8 +220,8 @@ public abstract class AspectualViewGps extends Observable implements
     }
 
     /**
-     * Unmarshals a rule from a file in <tt>.gpr</tt> format. The rule gets
-     * the filename (without directory path) as name.
+     * Unmarshals a rule from a file in <tt>.gpr</tt> format. The rule gets the
+     * filename (without directory path) as name.
      * @param location the file to get the rule from
      * @param properties the properties for the rule to be unmarshalled
      * @return a rule view for the given rule.
@@ -239,22 +241,6 @@ public abstract class AspectualViewGps extends Observable implements
     public void marshal(DefaultGrammarView gg, File target) throws IOException,
         UnsupportedOperationException {
         // not supported by default
-    }
-
-    /**
-     * Stores a given rule in a given directory.
-     * @param location
-     */
-    @SuppressWarnings("unused")
-    private boolean deleteRecursive(File location) {
-        if (location.isDirectory()) {
-            for (File file : location.listFiles()) {
-                if (!deleteRecursive(file)) {
-                    return false;
-                }
-            }
-        }
-        return location.delete();
     }
 
     /**
@@ -338,7 +324,7 @@ public abstract class AspectualViewGps extends Observable implements
      * unmarshalled. The unmarshaller should create a URL such that the
      * URLLoaderFactory can delegate the URL to this loader.
      * @param file
-     * @return URL 
+     * @return URL
      */
     public abstract URL createURL(File file);
 
@@ -357,10 +343,13 @@ public abstract class AspectualViewGps extends Observable implements
     static public final String LOADING_START_GRAPH = "Loading start graph";
     /** Error message if a grammar cannot be loaded. */
     static protected final String LOAD_ERROR = "Can't load graph grammar";
-    
+
     /** Returns the name of the grammar found at the given URL */
     public abstract String grammarName(URL grammarURL);
-    
-    /** Returns a String representation of the location where the grammar is found */
+
+    /**
+     * Returns a String representation of the location where the grammar is
+     * found
+     */
     public abstract String grammarLocation(URL grammarURL);
 }

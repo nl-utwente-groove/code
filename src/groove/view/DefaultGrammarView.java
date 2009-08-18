@@ -20,7 +20,6 @@ import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
-import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 
@@ -31,9 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Graph grammar with {@link RuleView} information for each rule.
@@ -102,15 +99,8 @@ public class DefaultGrammarView implements
      */
     public AspectualRuleView addRule(AspectualRuleView ruleView)
         throws IllegalStateException {
-        AspectualRuleView result = removeRule(ruleView.getNameLabel());
-        this.ruleMap.put(ruleView.getNameLabel(), ruleView);
-        int priority = ruleView.getPriority();
-        Set<AspectualRuleView> priorityRules = this.priorityMap.get(priority);
-        if (priorityRules == null) {
-            this.priorityMap.put(priority, priorityRules =
-                new TreeSet<AspectualRuleView>());
-        }
-        priorityRules.add(ruleView);
+        AspectualRuleView result =
+            this.ruleMap.put(ruleView.getNameLabel(), ruleView);
         invalidateGrammar();
         return result;
     }
@@ -123,15 +113,6 @@ public class DefaultGrammarView implements
      */
     public AspectualRuleView removeRule(NameLabel name) {
         AspectualRuleView result = this.ruleMap.remove(name);
-        if (result != null) {
-            int priority = result.getPriority();
-            Set<AspectualRuleView> priorityRules =
-                this.priorityMap.get(priority);
-            priorityRules.remove(result);
-            if (priorityRules.isEmpty()) {
-                this.priorityMap.remove(priority);
-            }
-        }
         invalidateGrammar();
         return result;
     }
@@ -143,10 +124,6 @@ public class DefaultGrammarView implements
      */
     public AspectualRuleView getRule(RuleNameLabel name) {
         return this.ruleMap.get(name);
-    }
-
-    public Map<Integer,Set<AspectualRuleView>> getPriorityMap() {
-        return Collections.unmodifiableMap(this.priorityMap);
     }
 
     public AspectualGraphView getStartGraph() {
@@ -273,7 +250,8 @@ public class DefaultGrammarView implements
 
         result.setProperties(getProperties());
         if (getStartGraph() == null) {
-            errors.add(String.format("Grammar %s has no start graph", getName()));
+            errors.add(String.format("No start graph set for grammar '%s'",
+                getName()));
         } else {
             try {
                 result.setStartGraph(getStartGraph().toModel());
@@ -313,8 +291,6 @@ public class DefaultGrammarView implements
     private final Map<RuleNameLabel,AspectualRuleView> ruleMap =
         new TreeMap<RuleNameLabel,AspectualRuleView>();
     /** Mapping from priorities to sets of rule names. */
-    private final Map<Integer,Set<AspectualRuleView>> priorityMap =
-        new TreeMap<Integer,Set<AspectualRuleView>>(Rule.PRIORITY_COMPARATOR);
     /** The name of this grammar view. */
     private String name;
     /** The control automaton * */

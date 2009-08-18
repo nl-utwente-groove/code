@@ -22,7 +22,6 @@ import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Interface encapsulating a representation of a rule system that is essentially
@@ -54,12 +53,6 @@ public interface GrammarView<GV extends View<Graph>,RV extends RuleView>
      * Returns the rule view stored for a given rule name.
      */
     public RV getRule(RuleNameLabel name);
-
-    /**
-     * Returns an unmodifiable map from priorities to non-empty sets of rules in
-     * this grammar with that priority.
-     */
-    public Map<Integer,Set<RV>> getPriorityMap();
 
     /** Returns the start graph of this grammar view. */
     public GV getStartGraph();

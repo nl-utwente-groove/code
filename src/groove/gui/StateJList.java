@@ -99,6 +99,7 @@ public class StateJList extends JList implements SimulationListener {
         return result;
     }
 
+    /** Lazily creates and returns the set start graph action. */
     private Action getSetStartGraphAction() {
         if (this.setStartGraphAction == null) {
             this.setStartGraphAction =
@@ -117,6 +118,7 @@ public class StateJList extends JList implements SimulationListener {
         return this.setStartGraphAction;
     }
 
+    /** Lazily creates and returns the graph preview action. */
     private Action getPreviewGraphAction() {
         if (this.previewGraphAction == null) {
             this.previewGraphAction =

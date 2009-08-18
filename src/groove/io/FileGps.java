@@ -57,7 +57,7 @@ public class FileGps extends AspectualViewGps {
         throws IOException {
 
         // first we load the graphs before we backup the old location
-        Map<String,AspectGraph> graphs = loadGraphs(gg.getGraphs(), location);
+        Map<String,AspectGraph> graphs = loadGraphs(gg.getGraphs());
 
         File backup = createLocation(location);
 
@@ -69,7 +69,7 @@ public class FileGps extends AspectualViewGps {
             marshalRule(gg.getRule(ruleName), location);
         }
 
-        /** Saves all graphs, so no needs to also save the current startgraph */
+        /** Saves all graphs, so no need to also save the current start graph */
         // saveStartGraph(gg.getStartGraph(), location);
         saveGraphs(graphs, location);
 
@@ -82,11 +82,12 @@ public class FileGps extends AspectualViewGps {
         }
     }
 
-    /** Loads the named graphs from specified location and returns the
+    /**
+     * Loads the named graphs from specified location and returns the
      * corresponding AspectGraphs
      */
-    private Map<String,AspectGraph> loadGraphs(Map<String,File> graphsMap,
-            File location) throws IOException {
+    private Map<String,AspectGraph> loadGraphs(Map<String,File> graphsMap)
+        throws IOException {
         Map<String,AspectGraph> graphs = new HashMap<String,AspectGraph>();
         for (String name : graphsMap.keySet()) {
             File file = graphsMap.get(name);

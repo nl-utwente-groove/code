@@ -225,6 +225,12 @@ class Edge2SearchItem extends AbstractSearchItem {
             return result;
         }
 
+        @Override
+        public void reset() {
+            super.reset();
+            this.search.putEdge(this.edgeIx, null);
+        }
+
         /** Tests if the (uniquely determined) edge image can be used. */
         boolean isImageCorrect(Edge image) {
             return this.host.containsElement(image);
@@ -319,7 +325,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         boolean setImage(Edge image) {
             assert image instanceof BinaryEdge;
             if (this.sourceFind == null) {
-                // maybe the prospective source image was used as 
+                // maybe the prospective source image was used as
                 // target image of this same edge in the previous attempt
                 rollBackTargetImage();
                 if (!this.search.putNode(this.sourceIx, image.source())) {
@@ -365,7 +371,7 @@ class Edge2SearchItem extends AbstractSearchItem {
             }
             rollBackSourceImage();
             rollBackTargetImage();
-            this.selected = null;    
+            this.selected = null;
         }
 
         /** Rolls back the image set for the source. */
@@ -374,7 +380,7 @@ class Edge2SearchItem extends AbstractSearchItem {
                 this.search.putNode(this.sourceIx, null);
             }
         }
-        
+
         /** Rolls back the image set for the source. */
         private void rollBackTargetImage() {
             if (this.targetFind == null && !Edge2SearchItem.this.selfEdge) {

@@ -22,6 +22,7 @@ import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -426,7 +427,7 @@ public class AutomatonBuilder extends Namespace {
                     // if the rulename is a group, this will add all child
                     // rules.
                     Set<Rule> rules =
-                        grammar.getChildRules(transition.getText());
+                        getChildRules(grammar, transition.getText());
                     if (!rules.isEmpty()) {
                         ControlTransition childTrans;
                         for (Rule childRule : rules) {
@@ -504,6 +505,26 @@ public class AutomatonBuilder extends Namespace {
             transition.setFailureSet(failures);
         }
         return;
+    }
+
+    /**
+     * Returns all rules from a given grammar with a structured rule name that
+     * have a given parent name.
+     */
+    private Set<Rule> getChildRules(GraphGrammar grammar, String parent) {
+        Set<Rule> result = new HashSet<Rule>();
+        for (Rule rule : grammar.getRules()) {
+            RuleNameLabel label = rule.getName().parent();
+            while (label != null) {
+                if (label.name().compareTo(parent) == 0) {
+                    result.add(rule);
+                    break;
+                } else {
+                    label = label.parent();
+                }
+            }
+        }
+        return result;
     }
 
     /**
