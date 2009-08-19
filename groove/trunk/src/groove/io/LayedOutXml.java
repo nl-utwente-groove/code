@@ -246,7 +246,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
         return layoutMap;
     }
 
-    /** Deletes the file itself as well as he layout file. */
+    /** Deletes the file itself as well as the layout file. */
     @Override
     protected void deleteFile(File file) {
         this.marshaller.deleteFile(file);

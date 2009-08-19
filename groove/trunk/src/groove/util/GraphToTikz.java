@@ -124,8 +124,8 @@ public final class GraphToTikz {
             return new StringBuilder();
         }
     }
-    
-    private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge, JEdgeLayout layout) {
+
+/*    private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge, JEdgeLayout layout) {
         StringBuilder result = new StringBuilder();
         
         if (edge.isVisible()) {
@@ -148,22 +148,22 @@ public final class GraphToTikz {
                 List<Point2D> points = layout.getPoints();
                 if (layout.getLineStyle() == GraphConstants.STYLE_ORTHOGONAL) {
                     for (int i = 1; i < points.size() - 1; i++) {
-                        double x = points.get(i).getX();
-                        double y = points.get(i).getY() * -1;
-                        result.append(enclosePar(x + ", " + y));
+                        appendPoint(points, i, result);
                         result.append(encloseSpace(DOUBLE_DASH));
                     }
                 } else if (layout.getLineStyle() == GraphConstants.STYLE_BEZIER) {
                     // EDUARDO
                     System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
-                    /*Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
-                    System.out.println(bezier.getPoints().toString());*/
+                    Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
+                    System.out.println(bezier.getPoints().toString());
                 } else if (layout.getLineStyle() == GraphConstants.STYLE_SPLINE) {
                     // EDUARDO
                     System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
                 } else if (layout.getLineStyle() == JAttr.STYLE_MANHATTAN) {
-                    // EDUARDO
-                    System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
+                    for (int i = 0; i < points.size() - 1; i++) {
+                        appendPoint(points, i, result);
+                        result.append(encloseSpace(ANGLED));
+                    }
                 }
             }
             
@@ -179,6 +179,75 @@ public final class GraphToTikz {
         }
         
         return result;
+    }*/
+    
+    private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge, JEdgeLayout layout) {
+        StringBuilder result = new StringBuilder();
+        
+        if (edge.isVisible()) {
+            ArrayList<String> styles = convertStyles(edge);
+            String edgeStyle = styles.get(0); 
+            String labStyle = styles.get(1);
+            
+            result.append(BEGIN_EDGE);
+            
+            // Edge Style.
+            result.append(encloseBrack(edgeStyle));
+            
+            if (layout != null) { // We have layout points
+                List<Point2D> points = layout.getPoints();
+                
+                if (layout.getLineStyle() == GraphConstants.STYLE_ORTHOGONAL) {
+                    appendPoint(points, 0, result);
+                    for (int i = 0; i < points.size(); i++) {
+                        result.append(encloseSpace(DOUBLE_DASH));
+                        appendPoint(points, i, result);
+                    }
+                } else if (layout.getLineStyle() == GraphConstants.STYLE_BEZIER) {
+                    // EDUARDO
+                    System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
+                    /*Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
+                    System.out.println(bezier.getPoints().toString());*/
+                } else if (layout.getLineStyle() == GraphConstants.STYLE_SPLINE) {
+                    // EDUARDO
+                    System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
+                } else if (layout.getLineStyle() == JAttr.STYLE_MANHATTAN) {
+                    for (int i = 0; i < points.size(); i++) {
+                        appendPoint(points, i, result);
+                        result.append(encloseSpace(ANGLED));
+                        if (i+1 < points.size()) {
+                            double x = points.get(i+1).getX();
+                            double y = points.get(i).getY() * -1;
+                            result.append(enclosePar(x + ", " + y));
+                            result.append(encloseSpace(ANGLED));
+                        }
+                    }
+                }
+            } else { // Default layout.
+                // Source Node.
+                result.append(encloseSpace(enclosePar(
+                    edge.getSourceVertex().getNode().toString())));
+                result.append(encloseSpace(DOUBLE_DASH));
+                
+                // Label.
+                result.append(NODE);
+                result.append(encloseBrack(labStyle));
+                result.append(encloseCurly(edge.getText()));
+                
+                // Target Node.
+                result.append(encloseSpace(enclosePar(
+                    edge.getTargetVertex().getNode().toString())));
+            }
+            result.append(END_EDGE);
+        }
+        
+        return result;
+    }
+    
+    private static void appendPoint(List<Point2D> points, int i, StringBuilder s) {
+        double x = points.get(i).getX();
+        double y = points.get(i).getY() * -1;
+        s.append(enclosePar(x + ", " + y));
     }
     
     private static StringBuilder convertHtmlToTikz(StringBuilder line) {
@@ -351,4 +420,5 @@ public final class GraphToTikz {
     private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
     private static final String WHITE_FILL = "whitefill";
     private static final String DOUBLE_DASH = "--";
+    private static final String ANGLED = "-|";
 }
