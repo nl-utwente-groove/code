@@ -24,6 +24,7 @@ import groove.gui.ZoomMenu;
 import groove.gui.jgraph.JModel.RefreshEdit;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
+import groove.gui.layout.SpringLayouter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
 
@@ -359,10 +360,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             // jModel.refresh();
             if (this.initialized) {
                 if (this.layouter != null && !jModel.isLayedOut()) {
-                    if (jModel.freeze()) {
-                        // SwingUtilities.invokeLater(new Runnable() {
-                        // public void run() {
-                        this.layouter.start(false);
+                    int layoutCount = jModel.freeze();
+                    if (layoutCount > 0) {
+                        Layouter layouter = layoutCount == jModel.getRootCount() ? this.layouter : this.incrementalLayouter;
+                        layouter.start(false);
                         final Timer timer = new Timer();
                         timer.schedule(new TimerTask() {
                             @Override
@@ -374,8 +375,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                             }
                         }, MAX_LAYOUT_DURATION);
                     }
-                    // });
-                    // }
                 }
                 setEnabled(true);
             }
@@ -964,7 +963,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * declared in the class.
      */
     private final boolean initialized = true;
-
+    /** Layouter used if only part of the model should be layed out. */
+    private final Layouter incrementalLayouter = new SpringLayouter().newInstance(this);
+    
     /** Maximum duration for layouting a new model. */
     static private final long MAX_LAYOUT_DURATION = 1000;
 

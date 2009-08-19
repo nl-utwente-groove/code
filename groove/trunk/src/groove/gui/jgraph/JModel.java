@@ -192,17 +192,19 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * Sets all jcells to unmovable, except those that have been added since the
      * last layout action. This is done in preparation for layouting.
-     * @return <code>true</code> if there is anything left to layout
+     * @return the number of objects left to layout
      */
-    public boolean freeze() {
-        boolean result = false;
+    public int freeze() {
+        int result = 0;
         @SuppressWarnings("unchecked")
         Iterator<DefaultGraphCell> rootsIter = this.roots.iterator();
         while (rootsIter.hasNext()) {
             DefaultGraphCell root = rootsIter.next();
             boolean layoutable = this.layoutableJCells.contains(root);
             GraphConstants.setMoveable(root.getAttributes(), layoutable);
-            result |= layoutable;
+            if (layoutable) {
+                result++;
+            }
         }
         return result;
     }
