@@ -21,6 +21,8 @@ import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.view.aspect.AspectGraph;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +38,12 @@ public class AspectualSource extends Observable implements
         RuleSystemSource<AspectGraph,AspectGraph> {
 
     /**
-     * Constructs a source object.
-     * @param layouted if <code>true</code>, loads and saves graph layout.
+     * Constructs a source object from a given persistent storage location.
+     * @param location location of the underlying persistent storage.
+     * @param layouted if <code>true</code>, should maintain graph layout.
      */
-    public AspectualSource(boolean layouted) {
+    public AspectualSource(URL location, boolean layouted) {
+        this.location = location;
         this.marshaller =
             createGraphMarshaller(GraphFactory.getInstance(), true);
     }
@@ -117,6 +121,17 @@ public class AspectualSource extends Observable implements
         // TODO Auto-generated method stub
         return null;
     }
+    
+    /** Reloads all data from the persistent storage into this store. */
+    public void reload() throws IOException {
+        reloadRules();
+//        reloadGraphs();
+//        reloadControls();
+    }
+    
+    private void reloadRules() {
+        
+    }
 
     /** Callback factory method for creating a graph marshaller. */
     protected Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory,
@@ -138,6 +153,8 @@ public class AspectualSource extends Observable implements
     private final Map<String,String> controlMap = new HashMap<String,String>();
     /** The system properties object of the source. */
     private SystemProperties properties;
+    /** The location from which the source is loaded. */
+    private final URL location;
     /** The graph marshaller used for retrieving rule and graph files. */
     private final Xml<AspectGraph> marshaller;
 }
