@@ -79,8 +79,7 @@ abstract public class EditorDialog {
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph toAspectGraph() {
-        return AspectGraph.getFactory().fromPlainGraph(
-            this.editor.getPlainGraph());
+        return AspectGraph.newInstance(this.editor.getPlainGraph());
     }
 
     /**

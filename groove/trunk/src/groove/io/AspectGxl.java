@@ -42,11 +42,11 @@ public class AspectGxl implements Xml<AspectGraph> {
     /**
      * Unmarshals the file using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}.
-     * @see AspectGraph#fromPlainGraph(GraphShape)
+     * @see AspectGraph#newInstance(GraphShape)
      */
     public AspectGraph unmarshalGraph(URL url) throws IOException {
         Graph plainGraph = this.marshaller.unmarshalGraph(url);
-        return AspectGraph.getFactory().fromPlainGraph(plainGraph);
+        return AspectGraph.newInstance(plainGraph);
     }
 
     /**

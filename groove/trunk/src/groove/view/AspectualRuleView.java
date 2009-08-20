@@ -1415,7 +1415,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Recursively descends into directories.
      */
     private static void testFile(File file) {
-        AspectGraph factory = AspectGraph.getFactory();
         if (file.isDirectory()) {
             for (File nestedFile : file.listFiles()) {
                 testFile(nestedFile);
@@ -1426,7 +1425,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                 if (plainGraph != null) {
                     System.out.printf("Testing %s%n", file);
                     testTranslation(file.getName(),
-                        factory.fromPlainGraph(plainGraph));
+                        AspectGraph.newInstance(plainGraph));
                     System.out.println(" - OK");
                 }
             } catch (FormatException exc) {

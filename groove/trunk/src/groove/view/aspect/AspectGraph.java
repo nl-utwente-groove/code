@@ -512,6 +512,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     }
 
     /**
+     * Creates an aspect graph from a given (plain) graph. Convenience method
+     * for <code>getFactory().fromPlainGraph(GraphShape)</code>.
+     * @param plainGraph the plain graph to convert; non-null
+     * @return the resulting aspect graph; non-null
+     * @see #fromPlainGraph(GraphShape)
+     */
+    public static AspectGraph newInstance(GraphShape plainGraph) {
+        return getFactory().fromPlainGraph(plainGraph);
+    }
+
+    /**
      * Main method, taking a sequence of filenames and testing conversion from
      * plain to aspect graphs of the graphs contained in those files.
      */
