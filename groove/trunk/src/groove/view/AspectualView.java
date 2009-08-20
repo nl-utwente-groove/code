@@ -18,11 +18,8 @@ package groove.view;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.NodeEdgeMap;
-import groove.trans.RuleName;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectValue;
@@ -106,21 +103,20 @@ abstract public class AspectualView<Model> implements View<Model> {
 
     /** Returns the default label parser for this particular view. */
     abstract protected LabelParser getDefaultLabelParser();
-
-    /**
-     * Creates a view from a given aspect graph. Depending on the role of the
-     * graph, the result is an {@link AspectualRuleView} or an
-     * {@link AspectualGraphView}.
-     * @param aspectGraph the graph to create the view from
-     * @return a graph or rule view based on <code>aspectGraph</code>
-     * @see GraphInfo#getRole(GraphShape)
-     */
-    static public AspectualView<?> createView(AspectGraph aspectGraph) {
-        if (GraphInfo.hasRuleRole(aspectGraph)) {
-            return new AspectualRuleView(aspectGraph, new RuleName(
-                GraphInfo.getName(aspectGraph)));
-        } else {
-            return new AspectualGraphView(aspectGraph, null);
-        }
-    }
+    //
+    // /**
+    // * Creates a view from a given aspect graph. Depending on the role of the
+    // * graph, the result is an {@link AspectualRuleView} or an
+    // * {@link AspectualGraphView}.
+    // * @param aspectGraph the graph to create the view from
+    // * @return a graph or rule view based on <code>aspectGraph</code>
+    // * @see GraphInfo#getRole(GraphShape)
+    // */
+    // static public AspectualView<?> createView(AspectGraph aspectGraph) {
+    // if (GraphInfo.hasRuleRole(aspectGraph)) {
+    // return new AspectualRuleView(aspectGraph);
+    // } else {
+    // return new AspectualGraphView(aspectGraph, null);
+    // }
+    // }
 }

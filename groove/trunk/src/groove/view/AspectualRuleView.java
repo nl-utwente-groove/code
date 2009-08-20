@@ -30,6 +30,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.MergeMap;
@@ -113,26 +114,15 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     }
 
     /**
-     * Constructs a rule graph with a given name from an (ordinary) graph. The
-     * rule properties are all set to default.
-     * @param graph the graph to be converted
-     * @param name the name of the rule; may be <code>null</code>
-     */
-    public AspectualRuleView(AspectGraph graph, RuleName name) {
-        this(graph, name, null);
-    }
-
-    /**
-     * Constructs a rule graph with a given name from an (ordinary) graph. The
-     * rule properties are explicitly given.
-     * @param graph the graph to be converted
-     * @param name the name of the rule; may be <code>null</code>
+     * Constructs a rule view from an aspect graph. The rule properties are
+     * explicitly given.
+     * @param graph the graph to be converted (non-null)
      * @param properties object specifying rule properties, such as injectivity
-     *        etc.
+     *        etc (nullable)
      */
-    public AspectualRuleView(AspectGraph graph, RuleName name,
-            SystemProperties properties) {
-        this.name = name;
+    public AspectualRuleView(AspectGraph graph, SystemProperties properties) {
+        String name = GraphInfo.getName(graph);
+        this.name = name == null ? null : new RuleName(name);
         this.priority = GraphProperties.getPriority(graph);
         this.enabled = GraphProperties.isEnabled(graph);
         this.confluent = GraphProperties.isConfluent(graph);
@@ -143,7 +133,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             this.errors = graph.getErrors();
         }
         // we fix the view; is it conceptually right to do that here?
-        graph.setFixed();
+        // graph.setFixed();
     }
 
     /**
@@ -203,13 +193,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Returns the name of the rule represented by this rule graph, set at
      * construction time.
      */
-    public RuleName getNameLabel() {
+    public RuleName getRuleName() {
         return this.name;
     }
 
     /** Convenience method for <code>getNameLabel().text()</code>. */
     public String getName() {
-        return getNameLabel().text();
+        return getRuleName() == null ? null : getRuleName().text();
     }
 
     /**
@@ -227,7 +217,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     public int compareTo(RuleView o) {
         int result = getPriority() - o.getPriority();
         if (result == 0) {
-            result = getNameLabel().compareTo(o.getNameLabel());
+            result = getRuleName().compareTo(o.getRuleName());
         }
         return result;
     }
@@ -1450,9 +1440,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /** Tests the translation from an aspect graph to a rule and back. */
     private static void testTranslation(String name, AspectGraph graph)
         throws FormatException, FormatException {
-        RuleName ruleName = new RuleName(name);
         // construct rule graph
-        AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
+        AspectualRuleView ruleGraph = graph.toRuleView(null);
         // convert rule graph into rule
         System.out.print("    Constructing rule from rule graph: ");
         Rule rule = ruleGraph.toRule();

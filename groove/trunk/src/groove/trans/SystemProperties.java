@@ -33,14 +33,15 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Indicates if control is used and that the system will look for a control program.
-     * Default value: <code>true</code>
+     * Indicates if control is used and that the system will look for a control
+     * program. Default value: <code>true</code>
      */
     public boolean isUseControl() {
         String control = getProperty(SystemProperties.CONTROL_KEY);
-        return control == null || (new Boolean(control) || control.equals(SystemProperties.CONTROL_YES));
+        return control == null
+            || (new Boolean(control) || control.equals(SystemProperties.CONTROL_YES));
     }
-    
+
     /**
      * Indicates if the LTS labels should be surrounded by angular brackets.
      * Default value: <code>false</code>.
@@ -131,8 +132,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Returns the value of the dangling edge property.
-     * @return if <code>true</code>, matches with dangling edges are
-     *         disallowed.
+     * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
         String result = getProperty(DANGLING_KEY);
@@ -145,17 +145,17 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public void setAlgebra(String family) {
         setProperty(ALGEBRA_KEY, family);
     }
-    
+
     /** Returns the selected algebra family. */
     public String getAlgebraFamily() {
         String result = getProperty(ALGEBRA_KEY);
         return result == null ? AlgebraRegister.DEFAULT_ALGEBRAS : result;
     }
-    
+
     /**
      * Sets the creator edge check to a certain value.
-     * @param check if <code>true</code>, creator edges are treated as
-     *        negative application conditions
+     * @param check if <code>true</code>, creator edges are treated as negative
+     *        application conditions
      */
     public void setCheckCreatorEdges(boolean check) {
         setProperty(CREATOR_EDGE_KEY, "" + check);
@@ -182,8 +182,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Returns the value of the graph isomorphism check property.
-     * @return if <code>true</code>, state graphs are compared up to
-     *         isomorphism
+     * @return if <code>true</code>, state graphs are compared up to isomorphism
      */
     public boolean isCheckIsomorphism() {
         String result = getProperty(ISOMORPHISM_KEY);
@@ -219,7 +218,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     @Override
     public synchronized Object setProperty(String key, String value) {
-        testFixed(true);
+        testFixed(false);
         return super.setProperty(key, value);
     }
 
@@ -231,7 +230,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     @Override
     public synchronized void load(InputStream inStream) throws IOException {
-        testFixed(true);
+        testFixed(false);
         super.load(inStream);
     }
 
@@ -244,7 +243,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     @Override
     public synchronized void loadFromXML(InputStream in) throws IOException,
         InvalidPropertiesFormatException {
-        testFixed(true);
+        testFixed(false);
         super.loadFromXML(in);
     }
 
@@ -256,7 +255,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     @Override
     public synchronized void clear() {
-        testFixed(true);
+        testFixed(false);
         super.clear();
     }
 
@@ -268,7 +267,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     @Override
     public synchronized Object put(Object key, Object value) {
-        testFixed(true);
+        testFixed(false);
         return super.put(key, value);
     }
 
@@ -280,7 +279,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     @Override
     public synchronized Object remove(Object key) {
-        testFixed(true);
+        testFixed(false);
         return super.remove(key);
     }
 
@@ -304,9 +303,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         this.fixed = true;
     }
 
-    /** 
-     * Indicates if the properties are fixed.
-     * If so, any attempt to modify any of the properties will result in an {@link IllegalStateException}.
+    /**
+     * Indicates if the properties are fixed. If so, any attempt to modify any
+     * of the properties will result in an {@link IllegalStateException}.
      * @return <code>true</code> if the properties are fixed.
      */
     public boolean isFixed() {
@@ -314,8 +313,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     public void testFixed(boolean fixed) throws IllegalStateException {
-        if (this.fixed) {
-            throw new IllegalStateException("Cannot change fixed properties");
+        if (this.fixed != fixed) {
+            throw new IllegalStateException(String.format(
+                "Expected fixed = %b", fixed));
         }
     }
 
@@ -334,11 +334,11 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Tests whether {@link #isCheckDangling()} holds for a given properties
-     * object. If the properties object is <code>null</code>, the method
-     * returns <code>false</code>.
+     * object. If the properties object is <code>null</code>, the method returns
+     * <code>false</code>.
      * @param properties the properties to be tested; may be <code>null</code>
-     * @return <true> if <code>properties</code> is not <code>null</code>
-     *         and satisfies {@link #isCheckDangling()}
+     * @return <true> if <code>properties</code> is not <code>null</code> and
+     *         satisfies {@link #isCheckDangling()}
      */
     static public boolean isCheckDangling(SystemProperties properties) {
         return properties != null && properties.isCheckDangling();
@@ -365,7 +365,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     static public final String COMMON_LABELS_KEY = "commonLabels";
 
-    /** (User) Property that holds the grammar history (max 10 separated by ',') * */
+    /**
+     * (User) Property that holds the grammar history (max 10 separated by ',')
+     * *
+     */
     static public final String HISTORY_KEY = "open_history";
 
     /** (User) Property that holds the user settings separated by ',') **/
@@ -387,14 +390,13 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Property that determines if control is used
      */
     static public final String CONTROL_KEY = "enableControl";
-    
+
     /** Value of {@link #CONTROL_KEY} that means control is used */
     static public final String CONTROL_YES = "true";
-    
+
     /** Value of {@link #CONTROL_KEY} that means control is not used */
     static public final String CONTROL_NO = "false";
-    
-    
+
     /**
      * Property that determines if transition parameters are included in the LTS
      * transition labels
@@ -414,8 +416,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     static public final String TRANSITION_BRACKETS_NO = "0";
 
     /**
-     * Property name of the injectivity of the rule system. If <code>true</code>,
-     * all rules should be matched injectively. Default is <code>false</code>.
+     * Property name of the injectivity of the rule system. If <code>true</code>
+     * , all rules should be matched injectively. Default is <code>false</code>.
      */
     static public final String INJECTIVE_KEY = "matchInjective";
     /**
@@ -437,8 +439,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     static public final String ISOMORPHISM_KEY = "checkIsomorphism";
     /**
-     * Property name of the RHS-as-NAC property. If <code>true</code>, each
-     * RHS is implicitly treated as a NAC. Default is <code>false</code>.
+     * Property name of the RHS-as-NAC property. If <code>true</code>, each RHS
+     * is implicitly treated as a NAC. Default is <code>false</code>.
      */
     static public final String RHS_AS_NAC_KEY = "rhsIsNAC";
     /**
@@ -462,8 +464,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             "A one-line description of the graph production system"));
         defaultKeys.put(
             ALGEBRA_KEY,
-            new Property.Choice<String>("Algebra family that should be used in simulation (empty for default)",
-                AlgebraRegister.DEFAULT_ALGEBRAS, AlgebraRegister.POINT_ALGEBRAS, AlgebraRegister.BIG_ALGEBRAS));
+            new Property.Choice<String>(
+                "Algebra family that should be used in simulation (empty for default)",
+                AlgebraRegister.DEFAULT_ALGEBRAS,
+                AlgebraRegister.POINT_ALGEBRAS, AlgebraRegister.BIG_ALGEBRAS));
         defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean(
             "Flag controlling if matches should be injective", true));
         defaultKeys.put(
@@ -486,10 +490,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
                 true));
         defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean(
             "Flag controlling if transition labels should be bracketed"));
-        
-        defaultKeys.put(
-            CONTROL_KEY
-            , new IsExtendedBoolean("Flag controlling if a control program is used"));
+
+        defaultKeys.put(CONTROL_KEY, new IsExtendedBoolean(
+            "Flag controlling if a control program is used"));
         defaultKeys.put(
             PARAMETERS_KEY,
             new IsExtendedBoolean(
@@ -527,9 +530,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Extends the {@link Property.IsBoolean} class by also allowing positive
-     * numerical values to stand for <code>true</code>, and <code>0</code>
-     * for <code>false</code>. Used for compatibility purposes (these
-     * properties at some point only accepted numerical values).
+     * numerical values to stand for <code>true</code>, and <code>0</code> for
+     * <code>false</code>. Used for compatibility purposes (these properties at
+     * some point only accepted numerical values).
      */
     static private class IsExtendedBoolean extends Property.IsBoolean {
         /**

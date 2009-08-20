@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id$
  */
 package groove.view.aspect;
@@ -39,43 +39,48 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class taking care of the creation of attribute nodes and attribute edges
- * in the translation from aspectual rule and graph views to actual rules and graphs.
+ * Class taking care of the creation of attribute nodes and attribute edges in
+ * the translation from aspectual rule and graph views to actual rules and
+ * graphs.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class AttributeElementFactory {
-    /** 
-     * Constructs a factory for a given aspect graph.
-     * System properties may be passed in to determine the algebra family from which to take the
-     * values and operations.
-     * @param graph the aspect graph for which the attribute elements are to be created
-     * @param properties source of the algebra family to be used; if <code>null</code>, the
-     * {@link AlgebraRegister#DEFAULT_ALGEBRAS} is used.
+    /**
+     * Constructs a factory for a given aspect graph. System properties may be
+     * passed in to determine the algebra family from which to take the values
+     * and operations.
+     * @param graph the aspect graph for which the attribute elements are to be
+     *        created
+     * @param properties source of the algebra family to be used; if
+     *        <code>null</code>, the {@link AlgebraRegister#DEFAULT_ALGEBRAS} is
+     *        used.
      * @see SystemProperties#getAlgebraFamily()
      */
-    public AttributeElementFactory(AspectGraph graph, SystemProperties properties) {
+    public AttributeElementFactory(AspectGraph graph,
+            SystemProperties properties) {
         this.graph = graph;
-        String registerName = properties == null ? AlgebraRegister.DEFAULT_ALGEBRAS : properties.getAlgebraFamily();
+        String registerName =
+            properties == null ? AlgebraRegister.DEFAULT_ALGEBRAS
+                    : properties.getAlgebraFamily();
         this.register = AlgebraRegister.getInstance(registerName);
     }
-    
+
     /**
      * Creates an attribute-related node from a given {@link AspectNode} found
-     * in a given {@link AspectGraph}. The type of the resulting node depends
-     * on the {@link AttributeAspect} value of the given node and its incident
+     * in a given {@link AspectGraph}. The type of the resulting node depends on
+     * the {@link AttributeAspect} value of the given node and its incident
      * edges. The result is a {@link VariableNode} or {@link ProductNode}, or
-     * <code>null</code> if the node contains no special
-     * {@link AttributeAspect} value. An exception is thrown if the context of
-     * the node in the graph is incorrect.
+     * <code>null</code> if the node contains no special {@link AttributeAspect}
+     * value. An exception is thrown if the context of the node in the graph is
+     * incorrect.
      * @param node the node for which we want an attribute-related node
      * @return a {@link VariableNode} or {@link ProductNode} corresponding to
      *         <code>node</code>, or <code>null</code>
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
      */
-    public Node createAttributeNode(AspectNode node)
-        throws FormatException {
+    public Node createAttributeNode(AspectNode node) throws FormatException {
         Node result;
         AspectValue attributeValue = getAttributeValue(node);
         if (attributeValue == null) {
@@ -93,8 +98,9 @@ public class AttributeElementFactory {
     /**
      * Creates a {@link VariableNode} corresponding to a given aspect node whose
      * {@link AttributeAspect} value equals {@link #VALUE}. This is either a
-     * true variable node (if the original node has no outgoing edges), or a {@link ValueNode}
-     * whose value depends on the label of the node's self-edge.
+     * true variable node (if the original node has no outgoing edges), or a
+     * {@link ValueNode} whose value depends on the label of the node's
+     * self-edge.
      * @param node the node for which a {@link VariableNode} is to be created
      * @throws FormatException if the outgoing edges of <code>node</code> are
      *         incorrect
@@ -126,12 +132,11 @@ public class AttributeElementFactory {
             try {
                 String signature = algebraValue.getName();
                 Object nodeValue =
-                    this.register.getConstant(
-                        signature, attributeEdge.label().text());
+                    this.register.getConstant(signature,
+                        attributeEdge.label().text());
                 result =
-                    ValueNode.createValueNode(this.register.getImplementation(
-                        signature),
-                        nodeValue);
+                    ValueNode.createValueNode(
+                        this.register.getImplementation(signature), nodeValue);
             } catch (UnknownSymbolException exc) {
                 throw new FormatException(exc.getMessage());
             }
@@ -141,14 +146,15 @@ public class AttributeElementFactory {
 
     /**
      * Creates a product node corresponding to a node with
-     * {@link AttributeAspect} value {@link #PRODUCT}. This only succeeds if
-     * the outgoing edges form a consecutive range of argument numbers, without
+     * {@link AttributeAspect} value {@link #PRODUCT}. This only succeeds if the
+     * outgoing edges form a consecutive range of argument numbers, without
      * duplication.
      * @param node the node for which a {@link ProductNode} is to be created
      * @throws FormatException if the outgoing edges of <code>node</code> are
      *         incorrect
      */
-    private ProductNode createProductNode(AspectNode node) throws FormatException {
+    private ProductNode createProductNode(AspectNode node)
+        throws FormatException {
         return new ProductNode(node.getNumber(), arity(node));
     }
 
@@ -158,8 +164,7 @@ public class AttributeElementFactory {
      * that the argument edges actually form a consecutive sequence ranging from
      * 0 to the arity.
      */
-    private int arity(AspectNode node)
-        throws FormatException {
+    private int arity(AspectNode node) throws FormatException {
         Set<Integer> argNumbers = new HashSet<Integer>();
         int maxArgNumber = -1;
         int result = 0;
@@ -193,8 +198,8 @@ public class AttributeElementFactory {
      * in a given {@link AspectGraph}, between given end nodes. The type of the
      * resulting edge depends on the {@link AttributeAspect} value of the given
      * edge. The result is a {@link OperatorEdge} or {@link ArgumentEdge}, or
-     * <code>null</code> if the edge contains no special
-     * {@link AttributeAspect} value.
+     * <code>null</code> if the edge contains no special {@link AttributeAspect}
+     * value.
      * @param edge the edge for which we want an attribute-related edge
      * @param ends the end nodes for the new edge
      * @return a {@link OperatorEdge} or {@link ArgumentEdge} corresponding to
@@ -206,7 +211,8 @@ public class AttributeElementFactory {
         throws FormatException {
         Edge result;
         AspectValue attributeValue = getAttributeValue(edge);
-        if (attributeValue == null || ends[Edge.SOURCE_INDEX] == ends[Edge.TARGET_INDEX]) {
+        if (attributeValue == null
+            || ends[Edge.SOURCE_INDEX] == ends[Edge.TARGET_INDEX]) {
             result = null;
         } else if (attributeValue == ARGUMENT) {
             int argNumber = Integer.parseInt(edge.label().text());
@@ -215,8 +221,8 @@ public class AttributeElementFactory {
         } else {
             try {
                 Operation operation =
-                    this.register.getOperation(
-                        attributeValue.getName(), edge.label().text());
+                    this.register.getOperation(attributeValue.getName(),
+                        edge.label().text());
                 result = createOperatorEdge(operation, ends);
             } catch (UnknownSymbolException e) {
                 throw new FormatException(e.getMessage());
@@ -231,8 +237,8 @@ public class AttributeElementFactory {
      * @param operator the edge for which the image is to be created
      * @param ends the end nodes of the edge to be created
      * @return a fresh {@link OperatorEdge}
-     * @throws FormatException if <code>edge</code> does not have a correct
-     *         set of outgoing attribute edges in <code>graph</code>
+     * @throws FormatException if <code>edge</code> does not have a correct set
+     *         of outgoing attribute edges in <code>graph</code>
      */
     private Edge createOperatorEdge(Operation operator, Node[] ends)
         throws FormatException {
@@ -283,11 +289,29 @@ public class AttributeElementFactory {
                 "Target of '%d'-edge should be a variable node", argNumber);
         }
         ArgumentEdge result =
-            new ArgumentEdge((ProductNode) source, argNumber, (VariableNode) target);
+            new ArgumentEdge((ProductNode) source, argNumber,
+                (VariableNode) target);
         result.source().setArgument(argNumber, result.target());
         return result;
     }
-    
+
+    /** Two factories are equal if they have the same aspect graph and register. */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AttributeElementFactory) {
+            AttributeElementFactory other = (AttributeElementFactory) obj;
+            return this.graph == other.graph && this.register == other.register;
+        } else {
+            return false;
+        }
+    }
+
+    /** The hash code is the sum of that of the aspect graph and register. */
+    @Override
+    public int hashCode() {
+        return this.graph.hashCode() + this.register.hashCode();
+    }
+
     /** Aspect graph on which this factory works. */
     private final AspectGraph graph;
     /** Algebra registry to use in creating the algebra values and operations. */

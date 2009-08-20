@@ -170,7 +170,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         AspectualRuleView view = this.simulator.getCurrentRule();
         if (view != null) {
             text.append("Rule ");
-            text.append(Converter.STRONG_TAG.on(view.getNameLabel().text()));
+            text.append(Converter.STRONG_TAG.on(view.getName()));
             try {
                 Rule rule = view.toRule();
                 if (rule instanceof SPORule

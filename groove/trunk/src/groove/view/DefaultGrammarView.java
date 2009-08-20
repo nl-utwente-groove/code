@@ -99,7 +99,7 @@ public class DefaultGrammarView implements
     public AspectualRuleView addRule(AspectualRuleView ruleView)
         throws IllegalStateException {
         AspectualRuleView result =
-            this.ruleMap.put(ruleView.getNameLabel(), ruleView);
+            this.ruleMap.put(ruleView.getRuleName(), ruleView);
         invalidateGrammar();
         return result;
     }
@@ -226,7 +226,7 @@ public class DefaultGrammarView implements
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
                     errors.add(String.format("Format error in %s: %s",
-                        ruleView.getNameLabel(), error));
+                        ruleView.getName(), error));
                 }
             }
         }

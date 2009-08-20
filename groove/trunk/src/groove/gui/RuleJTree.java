@@ -151,7 +151,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 dirNodeMap.clear();
             }
             for (AspectualRuleView ruleView : priorityEntry.getValue()) {
-                RuleName ruleName = ruleView.getNameLabel();
+                RuleName ruleName = ruleView.getRuleName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, ruleName);
@@ -329,7 +329,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         } else if (getCurrentEvent() != null) {
             treeNode = this.matchNodeMap.get(getCurrentEvent());
         } else if (getCurrentRule() != null) {
-            treeNode = this.ruleNodeMap.get(getCurrentRule().getNameLabel());
+            treeNode = this.ruleNodeMap.get(getCurrentRule().getRuleName());
         }
         if (treeNode != null) {
             setSelectionPath(new TreePath(treeNode.getPath()));
@@ -629,7 +629,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 Object selectedNode = evt.getPath().getLastPathComponent();
                 if (selectedNode instanceof RuleTreeNode) {
                     // selected tree node is a production rule (level 1 node)
-                    RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getNameLabel());
+                    RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
                     RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
                 } else if (selectedNode instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
@@ -788,7 +788,7 @@ public class RuleJTree extends JTree implements SimulationListener {
          */
         @Override
         public String toString() {
-            String name = getRule().getNameLabel().child();
+            String name = getRule().getRuleName().child();
             if (getRule().isEnabled()) {
                 return name;
             } else {
@@ -800,7 +800,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         public String getToolTipText() {
             StringBuilder result = new StringBuilder();
             result.append("Rule ");
-            result.append(Converter.STRONG_TAG.on(getRule().getNameLabel().text()));
+            result.append(Converter.STRONG_TAG.on(getRule().getName()));
             GraphProperties properties =
                 GraphInfo.getProperties(getRule().getAspectGraph(), false);
             if (properties != null && !properties.isEmpty()) {
