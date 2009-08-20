@@ -67,10 +67,11 @@ public class CompositeEvent extends
     }
 
     public String getAnchorImageString() {
-    	List<String> eventLabels = new ArrayList<String>();
-    	for (SPOEvent event: this.eventArray) {
-    		eventLabels.add(event.getRule().getName().name()+event.getAnchorImageString());
-    	}
+        List<String> eventLabels = new ArrayList<String>();
+        for (SPOEvent event : this.eventArray) {
+            eventLabels.add(event.getRule().getName().text()
+                + event.getAnchorImageString());
+        }
         return Arrays.toString(eventLabels.toArray());
     }
 
@@ -92,50 +93,52 @@ public class CompositeEvent extends
     }
 
     public RuleMatch getMatch(Graph source) {
-    	if (false) {
-        // the events are ordered according to rule level
-        // so we can build a stack of corresponding matches
-        Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
-        for (SPOEvent event : this.eventArray) {
-            RuleMatch match =
-                new RuleMatch(event.getRule(),
-                    event.getMatch(source).getElementMap());
-            int[] eventLevel = event.getRule().getLevel();
-            int eventDepth = eventLevel.length;
-            assert eventDepth / 2 <= matchStack.size();
-            // pop the stack until the right nesting depth
-            while (eventDepth / 2 < matchStack.size()) {
-                matchStack.pop();
+        if (false) {
+            // the events are ordered according to rule level
+            // so we can build a stack of corresponding matches
+            Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
+            for (SPOEvent event : this.eventArray) {
+                RuleMatch match =
+                    new RuleMatch(event.getRule(),
+                        event.getMatch(source).getElementMap());
+                int[] eventLevel = event.getRule().getLevel();
+                int eventDepth = eventLevel.length;
+                assert eventDepth / 2 <= matchStack.size();
+                // pop the stack until the right nesting depth
+                while (eventDepth / 2 < matchStack.size()) {
+                    matchStack.pop();
+                }
+                // add this match to the match of the parent event
+                // (which is now on the top of the stack)
+                if (eventDepth > 0) {
+                    RuleMatch parentMatch = matchStack.peek();
+                    assert eventDepth <= 2
+                        || parentMatch.getRule().getLevel()[eventDepth - 3] == eventLevel[eventDepth - 3];
+                    parentMatch.addSubMatch(match);
+                }
+                // add this match to the stack, to receive its sub-matches
+                matchStack.push(match);
             }
-            // add this match to the match of the parent event
-            // (which is now on the top of the stack)
-            if (eventDepth > 0) {
-                RuleMatch parentMatch = matchStack.peek();
-                assert eventDepth <= 2
-                    || parentMatch.getRule().getLevel()[eventDepth - 3] == eventLevel[eventDepth - 3];
-                parentMatch.addSubMatch(match);
+            return matchStack.get(0);
+        } else {
+            for (RuleMatch result : getRule().getMatches(source, null)) {
+                if (result.newEvent(null).equals(this)) {
+                    return result;
+                }
             }
-            // add this match to the stack, to receive its sub-matches
-            matchStack.push(match);
+            // if we're here, we failed to reconstruct this event from
+            // any of the matches.
+            throw new IllegalArgumentException(String.format(
+                "Can't find match for event %s", this));
         }
-        return matchStack.get(0);
-    	} else {
-    		for (RuleMatch result: getRule().getMatches(source, null)) {
-    			if (result.newEvent(null).equals(this)) {
-    				return result;
-    			}
-    		}
-    		// if we're here, we failed to reconstruct this event from 
-    		// any of the matches.
-    		throw new IllegalArgumentException(String.format("Can't find match for event %s", this));
-    	}
     }
 
     public MergeMap getMergeMap() {
         MergeMap result = new MergeMap();
         for (RuleEvent event : this.eventArray) {
-            for (Map.Entry<Node,Node> mergeEntry: event.getMergeMap().nodeMap().entrySet())
-            result.putNode(mergeEntry.getKey(), mergeEntry.getValue());
+            for (Map.Entry<Node,Node> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
+                result.putNode(mergeEntry.getKey(), mergeEntry.getValue());
+            }
         }
         return result;
     }
@@ -167,8 +170,8 @@ public class CompositeEvent extends
     }
 
     /**
-     * This method always returns <code>false</code> because it is quite hard
-     * to check universally matched sub-events against a new graph, especially
+     * This method always returns <code>false</code> because it is quite hard to
+     * check universally matched sub-events against a new graph, especially
      * since the universal information was lost in the conversion from rule
      * match to rule event.
      */

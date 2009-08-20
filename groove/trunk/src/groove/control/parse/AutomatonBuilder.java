@@ -22,7 +22,7 @@ import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -434,7 +434,7 @@ public class AutomatonBuilder extends Namespace {
                             childTrans =
                                 new ControlTransition(transition.source(),
                                     transition.target(),
-                                    childRule.getName().name());
+                                    childRule.getName().text());
                             childTrans.setRule(childRule);
                             transition.source().add(childTrans);
                             otherRules.remove(childRule);
@@ -472,7 +472,7 @@ public class AutomatonBuilder extends Namespace {
                     // rules
                     ControlTransition otherTrans =
                         new ControlTransition(trans.source(), trans.target(),
-                            rule.getName().name());
+                            rule.getName().text());
                     otherTrans.setRule(rule);
                     otherTrans.setParent(trans.getParent());
                     trans.source().add(otherTrans);
@@ -485,7 +485,7 @@ public class AutomatonBuilder extends Namespace {
         // collect the names of the other rules
         Set<String> otherRuleNames = new HashSet<String>();
         for (Rule rule : otherRules) {
-            otherRuleNames.add(rule.getName().name());
+            otherRuleNames.add(rule.getName().text());
         }
         // update the failure sets of else-transitions
         // this assumes that there are no outgoing lambda's from states that
@@ -514,9 +514,9 @@ public class AutomatonBuilder extends Namespace {
     private Set<Rule> getChildRules(GraphGrammar grammar, String parent) {
         Set<Rule> result = new HashSet<Rule>();
         for (Rule rule : grammar.getRules()) {
-            RuleNameLabel label = rule.getName().parent();
+            RuleName label = rule.getName().parent();
             while (label != null) {
-                if (label.name().compareTo(parent) == 0) {
+                if (label.text().compareTo(parent) == 0) {
                     result.add(rule);
                     break;
                 } else {

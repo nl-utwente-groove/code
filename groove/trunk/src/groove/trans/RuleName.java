@@ -20,6 +20,8 @@
  */
 package groove.trans;
 
+import groove.graph.WrapperLabel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -27,14 +29,14 @@ import java.util.StringTokenizer;
 /**
  * Representation of a structured rule name. A structured rule name is a rule
  * name consisting of a nonempty sequence of tokens, seperated by
- * <tt>SEPARATOR</tt> characters. Each individual token may be empty. The
- * prefix without the last token is called the parent (which is <tt>null</tt>
- * if there is only a single token); the last token is called the child.
+ * <tt>SEPARATOR</tt> characters. Each individual token may be empty. The prefix
+ * without the last token is called the parent (which is <tt>null</tt> if there
+ * is only a single token); the last token is called the child.
  * 
  * @author Angela Lozano and Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:37 $
  */
-public class RuleNameLabel extends NameLabel {
+public class RuleName extends WrapperLabel<String> {
     /**
      * Character to separate constituent tokens.
      */
@@ -42,13 +44,13 @@ public class RuleNameLabel extends NameLabel {
 
     /**
      * Creates a new structured rule name, on the basis of a given
-     * <tt>String</tt>. <tt>SEPARATOR</tt> characters appearing in the
-     * proposed name will be interpreted as token separators.
+     * <tt>String</tt>. <tt>SEPARATOR</tt> characters appearing in the proposed
+     * name will be interpreted as token separators.
      * @param name the text of the new structured rule name (without enclosing
      *        characters)
      * @require <tt>name != null</tt>
      */
-    public RuleNameLabel(String name) {
+    public RuleName(String name) {
         super(name);
     }
 
@@ -61,8 +63,8 @@ public class RuleNameLabel extends NameLabel {
      * @param child the child rule name (without enclosing characters)
      * @require <tt>child != null</tt>
      */
-    public RuleNameLabel(RuleNameLabel parent, String child) {
-        this(parent == null ? child : parent.name() + SEPARATOR + child);
+    public RuleName(RuleName parent, String child) {
+        this(parent == null ? child : parent.text() + SEPARATOR + child);
     }
 
     /**
@@ -79,12 +81,11 @@ public class RuleNameLabel extends NameLabel {
     /**
      * Indicates whether this structured rule name has a (nun-<tt>null</tt>)
      * parent.
-     * @return <tt>true</tt> if this rule name has a (non-<tt>null</tt>)
-     *         parent
+     * @return <tt>true</tt> if this rule name has a (non-<tt>null</tt>) parent
      * @ensure <tt>return == size()>1</tt>
      */
     public boolean hasParent() {
-        return name().indexOf(SEPARATOR) >= 0;
+        return text().indexOf(SEPARATOR) >= 0;
     }
 
     /**
@@ -102,7 +103,7 @@ public class RuleNameLabel extends NameLabel {
      * @ensure <tt>return == get(size()-1)</tt>
      */
     public String child() {
-        String name = name();
+        String name = text();
         return name.substring(name.lastIndexOf(SEPARATOR) + 1);
     }
 
@@ -113,27 +114,30 @@ public class RuleNameLabel extends NameLabel {
      * @return the parent rule name
      * @ensure <tt>return == null</tt> iff <tt>size() == 1</tt>
      */
-    public RuleNameLabel parent() {
-        String name = name();
+    public RuleName parent() {
+        String name = text();
         int dot = name.lastIndexOf(SEPARATOR);
         if (dot < 0) {
             return null;
         } else {
-            return new RuleNameLabel(name.substring(0, dot));
+            return new RuleName(name.substring(0, dot));
         }
     }
 
     /**
      * Returns the tokens in this structured rule name as an array of strings.
-     * @return the tokens in this structured rule name as an array of strings
-     * @ensure return.length > 0
      */
     public String[] tokens() {
         List<String> result = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(name(), "" + SEPARATOR);
+        StringTokenizer tokenizer = new StringTokenizer(text(), "" + SEPARATOR);
         while (tokenizer.hasMoreTokens()) {
             result.add(tokenizer.nextToken());
         }
         return result.toArray(new String[0]);
+    }
+
+    @Override
+    protected String convertToText(String name) {
+        return name;
     }
 }

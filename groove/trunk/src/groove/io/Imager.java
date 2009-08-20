@@ -23,7 +23,7 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -170,7 +170,7 @@ public class Imager extends CommandLineTool {
                         AspectualRuleView rule =
                             new AspectualRuleView(
                                 AspectGraph.getFactory().fromPlainGraph(graph),
-                                new RuleNameLabel(ruleName));
+                                new RuleName(ruleName));
                         model = AspectJModel.newInstance(rule, new Options());
                     } else {
                         model = GraphJModel.newInstance(graph, new Options());

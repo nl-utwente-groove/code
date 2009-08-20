@@ -18,7 +18,7 @@ package groove.view;
 
 import groove.graph.Graph;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 
 import java.util.Map;
@@ -47,12 +47,12 @@ public interface GrammarView<GV extends View<Graph>,RV extends RuleView>
     public RV addRule(RV rule) throws FormatException;
 
     /** Returns an unmodifiable map from rule names to rule views. */
-    public Map<RuleNameLabel,RV> getRuleMap();
+    public Map<RuleName,RV> getRuleMap();
 
     /**
      * Returns the rule view stored for a given rule name.
      */
-    public RV getRule(RuleNameLabel name);
+    public RV getRule(RuleName name);
 
     /** Returns the start graph of this grammar view. */
     public GV getStartGraph();

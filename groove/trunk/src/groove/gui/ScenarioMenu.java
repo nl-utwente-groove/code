@@ -39,9 +39,9 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.lts.State;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.view.DefaultGrammarView;
 
 import java.util.HashMap;
@@ -134,7 +134,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 "Explores the state space and uses linear exploration for confluent rules.",
                 "Full exploration (linear confluent rules)");
         addScenarioHandler(scenario);
-        
+
         scenario =
             ScenarioFactory.getScenario(
                 new LinearStrategy(),
@@ -225,7 +225,8 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 if (this.simulator.getCurrentRule() != null) {
                     ExploreCondition<Rule> explCond =
                         new IsRuleApplicableCondition();
-                    String ruleName = this.simulator.getCurrentRule().getName();
+                    String ruleName =
+                        this.simulator.getCurrentRule().getNameLabel().text();
                     explCond.setCondition(gts.getGrammar().getRule(ruleName));
                     ((ConditionalScenario<Rule>) scenario).setCondition(
                         explCond, ruleName);
@@ -252,7 +253,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
     }
 
     @SuppressWarnings("unchecked")
-    public void setRuleUpdate(NameLabel name) {
+    public void setRuleUpdate(RuleName name) {
         GTS gts = this.simulator.getCurrentGTS();
         if (gts != null) {
             for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
@@ -263,7 +264,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                         new IsRuleApplicableCondition();
                     explCond.setCondition(gts.getGrammar().getRule(name));
                     ((ConditionalScenario<Rule>) scenario).setCondition(
-                        explCond, name.name());
+                        explCond, name.text());
                     generateAction.putValue(Action.NAME, scenario.getName());
                     generateAction.setEnabled(true);
                 }

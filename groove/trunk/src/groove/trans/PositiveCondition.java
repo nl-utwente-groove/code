@@ -50,13 +50,13 @@ abstract public class PositiveCondition<M extends Match> extends
      * root morphism.
      * @param target the graph to be matched
      * @param rootMap element map from the context to the anchor elements of
-     *        <code>target</code>; may be <code>null</code> if the
-     *        condition is ground
+     *        <code>target</code>; may be <code>null</code> if the condition is
+     *        ground
      * @param name the name of the condition; may be <code>null</code>
      * @param properties properties for matching the condition; may be
      *        <code>null</code>
      */
-    PositiveCondition(Graph target, NodeEdgeMap rootMap, NameLabel name,
+    PositiveCondition(Graph target, NodeEdgeMap rootMap, RuleName name,
             SystemProperties properties) {
         super(target, rootMap, name, properties);
     }
@@ -66,7 +66,7 @@ abstract public class PositiveCondition<M extends Match> extends
      * target. and initially empty nested predicate. The name may be
      * <code>null</code>.
      */
-    PositiveCondition(Graph target, NameLabel name, SystemProperties properties) {
+    PositiveCondition(Graph target, RuleName name, SystemProperties properties) {
         super(target, name, properties);
     }
 
@@ -141,7 +141,8 @@ abstract public class PositiveCondition<M extends Match> extends
         }
         if (!unresolvedVariableNodes.isEmpty()) {
             throw new FormatException(
-                "Cannot resolve attribute value nodes %s", unresolvedVariableNodes);
+                "Cannot resolve attribute value nodes %s",
+                unresolvedVariableNodes);
         }
         if (!unresolvedProductNodes.isEmpty()) {
             Map.Entry<ProductNode,BitSet> productEntry =

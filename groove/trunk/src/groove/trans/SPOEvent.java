@@ -160,7 +160,7 @@ final public class SPOEvent extends
 
     @Override
     public String toString() {
-        StringBuffer result = new StringBuffer(getRule().getName().name());
+        StringBuffer result = new StringBuffer(getRule().getName().text());
         // result.append(getAnchorImageString());
         if (getRule().getProperties().isUseParameters()) {
             result.append(getParameterString());
@@ -472,11 +472,10 @@ final public class SPOEvent extends
     /**
      * Collects the set of simple created edges, i.e., the images of the LHS
      * creator edges between existing nodes, into a given set. Callback method
-     * from {@link #computeSimpleCreatedEdges()}. TODO the parameter
-     * erasedNodes is a hack, this should be solved by setting the coAnchorMap
-     * correctly
-     * @param erasedNodes set of erased nodes; if not <code>null</code>,
-     *        check if created edges have incident nodes in this set
+     * from {@link #computeSimpleCreatedEdges()}. TODO the parameter erasedNodes
+     * is a hack, this should be solved by setting the coAnchorMap correctly
+     * @param erasedNodes set of erased nodes; if not <code>null</code>, check
+     *        if created edges have incident nodes in this set
      */
     void collectSimpleCreatedEdges(Set<Node> erasedNodes, Set<Edge> result) {
         VarNodeEdgeMap coAnchorMap = getCoanchorMap();
@@ -501,11 +500,10 @@ final public class SPOEvent extends
      * Collects the set of created edges of which at least one incident nodes is
      * also created, i.e., the images of the LHS creator edges between existing
      * nodes, into a given set. Callback method from
-     * {@link #getComplexCreatedEdges(Iterator)}. TODO the parameter
-     * erasedNodes is a hack, this should be solved by setting the coAnchorMap
-     * correctly
-     * @param erasedNodes set of erased nodes; if not <code>null</code>,
-     *        check if created edges have incident nodes in this set
+     * {@link #getComplexCreatedEdges(Iterator)}. TODO the parameter erasedNodes
+     * is a hack, this should be solved by setting the coAnchorMap correctly
+     * @param erasedNodes set of erased nodes; if not <code>null</code>, check
+     *        if created edges have incident nodes in this set
      * @param coRootImages mapping from creator nodes that are co-roots in
      *        sub-rules to the corresponding created nodes
      */
@@ -609,26 +607,28 @@ final public class SPOEvent extends
     }
 
     /**
-     * Adds a node that is fresh with respect to a given graph to a 
-     * collection of already added node. The
-     * previously created fresh nodes are tried first (see
-     * {@link SPOEvent#getFreshNodes(int)}; only if all of those are already in
-     * the graph, a new fresh node is created using {@link #createNode()}.
+     * Adds a node that is fresh with respect to a given graph to a collection
+     * of already added node. The previously created fresh nodes are tried first
+     * (see {@link SPOEvent#getFreshNodes(int)}; only if all of those are
+     * already in the graph, a new fresh node is created using
+     * {@link #createNode()}.
      * @param creatorIndex index in the rhsOnlyNodes array indicating the node
      *        of the rule for which a new image is to be created
      * @param currentNodes the existing nodes, which should not contain the
      *        fresh node
-     * @param result the collection of already added nodes; the newly 
-     * added node is guaranteed to be fresh with respect to these
+     * @param result the collection of already added nodes; the newly added node
+     *        is guaranteed to be fresh with respect to these
      */
-    public void addFreshNode(int creatorIndex, Set<? extends Node> currentNodes, Set<Node> result) {
+    public void addFreshNode(int creatorIndex,
+            Set<? extends Node> currentNodes, Set<Node> result) {
         boolean added = false;
         Collection<Node> currentFreshNodes = getFreshNodes(creatorIndex);
         if (currentFreshNodes != null) {
             Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
             while (!added && freshNodeIter.hasNext()) {
                 Node freshNode = freshNodeIter.next();
-                added = !currentNodes.contains(freshNode) && result.add(freshNode);
+                added =
+                    !currentNodes.contains(freshNode) && result.add(freshNode);
             }
         }
         if (!added) {

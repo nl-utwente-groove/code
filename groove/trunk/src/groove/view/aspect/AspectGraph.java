@@ -101,8 +101,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     /**
      * Returns the list of format errors in this graph. If the list is empty,
      * the graph has no errors.
-     * @return a possibly empty, non-<code>null</code> list of format errors
-     *         in this aspect graph
+     * @return a possibly empty, non-<code>null</code> list of format errors in
+     *         this aspect graph
      */
     public List<String> getErrors() {
         List<String> result;
@@ -116,7 +116,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         }
         return result;
     }
-    
+
     /**
      * Indicates if this aspect graph has format errors. Convenience method for
      * <code>! getErrors().isEmpty()</code>.
@@ -136,7 +136,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             GraphInfo.getInfo(this, true).setErrors(errors);
         }
     }
-    
+
     /**
      * Method that returns an {@link AspectGraph} based on a graph whose edges
      * are interpreted as aspect value prefixed. This means that nodes with
@@ -253,6 +253,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         }
         GraphInfo.transfer(graph, result, elementMap);
         result.setErrors(errors);
+        result.setFixed();
         return result;
     }
 

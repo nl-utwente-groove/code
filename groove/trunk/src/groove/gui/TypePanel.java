@@ -24,8 +24,8 @@ import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
@@ -104,7 +104,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         // nothing happens
     }
 
-    public synchronized void setRuleUpdate(NameLabel rule) {
+    public synchronized void setRuleUpdate(RuleName rule) {
         // nothing happens
     }
 

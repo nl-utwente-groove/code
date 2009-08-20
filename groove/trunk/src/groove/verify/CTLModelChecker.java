@@ -23,8 +23,8 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleName;
 import groove.util.CommandLineTool;
 import groove.util.Generator;
 import groove.view.FormatException;
@@ -78,8 +78,11 @@ public class CTLModelChecker extends CommandLineTool {
         List<String> genArgs;
         if (argList.contains("-g")) {
             int splitPoint = argList.indexOf("-g");
-            checkerArgs = new LinkedList<String>(argList.subList(0, splitPoint));
-            genArgs = new LinkedList<String>(argList.subList(splitPoint + 1, argList.size()));
+            checkerArgs =
+                new LinkedList<String>(argList.subList(0, splitPoint));
+            genArgs =
+                new LinkedList<String>(argList.subList(splitPoint + 1,
+                    argList.size()));
         } else {
             checkerArgs = argList;
             genArgs = null;
@@ -124,27 +127,21 @@ public class CTLModelChecker extends CommandLineTool {
         this.gts = this.generator.getGTS();
         this.grammar = this.generator.getGrammar();
         this.marker = new CTLTransitionMarker();
-        /*if (this.checkSingleProperty) {
-            this.marker.mark(this.marking, getProperty(), this.gts, this);
-            if (this.property.getCounterExamples().contains(
-                this.gts.startState())) {
-                System.err.println("The model violates the given property.");
-            } else {
-                System.out.println("The model satisfies the given property.");
-            }
-        } else {
-            // listPredicates();
-            while (nextProperty()) {
-                this.marker.mark(this.marking, getProperty(), this.gts, this);
-
-                if (this.property.getCounterExamples().contains(
-                    this.gts.startState())) {
-                    System.err.println("The model violates the given property.");
-                } else {
-                    System.out.println("The model satisfies the given property.");
-                }
-            }
-        }*/
+        /*
+         * if (this.checkSingleProperty) { this.marker.mark(this.marking,
+         * getProperty(), this.gts, this); if
+         * (this.property.getCounterExamples().contains( this.gts.startState()))
+         * { System.err.println("The model violates the given property."); }
+         * else { System.out.println("The model satisfies the given property.");
+         * } } else { // listPredicates(); while (nextProperty()) {
+         * this.marker.mark(this.marking, getProperty(), this.gts, this);
+         * 
+         * if (this.property.getCounterExamples().contains(
+         * this.gts.startState())) {
+         * System.err.println("The model violates the given property."); } else
+         * { System.out.println("The model satisfies the given property."); } }
+         * }
+         */
         while (this.properties.size() > 0) {
             this.setProperty(this.properties.remove(0));
             System.out.println("Checking CTL formula: " + this.property);
@@ -180,6 +177,7 @@ public class CTLModelChecker extends CommandLineTool {
 
     /*
      * (non-Javadoc)
+     * 
      * @see groove.util.CommandLineTool#supportsLogOption()
      */
     @Override
@@ -189,6 +187,7 @@ public class CTLModelChecker extends CommandLineTool {
 
     /*
      * (non-Javadoc)
+     * 
      * @see groove.util.CommandLineTool#supportsOutputOption()
      */
     @Override
@@ -198,6 +197,7 @@ public class CTLModelChecker extends CommandLineTool {
 
     /*
      * (non-Javadoc)
+     * 
      * @see groove.util.CommandLineTool#supportsVerbosityOption()
      */
     @Override
@@ -211,7 +211,7 @@ public class CTLModelChecker extends CommandLineTool {
      * @return the graph condition with the given name
      */
     public Condition getGraphCondition(String name) {
-        return this.grammar.getRule(new NameLabel(name));
+        return this.grammar.getRule(new RuleName(name));
     }
 
     /**
@@ -250,7 +250,7 @@ public class CTLModelChecker extends CommandLineTool {
             print("Format error in property: " + efe.getMessage());
         }
     }
-    
+
     /**
      * Ordinary set-method.
      * @param property the property to be checked
@@ -410,7 +410,7 @@ public class CTLModelChecker extends CommandLineTool {
         // therefore may not be represented in the graph transition system
         while (ruleIter.hasNext()) {
             Rule nextRule = ruleIter.next();
-            result.add(nextRule.getName().name());
+            result.add(nextRule.getName().text());
         }
         return result;
     }
@@ -446,7 +446,7 @@ public class CTLModelChecker extends CommandLineTool {
      * Flag to indicate whether to check a single property or to ask for
      * properties interactively.
      */
-    //private boolean checkSingleProperty = false;
+    // private boolean checkSingleProperty = false;
     /**
      * The generator used for generating the state space.
      */
@@ -487,7 +487,7 @@ public class CTLModelChecker extends CommandLineTool {
      * The list of CTL formulas to be checked.
      */
     private List<TemporalFormula> properties;
-    
+
     /**
      * 
      */

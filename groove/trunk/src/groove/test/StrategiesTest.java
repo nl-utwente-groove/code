@@ -21,16 +21,14 @@ import groove.explore.util.MatchesIterator;
 import groove.explore.util.PriorityCache;
 import groove.explore.util.SimpleCache;
 import groove.graph.Graph;
-import groove.io.AspectualViewGps;
 import groove.io.FileGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
 import groove.trans.GraphGrammar;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
 
@@ -100,10 +98,10 @@ public class StrategiesTest extends TestCase {
             }
 
             // the expected matches (rule names)
-            ArrayList<ArrayList<RuleNameLabel>> expected =
-                new ArrayList<ArrayList<RuleNameLabel>>(4);
+            ArrayList<ArrayList<RuleName>> expected =
+                new ArrayList<ArrayList<RuleName>>(4);
             for (int i = 0; i < nb; i++) {
-                expected.add(new ArrayList<RuleNameLabel>());
+                expected.add(new ArrayList<RuleName>());
             }
             expected.get(0).add(grammars[0].getRule("a").getName());
             expected.get(0).add(grammars[0].getRule("b").getName());
@@ -115,10 +113,10 @@ public class StrategiesTest extends TestCase {
             expected.get(2).add(grammars[0].getRule("e").getName());
 
             // the computed matches (rule names)
-            ArrayList<ArrayList<RuleNameLabel>> computed =
-                new ArrayList<ArrayList<RuleNameLabel>>();
+            ArrayList<ArrayList<RuleName>> computed =
+                new ArrayList<ArrayList<RuleName>>();
             for (int i = 0; i < nb; i++) {
-                computed.add(new ArrayList<RuleNameLabel>());
+                computed.add(new ArrayList<RuleName>());
                 for (RuleEvent rm : theMatches.get(i)) {
                     computed.get(i).add(rm.getRule().getName());
                 }
@@ -245,23 +243,23 @@ public class StrategiesTest extends TestCase {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        Rule a = grammar.getRule(new NameLabel("a"));
-        Rule b = grammar.getRule(new NameLabel("b"));
-        Rule c = grammar.getRule(new NameLabel("c"));
-        Rule d = grammar.getRule(new NameLabel("d"));
-        ArrayList<RuleNameLabel> allRules = new ArrayList<RuleNameLabel>(4);
+        Rule a = grammar.getRule(new RuleName("a"));
+        Rule b = grammar.getRule(new RuleName("b"));
+        Rule c = grammar.getRule(new RuleName("c"));
+        Rule d = grammar.getRule(new RuleName("d"));
+        ArrayList<RuleName> allRules = new ArrayList<RuleName>(4);
         allRules.add(a.getName());
         allRules.add(b.getName());
         allRules.add(c.getName());
         allRules.add(d.getName());
 
         ExploreCache cache;
-        ArrayList<RuleNameLabel> list;
+        ArrayList<RuleName> list;
 
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), false);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -271,7 +269,7 @@ public class StrategiesTest extends TestCase {
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), true);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -282,10 +280,10 @@ public class StrategiesTest extends TestCase {
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), false);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             @SuppressWarnings("unchecked")
-            ArrayList<RuleNameLabel> expected =
-                (ArrayList<RuleNameLabel>) allRules.clone();
+            ArrayList<RuleName> expected =
+                (ArrayList<RuleName>) allRules.clone();
             expected.remove(b.getName());
             expected.remove(a.getName());
             cache.updateExplored(b);
@@ -299,7 +297,7 @@ public class StrategiesTest extends TestCase {
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), false);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             cache.updateMatches(b);
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
@@ -310,7 +308,7 @@ public class StrategiesTest extends TestCase {
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), false);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             cache.updateExplored(d);
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
@@ -321,10 +319,10 @@ public class StrategiesTest extends TestCase {
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), true);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             @SuppressWarnings("unchecked")
-            ArrayList<RuleNameLabel> expected =
-                (ArrayList<RuleNameLabel>) allRules.clone();
+            ArrayList<RuleName> expected =
+                (ArrayList<RuleName>) allRules.clone();
             expected.remove(b.getName());
             cache.updateExplored(b);
             while (cache.hasNext()) {
@@ -337,7 +335,7 @@ public class StrategiesTest extends TestCase {
         // -----------
         {
             cache = new SimpleCache(grammar.getRules(), true);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             cache.updateMatches(b);
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
@@ -362,14 +360,14 @@ public class StrategiesTest extends TestCase {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        Rule a8 = grammar.getRule(new NameLabel("a8"));
-        Rule b8 = grammar.getRule(new NameLabel("b8"));
-        Rule a5 = grammar.getRule(new NameLabel("a5"));
-        Rule b5 = grammar.getRule(new NameLabel("b5"));
-        Rule c5 = grammar.getRule(new NameLabel("c5"));
-        Rule a0 = grammar.getRule(new NameLabel("a0"));
-        Rule b0 = grammar.getRule(new NameLabel("b0"));
-        ArrayList<RuleNameLabel> allRules = new ArrayList<RuleNameLabel>();
+        Rule a8 = grammar.getRule(new RuleName("a8"));
+        Rule b8 = grammar.getRule(new RuleName("b8"));
+        Rule a5 = grammar.getRule(new RuleName("a5"));
+        Rule b5 = grammar.getRule(new RuleName("b5"));
+        Rule c5 = grammar.getRule(new RuleName("c5"));
+        Rule a0 = grammar.getRule(new RuleName("a0"));
+        Rule b0 = grammar.getRule(new RuleName("b0"));
+        ArrayList<RuleName> allRules = new ArrayList<RuleName>();
         allRules.add(a8.getName());
         allRules.add(b8.getName());
         allRules.add(a5.getName());
@@ -380,12 +378,12 @@ public class StrategiesTest extends TestCase {
         allRules.trimToSize();
 
         ExploreCache cache;
-        ArrayList<RuleNameLabel> list;
+        ArrayList<RuleName> list;
 
         // all the rules (none matches)
         {
             cache = new PriorityCache(grammar.getRuleMap(), false);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -395,7 +393,7 @@ public class StrategiesTest extends TestCase {
         // All the rules in some order (none matches)
         {
             cache = new PriorityCache(grammar.getRuleMap(), true);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -407,11 +405,11 @@ public class StrategiesTest extends TestCase {
         {
             cache = new PriorityCache(grammar.getRuleMap(), false);
 
-            ArrayList<RuleNameLabel> expected = new ArrayList<RuleNameLabel>();
+            ArrayList<RuleName> expected = new ArrayList<RuleName>();
             expected.add(c5.getName());
             cache.updateMatches(b5);
             cache.updateExplored(b5);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -421,11 +419,11 @@ public class StrategiesTest extends TestCase {
         // A rule of priority 0 matches (not fully explored)
         {
             cache = new PriorityCache(grammar.getRuleMap(), false);
-            ArrayList<RuleNameLabel> expected = new ArrayList<RuleNameLabel>();
+            ArrayList<RuleName> expected = new ArrayList<RuleName>();
             expected.add(a0.getName());
             expected.add(b0.getName());
             cache.updateMatches(b0);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -435,11 +433,11 @@ public class StrategiesTest extends TestCase {
         // A rule of priority 8 matches (not fully explored)
         {
             cache = new PriorityCache(grammar.getRuleMap(), false);
-            ArrayList<RuleNameLabel> expected = new ArrayList<RuleNameLabel>();
+            ArrayList<RuleName> expected = new ArrayList<RuleName>();
             expected.add(a8.getName());
             expected.add(b8.getName());
             cache.updateMatches(a8);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -449,11 +447,11 @@ public class StrategiesTest extends TestCase {
         // A rule of priority 8 matches (fully explored)
         {
             cache = new PriorityCache(grammar.getRuleMap(), false);
-            ArrayList<RuleNameLabel> expected = new ArrayList<RuleNameLabel>();
+            ArrayList<RuleName> expected = new ArrayList<RuleName>();
             expected.add(b8.getName());
             cache.updateMatches(a8);
             cache.updateExplored(a8);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -465,7 +463,7 @@ public class StrategiesTest extends TestCase {
             cache = new PriorityCache(grammar.getRuleMap(), false);
             cache.updateMatches(b0);
             cache.updateExplored(b0);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -475,12 +473,12 @@ public class StrategiesTest extends TestCase {
         // A rule of priority 5 matches and is fully explored. Randomized.
         {
             cache = new PriorityCache(grammar.getRuleMap(), true);
-            ArrayList<RuleNameLabel> expected = new ArrayList<RuleNameLabel>();
+            ArrayList<RuleName> expected = new ArrayList<RuleName>();
             expected.add(a5.getName());
             expected.add(c5.getName());
             cache.updateMatches(b5);
             cache.updateExplored(b5);
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             while (cache.hasNext()) {
                 list.add(cache.next().getName());
             }
@@ -491,10 +489,10 @@ public class StrategiesTest extends TestCase {
         // Exceptions and so
         {
             cache = new PriorityCache(grammar.getRuleMap(), false);
-            ArrayList<RuleNameLabel> expected = new ArrayList<RuleNameLabel>();
+            ArrayList<RuleName> expected = new ArrayList<RuleName>();
             expected.add(a8.getName());
             expected.add(b8.getName());
-            list = new ArrayList<RuleNameLabel>();
+            list = new ArrayList<RuleName>();
             list.add(cache.next().getName());
             int i = 0;
             while (cache.hasNext() && i < 20) {

@@ -196,8 +196,8 @@ public class ModelChecking {
     /**
      * Checks whether a Buchi-transition is enabled, given a set of rule-names
      * of applicable rules.
-     * @return <tt>true</tt> if the given transition is enabled,
-     *         <tt>false</tt> otherwise
+     * @return <tt>true</tt> if the given transition is enabled, <tt>false</tt>
+     *         otherwise
      */
     public static boolean isPropertyTransitionEnabled(
             BuchiTransition transition, Collection<Rule> rules) {
@@ -211,7 +211,7 @@ public class ModelChecking {
             // afterwards
             String prop = gp.getLabel();
             for (Rule rule : rules) {
-                if (prop.equals(rule.getName().name())) {
+                if (prop.equals(rule.getName().text())) {
                     applicable = true;
                 }
             }

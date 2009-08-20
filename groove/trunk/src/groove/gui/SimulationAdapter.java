@@ -19,8 +19,8 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.view.DefaultGrammarView;
 
 /**
@@ -45,7 +45,7 @@ public class SimulationAdapter implements SimulationListener {
     }
 
     /** Provides a default empty implementation. */
-    public void setRuleUpdate(NameLabel name) {
+    public void setRuleUpdate(RuleName name) {
         // does nothing by design
     }
 

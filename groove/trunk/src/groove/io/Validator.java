@@ -17,7 +17,7 @@
 package groove.io;
 
 import groove.graph.GraphShape;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
@@ -195,7 +195,7 @@ public class Validator {
             }
             new AspectualRuleView(
                 AspectGraph.getFactory().fromPlainGraph(graph),
-                new RuleNameLabel(file.getName())).toModel();
+                new RuleName(file.getName())).toModel();
             if (verbosity > GraphFileHandler.QUIET_MODE) {
                 System.out.println("OK");
             }

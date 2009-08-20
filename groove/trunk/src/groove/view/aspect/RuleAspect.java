@@ -20,8 +20,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
-import groove.trans.NameLabel;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -203,7 +202,8 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #EMBARGO}.
      */
     public static boolean inNAC(AspectElement element) {
-        return hasRole(element) && (EMBARGO.equals(getRuleValue(element))) || isCNEW(element);
+        return hasRole(element) && (EMBARGO.equals(getRuleValue(element)))
+            || isCNEW(element);
     }
 
     /**
@@ -214,18 +214,18 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #CREATOR}.
      */
     public static boolean isCreator(AspectElement element) {
-        return hasRole(element) && CREATOR.equals(getRuleValue(element)) || isCNEW(element);
+        return hasRole(element) && CREATOR.equals(getRuleValue(element))
+            || isCNEW(element);
     }
 
-    
     /**
-     * Tests if a given aspect element is an embargo creator. This is the case if there
-     * is an aspect value in the element which equals EMBARGOCREATOR.
+     * Tests if a given aspect element is an embargo creator. This is the case
+     * if there is an aspect value in the element which equals EMBARGOCREATOR.
      */
     public static boolean isCNEW(AspectElement element) {
         return hasRole(element) && CNEW.equals(getRuleValue(element));
     }
-    
+
     /**
      * Tests if a given aspect element is an eraser. This is the case if there
      * is an aspect value in the element which equals {@link #ERASER}.
@@ -278,10 +278,10 @@ public class RuleAspect extends AbstractAspect {
      * Convenience method to retrieve the content of a rule aspect value of a
      * given node.
      * @return the content of the rule aspect value of <code>node</code>, or
-     *         <code>null</code> if <code>node</code> does not have this
-     *         aspect value.
+     *         <code>null</code> if <code>node</code> does not have this aspect
+     *         value.
      */
-    public static Pair<NameLabel,Integer> getRuleContent(AspectNode node) {
+    public static Pair<RuleName,Integer> getRuleContent(AspectNode node) {
         AspectValue ruleValue = getRuleValue(node);
         if (ruleValue instanceof RuleAspectValue) {
             return ((RuleAspectValue) ruleValue).getContent();
@@ -291,7 +291,7 @@ public class RuleAspect extends AbstractAspect {
     }
 
     /** Static fixed parser for rule content. */
-    static final ContentParser<Pair<NameLabel,Integer>> parser =
+    static final ContentParser<Pair<RuleName,Integer>> parser =
         new RuleContentParser();
 
     /**
@@ -370,7 +370,7 @@ public class RuleAspect extends AbstractAspect {
             REMARK.setSourceToEdge(REMARK);
             REMARK.setTargetToEdge(REMARK);
             // incompatibilities
-//            instance.setIncompatible(NestingAspect.getInstance());
+            // instance.setIncompatible(NestingAspect.getInstance());
             VALUE_COUNT = instance.getValues().size();
         } catch (FormatException exc) {
             throw new Error("Aspect '" + RULE_ASPECT_NAME
@@ -380,7 +380,7 @@ public class RuleAspect extends AbstractAspect {
 
     /** Type for the content of a rule aspect value. */
     public static class RuleAspectValue extends
-            ContentAspectValue<Pair<NameLabel,Integer>> {
+            ContentAspectValue<Pair<RuleName,Integer>> {
         /** Constructs a factory instance. */
         public RuleAspectValue() throws FormatException {
             super(getInstance(), RULE_NAME);
@@ -388,12 +388,12 @@ public class RuleAspect extends AbstractAspect {
 
         /** Creates an instance with actual content. */
         public RuleAspectValue(RuleAspectValue original,
-                Pair<NameLabel,Integer> content) {
+                Pair<RuleName,Integer> content) {
             super(original, content);
         }
 
         @Override
-        ContentParser<Pair<NameLabel,Integer>> createParser() {
+        ContentParser<Pair<RuleName,Integer>> createParser() {
             return parser;
         }
 
@@ -412,7 +412,7 @@ public class RuleAspect extends AbstractAspect {
      * @version $Revision $
      */
     private static class RuleContentParser implements
-            ContentParser<Pair<NameLabel,Integer>> {
+            ContentParser<Pair<RuleName,Integer>> {
         /** Empty constructor with the correct visibility. */
         RuleContentParser() {
             // empty
@@ -431,7 +431,7 @@ public class RuleAspect extends AbstractAspect {
          * In the latter case the value returned for the priority is
          * {@link #IMPLICIT_PRIORITY}.
          */
-        public Pair<NameLabel,Integer> toContent(String value)
+        public Pair<RuleName,Integer> toContent(String value)
             throws FormatException {
             String name;
             int priority;
@@ -458,7 +458,7 @@ public class RuleAspect extends AbstractAspect {
             if (name.length() == 0) {
                 throw new FormatException("Rule name should be non-empty");
             }
-            return new Pair<NameLabel,Integer>(createName(name), priority);
+            return new Pair<RuleName,Integer>(createName(name), priority);
         }
 
         /**
@@ -467,8 +467,8 @@ public class RuleAspect extends AbstractAspect {
          * second component is not {@link #IMPLICIT_PRIORITY}, or just
          * <code>content.first()</code> otherwise.
          */
-        public String toString(Pair<NameLabel,Integer> content) {
-            String name = content.first().name();
+        public String toString(Pair<RuleName,Integer> content) {
+            String name = content.first().text();
             int priority = content.second();
             return name
                 + (priority == IMPLICIT_PRIORITY ? "" : CONTENT_SEPARATOR
@@ -476,8 +476,8 @@ public class RuleAspect extends AbstractAspect {
         }
 
         /** Callback factory method to create a rule name from a given string. */
-        protected RuleNameLabel createName(String text) {
-            return new RuleNameLabel(text);
+        protected RuleName createName(String text) {
+            return new RuleName(text);
         }
     }
 
@@ -530,9 +530,6 @@ public class RuleAspect extends AbstractAspect {
         static private EraserParser instance = new EraserParser();
     }
 
-    
-    
-    
     /**
      * Label parser for creator edges. Recognises atoms, named unguarded
      * wildcards, and mergers.
@@ -604,7 +601,7 @@ public class RuleAspect extends AbstractAspect {
         private CNewParser() {
             // empty
         }
-    
+
         /**
          * This implementation tries to parse the label text as a regular
          * expression, but throws an exception if the result is anything other
@@ -628,7 +625,7 @@ public class RuleAspect extends AbstractAspect {
             }
             return result;
         }
-    
+
         /** This implementation returns a default label based on the label text. */
         public DefaultLabel unparse(Label label) {
             if (label instanceof DefaultLabel) {
@@ -637,18 +634,18 @@ public class RuleAspect extends AbstractAspect {
                 return DefaultLabel.createLabel(label.text());
             }
         }
-    
+
         /**
          * The parser used to decompose the label, after which a selection
          * follows.
          */
         private final LabelParser preParser = RegExprLabelParser.getInstance();
-    
+
         /** Returns the singleton instance of this class. */
         static public CNewParser getInstance() {
             return instance;
         }
-    
+
         /** Singleton instance of this class. */
         static private CNewParser instance = new CNewParser();
     }

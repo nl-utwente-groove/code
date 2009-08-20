@@ -21,7 +21,7 @@ import groove.graph.WrapperLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
+import groove.trans.RuleName;
 import groove.util.Reporter;
 
 import java.util.Iterator;
@@ -67,7 +67,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                     // Edge nextTransition = (Edge) transitionIter.next();
                     Label label = transitionIter.next().getEvent().getLabel();
                     String transitionName = null;
-                    if (!(label instanceof NameLabel)) {
+                    if (!(label instanceof RuleName)) {
                         transitionName = ((WrapperLabel<?>) label).text();
                         if (transitionName.startsWith("[")) {
                             transitionName =
@@ -78,7 +78,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                         transitionName = transitionName.substring(0, index);
                         // System.out.println("WrapperLabel...");
                     } else {
-                        transitionName = ((NameLabel) label).name();
+                        transitionName = ((RuleName) label).text();
                     }
                     // String transitionName = ((NameLabel)
                     // transitionIter.next().getEvent().getLabel()).name();

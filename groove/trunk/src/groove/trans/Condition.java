@@ -37,7 +37,7 @@ public interface Condition extends Fixable {
      * Returns the name of this predicate. A return value of <code>null</code>
      * indicates that the predicate is unnamed.
      */
-    public NameLabel getName();
+    public RuleName getName();
 
     /**
      * Indicates if this graph predicate is closed, which is to say that it has

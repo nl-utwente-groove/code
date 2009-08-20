@@ -23,7 +23,10 @@ import groove.graph.WrapperLabel;
  * <tt>BEGIN_CHAR</tt> and <tt>END_CHAR</tt>-characters.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-29 11:17:59 $
+ * @deprecated unnecessary level between {@link RuleName} and
+ *             {@link WrapperLabel}
  */
+@Deprecated
 public class NameLabel extends WrapperLabel<String> {
     /** The obligatory first character of a rule name. */
     public static final char BEGIN_CHAR = '<';

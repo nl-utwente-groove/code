@@ -77,17 +77,10 @@ abstract public class EditorDialog {
         this.parent.validate();
     }
 
-    /** Returns the resulting graph of the editor. */
-    public Graph toPlainGraph() {
-        return this.editor.getPlainGraph();
-    }
-
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph toAspectGraph() {
-        AspectGraph result =
-            AspectGraph.getFactory().fromPlainGraph(toPlainGraph());
-        result.setFixed();
-        return result;
+        return AspectGraph.getFactory().fromPlainGraph(
+            this.editor.getPlainGraph());
     }
 
     /**

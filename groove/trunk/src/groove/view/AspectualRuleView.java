@@ -49,7 +49,7 @@ import groove.trans.ForallCondition;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -118,7 +118,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param graph the graph to be converted
      * @param name the name of the rule; may be <code>null</code>
      */
-    public AspectualRuleView(AspectGraph graph, RuleNameLabel name) {
+    public AspectualRuleView(AspectGraph graph, RuleName name) {
         this(graph, name, null);
     }
 
@@ -130,7 +130,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param properties object specifying rule properties, such as injectivity
      *        etc.
      */
-    public AspectualRuleView(AspectGraph graph, RuleNameLabel name,
+    public AspectualRuleView(AspectGraph graph, RuleName name,
             SystemProperties properties) {
         this.name = name;
         this.priority = GraphProperties.getPriority(graph);
@@ -203,13 +203,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Returns the name of the rule represented by this rule graph, set at
      * construction time.
      */
-    public RuleNameLabel getNameLabel() {
+    public RuleName getNameLabel() {
         return this.name;
     }
 
-    /** Convenience method for <code>getNameLabel().name()</code>. */
+    /** Convenience method for <code>getNameLabel().text()</code>. */
     public String getName() {
-        return getNameLabel().name();
+        return getNameLabel().text();
     }
 
     /**
@@ -551,7 +551,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     } else {
                         ruleNameSuffix = this.name + ruleNameSuffix;
                     }
-                    condition.setName(new RuleNameLabel(ruleNameSuffix));
+                    condition.setName(new RuleName(ruleNameSuffix));
                     levelRuleMap.get(parentLevel).addSubCondition(condition);
                 }
             }
@@ -1047,7 +1047,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param priority the priority of the new rule.
      * @return the fresh rule created by the factory
      */
-    protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name,
+    protected Rule createRule(Morphism ruleMorphism, RuleName name,
             int priority, boolean confluent) {
         return new SPORule(ruleMorphism, name, priority, confluent,
             getProperties());
@@ -1063,7 +1063,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the fresh rule created by the factory
      */
     protected SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap,
-            NodeEdgeMap coRootMap, RuleNameLabel name) {
+            NodeEdgeMap coRootMap, RuleName name) {
         return new SPORule(ruleMorphism, rootMap, coRootMap, name,
             getProperties());
     }
@@ -1076,7 +1076,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the fresh condition
      */
     protected ForallCondition createForall(Graph target, NodeEdgeMap rootMap,
-            RuleNameLabel name) {
+            RuleName name) {
         return new ForallCondition(target, rootMap, name, getProperties());
     }
 
@@ -1372,7 +1372,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
      * The name of the rule represented by this rule graph.
      */
-    protected final RuleNameLabel name;
+    protected final RuleName name;
     /**
      * The priority of the rule represented by this rule graph.
      */
@@ -1450,7 +1450,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /** Tests the translation from an aspect graph to a rule and back. */
     private static void testTranslation(String name, AspectGraph graph)
         throws FormatException, FormatException {
-        RuleNameLabel ruleName = new RuleNameLabel(name);
+        RuleName ruleName = new RuleName(name);
         // construct rule graph
         AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
         // convert rule graph into rule

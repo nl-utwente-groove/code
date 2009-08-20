@@ -16,7 +16,7 @@
  */
 package groove.control.parse;
 
-import groove.trans.NameLabel;
+import groove.trans.RuleName;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,8 +63,8 @@ public class Namespace {
     }
 
     /** Initialises the rule names of this name space from a given grammar view. */
-    public void setRuleNames(Set<NameLabel> ruleNames) {
-        for (NameLabel rule : ruleNames) {
+    public void setRuleNames(Set<RuleName> ruleNames) {
+        for (RuleName rule : ruleNames) {
             this.ruleNames.add(rule.text());
         }
     }

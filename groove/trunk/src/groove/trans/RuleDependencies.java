@@ -79,28 +79,26 @@ public class RuleDependencies {
                     + data.consumedLabelsMap.get(rule));
                 System.out.println("Produced labels: "
                     + data.producedLabelsMap.get(rule));
-                Collection<NameLabel> enablerNames = new ArrayList<NameLabel>();
+                Collection<RuleName> enablerNames = new ArrayList<RuleName>();
                 for (Rule depRule : data.getEnablers(rule)) {
                     enablerNames.add(depRule.getName());
                 }
-                Collection<NameLabel> disablerNames =
-                    new ArrayList<NameLabel>();
+                Collection<RuleName> disablerNames = new ArrayList<RuleName>();
                 for (Rule depRule : data.getDisablers(rule)) {
                     disablerNames.add(depRule.getName());
                 }
-                Collection<NameLabel> enabledNames = new ArrayList<NameLabel>();
+                Collection<RuleName> enabledNames = new ArrayList<RuleName>();
                 for (Rule depRule : data.getEnableds(rule)) {
                     enabledNames.add(depRule.getName());
                 }
-                Collection<NameLabel> disabledNames =
-                    new ArrayList<NameLabel>();
+                Collection<RuleName> disabledNames = new ArrayList<RuleName>();
                 for (Rule depRule : data.getDisableds(rule)) {
                     disabledNames.add(depRule.getName());
                 }
                 // disablerNames.removeAll(enablerNames);
                 // disabledNames.removeAll(enabledNames);
-                Collection<NameLabel> allRuleNames =
-                    new ArrayList<NameLabel>(grammar.getRuleNames());
+                Collection<RuleName> allRuleNames =
+                    new ArrayList<RuleName>(grammar.getRuleNames());
                 allRuleNames.removeAll(enablerNames);
                 allRuleNames.removeAll(disablerNames);
                 System.out.println("Enabled rules:  " + enabledNames);
@@ -385,8 +383,8 @@ public class RuleDependencies {
         // determine if the rule introduces an isolated node
         for (Node rhsNode : rhs.nodeSet()) {
             if (!ruleMorphism.containsValue(rhsNode)) { // &&
-                                                        // rhs.edgeSet(rhsNode).isEmpty())
-                                                        // {
+                // rhs.edgeSet(rhsNode).isEmpty())
+                // {
                 produced.add(ANY_NODE);
             }
         }
@@ -501,12 +499,14 @@ public class RuleDependencies {
     void addDisabling(Rule disabler, Rule disabled) {
         add(this.disablerMap, disabled, disabler);
         add(this.disabledMap, disabler, disabled);
-        // if the disabled rule has (universal) subrules, then its 
+        // if the disabled rule has (universal) subrules, then its
         // events will be {@link CompositeEvents}, meaning that they will
-        // claim that they never match on the next state, even if they actually do.
-        // In order not to miss events, the disabled rule must be re-enabled as well.
+        // claim that they never match on the next state, even if they actually
+        // do.
+        // In order not to miss events, the disabled rule must be re-enabled as
+        // well.
         if (disabled instanceof SPORule && ((SPORule) disabled).hasSubRules()) {
-        	addEnabling(disabler, disabled);
+            addEnabling(disabler, disabled);
         }
     }
 

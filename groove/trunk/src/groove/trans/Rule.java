@@ -37,7 +37,7 @@ import java.util.Iterator;
  */
 public interface Rule extends Comparable<Rule>, Condition {
     /** Returns the name of this rule. */
-    public RuleNameLabel getName();
+    public RuleName getName();
 
     /**
      * Returns the priority of this object. A higher number means higher

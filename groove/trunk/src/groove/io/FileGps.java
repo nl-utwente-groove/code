@@ -18,7 +18,7 @@ package groove.io;
 
 import groove.control.ControlView;
 import groove.graph.GraphShape;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
@@ -64,7 +64,7 @@ public class FileGps extends AspectualViewGps {
         String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
         gg.setName(grammarName);
         // iterate over rules and save them
-        for (RuleNameLabel ruleName : gg.getRuleMap().keySet()) {
+        for (RuleName ruleName : gg.getRuleMap().keySet()) {
             // turn the rule into a rule graph
             marshalRule(gg.getRule(ruleName), location);
         }
@@ -233,7 +233,7 @@ public class FileGps extends AspectualViewGps {
             loadProperties(result, toURL(propertiesFile));
         }
 
-        Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
+        Map<RuleName,URL> ruleMap = new HashMap<RuleName,URL>();
 
         collectRuleNames(ruleMap, location, null);
 
@@ -301,15 +301,15 @@ public class FileGps extends AspectualViewGps {
      */
     public void loadRule(DefaultGrammarView grammar, File ruleFile)
         throws IOException {
-        Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
+        Map<RuleName,URL> ruleMap = new HashMap<RuleName,URL>();
         if (ruleFile == null) {
             throw new IOException(LOAD_ERROR + ": no files found");
         } else {
             // read in production rule
             String fileName = RULE_FILTER.stripExtension(ruleFile.getName());
             PriorityFileName priorityFileName = new PriorityFileName(fileName);
-            RuleNameLabel ruleName =
-                new RuleNameLabel(null, priorityFileName.getActualName());
+            RuleName ruleName =
+                new RuleName(null, priorityFileName.getActualName());
 
             // check for overlapping rule and directory names
             if (ruleMap.put(ruleName, ruleFile.toURI().toURL()) != null) {
@@ -393,8 +393,8 @@ public class FileGps extends AspectualViewGps {
         }
     }
 
-    private void collectRuleNames(Map<RuleNameLabel,URL> result,
-            File directory, RuleNameLabel rulePath) throws IOException {
+    private void collectRuleNames(Map<RuleName,URL> result, File directory,
+            RuleName rulePath) throws IOException {
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
             throw new IOException(LOAD_ERROR + ": no files found at "
@@ -405,9 +405,8 @@ public class FileGps extends AspectualViewGps {
                 String fileName = RULE_FILTER.stripExtension(file.getName());
                 PriorityFileName priorityFileName =
                     new PriorityFileName(fileName);
-                RuleNameLabel ruleName =
-                    new RuleNameLabel(rulePath,
-                        priorityFileName.getActualName());
+                RuleName ruleName =
+                    new RuleName(rulePath, priorityFileName.getActualName());
                 // check for overlapping rule and directory names
                 if (file.isDirectory()) {
                     if (!file.getName().equals(".svn")) {
@@ -460,7 +459,7 @@ public class FileGps extends AspectualViewGps {
             boolean create) {
         File result = null;
         // if the rule name is structured, go to the relevant sub-directory
-        String remainingName = ruleGraph.getName();
+        String remainingName = ruleGraph.getNameLabel().text();
         int priority = ruleGraph.getPriority();
         boolean searching = true;
         while (searching) {
@@ -476,7 +475,7 @@ public class FileGps extends AspectualViewGps {
             if (candidate.exists()) {
                 result = candidate;
             }
-            int separator = remainingName.indexOf(RuleNameLabel.SEPARATOR);
+            int separator = remainingName.indexOf(RuleName.SEPARATOR);
             searching = result == null && separator >= 0;
             if (searching) {
                 // descend into sub-directory if no file is found and the name

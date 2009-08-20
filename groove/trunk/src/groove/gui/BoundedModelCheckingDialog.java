@@ -175,7 +175,7 @@ public class BoundedModelCheckingDialog {
         this.grammar = grammar;
         this.ruleNames = new ArrayList<String>();
         for (Rule rule : grammar.getRules()) {
-            this.ruleNames.add(rule.getName().name());
+            this.ruleNames.add(rule.getName().text());
         }
     }
 

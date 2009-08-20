@@ -18,7 +18,7 @@ package groove.gui.jgraph;
 
 import groove.gui.Simulator;
 import groove.gui.layout.SpringLayouter;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 
 import java.awt.event.ActionEvent;
 
@@ -91,7 +91,7 @@ public class AspectJGraph extends JGraph {
                 super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
-                    for (RuleNameLabel ruleName : getSimulator().getCurrentGrammar().getRuleMap().keySet()) {
+                    for (RuleName ruleName : getSimulator().getCurrentGrammar().getRuleMap().keySet()) {
                         add(createSetRuleAction(ruleName));
                     }
                 }
@@ -101,7 +101,7 @@ public class AspectJGraph extends JGraph {
     }
 
     /** Action to change the display to a given (named) rule. */
-    protected Action createSetRuleAction(final RuleNameLabel ruleName) {
+    protected Action createSetRuleAction(final RuleName ruleName) {
         return new AbstractAction(ruleName.toString()) {
             public void actionPerformed(ActionEvent evt) {
                 getSimulator().setRule(ruleName);
