@@ -217,7 +217,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * {@link #hasGraphRole()}.
      */
     public AspectualView<?> toView() {
-        return AspectualView.createView(toAspectGraph());
+        return toAspectGraph().toView();
     }
 
     /**
@@ -225,10 +225,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * graph.
      */
     public AspectGraph toAspectGraph() {
-        AspectGraph result =
-            AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
-        result.setFixed();
-        return result;
+        return AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
     }
 
     /**
@@ -323,7 +320,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
                     toFile =
                         new File(toFile.getParentFile(), actualName
                             + ExtensionFilter.getExtension(toFile));
-                    this.currentFile = toFile;
+                    setCurrentFile(toFile);
                 } catch (Exception exc) {
                     showErrorDialog(String.format("Error while saving to %s",
                         toFile), exc);
@@ -367,8 +364,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     public static boolean previewGraph(final Graph graph, final String option) {
         Editor e = new Editor();
         AspectGraph result = AspectGraph.getFactory().fromPlainGraph(graph);
-        result.setFixed();
-        AspectualGraphView view = new AspectualGraphView(result, null);
+        AspectualGraphView view = result.toGraphView(null);
         return e.showPreview(view, option);
     }
 
@@ -388,7 +384,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         } catch (IOException exception) {
             return false;
         }
-        AspectualGraphView view = new AspectualGraphView(graph, null);
+        AspectualGraphView view = graph.toGraphView(null);
         return e.showPreview(view, option);
     }
 
@@ -424,7 +420,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      *         formatted graph
      */
     private void doOpenGraph(final File fromFile) throws IOException {
-        this.currentFile = fromFile;
+        setCurrentFile(fromFile);
         // first create a graph from the gxl file
         final AspectGraph graph = this.layoutGxl.unmarshalGraph(fromFile);
         // load the model in the event dispatch thread, to avoid concurrency
@@ -771,7 +767,17 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
                 JFileChooser.FILE_FILTER_CHANGED_PROPERTY,
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
+                        // change the extension of the current file name
                         FileFilter filter = (FileFilter) evt.getNewValue();
+                        File currentFile = getCurrentFile();
+                        if (filter instanceof ExtensionFilter
+                            && currentFile != null) {
+                            String name =
+                                ExtensionFilter.getPureName(currentFile);
+                            setCurrentFile(new File(currentFile.getPath(),
+                                ((ExtensionFilter) filter).addExtension(name)));
+                        }
+                        // change the role of the currently edited graph
                         if (Editor.this.graphChooser.isRuleFilter(filter)) {
                             setRole(Groove.RULE_ROLE);
                         } else if (Editor.this.graphChooser.isStateFilter(filter)) {
@@ -844,7 +850,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     }
 
     /**
-     * Returns a textual representation of the graph type, with the first letter
+     * Returns a textual representation of the graph role, with the first letter
      * capitalised on demand.
      * @param upper if <code>true</code>, the first letter is capitalised
      */

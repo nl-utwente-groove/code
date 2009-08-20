@@ -23,7 +23,6 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.trans.RuleName;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -155,32 +154,29 @@ public class Imager extends CommandLineTool {
                         new File(
                             new ExtensionFilter(this.imageFormat).addExtension(outFileName));
                     GraphShape graph = graphLoader.unmarshalGraph(inFile);
-                    
-                    if( graph.size() == 0 ) {
+
+                    if (graph.size() == 0) {
                         // fix to skip empty graphs and rules, since
                         // they cause a nullpointer
                         printlnMedium("Skpping empty graph " + inFile);
                         return;
                     }
-                    
+
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
-                        String ruleName =
-                            ruleFilter.stripExtension(inFile.getName());
                         AspectualRuleView rule =
-                            new AspectualRuleView(
-                                AspectGraph.getFactory().fromPlainGraph(graph),
-                                new RuleName(ruleName));
+                            AspectGraph.getFactory().fromPlainGraph(graph).toRuleView(
+                                null);
                         model = AspectJModel.newInstance(rule, new Options());
                     } else {
                         model = GraphJModel.newInstance(graph, new Options());
                     }
-                    
+
                     JGraph jGraph = new JGraph(model, false);
                     jGraph.setModel(model);
                     jGraph.setSize(jGraph.getPreferredSize());
                     printlnMedium("Imaging " + inFile + " as " + outFile);
-                    
+
                     this.exporter.export(jGraph, outFile);
                     Thread.yield();
                 } catch (FileNotFoundException fnfe) {
@@ -258,8 +254,8 @@ public class Imager extends CommandLineTool {
     }
 
     /**
-     * Processes a list of arguments (which are <tt>String</tt>s) by setting
-     * the attributes of the imager accordingly.
+     * Processes a list of arguments (which are <tt>String</tt>s) by setting the
+     * attributes of the imager accordingly.
      * @require <tt>argsList instanceof List of String</tt>
      */
     @Override
@@ -636,8 +632,8 @@ public class Imager extends CommandLineTool {
         }
 
         /**
-         * Creates an action that calls {@link #handleBrowseAction(JTextField)}with
-         * a given text field.
+         * Creates an action that calls {@link #handleBrowseAction(JTextField)}
+         * with a given text field.
          */
         protected Action createBrowseAction(final JTextField fileField) {
             return new AbstractAction(BROWSE_LABEL) {

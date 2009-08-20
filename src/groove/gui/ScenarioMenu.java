@@ -225,8 +225,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 if (this.simulator.getCurrentRule() != null) {
                     ExploreCondition<Rule> explCond =
                         new IsRuleApplicableCondition();
-                    String ruleName =
-                        this.simulator.getCurrentRule().getNameLabel().text();
+                    String ruleName = this.simulator.getCurrentRule().getName();
                     explCond.setCondition(gts.getGrammar().getRule(ruleName));
                     ((ConditionalScenario<Rule>) scenario).setCondition(
                         explCond, ruleName);

@@ -284,7 +284,7 @@ public class Simulator {
         boolean result = this.currentGrammar != grammar;
         this.currentGrammar = grammar;
         if (this.currentRule != null
-            && grammar.getRule(this.currentRule.getNameLabel()) == null) {
+            && grammar.getRule(this.currentRule.getRuleName()) == null) {
             this.currentRule = null;
         }
         return result;
@@ -895,7 +895,7 @@ public class Simulator {
         AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
         GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
         properties.setEnabled(!properties.isEnabled());
-        doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
+        doAddRule(getCurrentRule().getRuleName(), ruleGraph);
     }
 
     /**
@@ -1071,8 +1071,7 @@ public class Simulator {
         try {
             AspectGraph aspectStartGraph = unmarshalGraph(file);
             AspectualGraphView startGraph =
-                new AspectualGraphView(aspectStartGraph,
-                    getCurrentGrammar().getProperties());
+                aspectStartGraph.toGraphView(getCurrentGrammar().getProperties());
             getCurrentGrammar().setStartGraph(startGraph);
             setCurrentStartGraphFile(file);
             setGrammar(getCurrentGrammar());
@@ -1209,8 +1208,7 @@ public class Simulator {
         try {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             AspectualRuleView ruleView =
-                new AspectualRuleView(ruleAsGraph, ruleName,
-                    getCurrentGrammar().getProperties());
+                ruleAsGraph.toRuleView(getCurrentGrammar().getProperties());
             getCurrentGrammar().addRule(ruleView);
             this.currentGrammarLoader.marshalRule(ruleView,
                 FileGps.toFile(this.currentGrammarURL));
@@ -1267,8 +1265,7 @@ public class Simulator {
                     AspectGraph aspectStartGraph =
                         unmarshalGraph(getCurrentStartGraphFile());
                     AspectualGraphView startGraph =
-                        new AspectualGraphView(aspectStartGraph,
-                            grammar.getProperties());
+                        aspectStartGraph.toGraphView(grammar.getProperties());
                     grammar.setStartGraph(startGraph);
                 }
                 File currentControlFile =
@@ -1300,8 +1297,7 @@ public class Simulator {
         if (isStartGraph) {
             // reset the start graph to the renamed graph
             AspectualGraphView startGraph =
-                new AspectualGraphView(graph,
-                    getCurrentGrammar().getProperties());
+                graph.toGraphView(getCurrentGrammar().getProperties());
             getCurrentGrammar().setStartGraph(startGraph);
         } else {
             this.stateJList.refreshList(true);
@@ -3428,8 +3424,7 @@ public class Simulator {
             if (confirmAbandon(false)) {
                 AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
                 RuleName newRuleName =
-                    askNewRuleName(null,
-                        getCurrentRule().getNameLabel().text(), true);
+                    askNewRuleName(null, getCurrentRule().getName(), true);
                 if (newRuleName != null) {
                     doAddRule(newRuleName, oldRuleGraph.clone());
                 }
@@ -3474,7 +3469,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            RuleName ruleName = getCurrentRule().getNameLabel();
+            RuleName ruleName = getCurrentRule().getRuleName();
             String question = String.format("Delete rule '%s'?", ruleName);
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
                 doDeleteRule(ruleName);
@@ -3607,8 +3602,8 @@ public class Simulator {
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
                 ruleProperties.clear();
                 ruleProperties.putAll(dialog.getEditedProperties());
-                doDeleteRule(rule.getNameLabel());
-                doAddRule(rule.getNameLabel(), ruleGraph);
+                doDeleteRule(rule.getRuleName());
+                doAddRule(rule.getRuleName(), ruleGraph);
             }
         }
     }
@@ -3647,7 +3642,7 @@ public class Simulator {
          * @require <tt>getCurrentRule != null</tt>.
          */
         public void actionPerformed(ActionEvent e) {
-            final RuleName ruleName = getCurrentRule().getNameLabel();
+            final String ruleName = getCurrentRule().getName();
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(),
                     getRulePanel().getJModel().toPlainGraph()) {
@@ -3657,7 +3652,7 @@ public class Simulator {
                             AspectGraph ruleAsAspectGraph = toAspectGraph();
                             RuleName newRuleName =
                                 askNewRuleName("Name for edited rule",
-                                    ruleName.text(), false);
+                                    ruleName, false);
                             if (newRuleName != null) {
                                 doAddRule(newRuleName, ruleAsAspectGraph);
                             }
@@ -3764,7 +3759,7 @@ public class Simulator {
                 fileName = getCurrentState().toString();
                 jGraph = getStatePanel().getJGraph();
             } else {
-                fileName = getCurrentRule().getNameLabel().toString();
+                fileName = getCurrentRule().getName();
                 jGraph = getRulePanel().getJGraph();
             }
             getExporter().getFileChooser().setSelectedFile(new File(fileName));
@@ -4521,7 +4516,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-                RuleName oldRuleName = getCurrentRule().getNameLabel();
+                RuleName oldRuleName = getCurrentRule().getRuleName();
                 AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
                 RuleName newRuleName =
                     askNewRuleName(null, oldRuleName.text(), true);

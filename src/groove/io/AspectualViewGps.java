@@ -141,7 +141,7 @@ public abstract class AspectualViewGps extends Observable implements
         setChanged();
         notifyObservers(ruleMap.size());
         for (Map.Entry<RuleName,URL> ruleEntry : ruleMap.entrySet()) {
-            result.addRule(loadRule(ruleEntry.getValue(), ruleEntry.getKey(),
+            result.addRule(loadRule(ruleEntry.getValue(),
                 result.getProperties()));
             setChanged();
             notifyObservers(result);
@@ -154,16 +154,15 @@ public abstract class AspectualViewGps extends Observable implements
      * Loads in and returns a single rule from a given location, giving it a
      * given name and priority.
      */
-    private AspectualRuleView loadRule(URL location, RuleName ruleName,
-            SystemProperties properties) throws IOException {
+    private AspectualRuleView loadRule(URL location, SystemProperties properties)
+        throws IOException {
 
         AspectGraph unmarshalledRule =
             getGxlGraphMarshaller().unmarshalGraph(location);
 
         GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
 
-        AspectualRuleView result =
-            createRuleView(unmarshalledRule, ruleName, properties);
+        AspectualRuleView result = unmarshalledRule.toRuleView(properties);
 
         return result;
     }
@@ -187,8 +186,7 @@ public abstract class AspectualViewGps extends Observable implements
                 unmarshalGraph(startGraphSource);
 
             AspectualGraphView startGraph =
-                new AspectualGraphView(unmarshalledStartGraph,
-                    result.getProperties());
+                unmarshalledStartGraph.toGraphView(result.getProperties());
 
             startGraph.getName();
 
@@ -229,13 +227,7 @@ public abstract class AspectualViewGps extends Observable implements
      */
     public AspectualRuleView unmarshalRule(URL location,
             SystemProperties properties) throws IOException {
-        String filename =
-            Groove.createRuleFilter().stripExtension(location.getFile());
-        PriorityFileName priorityFileName = new PriorityFileName(filename);
-        RuleName ruleName =
-            new RuleName(priorityFileName.getActualName());
-
-        return loadRule(location, ruleName, properties);
+        return loadRule(location, properties);
     }
 
     public void marshal(DefaultGrammarView gg, File target) throws IOException,
@@ -297,17 +289,6 @@ public abstract class AspectualViewGps extends Observable implements
      */
     protected DefaultGrammarView createGrammar(String name) {
         return new DefaultGrammarView(name);
-    }
-
-    /**
-     * Creates an {@link AspectualRuleView}.
-     * @param graph the graph from which to create the rule-graph
-     * @param ruleName the name of the rule to be created
-     * @return the {@link AspectualRuleView} created from the given graph
-     */
-    private AspectualRuleView createRuleView(AspectGraph graph,
-            RuleName ruleName, SystemProperties properties) {
-        return new AspectualRuleView(graph, ruleName, properties);
     }
 
     /**

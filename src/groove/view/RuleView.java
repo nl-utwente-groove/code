@@ -39,7 +39,7 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * Returns the name of the rule of which this is a view. Yields the same
      * result as <code>toRule().getName().name()</code>.
      */
-    public RuleName getNameLabel();
+    public RuleName getRuleName();
 
     /**
      * Returns the priority of the rule of which this is a view. Yields the same

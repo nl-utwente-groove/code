@@ -459,7 +459,7 @@ public class FileGps extends AspectualViewGps {
             boolean create) {
         File result = null;
         // if the rule name is structured, go to the relevant sub-directory
-        String remainingName = ruleGraph.getNameLabel().text();
+        String remainingName = ruleGraph.getName();
         int priority = ruleGraph.getPriority();
         boolean searching = true;
         while (searching) {
