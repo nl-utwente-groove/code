@@ -1182,8 +1182,7 @@ public class Simulator {
      */
     void doAddGraph(Graph graph, File file) {
         try {
-            AspectGraph saveGraph =
-                AspectGraph.getFactory().fromPlainGraph(graph);
+            AspectGraph saveGraph = AspectGraph.newInstance(graph);
             if (saveGraph.hasErrors()) {
                 showErrorDialog("Errors in graph", new FormatException(
                     saveGraph.getErrors()));
@@ -4596,8 +4595,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             AspectGraph graph =
-                AspectGraph.getFactory().fromPlainGraph(
-                    getGraphPanel().getJModel().toPlainGraph());
+                AspectGraph.newInstance(getGraphPanel().getJModel().toPlainGraph());
             if (getGraphPanel() == getLtsPanel()) {
                 handleSaveGraph(false, graph);
             } else {

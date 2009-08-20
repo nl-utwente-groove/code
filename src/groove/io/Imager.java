@@ -165,8 +165,7 @@ public class Imager extends CommandLineTool {
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
                         AspectualRuleView rule =
-                            AspectGraph.getFactory().fromPlainGraph(graph).toRuleView(
-                                null);
+                            AspectGraph.newInstance(graph).toRuleView(null);
                         model = AspectJModel.newInstance(rule, new Options());
                     } else {
                         model = GraphJModel.newInstance(graph, new Options());

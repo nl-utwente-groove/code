@@ -203,8 +203,8 @@ public class Exporter {
 
         public void export(JGraph jGraph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            convert(AspectGraph.getFactory().fromPlainGraph(
-                jGraph.getModel().toPlainGraph()), writer);
+            convert(AspectGraph.newInstance(jGraph.getModel().toPlainGraph()),
+                writer);
             writer.close();
         }
 
@@ -537,10 +537,9 @@ public class Exporter {
             BufferedImage image = jGraph.toImage();
             String format = this.pngFilter.getExtension().substring(1);
             ImageIO.write(image, format, file);
-            
-            
-//            ImageIO.write(jGraph.toImage(),
-//                this.pngFilter.getExtension().substring(1), file);
+
+            // ImageIO.write(jGraph.toImage(),
+            // this.pngFilter.getExtension().substring(1), file);
         }
 
         /**

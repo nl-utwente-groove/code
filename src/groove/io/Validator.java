@@ -191,7 +191,7 @@ public class Validator {
                 System.out.print("* Validating " + name
                     + " as a production rule: ");
             }
-            AspectGraph.getFactory().fromPlainGraph(graph).toRuleView(null).toModel();
+            AspectGraph.newInstance(graph).toRuleView(null).toModel();
             if (verbosity > GraphFileHandler.QUIET_MODE) {
                 System.out.println("OK");
             }

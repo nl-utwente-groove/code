@@ -225,7 +225,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * graph.
      */
     public AspectGraph toAspectGraph() {
-        return AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
+        return AspectGraph.newInstance(getPlainGraph());
     }
 
     /**
@@ -363,7 +363,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      */
     public static boolean previewGraph(final Graph graph, final String option) {
         Editor e = new Editor();
-        AspectGraph result = AspectGraph.getFactory().fromPlainGraph(graph);
+        AspectGraph result = AspectGraph.newInstance(graph);
         AspectualGraphView view = result.toGraphView(null);
         return e.showPreview(view, option);
     }
