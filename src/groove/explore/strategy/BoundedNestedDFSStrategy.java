@@ -198,7 +198,7 @@ public class BoundedNestedDFSStrategy extends
                         // target-state is already explored in previous
                         // iterations
                         // the transition must be traversed
-                        outTransition.rule().getName().name();
+                        outTransition.rule().getName().text();
                         if (!getBoundary().crossingBoundary(outTransition, true)) {
                             setAtBuchiState(newState);
                             setLastTransition(outTransition);
@@ -283,8 +283,8 @@ public class BoundedNestedDFSStrategy extends
             setAtBuchiState(null);
             return;
         } else if (s != null) { // the current state has an open successor (is
-                                // not really backtracking, a sibling state is
-                                // fully explored)
+            // not really backtracking, a sibling state is
+            // fully explored)
             setAtBuchiState(s);
             return;
         }
@@ -347,7 +347,9 @@ public class BoundedNestedDFSStrategy extends
 
     /*
      * (non-Javadoc)
-     * @see groove.explore.strategy.DefaultBoundedModelCheckingStrategy#finished()
+     * 
+     * @see
+     * groove.explore.strategy.DefaultBoundedModelCheckingStrategy#finished()
      */
     @Override
     public boolean finished() {
@@ -361,8 +363,8 @@ public class BoundedNestedDFSStrategy extends
     }
 
     /**
-     * Returns a random buchi transition from a given state.
-     * AREND: check if this comment is correct :)
+     * Returns a random buchi transition from a given state. AREND: check if
+     * this comment is correct :)
      */
     protected ProductTransition getRandomOpenBuchiTransition(
             BuchiGraphState state) {

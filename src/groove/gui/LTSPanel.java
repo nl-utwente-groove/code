@@ -31,8 +31,8 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.lts.State;
-import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.view.DefaultGrammarView;
 
 import java.awt.event.MouseAdapter;
@@ -141,7 +141,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     /**
      * Removes the emphasis from the currently emphasised edge, if any.
      */
-    public synchronized void setRuleUpdate(NameLabel name) {
+    public synchronized void setRuleUpdate(RuleName name) {
         if (isGTSactivated()) {
             getJModel().setActive(getJModel().getActiveState(), null);
         }

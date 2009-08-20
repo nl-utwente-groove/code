@@ -22,7 +22,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.NodeEdgeMap;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectValue;
@@ -117,7 +117,7 @@ abstract public class AspectualView<Model> implements View<Model> {
      */
     static public AspectualView<?> createView(AspectGraph aspectGraph) {
         if (GraphInfo.hasRuleRole(aspectGraph)) {
-            return new AspectualRuleView(aspectGraph, new RuleNameLabel(
+            return new AspectualRuleView(aspectGraph, new RuleName(
                 GraphInfo.getName(aspectGraph)));
         } else {
             return new AspectualGraphView(aspectGraph, null);

@@ -19,8 +19,7 @@ package groove.view;
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.trans.GraphGrammar;
-import groove.trans.NameLabel;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 
 import java.io.File;
@@ -89,13 +88,13 @@ public class DefaultGrammarView implements
         invalidateGrammar();
     }
 
-    public Map<RuleNameLabel,AspectualRuleView> getRuleMap() {
+    public Map<RuleName,AspectualRuleView> getRuleMap() {
         return Collections.unmodifiableMap(this.ruleMap);
     }
 
     /**
      * Adds a rule based on a given rule view.
-     * @see #getRule(RuleNameLabel)
+     * @see #getRule(RuleName)
      */
     public AspectualRuleView addRule(AspectualRuleView ruleView)
         throws IllegalStateException {
@@ -111,7 +110,7 @@ public class DefaultGrammarView implements
      * @return the view previously stored with name <code>name</code>, or
      *         <code>null</code>
      */
-    public AspectualRuleView removeRule(NameLabel name) {
+    public AspectualRuleView removeRule(RuleName name) {
         AspectualRuleView result = this.ruleMap.remove(name);
         invalidateGrammar();
         return result;
@@ -122,7 +121,7 @@ public class DefaultGrammarView implements
      * <code>null</code> if the rule cannot be viewed in the available
      * {@link RuleView} format.
      */
-    public AspectualRuleView getRule(RuleNameLabel name) {
+    public AspectualRuleView getRule(RuleName name) {
         return this.ruleMap.get(name);
     }
 
@@ -288,8 +287,8 @@ public class DefaultGrammarView implements
     }
 
     /** Mapping from rule names to views on the corresponding rules. */
-    private final Map<RuleNameLabel,AspectualRuleView> ruleMap =
-        new TreeMap<RuleNameLabel,AspectualRuleView>();
+    private final Map<RuleName,AspectualRuleView> ruleMap =
+        new TreeMap<RuleName,AspectualRuleView>();
     /** Mapping from priorities to sets of rule names. */
     /** The name of this grammar view. */
     private String name;

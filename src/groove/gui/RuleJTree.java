@@ -23,11 +23,10 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
@@ -134,8 +133,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
-        Map<NameLabel,DirectoryTreeNode> dirNodeMap =
-            new HashMap<NameLabel,DirectoryTreeNode>();
+        Map<RuleName,DirectoryTreeNode> dirNodeMap =
+            new HashMap<RuleName,DirectoryTreeNode>();
         this.ruleNodeMap.clear();
         this.matchNodeMap.clear();
         this.matchTransitionMap.clear();
@@ -152,7 +151,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 dirNodeMap.clear();
             }
             for (AspectualRuleView ruleView : priorityEntry.getValue()) {
-                RuleNameLabel ruleName = ruleView.getNameLabel();
+                RuleName ruleName = ruleView.getNameLabel();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, ruleName);
@@ -207,7 +206,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Sets the tree selection to a given rule name. Does <i>not</i> trigger
      * actions based on the selection change.
      */
-    public synchronized void setRuleUpdate(NameLabel name) {
+    public synchronized void setRuleUpdate(RuleName name) {
         refresh();
     }
 
@@ -276,8 +275,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** Adds tree nodes for all levels of a structured rule name. */
     private DefaultMutableTreeNode addParentNode(
             DefaultMutableTreeNode topNode,
-            Map<NameLabel,DirectoryTreeNode> dirNodeMap, RuleNameLabel ruleName) {
-        RuleNameLabel parent = ruleName.parent();
+            Map<RuleName,DirectoryTreeNode> dirNodeMap, RuleName ruleName) {
+        RuleName parent = ruleName.parent();
         if (parent == null) {
             // there is no parent rule name; the parent node is the top node
             return topNode;
@@ -548,8 +547,8 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
      *                                               \cup RuleTreeNode</tt>
      */
-    protected final Map<NameLabel,RuleTreeNode> ruleNodeMap =
-        new HashMap<NameLabel,RuleTreeNode>();
+    protected final Map<RuleName,RuleTreeNode> ruleNodeMap =
+        new HashMap<RuleName,RuleTreeNode>();
     // /**
     // * Mapping from rule names in the current grammar to rule nodes in the
     // * current rule directory.
@@ -801,7 +800,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         public String getToolTipText() {
             StringBuilder result = new StringBuilder();
             result.append("Rule ");
-            result.append(Converter.STRONG_TAG.on(getRule().getName()));
+            result.append(Converter.STRONG_TAG.on(getRule().getNameLabel().text()));
             GraphProperties properties =
                 GraphInfo.getProperties(getRule().getAspectGraph(), false);
             if (properties != null && !properties.isEmpty()) {
@@ -843,15 +842,15 @@ public class RuleJTree extends JTree implements SimulationListener {
          * Creates a new rule node based on a given rule name. The node can have
          * children.
          */
-        public DirectoryTreeNode(RuleNameLabel name) {
+        public DirectoryTreeNode(RuleName name) {
             super(name, true);
         }
 
         /**
          * Convenience method to retrieve the user object as a rule name.
          */
-        public RuleNameLabel name() {
-            return (RuleNameLabel) getUserObject();
+        public RuleName name() {
+            return (RuleName) getUserObject();
         }
 
         /**

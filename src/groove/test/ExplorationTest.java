@@ -30,7 +30,7 @@ import groove.lts.GTS;
 import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -298,7 +298,7 @@ public class ExplorationTest extends TestCase {
                 scenario = this.parser.getStrategy();
                 if (this.parser.getCondition() != null) {
                     Rule conditionRule =
-                        gg.getRule(new RuleNameLabel(this.parser.getCondition()));
+                        gg.getRule(new RuleName(this.parser.getCondition()));
                     assertNotNull(conditionRule);
                     // the scenario handler must then be conditional
                     ExploreCondition<Rule> explCond =

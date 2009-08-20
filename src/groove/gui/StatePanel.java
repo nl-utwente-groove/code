@@ -38,8 +38,8 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
-import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.view.AspectualGraphView;
 import groove.view.DefaultGrammarView;
 
@@ -151,7 +151,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /**
      * Resets the emphasis in the state model and the current derivation.
      */
-    public synchronized void setRuleUpdate(NameLabel rule) {
+    public synchronized void setRuleUpdate(RuleName rule) {
         if (clearSelectedMatch()) {
             refreshStatus();
         }

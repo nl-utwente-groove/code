@@ -60,7 +60,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param properties the factory this rule used to instantiate related
      *        classes
      */
-    public SPORule(Morphism morph, RuleNameLabel name, int priority,
+    public SPORule(Morphism morph, RuleName name, int priority,
             boolean confluent, SystemProperties properties) {
         super(morph.dom(), name, properties);
         this.morphism = morph;
@@ -81,7 +81,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      *        classes
      */
     public SPORule(Morphism morph, NodeEdgeMap rootMap, NodeEdgeMap coRootMap,
-            RuleNameLabel name, SystemProperties properties) {
+            RuleName name, SystemProperties properties) {
         super(morph.dom(), rootMap, name, properties);
         this.coRootMap = coRootMap;
         this.morphism = morph;
@@ -496,8 +496,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Specialises the return type.
      */
     @Override
-    public RuleNameLabel getName() {
-        return (RuleNameLabel) super.getName();
+    public RuleName getName() {
+        return (RuleName) super.getName();
     }
 
     public int getPriority() {

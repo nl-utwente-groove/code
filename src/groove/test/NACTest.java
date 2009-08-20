@@ -30,7 +30,7 @@ import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleMatch;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
@@ -97,7 +97,7 @@ public class NACTest extends TestCase {
         ruleMorphism.cod().addNode(this.n[1][0]);
         ruleMorphism.putNode(this.n[0][0], this.n[1][0]);
         this.rule =
-            new SPORule(ruleMorphism, new RuleNameLabel("test"), 0, false,
+            new SPORule(ruleMorphism, new RuleName("test"), 0, false,
                 SystemProperties.DEFAULT_PROPERTIES);
 
         this.NACs[0] =

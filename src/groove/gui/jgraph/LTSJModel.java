@@ -69,8 +69,8 @@ public class LTSJModel extends GraphJModel {
 
     /**
      * Returns the active transition of the LTS, if any. The active transition
-     * is the one currently selected in the simulator. Returns <tt>null</tt>
-     * if no transition is selected.
+     * is the one currently selected in the simulator. Returns <tt>null</tt> if
+     * no transition is selected.
      */
     public Transition getActiveTransition() {
         return this.activeTransition;
@@ -341,7 +341,7 @@ public class LTSJModel extends GraphJModel {
                 + edge;
             return isShowAnchors()
                     ? new WrapperLabel<String>(
-                        ((GraphTransition) edge).getEvent().getRule().getName().name()
+                        ((GraphTransition) edge).getEvent().getRule().getName().text()
                             + ((GraphTransition) edge).getEvent().getAnchorImageString())
                     : super.getLabel(edge);
         }
@@ -431,7 +431,7 @@ public class LTSJModel extends GraphJModel {
                 + edge;
             return isShowAnchors()
                     ? new WrapperLabel<String>(
-                        ((GraphTransition) edge).getEvent().getRule().getName().name()
+                        ((GraphTransition) edge).getEvent().getRule().getName().text()
                             + ((GraphTransition) edge).getEvent().getAnchorImageString())
                     : super.getLabel(edge);
         }

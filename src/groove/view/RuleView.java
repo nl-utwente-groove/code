@@ -17,7 +17,7 @@
 package groove.view;
 
 import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 
 /**
  * Interface for a graphical view upon a transformation rule. Currently the only
@@ -39,7 +39,7 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * Returns the name of the rule of which this is a view. Yields the same
      * result as <code>toRule().getName().name()</code>.
      */
-    public RuleNameLabel getNameLabel();
+    public RuleName getNameLabel();
 
     /**
      * Returns the priority of the rule of which this is a view. Yields the same

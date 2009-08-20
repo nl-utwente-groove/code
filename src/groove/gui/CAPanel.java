@@ -24,8 +24,8 @@ import groove.gui.jgraph.ControlJModel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
@@ -138,7 +138,7 @@ public class CAPanel extends JPanel implements SimulationListener {
         }
     }
 
-    public void setRuleUpdate(NameLabel name) {
+    public void setRuleUpdate(RuleName name) {
         // nothing happens
     }
 

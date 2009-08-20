@@ -60,8 +60,8 @@ import groove.lts.State;
 import groove.lts.StateGenerator;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleName;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
@@ -339,7 +339,7 @@ public class Generator extends CommandLineTool {
                 String conditionName = exploreParser.getCondition();
                 if (condResult.getConditionType().equals(Rule.class)) {
                     Rule condition =
-                        getGrammar().getRule(new NameLabel(conditionName));
+                        getGrammar().getRule(new RuleName(conditionName));
                     if (condition == null) {
                         printError("Error in exploration strategy: unknown condition "
                             + conditionName);
@@ -875,7 +875,9 @@ public class Generator extends CommandLineTool {
             this.finalSaveName = parameter;
         }
 
-        /** Returns the name specified as a parameter to the command line option. */
+        /**
+         * Returns the name specified as a parameter to the command line option.
+         */
         public String getFinalSaveName() {
             return this.finalSaveName;
         }

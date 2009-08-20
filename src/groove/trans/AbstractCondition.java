@@ -54,13 +54,13 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * 
      * @param target the graph to be matched
      * @param rootMap element map from the context to the anchor elements of
-     *        <code>target</code>; may be <code>null</code> if the
-     *        condition is ground
+     *        <code>target</code>; may be <code>null</code> if the condition is
+     *        ground
      * @param name the name of the condition; may be <code>null</code>
      * @param properties properties for matching the condition
      */
     protected AbstractCondition(Graph target, NodeEdgeMap rootMap,
-            NameLabel name, SystemProperties properties) {
+            RuleName name, SystemProperties properties) {
         this.rootMap = rootMap == null ? new NodeEdgeHashMap() : rootMap;
         this.target = target;
         this.properties = properties;
@@ -71,7 +71,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * Constructs a (named) ground graph condition based on a given target
      * graph. The name may be <code>null</code>.
      */
-    protected AbstractCondition(Graph target, NameLabel name,
+    protected AbstractCondition(Graph target, RuleName name,
             SystemProperties properties) {
         this(target, null, name, properties);
     }
@@ -107,7 +107,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Returns the name set at construction time.
      */
-    public NameLabel getName() {
+    public RuleName getName() {
         return this.name;
     }
 
@@ -115,7 +115,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * Sets the name of this condition, if the condition is not fixed. The name
      * is assumed to be as yet unset.
      */
-    public void setName(NameLabel name) {
+    public void setName(RuleName name) {
         testFixed(false);
         assert this.name == null : String.format(
             "Condition name already set to %s", name);
@@ -158,22 +158,23 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         // }
         // }
     }
-//
-//    /**
-//     * Returns <code>true</code> if the target graph of the condition contains
-//     * {@link ValueNode}s, or the negative conjunct is attributed.
-//     */
-//    private boolean hasAttributes() {
-//        boolean result = ValueNode.hasValueNodes(getTarget());
-//        if (result) {
-//            Iterator<AbstractCondition<?>> subConditionIter =
-//                getSubConditions().iterator();
-//            while (!result && subConditionIter.hasNext()) {
-//                result = subConditionIter.next().hasAttributes();
-//            }
-//        }
-//        return result;
-//    }
+
+    //
+    // /**
+    // * Returns <code>true</code> if the target graph of the condition contains
+    // * {@link ValueNode}s, or the negative conjunct is attributed.
+    // */
+    // private boolean hasAttributes() {
+    // boolean result = ValueNode.hasValueNodes(getTarget());
+    // if (result) {
+    // Iterator<AbstractCondition<?>> subConditionIter =
+    // getSubConditions().iterator();
+    // while (!result && subConditionIter.hasNext()) {
+    // result = subConditionIter.next().hasAttributes();
+    // }
+    // }
+    // return result;
+    // }
 
     /**
      * Tests if the target graph of the condition contains nodes without
@@ -282,8 +283,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * root map, to obtain a matching of {@link #getTarget()}.
      * 
      * @return a mapping that, concatenated after this condition's root map, is
-     *         a sub-map of <code>contextMap</code>; or <code>null</code>
-     *         if there is no such mapping.
+     *         a sub-map of <code>contextMap</code>; or <code>null</code> if
+     *         there is no such mapping.
      */
     final VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
         VarNodeEdgeMap result = new VarNodeEdgeHashMap();
@@ -347,8 +348,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     /**
      * Tests is a give edge is a proper anchor, in the sense that it is matched
-     * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}s
-     * and {@link OperatorEdge}s.
+     * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}
+     * s and {@link OperatorEdge}s.
      */
     boolean isAnchorable(Edge edge) {
         return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
@@ -438,7 +439,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * The name of this condition. May be <code>code</code> null.
      */
-    private NameLabel name;
+    private RuleName name;
 
     /**
      * The fixed matching strategy for this graph condition. Initially

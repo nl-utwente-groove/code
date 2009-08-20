@@ -38,7 +38,7 @@ import groove.explore.strategy.Strategy;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
 import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.view.AspectualRuleView;
 
 import javax.swing.BorderFactory;
@@ -87,7 +87,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     private String                  selectedFullStrategy    = ExplorationDialog.BRANCHING;
     private String                  selectedPathStrategy    = ExplorationDialog.LINEAR;
     private String                  selectedAcceptor        = ExplorationDialog.NONE_ACCEPTOR;
-    private RuleNameLabel           selectedRule;
+    private RuleName           selectedRule;
     //    private ConditionalAcceptor selectedConditionalAcceptor = new Conditional
     
     // The panel that displays either the choices for full exploration or the choices for
@@ -163,7 +163,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         innerRulePanel.add(new JLabel("<HTML><FONT color=996666>Select the transformation for Rule (Mis)Match:</FONT></HTML> "));
         JComboBox ruleSelector = new JComboBox();
         boolean first_element = true;
-        for (RuleNameLabel ruleName : this.simulator.getCurrentGrammar().getRuleMap().keySet()) {
+        for (RuleName ruleName : this.simulator.getCurrentGrammar().getRuleMap().keySet()) {
            ruleSelector.addItem(ruleName);
            if (first_element) {
                this.selectedRule = ruleName;

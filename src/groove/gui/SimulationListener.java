@@ -19,8 +19,8 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
+import groove.trans.RuleName;
 import groove.view.DefaultGrammarView;
 
 /**
@@ -66,7 +66,7 @@ public interface SimulationListener {
      * @param name the name of the new selected derivation rule
      * @require name != null
      */
-    void setRuleUpdate(NameLabel name);
+    void setRuleUpdate(RuleName name);
 
     /**
      * Reports the change of the currently selected transition. The new

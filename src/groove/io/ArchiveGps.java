@@ -16,7 +16,7 @@
  */
 package groove.io;
 
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 
@@ -112,11 +112,11 @@ public abstract class ArchiveGps extends AspectualViewGps {
         // RULES
 
         // store RuleNameLabels for rulegroup directories
-        HashMap<String,RuleNameLabel> pathLabels =
-            new HashMap<String,RuleNameLabel>();
+        HashMap<String,RuleName> pathLabels =
+            new HashMap<String,RuleName>();
 
         // store the rules
-        Map<RuleNameLabel,URL> ruleMap = new HashMap<RuleNameLabel,URL>();
+        Map<RuleName,URL> ruleMap = new HashMap<RuleName,URL>();
 
         for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
             JarEntry entry = entries.nextElement();
@@ -125,7 +125,7 @@ public abstract class ArchiveGps extends AspectualViewGps {
                 String path =
                     FileGps.RULE_FILTER.stripExtension(entry.getName());
                 path = path.substring(dir.length());
-                RuleNameLabel label = initLabel(pathLabels, path, true);
+                RuleName label = initLabel(pathLabels, path, true);
                 URL ruleURL = new URL(baseURL + entry.getName());
                 ruleMap.put(label, ruleURL);
             }
@@ -174,20 +174,20 @@ public abstract class ArchiveGps extends AspectualViewGps {
         return null;
     }
 
-    private RuleNameLabel initLabel(Map<String,RuleNameLabel> folders,
+    private RuleName initLabel(Map<String,RuleName> folders,
             String path, boolean isFile) {
         if (!folders.containsKey(path)) {
 
-            RuleNameLabel label;
+            RuleName label;
             if (path.indexOf('/') != -1) {
                 String parent = path.substring(0, path.lastIndexOf('/'));
 
-                RuleNameLabel pLabel = initLabel(folders, parent, false);
+                RuleName pLabel = initLabel(folders, parent, false);
                 label =
-                    new RuleNameLabel(pLabel,
+                    new RuleName(pLabel,
                         path.substring(path.lastIndexOf('/') + 1));
             } else {
-                label = new RuleNameLabel(path);
+                label = new RuleName(path);
             }
             if (!isFile) {
                 folders.put(path, label);

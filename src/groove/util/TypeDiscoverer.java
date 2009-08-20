@@ -30,7 +30,7 @@ import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.RuleSystem;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
@@ -177,7 +177,7 @@ public class TypeDiscoverer {
     }
 
     /** Callback factory method to create a rule. */
-    protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name,
+    protected Rule createRule(Morphism ruleMorphism, RuleName name,
             RuleSystem ruleSystem) {
         return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, false,
             ruleSystem.getProperties());

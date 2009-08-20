@@ -113,8 +113,8 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * @param target the target Buchi graph-state
      * @return <tt>true</tt> if the target Buchi graph-state has colour
      *         {@link ModelChecking#CYAN} and the buchi location of either the
-     *         <tt>source</tt> or <tt>target</tt> is accepting,
-     *         <tt>false</tt> otherwise.
+     *         <tt>source</tt> or <tt>target</tt> is accepting, <tt>false</tt>
+     *         otherwise.
      */
     public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
         boolean result =
@@ -306,7 +306,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     protected Set<String> filterRuleNames(Set<GraphTransition> graphTransitions) {
         Set<String> result = new HashSet<String>();
         for (GraphTransition nextTransition : graphTransitions) {
-            result.add(nextTransition.getEvent().getRule().getName().name());
+            result.add(nextTransition.getEvent().getRule().getName().text());
         }
         return result;
     }
@@ -323,7 +323,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     public Set<ProductTransition> addProductTransition(
             GraphTransition transition, BuchiLocation location) {
         Set<ProductTransition> result = null; // new
-                                                // HashSet<ProductTransition>();
+        // HashSet<ProductTransition>();
         // if the current source state is already closed
         // the product-gts contains all transitions and
         // we do not have to add new transitions.
@@ -377,6 +377,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     /*
      * (non-Javadoc)
+     * 
      * @see groove.explore.strategy.ModelCheckingStrategy#getAtBuchiState()
      */
     public BuchiGraphState getAtBuchiState() {

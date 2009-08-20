@@ -21,7 +21,7 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.State;
 import groove.trans.Condition;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.verify.CTLStarFormula.All;
 import groove.verify.CTLStarFormula.And;
 import groove.verify.CTLStarFormula.Atom;
@@ -158,9 +158,9 @@ public abstract class TemporalFormula {
      * @param property the property to check for validity of its atomic
      *        propositions
      * @param atoms the set of atomic propositions allowed
-     * @return <tt>null</tt>, if the given <code>property</code> is build
-     *         up from valid atoms. If not, it returns the string representation
-     *         of the first found invalid atom.
+     * @return <tt>null</tt>, if the given <code>property</code> is build up
+     *         from valid atoms. If not, it returns the string representation of
+     *         the first found invalid atom.
      */
     static public String validAtoms(TemporalFormula property,
             Set<? extends Label> atoms) {
@@ -175,7 +175,7 @@ public abstract class TemporalFormula {
             assert (property instanceof Atom && property.getOperands().size() == 0) : "An atom should have 0 operands.";
             boolean validAtom = false;
             for (Label nameLabel : atoms) {
-                String ruleName = ((RuleNameLabel) nameLabel).name();
+                String ruleName = ((RuleName) nameLabel).text();
                 if (property.toString().equals(ruleName)
                     || (property.toString().startsWith(ruleName + "(") && property.toString().endsWith(
                         ")"))

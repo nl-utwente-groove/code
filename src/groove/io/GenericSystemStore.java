@@ -16,103 +16,112 @@
  */
 package groove.io;
 
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
  * Interface for any source of rule system data. The data consist of a list of
  * graphs, a list of rules, a list of control programs, and a rule system
- * properties object. Depending on the implementation, the source may be
- * mutable.
+ * properties object. Depending on the implementation, the store may be
+ * immutable.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface RuleSystemSource<R,G> {
-    /** Immutable view on the rulename-to-rule map in the source. */
-    public Map<RuleNameLabel,R> getRules();
+public interface GenericSystemStore<R,G> {
+    /** Immutable view on the rulename-to-rule map in the store. */
+    public Map<RuleName,R> getRules();
 
-    /** Immutable view on the name-to-graph map in the source. */
+    /** Immutable view on the name-to-graph map in the store. */
     public Map<String,G> getGraphs();
 
-    /** Immutable view on the name-to-control-program map in the source. */
+    /** Immutable view on the name-to-control-program map in the store. */
     public Map<String,String> getControls();
 
-    /** The system properties object in the source. */
+    /** The system properties object in the store. */
     public SystemProperties getProperties();
 
     /**
-     * Deletes a rule from the source.
+     * Deletes a rule from the store.
      * @param name name of the rule to be deleted (non-null)
      * @return the rule with name <code>name</code>, or <code>null</code> if
      *         there was no such rule
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws UnsupportedOperationException if the store is immutable
      */
-    public R deleteRule(String name) throws UnsupportedOperationException;
+    public R deleteRule(RuleName name) throws UnsupportedOperationException;
 
     /**
-     * Adds or replaces a rule in the source.
+     * Adds or replaces a rule in the store.
      * @param rule the rule to be added (non-null)
      * @return the old rule with the name of <code>rule</code>, if any;
      *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while storing the rule
      */
-    public R putRule(R rule) throws UnsupportedOperationException;
+    public R putRule(R rule) throws UnsupportedOperationException, IOException;
 
     /**
-     * Renames a rule in the source.
+     * Renames a rule in the store.
      * @param oldName the name of the rule to be renamed (non-null)
      * @param newName the intended new name of the rule (non-null)
      * @return the renamed rule, or <code>null</code> if no rule named
      *         <code>oldName</code> existed
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws IOException if an error occurred while storing the renamed rule
+     * @throws UnsupportedOperationException if the store is immutable
      */
-    public R renameRule(String oldName, String newName);
+    public R renameRule(String oldName, String newName) throws IOException;
 
     /**
-     * Deletes a graph from the source.
+     * Deletes a graph from the store.
      * @param name name of the graph to be deleted
      * @return the graph with name <code>name</code>, or <code>null</code> if
      *         there was no such graph
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws UnsupportedOperationException if the store is immutable
      */
     public G deleteGraph(String name) throws UnsupportedOperationException;
 
     /**
-     * Adds or replaces a graph in the source.
+     * Adds or replaces a graph in the store.
      * @param graph the graph to be added
      * @return the old graph with the name of <code>graph</code>, if any;
      *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while storing the graph
      */
-    public G putGraph(G graph) throws UnsupportedOperationException;
+    public G putGraph(G graph) throws UnsupportedOperationException,
+        IOException;
 
     /**
-     * Renames a graph in the source.
+     * Renames a graph in the store.
      * @param oldName the name of the graph to be renamed (non-null)
      * @param newName the intended new name of the graph (non-null)
      * @return the renamed graph, or <code>null</code> if no graph named
      *         <code>oldName</code> existed
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws IOException if an error occurred while storing the renamed graph
+     * @throws UnsupportedOperationException if the store is immutable
      */
-    public G renameGraph(String oldName, String newName);
+    public G renameGraph(String oldName, String newName) throws IOException;
 
     /**
-     * Adds or replaces a control program in the source.
+     * Adds or replaces a control program in the store.
      * @param control the control program to be added
      * @return the old control program with name <code>name</code>, if any;
      *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while storing the control
+     *         program
      */
     public String putControl(String name, String control)
-        throws UnsupportedOperationException;
+        throws UnsupportedOperationException, IOException;
 
     /**
-     * Replaces the system properties in the source
+     * Replaces the system properties in the store
      * @param properties the new system properties object
-     * @throws UnsupportedOperationException if the source is immutable
+     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while storing the properties
      */
     public void putProperties(SystemProperties properties)
-        throws UnsupportedOperationException;
+        throws UnsupportedOperationException, IOException;
 }

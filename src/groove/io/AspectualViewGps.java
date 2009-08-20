@@ -20,7 +20,7 @@ package groove.io;
 import groove.control.ControlView;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
@@ -135,12 +135,12 @@ public abstract class AspectualViewGps extends Observable implements
      * Loads the rules for a given graph grammar from a given location.
      */
     protected void loadRules(DefaultGrammarView result,
-            Map<RuleNameLabel,URL> ruleMap) throws IOException {
+            Map<RuleName,URL> ruleMap) throws IOException {
         setChanged();
         notifyObservers(LOADING_RULES);
         setChanged();
         notifyObservers(ruleMap.size());
-        for (Map.Entry<RuleNameLabel,URL> ruleEntry : ruleMap.entrySet()) {
+        for (Map.Entry<RuleName,URL> ruleEntry : ruleMap.entrySet()) {
             result.addRule(loadRule(ruleEntry.getValue(), ruleEntry.getKey(),
                 result.getProperties()));
             setChanged();
@@ -154,7 +154,7 @@ public abstract class AspectualViewGps extends Observable implements
      * Loads in and returns a single rule from a given location, giving it a
      * given name and priority.
      */
-    private AspectualRuleView loadRule(URL location, RuleNameLabel ruleName,
+    private AspectualRuleView loadRule(URL location, RuleName ruleName,
             SystemProperties properties) throws IOException {
 
         AspectGraph unmarshalledRule =
@@ -232,8 +232,8 @@ public abstract class AspectualViewGps extends Observable implements
         String filename =
             Groove.createRuleFilter().stripExtension(location.getFile());
         PriorityFileName priorityFileName = new PriorityFileName(filename);
-        RuleNameLabel ruleName =
-            new RuleNameLabel(priorityFileName.getActualName());
+        RuleName ruleName =
+            new RuleName(priorityFileName.getActualName());
 
         return loadRule(location, ruleName, properties);
     }
@@ -306,7 +306,7 @@ public abstract class AspectualViewGps extends Observable implements
      * @return the {@link AspectualRuleView} created from the given graph
      */
     private AspectualRuleView createRuleView(AspectGraph graph,
-            RuleNameLabel ruleName, SystemProperties properties) {
+            RuleName ruleName, SystemProperties properties) {
         return new AspectualRuleView(graph, ruleName, properties);
     }
 

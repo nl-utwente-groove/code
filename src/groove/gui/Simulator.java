@@ -79,10 +79,9 @@ import groove.lts.GraphTransition;
 import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.lts.StateGenerator;
-import groove.trans.NameLabel;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.GrooveModules;
@@ -853,7 +852,7 @@ public class Simulator {
      * @return the file to which the graph has been saved; <tt>null</tt> if the
      *         graph has not been saved
      */
-    File handleSaveGraph(boolean state, Graph graph) {
+    File handleSaveGraph(boolean state, AspectGraph graph) {
         getStateFileChooser().setFileFilter(
             state ? this.stateFilter : this.gxlFilter);
         String name = state ? GraphInfo.getName(graph) : LTS_FILE_NAME;
@@ -1206,9 +1205,9 @@ public class Simulator {
      * @param ruleName the name of the new rule
      * @param ruleAsGraph the new rule, given as an aspect graph
      */
-    void doAddRule(RuleNameLabel ruleName, AspectGraph ruleAsGraph) {
+    void doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
         try {
-            GraphInfo.setName(ruleAsGraph, ruleName.name());
+            GraphInfo.setName(ruleAsGraph, ruleName.text());
             AspectualRuleView ruleView =
                 new AspectualRuleView(ruleAsGraph, ruleName,
                     getCurrentGrammar().getProperties());
@@ -1246,7 +1245,7 @@ public class Simulator {
      * Deletes a rule from the grammar and the file system, and resets the
      * grammar view.
      */
-    void doDeleteRule(RuleNameLabel name) {
+    void doDeleteRule(RuleName name) {
         AspectualRuleView rule = getCurrentGrammar().removeRule(name);
         if (rule != null) {
             this.currentGrammarLoader.deleteRule(rule,
@@ -1502,9 +1501,9 @@ public class Simulator {
      * thereby deactivated.
      * @param name the name of the new rule
      * @require name != null
-     * @see #fireSetRule(NameLabel)
+     * @see #fireSetRule(RuleName)
      */
-    public synchronized void setRule(RuleNameLabel name) {
+    public synchronized void setRule(RuleName name) {
         setCurrentRule(getCurrentGrammar().getRule(name));
         setCurrentTransition(null);
         setCurrentEvent(null);
@@ -1524,8 +1523,7 @@ public class Simulator {
     public synchronized void setTransition(GraphTransition transition) {
         if (transition != null) {
             if (setCurrentTransition(transition)) {
-                RuleNameLabel ruleName =
-                    transition.getEvent().getRule().getName();
+                RuleName ruleName = transition.getEvent().getRule().getName();
                 setCurrentRule(getCurrentGrammar().getRule(ruleName));
                 setCurrentEvent(transition.getEvent());
             }
@@ -1549,7 +1547,7 @@ public class Simulator {
      */
     public synchronized void setEvent(RuleEvent event) {
         assert event != null : "The match and the transition cannot be both null.";
-        RuleNameLabel ruleName = event.getRule().getName();
+        RuleName ruleName = event.getRule().getName();
         setCurrentRule(getCurrentGrammar().getRule(ruleName));
         setCurrentTransition(null);
         setCurrentEvent(event);
@@ -2390,14 +2388,14 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a new rule. As a result,
-     * {@link SimulationListener#setRuleUpdate(NameLabel)}is invoked on all
+     * {@link SimulationListener#setRuleUpdate(RuleName)}is invoked on all
      * currently registered listeners. This method should not be called
-     * directly: use {@link #setRule(RuleNameLabel)}instead.
+     * directly: use {@link #setRule(RuleName)}instead.
      * 
-     * @see SimulationListener#setRuleUpdate(NameLabel)
-     * @see #setRule(RuleNameLabel)
+     * @see SimulationListener#setRuleUpdate(RuleName)
+     * @see #setRule(RuleName)
      */
-    protected synchronized void fireSetRule(NameLabel name) {
+    protected synchronized void fireSetRule(RuleName name) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2691,13 +2689,13 @@ public class Simulator {
      * @return a rule name not occurring in the current grammar, or
      *         <code>null</code>
      */
-    RuleNameLabel askNewRuleName(String title, String name, boolean mustBeFresh) {
-        FreshNameDialog<RuleNameLabel> ruleNameDialog =
-            new FreshNameDialog<RuleNameLabel>(
+    RuleName askNewRuleName(String title, String name, boolean mustBeFresh) {
+        FreshNameDialog<RuleName> ruleNameDialog =
+            new FreshNameDialog<RuleName>(
                 getCurrentGrammar().getRuleMap().keySet(), name, mustBeFresh) {
                 @Override
-                protected RuleNameLabel createName(String name) {
-                    return new RuleNameLabel(name);
+                protected RuleName createName(String name) {
+                    return new RuleName(name);
                 }
             };
         ruleNameDialog.showDialog(getFrame(), title);
@@ -3429,9 +3427,9 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
                 AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
-                RuleNameLabel newRuleName =
+                RuleName newRuleName =
                     askNewRuleName(null,
-                        getCurrentRule().getNameLabel().name(), true);
+                        getCurrentRule().getNameLabel().text(), true);
                 if (newRuleName != null) {
                     doAddRule(newRuleName, oldRuleGraph.clone());
                 }
@@ -3476,7 +3474,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            RuleNameLabel ruleName = getCurrentRule().getNameLabel();
+            RuleName ruleName = getCurrentRule().getNameLabel();
             String question = String.format("Delete rule '%s'?", ruleName);
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
                 doDeleteRule(ruleName);
@@ -3525,7 +3523,7 @@ public class Simulator {
                     stateModel.toPlainGraph()) {
                     @Override
                     public void finish() {
-                        File saveFile = handleSaveGraph(true, toPlainGraph());
+                        File saveFile = handleSaveGraph(true, toAspectGraph());
                         if (saveFile != null
                             && confirmLoadStartState(saveFile.getName())) {
                             doLoadStartGraph(saveFile);
@@ -3564,7 +3562,7 @@ public class Simulator {
                             @Override
                             public void finish() {
                                 File saveFile =
-                                    handleSaveGraph(true, toPlainGraph());
+                                    handleSaveGraph(true, toAspectGraph());
                                 if (saveFile != null
                                     && confirmLoadStartState(saveFile.getName())) {
                                     doLoadStartGraph(saveFile);
@@ -3649,7 +3647,7 @@ public class Simulator {
          * @require <tt>getCurrentRule != null</tt>.
          */
         public void actionPerformed(ActionEvent e) {
-            final RuleNameLabel ruleName = getCurrentRule().getNameLabel();
+            final RuleName ruleName = getCurrentRule().getNameLabel();
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(),
                     getRulePanel().getJModel().toPlainGraph()) {
@@ -3657,9 +3655,9 @@ public class Simulator {
                     public void finish() {
                         if (confirmAbandon(false)) {
                             AspectGraph ruleAsAspectGraph = toAspectGraph();
-                            RuleNameLabel newRuleName =
+                            RuleName newRuleName =
                                 askNewRuleName("Name for edited rule",
-                                    ruleName.name(), false);
+                                    ruleName.text(), false);
                             if (newRuleName != null) {
                                 doAddRule(newRuleName, ruleAsAspectGraph);
                             }
@@ -4282,7 +4280,7 @@ public class Simulator {
                 new EditorDialog(getFrame(), getOptions(), newGraph) {
                     @Override
                     public void finish() {
-                        Graph newGraph = toPlainGraph();
+                        AspectGraph newGraph = toAspectGraph();
                         File saveFile = handleSaveGraph(true, newGraph);
                         if (saveFile != null) {
                             if (confirmLoadStartState(newGraph.getInfo().getName())) {
@@ -4309,11 +4307,11 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                final RuleNameLabel ruleName =
+                final RuleName ruleName =
                     askNewRuleName(null, NEW_RULE_NAME, true);
                 if (ruleName != null) {
                     Graph newRule = GraphFactory.getInstance().newGraph();
-                    GraphInfo.setName(newRule, ruleName.name());
+                    GraphInfo.setName(newRule, ruleName.text());
                     GraphInfo.setRuleRole(newRule);
                     EditorDialog dialog =
                         new EditorDialog(getFrame(), getOptions(), newRule) {
@@ -4523,10 +4521,10 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-                RuleNameLabel oldRuleName = getCurrentRule().getNameLabel();
+                RuleName oldRuleName = getCurrentRule().getNameLabel();
                 AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
-                RuleNameLabel newRuleName =
-                    askNewRuleName(null, oldRuleName.name(), true);
+                RuleName newRuleName =
+                    askNewRuleName(null, oldRuleName.text(), true);
                 if (newRuleName != null) {
                     doDeleteRule(oldRuleName);
                     doAddRule(newRuleName, ruleGraph);
@@ -4590,7 +4588,7 @@ public class Simulator {
 
     /**
      * Action to save the state or LTS as a graph.
-     * @see Simulator#handleSaveGraph(boolean, Graph)
+     * @see Simulator#handleSaveGraph(boolean, AspectGraph)
      * @see Simulator#doAddGraph(Graph, File)
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
@@ -4602,7 +4600,9 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Graph graph = getGraphPanel().getJModel().toPlainGraph();
+            AspectGraph graph =
+                AspectGraph.getFactory().fromPlainGraph(
+                    getGraphPanel().getJModel().toPlainGraph());
             if (getGraphPanel() == getLtsPanel()) {
                 handleSaveGraph(false, graph);
             } else {

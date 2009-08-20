@@ -28,10 +28,9 @@ import groove.gui.jgraph.JModel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
-import groove.trans.RuleNameLabel;
+import groove.trans.RuleName;
 import groove.trans.SPORule;
 import groove.util.Converter;
 import groove.util.Groove;
@@ -79,7 +78,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {
-            for (RuleNameLabel ruleName : grammar.getRuleMap().keySet()) {
+            for (RuleName ruleName : grammar.getRuleMap().keySet()) {
                 AspectJModel jModel =
                     AspectJModel.newInstance(grammar.getRule(ruleName),
                         getOptions());
@@ -108,10 +107,10 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
     /**
      * Retrieves a named rule from this component's store, and puts it on
      * display.
-     * @throws IllegalArgumentException if <code>name</code> is not a known
-     *         rule name
+     * @throws IllegalArgumentException if <code>name</code> is not a known rule
+     *         name
      */
-    public synchronized void setRuleUpdate(NameLabel name) {
+    public synchronized void setRuleUpdate(RuleName name) {
         if (!this.ruleJModelMap.containsKey(name)) {
             throw new IllegalArgumentException("Unknown rule: " + name);
         }
@@ -132,18 +131,18 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /**
-     * Has the effect of {@link #setRuleUpdate(NameLabel)} for the new
+     * Has the effect of {@link #setRuleUpdate(RuleName)} for the new
      * transition's rule.
-     * @see #setRuleUpdate(NameLabel)
+     * @see #setRuleUpdate(RuleName)
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
         setRuleUpdate(transition.getEvent().getRule().getName());
     }
 
     /**
-     * Has the effect of {@link #setRuleUpdate(NameLabel)} for the new match's
+     * Has the effect of {@link #setRuleUpdate(RuleName)} for the new match's
      * rule.
-     * @see #setRuleUpdate(NameLabel)
+     * @see #setRuleUpdate(RuleName)
      */
     public synchronized void setMatchUpdate(RuleMatch match) {
         setRuleUpdate(match.getRule().getName());
@@ -171,7 +170,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         AspectualRuleView view = this.simulator.getCurrentRule();
         if (view != null) {
             text.append("Rule ");
-            text.append(Converter.STRONG_TAG.on(view.getNameLabel().name()));
+            text.append(Converter.STRONG_TAG.on(view.getNameLabel().text()));
             try {
                 Rule rule = view.toRule();
                 if (rule instanceof SPORule
@@ -200,7 +199,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         } else {
             List<String> result = new ArrayList<String>();
             for (SPORule subRule : rule.getSubRules(true)) {
-                result.add(subRule.getName().name()
+                result.add(subRule.getName().text()
                     + Groove.toString(subRule.anchor(), "(", ")", ","));
             }
             return Groove.toString(result.toArray());
@@ -215,10 +214,10 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<NameLabel,AspectJModel> ruleJModelMap =
-        new TreeMap<NameLabel,AspectJModel>();
+    private final Map<RuleName,AspectJModel> ruleJModelMap =
+        new TreeMap<RuleName,AspectJModel>();
     // /** The currently displayed grammar, if any. */
     // private GrammarView displayedGrammar;
     /** The name of the currently displayed rule, if any. */
-    private NameLabel displayedRule;
+    private RuleName displayedRule;
 }
