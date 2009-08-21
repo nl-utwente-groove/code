@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="WINDOWS-1252"?>
 <jardesc>
-<jar path="../fast-groove-build/groove.jar"/>
+<jar path="H:/lib/groove/groove.jar"/>
 <options buildIfNeeded="true" compress="true" descriptionLocation="/groove/build.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
 <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
 <selectedProjects/>
