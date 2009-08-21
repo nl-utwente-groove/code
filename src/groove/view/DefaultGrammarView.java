@@ -225,7 +225,7 @@ public class DefaultGrammarView implements
                 }
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
-                    errors.add(String.format("Format error in %s: %s",
+                    errors.add(String.format("Format error in '%s': %s",
                         ruleView.getName(), error));
                 }
             }
