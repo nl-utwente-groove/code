@@ -16,8 +16,6 @@
  */
 package groove.verify;
 
-import groove.graph.Label;
-import groove.graph.WrapperLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -52,9 +50,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
             String name = ((CTLStarFormula.Atom) property).predicateName();
-            Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
-            while (stateIter.hasNext()) {
-                GraphState nextState = stateIter.next();
+            for (GraphState nextState: gts.nodeSet()) {
                 // this state satisfies the CTL-expression if it has an
                 // outgoing-transition labelled with the
                 // name of the property
@@ -62,36 +58,15 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                 // satisfy the CTL-expression
                 boolean satisfies = false;
                 Iterator<GraphTransition> transitionIter =
-                    gts.outEdgeSet(nextState).iterator();
-                while (transitionIter.hasNext()) {
-                    // Edge nextTransition = (Edge) transitionIter.next();
-                    Label label = transitionIter.next().getEvent().getLabel();
-                    String transitionName = null;
-                    if (!(label instanceof RuleName)) {
-                        transitionName = ((WrapperLabel<?>) label).text();
-                        if (transitionName.startsWith("[")) {
-                            transitionName =
-                                transitionName.substring(1,
-                                    transitionName.length() - 1);
-                        }
-                        int index = transitionName.indexOf(",");
-                        transitionName = transitionName.substring(0, index);
-                        // System.out.println("WrapperLabel...");
-                    } else {
-                        transitionName = ((RuleName) label).text();
-                    }
-                    // String transitionName = ((NameLabel)
-                    // transitionIter.next().getEvent().getLabel()).name();
-                    if (transitionName.equals(name)) {
+                    nextState.getTransitionIter();
+                while (!satisfies && transitionIter.hasNext()) {
+                    RuleName ruleName = transitionIter.next().getEvent().getRule().getName();
+                    if (ruleName.text().equals(name)) {
                         satisfies = true;
+                        property.getCounterExamples().add(nextState);
                     }
                 }
-                if (satisfies) {
-                    marking.set(nextState, property, true);
-                } else {
-                    marking.set(nextState, property, false);
-                    property.getCounterExamples().add(nextState);
-                }
+                marking.set(nextState, property, satisfies);
             }
         }
         reporter.stop();
