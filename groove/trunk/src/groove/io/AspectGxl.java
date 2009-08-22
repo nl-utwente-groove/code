@@ -40,7 +40,7 @@ public class AspectGxl implements Xml<AspectGraph> {
     }
 
     /**
-     * Unmarshals the file using the inner marshaller and converts the resulting
+     * Unmarshals the URL using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}.
      * @see AspectGraph#newInstance(GraphShape)
      */
@@ -50,10 +50,13 @@ public class AspectGxl implements Xml<AspectGraph> {
     }
 
     /**
-     * backwards compatibility method
+     * Unmarshals the file using the inner marshaller and converts the resulting
+     * graph to an {@link AspectGraph}.
+     * @see AspectGraph#newInstance(GraphShape)
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
-        return unmarshalGraph(FileGps.toURL(file));
+        Graph plainGraph = this.marshaller.unmarshalGraph(file);
+        return AspectGraph.newInstance(plainGraph);
     }
 
     /**

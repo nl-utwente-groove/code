@@ -18,6 +18,7 @@ package groove.io;
 
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
+import groove.view.StoredGrammarView;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,6 +32,19 @@ import java.util.Map;
  * @version $Revision $
  */
 public interface GenericSystemStore<R,G> {
+    /**
+     * Returns the name of this store.
+     * @return the name of this store; cannot be <code>null</code> or empty.
+     */
+    public String getName();
+
+    /**
+     * Returns the location of this store. The location uniquely identifies the
+     * place from where the store was obtained.
+     * @return the location of this store; cannot be <code>null</code> or empty.
+     */
+    public String getLocation();
+
     /** Immutable view on the rulename-to-rule map in the store. */
     public Map<RuleName,R> getRules();
 
@@ -40,7 +54,7 @@ public interface GenericSystemStore<R,G> {
     /** Immutable view on the name-to-control-program map in the store. */
     public Map<String,String> getControls();
 
-    /** The system properties object in the store. */
+    /** The system properties object in the store (non-null). */
     public SystemProperties getProperties();
 
     /**
@@ -124,4 +138,13 @@ public interface GenericSystemStore<R,G> {
      */
     public void putProperties(SystemProperties properties)
         throws UnsupportedOperationException, IOException;
+
+    /**
+     * Reloads all data from the persistent storage into this store. Should be
+     * called once immediately after construction of the store.
+     */
+    public void reload() throws IOException;
+
+    /** Returns a stored grammar view backed up by this store. */
+    public StoredGrammarView toGrammarView();
 }

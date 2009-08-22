@@ -125,7 +125,7 @@ public abstract class AspectualViewGps extends Observable implements
         if (result.getProperties().isUseControl()) {
             if (controlURL != null) {
                 ControlView cv =
-                    new ControlView(result, controlURL, controlName);
+                    new ControlView(controlURL, controlName);
                 result.setControl(cv);
             }
         }

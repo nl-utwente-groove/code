@@ -433,7 +433,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             throw new IllegalStateException(
                 "Aspect graph does not represent a state graph");
         }
-        if (this.graphView == null || !this.graphView.hasProperties(properties)) {
+        boolean refreshView = this.graphView == null;
+        if (!refreshView) {
+            String myName = GraphInfo.getName(this);
+            String viewName = this.graphView.getName();
+            refreshView =
+                myName == null ? viewName == null : myName.equals(viewName);
+        }
+        if (!refreshView) {
+            refreshView = !this.graphView.hasProperties(properties);
+        }
+        if (refreshView) {
             this.graphView = new AspectualGraphView(this, properties);
         }
         return this.graphView;
@@ -457,7 +467,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             throw new IllegalStateException(
                 "Aspect graph does not represent a state graph");
         }
-        if (this.ruleView == null) {
+        boolean refreshView = this.ruleView == null;
+        if (!refreshView) {
+            String myName = GraphInfo.getName(this);
+            String viewName = this.ruleView.getName();
+            refreshView =
+                myName == null ? viewName == null : myName.equals(viewName);
+        }
+        if (refreshView) {
             this.ruleView = new AspectualRuleView(this, properties);
         } else {
             this.ruleView.setProperties(properties);

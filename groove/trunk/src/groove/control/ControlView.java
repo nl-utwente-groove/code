@@ -23,7 +23,6 @@ import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
 import groove.trans.GraphGrammar;
-import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
@@ -48,35 +47,31 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * @author Staijen Loads a control program into a given ControlAutomaton
  */
 public class ControlView {
-    // /** File where the control program is stored. * */
-    // private final File controlFile;
-    //
-    // /** Grammar view to which this control view belongs. */
-    // private final DefaultGrammarView grammarView;
-
     /** The control program loaded at construction time. */
     private final String controlProgram;
-
+    /** The control automaton constructed from the program. */
     private ControlAutomaton automaton;
-
+    /** The name of the control program, set at construction time. */
     private final String controlName;
 
     /**
-     * Constructor, needs a grammar view and a filename to a control program.
-     * 
-     * Afterwards, programShape and automaton should have a value.
-     * 
-     * @param result
+     * Constructs a control view from a URL.
      * @param controlURL the URL to read the control program from
      */
-    public ControlView(DefaultGrammarView result, URL controlURL,
-            String controlName) throws IOException {
-        // this.grammarView = result;
-        // this.controlFile = controlProgramFile;
+    public ControlView(URL controlURL, String controlName) throws IOException {
         this.controlName = controlName;
         InputStream s = controlURL.openStream();
         this.controlProgram = loadProgram(s);
         s.close();
+    }
+
+    /**
+     * Constructs a control view from a given control program.
+     * @param control the control program
+     */
+    public ControlView(String control, String controlName) {
+        this.controlName = controlName;
+        this.controlProgram = control;
     }
 
     /** returns the control automaton */

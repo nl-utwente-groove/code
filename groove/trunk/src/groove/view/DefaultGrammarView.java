@@ -34,23 +34,21 @@ import java.util.TreeMap;
 /**
  * Graph grammar with {@link RuleView} information for each rule.
  */
-public class DefaultGrammarView implements
-        GrammarView<AspectualGraphView,AspectualRuleView>, View<GraphGrammar> {
+public class DefaultGrammarView implements GrammarView {
+    // /**
+    // * Constructs a (non-fixed) copy of an existing rule view grammar.
+    // */
+    // public DefaultGrammarView(
+    // GrammarView<AspectualGraphView,AspectualRuleView> oldGrammar) {
+    // this(oldGrammar.getName());
+    // getProperties().putAll(oldGrammar.getProperties());
+    // for (AspectualRuleView ruleView : oldGrammar.getRuleMap().values()) {
+    // addRule(ruleView);
+    // }
+    // setStartGraph(oldGrammar.getStartGraph());
+    // }
     /**
-     * Constructs a (non-fixed) copy of an existing rule view grammar.
-     */
-    public DefaultGrammarView(
-            GrammarView<AspectualGraphView,AspectualRuleView> oldGrammar) {
-        this(oldGrammar.getName());
-        getProperties().putAll(oldGrammar.getProperties());
-        for (AspectualRuleView ruleView : oldGrammar.getRuleMap().values()) {
-            addRule(ruleView);
-        }
-        setStartGraph(oldGrammar.getStartGraph());
-    }
-
-    /**
-     * Constructs a named, empty grammar based on a given rule factory.
+     * Constructs a named, empty grammar.
      */
     public DefaultGrammarView(String name) {
         this.name = name;
@@ -232,7 +230,6 @@ public class DefaultGrammarView implements
         }
 
         if (this.controlView != null) {
-
             if (result.hasMultiplePriorities()) {
                 errors.add("Unable to combine rule priorities and a control program, please disable either.");
             } else {
@@ -242,9 +239,7 @@ public class DefaultGrammarView implements
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 }
-
             }
-
         }
 
         result.setProperties(getProperties());

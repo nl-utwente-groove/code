@@ -26,5 +26,12 @@ import groove.view.aspect.AspectGraph;
  */
 public interface SystemStore extends
         GenericSystemStore<AspectGraph,AspectGraph> {
-    // no additional functionality
+    /** Value used in notifying changes to the properties. */
+    static public final String PROPERTIES_CHANGE = "P";
+    /** Value used in notifying changes to the control map. */
+    static public final String CONTROL_CHANGE = "C";
+    /** Value used in notifying changes to the rule map. */
+    static public final String RULE_CHANGE = "R";
+    /** Value used in notifying changes to the graph map. */
+    static public final String GRAPH_CHANGE = "G";
 }

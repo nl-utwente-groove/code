@@ -42,6 +42,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -184,8 +185,9 @@ public class Groove {
         new ImageIcon(getResource("groove-blue-g-32x32.gif"));
 
     /** The file containing the configuration for allowed scenarios. */
-    public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE = "configuration";
-    
+    public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE =
+        "configuration";
+
     /**
      * Flag to indicate if variaous types of statistics should be computed. This
      * flag is intended to be used globally.
@@ -201,8 +203,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>. By
-     * default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>. By default,
+     * the filter accepts directories.
      * @see #GXL_EXTENSION
      */
     public static ExtensionFilter createGxlFilter() {
@@ -210,8 +212,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh an extension filter for <tt>GXL_EXTENSION</tt>. A
-     * switch controls whether the filter accepts directories.
+     * Returns a fresh an extension filter for <tt>GXL_EXTENSION</tt>. A switch
+     * controls whether the filter accepts directories.
      * @param acceptDirectories if true, the filter accepts directries.
      * @see #GXL_EXTENSION
      */
@@ -220,8 +222,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for <tt>RULE_EXTENSION</tt>. By
-     * default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>RULE_EXTENSION</tt>. By default,
+     * the filter accepts directories.
      * @see #RULE_EXTENSION
      */
     public static ExtensionFilter createRuleFilter() {
@@ -229,8 +231,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh an extension filter for <tt>RULE_EXTENSION</tt>. A
-     * switch controls whether the filter accepts directories.
+     * Returns a fresh an extension filter for <tt>RULE_EXTENSION</tt>. A switch
+     * controls whether the filter accepts directories.
      * @param acceptDirectories if true, the filter accepts directries.
      * @see #RULE_EXTENSION
      */
@@ -240,8 +242,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>.
-     * By default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>. By
+     * default, the filter accepts directories.
      * @see #RULE_SYSTEM_EXTENSION
      */
     public static ExtensionFilter createRuleSystemFilter() {
@@ -249,8 +251,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh an extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>.
-     * A switch controls whether the filter accepts directories.
+     * Returns a fresh an extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>. A
+     * switch controls whether the filter accepts directories.
      * @param acceptDirectories if true, the filter accepts directories.
      * @see #RULE_SYSTEM_EXTENSION
      */
@@ -261,8 +263,8 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for <tt>FSM_EXTENSION</tt>. By
-     * default, the filter accepts directories.
+     * Returns a fresh extension filter for <tt>FSM_EXTENSION</tt>. By default,
+     * the filter accepts directories.
      * @see #FSM_EXTENSION
      */
     public static ExtensionFilter createFsmFilter() {
@@ -287,13 +289,13 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filer for <tt>TEXT_EXTENSION</tt>. By
-     * default, the filter accepts directories.
+     * Returns a fresh extension filer for <tt>TEXT_EXTENSION</tt>. By default,
+     * the filter accepts directories.
      */
     public static ExtensionFilter createTextFilter() {
         return new ExtensionFilter("Text files", TEXT_EXTENSION);
     }
-    
+
     /**
      * Returns a fresh extension filter for <tt>PROPERTIES_EXTENSION</tt>. By
      * default, the filter accepts directories.
@@ -340,8 +342,7 @@ public class Groove {
     /**
      * Retrieves a property from the gui properties file
      * @param key the property description
-     * @return the value associated with <tt>key</tt> in the gui properties
-     *         file
+     * @return the value associated with <tt>key</tt> in the gui properties file
      */
     static public String getGUIProperty(String key) {
         return guiProperties.getProperty(key);
@@ -350,8 +351,7 @@ public class Groove {
     /**
      * Retrieves a property from the xml properties file
      * @param key the property description
-     * @return the value associated with <tt>key</tt> in the xml properties
-     *         file
+     * @return the value associated with <tt>key</tt> in the xml properties file
      */
     static public String getXMLProperty(String key) {
         return xmlProperties.getProperty(key);
@@ -364,8 +364,8 @@ public class Groove {
      * @param filename the name of the file to lod the graph from
      * @return the graph contained in <code>filename</code>, or
      *         <code>null</code> if no file with this name can be found
-     * @throws IOException if <code>filename</code> does not exist or is
-     *         wrongly formatted
+     * @throws IOException if <code>filename</code> does not exist or is wrongly
+     *         formatted
      */
     static public Graph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
@@ -383,8 +383,8 @@ public class Groove {
     /**
      * Attempts to load in a graph from a file.
      * @param file file to load the graph from
-     * @return the graph contained in <code>file</code>, or <code>null</code>
-     *         if the file does not exist
+     * @return the graph contained in <code>file</code>, or <code>null</code> if
+     *         the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public Graph loadGraph(File file) throws IOException {
@@ -442,7 +442,7 @@ public class Groove {
             filename = createGxlFilter().addExtension(filename);
         }
         File file = new File(filename);
-//        System.err.println("Storing graph as " + file.getAbsolutePath());
+        // System.err.println("Storing graph as " + file.getAbsolutePath());
         gxlGraphLoader.marshalGraph(graph, file);
         return file;
     }
@@ -473,8 +473,8 @@ public class Groove {
      * extension.
      * @param filename the name of the file to load the rule graph from
      * @return the rule graph contained in <code>filename</code>
-     * @throws IOException if <code>filename</code> does not exist or is
-     *         wrongly formatted
+     * @throws IOException if <code>filename</code> does not exist or is wrongly
+     *         formatted
      */
     static public AspectualRuleView loadRuleGraph(String filename)
         throws IOException {
@@ -487,8 +487,8 @@ public class Groove {
      * extension.
      * @param filename the name of the file to load the rule graph from
      * @return the rule graph contained in <code>filename</code>
-     * @throws IOException if <code>filename</code> does not exist or is
-     *         wrongly formatted
+     * @throws IOException if <code>filename</code> does not exist or is wrongly
+     *         formatted
      */
     static public AspectualRuleView loadRuleGraph(String filename,
             SystemProperties properties) throws IOException {
@@ -497,13 +497,13 @@ public class Groove {
     }
 
     /**
-     * Attempts to load in a graph grammar from a given <tt>.gps</tt>
-     * directory and return it. Adds the <tt>.gps</tt> extension if the
-     * directory name has no extension.
+     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory
+     * and return it. Adds the <tt>.gps</tt> extension if the directory name has
+     * no extension.
      * @param dirname the name of the directory to load the graph grammar from
      * @return the rule system contained in <code>dirname</code>
-     * @throws IOException if <code>dirname</code> does not exist or is
-     *         wrongly formatted
+     * @throws IOException if <code>dirname</code> does not exist or is wrongly
+     *         formatted
      */
     static public DefaultGrammarView loadGrammar(String dirname)
         throws IOException {
@@ -550,16 +550,15 @@ public class Groove {
     }
 
     /**
-     * Attempts to load in a graph grammar from a given <tt>.gps</tt>
-     * directory, with an explicitly given start graph name, and return it. Adds
-     * the <tt>.gps</tt> extension if the file has no extension.
+     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
+     * with an explicitly given start graph name, and return it. Adds the
+     * <tt>.gps</tt> extension if the file has no extension.
      * @param dirname the name of the directory to load the graph grammar from
      * @param startfilename the name of the start graph
      * @return the graph grammar made up by <code>dirname</code> and
      *         <code>startfilename</code>
-     * @throws IOException if <code>dirname</code> or
-     *         <code>startfilename</code> do not exist or are wrongly
-     *         formatted
+     * @throws IOException if <code>dirname</code> or <code>startfilename</code>
+     *         do not exist or are wrongly formatted
      */
     static public DefaultGrammarView loadGrammar(String dirname,
             String startfilename) throws IOException {
@@ -688,10 +687,9 @@ public class Groove {
     }
 
     /**
-     * Converts a space-separated string value to an <tt>int</tt> array.
-     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not
-     * decompose into space-separated sub-strings, or does not convert to
-     * <tt>int</tt> values.
+     * Converts a space-separated string value to an <tt>int</tt> array. Returns
+     * <tt>null</tt> if the string is <tt>null</tt>, does not decompose into
+     * space-separated sub-strings, or does not convert to <tt>int</tt> values.
      */
     static public int[] toIntArray(String text) {
         if (text == null) {
@@ -714,9 +712,9 @@ public class Groove {
 
     /**
      * Converts a space-separated string value to a <tt>float</tt> array.
-     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not
-     * decompose into space-separated sub-strings, or does not convert to
-     * <tt>float</tt> values.
+     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not decompose
+     * into space-separated sub-strings, or does not convert to <tt>float</tt>
+     * values.
      */
     static public float[] toFloatArray(String text) {
         if (text == null) {
@@ -744,8 +742,8 @@ public class Groove {
      * @param text the string to be padded
      * @param length the desired length
      * @param right <tt>true</tt> if the space should be added on the right
-     * @return A new string, consisting of <tt>text</tt> preceded or followed
-     *         by spaces, up to minimum length <tt>length</tt>
+     * @return A new string, consisting of <tt>text</tt> preceded or followed by
+     *         spaces, up to minimum length <tt>length</tt>
      */
     static public String pad(String text, int length, boolean right) {
         StringBuffer result = new StringBuffer(text);
@@ -866,12 +864,14 @@ public class Groove {
     /** Properties object for the XML properties. */
     static public final Properties xmlProperties = new Properties();
 
-    /** Loads a properties object fomr a URL given as a string. */
+    /** Loads a properties object from a URL given as a string. */
     static private void loadProperties(Properties properties,
             String propertiesName) {
         try {
             URL propertiesURL = getResource(propertiesName);
-            properties.load(propertiesURL.openStream());
+            InputStream in = propertiesURL.openStream();
+            properties.load(in);
+            in.close();
         } catch (IOException e) {
             System.err.println("Could not open properties file: "
                 + propertiesName);

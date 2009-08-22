@@ -17,7 +17,7 @@
 package groove.io;
 
 import groove.util.Groove;
-import groove.view.GrammarView;
+import groove.view.GenericGrammarView;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GrammarViewXml<GG extends GrammarView<?,?>> extends
+public interface GrammarViewXml<GG extends GenericGrammarView<?,?>> extends
         ViewXml<GG> {
     /**
      * Returns the extension filter associated with this grammar loader.
