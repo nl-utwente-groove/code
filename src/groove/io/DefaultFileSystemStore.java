@@ -21,6 +21,7 @@ import groove.graph.GraphInfo;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.BufferedReader;
@@ -36,6 +37,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Properties;
 
 /**
@@ -45,45 +47,57 @@ import java.util.Properties;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultFileSystemStore implements SystemStore {
+public class DefaultFileSystemStore extends Observable implements SystemStore {
     /**
-     * Constructs a store from a given persistent storage location. The location
-     * needs to be a file. The store is writable.
+     * Constructs a store from a given file. The file should be a directory with
+     * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is writable.
+     * @param file source directory of the underlying persistent storage
+     * @param layouted if <code>true</code>, the store will load and save graph
+     *        layout.
+     * @throws IllegalArgumentException if <code>file</code> is not an existing
+     *         directory, or does not have the correct extension.
+     */
+    public DefaultFileSystemStore(File file, boolean layouted)
+        throws IllegalArgumentException {
+        if (!file.exists()) {
+            throw new IllegalArgumentException(String.format(
+                "File '%s' does not exist", file));
+        }
+        if (!file.isDirectory()) {
+            throw new IllegalArgumentException(String.format(
+                "File '%s' is not a directory", file));
+        }
+        if (!GRAMMAR_FILTER.accept(file)) {
+            throw new IllegalArgumentException(String.format(
+                "File '%s' does not refer to a production system", file));
+        }
+        this.file = file;
+        this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
+        this.marshaller =
+            createGraphMarshaller(GraphFactory.getInstance(), true);
+    }
+
+    /**
+     * Constructs a store from a given URL. The URL should specify the
+     * <code>file:</code> protocol, and the file should be a directory with
+     * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is writable.
      * @param location source location of the underlying persistent storage;
      *        should refer to a file.
-     * @param layouted if <code>true</code>, should maintain graph layout.
+     * @param layouted if <code>true</code>, the store will load and save graph
+     *        layout.
      * @throws IllegalArgumentException if <code>location</code> does not
      *         conform to URI syntax, or does not point to an existing
      *         directory, or does not have the correct extension.
      */
     public DefaultFileSystemStore(URL location, boolean layouted)
         throws IllegalArgumentException {
-        this.location = location;
-        try {
-            this.file = new File(location.toURI());
-        } catch (URISyntaxException exc) {
-            throw new IllegalArgumentException(String.format(
-                "URL '%s' is not formatted correctly: %s", location,
-                exc.getMessage()));
-        } catch (IllegalArgumentException exc) {
-            throw new IllegalArgumentException(String.format(
-                "URL '%s' is not a valid file: %s", location, exc.getMessage()));
-        }
-        this.marshaller =
-            createGraphMarshaller(GraphFactory.getInstance(), true);
-        if (!this.file.exists()) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' does not exist", this.file));
-        }
-        if (!this.file.isDirectory()) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' is not a directory", this.file));
-        }
-        if (!GRAMMAR_FILTER.accept(this.file)) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' does not refer to a production system", this.file));
-        }
-        this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
+        this(toFile(location), layouted);
+        this.url = location;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
     }
 
     @Override
@@ -91,6 +105,7 @@ public class DefaultFileSystemStore implements SystemStore {
         testInit();
         AspectGraph result = this.graphMap.remove(name);
         this.marshaller.deleteGraph(createGraphFile(name));
+        notify(SystemStore.GRAPH_CHANGE);
         return result;
     }
 
@@ -102,6 +117,7 @@ public class DefaultFileSystemStore implements SystemStore {
         this.marshaller.deleteGraph(new File(this.file,
             RULE_FILTER.addExtension(Groove.toString(name.tokens(), "", "",
                 Groove.FILE_SEPARATOR))));
+        notify(SystemStore.RULE_CHANGE);
         return result;
     }
 
@@ -134,6 +150,7 @@ public class DefaultFileSystemStore implements SystemStore {
         testInit();
         String result = this.controlMap.put(name, control);
         saveControl(name, control);
+        notify(SystemStore.CONTROL_CHANGE);
         return result;
     }
 
@@ -143,6 +160,7 @@ public class DefaultFileSystemStore implements SystemStore {
         String name = GraphInfo.getName(graph);
         AspectGraph result = this.graphMap.put(name, graph);
         this.marshaller.marshalGraph(graph, createGraphFile(name));
+        notify(SystemStore.GRAPH_CHANGE);
         return result;
     }
 
@@ -151,6 +169,7 @@ public class DefaultFileSystemStore implements SystemStore {
         testInit();
         this.properties = properties;
         saveProperties();
+        notify(SystemStore.PROPERTIES_CHANGE);
     }
 
     @Override
@@ -159,6 +178,7 @@ public class DefaultFileSystemStore implements SystemStore {
         RuleName name = new RuleName(GraphInfo.getName(rule));
         AspectGraph result = this.ruleMap.put(name, rule);
         this.marshaller.marshalGraph(rule, createRuleFile(name));
+        notify(SystemStore.RULE_CHANGE);
         return result;
     }
 
@@ -173,6 +193,7 @@ public class DefaultFileSystemStore implements SystemStore {
             this.graphMap.put(newName, graph);
             this.marshaller.marshalGraph(graph, createGraphFile(newName));
         }
+        notify(SystemStore.GRAPH_CHANGE);
         return graph;
     }
 
@@ -189,23 +210,37 @@ public class DefaultFileSystemStore implements SystemStore {
             this.ruleMap.put(newRuleName, rule);
             this.marshaller.marshalGraph(rule, createRuleFile(newRuleName));
         }
+        notify(SystemStore.RULE_CHANGE);
         return rule;
     }
 
-    public URL getLocation() {
-        return this.location;
-    }
-
-    /**
-     * Reloads all data from the persistent storage into this store. Should be
-     * called once immediately after construction of the store.
-     */
+    @Override
     public void reload() throws IOException {
         loadProperties();
         loadRules();
         loadGraphs();
         loadControls();
         this.initialised = true;
+    }
+
+    public StoredGrammarView toGrammarView() {
+        if (this.view == null) {
+            this.view = new StoredGrammarView(this);
+            addObserver(this.view);
+        }
+        return this.view;
+    }
+
+    /**
+     * Returns the string representation of the URL or file this store was
+     * loaded from.
+     */
+    public String getLocation() {
+        if (this.url == null) {
+            return this.file.toString();
+        } else {
+            return this.url.toString();
+        }
     }
 
     /** Callback factory method for creating a graph marshaller. */
@@ -278,6 +313,7 @@ public class DefaultFileSystemStore implements SystemStore {
      * to {@link #properties}.
      */
     private void loadProperties() throws IOException {
+        this.properties = new SystemProperties();
         File propertiesFile =
             new File(this.file,
                 PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
@@ -291,10 +327,7 @@ public class DefaultFileSystemStore implements SystemStore {
             InputStream s = new FileInputStream(propertiesFile);
             grammarProperties.load(s);
             s.close();
-            this.properties = new SystemProperties();
             this.properties.putAll(grammarProperties);
-        } else {
-            this.properties = null;
         }
     }
 
@@ -392,6 +425,12 @@ public class DefaultFileSystemStore implements SystemStore {
             ruleName.tokens(), "", "", Groove.FILE_SEPARATOR)));
     }
 
+    /** Notifies the observers with a given string value. */
+    private void notify(String property) {
+        setChanged();
+        notifyObservers(property);
+    }
+
     /** The name-to-rule map of the source. */
     private final Map<RuleName,AspectGraph> ruleMap =
         new HashMap<RuleName,AspectGraph>();
@@ -402,8 +441,11 @@ public class DefaultFileSystemStore implements SystemStore {
     private final Map<String,String> controlMap = new HashMap<String,String>();
     /** The system properties object of the source. */
     private SystemProperties properties;
-    /** The location from which the source is loaded. */
-    private final URL location;
+    /**
+     * The location from which the source is loaded. If <code>null</code>, the
+     * location was specified by file rather than url.
+     */
+    private URL url;
     /** The file obtained from <code>location</code>. */
     private final File file;
     /** Name of the rule system. */
@@ -412,6 +454,27 @@ public class DefaultFileSystemStore implements SystemStore {
     private final Xml<AspectGraph> marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
+    /** The grammar view associated with this store. */
+    private StoredGrammarView view;
+
+    /**
+     * Returns a file based on a given URL, if there is one such.
+     * @return a file based on <code>url</code>; non-null
+     * @throws IllegalArgumentException if <code>url</code> does not conform to
+     *         URI syntax or does not point to an existing file.
+     */
+    private static File toFile(URL url) throws IllegalArgumentException {
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException exc) {
+            throw new IllegalArgumentException(String.format(
+                "URL '%s' is not formatted correctly: %s", url,
+                exc.getMessage()));
+        } catch (IllegalArgumentException exc) {
+            throw new IllegalArgumentException(String.format(
+                "URL '%s' is not a valid file: %s", url, exc.getMessage()));
+        }
+    }
 
     /** File filter for graph grammars in the GPS format. */
     static private final ExtensionFilter GRAMMAR_FILTER =
@@ -434,5 +497,5 @@ public class DefaultFileSystemStore implements SystemStore {
         Groove.createControlFilter();
 
     /** Error message if a grammar cannot be loaded. */
-    static protected final String LOAD_ERROR = "Can't load graph grammar";
+    static private final String LOAD_ERROR = "Can't load graph grammar";
 }

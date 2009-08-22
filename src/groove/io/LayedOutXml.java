@@ -176,16 +176,32 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
         URL layoutURL = toLayoutURL(url);
         try {
             InputStream in = layoutURL.openStream();
-            BufferedReader layoutReader =
-                new BufferedReader(new InputStreamReader(in));
-            LayoutMap<Node,Edge> layoutMap =
-                readLayout(result, nodeMap, layoutReader);
-            in.close();
-            GraphInfo.setLayoutMap(result, layoutMap);
-        } catch(IOException e) {
+            addLayout(result, nodeMap, in);
+        } catch (IOException e) {
             // we do nothing when there is no layout found at the url
         }
         return new Pair<Graph,Map<String,Node>>(result, nodeMap);
+    }
+
+    /**
+     * Adds layout information to a given graph from an input stream. The input
+     * stream is closed afterwards.
+     * @param graph the graph to add layout information to; non-null
+     * @param nodeMap mapping from node identities in the input stream to nodes
+     *        in the graph
+     * @param in the input stream containing the layout information; non-null
+     * @throws IOException if an exception occurred while reading from the input
+     *         stream
+     */
+    public void addLayout(Graph graph, Map<String,Node> nodeMap, InputStream in)
+        throws IOException {
+        BufferedReader layoutReader =
+            new BufferedReader(new InputStreamReader(in));
+        LayoutMap<Node,Edge> layoutMap =
+            readLayout(graph, nodeMap, layoutReader);
+        layoutReader.close();
+        in.close();
+        GraphInfo.setLayoutMap(graph, layoutMap);
     }
 
     /**
@@ -495,8 +511,8 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
 
     /**
      * Converts a file containing a graph to the file containing the graph's
-     * layout information, by adding <code>Groove.LAYOUT_EXTENSION</code> ti
-     * the file name.
+     * layout information, by adding <code>Groove.LAYOUT_EXTENSION</code> ti the
+     * file name.
      */
     private File toLayoutFile(File graphFile) {
         return new File(graphFile.getParentFile(), graphFile.getName()
@@ -505,13 +521,13 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
 
     /**
      * Converts a file containing a graph to the file containing the graph's
-     * layout information, by adding <code>Groove.LAYOUT_EXTENSION</code> to
-     * the url path.
+     * layout information, by adding <code>Groove.LAYOUT_EXTENSION</code> to the
+     * url path.
      */
     private URL toLayoutURL(URL graphURL) throws MalformedURLException {
         return new URL(graphURL.toExternalForm() + Groove.LAYOUT_EXTENSION);
     }
-    
+
     /**
      * Converts a graph node plus layout information to a string.
      */

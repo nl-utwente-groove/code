@@ -140,6 +140,25 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
+     * Sets the dangling edge check to a certain value.
+     * @param dangling if <code>true</code>, matches with dangling edges are
+     *        disallowed
+     */
+    public void setControlEnabled(boolean dangling) {
+        setProperty(CONTROL_PROGRAM_KEY, "" + dangling);
+    }
+
+    /**
+     * Returns the value of the dangling edge property.
+     * @return if <code>true</code>, matches with dangling edges are disallowed.
+     */
+    public boolean isControlEnabled() {
+        String result = getProperty(CONTROL_PROGRAM_KEY);
+        return result != null
+            && (new Boolean(result) || result.equals(SystemProperties.CONTROL_YES));
+    }
+
+    /**
      * Sets the algebra family to a given value.
      */
     public void setAlgebra(String family) {

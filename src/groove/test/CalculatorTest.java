@@ -6,7 +6,7 @@ import groove.io.FileGps;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GenericGrammarView;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class CalculatorTest extends TestCase {
     /** Tests the append sample. */
     public void testCalculator() throws FormatException {
 
-        GrammarView<?,?> view = loadGrammar("ferryman.gps", "start");
+        GenericGrammarView<?,?> view = loadGrammar("ferryman.gps", "start");
         GraphGrammar gg = view.toGrammar();
 
         GraphCalculator calc = new DefaultGraphCalculator(gg);
@@ -29,7 +29,7 @@ public class CalculatorTest extends TestCase {
         assertNull(result);
     }
 
-    private GrammarView<?,?> loadGrammar(String grammarName,
+    private GenericGrammarView<?,?> loadGrammar(String grammarName,
             String startGraphName) {
         try {
             return this.loader.unmarshal(new File(INPUT_DIR, grammarName),

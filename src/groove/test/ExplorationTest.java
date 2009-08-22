@@ -34,7 +34,7 @@ import groove.trans.RuleName;
 import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GenericGrammarView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -191,10 +191,10 @@ public class ExplorationTest extends TestCase {
 
     /** Tests various parameters settable through the system properties. */
     public void testSystemProperties() {
-        GrammarView<?,?> gg = loadGrammar("simple.gps", null);
+        GenericGrammarView<?,?> gg = loadGrammar("simple.gps", null);
         testExploration(gg, null, 41, 300, 0);
         // GraphGrammar ggCopy = new GraphGrammar(gg);
-        GrammarView<?,?> ggCopy = loadGrammar("simple.gps", null);
+        GenericGrammarView<?,?> ggCopy = loadGrammar("simple.gps", null);
         ggCopy.getProperties().setCheckCreatorEdges(true);
         testExploration(ggCopy, null, 41, 188, 0);
         ggCopy = loadGrammar("simple.gps", null);
@@ -287,7 +287,7 @@ public class ExplorationTest extends TestCase {
      * @return the explored GTS
      */
     @SuppressWarnings("unchecked")
-    protected GTS testExploration(GrammarView<?,?> view, String strategyDescr,
+    protected GTS testExploration(GenericGrammarView<?,?> view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount, boolean save) {
         try {
             GraphGrammar gg = view.toGrammar();
@@ -350,7 +350,7 @@ public class ExplorationTest extends TestCase {
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(GrammarView<?,?> view, String strategyDescr,
+    protected GTS testExploration(GenericGrammarView<?,?> view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount) {
         return testExploration(view, strategyDescr, nodeCount, edgeCount,
             openCount, false);
@@ -370,7 +370,7 @@ public class ExplorationTest extends TestCase {
      */
     protected GTS testExploration(String grammarName, String startGraphName,
             String strategyDescr, int nodeCount, int edgeCount, int openCount) {
-        GrammarView<?,?> gg = loadGrammar(grammarName, startGraphName);
+        GenericGrammarView<?,?> gg = loadGrammar(grammarName, startGraphName);
         return testExploration(gg, strategyDescr, nodeCount, edgeCount,
             openCount);
     }
@@ -456,7 +456,7 @@ public class ExplorationTest extends TestCase {
         return result;
     }
 
-    private GrammarView<?,?> loadGrammar(String grammarName,
+    private GenericGrammarView<?,?> loadGrammar(String grammarName,
             String startGraphName) {
         try {
             return this.loader.unmarshal(new File(INPUT_DIR, grammarName),
