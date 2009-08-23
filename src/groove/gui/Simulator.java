@@ -680,17 +680,18 @@ public class Simulator {
         return this.newRuleAction;
     }
 
-    /**
-     * Returns the rule creation action permanently associated with this
-     * simulator.
-     */
-    public NewControlAction getNewControlAction() {
-        // lazily create the action
-        if (this.newControlAction == null) {
-            this.newControlAction = new NewControlAction();
-        }
-        return this.newControlAction;
-    }
+    //
+    // /**
+    // * Returns the rule creation action permanently associated with this
+    // * simulator.
+    // */
+    // public NewControlAction getNewControlAction() {
+    // // lazily create the action
+    // if (this.newControlAction == null) {
+    // this.newControlAction = new NewControlAction();
+    // }
+    // return this.newControlAction;
+    // }
 
     /** Returns the quit action permanently associated with this simulator. */
     public Action getQuitAction() {
@@ -882,12 +883,19 @@ public class Simulator {
         // check if we had a control program
         ControlView cv = getCurrentGrammar().getControl();
         String controlName =
-            cv == null ? Groove.DEFAULT_CONTROL_NAME : cv.getName();
+            cv == null ? getCurrentGrammar().getProperties().getControlName()
+                    : cv.getName();
+        if (controlName == null) {
+            controlName = Groove.DEFAULT_CONTROL_NAME;
+        }
         File controlFile =
             new File(FileGps.toFile(this.currentGrammarURL),
                 Groove.createControlFilter().addExtension(controlName));
-        doSaveControl(program, controlFile);
-        return controlFile;
+        if (doSaveControl(program, controlFile)) {
+            return controlFile;
+        } else {
+            return null;
+        }
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
@@ -1267,11 +1275,11 @@ public class Simulator {
                         aspectStartGraph.toGraphView(grammar.getProperties());
                     grammar.setStartGraph(startGraph);
                 }
-                File currentControlFile =
-                    getControlFileChooser().getSelectedFile();
-                if (currentControlFile != null) {
-                    new FileGps(false).loadControl(grammar, currentControlFile);
-                }
+                // File currentControlFile =
+                // getControlFileChooser().getSelectedFile();
+                // if (currentControlFile != null) {
+                // new FileGps(false).loadControl(grammar, currentControlFile);
+                // }
                 setGrammar(grammar);
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from "
@@ -1324,7 +1332,13 @@ public class Simulator {
     }
 
     void doSaveProperties(SystemProperties newProperties) {
+        // check if we need to load a new control program
+        String newControlName = newProperties.getControlName();
         DefaultGrammarView grammar = this.getCurrentGrammar();
+        String oldControlName = grammar.getProperties().getControlName();
+        boolean refresh =
+            newControlName == null ? oldControlName != null
+                    : !newControlName.equals(oldControlName);
         try {
             String outputFileName =
                 Groove.createPropertyFilter().addExtension(Groove.PROPERTY_NAME);
@@ -1336,7 +1350,11 @@ public class Simulator {
             newProperties.store(writer, String.format(
                 SystemProperties.DESCRIPTION, grammar.getName()));
             grammar.setProperties(newProperties);
-            setGrammar(grammar);
+            if (refresh) {
+                doRefreshGrammar();
+            } else {
+                setGrammar(grammar);
+            }
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
         }
@@ -2013,7 +2031,7 @@ public class Simulator {
         result.add(createItem(getNewGrammarAction(), menuName));
         result.add(createItem(getNewGraphAction(), menuName));
         result.add(createItem(getNewRuleAction(), menuName));
-        result.add(createItem(getNewControlAction(), menuName));
+        // result.add(createItem(getNewControlAction(), menuName));
         return result;
     }
 
@@ -3080,10 +3098,10 @@ public class Simulator {
      * The rule creation action permanently associated with this simulator.
      */
     private NewRuleAction newRuleAction;
-    /**
-     * The control creation action permanently associated with this simulator.
-     */
-    private NewControlAction newControlAction;
+    // /**
+    // * The control creation action permanently associated with this simulator.
+    // */
+    // private NewControlAction newControlAction;
     /**
      * The quit action permanently associated with this simulator.
      */
@@ -4311,63 +4329,63 @@ public class Simulator {
         }
     }
 
-    private class NewControlAction extends AbstractAction implements
-            Refreshable {
-        NewControlAction() {
-            super(Options.NEW_CONTROL_ACTION_NAME);
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(false)) {
-                File location =
-                    FileGps.toFile(Simulator.this.getCurrentGrammarURL());
-                int offset = 0;
-                File controlFile =
-                    new File(
-                        location,
-                        Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME));
-                while (controlFile.exists()) {
-                    offset++;
-                    controlFile =
-                        new File(
-                            location,
-                            Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME
-                                + offset));
-                }
-
-                JFileChooser chooser = Simulator.this.getControlFileChooser();
-                chooser.setSelectedFile(controlFile);
-
-                int result = chooser.showOpenDialog(getFrame());
-                // now load, if so required
-                if (result == JFileChooser.APPROVE_OPTION
-                    && confirmAbandon(false)) {
-
-                    if (!chooser.getSelectedFile().exists()) {
-
-                        // ControlView cv = grammar.getControl();
-                        try {
-                            ControlView.store("", new FileOutputStream(
-                                chooser.getSelectedFile()));
-                            doLoadControlFile(chooser.getSelectedFile());
-                            Simulator.this.getGraphViewsPanel().setSelectedComponent(
-                                Simulator.this.getControlPanel());
-                        } catch (IOException ioe) {
-                            showErrorDialog(ioe.getMessage(), ioe);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        /** Enabled if there is a grammar loaded. */
-        public void refresh() {
-            setEnabled(getCurrentGrammar() != null
-                && Simulator.this.currentGrammarLoader.canWrite());
-        }
-    }
+    // private class NewControlAction extends AbstractAction implements
+    // Refreshable {
+    // NewControlAction() {
+    // super(Options.NEW_CONTROL_ACTION_NAME);
+    // addRefreshable(this);
+    // }
+    //
+    // public void actionPerformed(ActionEvent e) {
+    // if (confirmAbandon(false)) {
+    // File location =
+    // FileGps.toFile(Simulator.this.getCurrentGrammarURL());
+    // int offset = 0;
+    // File controlFile =
+    // new File(
+    // location,
+    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME));
+    // while (controlFile.exists()) {
+    // offset++;
+    // controlFile =
+    // new File(
+    // location,
+    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME
+    // + offset));
+    // }
+    //
+    // JFileChooser chooser = Simulator.this.getControlFileChooser();
+    // chooser.setSelectedFile(controlFile);
+    //
+    // int result = chooser.showOpenDialog(getFrame());
+    // // now load, if so required
+    // if (result == JFileChooser.APPROVE_OPTION
+    // && confirmAbandon(false)) {
+    //
+    // if (!chooser.getSelectedFile().exists()) {
+    //
+    // // ControlView cv = grammar.getControl();
+    // try {
+    // ControlView.store("", new FileOutputStream(
+    // chooser.getSelectedFile()));
+    // doLoadControlFile(chooser.getSelectedFile());
+    // Simulator.this.getGraphViewsPanel().setSelectedComponent(
+    // Simulator.this.getControlPanel());
+    // } catch (IOException ioe) {
+    // showErrorDialog(ioe.getMessage(), ioe);
+    // }
+    // }
+    // }
+    //
+    // }
+    // }
+    //
+    // /** Enabled if there is a grammar loaded. */
+    // public void refresh() {
+    // setEnabled(getCurrentGrammar() != null
+    // && Simulator.this.currentGrammarLoader.canWrite());
+    // }
+    // }
 
     /**
      * Action for inputting a CTL formula.

@@ -25,13 +25,8 @@ import groove.control.parse.GCLParser;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -40,31 +35,11 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 
 /**
- * 
- * The Control part of the GrammarView. For loading, saving, getting an actual
- * representation, etc.
- * 
- * @author Staijen Loads a control program into a given ControlAutomaton
+ * Bridge between control programs (which are just strings) and control
+ * automata.
+ * @author Staijen
  */
 public class ControlView {
-    /** The control program loaded at construction time. */
-    private final String controlProgram;
-    /** The control automaton constructed from the program. */
-    private ControlAutomaton automaton;
-    /** The name of the control program, set at construction time. */
-    private final String controlName;
-
-    /**
-     * Constructs a control view from a URL.
-     * @param controlURL the URL to read the control program from
-     */
-    public ControlView(URL controlURL, String controlName) throws IOException {
-        this.controlName = controlName;
-        InputStream s = controlURL.openStream();
-        this.controlProgram = loadProgram(s);
-        s.close();
-    }
-
     /**
      * Constructs a control view from a given control program.
      * @param control the control program
@@ -84,26 +59,6 @@ public class ControlView {
         return this.controlProgram;
     }
 
-    /** loads the program from a File * */
-    private String loadProgram(InputStream stream) {
-        StringBuilder contents = new StringBuilder();
-        try {
-            BufferedReader br =
-                new BufferedReader(new InputStreamReader(stream));
-            String line;
-            while (((line = br.readLine()) != null)) {
-                contents.append(line + "\r\n");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return contents.toString();
-    }
-
-    /** returns the File containing the current control program */
-    // public File getFile() {
-    // return this.controlFile;
-    // }
     /**
      * This method should only be called from DefaultGrammarView.computeGrammar
      * Create the automaton once, then, use getAutomaton() to get the automaton.
@@ -168,6 +123,22 @@ public class ControlView {
     }
 
     /**
+     * Returns a unique identifier for the location, set by the
+     * LocationAutomatonBuilder
+     * @return name
+     */
+    public String getName() {
+        return this.controlName;
+    }
+
+    /** The control program loaded at construction time. */
+    private final String controlProgram;
+    /** The control automaton constructed from the program. */
+    private ControlAutomaton automaton;
+    /** The name of the control program, set at construction time. */
+    private final String controlName;
+
+    /**
      * Saves the program to the given OutputStream.
      * @param controlProgram
      * @param out the output stream to write the control program to.
@@ -177,14 +148,4 @@ public class ControlView {
         pw.write(controlProgram);
         pw.close();
     }
-
-    /**
-     * Returns a unique identifier for the location, set by the
-     * LocationAutomatonBuilder
-     * @return name
-     */
-    public String getName() {
-        return this.controlName;
-    }
-
 }

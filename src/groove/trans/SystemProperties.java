@@ -24,23 +24,18 @@ import java.util.Map.Entry;
 public class SystemProperties extends java.util.Properties implements Fixable,
         Cloneable {
     /**
-     * Indicates if the LTS labels should contain transition parameters. Default
-     * value: <code>false</code>.
-     */
-    public boolean isUseParameters() {
-        String params = getProperty(SystemProperties.PARAMETERS_KEY);
-        return params != null
-            && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));
-    }
-
-    /**
      * Indicates if control is used and that the system will look for a control
      * program. Default value: <code>true</code>
      */
     public boolean isUseControl() {
         String control = getProperty(SystemProperties.CONTROL_KEY);
-        return control == null
-            || (new Boolean(control) || control.equals(SystemProperties.CONTROL_YES));
+        return control == null || new Boolean(control)
+            || control.equals(SystemProperties.CONTROL_YES);
+    }
+
+    /** Sets the {@link #CONTROL_KEY} property to the given value * */
+    public void setUseControl(boolean useControl) {
+        setProperty(CONTROL_KEY, "" + useControl);
     }
 
     /**
@@ -51,6 +46,16 @@ public class SystemProperties extends java.util.Properties implements Fixable,
         String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);
         return property != null
             && (new Boolean(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));
+    }
+
+    /**
+     * Indicates if the LTS labels should contain transition parameters. Default
+     * value: <code>false</code>.
+     */
+    public boolean isUseParameters() {
+        String params = getProperty(SystemProperties.PARAMETERS_KEY);
+        return params != null
+            && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));
     }
 
     /** Sets the {@link #PARAMETERS_KEY} property to the given value * */
@@ -141,22 +146,19 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     }
 
     /**
-     * Sets the dangling edge check to a certain value.
-     * @param dangling if <code>true</code>, matches with dangling edges are
-     *        disallowed
+     * Sets the control program name to a certain value.
+     * @param program the new control program name
      */
-    public void setControlEnabled(boolean dangling) {
-        setProperty(CONTROL_PROGRAM_KEY, "" + dangling);
+    public void setControlName(String program) {
+        setProperty(CONTROL_NAME_KEY, program);
     }
 
     /**
-     * Returns the value of the dangling edge property.
-     * @return if <code>true</code>, matches with dangling edges are disallowed.
+     * Returns the control program name, if any. May be <code>null</code> if no
+     * control program is set explicitly.
      */
-    public boolean isControlEnabled() {
-        String result = getProperty(CONTROL_PROGRAM_KEY);
-        return result != null
-            && (new Boolean(result) || result.equals(SystemProperties.CONTROL_YES));
+    public String getControlName() {
+        return getProperty(CONTROL_NAME_KEY);
     }
 
     /**
@@ -376,7 +378,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * Name of the file containing the used control program. Will only be loaded
      * when the file exists in the grammar directory.
      */
-    static public final String CONTROL_PROGRAM_KEY = "controlProgram";
+    static public final String CONTROL_NAME_KEY = "controlName";
 
     /**
      * Property name of the list of control labels of a graph grammar. The
@@ -516,11 +518,13 @@ public class SystemProperties extends java.util.Properties implements Fixable,
             new Property.IsBoolean(
                 "Flag controlling state graphs are checked up to isomorphism",
                 true));
+        defaultKeys.put(CONTROL_KEY, new IsExtendedBoolean(
+            "Flag determining if control is enabled"));
+        defaultKeys.put(CONTROL_NAME_KEY, new Property.True<String>(
+            String.format("Name of the control program (default: '%s')",
+                Groove.DEFAULT_CONTROL_NAME)));
         defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean(
             "Flag controlling if transition labels should be bracketed"));
-
-        defaultKeys.put(CONTROL_KEY, new IsExtendedBoolean(
-            "Flag controlling if a control program is used"));
         defaultKeys.put(
             PARAMETERS_KEY,
             new IsExtendedBoolean(

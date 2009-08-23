@@ -130,7 +130,26 @@ public class StoredGrammarView implements GrammarView, Observer {
         return toGrammar();
     }
 
-    /** Converts the grammar view to a real grammar. */
+    /**
+     * Converts the grammar view to a real grammar. With respect to control, we
+     * recognise the following cases:
+     * <ul>
+     * <li>Control is enabled (which is the default case), but no control name
+     * is set in the properties. Then we look for a control program by the name
+     * of <code>control</code>; if that does not exist, we look for a control
+     * program by the name of the grammar. If that does not exist either,
+     * control is assumed to be disabled; the control name is implicitly set to
+     * <code>control</code>.
+     * <li>Control is enabled, and an explicit control name is set in the
+     * properties. If a control program by that name exists, it is used. If no
+     * such program exists, an error is raised.
+     * <li>Control is disabled, but a control name is set. If a control program
+     * by that name exists, it may be displayed but will not be used. If no such
+     * control program exists, an error should be raised.
+     * <li>Control is disabled, and no control name is set. No control will be
+     * used; the control name is implicitly set to <code>control</code>.
+     * </ul>
+     */
     public GraphGrammar toGrammar() throws FormatException {
         if (this.errors == null) {
             initGrammar();
@@ -183,7 +202,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             }
         }
 
-        boolean hasControl = getProperties().isControlEnabled();
+        boolean hasControl = getProperties().isUseControl();
         ControlView controlView =
             hasControl ? getControlMap().get(getControlName()) : null;
         if (controlView != null) {

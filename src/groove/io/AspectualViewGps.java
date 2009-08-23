@@ -28,9 +28,11 @@ import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Map;
 import java.util.Observable;
@@ -122,7 +124,21 @@ public abstract class AspectualViewGps extends Observable implements
     protected void loadControl(DefaultGrammarView result, URL controlURL,
             String controlName) throws IOException {
         if (controlURL != null) {
-            ControlView cv = new ControlView(controlURL, controlName);
+            InputStream s = controlURL.openStream();
+            StringBuilder contents = new StringBuilder();
+            try {
+                BufferedReader br =
+                    new BufferedReader(new InputStreamReader(s));
+                String line;
+                while (((line = br.readLine()) != null)) {
+                    contents.append(line + "\r\n");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            s.close();
+            String controlProgram = contents.toString();
+            ControlView cv = new ControlView(controlProgram, controlName);
             result.setControl(cv);
         }
     }

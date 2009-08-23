@@ -77,7 +77,6 @@ public class FileGps extends AspectualViewGps {
         saveControl(gg.getControl(), location);
 
         if (backup != null) {
-            System.out.println("Now deleting backup " + backup);
             deleteLocation(backup);
         }
     }
@@ -201,10 +200,6 @@ public class FileGps extends AspectualViewGps {
             String startGraphName, String controlName) throws IOException {
         String actualStartGraphName =
             startGraphName == null ? DEFAULT_START_GRAPH_NAME : startGraphName;
-        if (controlName == null) {
-            controlName = DEFAULT_CONTROL_NAME;
-        }
-
         if (!location.exists()) {
             throw new FileNotFoundException(LOAD_ERROR
                 + ": rule rystem location \"" + location.getAbsolutePath()
@@ -263,15 +258,22 @@ public class FileGps extends AspectualViewGps {
         }
 
         // CONTROL
+        if (controlName == null) {
+            // get the control name from the system properties
+            controlName = result.getProperties().getControlName();
+            if (controlName == null) {
+                // get the default control name
+                controlName = DEFAULT_CONTROL_NAME;
+                File controlFile =
+                    new File(location, CONTROL_FILTER.addExtension(controlName));
+                // backwards compatibility: <grammar name>.gcp
+                if (!controlFile.exists()) {
+                    controlName = result.getName();
+                }
+            }
+        }
         File controlFile =
             new File(location, CONTROL_FILTER.addExtension(controlName));
-        // backwards compatibility: <grammar name>.gcp
-        if (!controlFile.exists()) {
-            controlFile =
-                new File(location,
-                    CONTROL_FILTER.addExtension(result.getName()));
-
-        }
         if (controlFile.exists()) {
             loadControl(result, controlFile);
         }

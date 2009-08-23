@@ -241,6 +241,10 @@ public class DefaultGrammarView implements GrammarView {
                     errors.addAll(e.getErrors());
                 }
             }
+        } else if (getProperties().isUseControl()
+            && getProperties().getControlName() != null) {
+            errors.add(String.format("Control program '%s' cannot be found",
+                getProperties().getControlName()));
         }
 
         result.setProperties(getProperties());
