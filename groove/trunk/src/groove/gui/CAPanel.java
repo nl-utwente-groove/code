@@ -31,13 +31,18 @@ import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
@@ -62,14 +67,29 @@ public class CAPanel extends JPanel implements SimulationListener {
 
         // create the layout for this JPanel
         this.setLayout(new BorderLayout());
-        JToolBar toolBar = new JToolBar();
+        JToolBar toolBar = new JToolBar("Control");
+
+        this.namePanel = new JPanel(new BorderLayout());
+        this.nameLabel = new JLabel("Name: ");
+        toolBar.add(this.nameLabel);
+        this.nameField = new JTextField();
+        this.nameField.setEnabled(false);
+        this.nameField.setEditable(false);
+        this.namePanel.setMaximumSize(new Dimension(150, Integer.MAX_VALUE));
+        this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
+        // this.nameField.setPreferredSize(new Dimension(150, 10));
+        this.nameField.setMaximumSize(new Dimension(150, 24));
+        toolBar.add(this.nameField);
+        // this.namePanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        // toolBar.add(this.namePanel);
+        toolBar.add(new JLabel(" "));
 
         this.editButton = new JButton("Edit");
         toolBar.add(this.editButton);
         this.editButton.setEnabled(false);
         this.editButton.addActionListener(new EditButtonListener());
 
-        this.doneButton = new JButton("Done");
+        this.doneButton = new JButton("Save");
         toolBar.add(this.doneButton);
         this.doneButton.addActionListener(new DoneButtonListener());
         this.doneButton.setEnabled(false);
@@ -79,17 +99,27 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.cancelButton.addActionListener(new CancelButtonListener());
         this.cancelButton.setEnabled(false);
 
-        this.viewButton = new JButton(Groove.GRAPH_ICON);
+        this.viewButton = new JButton(Groove.GRAPH_MODE_ICON);
         toolBar.add(this.viewButton);
         this.viewButton.addActionListener(new ViewButtonListener());
         this.viewButton.setEnabled(false);
 
-        // 
         this.toggleButton = new JButton("<Toggle>");
         toolBar.add(this.toggleButton);
         this.toggleButton.setEnabled(false);
         this.toggleButton.addActionListener(new ToggleButtonListener());
 
+        int preferredHeight =
+            (int) this.viewButton.getPreferredSize().getHeight() - 2;
+        this.viewButton.setMaximumSize(new Dimension(
+            (int) this.viewButton.getPreferredSize().getWidth(),
+            preferredHeight));
+        this.viewButton.setPreferredSize(new Dimension(
+            (int) this.viewButton.getPreferredSize().getWidth(),
+            preferredHeight));
+        this.viewButton.setSize(new Dimension(
+            (int) this.viewButton.getPreferredSize().getWidth(),
+            preferredHeight));
         RSyntaxDocument document = new RSyntaxDocument("gcl");
         document.setSyntaxStyle(new GCLTokenMaker());
 
@@ -104,6 +134,8 @@ public class CAPanel extends JPanel implements SimulationListener {
 
         this.add(toolBar, BorderLayout.NORTH);
         this.add(scroller, BorderLayout.CENTER);
+        this.textPanel.setBackground(DISABLED_COLOUR);
+        this.textPanel.revalidate();
 
         simulator.addSimulationListener(this);
     }
@@ -116,20 +148,25 @@ public class CAPanel extends JPanel implements SimulationListener {
     }
 
     public void setGrammarUpdate(DefaultGrammarView grammar) {
-        boolean controlLoaded = grammar.getControl() != null;
+        ControlView controlView = grammar.getControl();
+        boolean controlLoaded = controlView != null;
+        String controlName =
+            controlLoaded ? controlView.getName()
+                    : grammar.getProperties().getControlName();
         boolean controlEnabled =
-            grammar.getProperties().isUseControl() && controlLoaded;
+            grammar.getProperties().isUseControl() && controlName != null;
+        this.nameField.setText(" "
+            + (controlName == null ? Groove.DEFAULT_CONTROL_NAME : controlName));
+        this.nameField.setEditable(controlEnabled);
+        this.toggleButton.setText(controlEnabled ? "Disable" : "Enable");
         this.toggleButton.setEnabled(true);
-        if (controlEnabled) {
-            this.toggleButton.setText("Disable Control");
-        } else {
-            this.toggleButton.setText("Enable Control");
-        }
         this.editButton.setEnabled(grammar.getProperties().isUseControl());
         this.viewButton.setEnabled(controlEnabled);
 
         setText();
         this.textPanel.setEnabled(controlEnabled);
+        this.textPanel.setBackground(controlEnabled ? ENABLED_COLOUR
+                : DISABLED_COLOUR);
     }
 
     /**
@@ -173,6 +210,12 @@ public class CAPanel extends JPanel implements SimulationListener {
 
     /** Simulator to which the control panel belongs. */
     private final Simulator simulator;
+    /** Panel for name field. */
+    private final JPanel namePanel;
+    /** Name label of the control program. */
+    private final JLabel nameLabel;
+    /** Name field of the control program. */
+    private final JTextField nameField;
     /** Panel showing the control program. */
     private final RSyntaxTextArea textPanel;
     /** Button to start editing the control program. */
@@ -194,11 +237,11 @@ public class CAPanel extends JPanel implements SimulationListener {
             // }
             if (getSimulator().handleSaveControl(program) != null) {
                 getSimulator().doRefreshGrammar();
-                CAPanel.this.textPanel.setEditable(false);
-                CAPanel.this.textPanel.setEnabled(false);
-                CAPanel.this.editButton.setEnabled(true);
-                CAPanel.this.doneButton.setEnabled(false);
-                CAPanel.this.cancelButton.setEnabled(false);
+                // CAPanel.this.textPanel.setEditable(false);
+                // CAPanel.this.textPanel.setEnabled(false);
+                // CAPanel.this.editButton.setEnabled(true);
+                // CAPanel.this.doneButton.setEnabled(false);
+                // CAPanel.this.cancelButton.setEnabled(false);
             }
         }
     }
@@ -222,6 +265,14 @@ public class CAPanel extends JPanel implements SimulationListener {
             newProperties.setProperty(SystemProperties.CONTROL_KEY,
                 new Boolean(!oldProperties.isUseControl()).toString());
             getSimulator().doSaveProperties(newProperties);
+            // if control just got enabled but no control program exists,
+            // we create an empty control program
+            if (newProperties.isUseControl()
+                && getSimulator().getCurrentGrammar().getClass() == null
+                && getSimulator().handleSaveControl("") != null) {
+                getSimulator().doRefreshGrammar();
+            }
+
         }
     }
 
@@ -289,4 +340,15 @@ public class CAPanel extends JPanel implements SimulationListener {
             return (ControlJModel) super.getJModel();
         }
     }
+
+    private static JTextField enabledField = new JTextField();
+    private static JTextField disabledField = new JTextField();
+    static {
+        enabledField.setEditable(true);
+        disabledField.setEditable(false);
+    }
+    /** The background colour of an enabled component. */
+    private static Color ENABLED_COLOUR = enabledField.getBackground();
+    /** The background colour of a disabled component. */
+    private static Color DISABLED_COLOUR = disabledField.getBackground();
 }
