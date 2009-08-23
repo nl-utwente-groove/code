@@ -607,17 +607,18 @@ public class Simulator {
         return this.loadStartGraphAction;
     }
 
-    /**
-     * Returns the start graph load action permanently associated with this
-     * simulator.
-     */
-    public LoadControlFileAction getLoadControlFileAction() {
-        // lazily create the action
-        if (this.loadControlFileAction == null) {
-            this.loadControlFileAction = new LoadControlFileAction();
-        }
-        return this.loadControlFileAction;
-    }
+    //
+    // /**
+    // * Returns the start graph load action permanently associated with this
+    // * simulator.
+    // */
+    // public LoadControlFileAction getLoadControlFileAction() {
+    // // lazily create the action
+    // if (this.loadControlFileAction == null) {
+    // this.loadControlFileAction = new LoadControlFileAction();
+    // }
+    // return this.loadControlFileAction;
+    // }
 
     /**
      * mzimakova Returns the rule load action permanently associated with this
@@ -880,13 +881,12 @@ public class Simulator {
     File handleSaveControl(String program) {
         // check if we had a control program
         ControlView cv = getCurrentGrammar().getControl();
-
+        String controlName =
+            cv == null ? Groove.DEFAULT_CONTROL_NAME : cv.getName();
         File controlFile =
-            new File(FileGps.toFile(this.currentGrammarURL), cv.getName()
-                + Groove.CONTROL_EXTENSION);
-
+            new File(FileGps.toFile(this.currentGrammarURL),
+                Groove.createControlFilter().addExtension(controlName));
         doSaveControl(program, controlFile);
-
         return controlFile;
     }
 
@@ -1323,9 +1323,8 @@ public class Simulator {
         }
     }
 
-    void doSaveProperties() {
+    void doSaveProperties(SystemProperties newProperties) {
         DefaultGrammarView grammar = this.getCurrentGrammar();
-        Properties properties = grammar.getProperties();
         try {
             String outputFileName =
                 Groove.createPropertyFilter().addExtension(Groove.PROPERTY_NAME);
@@ -1334,9 +1333,9 @@ public class Simulator {
                     outputFileName);
             outputFile.createNewFile();
             OutputStream writer = new FileOutputStream(outputFile);
-            properties.store(writer, String.format(
+            newProperties.store(writer, String.format(
                 SystemProperties.DESCRIPTION, grammar.getName()));
-            grammar.setProperties(properties);
+            grammar.setProperties(newProperties);
             setGrammar(grammar);
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
@@ -1981,7 +1980,7 @@ public class Simulator {
         result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(new LoadURLAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
-        result.add(new JMenuItem(getLoadControlFileAction()));
+        // result.add(new JMenuItem(getLoadControlFileAction()));
         result.add(new JMenuItem(getLoadRuleAction()));
         /** mzimakova* */
         result.add(new JMenuItem(getRefreshGrammarAction()));
@@ -3051,9 +3050,10 @@ public class Simulator {
      * The go-to start state action permanently associated with this simulator.
      */
     private GotoStartStateAction gotoStartStateAction;
-
-    /** The control file load action permanently associated with this simulator. */
-    private LoadControlFileAction loadControlFileAction;
+    //
+    // /** The control file load action permanently associated with this
+    // simulator. */
+    // private LoadControlFileAction loadControlFileAction;
 
     /**
      * The rule load action permanently associated with this simulator.
@@ -3684,23 +3684,7 @@ public class Simulator {
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
                 SystemProperties newProperties = new SystemProperties();
                 newProperties.putAll(dialog.getEditedProperties());
-                try {
-                    String outputFileName =
-                        Groove.createPropertyFilter().addExtension(
-                            grammar.getName());
-                    File outputFile =
-                        new File(
-                            FileGps.toFile(Simulator.this.currentGrammarURL),
-                            outputFileName);
-                    outputFile.createNewFile();
-                    OutputStream writer = new FileOutputStream(outputFile);
-                    newProperties.store(writer, String.format(
-                        SystemProperties.DESCRIPTION, grammar.getName()));
-                    grammar.setProperties(newProperties);
-                    setGrammar(grammar);
-                } catch (IOException exc) {
-                    showErrorDialog("Error while saving edited properties", exc);
-                }
+                doSaveProperties(newProperties);
             }
         }
 
@@ -4038,34 +4022,35 @@ public class Simulator {
         }
     }
 
-    /**
-     * Action for loading and setting a different control program.
-     * @see Simulator#doLoadControlFile(File)
-     */
-    private class LoadControlFileAction extends AbstractAction implements
-            Refreshable {
-        /** Constructs an instance of the action. */
-        LoadControlFileAction() {
-            super(Options.LOAD_CONTROL_FILE_ACTION_NAME);
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            int result = getControlFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                doLoadControlFile(getControlFileChooser().getSelectedFile());
-            }
-        }
-
-        /**
-         * Sets the enabling status of this action, depending on whether a
-         * grammar is currently loaded.
-         */
-        public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
-        }
-    }
+    //
+    // /**
+    // * Action for loading and setting a different control program.
+    // * @see Simulator#doLoadControlFile(File)
+    // */
+    // private class LoadControlFileAction extends AbstractAction implements
+    // Refreshable {
+    // /** Constructs an instance of the action. */
+    // LoadControlFileAction() {
+    // super(Options.LOAD_CONTROL_FILE_ACTION_NAME);
+    // addRefreshable(this);
+    // }
+    //
+    // public void actionPerformed(ActionEvent evt) {
+    // int result = getControlFileChooser().showOpenDialog(getFrame());
+    // // now load, if so required
+    // if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+    // doLoadControlFile(getControlFileChooser().getSelectedFile());
+    // }
+    // }
+    //
+    // /**
+    // * Sets the enabling status of this action, depending on whether a
+    // * grammar is currently loaded.
+    // */
+    // public void refresh() {
+    // setEnabled(getCurrentGrammar() != null);
+    // }
+    // }
 
     /**
      * mzimakova Action for loading and setting a different control program.
