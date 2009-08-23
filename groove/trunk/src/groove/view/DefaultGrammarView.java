@@ -230,21 +230,24 @@ public class DefaultGrammarView implements GrammarView {
             }
         }
 
-        if (this.controlView != null) {
-            if (result.hasMultiplePriorities()) {
-                errors.add("Unable to combine rule priorities and a control program, please disable either.");
-            } else if (getProperties().isUseControl()) {
-                try {
-                    ControlAutomaton ca = this.controlView.toAutomaton(result);
-                    result.setControl(ca);
-                } catch (FormatException e) {
-                    errors.addAll(e.getErrors());
+        if (getProperties().isUseControl()) {
+            if (this.controlView != null) {
+                if (result.hasMultiplePriorities()) {
+                    errors.add("Unable to combine rule priorities and a control program, please disable either.");
+                } else {
+                    try {
+                        ControlAutomaton ca =
+                            this.controlView.toAutomaton(result);
+                        result.setControl(ca);
+                    } catch (FormatException e) {
+                        errors.addAll(e.getErrors());
+                    }
                 }
+            } else if (getProperties().getControlName() != null) {
+                errors.add(String.format(
+                    "Control program '%s' cannot be found",
+                    getProperties().getControlName()));
             }
-        } else if (getProperties().isUseControl()
-            && getProperties().getControlName() != null) {
-            errors.add(String.format("Control program '%s' cannot be found",
-                getProperties().getControlName()));
         }
 
         result.setProperties(getProperties());

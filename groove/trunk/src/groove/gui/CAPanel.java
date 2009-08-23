@@ -69,19 +69,15 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.setLayout(new BorderLayout());
         JToolBar toolBar = new JToolBar("Control");
 
-        this.namePanel = new JPanel(new BorderLayout());
         this.nameLabel = new JLabel("Name: ");
         toolBar.add(this.nameLabel);
+
         this.nameField = new JTextField();
         this.nameField.setEnabled(false);
         this.nameField.setEditable(false);
-        this.namePanel.setMaximumSize(new Dimension(150, Integer.MAX_VALUE));
         this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
-        // this.nameField.setPreferredSize(new Dimension(150, 10));
         this.nameField.setMaximumSize(new Dimension(150, 24));
         toolBar.add(this.nameField);
-        // this.namePanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        // toolBar.add(this.namePanel);
         toolBar.add(new JLabel(" "));
 
         this.editButton = new JButton("Edit");
@@ -100,6 +96,11 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.cancelButton.setEnabled(false);
 
         this.viewButton = new JButton(Groove.GRAPH_MODE_ICON);
+        int preferredHeight =
+            (int) this.cancelButton.getPreferredSize().getHeight();
+        this.viewButton.setMaximumSize(new Dimension(
+            (int) this.viewButton.getPreferredSize().getWidth(),
+            preferredHeight));
         toolBar.add(this.viewButton);
         this.viewButton.addActionListener(new ViewButtonListener());
         this.viewButton.setEnabled(false);
@@ -109,17 +110,6 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.toggleButton.setEnabled(false);
         this.toggleButton.addActionListener(new ToggleButtonListener());
 
-        int preferredHeight =
-            (int) this.viewButton.getPreferredSize().getHeight() - 2;
-        this.viewButton.setMaximumSize(new Dimension(
-            (int) this.viewButton.getPreferredSize().getWidth(),
-            preferredHeight));
-        this.viewButton.setPreferredSize(new Dimension(
-            (int) this.viewButton.getPreferredSize().getWidth(),
-            preferredHeight));
-        this.viewButton.setSize(new Dimension(
-            (int) this.viewButton.getPreferredSize().getWidth(),
-            preferredHeight));
         RSyntaxDocument document = new RSyntaxDocument("gcl");
         document.setSyntaxStyle(new GCLTokenMaker());
 
@@ -131,11 +121,10 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.textPanel.setText("");
         this.textPanel.setEditable(false);
         this.textPanel.setEnabled(false);
+        this.textPanel.setBackground(DISABLED_COLOUR);
 
         this.add(toolBar, BorderLayout.NORTH);
         this.add(scroller, BorderLayout.CENTER);
-        this.textPanel.setBackground(DISABLED_COLOUR);
-        this.textPanel.revalidate();
 
         simulator.addSimulationListener(this);
     }
@@ -210,8 +199,6 @@ public class CAPanel extends JPanel implements SimulationListener {
 
     /** Simulator to which the control panel belongs. */
     private final Simulator simulator;
-    /** Panel for name field. */
-    private final JPanel namePanel;
     /** Name label of the control program. */
     private final JLabel nameLabel;
     /** Name field of the control program. */
@@ -271,8 +258,16 @@ public class CAPanel extends JPanel implements SimulationListener {
                 && getSimulator().getCurrentGrammar().getClass() == null
                 && getSimulator().handleSaveControl("") != null) {
                 getSimulator().doRefreshGrammar();
+            } else {
+                // since we may be in the middle of an edit action,
+                // let's assume editing was cancelled.
+                setText();
+                CAPanel.this.textPanel.setEditable(false);
+                CAPanel.this.textPanel.setEnabled(false);
+                CAPanel.this.editButton.setEnabled(true);
+                CAPanel.this.doneButton.setEnabled(false);
+                CAPanel.this.cancelButton.setEnabled(false);
             }
-
         }
     }
 
