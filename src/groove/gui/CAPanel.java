@@ -74,12 +74,16 @@ public class CAPanel extends JPanel implements SimulationListener {
         this.doneButton.addActionListener(new DoneButtonListener());
         this.doneButton.setEnabled(false);
 
+        this.cancelButton = new JButton("Cancel");
+        toolBar.add(this.cancelButton);
+        this.cancelButton.addActionListener(new CancelButtonListener());
+        this.cancelButton.setEnabled(false);
+
         this.viewButton = new JButton(Groove.GRAPH_ICON);
         toolBar.add(this.viewButton);
         this.viewButton.addActionListener(new ViewButtonListener());
         this.viewButton.setEnabled(false);
 
-        
         // 
         this.toggleButton = new JButton("<Toggle>");
         toolBar.add(this.toggleButton);
@@ -88,18 +92,19 @@ public class CAPanel extends JPanel implements SimulationListener {
 
         RSyntaxDocument document = new RSyntaxDocument("gcl");
         document.setSyntaxStyle(new GCLTokenMaker());
-        
+
         this.textPanel = new RSyntaxTextArea(document);
-        
-        RTextScrollPane scroller = new RTextScrollPane(500,400, this.textPanel, true);
-        
+
+        RTextScrollPane scroller =
+            new RTextScrollPane(500, 400, this.textPanel, true);
+
         this.textPanel.setText("");
         this.textPanel.setEditable(false);
         this.textPanel.setEnabled(false);
 
         this.add(toolBar, BorderLayout.NORTH);
         this.add(scroller, BorderLayout.CENTER);
-        
+
         simulator.addSimulationListener(this);
     }
 
@@ -111,30 +116,33 @@ public class CAPanel extends JPanel implements SimulationListener {
     }
 
     public void setGrammarUpdate(DefaultGrammarView grammar) {
-        this.textPanel.setText("");
-
+        boolean controlLoaded = grammar.getControl() != null;
+        boolean controlEnabled =
+            grammar.getProperties().isUseControl() && controlLoaded;
         this.toggleButton.setEnabled(true);
-        if( grammar.getProperties().isUseControl() ) {
+        if (controlEnabled) {
             this.toggleButton.setText("Disable Control");
         } else {
             this.toggleButton.setText("Enable Control");
         }
-        
-        if (grammar.getControl() != null) {
-            ControlView cv = grammar.getControl();
+        this.editButton.setEnabled(grammar.getProperties().isUseControl());
+        this.viewButton.setEnabled(controlEnabled);
+
+        setText();
+        this.textPanel.setEnabled(controlEnabled);
+    }
+
+    /**
+     * Displays the control program on the text panel. Displays a special
+     * message if no control is loaded.
+     */
+    private void setText() {
+        ControlView cv = getSimulator().getCurrentGrammar().getControl();
+        if (cv != null) {
             // in any case display the program
             this.textPanel.setText(cv.getProgram());
-            this.editButton.setEnabled(true);
-            // cant view automaton while grammar has errors!
-            if (grammar.getErrors().size() == 0) {
-                this.viewButton.setEnabled(true);
-            }
         } else {
-            this.viewButton.setEnabled(false);
-            this.editButton.setEnabled(false);
-            if( grammar.getProperties().isUseControl()) {
-                this.textPanel.setText("No program found. Go to File->New->Control to create a control program.");
-            }
+            this.textPanel.setText("No control program set.");
         }
     }
 
@@ -164,59 +172,70 @@ public class CAPanel extends JPanel implements SimulationListener {
     }
 
     /** Simulator to which the control panel belongs. */
-    private Simulator simulator;
+    private final Simulator simulator;
     /** Panel showing the control program. */
-    private RSyntaxTextArea textPanel;
+    private final RSyntaxTextArea textPanel;
     /** Button to start editing the control program. */
-    private JButton editButton;
+    private final JButton editButton;
     /** Button to stop editing the control program. */
-    private JButton doneButton;
+    private final JButton doneButton;
+    /** Button to cancel editing the control program. */
+    private final JButton cancelButton;
     /** Button to get an automaton view of the program. */
-    private JButton viewButton;
+    private final JButton viewButton;
     /** Button to enable or disable the control program. */
-    private JButton toggleButton;
+    private final JButton toggleButton;
 
     private class DoneButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String program = CAPanel.this.textPanel.getText();
-//            if (program == null || program.length() == 0) {
-//                return;
-//            }
+            // if (program == null || program.length() == 0) {
+            // return;
+            // }
             if (getSimulator().handleSaveControl(program) != null) {
                 getSimulator().doRefreshGrammar();
                 CAPanel.this.textPanel.setEditable(false);
                 CAPanel.this.textPanel.setEnabled(false);
                 CAPanel.this.editButton.setEnabled(true);
                 CAPanel.this.doneButton.setEnabled(false);
+                CAPanel.this.cancelButton.setEnabled(false);
             }
         }
     }
-    
+
+    private class CancelButtonListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            setText();
+            CAPanel.this.textPanel.setEditable(false);
+            CAPanel.this.textPanel.setEnabled(false);
+            CAPanel.this.editButton.setEnabled(true);
+            CAPanel.this.doneButton.setEnabled(false);
+            CAPanel.this.cancelButton.setEnabled(false);
+        }
+    }
+
     private class ToggleButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent arg0) {
-            SystemProperties grammarProperties = getSimulator().getCurrentGrammar().getProperties();
-            if( grammarProperties.isUseControl() ) {
-                // disabling control
-                grammarProperties.setProperty(SystemProperties.CONTROL_KEY, SystemProperties.CONTROL_NO);
-                getSimulator().doSaveProperties();
-                getSimulator().doRefreshGrammar();
-            } else {
-                // enabling control
-                grammarProperties.setProperty(SystemProperties.CONTROL_KEY, SystemProperties.CONTROL_YES);
-                getSimulator().doSaveProperties();
-                getSimulator().doRefreshGrammar();
-            }
+            SystemProperties oldProperties =
+                getSimulator().getCurrentGrammar().getProperties();
+            SystemProperties newProperties = oldProperties.clone();
+            newProperties.setProperty(SystemProperties.CONTROL_KEY,
+                new Boolean(!oldProperties.isUseControl()).toString());
+            getSimulator().doSaveProperties(newProperties);
         }
-        
     }
 
     private class EditButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+            // Clear the text panel of the special message text
+            if (getSimulator().getCurrentGrammar().getControl() == null) {
+                CAPanel.this.textPanel.setText("");
+            }
             CAPanel.this.textPanel.setEditable(true);
             CAPanel.this.textPanel.setEnabled(true);
             CAPanel.this.editButton.setEnabled(false);
+            CAPanel.this.cancelButton.setEnabled(true);
             CAPanel.this.doneButton.setEnabled(true);
-            // CAPanel.this.saveButton.setEnabled(false);
         }
     }
 
@@ -232,29 +251,29 @@ public class CAPanel extends JPanel implements SimulationListener {
             ControlAutomaton caut =
                 getSimulator().getCurrentGrammar().getControl().getAutomaton();
             ControlJGraph cjg =
-                new ControlJGraph(new ControlJModel(caut, getSimulator().getOptions()));
+                new ControlJGraph(new ControlJModel(caut,
+                    getSimulator().getOptions()));
 
             AutomatonPanel autPanel =
                 new AutomatonPanel(CAPanel.this.simulator, cjg);
 
             JDialog jf =
-                new JDialog(getSimulator().getFrame(),
-                    "Control Automaton");
+                new JDialog(getSimulator().getFrame(), "Control Automaton");
             jf.add(autPanel);
             jf.setSize(600, 700);
             Point p = getSimulator().getFrame().getLocation();
             jf.setLocation(new Point(p.x + 50, p.y + 50));
             jf.setVisible(true);
-            
+
             cjg.getLayouter().start(true);
-            
+
         }
     }
 
     private class AutomatonPanel extends JGraphPanel<ControlJGraph> {
         /**
-         * The constructor of this panel creates a panel with the Control Automaton
-         * of the current grammar.
+         * The constructor of this panel creates a panel with the Control
+         * Automaton of the current grammar.
          * @param simulator
          */
         public AutomatonPanel(Simulator simulator, ControlJGraph graph) {
@@ -271,4 +290,3 @@ public class CAPanel extends JPanel implements SimulationListener {
         }
     }
 }
-

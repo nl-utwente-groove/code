@@ -21,7 +21,8 @@ import java.util.Map.Entry;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemProperties extends java.util.Properties implements Fixable {
+public class SystemProperties extends java.util.Properties implements Fixable,
+        Cloneable {
     /**
      * Indicates if the LTS labels should contain transition parameters. Default
      * value: <code>false</code>.
@@ -209,16 +210,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Sets the RHS-as-NAC property to a certain value.
-     * @param value if <code>true</code>, the RHS is treated as a negative
-     *        application condition, preventing the same rule instance from
-     *        being applied twice in a row
-     */
-    public void setRhsAsNac(boolean value) {
-        setProperty(RHS_AS_NAC_KEY, "" + value);
-    }
-
-    /**
      * Returns the value of the RHS-as-NAC property.
      * @return if <code>true</code>, the RHS is treated as a negative
      *         application condition, preventing the same rule instance from
@@ -227,6 +218,16 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public boolean isRhsAsNac() {
         String result = getProperty(RHS_AS_NAC_KEY);
         return result != null && new Boolean(result);
+    }
+
+    /**
+     * Sets the RHS-as-NAC property to a certain value.
+     * @param value if <code>true</code>, the RHS is treated as a negative
+     *        application condition, preventing the same rule instance from
+     *        being applied twice in a row
+     */
+    public void setRhsAsNac(boolean value) {
+        setProperty(RHS_AS_NAC_KEY, "" + value);
     }
 
     /**
@@ -276,6 +277,14 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public synchronized void clear() {
         testFixed(false);
         super.clear();
+    }
+
+    /** Returns a non-fixed clone of the properties. */
+    @Override
+    public SystemProperties clone() {
+        SystemProperties result = (SystemProperties) super.clone();
+        result.fixed = false;
+        return result;
     }
 
     /**

@@ -83,6 +83,7 @@ public class DefaultGrammarView implements GrammarView {
         for (AspectualRuleView rule : this.ruleMap.values()) {
             rule.setProperties(this.properties);
         }
+        this.properties.setFixed();
         invalidateGrammar();
     }
 
@@ -232,7 +233,7 @@ public class DefaultGrammarView implements GrammarView {
         if (this.controlView != null) {
             if (result.hasMultiplePriorities()) {
                 errors.add("Unable to combine rule priorities and a control program, please disable either.");
-            } else {
+            } else if (getProperties().isUseControl()) {
                 try {
                     ControlAutomaton ca = this.controlView.toAutomaton(result);
                     result.setControl(ca);
