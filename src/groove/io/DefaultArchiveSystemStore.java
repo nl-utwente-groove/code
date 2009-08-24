@@ -315,6 +315,10 @@ public class DefaultArchiveSystemStore implements SystemStore {
         }
     }
 
+    public SystemStore save(File file) throws IOException {
+        return DefaultFileSystemStore.save(file, this);
+    }
+
     /**
      * Loads the named graphs from a zip file, using the prepared map from graph
      * names to zip entries.
