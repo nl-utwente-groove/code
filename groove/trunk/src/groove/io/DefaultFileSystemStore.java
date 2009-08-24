@@ -243,6 +243,10 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         }
     }
 
+    public SystemStore save(File file) throws IOException {
+        return save(file, this);
+    }
+
     /** Callback factory method for creating a graph marshaller. */
     private Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory,
             boolean layouted) {
@@ -417,8 +421,8 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     }
 
     /**
-     * Creates a file name from a given rule name. The file name consists of the
-     * store location, the name, and the state extension.
+     * Creates a file name from a given rule name. The file name consists of a
+     * given parent file, the name, and the state extension.
      */
     private File createRuleFile(RuleName ruleName) {
         return new File(this.file, RULE_FILTER.addExtension(Groove.toString(
@@ -456,6 +460,43 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     private boolean initialised;
     /** The grammar view associated with this store. */
     private StoredGrammarView view;
+
+    /** Saves the content of a given system store to file. */
+    static public SystemStore save(File file, SystemStore store)
+        throws IOException {
+        if (!GRAMMAR_FILTER.accept(file)) {
+            throw new IOException(String.format(
+                "File '%s' does not refer to a production system", file));
+        }
+        if (file.exists()) {
+            throw new IOException(String.format(
+                "Can't save grammar to existing file '%s'", file));
+        }
+        try {
+            file.mkdir();
+            SystemStore result = new DefaultFileSystemStore(file, true);
+            result.putProperties(store.getProperties());
+            // save control programs
+            for (Map.Entry<String,String> controlEntry : store.getControls().entrySet()) {
+                result.putControl(controlEntry.getKey(),
+                    controlEntry.getValue());
+            }
+            // save properties
+            result.putProperties(store.getProperties());
+            // save graphs
+            for (AspectGraph stateGraph : store.getGraphs().values()) {
+                result.putGraph(stateGraph);
+            }
+            // save rules
+            for (AspectGraph stateGraph : store.getRules().values()) {
+                result.putRule(stateGraph);
+            }
+            return result;
+        } catch (IOException exc) {
+            file.delete();
+            throw exc;
+        }
+    }
 
     /**
      * Returns a file based on a given URL, if there is one such.

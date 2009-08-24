@@ -20,6 +20,7 @@ import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.StoredGrammarView;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -144,6 +145,15 @@ public interface GenericSystemStore<R,G> {
      * called once immediately after construction of the store.
      */
     public void reload() throws IOException;
+
+    /**
+     * Saves the content of this grammar store to a given file, and returns the
+     * saved store.
+     * @throws IOException if the file does not have a known extension, or
+     *         already exists, or if something goes wrong during saving. If an
+     *         exception is thrown, any partial results are deleted.
+     */
+    public SystemStore save(File file) throws IOException;
 
     /** Returns a stored grammar view backed up by this store. */
     public StoredGrammarView toGrammarView();
