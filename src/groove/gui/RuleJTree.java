@@ -435,7 +435,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 
     /** Convenience method to retrieve the current GTS from the simulator. */
     GTS getCurrentGTS() {
-        return this.simulator.getCurrentGTS();
+        return this.simulator.getGTS();
     }
 
     /**

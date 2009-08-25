@@ -91,7 +91,7 @@ public class AspectJGraph extends JGraph {
                 super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
-                    for (RuleName ruleName : getSimulator().getCurrentGrammar().getRuleMap().keySet()) {
+                    for (RuleName ruleName : getSimulator().getGrammarView().getRuleMap().keySet()) {
                         add(createSetRuleAction(ruleName));
                     }
                 }

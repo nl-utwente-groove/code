@@ -38,6 +38,8 @@ import groove.view.DefaultGrammarView;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -236,6 +238,45 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     }
 
     /**
+     * Shows a given counterexample by emphasising the states in the LTS panel.
+     * Returns a message to be displayed in a dialog.
+     * @param counterExamples the collection of states that do not satisfy the
+     *        property verified
+     * @param allStates flag to indicate if all states (or just the start state)
+     *        should be emphasised
+     * @return message describing the size of the counterexample
+     */
+    protected String emphasiseStates(Set<State> counterExamples,
+            boolean allStates) {
+        if (!allStates) {
+            State initial = getGts().startState();
+            boolean initialIsCounterexample = counterExamples.contains(initial);
+            counterExamples = new HashSet<State>();
+            if (initialIsCounterexample) {
+                counterExamples.add(initial);
+            }
+        }
+        String message;
+        if (counterExamples.isEmpty()) {
+            message = "There were no counter-examples.";
+        } else if (counterExamples.size() == 1) {
+            message = "There was 1 counter-example.";
+        } else {
+            message =
+                String.format("There were %d counter-examples.",
+                    counterExamples.size());
+        }
+        // reset lts display visibility
+        getSimulator().setGraphPanel(this);
+        Set<JCell> jCells = new HashSet<JCell>();
+        for (State counterExample : counterExamples) {
+            jCells.add(getJModel().getJCell(counterExample));
+        }
+        getJModel().setEmphasized(jCells);
+        return message;
+    }
+
+    /**
      * The underlying lts of ltsJModel.
      * 
      * @invariant lts == ltsJModel.graph()
@@ -311,8 +352,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             if (evt.getButton() == MouseEvent.BUTTON1) {
                 if (!isEnabled()
                     && getSimulator().getStartSimulationAction().isEnabled()) {
-                    getSimulator().startSimulation(
-                        getSimulator().getCurrentGrammar());
+                    getSimulator().startSimulation();
                 } else if (evt.isControlDown()) {
                     getSimulator().setGraphPanel(getSimulator().getStatePanel());
                 }

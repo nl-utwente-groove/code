@@ -268,7 +268,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         GraphJModel result = this.stateJModelMap.get(state);
         // IOVKA : added additional condition here, and additional condition for
         // abstract simulation
-        if (state == this.simulator.getCurrentGTS().startState()
+        if (state == this.simulator.getGTS().startState()
             && !this.simulator.isAbstractSimulation()) {
             result = this.startGraphJModel;
         } else {

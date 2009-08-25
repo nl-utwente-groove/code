@@ -199,7 +199,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             "<HTML><FONT color=996666>Select the transformation for Rule (Mis)Match:</FONT></HTML> "));
         JComboBox ruleSelector = new JComboBox();
         boolean first_element = true;
-        for (RuleName ruleName : this.simulator.getCurrentGrammar().getRuleMap().keySet()) {
+        for (RuleName ruleName : this.simulator.getGrammarView().getRuleMap().keySet()) {
             ruleSelector.addItem(ruleName);
             if (first_element) {
                 this.selectedRule = ruleName;

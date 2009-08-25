@@ -132,7 +132,7 @@ public class ScenarioFactory {
             protected Boundary getBoundary() {
                 BoundedModelCheckingDialog dialog =
                     new BoundedModelCheckingDialog();
-                dialog.setGrammar(sim.getCurrentGTS().getGrammar());
+                dialog.setGrammar(sim.getGTS().getGrammar());
                 dialog.showDialog(sim.getFrame());
                 return dialog.getBoundary();
             }
