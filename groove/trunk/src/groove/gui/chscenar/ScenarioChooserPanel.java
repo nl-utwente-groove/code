@@ -13,7 +13,6 @@ import groove.io.FileGps;
 import groove.io.GrooveFileChooser;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
-import groove.view.AspectualGraphView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -396,13 +395,11 @@ public class ScenarioChooserPanel extends javax.swing.JPanel {
             DefaultGrammarView grammarView =
                 this.grammarLoader.unmarshal(grammarFile);
             if (startGraphFile != null) {
-                AspectGraph aspectStartGraph =
+                AspectGraph startGraph =
                     new AspectGxl().unmarshalGraph(startGraphFile);
-                AspectualGraphView startGraphView =
-                    aspectStartGraph.toGraphView(grammarView.getProperties());
-                grammarView.setStartGraph(startGraphView);
+                grammarView.setStartGraph(startGraph);
             }
-            if (grammarView.getStartGraph() == null) {
+            if (grammarView.getStartGraphView() == null) {
                 showErrorDialog("The grammar does not have a start graph. Please select one.");
                 return false;
             }

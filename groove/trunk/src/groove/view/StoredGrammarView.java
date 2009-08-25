@@ -18,6 +18,7 @@ package groove.view;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.graph.GraphInfo;
 import groove.io.DefaultArchiveSystemStore;
 import groove.io.DefaultFileSystemStore;
 import groove.io.SystemStore;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 
 /**
  * Grammar view based on a backing system store.
@@ -49,8 +51,8 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     public StoredGrammarView(SystemStore store) {
         this.store = store;
-        loadRuleMap();
-        loadGraphMap();
+        // loadRuleMap();
+        // loadGraphMap();
         loadControlMap();
     }
 
@@ -69,21 +71,21 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.store.getProperties();
     }
 
-    public Map<RuleName,AspectualRuleView> getRuleMap() {
-        return Collections.unmodifiableMap(this.ruleMap);
+    public Set<String> getControlNames() {
+        return Collections.unmodifiableSet(this.controlMap.keySet());
     }
 
-    public Map<String,AspectualGraphView> getGraphMap() {
-        return Collections.unmodifiableMap(this.graphMap);
+    public Set<String> getGraphNames() {
+        return Collections.unmodifiableSet(getStore().getGraphs().keySet());
     }
 
-    public Map<String,ControlView> getControlMap() {
-        return Collections.unmodifiableMap(this.controlMap);
+    public Set<RuleName> getRuleNames() {
+        return Collections.unmodifiableSet(getStore().getRules().keySet());
     }
 
     /**
      * Adds a rule based on a given rule view.
-     * @see #getRule(RuleName)
+     * @see #getRuleView(RuleName)
      */
     public AspectualRuleView addRule(AspectualRuleView ruleView)
         throws IllegalStateException {
@@ -103,17 +105,36 @@ public class StoredGrammarView implements GrammarView, Observer {
     // return result;
     // }
 
-    public AspectualRuleView getRule(RuleName name) {
-        return this.ruleMap.get(name);
+    public ControlView getControlView(String name) {
+        return this.controlMap.get(name);
     }
 
-    public AspectualGraphView getStartGraph() {
+    public AspectualGraphView getGraphView(String name) {
+        AspectGraph stateGraph = getStore().getGraphs().get(name);
+        return stateGraph == null ? null
+                : stateGraph.toGraphView(getProperties());
+    }
+
+    public AspectualRuleView getRuleView(RuleName name) {
+        AspectGraph ruleGraph = getStore().getRules().get(name);
+        return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
+    }
+
+    public AspectualGraphView getStartGraphView() {
         return this.startGraph;
     }
 
     /** Sets the start graph to a given graph. */
-    public void setStartGraph(AspectualGraphView startGraph) {
-        this.startGraph = startGraph;
+    public void setStartGraph(AspectGraph startGraph) {
+        if (startGraph == null) {
+            this.startGraph = null;
+        } else {
+            if (!GraphInfo.hasGraphRole(startGraph)) {
+                throw new IllegalArgumentException(
+                    String.format("Prospective start graph '%s' is not a graph"));
+            }
+            this.startGraph = startGraph.toGraphView(getProperties());
+        }
         invalidate();
     }
 
@@ -188,7 +209,8 @@ public class StoredGrammarView implements GrammarView, Observer {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
 
-        for (RuleView ruleView : getRuleMap().values()) {
+        for (AspectGraph ruleGraph : getStore().getRules().values()) {
+            AspectualRuleView ruleView = ruleGraph.toRuleView(getProperties());
             try {
                 // only add the enabled rules
                 if (ruleView.isEnabled()) {
@@ -204,7 +226,7 @@ public class StoredGrammarView implements GrammarView, Observer {
 
         boolean hasControl = getProperties().isUseControl();
         ControlView controlView =
-            hasControl ? getControlMap().get(getControlName()) : null;
+            hasControl ? getControlView(getControlName()) : null;
         if (controlView != null) {
             if (result.hasMultiplePriorities()) {
                 errors.add("Rule priorities and control programs are incompatible, please disable either.");
@@ -222,12 +244,12 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
 
         result.setProperties(getProperties());
-        if (getStartGraph() == null) {
+        if (getStartGraphView() == null) {
             errors.add(String.format("No start graph set for grammar '%s'",
                 getName()));
         } else {
             try {
-                result.setStartGraph(getStartGraph().toModel());
+                result.setStartGraph(getStartGraphView().toModel());
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
                     errors.add(String.format("Format error in start graph: %s",
@@ -256,27 +278,30 @@ public class StoredGrammarView implements GrammarView, Observer {
         this.errors = null;
     }
 
-    /**
-     * Reloads the rule map from the backing {@link SystemStore}.
-     */
-    private void loadRuleMap() {
-        this.ruleMap.clear();
-        for (Map.Entry<RuleName,AspectGraph> storedRuleEntry : this.store.getRules().entrySet()) {
-            this.ruleMap.put(storedRuleEntry.getKey(),
-                storedRuleEntry.getValue().toRuleView(getProperties()));
-        }
-    }
-
-    /**
-     * Reloads the graph map from the backing {@link SystemStore}.
-     */
-    private void loadGraphMap() {
-        this.graphMap.clear();
-        for (Map.Entry<String,AspectGraph> storedGraphEntry : this.store.getGraphs().entrySet()) {
-            this.graphMap.put(storedGraphEntry.getKey(),
-                storedGraphEntry.getValue().toGraphView(getProperties()));
-        }
-    }
+    //
+    // /**
+    // * Reloads the rule map from the backing {@link SystemStore}.
+    // */
+    // private void loadRuleMap() {
+    // this.ruleMap.clear();
+    // for (Map.Entry<RuleName,AspectGraph> storedRuleEntry :
+    // this.store.getRules().entrySet()) {
+    // this.ruleMap.put(storedRuleEntry.getKey(),
+    // storedRuleEntry.getValue().toRuleView(getProperties()));
+    // }
+    // }
+    //
+    // /**
+    // * Reloads the graph map from the backing {@link SystemStore}.
+    // */
+    // private void loadGraphMap() {
+    // this.graphMap.clear();
+    // for (Map.Entry<String,AspectGraph> storedGraphEntry :
+    // this.store.getGraphs().entrySet()) {
+    // this.graphMap.put(storedGraphEntry.getKey(),
+    // storedGraphEntry.getValue().toGraphView(getProperties()));
+    // }
+    // }
 
     /**
      * Reloads the control map from the backing {@link SystemStore}.
@@ -293,22 +318,22 @@ public class StoredGrammarView implements GrammarView, Observer {
     public void update(Observable arg0, Object arg1) {
         assert arg0 == this.store;
         String change = (String) arg1;
-        if (change.equals(SystemStore.GRAPH_CHANGE)) {
-            loadGraphMap();
-        } else if (change.equals(SystemStore.RULE_CHANGE)) {
-            loadRuleMap();
-        } else if (change.equals(SystemStore.CONTROL_CHANGE)) {
+        // if (change.equals(SystemStore.GRAPH_CHANGE)) {
+        // loadGraphMap();
+        // } else if (change.equals(SystemStore.RULE_CHANGE)) {
+        // loadRuleMap();
+        if (change.equals(SystemStore.CONTROL_CHANGE)) {
             loadControlMap();
         }
         invalidate();
     }
 
-    /** Mapping from rule names to views on the corresponding rules. */
-    private final Map<RuleName,AspectualRuleView> ruleMap =
-        new HashMap<RuleName,AspectualRuleView>();
-    /** Mapping from graph names to views on the corresponding graphs. */
-    private final Map<String,AspectualGraphView> graphMap =
-        new HashMap<String,AspectualGraphView>();
+    // /** Mapping from rule names to views on the corresponding rules. */
+    // private final Map<RuleName,AspectualRuleView> ruleMap =
+    // new HashMap<RuleName,AspectualRuleView>();
+    // /** Mapping from graph names to views on the corresponding graphs. */
+    // private final Map<String,AspectualGraphView> graphMap =
+    // new HashMap<String,AspectualGraphView>();
     /** Mapping from control names to views on the corresponding automata. */
     private final Map<String,ControlView> controlMap =
         new HashMap<String,ControlView>();

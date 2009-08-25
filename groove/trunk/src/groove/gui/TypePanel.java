@@ -123,7 +123,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         this.typeGraphPanel.setEnabled(false);
         this.grammar = grammar;
 
-        if (grammar == null || grammar.getStartGraph() == null) {
+        if (grammar == null || grammar.getStartGraphView() == null) {
             this.createButton.setEnabled(false);
         } else {
             try {
@@ -166,7 +166,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
          */
         public void actionPerformed(ActionEvent e) {
             if (TypePanel.this.grammar != null
-                && TypePanel.this.grammar.getStartGraph() != null) {
+                && TypePanel.this.grammar.getStartGraphView() != null) {
                 try {
                     Graph typeGraph =
                         TypeReconstructor.reconstruct(TypePanel.this.grammar.toModel());

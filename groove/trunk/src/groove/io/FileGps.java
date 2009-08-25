@@ -64,9 +64,9 @@ public class FileGps extends AspectualViewGps {
         String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
         gg.setName(grammarName);
         // iterate over rules and save them
-        for (RuleName ruleName : gg.getRuleMap().keySet()) {
+        for (RuleName ruleName : gg.getRuleNames()) {
             // turn the rule into a rule graph
-            marshalRule(gg.getRule(ruleName), location);
+            marshalRule(gg.getRuleView(ruleName), location);
         }
 
         /** Saves all graphs, so no need to also save the current start graph */

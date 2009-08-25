@@ -33,7 +33,9 @@ import org.jgraph.event.GraphModelEvent;
  * Extension of {@link JGraph} that provides the proper popup menu.
  */
 public class AspectJGraph extends JGraph {
-    /** Creates a j-graph for a given simulator, with an initially empty j-model. */
+    /**
+     * Creates a j-graph for a given simulator, with an initially empty j-model.
+     */
     public AspectJGraph(Simulator simulator) {
         super(AspectJModel.EMPTY_ASPECT_JMODEL, false);
         this.simulator = simulator;
@@ -91,7 +93,7 @@ public class AspectJGraph extends JGraph {
                 super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
-                    for (RuleName ruleName : getSimulator().getGrammarView().getRuleMap().keySet()) {
+                    for (RuleName ruleName : getSimulator().getGrammarView().getRuleNames()) {
                         add(createSetRuleAction(ruleName));
                     }
                 }

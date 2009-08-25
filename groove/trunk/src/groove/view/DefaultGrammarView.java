@@ -18,9 +18,11 @@ package groove.view;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.graph.GraphInfo;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
+import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -87,13 +90,13 @@ public class DefaultGrammarView implements GrammarView {
         invalidateGrammar();
     }
 
-    public Map<RuleName,AspectualRuleView> getRuleMap() {
-        return Collections.unmodifiableMap(this.ruleMap);
+    public Set<RuleName> getRuleNames() {
+        return Collections.unmodifiableSet(this.ruleMap.keySet());
     }
 
     /**
      * Adds a rule based on a given rule view.
-     * @see #getRule(RuleName)
+     * @see #getRuleView(RuleName)
      */
     public AspectualRuleView addRule(AspectualRuleView ruleView)
         throws IllegalStateException {
@@ -120,17 +123,29 @@ public class DefaultGrammarView implements GrammarView {
      * <code>null</code> if the rule cannot be viewed in the available
      * {@link RuleView} format.
      */
-    public AspectualRuleView getRule(RuleName name) {
+    public AspectualRuleView getRuleView(RuleName name) {
         return this.ruleMap.get(name);
     }
 
-    public AspectualGraphView getStartGraph() {
+    public AspectualGraphView getStartGraphView() {
         return this.startGraph;
     }
 
-    /** Sets the start graph to a given graph. */
-    public void setStartGraph(AspectualGraphView startGraph) {
-        this.startGraph = startGraph;
+    /**
+     * Sets the start graph to a given graph.
+     * @throws IllegalArgumentException if <code>startGraph</code> does not have
+     *         a graph role
+     */
+    public void setStartGraph(AspectGraph startGraph) {
+        if (startGraph == null) {
+            this.startGraph = null;
+        } else {
+            if (!GraphInfo.hasGraphRole(startGraph)) {
+                throw new IllegalArgumentException(
+                    String.format("Prospective start graph '%s' is not a graph"));
+            }
+            this.startGraph = startGraph.toGraphView(getProperties());
+        }
         invalidateGrammar();
     }
 
@@ -216,7 +231,7 @@ public class DefaultGrammarView implements GrammarView {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
 
-        for (RuleView ruleView : getRuleMap().values()) {
+        for (RuleView ruleView : this.ruleMap.values()) {
             try {
                 // only add the enabled rules
                 if (ruleView.isEnabled()) {
@@ -251,12 +266,12 @@ public class DefaultGrammarView implements GrammarView {
         }
 
         result.setProperties(getProperties());
-        if (getStartGraph() == null) {
+        if (getStartGraphView() == null) {
             errors.add(String.format("No start graph set for grammar '%s'",
                 getName()));
         } else {
             try {
-                result.setStartGraph(getStartGraph().toModel());
+                result.setStartGraph(getStartGraphView().toModel());
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
                     errors.add(String.format("Format error in start graph: %s",

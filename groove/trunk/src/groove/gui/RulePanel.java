@@ -78,9 +78,9 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {
-            for (RuleName ruleName : grammar.getRuleMap().keySet()) {
+            for (RuleName ruleName : grammar.getRuleNames()) {
                 AspectJModel jModel =
-                    AspectJModel.newInstance(grammar.getRule(ruleName),
+                    AspectJModel.newInstance(grammar.getRuleView(ruleName),
                         getOptions());
                 this.ruleJModelMap.put(ruleName, jModel);
             }

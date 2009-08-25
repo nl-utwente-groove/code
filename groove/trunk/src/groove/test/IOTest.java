@@ -138,7 +138,7 @@ public class IOTest extends TestCase {
             GraphGrammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
-            assertEquals(startName, view.getStartGraph().getName());
+            assertEquals(startName, view.getStartGraphView().getName());
             assertEquals(controlName, view.getControl().getName());
             assertEquals(rulecount, gg.getRules().size());
 
