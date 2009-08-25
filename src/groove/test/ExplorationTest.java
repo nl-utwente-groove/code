@@ -31,10 +31,13 @@ import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleName;
+import groove.trans.SystemProperties;
 import groove.util.Generator;
 import groove.util.Groove;
+import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 import groove.view.GenericGrammarView;
+import groove.view.GrammarView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -191,21 +194,33 @@ public class ExplorationTest extends TestCase {
 
     /** Tests various parameters settable through the system properties. */
     public void testSystemProperties() {
-        GenericGrammarView<?,?> gg = loadGrammar("simple.gps", null);
+        DefaultGrammarView gg = loadGrammar("simple.gps", null);
         testExploration(gg, null, 41, 300, 0);
-        // GraphGrammar ggCopy = new GraphGrammar(gg);
-        GenericGrammarView<?,?> ggCopy = loadGrammar("simple.gps", null);
-        ggCopy.getProperties().setCheckCreatorEdges(true);
+        // test check creator edges property
+        DefaultGrammarView ggCopy = loadGrammar("simple.gps", null);
+        SystemProperties newProperties = ggCopy.getProperties().clone();
+        newProperties.setCheckCreatorEdges(true);
+        ggCopy.setProperties(newProperties);
         testExploration(ggCopy, null, 41, 188, 0);
+        // test dangling edges property
         ggCopy = loadGrammar("simple.gps", null);
-        ggCopy.getProperties().setCheckDangling(true);
+        newProperties = ggCopy.getProperties().clone();
+        newProperties.setCheckDangling(true);
+        ggCopy.setProperties(newProperties);
         testExploration(ggCopy, null, 41, 230, 0);
+        // test injectivity property
         ggCopy = loadGrammar("simple.gps", null);
-        ggCopy.getProperties().setInjective(true);
+        newProperties = ggCopy.getProperties().clone();
+        newProperties.setInjective(true);
+        ggCopy.setProperties(newProperties);
         testExploration(ggCopy, null, 13, 64, 0);
+        // test check-isomorphism property
         ggCopy = loadGrammar("simple.gps", null);
-        ggCopy.getProperties().setCheckIsomorphism(false);
+        newProperties = ggCopy.getProperties().clone();
+        newProperties.setCheckIsomorphism(false);
+        ggCopy.setProperties(newProperties);
         testExploration(ggCopy, null, 73, 536, 0);
+        // test rhs-is-nac property
         gg = loadGrammar("rhs-is-nac.gps", null);
         testExploration(gg, null, 21, 56, 0);
     }
@@ -456,7 +471,7 @@ public class ExplorationTest extends TestCase {
         return result;
     }
 
-    private GenericGrammarView<?,?> loadGrammar(String grammarName,
+    private DefaultGrammarView loadGrammar(String grammarName,
             String startGraphName) {
         try {
             return this.loader.unmarshal(new File(INPUT_DIR, grammarName),
@@ -464,9 +479,6 @@ public class ExplorationTest extends TestCase {
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }
-//        catch (FormatException exc) {
-//            throw new RuntimeException(exc);
-//        }
     }
 
     /**
