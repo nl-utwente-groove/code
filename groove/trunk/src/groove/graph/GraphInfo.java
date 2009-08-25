@@ -69,10 +69,10 @@ public class GraphInfo {
     }
 
     /**
-     * Appends a list of format errors (key {@link #ERRORS_KEY}) to the
-     * existing errors in this info object. The errors property is created first
-     * if necessary. to a certain list. If the value is <code>null</code>,
-     * the key is removed altogether.
+     * Appends a list of format errors (key {@link #ERRORS_KEY}) to the existing
+     * errors in this info object. The errors property is created first if
+     * necessary. to a certain list. If the value is <code>null</code>, the key
+     * is removed altogether.
      * @see #getErrors()
      */
     public void setErrors(List<String> errors) {
@@ -95,8 +95,7 @@ public class GraphInfo {
     /**
      * 
      * Sets the file (key {@link #FILE_KEY}) in this info object to a certain
-     * value. If the value is <code>null</code>, the key is removed
-     * altogether.
+     * value. If the value is <code>null</code>, the key is removed altogether.
      * @see #getFile()
      */
     public void setFile(String file) {
@@ -151,8 +150,7 @@ public class GraphInfo {
 
     /**
      * Sets the name (key {@link #NAME_KEY}) in this info object to a certain
-     * value. If the value is <code>null</code>, the key is removed
-     * altogether.
+     * value. If the value is <code>null</code>, the key is removed altogether.
      * @see #getName()
      */
     public void setName(String name) {
@@ -172,8 +170,8 @@ public class GraphInfo {
      * Returns the graph properties map associated with the graph (key
      * {@link #PROPERTIES_KEY}). The parameter indicates if the map should be
      * created in case it is not yet there.
-     * @param create if <code>true</code> and this data object does not
-     *        contain properties, create and return an empty properties object
+     * @param create if <code>true</code> and this data object does not contain
+     *        properties, create and return an empty properties object
      * @return a property map, or <code>null</code>
      * @see #setProperties(GraphProperties)
      */
@@ -186,7 +184,7 @@ public class GraphInfo {
         }
         return result;
     }
-  
+
     /**
      * Copies the properties in a given map to this info object (key
      * {@link #PROPERTIES_KEY}).
@@ -203,8 +201,8 @@ public class GraphInfo {
     }
 
     /**
-     * Clones a GraphProperties object and inserts(overwrites) it in the
-     * hash map of the GraphInfo.
+     * Clones a GraphProperties object and inserts(overwrites) it in the hash
+     * map of the GraphInfo.
      * @param properties is the GraphProperties object to be cloned
      */
     public void newProperties(GraphProperties properties) {
@@ -229,8 +227,7 @@ public class GraphInfo {
     /**
      * 
      * Sets the role (key {@link #ROLE_KEY}) in this info object to a certain
-     * value. If the value is <code>null</code>, the key is removed
-     * altogether.
+     * value. If the value is <code>null</code>, the key is removed altogether.
      * @see #getRole()
      */
     public void setRole(String role) {
@@ -274,8 +271,8 @@ public class GraphInfo {
      * graph, creating it if necessary.
      * @param graph the graph for which the info object is to be (created and)
      *        retrieved
-     * @param create if <code>true</code>, the info object should be created
-     *        if not yet there
+     * @param create if <code>true</code>, the info object should be created if
+     *        not yet there
      * @return a non-<code>null</code> value which equals (afterwards)
      *         <code>graph.getInfo()</code>
      */
@@ -376,6 +373,8 @@ public class GraphInfo {
 
     /**
      * Convenience method to retrieve the name of a graph.
+     * @return the stored name of the graph; <code>null</code> if no name is
+     *         stored
      * @see #getName()
      */
     public static String getName(GraphShape graph) {
@@ -402,8 +401,8 @@ public class GraphInfo {
      * Convenience method to retrieve the properties map from a graph, creating
      * it is necessary if any.
      * @param graph the graph to retrieve the properties from
-     * @param create if <code>true</code>, the properties map (and so the
-     *        info object itself) should be created if not yet there
+     * @param create if <code>true</code>, the properties map (and so the info
+     *        object itself) should be created if not yet there
      * @return the properties map of <code>graph</code>, or <code>null</code>
      */
     public static GraphProperties getProperties(GraphShape graph, boolean create) {
@@ -453,6 +452,8 @@ public class GraphInfo {
 
     /**
      * Convenience method to retrieve the role of a graph.
+     * @return the stored role of the graph; <code>null</code> if no role is
+     *         stored
      * @see #setRole(String)
      */
     public static String getRole(GraphShape graph) {
@@ -510,7 +511,7 @@ public class GraphInfo {
     public static void setGraphRole(GraphShape graph) {
         setRole(graph, Groove.GRAPH_ROLE);
     }
-      
+
     /**
      * Transfers all available graph information from one graph to another,
      * modulo a given element map. The element map may be null if the node and
@@ -533,7 +534,7 @@ public class GraphInfo {
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties(false);
-             
+
             if (properties != null) {
                 target.getInfo().newProperties(properties);
             }

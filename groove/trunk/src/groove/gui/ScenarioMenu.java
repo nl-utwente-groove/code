@@ -193,7 +193,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
      */
     public void addScenarioHandler(Scenario scenario) {
         Action generateAction =
-            this.simulator.createLaunchScenarioAction(scenario);
+            this.simulator.getLaunchScenarioAction(scenario);
         generateAction.setEnabled(false);
         this.scenarioActionMap.put(scenario, generateAction);
         JMenuItem menuItem = add(generateAction);
@@ -253,7 +253,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
     @SuppressWarnings("unchecked")
     public void setRuleUpdate(RuleName name) {
-        GTS gts = this.simulator.getCurrentGTS();
+        GTS gts = this.simulator.getGTS();
         if (gts != null) {
             for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
                 Scenario scenario = entry.getKey();

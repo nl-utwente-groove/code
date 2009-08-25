@@ -57,10 +57,8 @@ import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.ReplaceLabelDialog;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
-import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
 import groove.io.AspectualViewGps;
 import groove.io.Aut;
@@ -125,7 +123,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Stack;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -271,18 +268,18 @@ public class Simulator {
      * Returns the currently loaded graph grammar, or <tt>null</tt> if none is
      * loaded.
      */
-    public DefaultGrammarView getCurrentGrammar() {
-        return this.currentGrammar;
+    public DefaultGrammarView getGrammarView() {
+        return this.grammarView;
     }
 
     /**
-     * Sets the {@link #currentGrammar} and {@link #currentRule} fields.
+     * Sets the {@link #grammarView} and {@link #currentRule} fields.
      * @return <code>true</code> if the new grammar is different from the
      *         previous
      */
-    public boolean setCurrentGrammar(DefaultGrammarView grammar) {
-        boolean result = this.currentGrammar != grammar;
-        this.currentGrammar = grammar;
+    private boolean setGrammarView(DefaultGrammarView grammar) {
+        boolean result = this.grammarView != grammar;
+        this.grammarView = grammar;
         if (this.currentRule != null
             && grammar.getRule(this.currentRule.getRuleName()) == null) {
             this.currentRule = null;
@@ -293,7 +290,7 @@ public class Simulator {
     /**
      * Returns the currently set GTS, or <tt>null</tt> if none is set.
      */
-    public GTS getCurrentGTS() {
+    public GTS getGTS() {
         return this.currentGTS;
     }
 
@@ -304,7 +301,7 @@ public class Simulator {
      * <code>null</code>.
      * @return <code>true</code> if the new GTS is different from the previous
      */
-    private boolean setCurrentGTS(GTS gts) {
+    private boolean setGTS(GTS gts) {
         boolean result = this.currentGTS == gts;
         this.currentGTS = gts;
         this.currentTransition = null;
@@ -341,24 +338,10 @@ public class Simulator {
     /**
      * Returns the currently selected transition, or <tt>null</tt> if none is
      * selected. The selected state is the one selected in the rule tree and
-     * emphasized in the state panel.
+     * emphasised in the state panel.
      */
     public GraphTransition getCurrentTransition() {
         return this.currentTransition;
-    }
-
-    /** Returns the currently selected match */
-    public RuleEvent getCurrentEvent() {
-        return this.currentEvent;
-    }
-
-    /**
-     * Sets the currently selected match.
-     */
-    protected boolean setCurrentEvent(RuleEvent event) {
-        boolean result = this.currentEvent != event;
-        this.currentEvent = event;
-        return result;
     }
 
     /**
@@ -373,8 +356,22 @@ public class Simulator {
         this.currentTransition = transition;
         if (transition != null) {
             this.currentState = transition.source();
-            setCurrentEvent(transition.getEvent());
+            this.currentEvent = transition.getEvent();
         }
+        return result;
+    }
+
+    /** Returns the currently selected match */
+    public RuleEvent getCurrentEvent() {
+        return this.currentEvent;
+    }
+
+    /**
+     * Sets the currently selected match.
+     */
+    private boolean setCurrentEvent(RuleEvent event) {
+        boolean result = this.currentEvent != event;
+        this.currentEvent = event;
         return result;
     }
 
@@ -391,7 +388,7 @@ public class Simulator {
      * <code>null</code>).
      * @return <code>true</code> if the new rule is different from the previous
      */
-    public boolean setCurrentRule(AspectualRuleView rule) {
+    private boolean setCurrentRule(AspectualRuleView rule) {
         boolean result = this.currentRule != rule;
         this.currentRule = rule;
         return result;
@@ -412,10 +409,10 @@ public class Simulator {
      * <code>null</code>).
      * @return <code>true</code> if the new file is different from the previous
      */
-    public boolean setCurrentStartGraphFile(File file) {
+    private boolean setCurrentStartGraphFile(File file) {
         boolean result =
             (this.currentStartGraphFile == null) ? file != null
-                    : this.currentStartGraphFile.equals(file);
+                    : !this.currentStartGraphFile.equals(file);
         this.currentStartGraphFile = file;
         return result;
     }
@@ -429,6 +426,13 @@ public class Simulator {
             this.applyTransitionAction = new ApplyTransitionAction();
         }
         return this.applyTransitionAction;
+    }
+
+    private ChooseCustomScenarioAction getChooseCustomScenarioAction() {
+        if (this.chooseScenarioAction == null) {
+            this.chooseScenarioAction = new ChooseCustomScenarioAction();
+        }
+        return this.chooseScenarioAction;
     }
 
     /**
@@ -595,6 +599,14 @@ public class Simulator {
         return this.gotoStartStateAction;
     }
 
+    /** Creates an action associated to a scenario handler. */
+    public LaunchScenarioAction getLaunchScenarioAction(Scenario scenario) {
+        if (this.launchScenarioAction == null) {
+            this.launchScenarioAction = new LaunchScenarioAction(scenario);
+        }
+        return this.launchScenarioAction;
+    }
+
     /**
      * Returns the start graph load action permanently associated with this
      * simulator.
@@ -707,11 +719,10 @@ public class Simulator {
      * simulator.
      */
     public Action getProvideTemporalFormulaAction() {
-        if (this.provideTemporalFormulaAction == null) {
-            this.provideTemporalFormulaAction =
-                new ProvideTemporalFormulaAction();
+        if (this.verifyAction == null) {
+            this.verifyAction = new VerifyCTLAction();
         }
-        return this.provideTemporalFormulaAction;
+        return this.verifyAction;
     }
 
     /** Returns the redo action permanently associated with this simulator. */
@@ -825,20 +836,8 @@ public class Simulator {
         return this.undoAction;
     }
 
-    /**
-     * Returns the go-to start state action permanently associated with this
-     * simulator. HARMEN: temporary method for showing model checking results
-     */
-    public ShowResultAction showResultAction() {
-        // lazily create the action
-        if (this.showResultAction == null) {
-            this.showResultAction = new ShowResultAction();
-        }
-        return this.showResultAction;
-    }
-
     /** Returns (after lazily creating) the undo history for this simulator. */
-    protected UndoHistory getUndoHistory() {
+    private UndoHistory getUndoHistory() {
         if (this.undoHistory == null) {
             this.undoHistory = new UndoHistory(this);
         }
@@ -881,9 +880,9 @@ public class Simulator {
      */
     File handleSaveControl(String program) {
         // check if we had a control program
-        ControlView cv = getCurrentGrammar().getControl();
+        ControlView cv = getGrammarView().getControl();
         String controlName =
-            cv == null ? getCurrentGrammar().getProperties().getControlName()
+            cv == null ? getGrammarView().getProperties().getControlName()
                     : cv.getName();
         if (controlName == null) {
             controlName = Groove.DEFAULT_CONTROL_NAME;
@@ -895,6 +894,90 @@ public class Simulator {
             return controlFile;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Adds a graph to the graph list, by saving it as a file to the current
+     * grammar location.
+     */
+    void doAddGraph(Graph graph) {
+        File graphFile =
+            new File(FileGps.toFile(this.currentGrammarURL),
+                this.stateFilter.addExtension(GraphInfo.getName(graph)));
+        doAddGraph(graph, graphFile);
+    }
+
+    /**
+     * Saves a given graph to a given file.
+     */
+    void doAddGraph(Graph graph, File file) {
+        try {
+            AspectGraph saveGraph = AspectGraph.newInstance(graph);
+            if (saveGraph.hasErrors()) {
+                showErrorDialog("Errors in graph", new FormatException(
+                    saveGraph.getErrors()));
+            } else {
+                marshalGraph(saveGraph, file);
+                getGrammarView().addGraph(saveGraph.getInfo().getName(), file);
+                getStateList().refreshList(true);
+            }
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving to " + file, exc);
+        }
+    }
+
+    /**
+     * Saves an aspect graph as a rule under a given name, and puts the rule
+     * into the current grammar view.
+     * @param ruleName the name of the new rule
+     * @param ruleAsGraph the new rule, given as an aspect graph
+     */
+    void doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
+        try {
+            GraphInfo.setName(ruleAsGraph, ruleName.text());
+            AspectualRuleView ruleView =
+                ruleAsGraph.toRuleView(getGrammarView().getProperties());
+            getGrammarView().addRule(ruleView);
+            this.currentGrammarLoader.marshalRule(ruleView,
+                FileGps.toFile(this.currentGrammarURL));
+            setGrammar(getGrammarView());
+            setRule(ruleName);
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving rule", exc);
+        } catch (UnsupportedOperationException u) {
+            showErrorDialog("Current grammar is read-only", u);
+        }
+    }
+
+    /**
+     * Deletes a graph from the start graph view.
+     */
+    void doDeleteGraph(String name) {
+        // test now if this is the start state, before it is deleted from the
+        // grammar
+        boolean isStartGraph = isStartGraph(name);
+        File graphFile = getGrammarView().removeGraph(name);
+        deleteGraph(graphFile);
+        if (isStartGraph) {
+            // reset the start graph to null
+            getGrammarView().setStartGraph(null);
+            setGrammar(getGrammarView());
+        } else {
+            this.stateJList.refreshList(true);
+        }
+    }
+
+    /**
+     * Deletes a rule from the grammar and the file system, and resets the
+     * grammar view.
+     */
+    void doDeleteRule(RuleName name) {
+        AspectualRuleView rule = getGrammarView().removeRule(name);
+        if (rule != null) {
+            this.currentGrammarLoader.deleteRule(rule,
+                FileGps.toFile(this.currentGrammarURL));
+            setGrammar(getGrammarView());
         }
     }
 
@@ -911,11 +994,11 @@ public class Simulator {
      * @param scenario
      */
     public void doGenerate(Scenario scenario) {
-        scenario.prepare(getCurrentGTS(), getCurrentState());
+        scenario.prepare(getGTS(), getCurrentState());
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
-            getCurrentGTS().removeGraphListener(ltsJModel);
+            getGTS().removeGraphListener(ltsJModel);
             // disable rule application for the time being
             boolean applyEnabled = getApplyTransitionAction().isEnabled();
             getApplyTransitionAction().setEnabled(false);
@@ -1044,12 +1127,12 @@ public class Simulator {
      */
     void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
         try {
-            grammarLoader.marshal(getCurrentGrammar(), grammarFile);
+            grammarLoader.marshal(getGrammarView(), grammarFile);
 
             String grammarName =
                 grammarLoader.getExtensionFilter().stripExtension(
                     grammarFile.getName());
-            getCurrentGrammar().setName(grammarName);
+            getGrammarView().setName(grammarName);
             // now we know saving succeeded, we can set the current names &
             // files
             this.currentGrammarURL = FileGps.toURL(grammarFile);
@@ -1058,7 +1141,7 @@ public class Simulator {
             setTitle();
 
             getStateFileChooser().setCurrentDirectory(grammarFile);
-            AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
+            AspectualGraphView startGraph = getGrammarView().getStartGraph();
             if (startGraph != null) {
                 getStateFileChooser().setSelectedFile(
                     new File(startGraph.getName()));
@@ -1079,10 +1162,10 @@ public class Simulator {
         try {
             AspectGraph aspectStartGraph = unmarshalGraph(file);
             AspectualGraphView startGraph =
-                aspectStartGraph.toGraphView(getCurrentGrammar().getProperties());
-            getCurrentGrammar().setStartGraph(startGraph);
+                aspectStartGraph.toGraphView(getGrammarView().getProperties());
+            getGrammarView().setStartGraph(startGraph);
             setCurrentStartGraphFile(file);
-            setGrammar(getCurrentGrammar());
+            setGrammar(getGrammarView());
         } catch (IOException exc) {
             showErrorDialog(
                 "Could not load start graph from " + file.getName(), exc);
@@ -1095,26 +1178,11 @@ public class Simulator {
      */
     void doLoadControlFile(File file) {
         try {
-            new FileGps(false).loadControl(this.currentGrammar, file);
-            setGrammar(getCurrentGrammar());
+            new FileGps(false).loadControl(this.grammarView, file);
+            setGrammar(getGrammarView());
             setTitle();
         } catch (IOException e) {
             this.showErrorDialog("Error loading control file", e);
-        }
-    }
-
-    /**
-     * mzimakova Sets the contents of a given file as start state.
-     */
-    void doLoadRule(File file) {
-        try {
-            new FileGps(true).loadRule(this.currentGrammar, file);
-            setGrammar(getCurrentGrammar());
-            setTitle();
-            doSaveGrammar(this.currentGrammarLoader,
-                FileGps.toFile(this.currentGrammarURL));
-        } catch (IOException e) {
-            this.showErrorDialog("Error loading rule", e);
         }
     }
 
@@ -1175,91 +1243,6 @@ public class Simulator {
     }
 
     /**
-     * Adds a graph to the graph list, by saving it as a file to the current
-     * grammar location.
-     */
-    public void doAddGraph(Graph graph) {
-        File graphFile =
-            new File(FileGps.toFile(this.currentGrammarURL),
-                this.stateFilter.addExtension(GraphInfo.getName(graph)));
-        doAddGraph(graph, graphFile);
-    }
-
-    /**
-     * Saves a given graph to a given file.
-     */
-    void doAddGraph(Graph graph, File file) {
-        try {
-            AspectGraph saveGraph = AspectGraph.newInstance(graph);
-            if (saveGraph.hasErrors()) {
-                showErrorDialog("Errors in graph", new FormatException(
-                    saveGraph.getErrors()));
-            } else {
-                marshalGraph(saveGraph, file);
-                getCurrentGrammar().addGraph(saveGraph.getInfo().getName(),
-                    file);
-                getStateList().refreshList(true);
-            }
-        } catch (IOException exc) {
-            showErrorDialog("Error while saving to " + file, exc);
-        }
-    }
-
-    /**
-     * Saves an aspect graph as a rule under a given name, and puts the rule
-     * into the current grammar view.
-     * @param ruleName the name of the new rule
-     * @param ruleAsGraph the new rule, given as an aspect graph
-     */
-    void doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
-        try {
-            GraphInfo.setName(ruleAsGraph, ruleName.text());
-            AspectualRuleView ruleView =
-                ruleAsGraph.toRuleView(getCurrentGrammar().getProperties());
-            getCurrentGrammar().addRule(ruleView);
-            this.currentGrammarLoader.marshalRule(ruleView,
-                FileGps.toFile(this.currentGrammarURL));
-            setGrammar(getCurrentGrammar());
-            setRule(ruleName);
-        } catch (IOException exc) {
-            showErrorDialog("Error while saving rule", exc);
-        } catch (UnsupportedOperationException u) {
-            showErrorDialog("Current grammar is read-only", u);
-        }
-    }
-
-    /**
-     * Deletes a graph from the start graph view.
-     */
-    void doDeleteGraph(String name) {
-        // test now if this is the start state, before it is deleted from the
-        // grammar
-        boolean isStartGraph = isStartGraph(name);
-        File graphFile = getCurrentGrammar().removeGraph(name);
-        deleteGraph(graphFile);
-        if (isStartGraph) {
-            // reset the start graph to null
-            getCurrentGrammar().setStartGraph(null);
-            setGrammar(getCurrentGrammar());
-        } else {
-            this.stateJList.refreshList(true);
-        }
-    }
-
-    /**
-     * Deletes a rule from the grammar and the file system, and resets the
-     * grammar view.
-     */
-    void doDeleteRule(RuleName name) {
-        AspectualRuleView rule = getCurrentGrammar().removeRule(name);
-        if (rule != null) {
-            this.currentGrammarLoader.deleteRule(rule,
-                FileGps.toFile(this.currentGrammarURL));
-            setGrammar(getCurrentGrammar());
-        }
-    }
-
-    /**
      * Refreshes the currently loaded grammar, if any. Does not ask for
      * confirmation. Has no effect if no grammar is currently loaded.
      */
@@ -1297,15 +1280,15 @@ public class Simulator {
         // test now if this is the start state, before it is deleted from the
         // grammar
         boolean isStartGraph = isStartGraph(oldName);
-        File graphFile = getCurrentGrammar().removeGraph(oldName);
+        File graphFile = getGrammarView().removeGraph(oldName);
         deleteGraph(graphFile);
         GraphInfo.setName(graph, newName);
         doAddGraph(graph);
         if (isStartGraph) {
             // reset the start graph to the renamed graph
             AspectualGraphView startGraph =
-                graph.toGraphView(getCurrentGrammar().getProperties());
-            getCurrentGrammar().setStartGraph(startGraph);
+                graph.toGraphView(getGrammarView().getProperties());
+            getGrammarView().setStartGraph(startGraph);
         } else {
             this.stateJList.refreshList(true);
         }
@@ -1334,7 +1317,7 @@ public class Simulator {
     void doSaveProperties(SystemProperties newProperties) {
         // check if we need to load a new control program
         String newControlName = newProperties.getControlName();
-        DefaultGrammarView grammar = this.getCurrentGrammar();
+        DefaultGrammarView grammar = this.getGrammarView();
         String oldControlName = grammar.getProperties().getControlName();
         boolean refresh =
             newControlName == null ? oldControlName != null
@@ -1363,6 +1346,41 @@ public class Simulator {
     /** Renames all instances of a given label by another. */
     void doRenameLabel(String original, String replacement) {
         // does nothing for now
+    }
+
+    /**
+     * Directs the actual verification process.
+     * @param property the property to be checked
+     */
+    void doVerifyProperty(String property) {
+        try {
+            TemporalFormula formula = CTLFormula.parseFormula(property);
+            String invalidAtom =
+                TemporalFormula.validAtoms(formula,
+                    getGrammarView().getRuleMap().keySet());
+            if (invalidAtom == null) {
+                CTLModelChecker modelChecker =
+                    new CTLModelChecker(getGTS(), formula);
+                modelChecker.verify();
+                Set<State> counterExamples = formula.getCounterExamples();
+                boolean reportForAllStates =
+                    confirmBehaviour(
+                        VERIFY_ALL_STATES_OPTION,
+                        "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
+                String message =
+                    getLtsPanel().emphasiseStates(counterExamples,
+                        reportForAllStates);
+                JOptionPane.showMessageDialog(getFrame(), message,
+                    "Verification results", JOptionPane.INFORMATION_MESSAGE,
+                    Groove.GROOVE_BLUE_ICON_32x32);
+            } else {
+                showErrorDialog("Invalid atomic proposition", new Exception("'"
+                    + invalidAtom + "' is not a valid atomic proposition."));
+            }
+        } catch (FormatException efe) {
+            showErrorDialog("Format error in temporal formula", efe);
+            efe.printStackTrace();
+        }
     }
 
     private void marshalGraph(AspectGraph graph, File file) throws IOException {
@@ -1394,8 +1412,8 @@ public class Simulator {
      * @see #fireSetGrammar(DefaultGrammarView)
      */
     public synchronized void setGrammar(DefaultGrammarView grammar) {
-        setCurrentGrammar(grammar);
-        setCurrentGTS(null);
+        setGrammarView(grammar);
+        setGTS(null);
         fireSetGrammar(grammar);
         refresh();
         List<String> grammarErrors = grammar.getErrors();
@@ -1403,9 +1421,9 @@ public class Simulator {
         getErrorPanel().setErrors(grammarErrors);
         if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
             if (isAbstractSimulation()) {
-                startAbstrSimulation(grammar);
+                startAbstrSimulation();
             } else {
-                startSimulation(grammar);
+                startSimulation();
             }
         }
     }
@@ -1414,15 +1432,13 @@ public class Simulator {
      * Sets a new graph transition system. Invokes
      * {@link #fireStartSimulation(GTS)} to notify all observers of the change.
      * 
-     * @param grammar the new graph transition system
      * @see #fireSetGrammar(DefaultGrammarView)
      */
-    public synchronized void startSimulation(DefaultGrammarView grammar) {
+    public synchronized void startSimulation() {
         try {
-            setCurrentGrammar(grammar);
-            setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
+            setGTS(new GTS(getGrammarView().toGrammar()));
             // getGenerator().explore(getCurrentState());
-            fireStartSimulation(getCurrentGTS());
+            fireStartSimulation(getGTS());
             refresh();
         } catch (FormatException exc) {
             showErrorDialog("Error while starting simulation", exc);
@@ -1430,30 +1446,12 @@ public class Simulator {
     }
 
     /**
-     * HARMEN: possibly merge this method with the above one.
+     * A variant of the {@link #startSimulation()} method for starting an
+     * abstract simulation.
      */
-    public synchronized void startSimulation(DefaultGrammarView grammar,
-            boolean findMatchings) {
+    public synchronized void startAbstrSimulation() {
         try {
-            setCurrentGrammar(grammar);
-            setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
-            // if (findMatchings) {
-            // getGenerator().explore(getCurrentState());
-            // }
-            fireStartSimulation(getCurrentGTS());
-            refresh();
-        } catch (FormatException exc) {
-            showErrorDialog("Error while starting simulation", exc);
-        }
-    }
-
-    /**
-     * A variant of the {@link #startSimulation(DefaultGrammarView)} method for
-     * starting an abstract simulation.
-     */
-    public synchronized void startAbstrSimulation(DefaultGrammarView grammar) {
-        try {
-            if (!groove.abs.Util.isAbstractionPossible(grammar.toGrammar())) {
+            if (!groove.abs.Util.isAbstractionPossible(getGrammarView().toGrammar())) {
                 JOptionPane.showMessageDialog(
                     getFrame(),
                     "Abstract simulation is not possible for grammars with composite rules.",
@@ -1474,9 +1472,9 @@ public class Simulator {
                 new Abstraction.Parameters(symred, linkPrecision,
                     properties.getRadius(), properties.getPrecision(),
                     properties.getMaxIncidence());
-            AGTS agts = new AGTS(getCurrentGrammar().toGrammar(), options);
-            setCurrentGTS(agts);
-            fireStartSimulation(getCurrentGTS());
+            AGTS agts = new AGTS(getGrammarView().toGrammar(), options);
+            setGTS(agts);
+            fireStartSimulation(getGTS());
             refresh();
         } catch (FormatException exc) {
             showErrorDialog("Error while starting simulation", exc);
@@ -1502,8 +1500,8 @@ public class Simulator {
 
     /** Fully explores a given state of the GTS. */
     public synchronized void exploreState(GraphState state) {
-        getExploreState().prepare(getCurrentGTS(), state);
-        getExploreState().next();
+        getExploreStateStrategy().prepare(getGTS(), state);
+        getExploreStateStrategy().next();
         setState(state);
     }
 
@@ -1516,7 +1514,7 @@ public class Simulator {
      * @see #fireSetRule(RuleName)
      */
     public synchronized void setRule(RuleName name) {
-        setCurrentRule(getCurrentGrammar().getRule(name));
+        setCurrentRule(getGrammarView().getRule(name));
         setCurrentTransition(null);
         setCurrentEvent(null);
         fireSetRule(name);
@@ -1536,7 +1534,7 @@ public class Simulator {
         if (transition != null) {
             if (setCurrentTransition(transition)) {
                 RuleName ruleName = transition.getEvent().getRule().getName();
-                setCurrentRule(getCurrentGrammar().getRule(ruleName));
+                setCurrentRule(getGrammarView().getRule(ruleName));
                 setCurrentEvent(transition.getEvent());
             }
             fireSetTransition(getCurrentTransition());
@@ -1560,7 +1558,7 @@ public class Simulator {
     public synchronized void setEvent(RuleEvent event) {
         assert event != null : "The match and the transition cannot be both null.";
         RuleName ruleName = event.getRule().getName();
-        setCurrentRule(getCurrentGrammar().getRule(ruleName));
+        setCurrentRule(getGrammarView().getRule(ruleName));
         setCurrentTransition(null);
         setCurrentEvent(event);
         fireSetMatch(event.getMatch(getCurrentState().getGraph()));
@@ -1570,15 +1568,15 @@ public class Simulator {
 
     /**
      * Applies a match to the current state. The current state is set to the
-     * derivation's cod, and the current derivation to null. Invokes
+     * derivation's target, and the current derivation to null. Invokes
      * <tt>notifyApplyTransition()</tt> to notify all observers of the change.
      * @see #fireApplyTransition(GraphTransition)
      */
     public synchronized void applyMatch() {
         if (getCurrentEvent() != null) {
             ExploreCache cache =
-                getCurrentGTS().getRecord().createCache(getCurrentState(),
-                    false, false);
+                getGTS().getRecord().createCache(getCurrentState(), false,
+                    false);
             Set<? extends GraphTransition> resultTransitions =
                 getGenerator().applyMatch(getCurrentState(), getCurrentEvent(),
                     cache);
@@ -1591,34 +1589,6 @@ public class Simulator {
             refreshActions();
         }
     }
-
-    /**
-     * Directs the actual verification process.
-     * @param property the property to be checked
-     */
-    public synchronized void verifyProperty(String property) {
-        try {
-            TemporalFormula formula = CTLFormula.parseFormula(property);
-            String invalidAtom =
-                TemporalFormula.validAtoms(formula,
-                    getCurrentGrammar().getRuleMap().keySet());
-            if (invalidAtom == null) {
-                CTLModelChecker modelChecker =
-                    new CTLModelChecker(getCurrentGTS(), formula);
-                modelChecker.verify();
-                Set<State> counterExamples = formula.getCounterExamples();
-                fireVerifyProperty(counterExamples);
-            } else {
-                showErrorDialog("Invalid atomic proposition", new Exception("'"
-                    + invalidAtom + "' is not a valid atomic proposition."));
-            }
-        } catch (FormatException efe) {
-            showErrorDialog("Format error in temporal formula", efe);
-            efe.printStackTrace();
-        }
-    }
-
-    // ---------------------- NOTIFICATIONS --------------------------------
 
     /**
      * Adds a listener to the registered simulation listeners. From this moment
@@ -1920,9 +1890,9 @@ public class Simulator {
             String text;
             if (enabled) {
                 text = "Labelled transition system";
-            } else if (getCurrentGrammar() == null) {
+            } else if (getGrammarView() == null) {
                 text = "Currently disabled; load grammar";
-            } else if (getCurrentGrammar().getErrors().isEmpty()) {
+            } else if (getGrammarView().getErrors().isEmpty()) {
                 text =
                     String.format(
                         "Currently disabled; press %s to start simulation",
@@ -2316,6 +2286,17 @@ public class Simulator {
         return this.formulaDialog;
     }
 
+    /**
+     * Returns the explore-strategy for exploring a single state.
+     * @return the explore-strategy for exploring a single state
+     */
+    private ExploreStateStrategy getExploreStateStrategy() {
+        if (this.exploreStateStrategy == null) {
+            this.exploreStateStrategy = new ExploreStateStrategy();
+        }
+        return this.exploreStateStrategy;
+    }
+
     private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             this.errorPanel = new ErrorListPanel();
@@ -2326,7 +2307,7 @@ public class Simulator {
     /**
      * Adds all implemented grammar loaders to the menu.
      */
-    protected void initGrammarLoaders() {
+    private void initGrammarLoaders() {
         this.grammarLoaderMap.clear();
         AspectualViewGps gpsLoader;
 
@@ -2353,7 +2334,7 @@ public class Simulator {
      * directly: use {@link #setGrammar(DefaultGrammarView)}instead.
      * @see SimulationListener#setGrammarUpdate(DefaultGrammarView)
      */
-    protected synchronized void fireSetGrammar(DefaultGrammarView grammar) {
+    private synchronized void fireSetGrammar(DefaultGrammarView grammar) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2367,10 +2348,10 @@ public class Simulator {
      * Notifies all listeners of the start of a new active simulation. As a
      * result, {@link SimulationListener#startSimulationUpdate(GTS)} is invoked
      * on all currently registered listeners. This method should not be called
-     * directly: use {@link #startSimulation(DefaultGrammarView)}instead.
+     * directly: use {@link #startSimulation()}instead.
      * @see SimulationListener#startSimulationUpdate(GTS)
      */
-    protected synchronized void fireStartSimulation(GTS gts) {
+    private synchronized void fireStartSimulation(GTS gts) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2388,7 +2369,7 @@ public class Simulator {
      * @see SimulationListener#setStateUpdate(GraphState)
      * @see #setState(GraphState)
      */
-    protected synchronized void fireSetState(GraphState state) {
+    private synchronized void fireSetState(GraphState state) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2407,7 +2388,7 @@ public class Simulator {
      * @see SimulationListener#setRuleUpdate(RuleName)
      * @see #setRule(RuleName)
      */
-    protected synchronized void fireSetRule(RuleName name) {
+    private synchronized void fireSetRule(RuleName name) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2425,7 +2406,7 @@ public class Simulator {
      * 
      * @see SimulationListener#setMatchUpdate(RuleMatch)
      */
-    protected synchronized void fireSetMatch(RuleMatch match) {
+    private synchronized void fireSetMatch(RuleMatch match) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2444,7 +2425,7 @@ public class Simulator {
      * @see SimulationListener#setTransitionUpdate(GraphTransition)
      * @see #setTransition(GraphTransition)
      */
-    protected synchronized void fireSetTransition(GraphTransition transition) {
+    private synchronized void fireSetTransition(GraphTransition transition) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2463,7 +2444,7 @@ public class Simulator {
      * @see SimulationListener#applyTransitionUpdate(GraphTransition)
      * @see #applyMatch()
      */
-    protected synchronized void fireApplyTransition(GraphTransition transition) {
+    private synchronized void fireApplyTransition(GraphTransition transition) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2471,100 +2452,6 @@ public class Simulator {
             }
             this.updating = false;
         }
-    }
-
-    /**
-     * Notifies all listeners of the verification of the current generated
-     * transition system. This method should not be called directly: use
-     * {@link #verifyProperty(String)} instead.
-     * 
-     * @param counterExamples the collection of states that do not satisfy the
-     *        property verified
-     */
-    protected synchronized void fireVerifyProperty(Set<State> counterExamples) {
-        boolean reportForAllStates =
-            confirmBehaviour(
-                VERIFY_ALL_STATES_OPTION,
-                "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
-        if (!reportForAllStates) {
-            State initial = getCurrentGTS().startState();
-            boolean initialIsCounterexample = counterExamples.contains(initial);
-            counterExamples = new HashSet<State>();
-            if (initialIsCounterexample) {
-                counterExamples.add(initial);
-            }
-        }
-        String message;
-        if (counterExamples.isEmpty()) {
-            message = "There were no counter-examples.";
-        } else if (counterExamples.size() == 1) {
-            message = "There was 1 counter-example.";
-        } else {
-            message =
-                String.format("There were %d counter-examples.",
-                    counterExamples.size());
-        }
-        JOptionPane.showMessageDialog(getFrame(), message,
-            "Verification results", JOptionPane.INFORMATION_MESSAGE,
-            Groove.GROOVE_BLUE_ICON_32x32);
-        // reset lts display visibility
-        setGraphPanel(getLtsPanel());
-        LTSJModel jModel = getLtsPanel().getJModel();
-        Set<JCell> jCells = new HashSet<JCell>();
-        for (State counterExample : counterExamples) {
-            jCells.add(jModel.getJCell(counterExample));
-        }
-        jModel.setEmphasized(jCells);
-    }
-
-    /**
-     * Emphasizes the transitions in the GTS that constitute the
-     * counter-example, if found. If no counter-example had been found, a
-     * message will say so.
-     * @param systemOK boolean indicating whether the a counter-example had been
-     *        found
-     * @param counterExample the actual path representing the counter-example
-     */
-    public synchronized void notifyCounterExample(boolean systemOK,
-            Stack<GraphTransition> counterExample) {
-        if (!systemOK) {
-            // reset lts display visibility
-            setGraphPanel(getLtsPanel());
-            LTSJModel jModel = getLtsPanel().getJModel();
-            jModel.clearEmphasized();
-            Set<JCell> jCells = new HashSet<JCell>();
-            while (!counterExample.isEmpty()) {
-                jCells.add(jModel.getJCell(counterExample.pop()));
-            }
-            jModel.setEmphasized(jCells);
-        } else {
-            String message = "The system is OK.";
-            JOptionPane.showConfirmDialog(getFrame(), message, "Verdict",
-                JOptionPane.PLAIN_MESSAGE);
-        }
-    }
-
-    /**
-     * Emphasises the states in the GTS that constitute the counter-example, if
-     * found.
-     * @param counterExample the actual states representing the counter-example
-     */
-    public synchronized void notifyCounterExample(
-            Collection<GraphState> counterExample) {
-        // reset lts display visibility
-        setGraphPanel(getLtsPanel());
-        LTSJModel jModel = getLtsPanel().getJModel();
-        jModel.clearEmphasized();
-        Set<JCell> jCells = new HashSet<JCell>();
-        for (GraphState state : counterExample) {
-            jCells.add(jModel.getJCell(state));
-        }
-        // while (!counterExample.isEmpty()) {
-        // jCells.add(jModel.getJCell(counterExample.pop()));
-        // }
-        jModel.setEmphasized(jCells);
-        JOptionPane.showConfirmDialog(getFrame(),
-            "There is a counter-example.", "Verdict", JOptionPane.PLAIN_MESSAGE);
     }
 
     /**
@@ -2580,15 +2467,14 @@ public class Simulator {
      */
     private void setTitle() {
         StringBuffer title = new StringBuffer();
-        if (getCurrentGrammar() != null
-            && getCurrentGrammar().getName() != null) {
-            title.append(getCurrentGrammar().getName());
-            AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
+        if (getGrammarView() != null && getGrammarView().getName() != null) {
+            title.append(getGrammarView().getName());
+            AspectualGraphView startGraph = getGrammarView().getStartGraph();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
             }
-            ControlView cv = getCurrentGrammar().getControl();
+            ControlView cv = getGrammarView().getControl();
             if (cv != null) {
                 title.append(" | ");
                 title.append(cv.getName());
@@ -2609,16 +2495,16 @@ public class Simulator {
      */
     private StateGenerator getGenerator() {
         if (this.stateGenerator == null
-            || this.stateGenerator.getGTS() != getCurrentGTS()) {
-            if (getCurrentGTS() != null) {
-                this.stateGenerator = createStateGenerator(getCurrentGTS());
+            || this.stateGenerator.getGTS() != getGTS()) {
+            if (getGTS() != null) {
+                this.stateGenerator = createStateGenerator(getGTS());
             }
         }
         return this.stateGenerator;
     }
 
     /** Callback factory method for the state generator. */
-    protected StateGenerator createStateGenerator(GTS gts) {
+    private StateGenerator createStateGenerator(GTS gts) {
         StateGenerator result;
         if (gts instanceof AGTS) {
             result =
@@ -2641,10 +2527,10 @@ public class Simulator {
      */
     boolean confirmAbandon(boolean setGrammar) {
         boolean result;
-        if (getCurrentGTS() != null) {
+        if (getGTS() != null) {
             result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
             if (result && setGrammar) {
-                setGrammar(getCurrentGrammar());
+                setGrammar(getGrammarView());
             }
         } else {
             result = true;
@@ -2653,17 +2539,45 @@ public class Simulator {
     }
 
     /**
+     * Checks if a given option is confirmed. The question can be set
+     * explicitly.
+     */
+    boolean confirmBehaviour(String option, String question) {
+        BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
+        return menu.confirm(getFrame(), question);
+    }
+
+    /**
+     * Checks if a given option is confirmed.
+     */
+    boolean confirmBehaviourOption(String option) {
+        return confirmBehaviour(option, null);
+    }
+
+    /**
      * Asks whether the current start graph should be replaced by the edited
      * version.
      */
     boolean confirmLoadStartState(String stateName) {
-        if (getCurrentGrammar().getStartGraph() == null) {
+        if (getGrammarView().getStartGraph() == null) {
             return true;
         } else {
             String question =
                 String.format("Replace start graph with '%s'?", stateName);
             return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
         }
+    }
+
+    /**
+     * Asks whether a given existing rule should be replaced by a newly loaded
+     * one.
+     */
+    boolean confirmOverwriteRule(RuleName ruleName) {
+        int response =
+            JOptionPane.showConfirmDialog(getFrame(), String.format(
+                "Replace existing rule '%s'?", ruleName), null,
+                JOptionPane.OK_CANCEL_OPTION);
+        return response == JOptionPane.OK_OPTION;
     }
 
     /**
@@ -2704,7 +2618,7 @@ public class Simulator {
     RuleName askNewRuleName(String title, String name, boolean mustBeFresh) {
         FreshNameDialog<RuleName> ruleNameDialog =
             new FreshNameDialog<RuleName>(
-                getCurrentGrammar().getRuleMap().keySet(), name, mustBeFresh) {
+                getGrammarView().getRuleMap().keySet(), name, mustBeFresh) {
                 @Override
                 protected RuleName createName(String name) {
                     return new RuleName(name);
@@ -2725,7 +2639,7 @@ public class Simulator {
      *         <code>null</code>
      */
     String askNewGraphName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = getCurrentGrammar().getGraphs().keySet();
+        Set<String> existingNames = getGrammarView().getGraphs().keySet();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -2756,22 +2670,6 @@ public class Simulator {
     }
 
     /**
-     * Checks if a given option is confirmed. The question can be set
-     * explicitly.
-     */
-    boolean confirmBehaviour(String option, String question) {
-        BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
-        return menu.confirm(getFrame(), question);
-    }
-
-    /**
-     * Checks if a given option is confirmed.
-     */
-    boolean confirmBehaviourOption(String option) {
-        return confirmBehaviour(option, null);
-    }
-
-    /**
      * Returns the options object associated with the simulator.
      */
     public Options getOptions() {
@@ -2789,7 +2687,7 @@ public class Simulator {
 
     /** Returns true if the current simulation is abstract. */
     public boolean isAbstractSimulation() {
-        return getCurrentGTS() != null && getCurrentGTS() instanceof AGTS;
+        return getGTS() != null && getGTS() instanceof AGTS;
     }
 
     /**
@@ -2800,7 +2698,7 @@ public class Simulator {
      *         start graph file.
      */
     private boolean isStartGraph(String graphName) {
-        File graphFile = getCurrentGrammar().getGraphs().get(graphName);
+        File graphFile = getGrammarView().getGraphs().get(graphName);
         return graphFile != null
             && graphFile.equals(getCurrentStartGraphFile());
     }
@@ -2814,7 +2712,7 @@ public class Simulator {
      * The underlying graph grammar of this simulator. If <tt>null</tt>, no
      * grammar has been loaded.
      */
-    private DefaultGrammarView currentGrammar;
+    private DefaultGrammarView grammarView;
 
     /**
      * The current graph transition system.
@@ -2860,6 +2758,8 @@ public class Simulator {
 
     /** The state generator strategy for the current GTS. */
     private StateGenerator stateGenerator;
+
+    ExploreStateStrategy exploreStateStrategy;
 
     /** Flag to indicate that one of the simulation events is underway. */
     private boolean updating;
@@ -2988,6 +2888,9 @@ public class Simulator {
     /** background for displays. */
     private JTabbedPane graphViewsPanel;
 
+    /** History of recently opened grammars. */
+    private History history;
+
     /** panel for the rule directory. */
     private JScrollPane ruleJTreePanel;
 
@@ -3006,6 +2909,11 @@ public class Simulator {
      * simulator.
      */
     private ApplyTransitionAction applyTransitionAction;
+    /**
+     * The custom scenario choose action permanently associated with this
+     * simulator.
+     */
+    private ChooseCustomScenarioAction chooseScenarioAction;
 
     /**
      * The graph copying action permanently associated with this simulator.
@@ -3068,6 +2976,10 @@ public class Simulator {
      * The go-to start state action permanently associated with this simulator.
      */
     private GotoStartStateAction gotoStartStateAction;
+    /**
+     * The launch scenario action permanently associated with this simulator.
+     */
+    private LaunchScenarioAction launchScenarioAction;
     //
     // /** The control file load action permanently associated with this
     // simulator. */
@@ -3143,101 +3055,11 @@ public class Simulator {
     /** The undo action permanently associated with this simulator. */
     private Action undoAction;
 
-    /** The undo action permanently associated with this simulator. */
-    private ShowResultAction showResultAction;
-
     /**
-     * The ctl formula providing action permanently associated with this
+     * The CTL formula providing action permanently associated with this
      * simulator.
      */
-    private ProvideTemporalFormulaAction provideTemporalFormulaAction;
-
-    /**
-     * Starts a simulator, optionally setting the graph production system and
-     * start state.
-     */
-    public static void main(String[] args) {
-        Simulator simulator;
-        try {
-            if (args.length == 0) {
-                simulator = new Simulator();
-            } else if (args.length == 1) {
-                simulator = new Simulator(args[0]);
-            } else if (args.length == 2) {
-                simulator = new Simulator(args[0], args[1]);
-            } else {
-                throw new IOException(
-                    "Usage: Simulator [<production-system> [<start-state>]]");
-            }
-            // simulator.loadModules();
-            simulator.start();
-        } catch (IOException exc) {
-            exc.printStackTrace();
-            System.out.println(exc.getMessage());
-            // System.exit(0);
-        }
-    }
-
-    // --------------------- INSTANCE DEFINITIONS -----------------------------
-
-    /**
-     * Name of the LTS file, when it is saved or exported.
-     */
-    static private final String LTS_FILE_NAME = "lts";
-    /**
-     * Default name of an empty rule.
-     */
-    static private final String NEW_GRAMMAR_NAME = "newGrammar";
-    /**
-     * Default name of an empty rule.
-     */
-    static private final String NEW_GRAPH_NAME = "newGraph";
-    /**
-     * Default name of an empty rule.
-     */
-    static private final String NEW_RULE_NAME = "newRule";
-
-    /**
-     * Separator between grammar name and start graph name in the frame title.
-     */
-    private static final String TITLE_NAME_SEPARATOR = "@";
-
-    /** Name of this application. */
-    private static final String APPLICATION_NAME = "Production Simulator";
-
-    /**
-     * Minimum width of the rule tree component.
-     */
-    static private final int RULE_TREE_MINIMUM_WIDTH = 100;
-
-    /**
-     * Minimum height of the rule tree component.
-     */
-    static private final int RULE_TREE_MINIMUM_HEIGHT = 500;
-
-    /**
-     * Minimum height of the rule tree component.
-     */
-    static private final int START_LIST_MINIMUM_HEIGHT = 130;
-
-    /**
-     * Preferred width of the graph view.
-     */
-    static private final int GRAPH_VIEW_PREFERRED_WIDTH = 500;
-
-    /**
-     * Preferred height of the graph view.
-     */
-    static private final int GRAPH_VIEW_PREFERRED_HEIGHT = 400;
-
-    /**
-     * Preferred dimension of the graph view.
-     */
-    static private final Dimension GRAPH_VIEW_PREFERRED_SIZE =
-        new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
-
-    /** Flag controlling if a report should be printed after quitting. */
-    private static final boolean REPORT = false;
+    private VerifyCTLAction verifyAction;
 
     /**
      * Class that spawns a thread to perform a long-lasting action, while
@@ -3400,6 +3222,34 @@ public class Simulator {
         }
     }
 
+    // BEGIN_IOVKA
+    /** Allows to select a custom scenario and run it. */
+    private class ChooseCustomScenarioAction extends AbstractAction implements
+            Refreshable {
+        ChooseCustomScenarioAction() {
+            super("Run a custom scenario (work in progress)");
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ScenarioSelectionDialog sd =
+                new ScenarioSelectionDialog(getFrame(), getGTS().getGrammar());
+            Scenario customScenario = sd.showDialog();
+            if (customScenario != null) {
+                LaunchScenarioAction action =
+                    getLaunchScenarioAction(customScenario);
+                action.actionPerformed(e);
+            }
+        }
+
+        public void refresh() {
+            // Temporarily disable the dialog.
+            // setEnabled(getCurrentGrammar() != null &&
+            // getCurrentGrammar().getStartGraph() != null);
+            setEnabled(false);
+        }
+    }
+
     private class CopyGraphAction extends AbstractAction {
         CopyGraphAction() {
             super(Options.COPY_GRAPH_ACTION_NAME);
@@ -3411,7 +3261,7 @@ public class Simulator {
             if (oldGraphName != null) {
                 try {
                     AspectGraph oldGraph =
-                        unmarshalGraph(getCurrentGrammar().getGraphs().get(
+                        unmarshalGraph(getGrammarView().getGraphs().get(
                             oldGraphName));
                     String newGraphName =
                         askNewGraphName(null, oldGraphName, true);
@@ -3510,9 +3360,8 @@ public class Simulator {
          */
         public void refresh() {
             boolean enabled =
-                getGraphPanel() == getStatePanel()
-                    && getCurrentGrammar() != null
-                    && getCurrentGrammar().getStartGraph() != null
+                getGraphPanel() == getStatePanel() && getGrammarView() != null
+                    && getGrammarView().getStartGraph() != null
                     && Simulator.this.currentGrammarLoader.canWrite();
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
@@ -3566,7 +3415,7 @@ public class Simulator {
             if (oldGraphName != null) {
                 try {
                     AspectGraph oldGraph =
-                        unmarshalGraph(getCurrentGrammar().getGraphs().get(
+                        unmarshalGraph(getGrammarView().getGraphs().get(
                             oldGraphName));
                     EditorDialog dialog =
                         new EditorDialog(getFrame(), getOptions(),
@@ -3694,7 +3543,7 @@ public class Simulator {
          * graph.
          */
         public void actionPerformed(ActionEvent e) {
-            DefaultGrammarView grammar = getCurrentGrammar();
+            DefaultGrammarView grammar = getGrammarView();
             Properties systemProperties = grammar.getProperties();
             PropertiesDialog dialog =
                 new PropertiesDialog(systemProperties,
@@ -3711,7 +3560,7 @@ public class Simulator {
          * system properties.
          */
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null
+            setEnabled(getGrammarView() != null
                 && Simulator.this.currentGrammarLoader.canWrite());
         }
     }
@@ -3734,6 +3583,61 @@ public class Simulator {
             // setEnabled(getCurrentGrammar() != null &&
             // getCurrentGrammar().getStartGraph() != null);
             setEnabled(false);
+        }
+    }
+
+    private class ExportAction extends AbstractAction implements Refreshable {
+
+        ExportAction() {
+            super("Export Simulation ...");
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent arg0) {
+            ExportDialog dialog = new ExportDialog(Simulator.this);
+            dialog.setCurrentDirectory(FileGps.toFile(
+                Simulator.this.currentGrammarURL).getAbsolutePath());
+
+            if (dialog.showDialog(Simulator.this)) {
+
+                File file = new File(dialog.getDirectory());
+                int exportStates = dialog.getExportStates();
+                boolean showFinal = dialog.showFinal();
+                boolean showNames = dialog.showNames();
+                boolean showStart = dialog.showStart();
+                boolean showOpen = dialog.showOpen();
+
+                GTS gts = Simulator.this.getGTS();
+
+                LTSGraph lts =
+                    new LTSGraph(gts, showFinal, showStart, showOpen, showNames);
+
+                Collection<GraphState> export = new HashSet<GraphState>(0);
+
+                if (exportStates == ExportDialog.STATES_ALL) {
+                    export = gts.getStateSet();
+                } else if (exportStates == ExportDialog.STATES_FINAL) {
+                    export = gts.getFinalStates();
+                }
+
+                try {
+                    Groove.saveGraph(lts,
+                        new File(file, "lts.gxl").getAbsolutePath());
+                    for (GraphState state : export) {
+                        String name = state.toString();
+                        Groove.saveGraph(state.getGraph(), new File(file, name
+                            + ".gst").getAbsolutePath());
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        public void refresh() {
+            setEnabled(getGTS() != null);
         }
     }
 
@@ -3785,7 +3689,7 @@ public class Simulator {
          */
         public void refresh() {
             if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getCurrentGTS() != null);
+                setEnabled(getGTS() != null);
                 putValue(NAME, Options.EXPORT_LTS_ACTION_NAME);
             } else if (getGraphPanel() == getStatePanel()) {
                 setEnabled(getCurrentState() != null);
@@ -3827,9 +3731,27 @@ public class Simulator {
         }
     }
 
-    /** Creates an action associated to a scenario handler. */
-    public LaunchScenarioAction createLaunchScenarioAction(Scenario scenario) {
-        return new LaunchScenarioAction(scenario);
+    /**
+     * Action for setting the initial state of the LTS as current state.
+     * @see GTS#startState()
+     * @see Simulator#setState(GraphState)
+     */
+    private class GotoStartStateAction extends AbstractAction implements
+            Refreshable {
+        /** Constructs an instance of the action. */
+        GotoStartStateAction() {
+            super(Options.GOTO_START_STATE_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            setState(getGTS().startState());
+        }
+
+        public void refresh() {
+            setEnabled(getGTS() != null);
+        }
     }
 
     /** An action used for launching a scenario. */
@@ -3868,7 +3790,7 @@ public class Simulator {
 
         @Override
         public void doAction() {
-            GTS gts = getCurrentGTS();
+            GTS gts = getGTS();
             displayProgress(gts);
             gts.addGraphListener(this.progressListener);
             this.scenario.play();
@@ -3963,54 +3885,6 @@ public class Simulator {
     }
 
     /**
-     * Action for setting the initial state of the LTS as current state.
-     * @see GTS#startState()
-     * @see Simulator#setState(GraphState)
-     */
-    private class GotoStartStateAction extends AbstractAction implements
-            Refreshable {
-        /** Constructs an instance of the action. */
-        GotoStartStateAction() {
-            super(Options.GOTO_START_STATE_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            setState(getCurrentGTS().startState());
-        }
-
-        public void refresh() {
-            setEnabled(getCurrentGTS() != null);
-        }
-    }
-
-    /**
-     * HARMEN: Temporary class for showing results of model checking.
-     * @author Harmen Kastenberg
-     * 
-     */
-    private class ShowResultAction extends AbstractAction implements
-            Refreshable {
-        /** Constructs an instance of the action. */
-        public ShowResultAction() {
-            super("Show Result");
-            // putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
-            // addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            if (visualize != null) {
-                notifyCounterExample(visualize);
-            }
-        }
-
-        public void refresh() {
-            setEnabled(getCurrentGTS() != null);
-        }
-    }
-
-    /**
      * Action for loading and setting a new initial state.
      * @see Simulator#doLoadStartGraph(File)
      */
@@ -4036,7 +3910,7 @@ public class Simulator {
          * grammar is currently loaded.
          */
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
+            setEnabled(getGrammarView() != null);
         }
     }
 
@@ -4085,7 +3959,18 @@ public class Simulator {
             int result = getRuleFileChooser().showOpenDialog(getFrame());
             // now load, if so required
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                doLoadRule(getRuleFileChooser().getSelectedFile());
+                try {
+                    File ruleFile = getRuleFileChooser().getSelectedFile();
+                    AspectGraph ruleGraph = unmarshalGraph(ruleFile);
+                    RuleName ruleName =
+                        new RuleName(GraphInfo.getName(ruleGraph));
+                    if (getGrammarView().getRule(ruleName) == null
+                        || confirmOverwriteRule(ruleName)) {
+                        doAddRule(ruleName, ruleGraph);
+                    }
+                } catch (IOException e) {
+                    showErrorDialog("Error loading rule", e);
+                }
             }
         }
 
@@ -4094,7 +3979,7 @@ public class Simulator {
          * grammar is currently loaded.
          */
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
+            setEnabled(getGrammarView() != null);
         }
     }
 
@@ -4103,9 +3988,6 @@ public class Simulator {
      * @see Simulator#doLoadGrammar(AspectualViewGps, URL)
      */
     private class LoadGrammarAction extends AbstractAction {
-
-        private File toOpen;
-
         /** Constructs an instance of the action. */
         LoadGrammarAction() {
             super(Options.LOAD_GRAMMAR_ACTION_NAME);
@@ -4113,38 +3995,18 @@ public class Simulator {
             addAccelerator(this);
         }
 
-        LoadGrammarAction(File path) {
-            super(path.getName());
-
-            this.toOpen = path;
-
-            // putValue(ACCELERATOR_KEY, Options.OPEN_KEY);
-            // addAccelerator(this);
-        }
-
         public void actionPerformed(ActionEvent evt) {
-
-            if (this.toOpen != null) {
+            int result = getGrammarFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+                File selectedFile = getGrammarFileChooser().getSelectedFile();
+                // when dealing with the open File dialog we can use the
+                // extension filters to find the correct loader
                 FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                doLoadGrammar(getGrammarLoaderMap().get(filterUsed),
-                    FileGps.toURL(this.toOpen));
-            } else {
-                int result = getGrammarFileChooser().showOpenDialog(getFrame());
-                // now load, if so required
-                if (result == JFileChooser.APPROVE_OPTION
-                    && confirmAbandon(false)) {
-                    File selectedFile =
-                        getGrammarFileChooser().getSelectedFile();
-                    // when dealing with the open File dialog we can use the
-                    // extension filters to find the correct loader
-                    FileFilter filterUsed =
-                        getGrammarFileChooser().getFileFilter();
 
-                    AspectualViewGps loader =
-                        getGrammarLoaderMap().get(filterUsed);
-                    URL grammarURL = loader.createURL(selectedFile);
-                    doLoadGrammar(loader, grammarURL);
-                }
+                AspectualViewGps loader = getGrammarLoaderMap().get(filterUsed);
+                URL grammarURL = loader.createURL(selectedFile);
+                doLoadGrammar(loader, grammarURL);
             }
         }
     }
@@ -4154,9 +4016,6 @@ public class Simulator {
      * @see Simulator#doLoadGrammar
      */
     private class LoadURLAction extends AbstractAction {
-
-        private URL toOpen;
-
         /** Constructs an instance of the action. */
         LoadURLAction() {
             super(Options.LOAD_URL_GRAMMAR_ACTION_NAME);
@@ -4164,18 +4023,17 @@ public class Simulator {
             addAccelerator(this);
         }
 
-        LoadURLAction(URL toOpen) {
-            super(toOpen.toExternalForm());
-            this.toOpen = toOpen;
-        }
-
+        /**
+         * Constructs an action that will load from a predefined URL.
+         * @param toOpen the URL to be used in loading
+         * @param displayName the name of the action
+         */
         LoadURLAction(URL toOpen, String displayName) {
             super(displayName);
             this.toOpen = toOpen;
         }
 
         public void actionPerformed(ActionEvent evt) {
-
             if (this.toOpen != null) {
                 try {
                     AspectualViewGps loader =
@@ -4185,7 +4043,6 @@ public class Simulator {
                     showErrorDialog("Can't load grammar: ", e);
                 }
             } else {
-
                 String input =
                     JOptionPane.showInputDialog("Input Grammar URL:");
                 if (input != null) {
@@ -4202,6 +4059,8 @@ public class Simulator {
                 }
             }
         }
+
+        private URL toOpen;
     }
 
     /** Action to create and load a new, initially empty graph grammar. */
@@ -4291,7 +4150,7 @@ public class Simulator {
 
         /** Enabled if there is a grammar loaded. */
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null
+            setEnabled(getGrammarView() != null
                 && Simulator.this.currentGrammarLoader.canWrite());
         }
     }
@@ -4324,7 +4183,7 @@ public class Simulator {
 
         /** Enabled if there is a grammar loaded. */
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null
+            setEnabled(getGrammarView() != null
                 && Simulator.this.currentGrammarLoader.canWrite());
         }
     }
@@ -4388,45 +4247,6 @@ public class Simulator {
     // }
 
     /**
-     * Action for inputting a CTL formula.
-     */
-    private class ProvideTemporalFormulaAction extends AbstractAction implements
-            Refreshable {
-        /** Constructs an instance of the action. */
-        ProvideTemporalFormulaAction() {
-            super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
-            setEnabled(true);
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            int goOn = 0;
-            // if there are still open states the result might be different as
-            // expected
-            // ask the user whether really to continue
-            if (getCurrentGTS().hasOpenStates()) {
-                String message =
-                    "The transition system still contains open states. Do you want to contiue verifying it?";
-                goOn =
-                    JOptionPane.showConfirmDialog(getFrame(), message,
-                        "Open states", JOptionPane.YES_NO_OPTION);
-            }
-            if (goOn == JOptionPane.YES_OPTION) {
-                FormulaDialog dialog = getFormulaDialog();
-                dialog.showDialog(getFrame());
-                String property = dialog.getProperty();
-                if (property != null) {
-                    verifyProperty(property);
-                }
-            }
-        }
-
-        public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
-        }
-    }
-
-    /**
      * Action for quitting the simulator.
      * @see Simulator#doQuit()
      */
@@ -4464,7 +4284,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
+            setEnabled(getGrammarView() != null);
         }
     }
 
@@ -4484,7 +4304,7 @@ public class Simulator {
             if (oldGraphName != null) {
                 try {
                     AspectGraph graph =
-                        unmarshalGraph(getCurrentGrammar().getGraphs().get(
+                        unmarshalGraph(getGrammarView().getGraphs().get(
                             oldGraphName));
                     assert graph != null : String.format("Graph '%s' in graph list but not in grammar");
                     String newGraphName =
@@ -4539,7 +4359,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
+            setEnabled(getGrammarView() != null);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4579,7 +4399,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
+            setEnabled(getGrammarView() != null);
         }
     }
 
@@ -4613,7 +4433,7 @@ public class Simulator {
          */
         public void refresh() {
             if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getCurrentGTS() != null);
+                setEnabled(getGTS() != null);
                 putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
             } else if (getGraphPanel() == getStatePanel()) {
                 setEnabled(getCurrentState() != null);
@@ -4636,70 +4456,15 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                startSimulation(getCurrentGrammar());
+                startSimulation();
             }
         }
 
         public void refresh() {
             boolean enabled =
-                getCurrentGrammar() != null
-                    && getCurrentGrammar().getErrors().isEmpty();
+                getGrammarView() != null
+                    && getGrammarView().getErrors().isEmpty();
             setEnabled(enabled);
-        }
-    }
-
-    private class ExportAction extends AbstractAction implements Refreshable {
-
-        ExportAction() {
-            super("Export Simulation ...");
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-            ExportDialog dialog = new ExportDialog(Simulator.this);
-            dialog.setCurrentDirectory(FileGps.toFile(
-                Simulator.this.currentGrammarURL).getAbsolutePath());
-
-            if (dialog.showDialog(Simulator.this)) {
-
-                File file = new File(dialog.getDirectory());
-                int exportStates = dialog.getExportStates();
-                boolean showFinal = dialog.showFinal();
-                boolean showNames = dialog.showNames();
-                boolean showStart = dialog.showStart();
-                boolean showOpen = dialog.showOpen();
-
-                GTS gts = Simulator.this.getCurrentGTS();
-
-                LTSGraph lts =
-                    new LTSGraph(gts, showFinal, showStart, showOpen, showNames);
-
-                Collection<GraphState> export = new HashSet<GraphState>(0);
-
-                if (exportStates == ExportDialog.STATES_ALL) {
-                    export = gts.getStateSet();
-                } else if (exportStates == ExportDialog.STATES_FINAL) {
-                    export = gts.getFinalStates();
-                }
-
-                try {
-                    Groove.saveGraph(lts,
-                        new File(file, "lts.gxl").getAbsolutePath());
-                    for (GraphState state : export) {
-                        String name = state.toString();
-                        Groove.saveGraph(state.getGraph(), new File(file, name
-                            + ".gst").getAbsolutePath());
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-
-        public void refresh() {
-            setEnabled(getCurrentGTS() != null);
         }
     }
 
@@ -4717,70 +4482,113 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                startAbstrSimulation(getCurrentGrammar());
+                startAbstrSimulation();
             }
         }
 
         public void refresh() {
             boolean enabled =
-                getCurrentGrammar() != null
-                    && getCurrentGrammar().getErrors().isEmpty();
+                getGrammarView() != null
+                    && getGrammarView().getErrors().isEmpty();
             setEnabled(enabled);
         }
     }
 
-    // BEGIN_IOVKA
-    /** Allows to select a custom scenario and run it. */
-    private class ChooseCustomScenarioAction extends AbstractAction implements
-            Refreshable {
-        ChooseCustomScenarioAction() {
-            super("Run a custom scenario (work in progress)");
+    // private class NewControlAction extends AbstractAction implements
+    // Refreshable {
+    // NewControlAction() {
+    // super(Options.NEW_CONTROL_ACTION_NAME);
+    // addRefreshable(this);
+    // }
+    //
+    // public void actionPerformed(ActionEvent e) {
+    // if (confirmAbandon(false)) {
+    // File location =
+    // FileGps.toFile(Simulator.this.getCurrentGrammarURL());
+    // int offset = 0;
+    // File controlFile =
+    // new File(
+    // location,
+    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME));
+    // while (controlFile.exists()) {
+    // offset++;
+    // controlFile =
+    // new File(
+    // location,
+    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME
+    // + offset));
+    // }
+    //
+    // JFileChooser chooser = Simulator.this.getControlFileChooser();
+    // chooser.setSelectedFile(controlFile);
+    //
+    // int result = chooser.showOpenDialog(getFrame());
+    // // now load, if so required
+    // if (result == JFileChooser.APPROVE_OPTION
+    // && confirmAbandon(false)) {
+    //
+    // if (!chooser.getSelectedFile().exists()) {
+    //
+    // // ControlView cv = grammar.getControl();
+    // try {
+    // ControlView.store("", new FileOutputStream(
+    // chooser.getSelectedFile()));
+    // doLoadControlFile(chooser.getSelectedFile());
+    // Simulator.this.getGraphViewsPanel().setSelectedComponent(
+    // Simulator.this.getControlPanel());
+    // } catch (IOException ioe) {
+    // showErrorDialog(ioe.getMessage(), ioe);
+    // }
+    // }
+    // }
+    //
+    // }
+    // }
+    //
+    // /** Enabled if there is a grammar loaded. */
+    // public void refresh() {
+    // setEnabled(getCurrentGrammar() != null
+    // && Simulator.this.currentGrammarLoader.canWrite());
+    // }
+    // }
+
+    /**
+     * Action for verifying a CTL formula.
+     */
+    private class VerifyCTLAction extends AbstractAction implements Refreshable {
+        /** Constructs an instance of the action. */
+        VerifyCTLAction() {
+            super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
+            setEnabled(true);
             addRefreshable(this);
         }
 
-        public void actionPerformed(ActionEvent e) {
-            ScenarioSelectionDialog sd =
-                new ScenarioSelectionDialog(getFrame(),
-                    getCurrentGTS().getGrammar());
-            Scenario customScenario = sd.showDialog();
-            if (customScenario != null) {
-                LaunchScenarioAction action =
-                    createLaunchScenarioAction(customScenario);
-                action.actionPerformed(e);
+        public void actionPerformed(ActionEvent evt) {
+            int goOn = 0;
+            // if there are still open states the result might be different as
+            // expected
+            // ask the user whether really to continue
+            if (getGTS().hasOpenStates()) {
+                String message =
+                    "The transition system still contains open states. Do you want to contiue verifying it?";
+                goOn =
+                    JOptionPane.showConfirmDialog(getFrame(), message,
+                        "Open states", JOptionPane.YES_NO_OPTION);
+            }
+            if (goOn == JOptionPane.YES_OPTION) {
+                FormulaDialog dialog = getFormulaDialog();
+                dialog.showDialog(getFrame());
+                String property = dialog.getProperty();
+                if (property != null) {
+                    doVerifyProperty(property);
+                }
             }
         }
 
         public void refresh() {
-            // Temporarily disable the dialog.
-            // setEnabled(getCurrentGrammar() != null &&
-            // getCurrentGrammar().getStartGraph() != null);
-            setEnabled(false);
+            setEnabled(getGrammarView() != null);
         }
     }
-
-    private ChooseCustomScenarioAction getChooseCustomScenarioAction() {
-        return new ChooseCustomScenarioAction();
-    }
-
-    // END_IOVKA
-
-    ExploreStateStrategy exploreState;
-
-    /**
-     * Returns the explore-strategy for exploring a single state.
-     * @return the explore-strategy for exploring a single state
-     */
-    public ExploreStateStrategy getExploreState() {
-        if (this.exploreState == null) {
-            this.exploreState = new ExploreStateStrategy();
-        }
-        return this.exploreState;
-    }
-
-    private static Collection<GraphState> visualize; // = new
-    // HashSet<GraphState>();
-
-    private History history;
 
     /** Class wrapping a menu of recently opened files. */
     private class History {
@@ -4879,4 +4687,97 @@ public class Simulator {
             return ret;
         }
     }
+
+    /**
+     * Starts a simulator, optionally setting the graph production system and
+     * start state.
+     */
+    public static void main(String[] args) {
+        Simulator simulator;
+        try {
+            if (args.length == 0) {
+                simulator = new Simulator();
+            } else if (args.length == 1) {
+                simulator = new Simulator(args[0]);
+            } else if (args.length == 2) {
+                simulator = new Simulator(args[0], args[1]);
+            } else {
+                throw new IOException(
+                    "Usage: Simulator [<production-system> [<start-state>]]");
+            }
+            // simulator.loadModules();
+            simulator.start();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+            System.out.println(exc.getMessage());
+            // System.exit(0);
+        }
+    }
+
+    // --------------------- INSTANCE DEFINITIONS -----------------------------
+
+    /**
+     * Name of the LTS file, when it is saved or exported.
+     */
+    static private final String LTS_FILE_NAME = "lts";
+
+    /**
+     * Default name of an empty rule.
+     */
+    static private final String NEW_GRAMMAR_NAME = "newGrammar";
+
+    /**
+     * Default name of an empty rule.
+     */
+    static private final String NEW_GRAPH_NAME = "newGraph";
+
+    /**
+     * Default name of an empty rule.
+     */
+    static private final String NEW_RULE_NAME = "newRule";
+
+    /**
+     * Separator between grammar name and start graph name in the frame title.
+     */
+    private static final String TITLE_NAME_SEPARATOR = "@";
+
+    /** Name of this application. */
+    private static final String APPLICATION_NAME = "Production Simulator";
+
+    /**
+     * Minimum width of the rule tree component.
+     */
+    static private final int RULE_TREE_MINIMUM_WIDTH = 100;
+
+    /**
+     * Minimum height of the rule tree component.
+     */
+    static private final int RULE_TREE_MINIMUM_HEIGHT = 500;
+
+    /**
+     * Minimum height of the rule tree component.
+     */
+    static private final int START_LIST_MINIMUM_HEIGHT = 130;
+
+    /**
+     * Preferred width of the graph view.
+     */
+    static private final int GRAPH_VIEW_PREFERRED_WIDTH = 500;
+
+    /**
+     * Preferred height of the graph view.
+     */
+    static private final int GRAPH_VIEW_PREFERRED_HEIGHT = 400;
+
+    /**
+     * Preferred dimension of the graph view.
+     */
+    static private final Dimension GRAPH_VIEW_PREFERRED_SIZE =
+        new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
+
+    /** Flag controlling if a report should be printed after quitting. */
+    private static final boolean REPORT = false;
+
+    private static Collection<GraphState> visualize; // = new
+    // HashSet<GraphState>();
 }

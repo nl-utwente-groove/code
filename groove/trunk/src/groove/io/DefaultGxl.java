@@ -87,16 +87,21 @@ public class DefaultGxl extends AbstractXml {
         // set some more information in the graph, based on the URL
         GraphInfo.setFile(resultGraph, url.getFile());
         PriorityFileName priorityName = new PriorityFileName(url);
-        GraphInfo.setName(resultGraph, priorityName.getActualName());
+        if (GraphInfo.getName(resultGraph) == null) {
+            GraphInfo.setName(resultGraph, priorityName.getActualName());
+        }
         if (priorityName.hasPriority()) {
             GraphInfo.getProperties(resultGraph, true).setPriority(
                 priorityName.getPriority());
         }
 
-        if (Groove.isRuleURL(url)) {
-            GraphInfo.setRuleRole(resultGraph);
-        } else {
-            GraphInfo.setGraphRole(resultGraph);
+        // set graph role if necessary
+        if (GraphInfo.getRole(resultGraph) == null) {
+            if (Groove.isRuleURL(url)) {
+                GraphInfo.setRuleRole(resultGraph);
+            } else {
+                GraphInfo.setGraphRole(resultGraph);
+            }
         }
         return result;
     }

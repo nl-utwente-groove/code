@@ -109,7 +109,7 @@ public class StateJList extends JList implements SimulationListener {
                         String selection =
                             (String) StateJList.this.getSelectedValue();
                         File file =
-                            StateJList.this.simulator.getCurrentGrammar().getGraphs().get(
+                            StateJList.this.simulator.getGrammarView().getGraphs().get(
                                 selection);
                         StateJList.this.simulator.doLoadStartGraph(file);
                     }
@@ -136,7 +136,7 @@ public class StateJList extends JList implements SimulationListener {
         if (!isSelectionEmpty()) {
             String selection = (String) this.getSelectedValue();
             File file =
-                this.simulator.getCurrentGrammar().getGraphs().get(selection);
+                this.simulator.getGrammarView().getGraphs().get(selection);
             boolean load =
                 Editor.previewGraph(file, Options.START_GRAPH_ACTION_NAME);
             if (load) {
@@ -192,7 +192,7 @@ public class StateJList extends JList implements SimulationListener {
      *        to select the start graph.
      */
     public void refreshList(boolean keepSelection) {
-        DefaultGrammarView grammar = this.simulator.getCurrentGrammar();
+        DefaultGrammarView grammar = this.simulator.getGrammarView();
         Map<String,File> graphs = grammar.getGraphs();
         setList(graphs.keySet(), keepSelection);
     }
@@ -202,7 +202,7 @@ public class StateJList extends JList implements SimulationListener {
      * grammar.
      */
     private void refreshStartGraphName() {
-        DefaultGrammarView grammar = this.simulator.getCurrentGrammar();
+        DefaultGrammarView grammar = this.simulator.getGrammarView();
         if (grammar.getStartGraph() != null) {
             // test if start graph exists and is taken from this list
             File startGraphFile = this.simulator.getCurrentStartGraphFile();
