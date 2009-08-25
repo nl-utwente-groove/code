@@ -112,12 +112,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         clearSelectedMatch();
         this.stateJModelMap.clear();
         this.jGraph.getFilteredLabels().clear();
-        if (grammar == null || grammar.getStartGraph() == null) {
+        if (grammar == null || grammar.getStartGraphView() == null) {
             this.jGraph.setModel(this.startGraphJModel =
                 AspectJModel.EMPTY_ASPECT_JMODEL);
             setEnabled(false);
         } else {
-            AspectualGraphView startGraph = grammar.getStartGraph();
+            AspectualGraphView startGraph = grammar.getStartGraphView();
             this.jGraph.setModel(this.startGraphJModel =
                 createGraphJModel(startGraph));
             setEnabled(true);

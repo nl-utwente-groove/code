@@ -176,14 +176,15 @@ public class RuleJTree extends JTree implements SimulationListener {
         Map<Integer,Set<AspectualRuleView>> result =
             new TreeMap<Integer,Set<AspectualRuleView>>(
                 Rule.PRIORITY_COMPARATOR);
-        for (AspectualRuleView rule : grammar.getRuleMap().values()) {
-            int priority = rule.getPriority();
+        for (RuleName ruleName : grammar.getRuleNames()) {
+            AspectualRuleView ruleView = grammar.getRuleView(ruleName);
+            int priority = ruleView.getPriority();
             Set<AspectualRuleView> priorityRules = result.get(priority);
             if (priorityRules == null) {
                 result.put(priority, priorityRules =
                     new TreeSet<AspectualRuleView>());
             }
-            priorityRules.add(rule);
+            priorityRules.add(ruleView);
         }
         return result;
     }

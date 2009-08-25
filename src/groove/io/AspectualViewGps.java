@@ -23,7 +23,6 @@ import groove.graph.GraphInfo;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
@@ -194,13 +193,7 @@ public abstract class AspectualViewGps extends Observable implements
             setChanged();
             notifyObservers(1);
 
-            AspectGraph unmarshalledStartGraph =
-                unmarshalGraph(startGraphSource);
-
-            AspectualGraphView startGraph =
-                unmarshalledStartGraph.toGraphView(result.getProperties());
-
-            startGraph.getName();
+            AspectGraph startGraph = unmarshalGraph(startGraphSource);
 
             setChanged();
             notifyObservers(startGraph);

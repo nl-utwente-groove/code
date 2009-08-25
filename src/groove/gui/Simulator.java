@@ -281,7 +281,7 @@ public class Simulator {
         boolean result = this.grammarView != grammar;
         this.grammarView = grammar;
         if (this.currentRule != null
-            && grammar.getRule(this.currentRule.getRuleName()) == null) {
+            && grammar.getRuleView(this.currentRule.getRuleName()) == null) {
             this.currentRule = null;
         }
         return result;
@@ -1072,10 +1072,10 @@ public class Simulator {
                     // names & files
                     Simulator.this.currentGrammarURL = grammarURL;
                     Simulator.this.currentGrammarLoader = grammarLoader;
-                    if (grammar.getStartGraph() != null) {
+                    if (grammar.getStartGraphView() != null) {
                         File startFile =
                             new File(FileGps.toFile(grammarURL),
-                                grammar.getStartGraph().getName());
+                                grammar.getStartGraphView().getName());
                         getStateFileChooser().setSelectedFile(startFile);
                     } else {
                         // make sure the selected file from an old grammar is
@@ -1141,7 +1141,7 @@ public class Simulator {
             setTitle();
 
             getStateFileChooser().setCurrentDirectory(grammarFile);
-            AspectualGraphView startGraph = getGrammarView().getStartGraph();
+            AspectualGraphView startGraph = getGrammarView().getStartGraphView();
             if (startGraph != null) {
                 getStateFileChooser().setSelectedFile(
                     new File(startGraph.getName()));
@@ -1160,9 +1160,7 @@ public class Simulator {
      */
     void doLoadStartGraph(File file) {
         try {
-            AspectGraph aspectStartGraph = unmarshalGraph(file);
-            AspectualGraphView startGraph =
-                aspectStartGraph.toGraphView(getGrammarView().getProperties());
+            AspectGraph startGraph = unmarshalGraph(file);
             getGrammarView().setStartGraph(startGraph);
             setCurrentStartGraphFile(file);
             setGrammar(getGrammarView());
@@ -1252,10 +1250,8 @@ public class Simulator {
                 DefaultGrammarView grammar =
                     this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
                 if (getCurrentStartGraphFile() != null) {
-                    AspectGraph aspectStartGraph =
+                    AspectGraph startGraph =
                         unmarshalGraph(getCurrentStartGraphFile());
-                    AspectualGraphView startGraph =
-                        aspectStartGraph.toGraphView(grammar.getProperties());
                     grammar.setStartGraph(startGraph);
                 }
                 // File currentControlFile =
@@ -1286,9 +1282,7 @@ public class Simulator {
         doAddGraph(graph);
         if (isStartGraph) {
             // reset the start graph to the renamed graph
-            AspectualGraphView startGraph =
-                graph.toGraphView(getGrammarView().getProperties());
-            getGrammarView().setStartGraph(startGraph);
+            getGrammarView().setStartGraph(graph);
         } else {
             this.stateJList.refreshList(true);
         }
@@ -1356,8 +1350,7 @@ public class Simulator {
         try {
             TemporalFormula formula = CTLFormula.parseFormula(property);
             String invalidAtom =
-                TemporalFormula.validAtoms(formula,
-                    getGrammarView().getRuleMap().keySet());
+                TemporalFormula.validAtoms(formula, getGrammarView().getRuleNames());
             if (invalidAtom == null) {
                 CTLModelChecker modelChecker =
                     new CTLModelChecker(getGTS(), formula);
@@ -1514,7 +1507,7 @@ public class Simulator {
      * @see #fireSetRule(RuleName)
      */
     public synchronized void setRule(RuleName name) {
-        setCurrentRule(getGrammarView().getRule(name));
+        setCurrentRule(getGrammarView().getRuleView(name));
         setCurrentTransition(null);
         setCurrentEvent(null);
         fireSetRule(name);
@@ -1534,7 +1527,7 @@ public class Simulator {
         if (transition != null) {
             if (setCurrentTransition(transition)) {
                 RuleName ruleName = transition.getEvent().getRule().getName();
-                setCurrentRule(getGrammarView().getRule(ruleName));
+                setCurrentRule(getGrammarView().getRuleView(ruleName));
                 setCurrentEvent(transition.getEvent());
             }
             fireSetTransition(getCurrentTransition());
@@ -1558,7 +1551,7 @@ public class Simulator {
     public synchronized void setEvent(RuleEvent event) {
         assert event != null : "The match and the transition cannot be both null.";
         RuleName ruleName = event.getRule().getName();
-        setCurrentRule(getGrammarView().getRule(ruleName));
+        setCurrentRule(getGrammarView().getRuleView(ruleName));
         setCurrentTransition(null);
         setCurrentEvent(event);
         fireSetMatch(event.getMatch(getCurrentState().getGraph()));
@@ -2469,7 +2462,7 @@ public class Simulator {
         StringBuffer title = new StringBuffer();
         if (getGrammarView() != null && getGrammarView().getName() != null) {
             title.append(getGrammarView().getName());
-            AspectualGraphView startGraph = getGrammarView().getStartGraph();
+            AspectualGraphView startGraph = getGrammarView().getStartGraphView();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
@@ -2559,7 +2552,7 @@ public class Simulator {
      * version.
      */
     boolean confirmLoadStartState(String stateName) {
-        if (getGrammarView().getStartGraph() == null) {
+        if (getGrammarView().getStartGraphView() == null) {
             return true;
         } else {
             String question =
@@ -2617,8 +2610,8 @@ public class Simulator {
      */
     RuleName askNewRuleName(String title, String name, boolean mustBeFresh) {
         FreshNameDialog<RuleName> ruleNameDialog =
-            new FreshNameDialog<RuleName>(
-                getGrammarView().getRuleMap().keySet(), name, mustBeFresh) {
+            new FreshNameDialog<RuleName>(getGrammarView().getRuleNames(), name,
+                mustBeFresh) {
                 @Override
                 protected RuleName createName(String name) {
                     return new RuleName(name);
@@ -3361,7 +3354,7 @@ public class Simulator {
         public void refresh() {
             boolean enabled =
                 getGraphPanel() == getStatePanel() && getGrammarView() != null
-                    && getGrammarView().getStartGraph() != null
+                    && getGrammarView().getStartGraphView() != null
                     && Simulator.this.currentGrammarLoader.canWrite();
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
@@ -3964,7 +3957,7 @@ public class Simulator {
                     AspectGraph ruleGraph = unmarshalGraph(ruleFile);
                     RuleName ruleName =
                         new RuleName(GraphInfo.getName(ruleGraph));
-                    if (getGrammarView().getRule(ruleName) == null
+                    if (getGrammarView().getRuleView(ruleName) == null
                         || confirmOverwriteRule(ruleName)) {
                         doAddRule(ruleName, ruleGraph);
                     }

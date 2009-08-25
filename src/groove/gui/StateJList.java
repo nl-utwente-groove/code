@@ -203,10 +203,10 @@ public class StateJList extends JList implements SimulationListener {
      */
     private void refreshStartGraphName() {
         DefaultGrammarView grammar = this.simulator.getGrammarView();
-        if (grammar.getStartGraph() != null) {
+        if (grammar.getStartGraphView() != null) {
             // test if start graph exists and is taken from this list
             File startGraphFile = this.simulator.getCurrentStartGraphFile();
-            String startGraphName = grammar.getStartGraph().getName();
+            String startGraphName = grammar.getStartGraphView().getName();
             assert startGraphName != null;
             if (startGraphFile == null
                 || startGraphFile.equals(grammar.getGraphs().get(startGraphName))) {

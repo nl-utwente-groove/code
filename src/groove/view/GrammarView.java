@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.trans.GraphGrammar;
+import groove.view.aspect.AspectGraph;
 
 /**
  * Instantiation of the generic grammar view with aspectual views.
@@ -26,5 +27,13 @@ import groove.trans.GraphGrammar;
 public interface GrammarView extends
         GenericGrammarView<AspectualGraphView,AspectualRuleView>,
         View<GraphGrammar> {
-    // does not add extra functionality
+
+    /**
+     * Sets the start graph to a given graph, or to <code>null</code>.
+     * @param startGraph the new start graph; if <code>null</code>, the start
+     *        graph is unset
+     * @throws IllegalArgumentException if <code>startGraph</code> does not have
+     *         a graph role
+     */
+    public void setStartGraph(AspectGraph startGraph);
 }

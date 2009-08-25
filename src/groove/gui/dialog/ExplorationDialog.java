@@ -61,31 +61,31 @@ public class ExplorationDialog extends JDialog implements ActionListener {
 
     // Constants to define the choices that can be made in this dialog.
     private static final String FULL_EXPLORATION = "Full exploration"; // strategy
-                                                                       // type
+    // type
     private static final String PATH_EXPLORATION = "Path exploration"; // strategy
-                                                                       // type
+    // type
     private static final String BRANCHING = "Branching"; // full exploration
-                                                         // strategy
+    // strategy
     private static final String BREADTH_FIRST = "Breadth First"; // full
-                                                                 // exploration
-                                                                 // strategy
+    // exploration
+    // strategy
     private static final String DEPTH_FIRST = "Depth First"; // full exploration
-                                                             // strategy
+    // strategy
     private static final String LINEAR_CONFLUENCE = "Linear Confluence"; // full
-                                                                         // exploration
-                                                                         // strategy
+    // exploration
+    // strategy
     private static final String LINEAR = "Linear"; // path exploration strategy
     private static final String RANDOM_LINEAR = "Random Linear"; // path
-                                                                 // exploration
-                                                                 // strategy
+    // exploration
+    // strategy
     private static final String NONE_ACCEPTOR = "None"; // acceptor
     private static final String FINAL_STATE = "Final State"; // acceptor
     private static final String RULE_MATCH = "Rule Match"; // acceptor (with
-                                                           // rule)
+    // rule)
     private static final String RULE_MISMATCH = "Rule Mismatch"; // acceptor
-                                                                 // (with rule)
+    // (with rule)
     private static final String EXPLORE_COMMAND = "Explore State Space"; // button
-                                                                         // command
+    // command
     private static final String CANCEL_COMMAND = "Cancel"; // button command
 
     // The current selection state of the dialog, which consists of:
@@ -100,8 +100,6 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     private String selectedFullStrategy = ExplorationDialog.BRANCHING;
     private final String selectedPathStrategy = ExplorationDialog.LINEAR;
     private String selectedAcceptor = ExplorationDialog.NONE_ACCEPTOR;
-    private RuleName selectedRule;
-    // private ConditionalAcceptor selectedConditionalAcceptor = new Conditional
 
     // The panel that displays either the choices for full exploration or the
     // choices for
@@ -199,10 +197,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             "<HTML><FONT color=996666>Select the transformation for Rule (Mis)Match:</FONT></HTML> "));
         JComboBox ruleSelector = new JComboBox();
         boolean first_element = true;
-        for (RuleName ruleName : this.simulator.getGrammarView().getRuleMap().keySet()) {
+        for (RuleName ruleName : this.simulator.getGrammarView().getRuleNames()) {
             ruleSelector.addItem(ruleName);
             if (first_element) {
-                this.selectedRule = ruleName;
                 first_element = false;
             }
         }
