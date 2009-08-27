@@ -126,16 +126,25 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** Sets the start graph to a given graph. */
     public void setStartGraph(AspectGraph startGraph) {
-        if (startGraph == null) {
-            this.startGraph = null;
-        } else {
-            if (!GraphInfo.hasGraphRole(startGraph)) {
-                throw new IllegalArgumentException(
-                    String.format("Prospective start graph '%s' is not a graph"));
-            }
-            this.startGraph = startGraph.toGraphView(getProperties());
+        assert startGraph != null;
+        if (!GraphInfo.hasGraphRole(startGraph)) {
+            throw new IllegalArgumentException(
+                String.format("Prospective start graph '%s' is not a graph"));
         }
+        this.startGraph = startGraph.toGraphView(getProperties());
         invalidate();
+    }
+
+    @Override
+    public boolean setStartGraph(String name) {
+        assert name != null;
+        this.startGraph = getGraphView(name);
+        return this.startGraph != null;
+    }
+
+    @Override
+    public void removeStartGraph() {
+        this.startGraph = null;
     }
 
     /** Collects and returns the permanent errors of the rule views. */
@@ -342,6 +351,11 @@ public class StoredGrammarView implements GrammarView, Observer {
     private final SystemStore store;
     /** The start graph of the grammar. */
     private AspectualGraphView startGraph;
+    /**
+     * Name of the current start graph, if it is one of the graphs in this rule
+     * system; <code>null</code> otherwise.
+     */
+    private String startGraphName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<String> errors;
     /** The graph grammar derived from the rule views. */
