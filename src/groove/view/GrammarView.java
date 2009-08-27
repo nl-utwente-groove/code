@@ -27,13 +27,13 @@ import groove.view.aspect.AspectGraph;
 public interface GrammarView extends
         GenericGrammarView<AspectualGraphView,AspectualRuleView>,
         View<GraphGrammar> {
-
     /**
      * Sets the start graph to a given graph, or to <code>null</code>.
      * @param startGraph the new start graph; if <code>null</code>, the start
      *        graph is unset
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
+     * @see #setStartGraph(String)
      */
     public void setStartGraph(AspectGraph startGraph);
 }

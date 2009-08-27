@@ -395,29 +395,6 @@ public class Simulator {
     }
 
     /**
-     * Returns the file from which the current start state has been loaded (if
-     * any).
-     * @return the file from which the current start state has been loaded, or
-     *         <code>null</code> if no start state is currently loaded.
-     */
-    public File getCurrentStartGraphFile() {
-        return this.currentStartGraphFile;
-    }
-
-    /**
-     * Sets the current start graph file to a given value (possibly
-     * <code>null</code>).
-     * @return <code>true</code> if the new file is different from the previous
-     */
-    private boolean setCurrentStartGraphFile(File file) {
-        boolean result =
-            (this.currentStartGraphFile == null) ? file != null
-                    : !this.currentStartGraphFile.equals(file);
-        this.currentStartGraphFile = file;
-        return result;
-    }
-
-    /**
      * Returns the transition application action permanently associated with
      * this simulator.
      */
@@ -919,7 +896,8 @@ public class Simulator {
                     saveGraph.getErrors()));
             } else {
                 marshalGraph(saveGraph, file);
-                getGrammarView().addGraph(saveGraph.getInfo().getName(), file);
+                getGrammarView().addGraph(saveGraph.getInfo().getName(),
+                    saveGraph);
                 getStateList().refreshList(true);
             }
         } catch (IOException exc) {
@@ -956,12 +934,13 @@ public class Simulator {
     void doDeleteGraph(String name) {
         // test now if this is the start state, before it is deleted from the
         // grammar
-        boolean isStartGraph = isStartGraph(name);
-        File graphFile = getGrammarView().removeGraph(name);
-        deleteGraph(graphFile);
+        boolean isStartGraph =
+            name.equals(getGrammarView().getStartGraphName());
+        getGrammarView().removeGraph(name);
+        deleteGraph(name);
         if (isStartGraph) {
             // reset the start graph to null
-            getGrammarView().setStartGraph(null);
+            getGrammarView().removeStartGraph();
             setGrammar(getGrammarView());
         } else {
             this.stateJList.refreshList(true);
@@ -1141,7 +1120,8 @@ public class Simulator {
             setTitle();
 
             getStateFileChooser().setCurrentDirectory(grammarFile);
-            AspectualGraphView startGraph = getGrammarView().getStartGraphView();
+            AspectualGraphView startGraph =
+                getGrammarView().getStartGraphView();
             if (startGraph != null) {
                 getStateFileChooser().setSelectedFile(
                     new File(startGraph.getName()));
@@ -1162,12 +1142,20 @@ public class Simulator {
         try {
             AspectGraph startGraph = unmarshalGraph(file);
             getGrammarView().setStartGraph(startGraph);
-            setCurrentStartGraphFile(file);
             setGrammar(getGrammarView());
         } catch (IOException exc) {
             showErrorDialog(
                 "Could not load start graph from " + file.getName(), exc);
         }
+    }
+
+    /**
+     * Sets a graph with given name as start state. This results in a reset of
+     * the LTS.
+     */
+    void doLoadStartGraph(String name) {
+        getGrammarView().setStartGraph(name);
+        setGrammar(getGrammarView());
     }
 
     /**
@@ -1247,12 +1235,11 @@ public class Simulator {
     void doRefreshGrammar() {
         if (this.currentGrammarURL != null) {
             try {
+                String startGraphName = getGrammarView().getStartGraphName();
                 DefaultGrammarView grammar =
                     this.currentGrammarLoader.unmarshal(this.currentGrammarURL);
-                if (getCurrentStartGraphFile() != null) {
-                    AspectGraph startGraph =
-                        unmarshalGraph(getCurrentStartGraphFile());
-                    grammar.setStartGraph(startGraph);
+                if (startGraphName != null) {
+                    grammar.setStartGraph(startGraphName);
                 }
                 // File currentControlFile =
                 // getControlFileChooser().getSelectedFile();
@@ -1275,14 +1262,15 @@ public class Simulator {
         String oldName = GraphInfo.getName(graph);
         // test now if this is the start state, before it is deleted from the
         // grammar
-        boolean isStartGraph = isStartGraph(oldName);
-        File graphFile = getGrammarView().removeGraph(oldName);
-        deleteGraph(graphFile);
+        boolean isStartGraph =
+            oldName.equals(getGrammarView().getStartGraphName());
+        getGrammarView().removeGraph(oldName);
+        deleteGraph(oldName);
         GraphInfo.setName(graph, newName);
         doAddGraph(graph);
         if (isStartGraph) {
             // reset the start graph to the renamed graph
-            getGrammarView().setStartGraph(graph);
+            getGrammarView().setStartGraph(newName);
         } else {
             this.stateJList.refreshList(true);
         }
@@ -1350,7 +1338,8 @@ public class Simulator {
         try {
             TemporalFormula formula = CTLFormula.parseFormula(property);
             String invalidAtom =
-                TemporalFormula.validAtoms(formula, getGrammarView().getRuleNames());
+                TemporalFormula.validAtoms(formula,
+                    getGrammarView().getRuleNames());
             if (invalidAtom == null) {
                 CTLModelChecker modelChecker =
                     new CTLModelChecker(getGTS(), formula);
@@ -1384,7 +1373,9 @@ public class Simulator {
         return getGraphLoader(file).unmarshalGraph(file);
     }
 
-    private void deleteGraph(File file) {
+    private void deleteGraph(String name) {
+        File grammarFile = FileGps.toFile(this.currentGrammarURL);
+        File file = new File(grammarFile, this.stateFilter.addExtension(name));
         getGraphLoader(file).deleteGraph(file);
     }
 
@@ -2462,7 +2453,8 @@ public class Simulator {
         StringBuffer title = new StringBuffer();
         if (getGrammarView() != null && getGrammarView().getName() != null) {
             title.append(getGrammarView().getName());
-            AspectualGraphView startGraph = getGrammarView().getStartGraphView();
+            AspectualGraphView startGraph =
+                getGrammarView().getStartGraphView();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
@@ -2610,8 +2602,8 @@ public class Simulator {
      */
     RuleName askNewRuleName(String title, String name, boolean mustBeFresh) {
         FreshNameDialog<RuleName> ruleNameDialog =
-            new FreshNameDialog<RuleName>(getGrammarView().getRuleNames(), name,
-                mustBeFresh) {
+            new FreshNameDialog<RuleName>(getGrammarView().getRuleNames(),
+                name, mustBeFresh) {
                 @Override
                 protected RuleName createName(String name) {
                     return new RuleName(name);
@@ -2632,7 +2624,7 @@ public class Simulator {
      *         <code>null</code>
      */
     String askNewGraphName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = getGrammarView().getGraphs().keySet();
+        Set<String> existingNames = getGrammarView().getGraphNames();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -2684,19 +2676,6 @@ public class Simulator {
     }
 
     /**
-     * Tests if a graph with a given name (in the graph list) is the one
-     * currently being used as start graph.
-     * @param graphName the graph name to be tested; non-null
-     * @return <code>true</code> if <code>graphName</code> refers to the current
-     *         start graph file.
-     */
-    private boolean isStartGraph(String graphName) {
-        File graphFile = getGrammarView().getGraphs().get(graphName);
-        return graphFile != null
-            && graphFile.equals(getCurrentStartGraphFile());
-    }
-
-    /**
      * The options object of this simulator.
      */
     private Options options;
@@ -2735,8 +2714,6 @@ public class Simulator {
      */
     private RuleEvent currentEvent;
 
-    /** File from which the last start state was loaded. */
-    private File currentStartGraphFile;
     /**
      * The file or directory containing the last loaded or saved grammar, or
      * <tt>null</tt> if no grammar was yet loaded.
@@ -3252,19 +3229,12 @@ public class Simulator {
             String oldGraphName =
                 (String) Simulator.this.stateJList.getSelectedValue();
             if (oldGraphName != null) {
-                try {
-                    AspectGraph oldGraph =
-                        unmarshalGraph(getGrammarView().getGraphs().get(
-                            oldGraphName));
-                    String newGraphName =
-                        askNewGraphName(null, oldGraphName, true);
-                    AspectGraph newGraph = oldGraph.clone();
-                    GraphInfo.setName(newGraph, newGraphName);
-                    doAddGraph(newGraph);
-                } catch (IOException exc) {
-                    new ErrorDialog(getFrame(), String.format(
-                        "Cannot load graph %s", oldGraphName), exc);
-                }
+                AspectualGraphView oldGraphView =
+                    getGrammarView().getGraphView(oldGraphName);
+                String newGraphName = askNewGraphName(null, oldGraphName, true);
+                AspectGraph newGraph = oldGraphView.getAspectGraph().clone();
+                GraphInfo.setName(newGraph, newGraphName);
+                doAddGraph(newGraph);
             }
         }
     }
@@ -3303,10 +3273,11 @@ public class Simulator {
             String graphName =
                 (String) Simulator.this.stateJList.getSelectedValue();
             if (graphName != null) {
+                boolean isStartGraph =
+                    graphName.equals(getGrammarView().getStartGraphName());
                 String question =
-                    String.format(isStartGraph(graphName)
-                            ? "Delete start graph '%s'?" : "Delete graph '%s'",
-                        graphName);
+                    String.format(isStartGraph ? "Delete start graph '%s'?"
+                            : "Delete graph '%s'", graphName);
                 if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
                     doDeleteGraph(graphName);
                 }
@@ -3406,34 +3377,22 @@ public class Simulator {
             String oldGraphName =
                 (String) Simulator.this.stateJList.getSelectedValue();
             if (oldGraphName != null) {
-                try {
-                    AspectGraph oldGraph =
-                        unmarshalGraph(getGrammarView().getGraphs().get(
-                            oldGraphName));
-                    EditorDialog dialog =
-                        new EditorDialog(getFrame(), getOptions(),
-                            oldGraph.toPlainGraph()) {
-                            @Override
-                            public void finish() {
-                                File saveFile =
-                                    handleSaveGraph(true, toAspectGraph());
-                                if (saveFile != null
-                                    && confirmLoadStartState(saveFile.getName())) {
-                                    doLoadStartGraph(saveFile);
-                                }
+                AspectualGraphView oldGraphView =
+                    getGrammarView().getGraphView(oldGraphName);
+                EditorDialog dialog =
+                    new EditorDialog(getFrame(), getOptions(),
+                        oldGraphView.getAspectGraph().toPlainGraph()) {
+                        @Override
+                        public void finish() {
+                            File saveFile =
+                                handleSaveGraph(true, toAspectGraph());
+                            if (saveFile != null
+                                && confirmLoadStartState(saveFile.getName())) {
+                                doLoadStartGraph(saveFile);
                             }
-                        };
-                    dialog.start();
-                    //
-                    // String newGraphName =
-                    // askNewGraphName(null, oldGraphName, true);
-                    // AspectGraph newGraph = oldGraph.clone();
-                    // GraphInfo.setName(newGraph, newGraphName);
-                    // doAddGraph(newGraph);
-                } catch (IOException exc) {
-                    new ErrorDialog(getFrame(), String.format(
-                        "Cannot load graph %s", oldGraphName), exc);
-                }
+                        }
+                    };
+                dialog.start();
             }
         }
     }
@@ -4295,19 +4254,13 @@ public class Simulator {
             String oldGraphName =
                 (String) Simulator.this.stateJList.getSelectedValue();
             if (oldGraphName != null) {
-                try {
-                    AspectGraph graph =
-                        unmarshalGraph(getGrammarView().getGraphs().get(
-                            oldGraphName));
-                    assert graph != null : String.format("Graph '%s' in graph list but not in grammar");
-                    String newGraphName =
-                        askNewGraphName(null, oldGraphName, false);
-                    if (!oldGraphName.equals(newGraphName)) {
-                        doRenameGraph(graph, newGraphName);
-                    }
-                } catch (IOException exc) {
-                    new ErrorDialog(getFrame(), String.format(
-                        "Cannot load graph %s", oldGraphName), exc);
+                AspectualGraphView graph =
+                    getGrammarView().getGraphView(oldGraphName);
+                assert graph != null : String.format("Graph '%s' in graph list but not in grammar");
+                String newGraphName =
+                    askNewGraphName(null, oldGraphName, false);
+                if (!oldGraphName.equals(newGraphName)) {
+                    doRenameGraph(graph.getAspectGraph(), newGraphName);
                 }
             }
         }

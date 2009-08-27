@@ -21,6 +21,7 @@ import groove.graph.GraphShape;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.aspect.AspectGraph;
@@ -57,7 +58,7 @@ public class FileGps extends AspectualViewGps {
         throws IOException {
 
         // first we load the graphs before we backup the old location
-        Map<String,AspectGraph> graphs = loadGraphs(gg.getGraphs());
+        Map<String,AspectualGraphView> graphs = gg.getGraphs();
 
         File backup = createLocation(location);
 
@@ -81,28 +82,31 @@ public class FileGps extends AspectualViewGps {
         }
     }
 
-    /**
-     * Loads the named graphs from specified location and returns the
-     * corresponding AspectGraphs
-     */
-    private Map<String,AspectGraph> loadGraphs(Map<String,File> graphsMap)
-        throws IOException {
-        Map<String,AspectGraph> graphs = new HashMap<String,AspectGraph>();
-        for (String name : graphsMap.keySet()) {
-            File file = graphsMap.get(name);
-            AspectGraph graph = this.unmarshalGraph(file.toURI().toURL());
-            graphs.put(name, graph);
-        }
-        return graphs;
-    }
+    //
+    // /**
+    // * Loads the named graphs from specified location and returns the
+    // * corresponding AspectGraphs
+    // */
+    // private Map<String,AspectGraph> loadGraphs(Map<String,File> graphsMap)
+    // throws IOException {
+    // Map<String,AspectGraph> graphs = new HashMap<String,AspectGraph>();
+    // for (String name : graphsMap.keySet()) {
+    // File file = graphsMap.get(name);
+    // AspectGraph graph = this.unmarshalGraph(file.toURI().toURL());
+    // graphs.put(name, graph);
+    // }
+    // return graphs;
+    // }
 
-    private void saveGraphs(Map<String,AspectGraph> graphs, File location)
+    private void saveGraphs(Map<String,AspectualGraphView> graphs, File location)
         throws IOException {
-        for (String name : graphs.keySet()) {
-            AspectGraph graph = graphs.get(name);
+        for (Map.Entry<String,AspectualGraphView> graphEntry : graphs.entrySet()) {
+            AspectualGraphView graph = graphEntry.getValue();
             File newLocation =
-                new File(location, STATE_FILTER.addExtension(name));
-            getGxlGraphMarshaller().marshalGraph(graph, newLocation);
+                new File(location,
+                    STATE_FILTER.addExtension(graphEntry.getKey()));
+            getGxlGraphMarshaller().marshalGraph(graph.getAspectGraph(),
+                newLocation);
         }
 
     }
@@ -238,23 +242,24 @@ public class FileGps extends AspectualViewGps {
         // GRAPHS
         Map<String,File> graphMap = new HashMap<String,File>();
         collectGraphNames(graphMap, location);
-        for (String graphName : graphMap.keySet()) {
-            result.addGraph(graphName, graphMap.get(graphName));
+        for (Map.Entry<String,File> graphEntry : graphMap.entrySet()) {
+            AspectGraph graph = unmarshalGraph(toURL(graphEntry.getValue()));
+            result.addGraph(graphEntry.getKey(), graph);
         }
 
         // START GRAPH
         File startGraphFile;
-        if (!hasRecognisedExtension(actualStartGraphName)) {
-            actualStartGraphName =
-                STATE_FILTER.addExtension(actualStartGraphName);
-        }
-        startGraphFile = new File(location, actualStartGraphName);
-        if (startGraphFile.exists()) {
-            loadStartGraph(result, toURL(startGraphFile));
-        } else if (startGraphName != null) {
-            // if there was an explicit name given, throw an exception
-            throw new IOException(String.format(
-                "Start graph '%s' does not exist", startGraphName));
+        if (hasRecognisedExtension(actualStartGraphName)) {
+            startGraphFile = new File(location, actualStartGraphName);
+            if (startGraphFile.exists()) {
+                loadStartGraph(result, toURL(startGraphFile));
+            } else if (startGraphName != null) {
+                // if there was an explicit name given, throw an exception
+                throw new IOException(String.format(
+                    "Start graph '%s' does not exist", startGraphName));
+            }
+        } else {
+            result.setStartGraph(actualStartGraphName);
         }
 
         // CONTROL

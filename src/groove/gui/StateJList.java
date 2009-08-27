@@ -21,6 +21,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
+import groove.view.AspectualGraphView;
 import groove.view.DefaultGrammarView;
 
 import java.awt.Color;
@@ -29,9 +30,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -108,10 +107,7 @@ public class StateJList extends JList implements SimulationListener {
                     public void actionPerformed(ActionEvent arg0) {
                         String selection =
                             (String) StateJList.this.getSelectedValue();
-                        File file =
-                            StateJList.this.simulator.getGrammarView().getGraphs().get(
-                                selection);
-                        StateJList.this.simulator.doLoadStartGraph(file);
+                        StateJList.this.simulator.doLoadStartGraph(selection);
                     }
                 };
         }
@@ -135,12 +131,13 @@ public class StateJList extends JList implements SimulationListener {
     private void doPreviewGraph() {
         if (!isSelectionEmpty()) {
             String selection = (String) this.getSelectedValue();
-            File file =
-                this.simulator.getGrammarView().getGraphs().get(selection);
+            AspectualGraphView graphView =
+                this.simulator.getGrammarView().getGraphView(selection);
             boolean load =
-                Editor.previewGraph(file, Options.START_GRAPH_ACTION_NAME);
+                Editor.previewGraph(graphView.getAspectGraph().toPlainGraph(),
+                    Options.START_GRAPH_ACTION_NAME);
             if (load) {
-                this.simulator.doLoadStartGraph(file);
+                this.simulator.doLoadStartGraph(selection);
             }
         }
     }
@@ -193,8 +190,7 @@ public class StateJList extends JList implements SimulationListener {
      */
     public void refreshList(boolean keepSelection) {
         DefaultGrammarView grammar = this.simulator.getGrammarView();
-        Map<String,File> graphs = grammar.getGraphs();
-        setList(graphs.keySet(), keepSelection);
+        setList(grammar.getGraphNames(), keepSelection);
     }
 
     /**
@@ -202,20 +198,8 @@ public class StateJList extends JList implements SimulationListener {
      * grammar.
      */
     private void refreshStartGraphName() {
-        DefaultGrammarView grammar = this.simulator.getGrammarView();
-        if (grammar.getStartGraphView() != null) {
-            // test if start graph exists and is taken from this list
-            File startGraphFile = this.simulator.getCurrentStartGraphFile();
-            String startGraphName = grammar.getStartGraphView().getName();
-            assert startGraphName != null;
-            if (startGraphFile == null
-                || startGraphFile.equals(grammar.getGraphs().get(startGraphName))) {
-                // emphasise the start graph name
-                this.startGraphName = startGraphName;
-            } else {
-                this.startGraphName = null;
-            }
-        }
+        this.startGraphName =
+            this.simulator.getGrammarView().getStartGraphName();
     }
 
     /**

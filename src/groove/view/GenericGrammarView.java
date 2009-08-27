@@ -46,16 +46,45 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView>
      */
     public RV addRule(RV rule) throws FormatException;
 
-    /** Returns an unmodifiable map from rule names to rule views. */
+    /** Returns an unmodifiable view on the set of graph names in this grammar. */
+    public Set<String> getGraphNames();
+
+    /** Returns an unmodifiable view on the set of rule names in this grammar. */
     public Set<RuleName> getRuleNames();
 
     /**
-     * Returns the rule view stored for a given rule name.
+     * Returns the rule view for a given rule name.
+     * @return the rule view for rule <code>name</code>, or <code>null</code> if
+     *         there is no such rule.
      */
     public RV getRuleView(RuleName name);
 
-    /** Returns the start graph of this grammar view. */
+    /**
+     * Returns the graph view for a given graph name.
+     * @return the graph view for graph <code>name</code>, or <code>null</code>
+     *         if there is no such graph.
+     */
+    public GV getGraphView(String name);
+
+    /**
+     * Returns the start graph of this grammar view.
+     * @return the start graph view, or <code>null</code> if no start graph is
+     *         set.
+     */
     public GV getStartGraphView();
+
+    /**
+     * Sets the name of the start graph. The name should correspond with one of
+     * the graphs stored with the rule system.
+     * @param name either a graph name within the current grammar; or
+     *        <code>null</code> if the start graph should be unset
+     * @return <code>true</code> if the start graph as set; <code>false</code>
+     *         if <code>name</code> is not a known graph name.
+     */
+    public boolean setStartGraph(String name);
+
+    /** Unsets the start graph. */
+    public void removeStartGraph();
 
     /**
      * Lazily converts the view to a fixed rule system. This may throw an

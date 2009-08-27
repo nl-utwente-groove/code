@@ -19,12 +19,13 @@ package groove.view;
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.graph.GraphInfo;
+import groove.io.AspectGxl;
+import groove.io.LayedOutXml;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.aspect.AspectGraph;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,6 +91,10 @@ public class DefaultGrammarView implements GrammarView {
         invalidateGrammar();
     }
 
+    public Set<String> getGraphNames() {
+        return Collections.unmodifiableSet(this.graphMap.keySet());
+    }
+
     public Set<RuleName> getRuleNames() {
         return Collections.unmodifiableSet(this.ruleMap.keySet());
     }
@@ -118,11 +123,10 @@ public class DefaultGrammarView implements GrammarView {
         return result;
     }
 
-    /**
-     * Returns the rule view stored for a given rule name. May be
-     * <code>null</code> if the rule cannot be viewed in the available
-     * {@link RuleView} format.
-     */
+    public AspectualGraphView getGraphView(String name) {
+        return this.graphMap.get(name);
+    }
+
     public AspectualRuleView getRuleView(RuleName name) {
         return this.ruleMap.get(name);
     }
@@ -132,20 +136,47 @@ public class DefaultGrammarView implements GrammarView {
     }
 
     /**
+     * Returns the name of the start graph, if it is one of the graphs stored
+     * with the rule system.
+     * @return the name of the start graph, or <code>null</code> if the start
+     *         graph is not one of the graphs stored with the rule system
+     */
+    public String getStartGraphName() {
+        return this.startGraphName;
+    }
+
+    @Override
+    public boolean setStartGraph(String name) {
+        assert name != null;
+        AspectualGraphView graphView = this.graphMap.get(name);
+        if (graphView == null) {
+            return false;
+        } else {
+            this.startGraph = graphView;
+            this.startGraphName = name;
+            invalidateGrammar();
+            return true;
+        }
+    }
+
+    /**
      * Sets the start graph to a given graph.
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
      */
     public void setStartGraph(AspectGraph startGraph) {
-        if (startGraph == null) {
-            this.startGraph = null;
-        } else {
-            if (!GraphInfo.hasGraphRole(startGraph)) {
-                throw new IllegalArgumentException(
-                    String.format("Prospective start graph '%s' is not a graph"));
-            }
-            this.startGraph = startGraph.toGraphView(getProperties());
+        assert startGraph != null;
+        if (!GraphInfo.hasGraphRole(startGraph)) {
+            throw new IllegalArgumentException(
+                String.format("Prospective start graph '%s' is not a graph"));
         }
+        this.startGraph = startGraph.toGraphView(getProperties());
+        this.startGraphName = null;
+        invalidateGrammar();
+    }
+
+    public void removeStartGraph() {
+        this.startGraph = null;
         invalidateGrammar();
     }
 
@@ -176,8 +207,8 @@ public class DefaultGrammarView implements GrammarView {
      * @param name the name of the graph to be added
      * @param file the file where the graph is actually stored
      */
-    public void addGraph(String name, File file) {
-        this.graphs.put(name, file);
+    public void addGraph(String name, AspectGraph graph) {
+        this.graphMap.put(name, graph.toGraphView(getProperties()));
     }
 
     /**
@@ -186,13 +217,13 @@ public class DefaultGrammarView implements GrammarView {
      * @return the file at which the graph with this name was stored;
      *         <code>null</code> if there was no graph with this name.
      */
-    public File removeGraph(String name) {
-        return this.graphs.remove(name);
+    public AspectualGraphView removeGraph(String name) {
+        return this.graphMap.remove(name);
     }
 
     /** Returns the graphs found during loading of the grammar */
-    public Map<String,File> getGraphs() {
-        return this.graphs;
+    public Map<String,AspectualGraphView> getGraphs() {
+        return this.graphMap;
     }
 
     /** Delegates to {@link #toGrammar()}. */
@@ -310,10 +341,15 @@ public class DefaultGrammarView implements GrammarView {
     /** Mapping from priorities to sets of rule names. */
     /** The name of this grammar view. */
     private String name;
-    /** The control automaton * */
+    /** The control automaton */
     private ControlView controlView;
-    /** The start gramg of the grammar. */
+    /** The start graph of the grammar. */
     private AspectualGraphView startGraph;
+    /**
+     * Name of the start graph, if the start graph is one of the graphs stored
+     * in the rule system.
+     */
+    private String startGraphName;
     /** The rule system properties of this grammar view. */
     private SystemProperties properties;
     /** Possibly empty list of errors found in the conversion to a grammar. */
@@ -322,5 +358,8 @@ public class DefaultGrammarView implements GrammarView {
     private GraphGrammar grammar;
 
     /** Contains the list of states found in the grammar location * */
-    private final Map<String,File> graphs = new HashMap<String,File>();
+    private final Map<String,AspectualGraphView> graphMap =
+        new HashMap<String,AspectualGraphView>();
+
+    private final AspectGxl graphMarshaller = new AspectGxl(new LayedOutXml());
 }
