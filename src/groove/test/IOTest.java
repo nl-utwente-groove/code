@@ -68,7 +68,7 @@ public class IOTest extends TestCase {
                 DEF_CONTROL, nodecount, edgecount);
             
             File file = new File(DIRECTORY);
-            URL url = FileGps.toURL(file);
+            URL url = Groove.toURL(file);
             
             FileGps gps = new FileGps(false);
             testControl(gps.unmarshal(file), DEF_START,DEF_CONTROL, nodecount, edgecount);
@@ -109,7 +109,7 @@ public class IOTest extends TestCase {
         int nodecount = 12;
         int edgecount = 15;
         try {
-            URL dir = FileGps.toURL(new File(DIRECTORY));
+            URL dir = Groove.toURL(new File(DIRECTORY));
             testControl(new FileGps(true).unmarshal(dir, ALT_START, ALT_CONTROL), ALT_START, ALT_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
             e.printStackTrace();

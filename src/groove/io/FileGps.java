@@ -30,8 +30,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -171,7 +169,7 @@ public class FileGps extends AspectualViewGps {
     @Override
     public DefaultGrammarView unmarshal(URL location, String startGraphName,
             String controlName) throws IOException {
-        return unmarshal(toFile(location), startGraphName, controlName);
+        return unmarshal(Groove.toFile(location), startGraphName, controlName);
     }
 
     /**
@@ -229,7 +227,7 @@ public class FileGps extends AspectualViewGps {
                     PROPERTIES_FILTER.addExtension(result.getName()));
         }
         if (propertiesFile.exists()) {
-            loadProperties(result, toURL(propertiesFile));
+            loadProperties(result, Groove.toURL(propertiesFile));
         }
 
         Map<RuleName,URL> ruleMap = new HashMap<RuleName,URL>();
@@ -243,7 +241,7 @@ public class FileGps extends AspectualViewGps {
         Map<String,File> graphMap = new HashMap<String,File>();
         collectGraphNames(graphMap, location);
         for (Map.Entry<String,File> graphEntry : graphMap.entrySet()) {
-            AspectGraph graph = unmarshalGraph(toURL(graphEntry.getValue()));
+            AspectGraph graph = unmarshalGraph(Groove.toURL(graphEntry.getValue()));
             result.addGraph(graphEntry.getKey(), graph);
         }
 
@@ -252,7 +250,7 @@ public class FileGps extends AspectualViewGps {
         if (hasRecognisedExtension(actualStartGraphName)) {
             startGraphFile = new File(location, actualStartGraphName);
             if (startGraphFile.exists()) {
-                loadStartGraph(result, toURL(startGraphFile));
+                loadStartGraph(result, Groove.toURL(startGraphFile));
             } else if (startGraphName != null) {
                 // if there was an explicit name given, throw an exception
                 throw new IOException(String.format(
@@ -298,7 +296,7 @@ public class FileGps extends AspectualViewGps {
         throws IOException {
         String controlName =
             CONTROL_FILTER.stripExtension(controlFile.getName());
-        loadControl(grammar, toURL(controlFile), controlName);
+        loadControl(grammar, Groove.toURL(controlFile), controlName);
 
     }
 
@@ -444,13 +442,13 @@ public class FileGps extends AspectualViewGps {
 
     @Override
     public URL createURL(File file) {
-        return toURL(file);
+        return Groove.toURL(file);
     }
 
     /** Returns the name of the grammar located at the given URL. */
     @Override
     public String grammarName(URL grammarURL) {
-        return GRAMMAR_FILTER.stripExtension(toFile(grammarURL).getName());
+        return GRAMMAR_FILTER.stripExtension(Groove.toFile(grammarURL).getName());
     }
 
     /**
@@ -459,7 +457,7 @@ public class FileGps extends AspectualViewGps {
      */
     @Override
     public String grammarLocation(URL grammarURL) {
-        return toFile(grammarURL).getParent();
+        return Groove.toFile(grammarURL).getParent();
     }
 
     private static File getFile(File location, AspectualRuleView ruleGraph,
@@ -507,32 +505,6 @@ public class FileGps extends AspectualViewGps {
                 new File(location, RULE_FILTER.addExtension(remainingName));
         }
         return result;
-    }
-
-    /**
-     * Convenience method for backwards compatibility. Converts a File to an
-     * URL, discarding any exceptions since it is well-formed
-     */
-    public static URL toURL(File file) {
-        URL url = null;
-        try {
-            url = file.toURI().toURL();
-        } catch (Exception e) {
-            //
-        }
-        return url;
-    }
-
-    /**
-     * Convenience method for converting URL's to Files without %20 for spaces
-     */
-    public static File toFile(URL url) {
-        try {
-            URI uri = new URI(url.getPath());
-            return new File(uri.getPath());
-        } catch (URISyntaxException e) {
-            return null;
-        }
     }
 
     /** File filter for graph grammars in the GPS format. */

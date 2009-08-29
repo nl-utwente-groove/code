@@ -30,7 +30,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Map;
 
 /**
@@ -80,28 +82,43 @@ public class DefaultGxl extends AbstractXml {
     @Override
     protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {
-        InputStream in = url.openStream();
-        Pair<Graph,Map<String,Node>> result =
-            DefaultGxlIO.getInstance().loadGraphWithMap(in);
-        Graph resultGraph = result.first();
-        // set some more information in the graph, based on the URL
-        GraphInfo.setFile(resultGraph, url.getFile());
-        PriorityFileName priorityName = new PriorityFileName(url);
-        GraphInfo.setName(resultGraph, priorityName.getActualName());
-        if (priorityName.hasPriority()) {
-            GraphInfo.getProperties(resultGraph, true).setPriority(
-                priorityName.getPriority());
-        }
-
-        // set graph role if necessary
-        if (GraphInfo.getRole(resultGraph) == null) {
-            if (Groove.isRuleURL(url)) {
-                GraphInfo.setRuleRole(resultGraph);
+        try {
+            URLConnection connection = url.openConnection();
+            InputStream in = connection.getInputStream();
+            Pair<Graph,Map<String,Node>> result =
+                DefaultGxlIO.getInstance().loadGraphWithMap(in);
+            Graph resultGraph = result.first();
+            // set some more information in the graph, based on the URL
+            GraphInfo.setFile(resultGraph, url.getFile());
+            // derive the name of the graph from the URL
+            String entryName;
+            if (connection instanceof JarURLConnection) {
+                entryName = ((JarURLConnection) connection).getEntryName();
             } else {
-                GraphInfo.setGraphRole(resultGraph);
+                entryName = url.getFile();
             }
+            PriorityFileName priorityName =
+                new PriorityFileName(new File(entryName));
+            if (priorityName.hasPriority()) {
+                GraphInfo.getProperties(resultGraph, true).setPriority(
+                    priorityName.getPriority());
+            }
+
+            // set graph role if necessary
+            if (GraphInfo.getRole(resultGraph) == null) {
+                if (Groove.isRuleURL(url)) {
+                    GraphInfo.setRuleRole(resultGraph);
+                } else {
+                    GraphInfo.setGraphRole(resultGraph);
+                }
+            }
+            // note: don't set the name,
+            // there is no general scheme to derive it from the URL
+            return result;
+        } catch (IOException exc) {
+            throw new IOException(String.format("Error while loading '%s': %s",
+                url, exc.getMessage()), exc);
         }
-        return result;
     }
 
     /**

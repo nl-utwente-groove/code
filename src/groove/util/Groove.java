@@ -43,6 +43,9 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -857,6 +860,54 @@ public class Groove {
         }
         result.append(end);
         return result.toString();
+    }
+
+    /**
+     * Converts a File to a URL.
+     */
+    public static URL toURL(File file) {
+        URL url = null;
+        try {
+            url = file.toURI().toURL();
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(String.format(
+                "File '%s' cannot be converted to URL", file));
+        }
+        return url;
+    }
+
+    /**
+     * Returns the file corresponding to a given URL, if the URL points to a
+     * file. Otherwise, returns <code>null</code>. The URL points to a file in
+     * two cases:
+     * <ul>
+     * <li>its protocol is 'file' with undefined authority, query, and fragment
+     * components;
+     * <li>its protocol is 'jar' with undefined entry, and an inner URL which is
+     * a file URL of the first kind.
+     * </ul>
+     */
+    public static File toFile(URL url) {
+        if (url.getProtocol().equals("file")) {
+            try {
+                return new File(url.toURI());
+            } catch (URISyntaxException e) {
+                return null;
+            } catch (IllegalArgumentException e) {
+                // possibly thrown by the File constructor
+                return null;
+            }
+        } else if (url.getProtocol().equals("jar")) {
+            try {
+                URL innerURL =
+                    ((JarURLConnection) url.openConnection()).getJarFileURL();
+                return toFile(innerURL);
+            } catch (IOException exc) {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     /** Properties object for the GUI properties. */

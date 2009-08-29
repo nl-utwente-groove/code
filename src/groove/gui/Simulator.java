@@ -196,7 +196,7 @@ public class Simulator {
                 new File(Groove.createRuleSystemFilter().addExtension(
                     grammarLocation)).getAbsoluteFile();
 
-            URL locationURL = FileGps.toURL(location);
+            URL locationURL = Groove.toURL(location);
             final URL grammarURL;
             if (startGraphName != null) {
                 grammarURL =
@@ -578,10 +578,8 @@ public class Simulator {
 
     /** Creates an action associated to a scenario handler. */
     public LaunchScenarioAction getLaunchScenarioAction(Scenario scenario) {
-        if (this.launchScenarioAction == null) {
-            this.launchScenarioAction = new LaunchScenarioAction(scenario);
-        }
-        return this.launchScenarioAction;
+        // reuse: the action depends on the scenario
+        return new LaunchScenarioAction(scenario);
     }
 
     /**
@@ -865,7 +863,7 @@ public class Simulator {
             controlName = Groove.DEFAULT_CONTROL_NAME;
         }
         File controlFile =
-            new File(FileGps.toFile(this.currentGrammarURL),
+            new File(Groove.toFile(this.currentGrammarURL),
                 Groove.createControlFilter().addExtension(controlName));
         if (doSaveControl(program, controlFile)) {
             return controlFile;
@@ -880,7 +878,7 @@ public class Simulator {
      */
     void doAddGraph(Graph graph) {
         File graphFile =
-            new File(FileGps.toFile(this.currentGrammarURL),
+            new File(Groove.toFile(this.currentGrammarURL),
                 this.stateFilter.addExtension(GraphInfo.getName(graph)));
         doAddGraph(graph, graphFile);
     }
@@ -918,7 +916,7 @@ public class Simulator {
                 ruleAsGraph.toRuleView(getGrammarView().getProperties());
             getGrammarView().addRule(ruleView);
             this.currentGrammarLoader.marshalRule(ruleView,
-                FileGps.toFile(this.currentGrammarURL));
+                Groove.toFile(this.currentGrammarURL));
             setGrammar(getGrammarView());
             setRule(ruleName);
         } catch (IOException exc) {
@@ -955,7 +953,7 @@ public class Simulator {
         AspectualRuleView rule = getGrammarView().removeRule(name);
         if (rule != null) {
             this.currentGrammarLoader.deleteRule(rule,
-                FileGps.toFile(this.currentGrammarURL));
+                Groove.toFile(this.currentGrammarURL));
             setGrammar(getGrammarView());
         }
     }
@@ -1053,7 +1051,7 @@ public class Simulator {
                     Simulator.this.currentGrammarLoader = grammarLoader;
                     if (grammar.getStartGraphView() != null) {
                         File startFile =
-                            new File(FileGps.toFile(grammarURL),
+                            new File(Groove.toFile(grammarURL),
                                 grammar.getStartGraphView().getName());
                         getStateFileChooser().setSelectedFile(startFile);
                     } else {
@@ -1063,11 +1061,11 @@ public class Simulator {
                         // make sure the dialog for open state opens at the
                         // grammar location
                         getStateFileChooser().setCurrentDirectory(
-                            FileGps.toFile(grammarURL));
+                            Groove.toFile(grammarURL));
                     }
                     if (grammar.getControl() != null) {
                         File controlFile =
-                            new File(FileGps.toFile(grammarURL),
+                            new File(Groove.toFile(grammarURL),
                                 grammar.getControl().getName());
                         getControlFileChooser().setSelectedFile(controlFile);
                     } else {
@@ -1077,16 +1075,16 @@ public class Simulator {
                         // make sure the dialog for open control opens at the
                         // grammar location
                         getControlFileChooser().setCurrentDirectory(
-                            FileGps.toFile(grammarURL));
+                            Groove.toFile(grammarURL));
                     }
                     getGrammarFileChooser().setSelectedFile(
-                        FileGps.toFile(grammarURL));
+                        Groove.toFile(grammarURL));
                     getRuleFileChooser().setCurrentDirectory(
-                        FileGps.toFile(grammarURL));// mzimakova
+                        Groove.toFile(grammarURL));// mzimakova
                 } catch (final IOException exc) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            showErrorDialog(exc.getMessage(), exc.getCause());
+                            showErrorDialog(exc.getMessage(), exc);
                         }
                     });
                 }
@@ -1097,41 +1095,6 @@ public class Simulator {
 
         // updating history
         this.history.updateLoadGrammar(grammarURL);
-    }
-
-    /**
-     * Saves the current grammar to a given file.
-     * @param grammarLoader the loader to be used
-     * @param grammarFile the grammar file to be used
-     */
-    void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
-        try {
-            grammarLoader.marshal(getGrammarView(), grammarFile);
-
-            String grammarName =
-                grammarLoader.getExtensionFilter().stripExtension(
-                    grammarFile.getName());
-            getGrammarView().setName(grammarName);
-            // now we know saving succeeded, we can set the current names &
-            // files
-            this.currentGrammarURL = FileGps.toURL(grammarFile);
-            this.currentGrammarLoader = grammarLoader;
-
-            setTitle();
-
-            getStateFileChooser().setCurrentDirectory(grammarFile);
-            AspectualGraphView startGraph =
-                getGrammarView().getStartGraphView();
-            if (startGraph != null) {
-                getStateFileChooser().setSelectedFile(
-                    new File(startGraph.getName()));
-            } else {
-                getStateFileChooser().setSelectedFile(new File(""));
-            }
-            getGrammarFileChooser().setSelectedFile(grammarFile);
-        } catch (IOException exc) {
-            showErrorDialog("Error while saving grammar to " + grammarFile, exc);
-        }
     }
 
     /**
@@ -1186,13 +1149,13 @@ public class Simulator {
                 grammarFile.getName());
         DefaultGrammarView grammar = new DefaultGrammarView(grammarName);
         // now we know loading succeeded, we can set the current names & files
-        this.currentGrammarURL = FileGps.toURL(grammarFile);
+        this.currentGrammarURL = Groove.toURL(grammarFile);
         this.currentGrammarLoader = grammarLoader;
         getStateFileChooser().setCurrentDirectory(grammarFile);
         getStateFileChooser().setSelectedFile(new File(""));
         getGrammarFileChooser().setSelectedFile(grammarFile);
         setGrammar(grammar);
-        this.history.updateLoadGrammar(FileGps.toURL(grammarFile));
+        this.history.updateLoadGrammar(Groove.toURL(grammarFile));
     }
 
     /**
@@ -1296,6 +1259,42 @@ public class Simulator {
         }
     }
 
+    /**
+     * Saves the current grammar to a given file.
+     * @param grammarLoader the loader to be used
+     * @param grammarFile the grammar file to be used
+     */
+    void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
+        try {
+            grammarLoader.marshal(getGrammarView(), grammarFile);
+
+            String grammarName =
+                grammarLoader.getExtensionFilter().stripExtension(
+                    grammarFile.getName());
+            getGrammarView().setName(grammarName);
+            // now we know saving succeeded, we can set the current names &
+            // files
+            this.currentGrammarURL = Groove.toURL(grammarFile);
+            this.currentGrammarLoader = grammarLoader;
+
+            setTitle();
+
+            getStateFileChooser().setCurrentDirectory(grammarFile);
+            AspectualGraphView startGraph =
+                getGrammarView().getStartGraphView();
+            if (startGraph != null) {
+                getStateFileChooser().setSelectedFile(
+                    new File(startGraph.getName()));
+            } else {
+                getStateFileChooser().setSelectedFile(new File(""));
+            }
+            getGrammarFileChooser().setSelectedFile(grammarFile);
+            setGrammar(getGrammarView());
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving grammar to " + grammarFile, exc);
+        }
+    }
+
     void doSaveProperties(SystemProperties newProperties) {
         // check if we need to load a new control program
         String newControlName = newProperties.getControlName();
@@ -1308,7 +1307,7 @@ public class Simulator {
             String outputFileName =
                 Groove.createPropertyFilter().addExtension(Groove.PROPERTY_NAME);
             File outputFile =
-                new File(FileGps.toFile(Simulator.this.currentGrammarURL),
+                new File(Groove.toFile(Simulator.this.currentGrammarURL),
                     outputFileName);
             outputFile.createNewFile();
             OutputStream writer = new FileOutputStream(outputFile);
@@ -1374,7 +1373,7 @@ public class Simulator {
     }
 
     private void deleteGraph(String name) {
-        File grammarFile = FileGps.toFile(this.currentGrammarURL);
+        File grammarFile = Groove.toFile(this.currentGrammarURL);
         File file = new File(grammarFile, this.stateFilter.addExtension(name));
         getGraphLoader(file).deleteGraph(file);
     }
@@ -2460,7 +2459,7 @@ public class Simulator {
                 title.append(startGraph.getName());
             }
             ControlView cv = getGrammarView().getControl();
-            if (cv != null) {
+            if (getGrammarView().getProperties().isUseControl() && cv != null) {
                 title.append(" | ");
                 title.append(cv.getName());
 
@@ -2946,10 +2945,6 @@ public class Simulator {
      * The go-to start state action permanently associated with this simulator.
      */
     private GotoStartStateAction gotoStartStateAction;
-    /**
-     * The launch scenario action permanently associated with this simulator.
-     */
-    private LaunchScenarioAction launchScenarioAction;
     //
     // /** The control file load action permanently associated with this
     // simulator. */
@@ -3547,7 +3542,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent arg0) {
             ExportDialog dialog = new ExportDialog(Simulator.this);
-            dialog.setCurrentDirectory(FileGps.toFile(
+            dialog.setCurrentDirectory(Groove.toFile(
                 Simulator.this.currentGrammarURL).getAbsolutePath());
 
             if (dialog.showDialog(Simulator.this)) {
@@ -4029,7 +4024,7 @@ public class Simulator {
                     newGrammar = new File(NEW_GRAMMAR_NAME);
                 } else {
                     newGrammar =
-                        new File(FileGps.toFile(grammarFile).getParentFile(),
+                        new File(Groove.toFile(grammarFile).getParentFile(),
                             NEW_GRAMMAR_NAME);
                 }
                 getGrammarFileChooser().setSelectedFile(newGrammar);
@@ -4059,7 +4054,7 @@ public class Simulator {
                                         selectedFile.getName()));
                             if (response == JOptionPane.OK_OPTION) {
                                 doLoadGrammar(grammarLoader,
-                                    FileGps.toURL(selectedFile));
+                                    Groove.toURL(selectedFile));
                             }
                             ok = response != JOptionPane.NO_OPTION;
                         } else {

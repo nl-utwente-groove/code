@@ -35,14 +35,16 @@ import java.util.jar.JarFile;
  * @author Tom Staijen
  * @version $Revision $
  * 
- * A grammar loader class that can load grammars from Jar files. Inside the
- * Jarfile a directory is expected that is structured as a regular .gps
- * directory. The grammar can be loaded given a URL to the directory in the jar
- * file (including the tailing /), optionaly with the start graph name as
- * "query" and the control name as "ref". Example url's:
- * jar:file:/c:/grammars.jar!/languages/java.gps/?simpleprogram#simplecontrol
- * jar:http://www.someurl.com/some.jar!/java.gps/#scenario1 (default start graph
- * used)
+ *          A grammar loader class that can load grammars from Jar files. Inside
+ *          the Jarfile a directory is expected that is structured as a regular
+ *          .gps directory. The grammar can be loaded given a URL to the
+ *          directory in the jar file (including the tailing /), optionaly with
+ *          the start graph name as "query" and the control name as "ref".
+ *          Example url's:
+ *          jar:file:/c:/grammars.jar!/languages/java.gps/?simpleprogram
+ *          #simplecontrol
+ *          jar:http://www.someurl.com/some.jar!/java.gps/#scenario1 (default
+ *          start graph used)
  * 
  */
 public abstract class ArchiveGps extends AspectualViewGps {
@@ -112,11 +114,12 @@ public abstract class ArchiveGps extends AspectualViewGps {
         // RULES
 
         // store RuleNameLabels for rulegroup directories
-        HashMap<String,RuleName> pathLabels =
-            new HashMap<String,RuleName>();
+        HashMap<String,RuleName> pathLabels = new HashMap<String,RuleName>();
 
         // store the rules
         Map<RuleName,URL> ruleMap = new HashMap<RuleName,URL>();
+        // store the graphs
+        Map<String,URL> graphMap = new HashMap<String,URL>();
 
         for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
             JarEntry entry = entries.nextElement();
@@ -128,22 +131,36 @@ public abstract class ArchiveGps extends AspectualViewGps {
                 RuleName label = initLabel(pathLabels, path, true);
                 URL ruleURL = new URL(baseURL + entry.getName());
                 ruleMap.put(label, ruleURL);
+            } else if (entry.getName().startsWith(dir)
+                && FileGps.STATE_FILTER.hasExtension(entry.getName())) {
+                String path =
+                    FileGps.STATE_FILTER.stripExtension(entry.getName());
+                path = path.substring(dir.length());
+                if (new File(path).getParent() == null) {
+                    // the entry is at the top level within dir
+                    URL graphURL = new URL(baseURL + entry.getName());
+                    graphMap.put(path, graphURL);
+                }
             }
         }
 
         loadRules(result, ruleMap);
+        loadGraphs(result, graphMap);
 
         // init start graph url
         if (startGraphName == null) {
             startGraphName = DEFAULT_START_GRAPH_NAME;
+            if (graphMap.containsKey(startGraphName)) {
+                result.setStartGraph(startGraphName);
+            }
         }
-        JarEntry je =
-            jarFile.getJarEntry(dir + startGraphName + Groove.STATE_EXTENSION);
-
-        if (je != null) {
-            URL startGraphEntry = new URL(baseURL + je.getName());
-            this.loadStartGraph(result, startGraphEntry);
-        }
+        // JarEntry je =
+        // jarFile.getJarEntry(dir + startGraphName + Groove.STATE_EXTENSION);
+        //
+        // if (je != null) {
+        // URL startGraphEntry = new URL(baseURL + je.getName());
+        // this.loadStartGraph(result, startGraphEntry);
+        // }
 
         // control
 
@@ -174,8 +191,8 @@ public abstract class ArchiveGps extends AspectualViewGps {
         return null;
     }
 
-    private RuleName initLabel(Map<String,RuleName> folders,
-            String path, boolean isFile) {
+    private RuleName initLabel(Map<String,RuleName> folders, String path,
+            boolean isFile) {
         if (!folders.containsKey(path)) {
 
             RuleName label;
@@ -202,7 +219,7 @@ public abstract class ArchiveGps extends AspectualViewGps {
     @Override
     public URL createURL(File file) {
         try {
-            return new URL("jar:" + FileGps.toURL(file) + "!/");
+            return new URL("jar:" + Groove.toURL(file) + "!/");
         } catch (MalformedURLException e) {
             return null;
         }
@@ -243,12 +260,12 @@ public abstract class ArchiveGps extends AspectualViewGps {
     @Override
     public String grammarLocation(URL grammarURL) {
         String file = grammarURL.getFile();
-        file = file.substring(0,file.indexOf("!"));
-        if( file.startsWith("file://")) {
+        file = file.substring(0, file.indexOf("!"));
+        if (file.startsWith("file://")) {
             try {
-                File local = FileGps.toFile(new URL(file));
+                File local = Groove.toFile(new URL(file));
                 return local.getAbsolutePath();
-            } catch(MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 return file;
             }
         } else {

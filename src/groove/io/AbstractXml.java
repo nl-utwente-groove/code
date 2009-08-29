@@ -19,6 +19,7 @@ package groove.io;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
+import groove.util.Groove;
 import groove.util.Pair;
 
 import java.io.File;
@@ -45,7 +46,7 @@ public abstract class AbstractXml implements Xml<Graph> {
 
     /** backwards compatibility method */
     public Graph unmarshalGraph(File file) throws IOException {
-        return unmarshalGraph(FileGps.toURL(file));
+        return unmarshalGraph(Groove.toURL(file));
     }
 
     /**
