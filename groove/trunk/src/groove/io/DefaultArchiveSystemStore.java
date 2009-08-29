@@ -273,17 +273,29 @@ public class DefaultArchiveSystemStore implements SystemStore {
                         ruleName.insert(0, RuleName.SEPARATOR);
                         ruleName.insert(0, nameAsFile.getName());
                     }
-                    rules.put(new RuleName(ruleName.toString()), entry);
+                    Object oldEntry =
+                        rules.put(new RuleName(ruleName.toString()), entry);
+                    assert oldEntry == null : String.format(
+                        "Duplicate rule name '%s'", ruleName);
                 } else if (restName.endsWith(STATE_FILTER.getExtension())) {
                     // check if the entry is top level
                     if (new File(restName).getParent() == null) {
-                        graphs.put(STATE_FILTER.stripExtension(restName), entry);
+                        Object oldEntry =
+                            graphs.put(STATE_FILTER.stripExtension(restName),
+                                entry);
+                        assert oldEntry == null : String.format(
+                            "Duplicate graph name '%s'",
+                            STATE_FILTER.stripExtension(restName));
                     }
                 } else if (restName.endsWith(CONTROL_FILTER.getExtension())) {
                     // check if the entry is top level
                     if (new File(restName).getParent() == null) {
-                        controls.put(CONTROL_FILTER.stripExtension(restName),
-                            entry);
+                        Object oldEntry =
+                            controls.put(
+                                CONTROL_FILTER.stripExtension(restName), entry);
+                        assert oldEntry == null : String.format(
+                            "Duplicate rule name '%s'",
+                            CONTROL_FILTER.stripExtension(restName));
                     }
                 }
             }

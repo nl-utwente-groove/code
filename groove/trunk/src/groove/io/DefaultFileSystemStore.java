@@ -277,7 +277,9 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
                 GraphInfo.setRole(graph, Groove.GRAPH_ROLE);
                 GraphInfo.setName(graph, graphName);
                 /* Store the graph */
-                this.graphMap.put(graphName, graph);
+                Object oldEntry = this.graphMap.put(graphName, graph);
+                assert oldEntry == null : String.format(
+                    "Duplicate graph name '%s'", graphName);
             }
         }
     }
