@@ -333,7 +333,6 @@ public class DefaultArchiveSystemStore implements SystemStore {
                 AspectGraph.newInstance(DefaultGxlIO.getInstance().loadGraph(in));
             /*
              * For backward compatibility, we set the role and name of the graph
-             * graph
              */
             GraphInfo.setRole(graph, Groove.GRAPH_ROLE);
             GraphInfo.setName(graph, graphName);

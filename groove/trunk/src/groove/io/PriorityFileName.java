@@ -16,10 +16,11 @@
  */
 package groove.io;
 
+import groove.trans.Rule;
+import groove.util.Groove;
+
 import java.io.File;
 import java.net.URL;
-
-import groove.trans.Rule;
 
 /**
  * Encoding of a rule name plus priority as a string
@@ -33,13 +34,12 @@ public class PriorityFileName {
     static public final String SEPARATOR = ".";
 
     /**
-     * Parses a string as <tt>priority.ruleName</tt>. If there is no period
-     * in the string, the priority is assumed to be 0.
+     * Parses a string as <tt>priority.ruleName</tt>. If there is no period in
+     * the string, the priority is assumed to be 0.
      * @throws NumberFormatException if the part before the period cannot be
      *         parsed as an integer, or yields a negative number.
      */
     public PriorityFileName(String fullName) {
-      
         int separatorPos = fullName.indexOf(SEPARATOR);
         if (separatorPos <= 0) {
             this.priority = DEFAULT_PRIORITY;
@@ -53,15 +53,13 @@ public class PriorityFileName {
             } catch (NumberFormatException nfe) {
                 startNumber = DEFAULT_PRIORITY;
                 validStartNumber = false;
+                separatorPos = -1;
             }
             this.priority = startNumber;
             this.explicitPriority = validStartNumber;
             if (this.priority < 0) {
                 throw new NumberFormatException("Invalid rule priority "
                     + this.priority);
-                // } else if (priority == DEFAULT_PRIORITY) {
-                // throw new NumberFormatException("Default priority
-                // "+priority+" should not be included in file name");
             }
         }
         this.ruleName = fullName.substring(separatorPos + 1);
@@ -69,28 +67,28 @@ public class PriorityFileName {
 
     /**
      * Parses the name part of a file as <tt>priority.actualName.extension</tt>.
-     * If there is no period in the string, the priority is assumed to be 0.
-     * @throws NumberFormatException if the part before the period cannot be
-     *         parsed as an integer, or yields a negative number.
+     * If there is no period in the string, or the part before the period is not
+     * an integer, the priority is assumed to be 0.
      */
     public PriorityFileName(File file) {
         this(ExtensionFilter.getPureName(file));
         this.extension = file.getName().substring(this.ruleName.length());
     }
-    
+
     /**
      * Convenience method to create a PriorityFileName for a URL.
      * @param url
      */
     public PriorityFileName(URL url) {
-        this(FileGps.toFile(url));
+        this(Groove.toFile(url));
     }
 
     /**
      * Creates a file name from a given rule name and (possibly explicit)
      * priority.
      */
-    public PriorityFileName(String ruleName, int priority, boolean explicitPriority) {
+    public PriorityFileName(String ruleName, int priority,
+            boolean explicitPriority) {
         this.ruleName = ruleName;
         this.priority = priority;
         this.explicitPriority = explicitPriority;

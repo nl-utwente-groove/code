@@ -152,7 +152,7 @@ public abstract class AspectualViewGps extends Observable implements
         setChanged();
         notifyObservers(ruleMap.size());
         for (Map.Entry<RuleName,URL> ruleEntry : ruleMap.entrySet()) {
-            result.addRule(loadRule(ruleEntry.getValue(),
+            result.addRule(loadRule(ruleEntry.getKey(), ruleEntry.getValue(),
                 result.getProperties()));
             setChanged();
             notifyObservers(result);
@@ -164,17 +164,49 @@ public abstract class AspectualViewGps extends Observable implements
     /**
      * Loads in and returns a single rule from a given location, giving it a
      * given name and priority.
+     * @param ruleName TODO
      */
-    private AspectualRuleView loadRule(URL location, SystemProperties properties)
-        throws IOException {
-
+    private AspectualRuleView loadRule(RuleName ruleName, URL location,
+            SystemProperties properties) throws IOException {
         AspectGraph unmarshalledRule =
             getGxlGraphMarshaller().unmarshalGraph(location);
-
         GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
-
+        // we need to set the name here
+        GraphInfo.setName(unmarshalledRule, ruleName.text());
         AspectualRuleView result = unmarshalledRule.toRuleView(properties);
+        return result;
+    }
 
+    /**
+     * Loads the rules for a given graph grammar from a given location.
+     */
+    protected void loadGraphs(DefaultGrammarView result,
+            Map<String,URL> graphMap) throws IOException {
+        setChanged();
+        notifyObservers(LOADING_GRAPHS);
+        setChanged();
+        notifyObservers(graphMap.size());
+        for (Map.Entry<String,URL> graphEntry : graphMap.entrySet()) {
+            result.addGraph(graphEntry.getKey(), loadGraph(graphEntry.getKey(),
+                graphEntry.getValue(), result.getProperties()));
+            setChanged();
+            notifyObservers(result);
+        }
+        setChanged();
+        notifyObservers();
+    }
+
+    /**
+     * Loads in and returns a single rule from a given location, giving it a
+     * given name and priority.
+     * @param graphName name of the graph to be loaded; will be set explicitly
+     *        in the resulting graph
+     */
+    private AspectGraph loadGraph(String graphName, URL location,
+            SystemProperties properties) throws IOException {
+        AspectGraph result = getGxlGraphMarshaller().unmarshalGraph(location);
+        GraphInfo.setName(result, graphName);
+        GraphInfo.setRole(result, Groove.GRAPH_ROLE);
         return result;
     }
 
@@ -232,7 +264,7 @@ public abstract class AspectualViewGps extends Observable implements
      */
     public AspectualRuleView unmarshalRule(URL location,
             SystemProperties properties) throws IOException {
-        return loadRule(location, properties);
+        return loadRule(null, location, properties);
     }
 
     public void marshal(DefaultGrammarView gg, File target) throws IOException,
@@ -323,6 +355,8 @@ public abstract class AspectualViewGps extends Observable implements
      */
     private final Xml<AspectGraph> autGraphMarshaller;
 
+    /** Notification text for the rule loading phase. */
+    static public final String LOADING_GRAPHS = "Loading graphs";
     /** Notification text for the rule loading phase. */
     static public final String LOADING_RULES = "Loading rules";
     /** Notification text for the start graph loading phase. */

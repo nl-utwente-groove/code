@@ -205,7 +205,7 @@ public class DefaultGrammarView implements GrammarView {
     /**
      * Adds a graph to the list of graphs belonging to this grammar.
      * @param name the name of the graph to be added
-     * @param file the file where the graph is actually stored
+     * @param graph the aspect graph representation of the graph
      */
     public void addGraph(String name, AspectGraph graph) {
         this.graphMap.put(name, graph.toGraphView(getProperties()));

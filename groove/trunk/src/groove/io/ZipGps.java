@@ -18,23 +18,34 @@ package groove.io;
 
 import groove.util.Groove;
 
+import java.io.File;
+
 /**
  * @author Tom Staijen
  * @version $Revision $
  */
 public class ZipGps extends ArchiveGps {
-
-    /** File filter for jar files. */
-    static protected final ExtensionFilter GRAMMAR_FILTER =
-        Groove.getFilter("Zip-file containing Groove production system", ".zip",
-            false);
-    
     /** create a new instance */
     public ZipGps(boolean layouted) {
         super(layouted);
     }
 
     public ExtensionFilter getExtensionFilter() {
-            return GRAMMAR_FILTER;
-        }
+        return GRAMMAR_FILTER;
+    }
+
+    /** Filter for rule system files. */
+    static private final ExtensionFilter SYSTEM_FILTER =
+        Groove.createRuleSystemFilter();
+    /** File filter for jar files. */
+    static protected final ExtensionFilter GRAMMAR_FILTER =
+        new ExtensionFilter("Zip-file containing Groove production system",
+            ".gps.zip", false) {
+            @Override
+            public boolean accept(File file) {
+                return super.accept(file) || file.isDirectory()
+                    && !SYSTEM_FILTER.hasExtension(file.getName());
+            }
+
+        };
 }

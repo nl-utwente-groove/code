@@ -257,7 +257,7 @@ public class Generator extends CommandLineTool {
             new File(this.ruleSystemFilter.addExtension(this.grammarLocation));
         try {
             if (f.exists()) {
-                url = FileGps.toURL(f);
+                url = Groove.toURL(f);
             } else {
                 url = new URL(this.grammarLocation);
             }
