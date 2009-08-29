@@ -29,7 +29,7 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GrammarViewXml<GG extends GenericGrammarView<?,?>> extends
+public interface GrammarViewXml<GG extends GenericGrammarView<?,?,?>> extends
         ViewXml<GG> {
     /**
      * Returns the extension filter associated with this grammar loader.
@@ -67,6 +67,10 @@ public interface GrammarViewXml<GG extends GenericGrammarView<?,?>> extends
 
     /** Aliases the default control name from the constants in {@link Groove}. */
     public final String DEFAULT_CONTROL_NAME = Groove.DEFAULT_CONTROL_NAME;
-    /** Aliases the default start graph name from the constants in {@link Groove}. */
-    public final String DEFAULT_START_GRAPH_NAME = Groove.DEFAULT_START_GRAPH_NAME;
-    }
+    /**
+     * Aliases the default start graph name from the constants in {@link Groove}
+     * .
+     */
+    public final String DEFAULT_START_GRAPH_NAME =
+        Groove.DEFAULT_START_GRAPH_NAME;
+}
