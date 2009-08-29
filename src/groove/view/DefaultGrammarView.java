@@ -135,12 +135,6 @@ public class DefaultGrammarView implements GrammarView {
         return this.startGraph;
     }
 
-    /**
-     * Returns the name of the start graph, if it is one of the graphs stored
-     * with the rule system.
-     * @return the name of the start graph, or <code>null</code> if the start
-     *         graph is not one of the graphs stored with the rule system
-     */
     public String getStartGraphName() {
         return this.startGraphName;
     }
@@ -298,8 +292,12 @@ public class DefaultGrammarView implements GrammarView {
 
         result.setProperties(getProperties());
         if (getStartGraphView() == null) {
-            errors.add(String.format("No start graph set for grammar '%s'",
-                getName()));
+            if (getStartGraphName() == null) {
+                errors.add(String.format("No start graph set"));
+            } else {
+                errors.add(String.format("Start graph '%s' cannot be loaded",
+                    getStartGraphName()));
+            }
         } else {
             try {
                 result.setStartGraph(getStartGraphView().toModel());
