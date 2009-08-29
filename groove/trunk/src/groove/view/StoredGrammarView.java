@@ -120,6 +120,10 @@ public class StoredGrammarView implements GrammarView, Observer {
         return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
     }
 
+    public String getStartGraphName() {
+        return this.startGraphName;
+    }
+
     public AspectualGraphView getStartGraphView() {
         return this.startGraph;
     }
@@ -132,6 +136,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                 String.format("Prospective start graph '%s' is not a graph"));
         }
         this.startGraph = startGraph.toGraphView(getProperties());
+        this.startGraphName = null;
         invalidate();
     }
 
@@ -139,6 +144,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     public boolean setStartGraph(String name) {
         assert name != null;
         this.startGraph = getGraphView(name);
+        this.startGraphName = name;
         return this.startGraph != null;
     }
 
@@ -192,11 +198,16 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * Records the name of the control program to be used. Currently, this is
-     * always {@link Groove#DEFAULT_CONTROL_NAME}.
+     * Records the name of the control program to be used. This is either taken
+     * from the system properties; if no explicit control name is given, it is
+     * set to {@link Groove#DEFAULT_CONTROL_NAME}.
      */
     private String getControlName() {
-        return Groove.DEFAULT_CONTROL_NAME;
+        String result = getProperties().getControlName();
+        if (result == null || result.length() == 0) {
+            result = Groove.DEFAULT_CONTROL_NAME;
+        }
+        return result;
     }
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
@@ -217,7 +228,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
-
+        // set rules
         for (AspectGraph ruleGraph : getStore().getRules().values()) {
             AspectualRuleView ruleView = ruleGraph.toRuleView(getProperties());
             try {
@@ -227,17 +238,18 @@ public class StoredGrammarView implements GrammarView, Observer {
                 }
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
-                    errors.add(String.format("Format error in '%s': %s",
+                    errors.add(String.format("Format error in rule '%s': %s",
                         ruleView.getName(), error));
                 }
             }
         }
-
-        boolean hasControl = getProperties().isUseControl();
-        ControlView controlView =
-            hasControl ? getControlView(getControlName()) : null;
-        if (controlView != null) {
-            if (result.hasMultiplePriorities()) {
+        // set control
+        if (getProperties().isUseControl()) {
+            ControlView controlView = getControlView(getControlName());
+            if (controlView == null) {
+                errors.add(String.format(
+                    "Control program '%s' cannot be loaded", getControlName()));
+            } else if (result.hasMultiplePriorities()) {
                 errors.add("Rule priorities and control programs are incompatible, please disable either.");
             } else {
                 try {
@@ -246,16 +258,22 @@ public class StoredGrammarView implements GrammarView, Observer {
                 } catch (FormatException exc) {
                     for (String error : exc.getErrors()) {
                         errors.add(String.format(
-                            "Format error in control program: %s", error));
+                            "Format error in control program '%s': %s",
+                            getControlName(), error));
                     }
                 }
             }
         }
-
+        // set properties
         result.setProperties(getProperties());
+        // set start graph
         if (getStartGraphView() == null) {
-            errors.add(String.format("No start graph set for grammar '%s'",
-                getName()));
+            if (getStartGraphName() == null) {
+                errors.add(String.format("No start graph set"));
+            } else {
+                errors.add(String.format("Start graph '%s' cannot be loaded",
+                    getStartGraphName()));
+            }
         } else {
             try {
                 result.setStartGraph(getStartGraphView().toModel());

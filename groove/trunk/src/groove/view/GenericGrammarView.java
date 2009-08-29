@@ -74,6 +74,14 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView>
     public GV getStartGraphView();
 
     /**
+     * Returns the name of the start graph, if it is one of the graphs stored
+     * with the rule system.
+     * @return the name of the start graph, or <code>null</code> if the start
+     *         graph is not one of the graphs stored with the rule system
+     */
+    public String getStartGraphName();
+
+    /**
      * Sets the name of the start graph. The name should correspond with one of
      * the graphs stored with the rule system.
      * @param name either a graph name within the current grammar; or
