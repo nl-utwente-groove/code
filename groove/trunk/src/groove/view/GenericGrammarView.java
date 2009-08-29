@@ -30,7 +30,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView>
+public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,CV>
         extends View<GraphGrammar> {
     /** Returns the name of the rule system. */
     public String getName();
@@ -65,6 +65,13 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView>
      *         if there is no such graph.
      */
     public GV getGraphView(String name);
+
+    /**
+     * Returns the control view set for the grammar.
+     * @return the control view for the grammar, or <code>null</code> if there
+     *         is no control program loaded.
+     */
+    public CV getControl();
 
     /**
      * Returns the start graph of this grammar view.

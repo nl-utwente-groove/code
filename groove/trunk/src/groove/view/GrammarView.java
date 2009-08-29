@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import groove.control.ControlView;
 import groove.trans.GraphGrammar;
 import groove.view.aspect.AspectGraph;
 
@@ -25,7 +26,7 @@ import groove.view.aspect.AspectGraph;
  * @version $Revision $
  */
 public interface GrammarView extends
-        GenericGrammarView<AspectualGraphView,AspectualRuleView>,
+        GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView>,
         View<GraphGrammar> {
     /**
      * Sets the start graph to a given graph, or to <code>null</code>.

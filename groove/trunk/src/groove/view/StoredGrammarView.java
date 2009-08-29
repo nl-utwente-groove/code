@@ -109,6 +109,12 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.controlMap.get(name);
     }
 
+    @Override
+    public ControlView getControl() {
+        return !getProperties().isUseControl() || getControlName() == null
+                ? null : getControlView(getControlName());
+    }
+
     public AspectualGraphView getGraphView(String name) {
         AspectGraph stateGraph = getStore().getGraphs().get(name);
         return stateGraph == null ? null
