@@ -165,10 +165,23 @@ public abstract class ArchiveGps extends AspectualViewGps {
         // control
 
         if (controlName == null) {
-            controlName = DEFAULT_CONTROL_NAME;
+            // get the control name from the system properties
+            controlName = result.getProperties().getControlName();
+            if (controlName == null) {
+                // get the default control name
+                controlName = DEFAULT_CONTROL_NAME;
+            }
         }
         JarEntry ce =
-            jarFile.getJarEntry(dir + controlName + Groove.CONTROL_EXTENSION);
+            jarFile.getJarEntry(dir
+                + FileGps.CONTROL_FILTER.addExtension(controlName));
+        if (ce == null) {
+            // backwards compatibility: <grammar name>.gcp
+            controlName = result.getName();
+            ce =
+                jarFile.getJarEntry(dir
+                    + FileGps.CONTROL_FILTER.addExtension(controlName));
+        }
         if (ce != null) {
             URL controlEntry = new URL(baseURL + ce.getName());
             this.loadControl(result, controlEntry, controlName);
@@ -273,4 +286,7 @@ public abstract class ArchiveGps extends AspectualViewGps {
         }
     }
 
+    /** File filter for control files. */
+    static private final ExtensionFilter CONTROL_FILTER =
+        Groove.createControlFilter();
 }
