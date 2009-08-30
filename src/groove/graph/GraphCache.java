@@ -59,7 +59,7 @@ public class GraphCache extends GraphShapeCache {
     public void addUpdate(GraphShape graph, Node node) {
         super.addUpdate(graph, node);
         DefaultDispenser nodeCounter = getNodeCounter();
-        int nodeNr = node.getClass() == DefaultNode.class ? node.getNumber() : 0;
+        int nodeNr = node.getNumber();
         if (nodeCounter.getCount() <= nodeNr) {
             nodeCounter.setCount(nodeNr + 1);
         }
@@ -71,7 +71,7 @@ public class GraphCache extends GraphShapeCache {
             this.nodeCounter = new DefaultDispenser();
             // make sure all existing node numbers are accounted for
             for (Node node : getGraph().nodeSet()) {
-                int nodeNr = node.getClass() == DefaultNode.class ? node.getNumber() : 0;
+                int nodeNr = node.getNumber();
                 if (nodeNr >= this.nodeCounter.getCount()) {
                     this.nodeCounter.setCount(nodeNr + 1);
                 }
@@ -84,14 +84,15 @@ public class GraphCache extends GraphShapeCache {
      * Returns a certificate strategy for the current state of this graph. If no
      * strategy is currently cached, it is created by calling
      * {@link CertificateStrategy#newInstance(Graph, boolean)} on
-     * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph
-     * is fixed (see {@link Graph#isFixed()}, the strategy is cached.
+     * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph is
+     * fixed (see {@link Graph#isFixed()}, the strategy is cached.
      */
     protected CertificateStrategy getCertificateStrategy(boolean strong) {
         CertificateStrategy result = this.certificateStrategy;
         if (result == null || result.getStrength() != strong) {
             result =
-                AbstractGraph.getCertificateFactory().newInstance(getGraph(), strong);
+                AbstractGraph.getCertificateFactory().newInstance(getGraph(),
+                    strong);
             if (this.graph.isFixed()) {
                 this.certificateStrategy = result;
             }

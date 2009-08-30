@@ -26,42 +26,26 @@ import java.util.List;
  * Instances of this class represent tuples of data values on which one can
  * perform algebraic operations. A product node has <i>arguments</i>, which are
  * the {@link VariableNode}s attached to it through {@link ArgumentEdge}s, and
- * <i>operands</i>, which are the corresponding constants on those
- * nodes.
+ * <i>operands</i>, which are the corresponding constants on those nodes.
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-02-12 15:15:32 $
  */
 public class ProductNode extends DefaultNode {
     /**
-     * Returns a fresh product node with a given node number and arity.
-     * The arguments are initially set to <code>null</code>.
+     * Returns a fresh product node with a given node number and arity. The
+     * arguments are initially set to <code>null</code>.
      */
     public ProductNode(int nr, int arity) {
         super(nr);
-        this.arguments = arity == 0 ? EMPTY_ARGUMENT_LIST : new ArrayList<VariableNode>(arity);
+        this.arguments =
+            arity == 0 ? EMPTY_ARGUMENT_LIST : new ArrayList<VariableNode>(
+                arity);
         for (int i = 0; i < arity; i++) {
             this.arguments.add(null);
         }
         this.argCount = 0;
     }
-//    
-//    /**
-//     * Returns a fresh product node with a given arity and a fresh node number.
-//     * The arguments are initially set to <code>null</code>.
-//     */
-//    protected ProductNode(int arity) {
-//        this(DefaultNode.nextExtNodeNr(), arity);
-//    }
-//
-//    /**
-//     * Constructor for a nullary product node.
-//     * A nullary product node is the same as a value node;
-//     * this constructor is only there for the {@link ValueNode} subclass.
-//     */
-//    protected ProductNode() {
-//        this(0);
-//        
-//    }
+
     /**
      * Sets one of the arguments of the product node.
      * @throws IllegalArgumentException if argument number <code>i</code> has
@@ -110,5 +94,6 @@ public class ProductNode extends DefaultNode {
      */
     private int argCount;
     /** Empty list of value nodes, to be passed to the super constructor. */
-    static private final List<VariableNode> EMPTY_ARGUMENT_LIST = Arrays.asList();
+    static private final List<VariableNode> EMPTY_ARGUMENT_LIST =
+        Arrays.asList();
 }

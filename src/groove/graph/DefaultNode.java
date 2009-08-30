@@ -39,13 +39,14 @@ public class DefaultNode implements Node {
         this.nodeNr = nr;
         this.hashCode = computeHashCode();
     }
-//
-//    /**
-//     * Constructor for subclasses that do not have their own node counter.
-//     */
-//    protected DefaultNode() {
-//        this(nextExtNodeNr());
-//    }
+
+    //
+    // /**
+    // * Constructor for subclasses that do not have their own node counter.
+    // */
+    // protected DefaultNode() {
+    // this(nextExtNodeNr());
+    // }
 
     // ----------------------------- OBJECT OVERRIDES
     // -----------------------------
@@ -79,7 +80,8 @@ public class DefaultNode implements Node {
     @Override
     final public boolean equals(Object obj) {
         boolean result = (obj == this);
-        assert result || !(obj instanceof DefaultNode) || testDiffers((DefaultNode) obj) : String.format(
+        assert result || !(obj instanceof DefaultNode)
+            || testDiffers((DefaultNode) obj) : String.format(
             "Distinct nodes with number %d: " + this + " & " + obj + ", "
                 + obj.getClass().getName(), this.nodeNr);
         return result;
@@ -104,7 +106,8 @@ public class DefaultNode implements Node {
         if (obj instanceof Node) {
             result = getNumber() - ((Node) obj).getNumber();
             if (result == 0) {
-                result = getClass().getName().compareTo(obj.getClass().getName());
+                result =
+                    getClass().getName().compareTo(obj.getClass().getName());
             }
         } else if (obj instanceof Edge) {
             result = compareTo(((Edge) obj).source());
@@ -129,14 +132,16 @@ public class DefaultNode implements Node {
         return this.nodeNr;
     }
 
-    /** 
-     * Callback method to test if this node is distinguishable (content-wise) from another.
-     * Used to assert correctness of {@link #equals(Object)}.
-     * This implementation tests for distinctness of actual class or node number.
+    /**
+     * Callback method to test if this node is distinguishable (content-wise)
+     * from another. Used to assert correctness of {@link #equals(Object)}. This
+     * implementation tests for distinctness of actual class or node number.
      */
     protected boolean testDiffers(DefaultNode other) {
-        return other.getClass() != this.getClass() || (this.getNumber() != other.getNumber());
+        return other.getClass() != this.getClass()
+            || (this.getNumber() != other.getNumber());
     }
+
     /**
      * Computes the hash code for this node.
      * @return the hashcode for this node.
@@ -218,22 +223,23 @@ public class DefaultNode implements Node {
     static public int getHighestNodeNr() {
         return nextNodeNr;
     }
-//
-//    /**
-//     * Extracts a node number from a node. The node number is assumed to exist
-//     * only if the node is a {@link DefaultNode}, and not a subclass.
-//     * Returns {@link #NO_NODE_NUMBER} otherwise.
-//     * @param node the node of which to get the number
-//     * @return the number of the given node
-//     */
-//    static public int getNodeNr(Node node) {
-//        if (node instanceof DefaultNode) {
-//            int result = node.getNumber();
-//            return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
-//        } else {
-//            return NO_NODE_NUMBER;
-//        }
-//    }
+
+    //
+    // /**
+    // * Extracts a node number from a node. The node number is assumed to exist
+    // * only if the node is a {@link DefaultNode}, and not a subclass.
+    // * Returns {@link #NO_NODE_NUMBER} otherwise.
+    // * @param node the node of which to get the number
+    // * @return the number of the given node
+    // */
+    // static public int getNodeNr(Node node) {
+    // if (node instanceof DefaultNode) {
+    // int result = node.getNumber();
+    // return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
+    // } else {
+    // return NO_NODE_NUMBER;
+    // }
+    // }
 
     /**
      * Returns the next free node number, according to the static counter.
@@ -245,14 +251,15 @@ public class DefaultNode implements Node {
         }
         return nextNodeNr;
     }
-//
-//    /**
-//     * Returns the fresh node number for subclasses of DefaultNode, and
-//     * increments the counter.
-//     */
-//    static protected int nextExtNodeNr() {
-//        return ++nextNodeNrExt;
-//    }
+
+    //
+    // /**
+    // * Returns the fresh node number for subclasses of DefaultNode, and
+    // * increments the counter.
+    // */
+    // static protected int nextExtNodeNr() {
+    // return ++nextNodeNrExt;
+    // }
 
     /**
      * The total number of nodes in the {@link #nodes} array.
@@ -273,17 +280,17 @@ public class DefaultNode implements Node {
      * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
      */
     static private DefaultNode[] nodes = new DefaultNode[INIT_CAPACITY];
-//
-//    /**
-//     * The maximal number for {@link DefaultNode}s.
-//     */
-//
-//    public static final int MAX_NODE_NUMBER = 999999999;
-//
-//    /**
-//     * First fresh node number for subclasses van DefaultNode.
-//     */
-//    static private int nextNodeNrExt = MAX_NODE_NUMBER + 1;
+    //
+    // /**
+    // * The maximal number for {@link DefaultNode}s.
+    // */
+    //
+    // public static final int MAX_NODE_NUMBER = 999999999;
+    //
+    // /**
+    // * First fresh node number for subclasses van DefaultNode.
+    // */
+    // static private int nextNodeNrExt = MAX_NODE_NUMBER + 1;
 
     /**
      * Value indicating an invalid node number.
