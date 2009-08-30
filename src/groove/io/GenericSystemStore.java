@@ -157,4 +157,12 @@ public interface GenericSystemStore<R,G> {
 
     /** Returns a stored grammar view backed up by this store. */
     public StoredGrammarView toGrammarView();
+
+    /**
+     * Indicates if this store can be modified. If the store cannot be modified,
+     * all the operations that attempt to modify it will throw
+     * {@link UnsupportedOperationException}s.
+     * @return <code>true</code> if the store is modifiable
+     */
+    public boolean isModifiable();
 }
