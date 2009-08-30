@@ -54,9 +54,16 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
     public boolean isEnabled();
 
     /**
+     * Indicates whether the rule is marked as locally confluent. If the rule is
+     * marked as such, only match will be chosen among this and all other
+     * locally confluent rules.
+     */
+    public boolean isConfluent();
+
+    /**
      * Factory method for a rule view of a given rule.
-     * @throws FormatException if <code>rule</code> cannot be visualised in
-     *         the current rule view format
+     * @throws FormatException if <code>rule</code> cannot be visualised in the
+     *         current rule view format
      */
     public RuleView newInstance(Rule rule) throws FormatException;
 }

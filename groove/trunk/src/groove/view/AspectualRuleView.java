@@ -102,9 +102,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      */
     public AspectualRuleView(Rule rule) {
         this.name = rule.getName();
-        this.priority = rule.getPriority();
-        this.enabled = true;
-        this.confluent = rule.isConfluent();
         this.rule = rule;
         this.properties = rule.getProperties();
         this.viewToRuleMap = new NodeEdgeHashMap();
@@ -123,9 +120,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     public AspectualRuleView(AspectGraph graph, SystemProperties properties) {
         String name = GraphInfo.getName(graph);
         this.name = name == null ? null : new RuleName(name);
-        this.priority = GraphProperties.getPriority(graph);
-        this.enabled = GraphProperties.isEnabled(graph);
-        this.confluent = GraphProperties.isConfluent(graph);
         this.properties = properties;
         this.graph = graph;
         this.attributeFactory = new AttributeElementFactory(graph, properties);
@@ -202,16 +196,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         return getRuleName() == null ? null : getRuleName().text();
     }
 
-    /**
-     * Returns the priority of the rule represented by this rule graph, set at
-     * construction time.
-     */
     public int getPriority() {
-        return this.priority;
+        return GraphProperties.getPriority(this.graph);
     }
 
     public boolean isEnabled() {
-        return this.enabled;
+        return GraphProperties.isEnabled(this.graph);
+    }
+
+    public boolean isConfluent() {
+        return GraphProperties.isConfluent(this.graph);
     }
 
     public int compareTo(RuleView o) {
@@ -302,7 +296,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * checked.
      * @return <code>true</code> if the rule is to be matched injectively.
      */
-    protected final boolean isInjective() {
+    private final boolean isInjective() {
         return getProperties() != null && getProperties().isInjective();
     }
 
@@ -546,8 +540,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                 }
             }
             rule = (SPORule) levelRuleMap.get(topLevel);
-            rule.setPriority(this.priority);
-            rule.setConfluent(this.confluent);
+            rule.setPriority(getPriority());
+            rule.setConfluent(isConfluent());
             rule.setParameters(new ArrayList<Node>(parameterMap.values()),
                 parameters);
             rule.setFixed();
@@ -1243,6 +1237,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                 testConnected(nacGraph);
             }
         }
+        GraphProperties graphProperties = new GraphProperties();
+        graphProperties.setConfluent(rule.isConfluent());
+        graphProperties.setPriority(rule.getPriority());
+        GraphInfo.setProperties(result, graphProperties);
         result.setFixed();
         return result;
     }
@@ -1363,19 +1361,19 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * The name of the rule represented by this rule graph.
      */
     protected final RuleName name;
-    /**
-     * The priority of the rule represented by this rule graph.
-     */
-    protected final int priority;
-
-    /**
-     * The enabledness of the rule view.
-     */
-    protected final boolean enabled;
-    /**
-     * The confluency of the rule view.
-     */
-    protected final boolean confluent;
+    // /**
+    // * The priority of the rule represented by this rule graph.
+    // */
+    // protected final int priority;
+    //
+    // /**
+    // * The enabledness of the rule view.
+    // */
+    // protected final boolean enabled;
+    // /**
+    // * The confluency of the rule view.
+    // */
+    // protected final boolean confluent;
 
     /** The aspect graph representation of the rule. */
     private final AspectGraph graph;
