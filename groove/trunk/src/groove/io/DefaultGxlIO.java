@@ -103,7 +103,7 @@ public class DefaultGxlIO {
 
     /**
      * Loads a graph from an input stream. Convenience method for
-     * <code>loadGraphWitMap(in).first()</code>.
+     * <code>loadGraphWithMap(in).first()</code>.
      */
     public Graph loadGraph(InputStream in) throws IOException {
         return loadGraphWithMap(in).first();
