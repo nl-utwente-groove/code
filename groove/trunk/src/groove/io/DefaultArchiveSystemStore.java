@@ -58,12 +58,10 @@ public class DefaultArchiveSystemStore implements SystemStore {
      * file containing a single subdirectory with extension
      * {@link Groove#RULE_SYSTEM_EXTENSION}. The store is immutable.
      * @param file source JAR or ZIP file containing the rule system
-     * @param layouted if <code>true</code>, the store will load graph layout.
      * @throws IllegalArgumentException if <code>file</code> is not a correct
      *         archive
      */
-    public DefaultArchiveSystemStore(File file, boolean layouted)
-        throws IllegalArgumentException {
+    public DefaultArchiveSystemStore(File file) throws IllegalArgumentException {
         if (!file.exists()) {
             throw new IllegalArgumentException(String.format(
                 "File '%s' does not exist", file));
@@ -85,17 +83,15 @@ public class DefaultArchiveSystemStore implements SystemStore {
 
     /**
      * Constructs a store from a given URL. The URL should specify the
-     * <code>jar:</code> protocol, and the file should be a directory with
-     * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is immutable.
+     * <code>jar:</code> protocol, and the sub-URL should point to a JAR or ZIP
+     * file. The store is immutable.
      * @param location source location of the underlying persistent storage;
      *        should refer to a file.
-     * @param layouted if <code>true</code>, the store will load and save graph
-     *        layout.
      * @throws IllegalArgumentException if <code>location</code> does not
      *         specify the correct protocol
      * @throws IOException if the URL has the JAR protocol, but cannot be opened
      */
-    public DefaultArchiveSystemStore(URL location, boolean layouted)
+    public DefaultArchiveSystemStore(URL location)
         throws IllegalArgumentException, IOException {
         if (!location.getProtocol().equals(JAR_PROTOCOL)) {
             throw new IllegalArgumentException(String.format(

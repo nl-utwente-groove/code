@@ -421,14 +421,33 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     static public StoredGrammarView newInstance(URL url)
         throws IllegalArgumentException, IOException {
+        return newInstance(url, null);
+    }
+
+    /**
+     * Creates an instance based on a store located at a given URL, with a given
+     * start graph.
+     * @param url the URL to load the grammar from
+     * @param startGraphName the start graph name; if <code>null</code>, the
+     *        default start graph name is used
+     * @throws IllegalArgumentException if no store can be created from the
+     *         given URL
+     * @throws IOException if a store can be created but not loaded
+     */
+    static public StoredGrammarView newInstance(URL url, String startGraphName)
+        throws IllegalArgumentException, IOException {
         SystemStore store = null;
         try {
-            store = new DefaultArchiveSystemStore(url, true);
+            store = new DefaultArchiveSystemStore(url);
         } catch (IllegalArgumentException exc) {
             store = new DefaultFileSystemStore(url, true);
         }
         store.reload();
-        return store.toGrammarView();
+        StoredGrammarView result = store.toGrammarView();
+        if (startGraphName != null) {
+            result.setStartGraph(startGraphName);
+        }
+        return result;
     }
 
     /**
@@ -456,7 +475,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         throws IllegalArgumentException, IOException {
         SystemStore store = null;
         try {
-            store = new DefaultArchiveSystemStore(file, true);
+            store = new DefaultArchiveSystemStore(file);
         } catch (IllegalArgumentException exc) {
             store = new DefaultFileSystemStore(file, true);
         }
