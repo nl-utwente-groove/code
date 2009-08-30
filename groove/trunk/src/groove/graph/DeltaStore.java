@@ -80,9 +80,10 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget,
 
     public boolean addNode(Node elem) {
         if (!getRemovedNodeSet().remove(elem)) {
-            assert !getAddedNodeSet().contains(elem) : "Added node set "
-                + getAddedNodeSet() + " already contains " + elem;
-            return getAddedNodeSet().add(elem);
+            boolean added = getAddedNodeSet().add(elem);
+            assert added : "Added node set " + getAddedNodeSet()
+                + " already contains " + elem;
+            return added;
         } else {
             return true;
         }

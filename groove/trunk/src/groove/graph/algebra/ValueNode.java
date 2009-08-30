@@ -31,7 +31,8 @@ import java.util.Map;
  */
 public class ValueNode extends VariableNode {
     /**
-     * Constructs a (numbered) node for a given algebra and value of that algebra.
+     * Constructs a (numbered) node for a given algebra and value of that
+     * algebra.
      * @param nr the number for the new node.
      * @param algebra the algebra that the value belongs to; non-null
      * @param value the value to create a graph node for; non-null
@@ -44,7 +45,8 @@ public class ValueNode extends VariableNode {
     }
 
     /**
-     * Method returning the (non-null) algebra to which the attribute node belongs.
+     * Method returning the (non-null) algebra to which the attribute node
+     * belongs.
      * @return the (non-null) algebra to which the attribute node belongs
      */
     public Algebra<?> getAlgebra() {
@@ -52,21 +54,12 @@ public class ValueNode extends VariableNode {
     }
 
     /**
-     * Returns the (non-null) algebra value this value node is
-     * representing.
+     * Returns the (non-null) algebra value this value node is representing.
      */
     public Object getValue() {
         return this.value;
     }
-//
-//    /** 
-//     * Returns <code>true</code> if this value node represents a variable.
-//     * @see #getValue()
-//     */
-//    public boolean hasValue() {
-//        return this.value != null;
-//    }
-//    
+
     /**
      * Returns a symbolic description of the value, which uniquely identifies
      * the value in the algebra.
@@ -85,18 +78,6 @@ public class ValueNode extends VariableNode {
             AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
         return algebraName + CONTENT_SEPARATOR + getSymbol();
     }
-//
-//    /** Value nodes with and without value may overlap in node number. */
-//    @Override
-//    protected boolean testDiffers(DefaultNode other) {
-//        return super.testDiffers(other) || this.hasValue() != ((ValueNode) other).hasValue();
-//    }
-//
-//    /** Modifies the super result by testing whether this is actually a variable node. */
-//    @Override
-//    protected int computeHashCode() {
-//        return super.computeHashCode() * (hasValue() ? 1 : 3);
-//    }
 
     /**
      * The algebra to which this value belongs (non-null).
@@ -107,51 +88,28 @@ public class ValueNode extends VariableNode {
      */
     private final Object value;
 
-    /** 
-     * Returns a (numbered) value node for a given algebra and value.
-     * Stores previously generated instances for reuse. 
+    /**
+     * Returns a (numbered) value node for a given algebra and value. Stores
+     * previously generated instances for reuse.
      */
     static public ValueNode createValueNode(Algebra<?> algebra, Object value) {
         Map<Object,ValueNode> nodeMap = valueNodeStore.get(algebra.getName());
         if (nodeMap == null) {
             nodeMap = new HashMap<Object,ValueNode>();
-            valueNodeStore.put(algebra.getName(),nodeMap);
+            valueNodeStore.put(algebra.getName(), nodeMap);
         }
         ValueNode result = nodeMap.get(value);
         if (result == null) {
             valueNodeCount++;
             result = new ValueNode(valueNodeCount, algebra, value);
-            nodeMap.put(value,result);
+            nodeMap.put(value, result);
         }
         return result;
     }
-//    
-//    /** 
-//     * Returns a new value node, with a given number but without predefined value.
-//     * Reuses a previously created variable node with the same number, if any.
-//     */
-//    static public ValueNode createVariableNode(int nr) {
-//        ValueNode result = variableNodeStore.get(nr);
-//        if (result == null) {
-//            variableNodeStore.put(nr, result = new ValueNode(nr));
-//        }
-//        return result;
-//    }
-//    
-//    /** Tests if a given graph contains value nodes. */
-//    static public boolean hasValueNodes(Graph graph) {
-//        boolean result = false;
-//        Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
-//        while (!result && nodeIter.hasNext()) {
-//            result = (nodeIter.next() instanceof ValueNode);
-//        }
-//        return result;
-//    }
-    
+
     /** Internal store of previously generated value nodes. */
-    static private final Map<String,Map<Object,ValueNode>> valueNodeStore = new HashMap<String,Map<Object,ValueNode>>();
+    static private final Map<String,Map<Object,ValueNode>> valueNodeStore =
+        new HashMap<String,Map<Object,ValueNode>>();
     /** Maximum value node number */
     static private int valueNodeCount;
-//    /** Store of previously created variable nodes. */
-//    static private final Map<Integer,ValueNode> variableNodeStore = new HashMap<Integer,ValueNode>();
 }
