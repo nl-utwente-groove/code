@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -63,9 +64,9 @@ public class DefaultArchiveSystemStore implements SystemStore {
                 "File '%s' does not exist", file));
         }
         String extendedName;
-        if (JAR_FILTER.accept(file)) {
+        if (!file.isDirectory() && JAR_FILTER.accept(file)) {
             extendedName = JAR_FILTER.stripExtension(file.getName());
-        } else if (ZIP_FILTER.accept(file)) {
+        } else if (!file.isDirectory() && ZIP_FILTER.accept(file)) {
             extendedName = ZIP_FILTER.stripExtension(file.getName());
         } else {
             throw new IllegalArgumentException(String.format(
@@ -331,6 +332,12 @@ public class DefaultArchiveSystemStore implements SystemStore {
         return DefaultFileSystemStore.save(file, this);
     }
 
+    /** This type of system store is not modifiable. */
+    @Override
+    public boolean isModifiable() {
+        return false;
+    }
+
     /**
      * Loads the named graphs from a zip file, using the prepared map from graph
      * names to zip entries.
@@ -341,13 +348,15 @@ public class DefaultArchiveSystemStore implements SystemStore {
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
             String graphName = graphEntry.getKey();
             InputStream in = file.getInputStream(graphEntry.getValue());
-            AspectGraph graph =
-                AspectGraph.newInstance(DefaultGxlIO.getInstance().loadGraph(in));
+            Graph plainGraph = DefaultGxlIO.getInstance().loadGraph(in);
             /*
              * For backward compatibility, we set the role and name of the graph
+             * graph
              */
-            GraphInfo.setRole(graph, Groove.GRAPH_ROLE);
-            GraphInfo.setName(graph, graphName);
+            GraphInfo.setRole(plainGraph, Groove.GRAPH_ROLE);
+            GraphInfo.setName(plainGraph, graphName);
+
+            AspectGraph graph = AspectGraph.newInstance(plainGraph);
             /* Store the graph */
             this.graphMap.put(graphName, graph);
         }
@@ -413,14 +422,14 @@ public class DefaultArchiveSystemStore implements SystemStore {
         for (Map.Entry<RuleName,ZipEntry> ruleEntry : rules.entrySet()) {
             RuleName ruleName = ruleEntry.getKey();
             InputStream in = file.getInputStream(ruleEntry.getValue());
-            AspectGraph graph =
-                AspectGraph.newInstance(DefaultGxlIO.getInstance().loadGraph(in));
+            Graph plainGraph = DefaultGxlIO.getInstance().loadGraph(in);
             /*
              * For backward compatibility, we set the role and name of the graph
              * graph
              */
-            GraphInfo.setRole(graph, Groove.RULE_ROLE);
-            GraphInfo.setName(graph, ruleName.toString());
+            GraphInfo.setRole(plainGraph, Groove.RULE_ROLE);
+            GraphInfo.setName(plainGraph, ruleName.toString());
+            AspectGraph graph = AspectGraph.newInstance(plainGraph);
             /* Store the graph */
             this.ruleMap.put(ruleName, graph);
         }

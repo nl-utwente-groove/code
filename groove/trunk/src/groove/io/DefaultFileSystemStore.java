@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.trans.RuleName;
@@ -113,7 +114,7 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     public AspectGraph deleteRule(RuleName name)
         throws UnsupportedOperationException {
         testInit();
-        AspectGraph result = this.graphMap.remove(name);
+        AspectGraph result = this.ruleMap.remove(name);
         this.marshaller.deleteGraph(new File(this.file,
             RULE_FILTER.addExtension(Groove.toString(name.tokens(), "", "",
                 Groove.FILE_SEPARATOR))));
@@ -247,13 +248,19 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         return save(file, this);
     }
 
+    /** This type of system store is modifiable. */
+    @Override
+    public boolean isModifiable() {
+        return true;
+    }
+
     /** Callback factory method for creating a graph marshaller. */
-    private Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory,
+    private Xml<Graph> createGraphMarshaller(GraphFactory graphFactory,
             boolean layouted) {
         if (layouted) {
-            return new AspectGxl(new LayedOutXml(graphFactory));
+            return new LayedOutXml(graphFactory);
         } else {
-            return new AspectGxl(new DefaultGxl(graphFactory));
+            return new DefaultGxl(graphFactory);
         }
     }
 
@@ -268,14 +275,15 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         for (File file : files) {
             // check for overlapping rule and directory names
             if (!file.isDirectory()) {
-                AspectGraph graph = this.marshaller.unmarshalGraph(file);
+                Graph plainGraph = this.marshaller.unmarshalGraph(file);
                 String graphName = STATE_FILTER.stripExtension(file.getName());
                 /*
                  * For backward compatibility, we set the role and name of the
-                 * rule graph
+                 * graph
                  */
-                GraphInfo.setRole(graph, Groove.GRAPH_ROLE);
-                GraphInfo.setName(graph, graphName);
+                GraphInfo.setRole(plainGraph, Groove.GRAPH_ROLE);
+                GraphInfo.setName(plainGraph, graphName);
+                AspectGraph graph = AspectGraph.newInstance(plainGraph);
                 /* Store the graph */
                 Object oldEntry = this.graphMap.put(graphName, graph);
                 assert oldEntry == null : String.format(
@@ -390,14 +398,14 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
                         collectRules(file, ruleName);
                     }
                 } else {
-                    AspectGraph ruleGraph =
-                        this.marshaller.unmarshalGraph(file);
+                    Graph plainGraph = this.marshaller.unmarshalGraph(file);
                     /*
                      * For backward compatibility, we set the role and name of
                      * the rule graph
                      */
-                    GraphInfo.setRole(ruleGraph, Groove.RULE_ROLE);
-                    GraphInfo.setName(ruleGraph, ruleName.text());
+                    GraphInfo.setRole(plainGraph, Groove.RULE_ROLE);
+                    GraphInfo.setName(plainGraph, ruleName.text());
+                    AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
                     /* Store the rule graph */
                     AspectGraph oldRule = this.ruleMap.put(ruleName, ruleGraph);
                     assert oldRule == null : String.format(
@@ -457,7 +465,7 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     /** Name of the rule system. */
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
-    private final Xml<AspectGraph> marshaller;
+    private final Xml<Graph> marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
     /** The grammar view associated with this store. */
@@ -470,13 +478,26 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
             throw new IOException(String.format(
                 "File '%s' does not refer to a production system", file));
         }
+        // if the file already exists, rename it
+        // in order to be able to restore if saving fails
+        File newFile = null;
         if (file.exists()) {
-            throw new IOException(String.format(
-                "Can't save grammar to existing file '%s'", file));
+            newFile = file;
+            do {
+                newFile =
+                    new File(newFile.getParent(), "Copy of "
+                        + newFile.getName());
+            } while (newFile.exists());
+            if (!file.renameTo(newFile)) {
+                throw new IOException(String.format(
+                    "Can't save grammar to existing file '%s'", file));
+            }
         }
         try {
             file.mkdir();
-            SystemStore result = new DefaultFileSystemStore(file, true);
+            DefaultFileSystemStore result =
+                new DefaultFileSystemStore(file, true);
+            result.reload();
             result.putProperties(store.getProperties());
             // save control programs
             for (Map.Entry<String,String> controlEntry : store.getControls().entrySet()) {
@@ -493,10 +514,36 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
             for (AspectGraph stateGraph : store.getRules().values()) {
                 result.putRule(stateGraph);
             }
+            if (newFile != null) {
+                boolean deleted = deleteRecursive(newFile);
+                assert deleted : String.format("Failed to delete '%s'", newFile);
+            }
             return result;
         } catch (IOException exc) {
             file.delete();
+            // attempt to re-rename previously existing file
+            if (newFile != null) {
+                newFile.renameTo(file);
+            }
             throw exc;
+        }
+    }
+
+    /**
+     * Recursively traverses all subdirectories and deletes all files and
+     * directories.
+     */
+    private static boolean deleteRecursive(File location) {
+        if (location.isDirectory()) {
+            for (File file : location.listFiles()) {
+                if (!deleteRecursive(file)) {
+                    return false;
+                }
+            }
+            return location.delete();
+        } else {
+            location.delete();
+            return true;
         }
     }
 
