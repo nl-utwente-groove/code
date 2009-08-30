@@ -47,13 +47,25 @@ public class StoredGrammarView implements GrammarView, Observer {
     /**
      * Constructs a grammar view from a rule system store. If the store is
      * modifiable and the view should be kept in sync, it should be added as
-     * observer to the store.
+     * observer to the store. The start graph name is the default one.
+     * @see Groove#DEFAULT_START_GRAPH_NAME
      */
     public StoredGrammarView(SystemStore store) {
+        this(store, null);
+    }
+
+    /**
+     * Constructs a grammar view from a rule system store and a start graph
+     * name. If the store is modifiable and the view should be kept in sync, it
+     * should be added as observer to the store.
+     * @param startGrameName the name of the graph to be used as start state; if
+     *        <code>null</code>, the default start graph name is used.
+     */
+    public StoredGrammarView(SystemStore store, String startGrameName) {
         this.store = store;
-        // loadRuleMap();
-        // loadGraphMap();
         loadControlMap();
+        setStartGraph(this.startGraphName == null
+                ? Groove.DEFAULT_START_GRAPH_NAME : startGrameName);
     }
 
     /** Returns the name of this grammar view. */
@@ -151,6 +163,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         assert name != null;
         this.startGraph = getGraphView(name);
         this.startGraphName = name;
+        invalidate();
         return this.startGraph != null;
     }
 
@@ -204,6 +217,20 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
+     * Indicates if control is explicitly enabled. This means not only the
+     * {@link SystemProperties#isUseControl()} yields <code>true</code>, but
+     * also {@link SystemProperties#getControlName()} is set to a non-empty
+     * value.
+     * @return <code>true</code> if control is explicitly enabled, in the above
+     *         sense.
+     */
+    private boolean isUseControl() {
+        return getProperties().isUseControl()
+            && getProperties().getControlName() != null
+            && getProperties().getControlName().length() > 0;
+    }
+
+    /**
      * Records the name of the control program to be used. This is either taken
      * from the system properties; if no explicit control name is given, it is
      * set to {@link Groove#DEFAULT_CONTROL_NAME}.
@@ -250,7 +277,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             }
         }
         // set control
-        if (getProperties().isUseControl()) {
+        if (isUseControl()) {
             ControlView controlView = getControlView(getControlName());
             if (controlView == null) {
                 errors.add(String.format(
@@ -413,6 +440,20 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     static public StoredGrammarView newInstance(File file)
         throws IllegalArgumentException, IOException {
+        return newInstance(file, null);
+    }
+
+    /**
+     * Creates an instance based on a given file and start graph name.
+     * @param file the file to load the grammar from
+     * @param startGraphName the start graph name; if <code>null</code>, the
+     *        default start graph name is used
+     * @throws IllegalArgumentException if no store can be created from the
+     *         given file
+     * @throws IOException if a store can be created but not loaded
+     */
+    static public StoredGrammarView newInstance(File file, String startGraphName)
+        throws IllegalArgumentException, IOException {
         SystemStore store = null;
         try {
             store = new DefaultArchiveSystemStore(file, true);
@@ -420,7 +461,11 @@ public class StoredGrammarView implements GrammarView, Observer {
             store = new DefaultFileSystemStore(file, true);
         }
         store.reload();
-        return store.toGrammarView();
+        StoredGrammarView result = store.toGrammarView();
+        if (startGraphName != null) {
+            result.setStartGraph(startGraphName);
+        }
+        return result;
     }
 
     /**
