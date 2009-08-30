@@ -492,14 +492,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     // ------------------- commands --------------------------
 
-    /**
-     * Specialises the return type.
-     */
-    @Override
-    public RuleName getName() {
-        return (RuleName) super.getName();
-    }
-
     public int getPriority() {
         return this.priority;
     }
