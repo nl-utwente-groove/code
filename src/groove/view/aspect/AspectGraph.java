@@ -438,7 +438,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             String myName = GraphInfo.getName(this);
             String viewName = this.graphView.getName();
             refreshView =
-                myName == null ? viewName == null : myName.equals(viewName);
+                myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (!refreshView) {
             refreshView = !this.graphView.hasProperties(properties);
@@ -472,7 +472,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             String myName = GraphInfo.getName(this);
             String viewName = this.ruleView.getName();
             refreshView =
-                myName == null ? viewName == null : myName.equals(viewName);
+                myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
             this.ruleView = new AspectualRuleView(this, properties);
