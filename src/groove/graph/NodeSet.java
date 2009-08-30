@@ -16,6 +16,9 @@
  */
 package groove.graph;
 
+import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -65,13 +68,46 @@ final public class NodeSet extends TreeHashSet<Node> {
 
     @Override
     protected int getCode(Node key) {
-        if (key instanceof DefaultNode) {
-            return ((DefaultNode) key).getNumber();
+        int nr = key.getNumber();
+        if (key instanceof ValueNode) {
+            assert nr < MAX_VALUE_NODE_NR : String.format(
+                "Value node number '%s' too high to ensure correctness of NodeSet implementation",
+                nr);
+            nr += VALUE_NODE_BASE;
+        } else if (key instanceof VariableNode) {
+            assert nr < MAX_VARIABLE_NODE_NR : String.format(
+                "Variable node number '%s' too high to ensure correctness of NodeSet implementation",
+                nr);
+            nr += VARIABLE_NODE_BASE;
+        } else if (key instanceof ProductNode) {
+            assert nr < MAX_PRODUCT_NODE_NR : String.format(
+                "Product node number '%s' too high to ensure correctness of NodeSet implementation",
+                nr);
+            nr += PRODUCT_NODE_BASE;
         } else {
-            return key.hashCode();
+            assert nr < MAX_DEFAULT_NODE_NR : String.format(
+                "Default node number '%s' too high to ensure correctness of NodeSet implementation",
+                nr);
         }
+        return nr;
     }
 
+    /** Maximum number of default nodes. */
+    static private final long MAX_DEFAULT_NODE_NR = 0x80000000;
+    /** Maximum number of product nodes. */
+    static private final long MAX_PRODUCT_NODE_NR = 0x10000000;
+    /** Maximum number of variable nodes. */
+    static private final long MAX_VARIABLE_NODE_NR = 0x10000000;
+    /** Maximum number of value nodes. */
+    static private final long MAX_VALUE_NODE_NR = 0x60000000;
+    /** Offset added to product node numbers, to keep them distinct. */
+    static private final int PRODUCT_NODE_BASE = (int) MAX_DEFAULT_NODE_NR;
+    /** Offset added to variable node numbers, to keep them distinct. */
+    static private final int VARIABLE_NODE_BASE =
+        PRODUCT_NODE_BASE + (int) MAX_PRODUCT_NODE_NR;
+    /** Offset added to value node numbers, to keep them distinct. */
+    static private final int VALUE_NODE_BASE =
+        VARIABLE_NODE_BASE + (int) MAX_VARIABLE_NODE_NR;
     /** The resolution of the tree for a node set. */
     static private final int NODE_RESOLUTION = 4;
 }
