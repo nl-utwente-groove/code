@@ -24,7 +24,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.Version;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,7 +71,6 @@ public class DefaultGxl extends AbstractXml {
      * This implementation works by delegating to {@link DefaultGxlIO}.
      */
     public void marshalGraph(Graph graph, File file) throws IOException {
-        GraphInfo.setVersion(graph, Version.GXL_VERSION);
         DefaultGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
     }
 
