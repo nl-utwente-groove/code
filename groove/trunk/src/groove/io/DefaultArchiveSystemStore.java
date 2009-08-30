@@ -16,11 +16,16 @@
  */
 package groove.io;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.Node;
+import groove.gui.layout.LayoutMap;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.util.Pair;
+import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -120,7 +125,9 @@ public class DefaultArchiveSystemStore implements SystemStore {
         String result;
         JarURLConnection connection = (JarURLConnection) url.openConnection();
         if (connection.getEntryName() == null) {
-            result = new File(connection.getJarFileURL().getPath()).getName();
+            result =
+                ExtensionFilter.getPureName(new File(
+                    connection.getJarFileURL().getPath()));
         } else {
             result = connection.getEntryName();
         }
@@ -241,7 +248,7 @@ public class DefaultArchiveSystemStore implements SystemStore {
             zipFile = new ZipFile(this.file);
         }
         // collect the relevant entries
-        Map<RuleName,ZipEntry> rules = new HashMap<RuleName,ZipEntry>();
+        Map<String,ZipEntry> rules = new HashMap<String,ZipEntry>();
         Map<String,ZipEntry> graphs = new HashMap<String,ZipEntry>();
         Map<String,ZipEntry> controls = new HashMap<String,ZipEntry>();
         ZipEntry properties = null;
@@ -264,40 +271,26 @@ public class DefaultArchiveSystemStore implements SystemStore {
                         properties = entry;
                     }
                 } else if (restName.endsWith(RULE_FILTER.getExtension())) {
-                    // create rule name
-                    StringBuilder ruleName = new StringBuilder();
-                    File nameAsFile =
-                        new File(RULE_FILTER.stripExtension(restName));
-                    ruleName.append(nameAsFile.getName());
-                    while (nameAsFile.getParent() != null) {
-                        nameAsFile = nameAsFile.getParentFile();
-                        ruleName.insert(0, RuleName.SEPARATOR);
-                        ruleName.insert(0, nameAsFile.getName());
-                    }
-                    Object oldEntry =
-                        rules.put(new RuleName(ruleName.toString()), entry);
+                    Object oldEntry = rules.put(restName, entry);
                     assert oldEntry == null : String.format(
-                        "Duplicate rule name '%s'", ruleName);
+                        "Duplicate rule name '%s'", restName);
                 } else if (restName.endsWith(STATE_FILTER.getExtension())) {
                     // check if the entry is top level
                     if (new File(restName).getParent() == null) {
-                        Object oldEntry =
-                            graphs.put(STATE_FILTER.stripExtension(restName),
-                                entry);
+                        Object oldEntry = graphs.put(restName, entry);
                         assert oldEntry == null : String.format(
-                            "Duplicate graph name '%s'",
-                            STATE_FILTER.stripExtension(restName));
+                            "Duplicate graph name '%s'", restName);
                     }
                 } else if (restName.endsWith(CONTROL_FILTER.getExtension())) {
                     // check if the entry is top level
                     if (new File(restName).getParent() == null) {
-                        Object oldEntry =
-                            controls.put(
-                                CONTROL_FILTER.stripExtension(restName), entry);
+                        Object oldEntry = controls.put(restName, entry);
                         assert oldEntry == null : String.format(
-                            "Duplicate rule name '%s'",
-                            CONTROL_FILTER.stripExtension(restName));
+                            "Duplicate control name '%s'", restName);
                     }
+                } else if (restName.endsWith(LAYOUT_FILTER.getExtension())) {
+                    String objectName = LAYOUT_FILTER.stripExtension(restName);
+                    this.layoutEntryMap.put(objectName, entry);
                 }
             }
         }
@@ -346,16 +339,19 @@ public class DefaultArchiveSystemStore implements SystemStore {
         throws IOException {
         this.graphMap.clear();
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
-            String graphName = graphEntry.getKey();
+            String graphName = STATE_FILTER.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
-            Graph plainGraph = DefaultGxlIO.getInstance().loadGraph(in);
+            Pair<Graph,Map<String,Node>> plainGraphAndMap =
+                DefaultGxlIO.getInstance().loadGraphWithMap(in);
+            Graph plainGraph = plainGraphAndMap.first();
             /*
              * For backward compatibility, we set the role and name of the graph
              * graph
              */
             GraphInfo.setRole(plainGraph, Groove.GRAPH_ROLE);
             GraphInfo.setName(plainGraph, graphName);
-
+            addLayout(file, graphEntry.getKey(), plainGraph,
+                plainGraphAndMap.second());
             AspectGraph graph = AspectGraph.newInstance(plainGraph);
             /* Store the graph */
             this.graphMap.put(graphName, graph);
@@ -370,7 +366,8 @@ public class DefaultArchiveSystemStore implements SystemStore {
         throws IOException {
         this.controlMap.clear();
         for (Map.Entry<String,ZipEntry> controlEntry : controls.entrySet()) {
-            String controlName = controlEntry.getKey();
+            String controlName =
+                CONTROL_FILTER.stripExtension(controlEntry.getKey());
             InputStream in = file.getInputStream(controlEntry.getValue());
             // read the program in as a single string
             BufferedReader reader =
@@ -416,23 +413,68 @@ public class DefaultArchiveSystemStore implements SystemStore {
     /**
      * Loads all the rules from the file into {@link #ruleMap}.
      */
-    private void loadRules(ZipFile file, Map<RuleName,ZipEntry> rules)
+    private void loadRules(ZipFile file, Map<String,ZipEntry> rules)
         throws IOException {
         this.ruleMap.clear();
-        for (Map.Entry<RuleName,ZipEntry> ruleEntry : rules.entrySet()) {
-            RuleName ruleName = ruleEntry.getKey();
+        for (Map.Entry<String,ZipEntry> ruleEntry : rules.entrySet()) {
+            RuleName ruleName =
+                createRuleName(RULE_FILTER.stripExtension(ruleEntry.getKey()));
             InputStream in = file.getInputStream(ruleEntry.getValue());
-            Graph plainGraph = DefaultGxlIO.getInstance().loadGraph(in);
+            Pair<Graph,Map<String,Node>> plainGraphAndMap =
+                DefaultGxlIO.getInstance().loadGraphWithMap(in);
+            Graph plainGraph = plainGraphAndMap.first();
             /*
              * For backward compatibility, we set the role and name of the graph
              * graph
              */
             GraphInfo.setRole(plainGraph, Groove.RULE_ROLE);
             GraphInfo.setName(plainGraph, ruleName.toString());
+            addLayout(file, ruleEntry.getKey(), plainGraph,
+                plainGraphAndMap.second());
             AspectGraph graph = AspectGraph.newInstance(plainGraph);
             /* Store the graph */
             this.ruleMap.put(ruleName, graph);
         }
+    }
+
+    /**
+     * @param file
+     * @param ruleEntryName
+     * @param plainGraph
+     * @param nodeMap
+     * @throws IOException
+     */
+    private void addLayout(ZipFile file, String ruleEntryName,
+            Graph plainGraph, Map<String,Node> nodeMap) throws IOException {
+        ZipEntry layoutEntry = this.layoutEntryMap.get(ruleEntryName);
+        if (layoutEntry != null) {
+            try {
+                LayoutMap<Node,Edge> layout =
+                    LayoutIO.getInstance().readLayout(nodeMap,
+                        file.getInputStream(layoutEntry));
+                GraphInfo.setLayoutMap(plainGraph, layout);
+            } catch (FormatException exc) {
+                GraphInfo.addErrors(plainGraph, exc.getErrors());
+            }
+        }
+    }
+
+    /**
+     * Creates a rule name from the remainder of a JAR/ZIP entry name. The
+     * '/'-separators are interpreted as sule name hierarchy.
+     * @param restName The entry name to convert; non-null
+     * @return The resulting rule name; non-null
+     */
+    private RuleName createRuleName(String restName) {
+        StringBuilder result = new StringBuilder();
+        File nameAsFile = new File(RULE_FILTER.stripExtension(restName));
+        result.append(nameAsFile.getName());
+        while (nameAsFile.getParent() != null) {
+            nameAsFile = nameAsFile.getParentFile();
+            result.insert(0, RuleName.SEPARATOR);
+            result.insert(0, nameAsFile.getName());
+        }
+        return new RuleName(result.toString());
     }
 
     private void testInit() throws IllegalStateException {
@@ -450,6 +492,9 @@ public class DefaultArchiveSystemStore implements SystemStore {
         new HashMap<String,AspectGraph>();
     /** The name-to-control-program map of the source. */
     private final Map<String,String> controlMap = new HashMap<String,String>();
+    /** Map from entry name to layout entry. */
+    private final Map<String,ZipEntry> layoutEntryMap =
+        new HashMap<String,ZipEntry>();
     /** The system properties object of the source. */
     private SystemProperties properties;
     /**
@@ -497,4 +542,8 @@ public class DefaultArchiveSystemStore implements SystemStore {
     /** File filter for control files. */
     static private final ExtensionFilter CONTROL_FILTER =
         Groove.createControlFilter();
+
+    /** File filter for layout files. */
+    static private final ExtensionFilter LAYOUT_FILTER =
+        new ExtensionFilter(Groove.LAYOUT_EXTENSION);
 }
