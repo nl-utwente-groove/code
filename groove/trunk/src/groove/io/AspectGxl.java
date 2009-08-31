@@ -2,6 +2,7 @@
 package groove.io;
 
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.view.aspect.AspectGraph;
 
@@ -41,22 +42,37 @@ public class AspectGxl implements Xml<AspectGraph> {
 
     /**
      * Unmarshals the URL using the inner marshaller and converts the resulting
-     * graph to an {@link AspectGraph}.
+     * graph to an {@link AspectGraph}. Derives the name of the graph from the
+     * last part of the URL path
      * @see AspectGraph#newInstance(GraphShape)
      */
     public AspectGraph unmarshalGraph(URL url) throws IOException {
         Graph plainGraph = this.marshaller.unmarshalGraph(url);
+        GraphInfo.setName(plainGraph, extractName(url.getPath()));
         return AspectGraph.newInstance(plainGraph);
     }
 
     /**
      * Unmarshals the file using the inner marshaller and converts the resulting
-     * graph to an {@link AspectGraph}.
+     * graph to an {@link AspectGraph}. Derives the name of the graph from the
+     * name part of the file
      * @see AspectGraph#newInstance(GraphShape)
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
         Graph plainGraph = this.marshaller.unmarshalGraph(file);
+        GraphInfo.setName(plainGraph, extractName(file.toString()));
         return AspectGraph.newInstance(plainGraph);
+    }
+
+    /**
+     * Extracts a graph name from a location (given as a string) by regarding
+     * the string as a file and returning the name part, without extension.
+     * @param location string description of the location a graph was marshalled
+     *        from
+     * @return graph name extracted from <code>location</code>; non-null
+     */
+    private String extractName(String location) {
+        return ExtensionFilter.getPureName(new File(location));
     }
 
     /**
