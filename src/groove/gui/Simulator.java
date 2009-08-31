@@ -578,7 +578,7 @@ public class Simulator {
 
     /** Creates an action associated to a scenario handler. */
     public LaunchScenarioAction getLaunchScenarioAction(Scenario scenario) {
-        // reuse: the action depends on the scenario
+        // no reuse: the action depends on the scenario
         return new LaunchScenarioAction(scenario);
     }
 
@@ -2945,10 +2945,6 @@ public class Simulator {
      * The go-to start state action permanently associated with this simulator.
      */
     private GotoStartStateAction gotoStartStateAction;
-    //
-    // /** The control file load action permanently associated with this
-    // simulator. */
-    // private LoadControlFileAction loadControlFileAction;
 
     /**
      * The rule load action permanently associated with this simulator.

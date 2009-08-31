@@ -302,7 +302,7 @@ public class ExplorationTest extends TestCase {
      * @return the explored GTS
      */
     @SuppressWarnings("unchecked")
-    protected GTS testExploration(GenericGrammarView<?,?> view, String strategyDescr,
+    protected GTS testExploration(GrammarView view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount, boolean save) {
         try {
             GraphGrammar gg = view.toGrammar();
@@ -365,7 +365,7 @@ public class ExplorationTest extends TestCase {
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(GenericGrammarView<?,?> view, String strategyDescr,
+    protected GTS testExploration(GrammarView view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount) {
         return testExploration(view, strategyDescr, nodeCount, edgeCount,
             openCount, false);
@@ -385,7 +385,7 @@ public class ExplorationTest extends TestCase {
      */
     protected GTS testExploration(String grammarName, String startGraphName,
             String strategyDescr, int nodeCount, int edgeCount, int openCount) {
-        GenericGrammarView<?,?> gg = loadGrammar(grammarName, startGraphName);
+        GrammarView gg = loadGrammar(grammarName, startGraphName);
         return testExploration(gg, strategyDescr, nodeCount, edgeCount,
             openCount);
     }

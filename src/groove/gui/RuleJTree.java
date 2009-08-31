@@ -31,7 +31,7 @@ import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
-import groove.view.GenericGrammarView;
+import groove.view.GrammarView;
 import groove.view.RuleView;
 
 import java.awt.Color;
@@ -589,7 +589,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** The currently displayed state. */
     private GraphState displayedState;
     /** The currently displayed grammar. */
-    private GenericGrammarView<?,?> displayedGrammar;
+    private GrammarView displayedGrammar;
 
     /**
      * Transforms a given rule name into the string that shows this rule is
