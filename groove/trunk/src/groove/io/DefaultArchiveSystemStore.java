@@ -31,11 +31,11 @@ import groove.view.aspect.AspectGraph;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -75,6 +75,7 @@ public class DefaultArchiveSystemStore implements SystemStore {
             throw new IllegalArgumentException(String.format(
                 "File '%s' is not a JAR or ZIP file", file));
         }
+        this.location = file.toString();
         this.file = file;
         this.entryName = extendedName;
         this.grammarName = GRAMMAR_FILTER.stripExtension(extendedName);
@@ -82,35 +83,43 @@ public class DefaultArchiveSystemStore implements SystemStore {
     }
 
     /**
-     * Constructs a store from a given URL. The URL should specify the
-     * <code>jar:</code> protocol, and the sub-URL should point to a JAR or ZIP
-     * file. The store is immutable.
-     * @param location source location of the underlying persistent storage;
-     *        should refer to a file.
+     * Constructs a store from a given URL. The URL should either specify the
+     * <code>jar:</code> protocol, in which case the sub-URL should point to a
+     * JAR or ZIP file; or the URL should itself specify a JAR or ZIP file.
+     * Query and reference part of the URL are ignored. The store is immutable.
+     * @param url source location of the underlying persistent storage; should
+     *        refer to a ZIP or JAR file.
      * @throws IllegalArgumentException if <code>location</code> does not
      *         specify the correct protocol
      * @throws IOException if the URL has the JAR protocol, but cannot be opened
      */
-    public DefaultArchiveSystemStore(URL location)
-        throws IllegalArgumentException, IOException {
-        if (!location.getProtocol().equals(JAR_PROTOCOL)) {
-            throw new IllegalArgumentException(String.format(
-                "Protocol '%s' should be '%s'", location.getProtocol(),
-                JAR_PROTOCOL));
+    public DefaultArchiveSystemStore(URL url) throws IllegalArgumentException,
+        IOException {
+        // first strip query and anchor part
+        try {
+            url = new URL(url.getProtocol(), url.getAuthority(), url.getPath());
+        } catch (MalformedURLException exc) {
+            assert false : String.format(
+                "Stripping URL '%s' throws exception: %s", url, exc);
         }
-        this.url = location;
-        this.entryName = extractEntryName(location);
+        this.location = url.toString();
+        // artificially append the jar protocol, if it is not yet there
+        if (!url.getProtocol().equals(JAR_PROTOCOL)) {
+            url = new URL(JAR_PROTOCOL, null, url.toString() + "!/");
+        }
+        this.entryName = extractEntryName(url);
         // take the last part of the entry name as grammar name
         File fileFromEntry = new File(this.entryName);
         this.grammarName =
             GRAMMAR_FILTER.stripExtension(fileFromEntry.getName());
+        this.url = url;
         this.file = null;
     }
 
     /**
      * Extracts the entry name for the grammar from a given JAR or ZIP URL. The
      * name is either given in the JAR entry part of the URL, or it is taken to
-     * be the only directory inside the archive file.
+     * be the name of the archive file.
      * @param url the URL to be parsed; guaranteed to be a JAR or ZIP
      * @return the name; non-null
      * @throws IllegalArgumentException if no name can be found according to the
@@ -120,12 +129,11 @@ public class DefaultArchiveSystemStore implements SystemStore {
     private String extractEntryName(URL url) throws IOException {
         String result;
         JarURLConnection connection = (JarURLConnection) url.openConnection();
-        if (connection.getEntryName() == null) {
+        result = connection.getEntryName();
+        if (result == null) {
             result =
                 ExtensionFilter.getPureName(new File(
                     connection.getJarFileURL().getPath()));
-        } else {
-            result = connection.getEntryName();
         }
         return result;
         // if (jarEntryName == null) {
@@ -310,11 +318,7 @@ public class DefaultArchiveSystemStore implements SystemStore {
      * loaded from.
      */
     public String getLocation() {
-        if (this.url == null) {
-            return this.file.toString();
-        } else {
-            return this.url.toString();
-        }
+        return this.location;
     }
 
     public SystemStore save(File file) throws IOException {
@@ -388,18 +392,9 @@ public class DefaultArchiveSystemStore implements SystemStore {
     private void loadProperties(ZipFile file, ZipEntry entry)
         throws IOException {
         this.properties = new SystemProperties();
-        File propertiesFile =
-            new File(this.file,
-                PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
-        // backwards compatibility: <grammar name>.properties
-        if (!propertiesFile.exists()) {
-            propertiesFile =
-                new File(this.file,
-                    PROPERTIES_FILTER.addExtension(this.grammarName));
-        }
-        if (propertiesFile.exists()) {
+        if (entry != null) {
             Properties grammarProperties = new Properties();
-            InputStream s = new FileInputStream(propertiesFile);
+            InputStream s = file.getInputStream(entry);
             grammarProperties.load(s);
             s.close();
             this.properties.putAll(grammarProperties);
@@ -500,6 +495,11 @@ public class DefaultArchiveSystemStore implements SystemStore {
     private final URL url;
     /** The file obtained from <code>location</code>. */
     private final File file;
+    /**
+     * Location identifier; either the URL or the file from which this store was
+     * created.
+     */
+    private final String location;
     /** Name of the jar entry containing the grammar. */
     private final String entryName;
     /** Name of the rule system. */
