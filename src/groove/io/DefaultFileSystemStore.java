@@ -33,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
@@ -555,7 +556,9 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
      */
     private static File toFile(URL url) throws IllegalArgumentException {
         try {
-            return new File(url.toURI());
+            // ignore query and reference part of the URL
+            return new File(new URI(url.getProtocol(), url.getAuthority(),
+                url.getPath(), null, null));
         } catch (URISyntaxException exc) {
             throw new IllegalArgumentException(String.format(
                 "URL '%s' is not formatted correctly: %s", url,
