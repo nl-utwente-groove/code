@@ -21,7 +21,7 @@ public class CalculatorTest extends TestCase {
     /** Tests the append sample. */
     public void testCalculator() throws FormatException {
 
-        GenericGrammarView<?,?> view = loadGrammar("ferryman.gps", "start");
+        GenericGrammarView<?,?,?> view = loadGrammar("ferryman.gps", "start");
         GraphGrammar gg = view.toGrammar();
 
         GraphCalculator calc = new DefaultGraphCalculator(gg);
@@ -29,7 +29,7 @@ public class CalculatorTest extends TestCase {
         assertNull(result);
     }
 
-    private GenericGrammarView<?,?> loadGrammar(String grammarName,
+    private GenericGrammarView<?,?,?> loadGrammar(String grammarName,
             String startGraphName) {
         try {
             return this.loader.unmarshal(new File(INPUT_DIR, grammarName),
