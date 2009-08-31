@@ -19,9 +19,8 @@ package groove.view;
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.graph.GraphInfo;
-import groove.io.DefaultArchiveSystemStore;
-import groove.io.DefaultFileSystemStore;
 import groove.io.SystemStore;
+import groove.io.SystemStoreFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -421,7 +420,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     static public StoredGrammarView newInstance(URL url)
         throws IllegalArgumentException, IOException {
-        return newInstance(url, null);
+        return newInstance(url, url.getQuery());
     }
 
     /**
@@ -436,12 +435,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     static public StoredGrammarView newInstance(URL url, String startGraphName)
         throws IllegalArgumentException, IOException {
-        SystemStore store = null;
-        try {
-            store = new DefaultArchiveSystemStore(url);
-        } catch (IllegalArgumentException exc) {
-            store = new DefaultFileSystemStore(url, true);
-        }
+        SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
         StoredGrammarView result = store.toGrammarView();
         if (startGraphName != null) {
@@ -472,13 +466,8 @@ public class StoredGrammarView implements GrammarView, Observer {
      * @throws IOException if a store can be created but not loaded
      */
     static public StoredGrammarView newInstance(File file, String startGraphName)
-        throws IllegalArgumentException, IOException {
-        SystemStore store = null;
-        try {
-            store = new DefaultArchiveSystemStore(file);
-        } catch (IllegalArgumentException exc) {
-            store = new DefaultFileSystemStore(file, true);
-        }
+        throws IOException {
+        SystemStore store = SystemStoreFactory.newStore(file);
         store.reload();
         StoredGrammarView result = store.toGrammarView();
         if (startGraphName != null) {
