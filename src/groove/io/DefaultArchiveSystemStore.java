@@ -105,6 +105,11 @@ public class DefaultArchiveSystemStore implements SystemStore {
         this.location = url.toString();
         // artificially append the jar protocol, if it is not yet there
         if (!url.getProtocol().equals(JAR_PROTOCOL)) {
+            if (!JAR_FILTER.hasExtension(url.getPath())
+                && !ZIP_FILTER.hasExtension(url.getPath())) {
+                throw new IllegalArgumentException(String.format(
+                    "URL '%s' is not a JAR or ZIP file", url));
+            }
             url = new URL(JAR_PROTOCOL, null, url.toString() + "!/");
         }
         this.entryName = extractEntryName(url);

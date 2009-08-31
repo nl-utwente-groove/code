@@ -233,10 +233,6 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         return this.view;
     }
 
-    /**
-     * Returns the string representation of the URL or file this store was
-     * loaded from.
-     */
     public String getLocation() {
         if (this.url == null) {
             return this.file.toString();
