@@ -30,9 +30,9 @@ import groove.trans.RuleName;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
-import groove.view.DefaultGrammarView;
 import groove.view.GrammarView;
 import groove.view.RuleView;
+import groove.view.StoredGrammarView;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -111,7 +111,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Fills the rule directory with rule nodes, based on a given rule system.
      * Sets the current LTS to the grammar's LTS.
      */
-    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         this.displayedGrammar = grammar;
         if (grammar == null) {
             this.ruleNodeMap.clear();
@@ -129,7 +129,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Loads the j-tree with the data of the given (non-<code>null</code>)
      * grammar.
      */
-    private void loadGrammar(DefaultGrammarView grammar) {
+    private void loadGrammar(GrammarView grammar) {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
@@ -172,7 +172,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @param grammar the source of the rule map
      */
     private Map<Integer,Set<AspectualRuleView>> getPriorityMap(
-            DefaultGrammarView grammar) {
+            GrammarView grammar) {
         Map<Integer,Set<AspectualRuleView>> result =
             new TreeMap<Integer,Set<AspectualRuleView>>(
                 Rule.PRIORITY_COMPARATOR);
