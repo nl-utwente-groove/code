@@ -82,6 +82,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.store.getProperties();
     }
 
+    /** Returns a list of all available control program names. */
     public Set<String> getControlNames() {
         return Collections.unmodifiableSet(this.controlMap.keySet());
     }
@@ -103,19 +104,13 @@ public class StoredGrammarView implements GrammarView, Observer {
         throw new UnsupportedOperationException();
     }
 
-    //
-    // /**
-    // * Removes a rule view with a given name. Also removes the rule from the
-    // * graph grammar.
-    // * @return the view previously stored with name <code>name</code>, or
-    // * <code>null</code>
-    // */
-    // public AspectualRuleView removeRule(RuleName name) {
-    // AspectualRuleView result = this.ruleMap.remove(name);
-    // invalidateGrammar();
-    // return result;
-    // }
+    /** Sets the control program to a given name. */
+    public void setControl(String name) {
+        this.controlName = name;
+        invalidate();
+    }
 
+    /** Returns the control view associated with a given program. */
     public ControlView getControlView(String name) {
         return this.controlMap.get(name);
     }
@@ -224,20 +219,37 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         sense.
      */
     private boolean isUseControl() {
-        return getProperties().isUseControl()
-            && getProperties().getControlName() != null
-            && getProperties().getControlName().length() > 0;
+        return getProperties().isUseControl() && getControlName(false) != null;
     }
 
     /**
-     * Records the name of the control program to be used. This is either taken
-     * from the system properties; if no explicit control name is given, it is
-     * set to {@link Groove#DEFAULT_CONTROL_NAME}.
+     * Returns the name of the control program to be used. This is either
+     * explicitly set through {@link #setControl(String)}, or taken from the
+     * system properties; if no explicit control name is given, it is set to
+     * {@link Groove#DEFAULT_CONTROL_NAME}.
+     * @see SystemProperties#getControlName()
      */
-    private String getControlName() {
-        String result = getProperties().getControlName();
+    public String getControlName() {
+        return getControlName(true);
+    }
+
+    /**
+     * Returns the name of the control program to be used. This is either
+     * explicitly set through {@link #setControl(String)}, or taken from the
+     * system properties. If no explicit control name is given, either
+     * {@link Groove#DEFAULT_CONTROL_NAME} or <code>null</code> is returned.
+     * @param useDefault flag to control if {@link Groove#DEFAULT_CONTROL_NAME}
+     *        is used in case no explicit control name is set using
+     *        {@link #setControl(String)} or in the system properties.
+     * @see SystemProperties#getControlName()
+     */
+    private String getControlName(boolean useDefault) {
+        String result = this.controlName;
         if (result == null || result.length() == 0) {
-            result = Groove.DEFAULT_CONTROL_NAME;
+            result = getProperties().getControlName();
+        }
+        if (result == null || result.length() == 0) {
+            result = useDefault ? Groove.DEFAULT_CONTROL_NAME : null;
         }
         return result;
     }
@@ -377,22 +389,12 @@ public class StoredGrammarView implements GrammarView, Observer {
     public void update(Observable arg0, Object arg1) {
         assert arg0 == this.store;
         String change = (String) arg1;
-        // if (change.equals(SystemStore.GRAPH_CHANGE)) {
-        // loadGraphMap();
-        // } else if (change.equals(SystemStore.RULE_CHANGE)) {
-        // loadRuleMap();
         if (change.equals(SystemStore.CONTROL_CHANGE)) {
             loadControlMap();
         }
         invalidate();
     }
 
-    // /** Mapping from rule names to views on the corresponding rules. */
-    // private final Map<RuleName,AspectualRuleView> ruleMap =
-    // new HashMap<RuleName,AspectualRuleView>();
-    // /** Mapping from graph names to views on the corresponding graphs. */
-    // private final Map<String,AspectualGraphView> graphMap =
-    // new HashMap<String,AspectualGraphView>();
     /** Mapping from control names to views on the corresponding automata. */
     private final Map<String,ControlView> controlMap =
         new HashMap<String,ControlView>();
@@ -401,6 +403,11 @@ public class StoredGrammarView implements GrammarView, Observer {
     private final SystemStore store;
     /** The start graph of the grammar. */
     private AspectualGraphView startGraph;
+    /**
+     * Name of the current control program, if it is explicitly set;
+     * <code>null</code> otherwise.
+     */
+    private String controlName;
     /**
      * Name of the current start graph, if it is one of the graphs in this rule
      * system; <code>null</code> otherwise.
