@@ -251,6 +251,40 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         return true;
     }
 
+    /**
+     * Two system stores are considered equal if the locations they load from
+     * are equal.
+     * @see #getLocation()
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof DefaultFileSystemStore)
+            && ((DefaultFileSystemStore) obj).getLocation().equals(
+                getLocation());
+    }
+
+    /**
+     * Returns the hash code of this store's location.
+     * @see #getLocation()
+     */
+    @Override
+    public int hashCode() {
+        return getLocation().hashCode();
+    }
+
+    /**
+     * Returns a human-readable combination of the name and location of this
+     * store.
+     * @see #getName()
+     * @see #getLocation()
+     */
+    @Override
+    public String toString() {
+        String location =
+            this.file == null ? getLocation() : this.file.getParent();
+        return getName() + " - " + location;
+    }
+
     /** Callback factory method for creating a graph marshaller. */
     private Xml<Graph> createGraphMarshaller(GraphFactory graphFactory,
             boolean layouted) {
@@ -508,8 +542,8 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
                 result.putGraph(stateGraph);
             }
             // save rules
-            for (AspectGraph stateGraph : store.getRules().values()) {
-                result.putRule(stateGraph);
+            for (AspectGraph ruleGraph : store.getRules().values()) {
+                result.putRule(ruleGraph);
             }
             if (newFile != null) {
                 boolean deleted = deleteRecursive(newFile);
