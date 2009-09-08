@@ -337,6 +337,38 @@ public class DefaultArchiveSystemStore implements SystemStore {
     }
 
     /**
+     * Two system stores are considered equal if the locations they load from
+     * are equal.
+     * @see #getLocation()
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof DefaultArchiveSystemStore)
+            && ((DefaultArchiveSystemStore) obj).getLocation().equals(
+                getLocation());
+    }
+
+    /**
+     * Returns the hash code of this store's location.
+     * @see #getLocation()
+     */
+    @Override
+    public int hashCode() {
+        return getLocation().hashCode();
+    }
+
+    /**
+     * Returns a human-readable combination of the name and location of this
+     * store.
+     * @see #getName()
+     * @see #getLocation()
+     */
+    @Override
+    public String toString() {
+        return getName() + " - " + getLocation();
+    }
+
+    /**
      * Loads the named graphs from a zip file, using the prepared map from graph
      * names to zip entries.
      */
