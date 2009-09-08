@@ -93,13 +93,13 @@ final public class NodeSet extends TreeHashSet<Node> {
     }
 
     /** Maximum number of default nodes. */
-    static private final long MAX_DEFAULT_NODE_NR = 0x80000000;
+    static private final long MAX_DEFAULT_NODE_NR = 0x80000000L;
     /** Maximum number of product nodes. */
-    static private final long MAX_PRODUCT_NODE_NR = 0x10000000;
+    static private final long MAX_PRODUCT_NODE_NR = 0x10000000L;
     /** Maximum number of variable nodes. */
-    static private final long MAX_VARIABLE_NODE_NR = 0x10000000;
+    static private final long MAX_VARIABLE_NODE_NR = 0x10000000L;
     /** Maximum number of value nodes. */
-    static private final long MAX_VALUE_NODE_NR = 0x60000000;
+    static private final long MAX_VALUE_NODE_NR = 0x60000000L;
     /** Offset added to product node numbers, to keep them distinct. */
     static private final int PRODUCT_NODE_BASE = (int) MAX_DEFAULT_NODE_NR;
     /** Offset added to variable node numbers, to keep them distinct. */
