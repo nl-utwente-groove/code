@@ -79,7 +79,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
         if (GraphInfo.hasLayoutMap(graph)) {
             this.marshaller.marshalGraph(graph, file);
             LayoutIO.getInstance().writeLayout(GraphInfo.getLayoutMap(graph),
-                new FileOutputStream(file));
+                new FileOutputStream(toLayoutFile(file)));
         } else {
             // first marshal the graph
             this.marshaller.marshalGraph(graph, file);
@@ -126,8 +126,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      * file name.
      */
     private File toLayoutFile(File graphFile) {
-        return new File(graphFile.getParentFile(), graphFile.getName()
-            + Groove.LAYOUT_EXTENSION);
+        return new File(this.layoutFilter.addExtension(graphFile.toString()));
     }
 
     /**
@@ -136,11 +135,15 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      * url path.
      */
     private URL toLayoutURL(URL graphURL) throws MalformedURLException {
-        return new URL(graphURL.toExternalForm() + Groove.LAYOUT_EXTENSION);
+        return new URL(
+            this.layoutFilter.addExtension(graphURL.toExternalForm()));
     }
 
     /**
      * The inner (un)marshaller.
      */
     private final AbstractXml marshaller;
+    /** Extension filter for layout extension. */
+    private final ExtensionFilter layoutFilter =
+        new ExtensionFilter(Groove.LAYOUT_EXTENSION);
 }
