@@ -17,7 +17,9 @@
 package groove.gui;
 
 import java.awt.BorderLayout;
-
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -25,18 +27,107 @@ import javax.swing.JPanel;
  * @version $Revision $
  * 
  * This class creates a panel with two elements:
- * (1) TODO
- * (2) An inner LTSPanel.
+ * (1) An inner LTSPanel. (optional)
+ * (2) A status line. (can be clicked)
  * These elements are aligned vertically in a BorderLayout.
  */
-public class ConditionalLTSPanel extends JPanel {
+public class ConditionalLTSPanel extends JPanel implements MouseListener {
+    
+    /*
+     * JLabel for the status line. Contents are changed dynamically.
+    */
+    private JLabel          statusText;
+    
+    /*
+     * Inner reference to the actual LTSPanel. Is added/removed to the panel dynamically.
+    */
+    private LTSPanel        LTSPanel;
+    
+    /*
+     * Internal bookkeeping of visibility of the LTSPanel.
+    */
+    private boolean         LTSPanelVisible;
+    
+    /*
+     * Displayed text when the LTSPanel is hidden.
+    */
+    private final String    hiddenText  = "<HTML><BODY bgcolor=#C3C2DD>"
+                                        + "The LTSPanel is currently <FONT color=red>hidden</FONT>. "
+                                        + "Click anywhere on this line to display it."
+                                        + "</BODY></HTML>";
+    
+    /* 
+     * Displayed text when the LTSPanel is visible.
+    */
+    private final String    visibleText = "<HTML><BODY bgcolor=#C3C2DD>"
+                                        + "The LTSPanel is currently <FONT color=green>visible</FONT>. "
+                                        + "Click anywhere on this line to hide it."
+                                        + "</BODY></HTML>";
+    
     /**
-     * @param ltsPanel  the inner LTSPanel (assumed to have been created elsewhere)
+     * Constructor for the ConditionalLTSPanel.
+     * Draws the LTSPanel (initially always visible), and a status line.
+     * @param theLTSPanel  the inner LTSPanel (assumed to have been created elsewhere)
      */
-    public ConditionalLTSPanel(LTSPanel ltsPanel) {
+    public ConditionalLTSPanel(LTSPanel theLTSPanel) {
+        /*
+         * Create the JPanel.
+        */
         super(new BorderLayout());
-        // Temporarily disabled for release.
-        // this.add(new JLabel("Test"), BorderLayout.PAGE_START);
-        this.add(ltsPanel, BorderLayout.CENTER);
+        
+        /*
+         * Initialize the local variables.
+        */
+        this.LTSPanel = theLTSPanel;
+        this.LTSPanelVisible = true;
+        this.statusText = new JLabel(this.visibleText);
+        
+        /*
+         * The status line can be clicked. See below for event handler.
+        */
+        this.statusText.addMouseListener(this);
+
+        /*
+         * Draw the JPanel by adding the LTSPanel (initially always visible) and the statusText.
+        */
+        this.add(this.LTSPanel, BorderLayout.CENTER);
+        this.add(this.statusText, BorderLayout.PAGE_END);
+    }
+    
+    /*
+     * Event handler for the status line. Responds to arbitrary mouse clicks.
+     * If clicked when visible, it hides the LTSPanel. If clicked when hidden, it displays the LTSPanel.
+    */
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (this.LTSPanelVisible) {
+            this.remove(this.LTSPanel);
+            this.statusText.setText(this.hiddenText);
+        } else {
+            this.add(this.LTSPanel, BorderLayout.CENTER);
+            this.statusText.setText(this.visibleText);
+        }
+        this.LTSPanelVisible = !this.LTSPanelVisible;
+        this.updateUI();
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        /* No specific action on mouse enter. */
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        /* No specific action on mouse exit. */
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        /* No specific action on mouse press. */
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        /* No specific action on mouse released. */
     }
 }
