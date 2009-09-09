@@ -338,7 +338,7 @@ public class Simulator {
     /**
      * Returns the currently selected transition, or <tt>null</tt> if none is
      * selected. The selected state is the one selected in the rule tree and
-     * emphasised in the state panel.
+     * emphasized in the state panel.
      */
     public GraphTransition getCurrentTransition() {
         return this.currentTransition;
@@ -1746,9 +1746,9 @@ public class Simulator {
     }
 
     /**
-     * Returns the simulator panel on which the LTS. Note that: - this panel may
-     * currently not be visible. - this panel is always contained in the
-     * ConditionalLTSPanel.
+     * Returns the simulator panel on which the LTS. Note that:
+     * - this panel may currently not be visible.
+     * - this panel is always contained in the ConditionalLTSPanel.
      * @see #setGraphPanel(JGraphPanel)
      */
     LTSPanel getLtsPanel() {
