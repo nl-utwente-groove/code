@@ -44,5 +44,10 @@ public class DFSStrategy extends ClosingStrategy {
         this.stack.push(element);
     }
 
+    @Override
+    protected void clearPool() {
+        this.stack.clear();
+    }
+
     private final Stack<PoolElement> stack = new Stack<PoolElement>();
 }

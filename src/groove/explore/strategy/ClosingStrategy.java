@@ -71,6 +71,9 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         // avoid excessive garbage collection.
         gts.getRecord().setCopyGraphs(false);
         getGTS().addGraphListener(this.exploreListener);
+        this.newStates.clear();
+        this.virtualEvents = null;
+        clearPool();
     }
 
     @Override
@@ -98,6 +101,9 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     /** Returns the next element from the pool of explorable states. */
     abstract protected PoolElement getFromPool();
 
+    /** Clears the pool, in order to prepare the strategy for reuse. */
+    abstract protected void clearPool();
+    
     /**
      * This collector takes the virtual events for the current state into
      * account.
