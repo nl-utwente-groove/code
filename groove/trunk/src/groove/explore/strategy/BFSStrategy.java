@@ -34,6 +34,11 @@ public class BFSStrategy extends ClosingStrategy {
         this.stateQueue.offer(element);
     }
 
+    @Override
+    protected void clearPool() {
+        this.stateQueue.clear();
+    }
+
     /**
      * Queue of states to be explored. The set of outgoing transitions of the
      * parent state is included with each state.
