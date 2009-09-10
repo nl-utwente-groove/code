@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2009 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -31,6 +31,7 @@ import groove.gui.layout.LayoutMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -99,7 +100,7 @@ public final class GraphToTikz {
             Rectangle2D bounds = layout.getBounds();
             double x = bounds.getCenterX();
             double y = bounds.getCenterY() * -1;
-            result.append(enclosePar(x + ", " + y));
+            appendPoint(x, y, result);
             
             // Node Labels.
             result.append(BEGIN_NODE_LAB);
@@ -117,7 +118,10 @@ public final class GraphToTikz {
         return result;
     }
 
-    private static StringBuilder convertEdgeToTikzStr(JCell cell, JEdgeLayout layout) {
+    private static StringBuilder convertEdgeToTikzStr(
+            JCell cell,
+            JEdgeLayout layout) {
+        
         if (cell instanceof GraphJEdge) {
             return convertEdgeToTikzStr((GraphJEdge) cell, layout);
         } else {
@@ -125,63 +129,22 @@ public final class GraphToTikz {
         }
     }
 
-/*    private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge, JEdgeLayout layout) {
-        StringBuilder result = new StringBuilder();
-        
-        if (edge.isVisible()) {
-            ArrayList<String> styles = convertStyles(edge);
-            String edgeStyle = styles.get(0); 
-            String labStyle = styles.get(1);
-            
-            result.append(BEGIN_EDGE);
-            
-            // Edge Style.
-            result.append(encloseBrack(edgeStyle));
-            
-            // Source Node.
-            result.append(encloseSpace(enclosePar(
-                edge.getSourceVertex().getNode().toString())));
-            
-            // Path points.
-            result.append(encloseSpace(DOUBLE_DASH));
-            if (layout != null) {
-                List<Point2D> points = layout.getPoints();
-                if (layout.getLineStyle() == GraphConstants.STYLE_ORTHOGONAL) {
-                    for (int i = 1; i < points.size() - 1; i++) {
-                        appendPoint(points, i, result);
-                        result.append(encloseSpace(DOUBLE_DASH));
-                    }
-                } else if (layout.getLineStyle() == GraphConstants.STYLE_BEZIER) {
-                    // EDUARDO
-                    System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
-                    Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
-                    System.out.println(bezier.getPoints().toString());
-                } else if (layout.getLineStyle() == GraphConstants.STYLE_SPLINE) {
-                    // EDUARDO
-                    System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
-                } else if (layout.getLineStyle() == JAttr.STYLE_MANHATTAN) {
-                    for (int i = 0; i < points.size() - 1; i++) {
-                        appendPoint(points, i, result);
-                        result.append(encloseSpace(ANGLED));
-                    }
-                }
-            }
-            
-            // Label.
-            result.append(NODE);
-            result.append(encloseBrack(labStyle));
-            result.append(encloseCurly(edge.getText()));
-            
-            // Target Node.
-            result.append(encloseSpace(enclosePar(
-                edge.getTargetVertex().getNode().toString())));
-            result.append(END_EDGE);
-        }
-        
-        return result;
-    }*/
+//    for (int i = 0; i < points.size(); i++) {
+//        appendPoint(points, i, result);
+//        result.append(encloseSpace(ANGLED));
+//        if (i+1 < points.size()) {
+//            double x = points.get(i+1).getX();
+//            double y = points.get(i).getY() * -1;
+//            result.append(enclosePar(x + ", " + y));
+//            result.append(encloseSpace(ANGLED));
+//        }
+//    }
+
     
-    private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge, JEdgeLayout layout) {
+    private static StringBuilder convertEdgeToTikzStr(
+            GraphJEdge edge,
+            JEdgeLayout layout) {
+        
         StringBuilder result = new StringBuilder();
         
         if (edge.isVisible()) {
@@ -198,30 +161,48 @@ public final class GraphToTikz {
                 List<Point2D> points = layout.getPoints();
                 
                 if (layout.getLineStyle() == GraphConstants.STYLE_ORTHOGONAL) {
-                    appendPoint(points, 0, result);
-                    for (int i = 0; i < points.size(); i++) {
-                        result.append(encloseSpace(DOUBLE_DASH));
+
+                    // In this style we ignore the node ports from jGraph and
+                    // let Tikz find the best connection points.
+
+                    // Source Node.
+                    result.append(encloseSpace(enclosePar(
+                        edge.getSourceVertex().getNode().toString())));
+                    result.append(encloseSpace(DOUBLE_DASH));
+                    
+                    // Intermediate points
+                    for (int i = 1; i < points.size() - 1; i++) {
                         appendPoint(points, i, result);
+                        result.append(encloseSpace(DOUBLE_DASH));
                     }
+
+                    // Target Node.
+                    result.append(encloseSpace(enclosePar(
+                        edge.getTargetVertex().getNode().toString())));
+                    
+                    result.append(END_PATH);
+                    
+                    // Extra path for the label position.
+                    Point2D labelPos = convertRelativeLabelPositionToAbsolute
+                        (layout.getLabelPosition(), points);
+                    
+                    result.append(BEGIN_NODE);
+                    result.append(encloseBrack(labStyle));
+                    result.append(encloseSpace(AT_KEYWORD));
+                    appendPoint(labelPos, result);
+                    result.append(encloseCurly(edge.getText()));
+                    
+                    result.append(END_EDGE);
+
                 } else if (layout.getLineStyle() == GraphConstants.STYLE_BEZIER) {
                     // EDUARDO
                     System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
-                    /*Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
-                    System.out.println(bezier.getPoints().toString());*/
                 } else if (layout.getLineStyle() == GraphConstants.STYLE_SPLINE) {
                     // EDUARDO
                     System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
                 } else if (layout.getLineStyle() == JAttr.STYLE_MANHATTAN) {
-                    for (int i = 0; i < points.size(); i++) {
-                        appendPoint(points, i, result);
-                        result.append(encloseSpace(ANGLED));
-                        if (i+1 < points.size()) {
-                            double x = points.get(i+1).getX();
-                            double y = points.get(i).getY() * -1;
-                            result.append(enclosePar(x + ", " + y));
-                            result.append(encloseSpace(ANGLED));
-                        }
-                    }
+                    // EDUARDO
+                    System.out.println("Sorry, this line style is not supported yet... Use ORTHOGONAL lines.");
                 }
             } else { // Default layout.
                 // Source Node.
@@ -237,17 +218,119 @@ public final class GraphToTikz {
                 // Target Node.
                 result.append(encloseSpace(enclosePar(
                     edge.getTargetVertex().getNode().toString())));
+                
+                result.append(END_EDGE);
             }
-            result.append(END_EDGE);
         }
         
         return result;
     }
     
     private static void appendPoint(List<Point2D> points, int i, StringBuilder s) {
-        double x = points.get(i).getX();
-        double y = points.get(i).getY() * -1;
-        s.append(enclosePar(x + ", " + y));
+        appendPoint(points.get(i),s);
+    }
+
+    private static void appendPoint(Point2D point, StringBuilder s) {
+        double x = point.getX();
+        double y = point.getY() * -1;
+        appendPoint(x, y, s);
+    }
+    
+    private static void appendPoint(double x, double y, StringBuilder s) {
+        DecimalFormat df = new DecimalFormat("0.0");
+        s.append(enclosePar(df.format(x) + ", " + df.format(y)));
+    }
+    
+    /**
+     * Adapted from jGraph.
+     * Converts an relative label position (x is distance along edge and y is
+     * distance above/below edge vector) into an absolute coordination point.
+     * @param geometry the relative label position
+     * @param points the list of points along the edge
+     * @return the absolute label position
+     */
+    private static Point2D convertRelativeLabelPositionToAbsolute
+        (Point2D geometry,
+         List<Point2D> points) {
+        Point2D pt = points.get(0);
+
+        if (pt != null)
+        {
+            double length = 0;
+            int pointCount = points.size();
+            double[] segments = new double[pointCount];
+            // Find the total length of the segments and also store the length
+            // of each segment
+            for (int i = 1; i < pointCount; i++)
+            {
+                Point2D tmp = points.get(i);
+
+                if (tmp != null)
+                {
+                    double dx = pt.getX() - tmp.getX();
+                    double dy = pt.getY() - tmp.getY();
+
+                    double segment = Math.sqrt(dx * dx + dy * dy);
+
+                    segments[i - 1] = segment;
+                    length += segment;
+                    pt = tmp;
+                }
+            }
+
+            // Change x to be a value between 0 and 1 indicating how far
+            // along the edge the label is
+            double x = geometry.getX()/GraphConstants.PERMILLE;
+            double y = geometry.getY();
+
+            // dist is the distance along the edge the label is
+            double dist = x * length;
+            length = 0;
+
+            int index = 1;
+            double segment = segments[0];
+
+            // Find the length up to the start of the segment the label is
+            // on (length) and retrieve the length of that segment (segment)
+            while (dist > length + segment && index < pointCount - 1)
+            {
+                length += segment;
+                segment = segments[index++];
+            }
+
+            // factor is the proportion along this segment the label lies at
+            double factor = (dist - length) / segment;
+
+            Point2D p0 = points.get(index - 1);
+            Point2D pe = points.get(index);
+
+            if (p0 != null && pe != null)
+            {
+                // The x and y offsets of the label from the start point
+                // of the segment
+                double dx = pe.getX() - p0.getX();
+                double dy = pe.getY() - p0.getY();
+
+                // The normal vectors of
+                double nx = dy / segment;
+                double ny = dx / segment;
+
+                // The x position is the start x of the segment + the factor of
+                // the x offset between the start and end of the segment + the
+                // x component of the y (height) offset contributed along the
+                // normal vector.
+                x = p0.getX() + dx * factor - nx * y;
+
+                // The x position is the start y of the segment + the factor of
+                // the y offset between the start and end of the segment + the
+                // y component of the y (height) offset contributed along the
+                // normal vector.
+                y = p0.getY() + dy * factor + ny * y;
+                return new Point2D.Double(x, y);
+            }
+        }
+
+        return null;
     }
     
     private static StringBuilder convertHtmlToTikz(StringBuilder line) {
@@ -400,7 +483,8 @@ public final class GraphToTikz {
     private static final String FORALLX_STR = "$\\forall^{>0}$";
     private static final String ITALIC_STYLE = "\\textit{";
     private static final String BEGIN_EDGE = "\\path";
-    private static final String END_EDGE = ";\n";
+    private static final String END_PATH = ";\n";
+    private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
     private static final String BASIC_NODE_STYLE = "node";
     private static final String BASIC_EDGE_STYLE = "edge";
