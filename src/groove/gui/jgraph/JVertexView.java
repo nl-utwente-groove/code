@@ -21,7 +21,6 @@ import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.util.Converter.HTMLTag;
 

@@ -521,8 +521,7 @@ public class JEdgeView extends EdgeView {
             int n = this.view.getPointCount();
             if (n > 1) {
                 // Following block may modify static vars as side effect
-                // (Flyweight
-                // Design)
+                // (Flyweight Design)
                 EdgeView tmp = this.view;
                 Point2D[] p = null;
                 p = new Point2D[n];
