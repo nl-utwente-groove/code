@@ -29,7 +29,6 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
-import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
 import groove.gui.layout.JCellLayout;

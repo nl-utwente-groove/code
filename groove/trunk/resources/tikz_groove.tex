@@ -3,7 +3,7 @@
 \usetikzlibrary{arrows,automata,positioning,er}
 
 % Set the font to \footnotesize and \sf
-\tikzstyle every node=[font=\footnotesize\sffamily,inner sep=2.5pt]
+\tikzstyle every node=[font=\footnotesize\sffamily,inner sep=2.5pt,minimum size=9pt]
 
 % Colours
 \newcommand{\red}{red}
@@ -17,30 +17,30 @@
 
 % Readers
 \tikzstyle{node}=[draw=black,fill=\grey,shape=rectangle]
-\tikzstyle{edge}=[draw=black,-stealth']
+\tikzstyle{edge}=[draw,black,-stealth']
 \tikzstyle{lab}=[fill=white,inner sep=2pt]
 
 % Erasers
 \tikzstyle{delnode}=[draw=\blue,fill=\bluefill,text=\blue,shape=rectangle,densely dashed]
-\tikzstyle{deledge}=[draw=\blue,densely dashed,-stealth']
+\tikzstyle{deledge}=[draw,\blue,fill=\blue,densely dashed,-stealth']
 \tikzstyle{dellab}=[text=\blue,fill=white,inner sep=2pt]
 
 % Creators
 \tikzstyle{newnode}=[draw=\green,fill=\greenfill,very thick,text=\green,shape=rectangle]
-\tikzstyle{newedge}=[draw=\green,very thick,-stealth']
+\tikzstyle{newedge}=[draw,\green,very thick,-stealth']
 \tikzstyle{newlab}=[text=\green,fill=white,inner sep=2pt]
 
 % NACs
 \tikzstyle{nacnode}=[draw=\red,fill=\redfill,text=\red,line width=2pt,dotted,shape=rectangle]
-\tikzstyle{nacedge}=[draw=\red,line width=2pt,dotted,-stealth']
+\tikzstyle{nacedge}=[draw,\red,line width=2pt,dotted,-stealth']
 \tikzstyle{naclab}=[text=\red,fill=white,inner sep=2pt]
 
 % Quantifiers
 \tikzstyle{quantnode}=[dotted,fill=white]
-\tikzstyle{quantedge}=[draw=black,dotted,-stealth']
+\tikzstyle{quantedge}=[draw,black,dotted,-stealth']
 
 % Special styles (can be combined with the above)
-\tikzstyle{attr}=[shape=circle,inner sep=1pt]
+\tikzstyle{attr}=[shape=ellipse,inner sep=1pt]
 \tikzstyle{prod}=[shape=diamond,inner sep=1pt]
 
 % Ugly hack to allow nodes with multiple lines
