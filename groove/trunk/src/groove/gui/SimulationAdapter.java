@@ -21,7 +21,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 /**
  * An adapter for the simulation listener, offering empty stub methods.
@@ -30,7 +30,7 @@ import groove.view.DefaultGrammarView;
  */
 public class SimulationAdapter implements SimulationListener {
     /** Provides a default empty implementation. */
-    public void setGrammarUpdate(DefaultGrammarView grammar) {
+    public void setGrammarUpdate(StoredGrammarView grammar) {
         // does nothing by design
     }
 

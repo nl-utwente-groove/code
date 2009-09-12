@@ -54,16 +54,23 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
      * Constructs a store from a given file. The file should be a directory with
      * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is writable.
      * @param file source directory of the underlying persistent storage
-     * @param layouted if <code>true</code>, the store will load and save graph
-     *        layout.
+     * @param create if <code>true</code> and <code>file</code> does not yet
+     *        exist, attempt to create it.
      * @throws IllegalArgumentException if <code>file</code> is not an existing
      *         directory, or does not have the correct extension.
      */
-    public DefaultFileSystemStore(File file, boolean layouted)
+    public DefaultFileSystemStore(File file, boolean create)
         throws IllegalArgumentException {
         if (!file.exists()) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' does not exist", file));
+            if (create) {
+                if (!file.mkdirs()) {
+                    throw new IllegalArgumentException(String.format(
+                        "Could not create directory '%s'", file));
+                }
+            } else {
+                throw new IllegalArgumentException(String.format(
+                    "File '%s' does not exist", file));
+            }
         }
         if (!file.isDirectory()) {
             throw new IllegalArgumentException(String.format(
@@ -85,15 +92,12 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
      * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is writable.
      * @param location source location of the underlying persistent storage;
      *        should refer to a file.
-     * @param layouted if <code>true</code>, the store will load and save graph
-     *        layout.
      * @throws IllegalArgumentException if <code>location</code> does not
      *         conform to URI syntax, or does not point to an existing
      *         directory, or does not have the correct extension.
      */
-    public DefaultFileSystemStore(URL location, boolean layouted)
-        throws IllegalArgumentException {
-        this(toFile(location), layouted);
+    public DefaultFileSystemStore(URL location) throws IllegalArgumentException {
+        this(toFile(location), false);
         this.url = location;
     }
 
@@ -525,7 +529,6 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
             }
         }
         try {
-            file.mkdir();
             DefaultFileSystemStore result =
                 new DefaultFileSystemStore(file, true);
             result.reload();

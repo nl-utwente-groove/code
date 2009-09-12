@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleName;
@@ -44,7 +45,11 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,C
      * @param rule the rule view to be added; non-<code>null</code>
      * @return a rule view previously stored under the name of <code>rule</code>
      */
+    @Deprecated
     public RV addRule(RV rule) throws FormatException;
+
+    /** Returns a list of all available control program names. */
+    public Set<String> getControlNames();
 
     /** Returns an unmodifiable view on the set of graph names in this grammar. */
     public Set<String> getGraphNames();
@@ -65,6 +70,17 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,C
      *         if there is no such graph.
      */
     public GV getGraphView(String name);
+
+    /**
+     * Returns the control view associated with a given (named) control program.
+     * @param name the name of the control program to return the view of;
+     * @return the corresponding control program view, or <code>null</code> if
+     *         no program by that name exists
+     */
+    public ControlView getControlView(String name);
+
+    /** Sets the control program to a given name. */
+    public void setControl(String name);
 
     /**
      * Returns the control view set for the grammar.

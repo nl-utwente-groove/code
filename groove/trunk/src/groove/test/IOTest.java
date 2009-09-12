@@ -16,17 +16,20 @@
  */
 package groove.test;
 
+import groove.control.ControlView;
 import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.DFSStrategy;
-import groove.io.FileGps;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
 import groove.util.Generator;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
+import groove.view.AspectualGraphView;
+import groove.view.AspectualRuleView;
 import groove.view.FormatException;
+import groove.view.GenericGrammarView;
+import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,18 +69,22 @@ public class IOTest extends TestCase {
                 nodecount, edgecount);
             testControl(Groove.loadGrammar(DIRECTORY, null), DEF_START,
                 DEF_CONTROL, nodecount, edgecount);
-            
+
             File file = new File(DIRECTORY);
             URL url = Groove.toURL(file);
-            
-            FileGps gps = new FileGps(false);
-            testControl(gps.unmarshal(file), DEF_START,DEF_CONTROL, nodecount, edgecount);
-            testControl(gps.unmarshal(file, null), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            
-            testControl(gps.unmarshal(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(gps.unmarshal(url, null,null), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(gps.unmarshal(url, DEF_START,null), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            
+
+            testControl(StoredGrammarView.newInstance(file, false), DEF_START,
+                DEF_CONTROL, nodecount, edgecount);
+            testControl(StoredGrammarView.newInstance(file, null, false), DEF_START,
+                DEF_CONTROL, nodecount, edgecount);
+
+            testControl(StoredGrammarView.newInstance(url), DEF_START,
+                DEF_CONTROL, nodecount, edgecount);
+            testControl(StoredGrammarView.newInstance(url, null), DEF_START,
+                DEF_CONTROL, nodecount, edgecount);
+            testControl(StoredGrammarView.newInstance(url, DEF_START),
+                DEF_START, DEF_CONTROL, nodecount, edgecount);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,22 +94,11 @@ public class IOTest extends TestCase {
         int nodecount = 11;
         int edgecount = 13;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY, ALT_START), ALT_START, DEF_CONTROL, nodecount,
-                edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY, ALT_START), ALT_START,
+                DEF_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void testLoadAltControl() {
-        int nodecount = 10;
-        int edgecount = 11;
-//        try {
-//           
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
     }
 
     public void testLoadAltBoth() {
@@ -110,14 +106,15 @@ public class IOTest extends TestCase {
         int edgecount = 15;
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
-            testControl(new FileGps(true).unmarshal(dir, ALT_START, ALT_CONTROL), ALT_START, ALT_CONTROL, nodecount, edgecount);
+            testControl(StoredGrammarView.newInstance(dir, ALT_START),
+                ALT_START, ALT_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    protected void testControl(DefaultGrammarView view, String startName,
+    protected void testControl(GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> view, String startName,
             String controlName, int nodecount, int edgecount) {
         testExploration(view, "control", startName, controlName, 3, nodecount,
             edgecount);
@@ -130,7 +127,7 @@ public class IOTest extends TestCase {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(DefaultGrammarView view, String grammarName,
+    protected GTS testExploration(GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> view, String grammarName,
             String startName, String controlName, int rulecount, int nodeCount,
             int edgeCount) {
         try {
@@ -143,7 +140,9 @@ public class IOTest extends TestCase {
             assertEquals(rulecount, gg.getRules().size());
 
             GTS lts = new GTS(gg);
-            Scenario scenario = ScenarioFactory.getScenario(new DFSStrategy(), new Acceptor(), "bah", "dus");
+            Scenario scenario =
+                ScenarioFactory.getScenario(new DFSStrategy(), new Acceptor(),
+                    "bah", "dus");
             scenario.prepare(lts);
             scenario.play();
             assertFalse(scenario.isInterrupted());

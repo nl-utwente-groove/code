@@ -25,7 +25,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.util.History;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 import java.awt.event.ActionEvent;
 
@@ -69,7 +69,7 @@ class UndoHistory implements SimulationListener {
     /**
      * Clears the history.
      */
-    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         this.history.clear();
         setActionEnablings();
         this.ignoreSimulationUpdates = false;

@@ -28,8 +28,9 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
+import groove.view.GrammarView;
+import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -51,7 +52,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
     private final JButton createButton;
     private final JGraphPanel<StateJGraph> typeGraphPanel;
-    private DefaultGrammarView grammar;
+    private GrammarView grammar;
 
     // --------------------- INSTANCE DEFINITIONS ----------------------
 
@@ -117,7 +118,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * disabled, except the "create type graph" button, which can be used to
      * compute a new type graph.
      */
-    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
 
         this.typeGraphPanel.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
         this.typeGraphPanel.setEnabled(false);
@@ -131,11 +132,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 // this type graph will be displayed.
                 Graph typeGraph;
                 File file =
-                    new File(
-                        this.simulator.getCurrentGrammarURL().getFile()
-                            + Groove.FILE_SEPARATOR
-                            + Groove.TGR_NAME
-                            + Groove.GXL_EXTENSION);
+                    new File(this.simulator.getLastGrammarFile()
+                        + Groove.FILE_SEPARATOR + Groove.TGR_NAME
+                        + Groove.GXL_EXTENSION);
 
                 if ((typeGraph = Groove.loadGraph(file)) != null) {
                     GraphInfo.setName(typeGraph, "Type graph");
@@ -170,11 +169,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 try {
                     Graph typeGraph =
                         TypeReconstructor.reconstruct(TypePanel.this.grammar.toModel());
-                    Groove.saveGraph(
-                        typeGraph,
-                        TypePanel.this.simulator.getCurrentGrammarURL().getFile()
-                            + Groove.FILE_SEPARATOR
-                            + Groove.TGR_NAME
+                    Groove.saveGraph(typeGraph,
+                        TypePanel.this.simulator.getLastGrammarFile()
+                            + Groove.FILE_SEPARATOR + Groove.TGR_NAME
                             + Groove.GXL_EXTENSION);
                     displayTypeGraph(typeGraph);
 

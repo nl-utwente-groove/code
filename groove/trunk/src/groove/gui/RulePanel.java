@@ -35,8 +35,8 @@ import groove.trans.SPORule;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
-import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Sets the frame to a given rule system. Resets the display, and creates
      * and stores a model for each rule in the system.
      */
-    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {

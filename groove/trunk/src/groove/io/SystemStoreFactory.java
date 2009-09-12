@@ -28,18 +28,22 @@ import java.net.URL;
 public final class SystemStoreFactory {
     /**
      * Creates an appropriate system store from a given file. The resulting
-     * store has not yet been loaded.
+     * store has not yet been loaded. A flag indicates if the file should be
+     * created if it does not yet exist.
      * @param file the file to create the store from; non-null
+     * @param create if <code>true</code> and <code>file</code> does not yet
+     *        exist, attempt to create it.
      * @return a store created from <code>file</code>; non-null
      * @throws IOException if a store cannot be created from <code>file</code>
      */
-    static public SystemStore newStore(File file) throws IOException {
+    static public SystemStore newStore(File file, boolean create)
+        throws IOException {
         SystemStore store = null;
         try {
-            store = new DefaultArchiveSystemStore(file);
+            store = new DefaultFileSystemStore(file, create);
         } catch (IllegalArgumentException exc) {
             try {
-                store = new DefaultFileSystemStore(file, true);
+                store = new DefaultArchiveSystemStore(file);
             } catch (IllegalArgumentException exc1) {
                 throw new IOException(exc1.getMessage());
             }
@@ -60,7 +64,7 @@ public final class SystemStoreFactory {
             store = new DefaultArchiveSystemStore(url);
         } catch (IllegalArgumentException exc) {
             try {
-                store = new DefaultFileSystemStore(url, true);
+                store = new DefaultFileSystemStore(url);
             } catch (IllegalArgumentException exc1) {
                 throw new IOException(exc1.getMessage());
             }
@@ -82,7 +86,7 @@ public final class SystemStoreFactory {
         try {
             return newStore(new URL(location));
         } catch (IOException exc) {
-            return newStore(new File(location));
+            return newStore(new File(location), false);
         }
     }
 }

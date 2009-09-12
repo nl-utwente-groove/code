@@ -41,7 +41,7 @@ import groove.lts.State;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.AspectualGraphView;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -108,7 +108,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Sets the underlying model of this state frame to the initial graph of the
      * new grammar.
      */
-    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         clearSelectedMatch();
         this.stateJModelMap.clear();
         this.jGraph.getFilteredLabels().clear();

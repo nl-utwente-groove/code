@@ -28,6 +28,7 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public interface ViewXml<V extends View<?>> {
     /**
      * Writes a view to a file, in XML format.

@@ -22,7 +22,8 @@ import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.AspectualGraphView;
-import groove.view.DefaultGrammarView;
+import groove.view.GrammarView;
+import groove.view.StoredGrammarView;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -85,7 +86,7 @@ public class StateJList extends JList implements SimulationListener {
         result.add(this.simulator.getNewGraphAction());
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
-        if (getCellBounds(index, index).contains(atPoint)) {
+        if (index >= 0 && getCellBounds(index, index).contains(atPoint)) {
             result.addSeparator();
             result.add(this.simulator.getCopyGraphAction());
             result.add(this.simulator.getDeleteGraphAction());
@@ -150,7 +151,7 @@ public class StateJList extends JList implements SimulationListener {
         // does nothing
     }
 
-    public void setGrammarUpdate(DefaultGrammarView grammar) {
+    public void setGrammarUpdate(StoredGrammarView grammar) {
         this.removeAll();
         this.setEnabled(false);
         if (grammar != null) {
@@ -189,7 +190,7 @@ public class StateJList extends JList implements SimulationListener {
      *        to select the start graph.
      */
     public void refreshList(boolean keepSelection) {
-        DefaultGrammarView grammar = this.simulator.getGrammarView();
+        GrammarView grammar = this.simulator.getGrammarView();
         setList(grammar.getGraphNames(), keepSelection);
     }
 
@@ -260,19 +261,20 @@ public class StateJList extends JList implements SimulationListener {
         @Override
         public void mouseClicked(MouseEvent evt) {
             int index = locationToIndex(evt.getPoint());
-            if (StateJList.this.isEnabled() && index >= 0) {
-                if (evt.getClickCount() == 2) { // Left double click
+            if (evt.getClickCount() == 2) { // Left double click
+                if (StateJList.this.isEnabled() && index >= 0) {
                     StateJList.this.doPreviewGraph();
-                } else if (evt.getClickCount() == 1
-                    && evt.getButton() == MouseEvent.BUTTON3) { // Right click
-                    // Determine if index was really selected
-                    if (getCellBounds(index, index).contains(evt.getPoint())) {
-                        // Adjust list selection accordingly.
-                        StateJList.this.setSelectedIndex(index);
-                    }
-                    createPopupMenu(evt.getPoint()).show(evt.getComponent(),
-                        evt.getX(), evt.getY());
                 }
+            } else if (evt.getClickCount() == 1
+                && evt.getButton() == MouseEvent.BUTTON3) { // Right click
+                // Determine if index was really selected
+                if (index >= 0
+                    && getCellBounds(index, index).contains(evt.getPoint())) {
+                    // Adjust list selection accordingly.
+                    StateJList.this.setSelectedIndex(index);
+                }
+                createPopupMenu(evt.getPoint()).show(evt.getComponent(),
+                    evt.getX(), evt.getY());
             }
         }
     }

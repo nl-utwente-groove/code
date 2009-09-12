@@ -29,6 +29,7 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public interface GrammarViewXml<GG extends GenericGrammarView<?,?,?>> extends
         ViewXml<GG> {
     /**

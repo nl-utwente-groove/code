@@ -38,6 +38,7 @@ import java.util.TreeMap;
 /**
  * Graph grammar with {@link RuleView} information for each rule.
  */
+@Deprecated
 public class DefaultGrammarView implements GrammarView {
     // /**
     // * Constructs a (non-fixed) copy of an existing rule view grammar.
@@ -180,6 +181,24 @@ public class DefaultGrammarView implements GrammarView {
             initGrammar();
         }
         return this.errors;
+    }
+
+    @Override
+    @Deprecated
+    public Set<String> getControlNames() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public ControlView getControlView(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public void setControl(String name) {
+        throw new UnsupportedOperationException();
     }
 
     /** setter method for the control view * */

@@ -33,7 +33,7 @@ import groove.lts.LTSAdapter;
 import groove.lts.State;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -79,7 +79,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * 
      * @param grammar the new grammar
      */
-    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         setGTS(null);
         getJGraph().setModel(LTSJModel.EMPTY_LTS_JMODEL);
         getJGraph().getFilteredLabels().clear();

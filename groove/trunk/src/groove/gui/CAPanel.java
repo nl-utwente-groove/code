@@ -21,6 +21,7 @@ import groove.control.ControlView;
 import groove.control.parse.GCLTokenMaker;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
+import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -28,7 +29,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -136,7 +137,7 @@ public class CAPanel extends JPanel implements SimulationListener {
         // // do nothing
     }
 
-    public void setGrammarUpdate(DefaultGrammarView grammar) {
+    public void setGrammarUpdate(StoredGrammarView grammar) {
         ControlView controlView = grammar.getControlView();
         boolean controlLoaded = controlView != null;
         String controlName =
@@ -148,8 +149,9 @@ public class CAPanel extends JPanel implements SimulationListener {
             + (controlName == null ? Groove.DEFAULT_CONTROL_NAME : controlName));
         this.nameField.setEditable(controlEnabled);
         this.toggleButton.setText(controlEnabled ? "Disable" : "Enable");
-        this.toggleButton.setEnabled(true);
-        this.editButton.setEnabled(grammar.getProperties().isUseControl());
+        this.toggleButton.setEnabled(isModifiable());
+        this.editButton.setEnabled(isModifiable()
+            && grammar.getProperties().isUseControl());
         this.viewButton.setEnabled(controlEnabled);
 
         setText();
@@ -197,6 +199,12 @@ public class CAPanel extends JPanel implements SimulationListener {
         return this.simulator;
     }
 
+    /** Indicates if the currently loaded grammar is modifiable. */
+    private boolean isModifiable() {
+        SystemStore store = getSimulator().getGrammarStore();
+        return store != null && store.isModifiable();
+    }
+
     /** Simulator to which the control panel belongs. */
     private final Simulator simulator;
     /** Name label of the control program. */
@@ -222,7 +230,7 @@ public class CAPanel extends JPanel implements SimulationListener {
             // if (program == null || program.length() == 0) {
             // return;
             // }
-            if (getSimulator().handleSaveControl(program) != null) {
+            if (getSimulator().handleSaveControl(program)) {
                 getSimulator().doRefreshGrammar();
                 // CAPanel.this.textPanel.setEditable(false);
                 // CAPanel.this.textPanel.setEnabled(false);
@@ -238,7 +246,7 @@ public class CAPanel extends JPanel implements SimulationListener {
             setText();
             CAPanel.this.textPanel.setEditable(false);
             CAPanel.this.textPanel.setEnabled(false);
-            CAPanel.this.editButton.setEnabled(true);
+            CAPanel.this.editButton.setEnabled(isModifiable());
             CAPanel.this.doneButton.setEnabled(false);
             CAPanel.this.cancelButton.setEnabled(false);
         }
@@ -255,8 +263,8 @@ public class CAPanel extends JPanel implements SimulationListener {
             // if control just got enabled but no control program exists,
             // we create an empty control program
             if (newProperties.isUseControl()
-                && getSimulator().getGrammarView().getClass() == null
-                && getSimulator().handleSaveControl("") != null) {
+                && getSimulator().getGrammarView().getControlView() == null
+                && getSimulator().handleSaveControl("")) {
                 getSimulator().doRefreshGrammar();
             } else {
                 // since we may be in the middle of an edit action,
@@ -264,7 +272,7 @@ public class CAPanel extends JPanel implements SimulationListener {
                 setText();
                 CAPanel.this.textPanel.setEditable(false);
                 CAPanel.this.textPanel.setEnabled(false);
-                CAPanel.this.editButton.setEnabled(true);
+                CAPanel.this.editButton.setEnabled(isModifiable());
                 CAPanel.this.doneButton.setEnabled(false);
                 CAPanel.this.cancelButton.setEnabled(false);
             }
