@@ -116,7 +116,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     @Override
-    public ControlView getControl() {
+    public ControlView getControlView() {
         return !getProperties().isUseControl() || getControlName() == null
                 ? null : getControlView(getControlName());
     }
