@@ -73,7 +73,7 @@ public class FileGps extends AspectualViewGps {
         saveGraphs(graphs, location);
 
         saveProperties(gg, location);
-        saveControl(gg.getControl(), location);
+        saveControl(gg.getControlView(), location);
 
         if (backup != null) {
             deleteLocation(backup);

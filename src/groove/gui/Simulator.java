@@ -855,7 +855,7 @@ public class Simulator {
      */
     File handleSaveControl(String program) {
         // check if we had a control program
-        ControlView cv = getGrammarView().getControl();
+        ControlView cv = getGrammarView().getControlView();
         String controlName =
             cv == null ? getGrammarView().getProperties().getControlName()
                     : cv.getName();
@@ -1063,10 +1063,10 @@ public class Simulator {
                         getStateFileChooser().setCurrentDirectory(
                             Groove.toFile(grammarURL));
                     }
-                    if (grammar.getControl() != null) {
+                    if (grammar.getControlView() != null) {
                         File controlFile =
                             new File(Groove.toFile(grammarURL),
-                                grammar.getControl().getName());
+                                grammar.getControlView().getName());
                         getControlFileChooser().setSelectedFile(controlFile);
                     } else {
                         // make sure the selected file from an old grammar is
@@ -2458,7 +2458,7 @@ public class Simulator {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
             }
-            ControlView cv = getGrammarView().getControl();
+            ControlView cv = getGrammarView().getControlView();
             if (getGrammarView().getProperties().isUseControl() && cv != null) {
                 title.append(" | ");
                 title.append(cv.getName());

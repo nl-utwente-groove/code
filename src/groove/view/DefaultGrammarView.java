@@ -189,7 +189,7 @@ public class DefaultGrammarView implements GrammarView {
     }
 
     /** getter method for control view * */
-    public ControlView getControl() {
+    public ControlView getControlView() {
         if (this.errors == null) {
             initGrammar();
         }

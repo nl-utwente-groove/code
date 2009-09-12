@@ -137,7 +137,7 @@ public class CAPanel extends JPanel implements SimulationListener {
     }
 
     public void setGrammarUpdate(DefaultGrammarView grammar) {
-        ControlView controlView = grammar.getControl();
+        ControlView controlView = grammar.getControlView();
         boolean controlLoaded = controlView != null;
         String controlName =
             controlLoaded ? controlView.getName()
@@ -163,7 +163,7 @@ public class CAPanel extends JPanel implements SimulationListener {
      * message if no control is loaded.
      */
     private void setText() {
-        ControlView cv = getSimulator().getGrammarView().getControl();
+        ControlView cv = getSimulator().getGrammarView().getControlView();
         if (cv != null) {
             // in any case display the program
             this.textPanel.setText(cv.getProgram());
@@ -274,7 +274,7 @@ public class CAPanel extends JPanel implements SimulationListener {
     private class EditButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             // Clear the text panel of the special message text
-            if (getSimulator().getGrammarView().getControl() == null) {
+            if (getSimulator().getGrammarView().getControlView() == null) {
                 CAPanel.this.textPanel.setText("");
             }
             CAPanel.this.textPanel.setEditable(true);
@@ -295,7 +295,7 @@ public class CAPanel extends JPanel implements SimulationListener {
             assert getSimulator().getGrammarView().getErrors().size() == 0 : "View Button should be disabled if grammar has errors.";
 
             ControlAutomaton caut =
-                getSimulator().getGrammarView().getControl().getAutomaton();
+                getSimulator().getGrammarView().getControlView().getAutomaton();
             ControlJGraph cjg =
                 new ControlJGraph(new ControlJModel(caut,
                     getSimulator().getOptions()));
