@@ -38,9 +38,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
-import groove.io.FileGps;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
@@ -50,6 +48,7 @@ import groove.trans.RuleEvent;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
+import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.File;
@@ -112,8 +111,7 @@ public class TestingMisc extends TestCase {
 
         try {
             this.listGrammar4 =
-                (new FileGps(false)).unmarshal(
-                    new File("junit/samples/list4.gps"), "start").toGrammar();
+                Groove.loadGrammar("junit/samples/list4.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -124,8 +122,7 @@ public class TestingMisc extends TestCase {
 
         try {
             this.listGrammar10 =
-                (new FileGps(false)).unmarshal(
-                    new File("junit/samples/list10.gps"), "start").toGrammar();
+                Groove.loadGrammar("junit/samples/list10.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -136,8 +133,7 @@ public class TestingMisc extends TestCase {
 
         try {
             this.listGrammar5 =
-                (new FileGps(false)).unmarshal(
-                    new File("junit/samples/list5.gps"), "start").toGrammar();
+                Groove.loadGrammar("junit/samples/list5.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -514,7 +510,7 @@ public class TestingMisc extends TestCase {
         // Test isomorphism check
         PatternFamily pf1 = new PatternFamily(1, 10);
         PatternFamily pf2 = pf1; // new PatternFamily(1, 10,
-                                    // Util.labelSet(listGrammar10.getStartGraph()));
+        // Util.labelSet(listGrammar10.getStartGraph()));
 
         DefaultAbstrGraph s_l4_1 = null; // list with 4 cells, precision 1
         DefaultAbstrGraph s_l4_2 = null; // list with 4 cells, precision 2

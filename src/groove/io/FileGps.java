@@ -38,6 +38,7 @@ import java.util.Map;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class FileGps extends AspectualViewGps {
 
     /**
@@ -241,7 +242,8 @@ public class FileGps extends AspectualViewGps {
         Map<String,File> graphMap = new HashMap<String,File>();
         collectGraphNames(graphMap, location);
         for (Map.Entry<String,File> graphEntry : graphMap.entrySet()) {
-            AspectGraph graph = unmarshalGraph(Groove.toURL(graphEntry.getValue()));
+            AspectGraph graph =
+                unmarshalGraph(Groove.toURL(graphEntry.getValue()));
             result.addGraph(graphEntry.getKey(), graph);
         }
 

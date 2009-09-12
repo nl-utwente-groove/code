@@ -24,6 +24,7 @@ import java.io.File;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class JarGps extends ArchiveGps {
     /**
      * Create a loader for loading grammars from Jar files.

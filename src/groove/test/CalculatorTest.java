@@ -2,7 +2,6 @@ package groove.test;
 
 import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
-import groove.io.FileGps;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -32,7 +31,7 @@ public class CalculatorTest extends TestCase {
     private GrammarView loadGrammar(String grammarName, String startGraphName) {
         try {
             return StoredGrammarView.newInstance(new File(INPUT_DIR,
-                grammarName));
+                grammarName), false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }
@@ -40,9 +39,4 @@ public class CalculatorTest extends TestCase {
         // throw new RuntimeException(exc);
         // }
     }
-
-    /**
-     * Grammar loader used in this test case.
-     */
-    protected FileGps loader = new FileGps(false);
 }

@@ -47,6 +47,7 @@ import java.util.jar.JarFile;
  *          start graph used)
  * 
  */
+@Deprecated
 public abstract class ArchiveGps extends AspectualViewGps {
 
     /**

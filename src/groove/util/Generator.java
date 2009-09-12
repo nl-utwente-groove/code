@@ -44,11 +44,10 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PaigeTarjanMcKay;
-import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
-import groove.io.FileGps;
 import groove.io.RuleList;
-import groove.io.URLLoaderFactory;
+import groove.io.SystemStore;
+import groove.io.SystemStoreFactory;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
@@ -271,10 +270,12 @@ public class Generator extends CommandLineTool {
         // now we are guarenteed to have a URL
 
         try {
-
-            AspectualViewGps loader = URLLoaderFactory.getLoader(url, false);
-            loader.addObserver(loadObserver);
-            this.grammar = loader.unmarshal(url).toGrammar();
+            SystemStore store = SystemStoreFactory.newStore(url);
+            if (store instanceof Observable) {
+                ((Observable) store).addObserver(loadObserver);
+            }
+            store.reload();
+            this.grammar = store.toGrammarView().toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
             printError("Can't load grammar: " + exc.getMessage());
@@ -721,16 +722,6 @@ public class Generator extends CommandLineTool {
             result = result.replaceAll(grammarNameRegExpr, getGrammarName());
         }
         return result;
-    }
-
-    /**
-     * Factory method for the grammar loader to be used by state space
-     * generation.
-     */
-    protected FileGps createGrammarLoader() {
-        return new FileGps(false);
-        // return new GpsGrammar(new UntypedGxl(graphFactory),
-        // SPORuleFactory.getInstance());
     }
 
     /**

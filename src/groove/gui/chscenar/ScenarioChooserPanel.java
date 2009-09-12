@@ -9,11 +9,11 @@ package groove.gui.chscenar;
 import groove.explore.Scenario;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
-import groove.io.FileGps;
 import groove.io.GrooveFileChooser;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
+import groove.view.GrammarView;
+import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
@@ -351,7 +351,6 @@ public class ScenarioChooserPanel extends javax.swing.JPanel {
     private final ExtensionFilter ruleSystemFilter =
         groove.util.Groove.createRuleSystemFilter();
     private GraphGrammar grammar;
-    private final FileGps grammarLoader = new FileGps(false);
     private Scenario scenario;
 
     /**
@@ -386,8 +385,8 @@ public class ScenarioChooserPanel extends javax.swing.JPanel {
             startGraphFile = new File(startGraphName);
         }
         try {
-            DefaultGrammarView grammarView =
-                this.grammarLoader.unmarshal(grammarFile);
+            GrammarView grammarView =
+                StoredGrammarView.newInstance(grammarFile, false);
             if (startGraphFile != null) {
                 AspectGraph startGraph =
                     new AspectGxl().unmarshalGraph(startGraphFile);
@@ -443,7 +442,7 @@ public class ScenarioChooserPanel extends javax.swing.JPanel {
         if (this.grammarFileChooser == null) {
             this.grammarFileChooser = new GrooveFileChooser();
             this.grammarFileChooser.setAcceptAllFileFilterUsed(false);
-            this.grammarFileChooser.setFileFilter(this.grammarLoader.getExtensionFilter());
+            this.grammarFileChooser.setFileFilter(Groove.createRuleSystemFilter());
             this.grammarFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         }
         return this.grammarFileChooser;

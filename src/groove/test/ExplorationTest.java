@@ -24,20 +24,16 @@ import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.strategy.BFSStrategy;
 import groove.graph.Graph;
-import groove.io.FileGps;
-import groove.io.GrammarViewXml;
 import groove.lts.GTS;
 import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleName;
-import groove.trans.SystemProperties;
 import groove.util.Generator;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
-import groove.view.GenericGrammarView;
 import groove.view.GrammarView;
+import groove.view.StoredGrammarView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -194,31 +190,32 @@ public class ExplorationTest extends TestCase {
 
     /** Tests various parameters settable through the system properties. */
     public void testSystemProperties() {
-        DefaultGrammarView gg = loadGrammar("simple.gps", null);
+        StoredGrammarView gg = loadGrammar("simple.gps", null);
         testExploration(gg, null, 41, 300, 0);
         // test check creator edges property
-        DefaultGrammarView ggCopy = loadGrammar("simple.gps", null);
-        SystemProperties newProperties = ggCopy.getProperties().clone();
-        newProperties.setCheckCreatorEdges(true);
-        ggCopy.setProperties(newProperties);
+        StoredGrammarView ggCopy =
+            loadGrammar("simpleCheckCreatorEdges.gps", null);
+        // SystemProperties newProperties = ggCopy.getProperties().clone();
+        // newProperties.setCheckCreatorEdges(true);
+        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 41, 188, 0);
         // test dangling edges property
-        ggCopy = loadGrammar("simple.gps", null);
-        newProperties = ggCopy.getProperties().clone();
-        newProperties.setCheckDangling(true);
-        ggCopy.setProperties(newProperties);
+        ggCopy = loadGrammar("simpleCheckDanglingEdges.gps", null);
+        // newProperties = ggCopy.getProperties().clone();
+        // newProperties.setCheckDangling(true);
+        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 41, 230, 0);
         // test injectivity property
-        ggCopy = loadGrammar("simple.gps", null);
-        newProperties = ggCopy.getProperties().clone();
-        newProperties.setInjective(true);
-        ggCopy.setProperties(newProperties);
+        ggCopy = loadGrammar("simpleInjective.gps", null);
+        // newProperties = ggCopy.getProperties().clone();
+        // newProperties.setInjective(true);
+        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 13, 64, 0);
         // test check-isomorphism property
-        ggCopy = loadGrammar("simple.gps", null);
-        newProperties = ggCopy.getProperties().clone();
-        newProperties.setCheckIsomorphism(false);
-        ggCopy.setProperties(newProperties);
+        ggCopy = loadGrammar("simpleNoIsomorphism.gps", null);
+        // newProperties = ggCopy.getProperties().clone();
+        // newProperties.setCheckIsomorphism(false);
+        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 73, 536, 0);
         // test rhs-is-nac property
         gg = loadGrammar("rhs-is-nac.gps", null);
@@ -249,7 +246,8 @@ public class ExplorationTest extends TestCase {
     /**
      * Reads and executes the test cases in a given input stream. The format is
      * described in {@link #testExplorations(BufferedReader)}. Calls
-     * <tt>testExploration(new BufferedReader(new InputStreamReader(testCasesStream)))</tt>.
+     * <tt>testExploration(new BufferedReader(new InputStreamReader(testCasesStream)))</tt>
+     * .
      */
     protected void testExplorations(InputStream testCasesStream) {
         BufferedReader testCasesReader =
@@ -261,15 +259,15 @@ public class ExplorationTest extends TestCase {
      * Reads and executes the test cases in a given reader. Each line describes
      * a test case, as while space-separated fields
      * <ul>
-     * <li> The test command {@link #TEST_COMMAND}
-     * <li> Name of the production system, to be found in the same package as
-     * the text file
-     * <li> Name of the start state, to be found in the production system
-     * <li> Exploration strategy, in the input format of
+     * <li>The test command {@link #TEST_COMMAND}
+     * <li>Name of the production system, to be found in the same package as the
+     * text file
+     * <li>Name of the start state, to be found in the production system
+     * <li>Exploration strategy, in the input format of
      * {@link groove.util.Generator.ExploreOption}
-     * <li> Expected number of states
-     * <li> Expected number of transitions; not tested if < 0
-     * <li> (Optional) expected number of open states after exploration; not
+     * <li>Expected number of states
+     * <li>Expected number of transitions; not tested if < 0
+     * <li>(Optional) expected number of open states after exploration; not
      * tested if < 0. (Used for bounded exploration strategies)
      * </ul>
      * Lines not starting with {@link #TEST_COMMAND} are ignored.
@@ -432,14 +430,13 @@ public class ExplorationTest extends TestCase {
      */
     protected GTS testExploration(String grammarName, int nodeCount,
             int edgeCount) {
-        return testExploration(grammarName,
-            GrammarViewXml.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
+        return testExploration(grammarName, Groove.DEFAULT_START_GRAPH_NAME,
+            nodeCount, edgeCount);
     }
 
     /**
      * Returns the test case record corresponding to the test command line on
-     * the input. Returns <tt>null</tt> if no more test command lines are
-     * found.
+     * the input. Returns <tt>null</tt> if no more test command lines are found.
      * @param testCaseFile the input file
      * @return test record for the next test, or <tt>null</tt> if no more test
      *         is found.
@@ -471,11 +468,11 @@ public class ExplorationTest extends TestCase {
         return result;
     }
 
-    private DefaultGrammarView loadGrammar(String grammarName,
+    private StoredGrammarView loadGrammar(String grammarName,
             String startGraphName) {
         try {
-            return this.loader.unmarshal(new File(INPUT_DIR, grammarName),
-                startGraphName);
+            return StoredGrammarView.newInstance(new File(INPUT_DIR,
+                grammarName), startGraphName, false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }
@@ -486,9 +483,4 @@ public class ExplorationTest extends TestCase {
      */
     private final Generator.ExploreStrategyParser parser =
         new Generator.ExploreStrategyParser(false);
-
-    /**
-     * Grammar loader used in this test case.
-     */
-    protected FileGps loader = new FileGps(false);
 }

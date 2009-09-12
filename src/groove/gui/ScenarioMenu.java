@@ -42,7 +42,7 @@ import groove.lts.State;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -202,7 +202,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
     // ----------------------------- simulation listener methods
     // -----------------------
-    public void setGrammarUpdate(DefaultGrammarView grammar) {
+    public void setGrammarUpdate(StoredGrammarView grammar) {
         setStateUpdate(null);
         // the lts's of the strategies in this menu are changed
         // moreover, the conditions in condition strategies are reset

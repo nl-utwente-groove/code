@@ -28,15 +28,12 @@ import groove.gui.Exporter.StructuralFormat;
 import groove.io.Aut;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
-import groove.io.FileGps;
 import groove.io.Xml;
 import groove.match.GraphSearchPlanFactory;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.GraphGrammar;
-import groove.trans.SystemProperties;
-import groove.view.AspectualRuleView;
-import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -471,35 +468,6 @@ public class Groove {
     }
 
     /**
-     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and
-     * return it. Adds the <tt>.gpr</tt> extension if the filename has no
-     * extension.
-     * @param filename the name of the file to load the rule graph from
-     * @return the rule graph contained in <code>filename</code>
-     * @throws IOException if <code>filename</code> does not exist or is wrongly
-     *         formatted
-     */
-    static public AspectualRuleView loadRuleGraph(String filename)
-        throws IOException {
-        return loadRuleGraph(filename, SystemProperties.DEFAULT_PROPERTIES);
-    }
-
-    /**
-     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and
-     * return it. Adds the <tt>.gpr</tt> extension if the filename has no
-     * extension.
-     * @param filename the name of the file to load the rule graph from
-     * @return the rule graph contained in <code>filename</code>
-     * @throws IOException if <code>filename</code> does not exist or is wrongly
-     *         formatted
-     */
-    static public AspectualRuleView loadRuleGraph(String filename,
-            SystemProperties properties) throws IOException {
-        File file = new File(createRuleFilter().addExtension(filename));
-        return gpsLoader.unmarshalRule(file.toURI().toURL(), properties);
-    }
-
-    /**
      * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory
      * and return it. Adds the <tt>.gps</tt> extension if the directory name has
      * no extension.
@@ -508,10 +476,10 @@ public class Groove {
      * @throws IOException if <code>dirname</code> does not exist or is wrongly
      *         formatted
      */
-    static public DefaultGrammarView loadGrammar(String dirname)
+    static public StoredGrammarView loadGrammar(String dirname)
         throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        return gpsLoader.unmarshal(dir);
+        return StoredGrammarView.newInstance(dir, false);
     }
 
     /**
@@ -563,11 +531,11 @@ public class Groove {
      * @throws IOException if <code>dirname</code> or <code>startfilename</code>
      *         do not exist or are wrongly formatted
      */
-    static public DefaultGrammarView loadGrammar(String dirname,
+    static public StoredGrammarView loadGrammar(String dirname,
             String startfilename) throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
 
-        return gpsLoader.unmarshal(dir, startfilename);
+        return StoredGrammarView.newInstance(dir, startfilename, false);
     }
 
     /**
@@ -948,8 +916,4 @@ public class Groove {
      * The fixed AUT graph loader.
      */
     static private final Xml<Graph> autGraphLoader = new Aut();
-    /**
-     * The fixed grammar loader.
-     */
-    static private final FileGps gpsLoader = new FileGps(false);
 }

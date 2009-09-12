@@ -21,7 +21,6 @@ import groove.explore.util.MatchesIterator;
 import groove.explore.util.PriorityCache;
 import groove.explore.util.SimpleCache;
 import groove.graph.Graph;
-import groove.io.FileGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
@@ -30,9 +29,9 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleName;
 import groove.trans.SystemRecord;
+import groove.util.Groove;
 import groove.view.FormatException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,9 +60,8 @@ public class StrategiesTest extends TestCase {
             try {
                 for (int i = 0; i < nb; i++) {
                     grammars[i] =
-                        (new FileGps(false)).unmarshal(
-                            new File(this.PATH_PREFIX + "matchesiter.gps"),
-                            "start" + i).toGrammar();
+                        Groove.loadGrammar(
+                            this.PATH_PREFIX + "matchesiter.gps", "start" + i).toGrammar();
                 }
             } catch (FormatException e1) {
                 e1.printStackTrace();
@@ -142,8 +140,7 @@ public class StrategiesTest extends TestCase {
             GraphGrammar grammar = null;
             try {
                 grammar =
-                    (new FileGps(false)).unmarshal(
-                        new File(this.PATH_PREFIX + "matchesiter.gps"),
+                    Groove.loadGrammar(this.PATH_PREFIX + "matchesiter.gps",
                         "start4").toGrammar();
             } catch (FormatException e) {
                 e.printStackTrace();
@@ -207,8 +204,8 @@ public class StrategiesTest extends TestCase {
 
         try {
             grammar =
-                (new FileGps(false)).unmarshal(
-                    new File(this.PATH_PREFIX + "matchesiter2.gps"), "start").toGrammar();
+                Groove.loadGrammar(this.PATH_PREFIX + "matchesiter2.gps",
+                    "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
@@ -236,8 +233,7 @@ public class StrategiesTest extends TestCase {
 
         try {
             grammar =
-                (new FileGps(false)).unmarshal(
-                    new File(this.PATH_PREFIX + "exploreCache1.gps")).toGrammar();
+                Groove.loadGrammar(this.PATH_PREFIX + "exploreCache1.gps").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
@@ -353,8 +349,7 @@ public class StrategiesTest extends TestCase {
 
         try {
             grammar =
-                (new FileGps(false)).unmarshal(
-                    new File(this.PATH_PREFIX + "exploreCache2.gps")).toGrammar();
+                Groove.loadGrammar(this.PATH_PREFIX + "exploreCache2.gps").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {

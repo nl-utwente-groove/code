@@ -21,7 +21,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.view.DefaultGrammarView;
+import groove.view.StoredGrammarView;
 
 /**
  * Observer (= viewer) interface for production rule simulation.
@@ -35,13 +35,13 @@ public interface SimulationListener {
      * thus, comparing the parameter value with a previous one is misleading.
      * @param grammar the current graph grammar view; may be <code>null</code>
      */
-    void setGrammarUpdate(DefaultGrammarView grammar);
+    void setGrammarUpdate(StoredGrammarView grammar);
 
     /**
      * Reports the start of the simulation by setting a graph transition system.
      * The GTS is not <code>null</code>; deactivation is signalled through
-     * {@link #setGrammarUpdate(DefaultGrammarView)}. This update is always
-     * preceded by a {@link #setGrammarUpdate(DefaultGrammarView)} with the
+     * {@link #setGrammarUpdate(StoredGrammarView)}. This update is always
+     * preceded by a {@link #setGrammarUpdate(StoredGrammarView)} with the
      * relevant grammar view; that is, the GTS' grammar is derived from the view
      * as last passed through a grammar update. The start state should also be
      * set as part of this action; no separate call of

@@ -33,7 +33,8 @@ import groove.graph.Node;
 import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.ExtensionFilter;
-import groove.io.FileGps;
+import groove.io.SystemStore;
+import groove.io.SystemStoreFactory;
 import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -47,6 +48,7 @@ import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.verify.ModelChecking;
 import groove.view.FormatException;
+import groove.view.GrammarView;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -519,7 +521,7 @@ public class LTLBenchmarker extends CommandLineTool {
             } while (!finishedIterations());
             exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -561,7 +563,7 @@ public class LTLBenchmarker extends CommandLineTool {
             } while (!finishedIterations());
             exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -605,7 +607,7 @@ public class LTLBenchmarker extends CommandLineTool {
                 && getScenario().getResult().getValue().isEmpty());
             exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -639,7 +641,7 @@ public class LTLBenchmarker extends CommandLineTool {
             report();
             exit(this.endTime - this.startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -670,7 +672,7 @@ public class LTLBenchmarker extends CommandLineTool {
             report();
             exit(this.endTime - this.startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -700,7 +702,7 @@ public class LTLBenchmarker extends CommandLineTool {
             report();
             exit(this.endTime - this.startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -739,7 +741,7 @@ public class LTLBenchmarker extends CommandLineTool {
                 && getScenario().getResult().getValue().isEmpty());
             exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -765,7 +767,7 @@ public class LTLBenchmarker extends CommandLineTool {
             report();
             exit(this.endTime - this.startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -794,7 +796,7 @@ public class LTLBenchmarker extends CommandLineTool {
             initialBound += step;
             exit(this.endTime - this.startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-                                                    // be removed
+            // be removed
             e.printStackTrace();
             System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
@@ -937,17 +939,22 @@ public class LTLBenchmarker extends CommandLineTool {
                 }
             }
         };
-        this.loader.addObserver(loadObserver);
         try {
-            this.grammar =
-                this.loader.unmarshal(new File(grammarLocation), startStateName).toGrammar();
-            this.grammar.setFixed();
+            SystemStore store = SystemStoreFactory.newStore(grammarLocation);
+            if (store instanceof Observable) {
+                ((Observable) store).addObserver(loadObserver);
+            }
+            GrammarView grammarView = store.toGrammarView();
+            grammarView.setStartGraph(startStateName);
+            this.grammar = grammarView.toGrammar();
+            if (store instanceof Observable) {
+                ((Observable) store).deleteObserver(loadObserver);
+            }
         } catch (IOException exc) {
             printError("Can't load grammar: " + exc.getMessage());
         } catch (FormatException exc) {
             printError("Grammar format error: " + exc.getMessage());
         }
-        this.loader.deleteObserver(loadObserver);
     }
 
     /**
@@ -1397,16 +1404,6 @@ public class LTLBenchmarker extends CommandLineTool {
     }
 
     /**
-     * Factory method for the grammar loader to be used by state space
-     * generation.
-     */
-    protected FileGps createGrammarLoader() {
-        return new FileGps(false);
-        // return new GpsGrammar(new UntypedGxl(graphFactory),
-        // SPORuleFactory.getInstance());
-    }
-
-    /**
      * Convenience method to derive the name of a grammar from its location.
      * Strips the directory and extension.
      */
@@ -1512,11 +1509,6 @@ public class LTLBenchmarker extends CommandLineTool {
     /** File filter for graph files (GXL or GST). */
     protected static final ExtensionFilter graphFilter =
         new ExtensionFilter("Serialized graph files", GRAPH_FILE_EXTENSION);
-
-    /**
-     * The grammar loader.
-     */
-    protected final FileGps loader = createGrammarLoader();
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
     private static class StatisticsListener extends GraphAdapter {

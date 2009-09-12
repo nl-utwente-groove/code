@@ -24,6 +24,7 @@ import java.io.File;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class ZipGps extends ArchiveGps {
     /** create a new instance */
     public ZipGps(boolean layouted) {

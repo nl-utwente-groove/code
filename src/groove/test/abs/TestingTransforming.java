@@ -38,9 +38,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
-import groove.io.FileGps;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
@@ -50,6 +48,7 @@ import groove.trans.RuleEvent;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
+import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.File;
@@ -99,7 +98,7 @@ public class TestingTransforming extends TestCase {
     GraphGrammar binaryTreeGrammar;
 
     Map<String,GraphPattern> binaryTreePatternsMap; // keys are pR, pA0, pA1,
-                                                    // pA2, pB, pC, pD, pL
+    // pA2, pB, pC, pD, pL
     PatternFamily binaryTreePF = new PatternFamily(1, 10);
 
     @SuppressWarnings("unqualified-field-access")
@@ -126,8 +125,7 @@ public class TestingTransforming extends TestCase {
 
         try {
             this.listGrammar4 =
-                (new FileGps(false)).unmarshal(
-                    new File(PATH_PREFIX + "list4.gps"), "start").toGrammar();
+                Groove.loadGrammar(PATH_PREFIX + "list4.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -138,8 +136,7 @@ public class TestingTransforming extends TestCase {
 
         try {
             this.listGrammar10 =
-                (new FileGps(false)).unmarshal(
-                    new File(PATH_PREFIX + "list10.gps"), "start").toGrammar();
+                Groove.loadGrammar(PATH_PREFIX + "list10.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -150,8 +147,7 @@ public class TestingTransforming extends TestCase {
 
         try {
             this.listGrammar5 =
-                (new FileGps(false)).unmarshal(
-                    new File(PATH_PREFIX + "list5.gps"), "start").toGrammar();
+                Groove.loadGrammar(PATH_PREFIX + "list5.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -162,8 +158,7 @@ public class TestingTransforming extends TestCase {
 
         try {
             this.circularListGrammar4 =
-                (new FileGps(false)).unmarshal(
-                    new File(PATH_PREFIX + "circularlist4.gps"), "start").toGrammar();
+                Groove.loadGrammar(PATH_PREFIX + "circularlist4.gps", "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -173,8 +168,8 @@ public class TestingTransforming extends TestCase {
         }
         try {
             this.binaryTreeGrammar =
-                (new FileGps(false)).unmarshal(
-                    new File(PATH_PREFIX + "generate-binary-tree.gps"), "start").toGrammar();
+                Groove.loadGrammar(PATH_PREFIX + "generate-binary-tree.gps",
+                    "start").toGrammar();
         } catch (FormatException e1) {
             e1.printStackTrace();
             System.exit(1);
@@ -703,8 +698,8 @@ public class TestingTransforming extends TestCase {
         Collection<AbstrGraph> all = new ArrayList<AbstrGraph>();
         VarNodeEdgeMap match =
             Util.getMatchesIter(rule.lhs(), ag, new NodeEdgeHashMap()).iterator().next(); // only
-                                                                                            // one
-                                                                                            // match
+        // one
+        // match
         ConcretePart.Typing typing = new TypingImpl(ag, match);
         Collection<ConcretePart> ext =
             ConcretePart.extensions(rule.lhs(), typing, this.binaryTreePF,
@@ -764,8 +759,8 @@ public class TestingTransforming extends TestCase {
         Collection<AbstrGraph> all = new ArrayList<AbstrGraph>();
         VarNodeEdgeMap match =
             Util.getMatchesIter(rule.lhs(), ag, new NodeEdgeHashMap()).iterator().next(); // only
-                                                                                            // one
-                                                                                            // match
+        // one
+        // match
         ConcretePart.Typing typing = new TypingImpl(ag, match);
         Collection<ConcretePart> ext =
             ConcretePart.extensions(rule.lhs(), typing, this.binaryTreePF,

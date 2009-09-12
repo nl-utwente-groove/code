@@ -48,6 +48,7 @@ import java.util.Properties;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public abstract class AspectualViewGps extends Observable implements
         GrammarViewXml<DefaultGrammarView> {
     /**

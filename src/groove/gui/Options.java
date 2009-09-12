@@ -366,6 +366,9 @@ public class Options {
     public static final KeyStroke OPEN_KEY =
         KeyStroke.getKeyStroke("control O");
     /** Open keystroke */
+    public static final KeyStroke OPEN_URL_KEY =
+        KeyStroke.getKeyStroke("control alt O");
+    /** Open graph keystroke */
     public static final KeyStroke OPEN_GRAPH_KEY =
         KeyStroke.getKeyStroke("control shift O");
     /**

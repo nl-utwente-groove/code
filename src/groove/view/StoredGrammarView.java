@@ -99,26 +99,14 @@ public class StoredGrammarView implements GrammarView, Observer {
      * Adds a rule based on a given rule view.
      * @see #getRuleView(RuleName)
      */
+    @Deprecated
     public AspectualRuleView addRule(AspectualRuleView ruleView)
         throws IllegalStateException {
         throw new UnsupportedOperationException();
     }
 
-    /** Sets the control program to a given name. */
-    public void setControl(String name) {
-        this.controlName = name;
-        invalidate();
-    }
-
-    /** Returns the control view associated with a given program. */
     public ControlView getControlView(String name) {
         return this.controlMap.get(name);
-    }
-
-    @Override
-    public ControlView getControlView() {
-        return !getProperties().isUseControl() || getControlName() == null
-                ? null : getControlView(getControlName());
     }
 
     public AspectualGraphView getGraphView(String name) {
@@ -130,6 +118,28 @@ public class StoredGrammarView implements GrammarView, Observer {
     public AspectualRuleView getRuleView(RuleName name) {
         AspectGraph ruleGraph = getStore().getRules().get(name);
         return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
+    }
+
+    public void setControl(String name) {
+        this.controlName = name;
+        invalidate();
+    }
+
+    /**
+     * Returns the name of the control program to be used. This is either
+     * explicitly set through {@link #setControl(String)}, or taken from the
+     * system properties; if no explicit control name is given, it is set to
+     * {@link Groove#DEFAULT_CONTROL_NAME}.
+     * @see SystemProperties#getControlName()
+     */
+    public String getControlName() {
+        return getControlName(true);
+    }
+
+    @Override
+    public ControlView getControlView() {
+        return !getProperties().isUseControl() || getControlName() == null
+                ? null : getControlView(getControlName());
     }
 
     public String getStartGraphName() {
@@ -220,17 +230,6 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     private boolean isUseControl() {
         return getProperties().isUseControl() && getControlName(false) != null;
-    }
-
-    /**
-     * Returns the name of the control program to be used. This is either
-     * explicitly set through {@link #setControl(String)}, or taken from the
-     * system properties; if no explicit control name is given, it is set to
-     * {@link Groove#DEFAULT_CONTROL_NAME}.
-     * @see SystemProperties#getControlName()
-     */
-    public String getControlName() {
-        return getControlName(true);
     }
 
     /**
@@ -344,7 +343,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
      * they are regenerated at a next call of {@link #toModel()}.
      */
-    private void invalidate() {
+    void invalidate() {
         this.grammar = null;
         this.errors = null;
     }
@@ -396,7 +395,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /** Mapping from control names to views on the corresponding automata. */
-    private final Map<String,ControlView> controlMap =
+    final Map<String,ControlView> controlMap =
         new HashMap<String,ControlView>();
 
     /** The store backing this view. */
@@ -407,7 +406,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      * Name of the current control program, if it is explicitly set;
      * <code>null</code> otherwise.
      */
-    private String controlName;
+    String controlName;
     /**
      * Name of the current start graph, if it is one of the graphs in this rule
      * system; <code>null</code> otherwise.
@@ -425,8 +424,8 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(URL url)
-        throws IllegalArgumentException, IOException {
+    static public GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> newInstance(
+            URL url) throws IllegalArgumentException, IOException {
         return newInstance(url, url.getQuery());
     }
 
@@ -440,11 +439,13 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(URL url, String startGraphName)
-        throws IllegalArgumentException, IOException {
+    static public GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> newInstance(
+            URL url, String startGraphName) throws IllegalArgumentException,
+        IOException {
         SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
-        StoredGrammarView result = store.toGrammarView();
+        GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> result =
+            store.toGrammarView();
         if (startGraphName != null) {
             result.setStartGraph(startGraphName);
         }
@@ -454,13 +455,15 @@ public class StoredGrammarView implements GrammarView, Observer {
     /**
      * Creates an instance based on a given file.
      * @param file the file to load the grammar from
+     * @param create if <code>true</code> and <code>file</code> does not yet
+     *        exist, attempt to create it.
      * @throws IllegalArgumentException if no store can be created from the
      *         given file
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(File file)
+    static public StoredGrammarView newInstance(File file, boolean create)
         throws IllegalArgumentException, IOException {
-        return newInstance(file, null);
+        return newInstance(file, null, create);
     }
 
     /**
@@ -468,13 +471,15 @@ public class StoredGrammarView implements GrammarView, Observer {
      * @param file the file to load the grammar from
      * @param startGraphName the start graph name; if <code>null</code>, the
      *        default start graph name is used
+     * @param create if <code>true</code> and <code>file</code> does not yet
+     *        exist, attempt to create it.
      * @throws IllegalArgumentException if no store can be created from the
      *         given file
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(File file, String startGraphName)
-        throws IOException {
-        SystemStore store = SystemStoreFactory.newStore(file);
+    static public StoredGrammarView newInstance(File file,
+            String startGraphName, boolean create) throws IOException {
+        SystemStore store = SystemStoreFactory.newStore(file, create);
         store.reload();
         StoredGrammarView result = store.toGrammarView();
         if (startGraphName != null) {
@@ -491,14 +496,14 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(String location)
-        throws IllegalArgumentException, IOException {
+    static public GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> newInstance(
+            String location) throws IllegalArgumentException, IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {
-            return newInstance(new File(location));
+            return newInstance(new File(location), false);
         } catch (IOException exc) {
-            return newInstance(new File(location));
+            return newInstance(new File(location), false);
         }
     }
 }
