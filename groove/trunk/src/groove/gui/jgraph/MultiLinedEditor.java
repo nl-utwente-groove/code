@@ -202,14 +202,16 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 // only do completion if we're at the end of a label
                 Document document = this.editorComponent.getDocument();
                 if (pos + 1 < document.getLength()
-                    && !Character.isWhitespace(document.getText(pos, pos + 1).charAt(
+                    && !Character.isWhitespace(document.getText(pos + 1, 1).charAt(
                         0))) {
+                    System.err.printf("Character is not white space: %s%n",
+                        document.getText(pos, 1));
                     return;
                 }
                 content = document.getText(0, pos + 1);
             } catch (BadLocationException e) {
                 throw new IllegalStateException(String.format(
-                    "Impossible error: %s", e));
+                    "Impossible error: %s", e.offsetRequested(), e));
             }
 
             // Find where the word starts
