@@ -204,14 +204,12 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 if (pos + 1 < document.getLength()
                     && !Character.isWhitespace(document.getText(pos + 1, 1).charAt(
                         0))) {
-                    System.err.printf("Character is not white space: %s%n",
-                        document.getText(pos, 1));
                     return;
                 }
                 content = document.getText(0, pos + 1);
             } catch (BadLocationException e) {
                 throw new IllegalStateException(String.format(
-                    "Impossible error: %s", e.offsetRequested(), e));
+                    "Impossible error: %s", e));
             }
 
             // Find where the word starts
