@@ -165,7 +165,8 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         testInit();
         String name = GraphInfo.getName(graph);
         AspectGraph result = this.graphMap.put(name, graph);
-        this.marshaller.marshalGraph(graph, createGraphFile(name));
+        this.marshaller.marshalGraph(graph.toPlainGraph(),
+            createGraphFile(name));
         notify(SystemStore.GRAPH_CHANGE);
         return result;
     }
@@ -183,7 +184,7 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         testInit();
         RuleName name = new RuleName(GraphInfo.getName(rule));
         AspectGraph result = this.ruleMap.put(name, rule);
-        this.marshaller.marshalGraph(rule, createRuleFile(name));
+        this.marshaller.marshalGraph(rule.toPlainGraph(), createRuleFile(name));
         notify(SystemStore.RULE_CHANGE);
         return result;
     }
