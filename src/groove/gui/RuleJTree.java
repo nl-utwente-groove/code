@@ -83,8 +83,9 @@ public class RuleJTree extends JTree implements SimulationListener {
         setEnabled(false);
         setToggleClickCount(0);
         setCellRenderer(new MyTreeCellRenderer());
+        //mzimakova - Multiple selection
         getSelectionModel().setSelectionMode(
-            TreeSelectionModel.SINGLE_TREE_SELECTION);
+            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // set icons
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) this.cellRenderer;
@@ -627,12 +628,20 @@ public class RuleJTree extends JTree implements SimulationListener {
         public void valueChanged(TreeSelectionEvent evt) {
             // only do something if a path was added to the selection
             if (isListenToSelectionChanges() && evt.isAddedPath()) {
-                Object selectedNode = evt.getPath().getLastPathComponent();
+                //mzimakova - Multiple selection
+                TreePath[] paths = getSelectionPaths();
+              for (int i = 0; i < paths.length; i++)
+              { 
+                Object selectedNode = paths[i].getLastPathComponent();
                 if (selectedNode instanceof RuleTreeNode) {
                     // selected tree node is a production rule (level 1 node)
+                  if (paths.length == 1) {  //mzimakova - Multiple selection
                     RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
                     RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
-                } else if (selectedNode instanceof MatchTreeNode) {
+                  } else {
+                      RuleJTree.this.simulator.setMultipleRule(((RuleTreeNode) selectedNode).getRule().getRuleName());                      
+                  }
+                 } else if (selectedNode instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
                     RuleEvent event = ((MatchTreeNode) selectedNode).event();
                     GraphTransition trans =
@@ -664,6 +673,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                         RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getStatePanel());
                     }
                 }
+              }
             }
         }
     }
@@ -685,8 +695,18 @@ public class RuleJTree extends JTree implements SimulationListener {
             if (evt.getButton() == MouseEvent.BUTTON3) {
                 TreePath selectedPath =
                     getPathForLocation(evt.getX(), evt.getY());
+                //mzimakova - Multiple selection
                 if (selectedPath != null) {
+                  TreePath[] paths = getSelectionPaths();
+                  boolean pathIsSelected = false;
+                  for (int i = 0; i < paths.length; i++) {
+                    if (selectedPath == paths[i]) {
+                      pathIsSelected = true; 
+                    }                     
+                  }
+                  if (pathIsSelected == false) {
                     setSelectionPath(selectedPath);
+                  }
                 }
             }
             maybeShowPopup(evt);
