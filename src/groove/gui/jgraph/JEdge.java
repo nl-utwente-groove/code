@@ -105,7 +105,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      */
     @Override
     public void setUserObject(Object userObject) {
-        if (!(userObject instanceof JCellContent)) {
+        if (!(userObject instanceof JCellContent<?>)) {
             throw new IllegalArgumentException(String.format(
                 "Cannot set user object %s: incorrect type %s", userObject,
                 userObject.getClass()));

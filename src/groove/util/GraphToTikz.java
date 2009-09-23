@@ -369,7 +369,7 @@ public final class GraphToTikz {
         
         s.append(NODE);
         s.append(encloseBrack(labStyle));
-        s.append(encloseCurly(edge.getText()));
+        s.append(encloseCurly(escapeSpecialChars(edge.getText())));
     }
     
     private static void appendEdgeLabel (
@@ -386,7 +386,7 @@ public final class GraphToTikz {
         s.append(encloseBrack(labStyle));
         s.append(encloseSpace(AT_KEYWORD));
         appendPoint(labelPos, s);
-        s.append(encloseCurly(edge.getText()));
+        s.append(encloseCurly(escapeSpecialChars(edge.getText())));
     }
     
     private static void appendPoint(
@@ -501,13 +501,14 @@ public final class GraphToTikz {
     }
     
     /**
-     * Scans the Html string of a node and convert the tags to Tikz.
-     * @param line the Html string to be converted.
+     * Scans the HTML string of a node and convert the tags to Tikz.
+     * @param htmlLine the HTML string to be converted.
      * @return a produced Tikz string as a StringBuilder.
      */
-    private static StringBuilder convertHtmlToTikz(StringBuilder line) {
+    private static StringBuilder convertHtmlToTikz(StringBuilder htmlLine) {
         StringBuilder result = new StringBuilder();
         
+        StringBuilder line = escapeSpecialChars(htmlLine);
         if (line.indexOf(Converter.HTML_EXISTS) > -1) {
             result.append(EXISTS_STR);
         } else if (line.indexOf(Converter.HTML_FORALL) > -1) {
@@ -527,6 +528,48 @@ public final class GraphToTikz {
         result.append(CRLF);
         
         return result;
+    }
+    
+    /**
+     * Escapes the special LaTeX characters in the line and copies the rest.
+     * @param line the string to be escaped.
+     * @return the line with escaped characters, if any.
+     */
+    private static StringBuilder escapeSpecialChars(StringBuilder line) {
+        StringBuilder result = new StringBuilder();
+        
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            switch (c) {
+                case '&':  // We have to check if the & is part of a special
+                           // HTML char.
+                          if (line.charAt(i + 1) == '#') {
+                              // Yes, it is. Keep it.
+                              result.append("&#");
+                              i++;
+                          } else { // It's not.
+                              result.append(AMP);
+                          }
+                          break;
+                case '$':  result.append(DOLLAR);      break;
+                case '#':  result.append(NUMBER);      break;
+                case '%':  result.append(PERCENT);     break;
+                case '_':  result.append(UNDERSCORE);  break;
+                case '{':  result.append(LEFT_CURLY);  break;
+                case '}':  result.append(RIGHT_CURLY); break;
+                case '^':  result.append(CIRCUNFLEX);  break;
+                case '~':  result.append(TILDE);       break;
+                case '\\': result.append(BACKSLASH);   break;
+                case Groove.LC_PI: result.append(PI);  break;
+                default:   result.append(c);
+            }
+        }
+
+        return result;
+    }
+
+    private static String escapeSpecialChars(String line) {
+        return escapeSpecialChars(new StringBuilder(line)).toString();
     }
     
     private static String enclose(String string, String start, String end) {
@@ -561,20 +604,8 @@ public final class GraphToTikz {
         
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
-        if (node.isValueNode()) {
-            // Attribute node
-            styles.add(BASIC_NODE_STYLE);
-            styles.add(ATTRIBUTE_NODE_STYLE);
-        } else if (node.isProductNode()) {
-            styles.add(BASIC_NODE_STYLE);
-            styles.add(PRODUCT_NODE_STYLE);
-        } else if (allLabels.contains(EXISTS) || allLabels.contains(FORALL) ||
-                   allLabels.contains(FORALLX)) {
-            // Quantifier node
-            styles.add(BASIC_NODE_STYLE);
-            styles.add(QUANTIFIER_NODE_STYLE);
-        }
-        else if (allLabels.contains(DEL_COL)) {
+        
+        if (allLabels.contains(DEL_COL)) {
             // Eraser node
             styles.add(ERASER_NODE_STYLE);
         } else if (allLabels.contains(NEW_COL)) {
@@ -586,6 +617,15 @@ public final class GraphToTikz {
         } else {
             // Reader node
             styles.add(BASIC_NODE_STYLE);
+        }
+        
+        if (node.isValueNode()) {
+            styles.add(ATTRIBUTE_NODE_STYLE);
+        } else if (node.isProductNode()) {
+            styles.add(PRODUCT_NODE_STYLE);
+        } else if (allLabels.contains(EXISTS) || allLabels.contains(FORALL) ||
+                   allLabels.contains(FORALLX)) {
+            styles.add(QUANTIFIER_NODE_STYLE);
         }
         
         // Check background flag
@@ -692,4 +732,15 @@ public final class GraphToTikz {
     private static final String BEGIN_CONTROLS = ".. controls ";
     private static final String END_CONTROLS = " .. ";
     private static final String AND = " and ";
+    private static final String AMP = "\\&";
+    private static final String DOLLAR = "\\$";
+    private static final String NUMBER = "\\#";
+    private static final String PERCENT = "\\%";
+    private static final String UNDERSCORE = "\\_";
+    private static final String LEFT_CURLY = "\\{";
+    private static final String RIGHT_CURLY = "\\}";
+    private static final String CIRCUNFLEX = "\\^{}";
+    private static final String TILDE = "\\~{}";
+    private static final String BACKSLASH = "$\\backslash$";
+    private static final String PI = "$\\pi$";
 }
