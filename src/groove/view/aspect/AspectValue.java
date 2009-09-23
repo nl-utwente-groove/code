@@ -16,14 +16,14 @@
  */
 package groove.view.aspect;
 
+import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
+import groove.view.FormatException;
+import groove.view.LabelParser;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import groove.view.FormatException;
-import groove.view.LabelParser;
-import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 
 /**
  * Class implementing values of a given aspect. Aspect values are distinguished
@@ -296,8 +296,8 @@ public class AspectValue {
     /**
      * Registers a new aspect value. For this to be successful, the value name
      * must be fresh; otherwise, themathod throws a {@link FormatException}. If
-     * successful, afterwards <code>getValue(value.getName())</code> will
-     * yield <code>value</code>.
+     * successful, afterwards <code>getValue(value.getName())</code> will yield
+     * <code>value</code>.
      * @param value the new aspect value
      * @throws FormatException if <code>value.getName()</code> is an already
      *         existing aspect value name, as attested by
@@ -321,6 +321,11 @@ public class AspectValue {
      */
     public static AspectValue getValue(String name) {
         return valueMap.get(name);
+    }
+
+    /** Returns an unmodifiable view on the registered value names. */
+    public static Set<String> getValueNames() {
+        return valueMap.keySet();
     }
 
     /** The internally kept register of aspect value names. */
