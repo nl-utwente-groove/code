@@ -42,7 +42,7 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
      * Inner reference to the actual LTSPanel. Is added/removed to the panel dynamically.
     */
     private LTSPanel        LTSPanel;
-    
+       
     /*
      * Internal bookkeeping of visibility of the LTSPanel.
     */
@@ -51,7 +51,7 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
     /*
      * Displayed text when the LTSPanel is hidden.
     */
-    private final String    hiddenText  = "<HTML><BODY bgcolor=#C3C2DD>"
+    private final String    hiddenText  = "<HTML><BODY>"
                                         + "The LTSPanel is currently <FONT color=red>hidden</FONT>. "
                                         + "Click anywhere on this line to display it."
                                         + "</BODY></HTML>";
@@ -59,7 +59,7 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
     /* 
      * Displayed text when the LTSPanel is visible.
     */
-    private final String    visibleText = "<HTML><BODY bgcolor=#C3C2DD>"
+    private final String    visibleText = "<HTML><BODY>"
                                         + "The LTSPanel is currently <FONT color=green>visible</FONT>. "
                                         + "Click anywhere on this line to hide it."
                                         + "</BODY></HTML>";
@@ -95,19 +95,37 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
     }
     
     /*
+     * Hides the internal LTSPanel.
+     * Precondition: LTSPanel is currently visible.
+    */
+    private void hideLTSPanel() {
+        this.remove(this.LTSPanel);
+        this.statusText.setText(this.hiddenText);
+    }
+
+    /*
+     * Shows the internal LTSPanel.
+     * Precondition: LTSPanel is currently hidden.
+    */
+    private void showLTSPanel() {
+        this.add(this.LTSPanel, BorderLayout.CENTER);
+        this.statusText.setText(this.visibleText);
+}
+    
+    
+    /*
      * Event handler for the status line. Responds to arbitrary mouse clicks.
      * If clicked when visible, it hides the LTSPanel. If clicked when hidden, it displays the LTSPanel.
     */
     @Override
     public void mouseClicked(MouseEvent e) {
         if (this.LTSPanelVisible) {
-            this.remove(this.LTSPanel);
-            this.statusText.setText(this.hiddenText);
+            hideLTSPanel();
         } else {
-            this.add(this.LTSPanel, BorderLayout.CENTER);
-            this.statusText.setText(this.visibleText);
+            showLTSPanel();
         }
         this.LTSPanelVisible = !this.LTSPanelVisible;
+        this.LTSPanel.setGUIVisibility(this.LTSPanelVisible);
         this.updateUI();
     }
 
