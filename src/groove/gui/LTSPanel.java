@@ -19,6 +19,7 @@ package groove.gui;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.AbstrLTSJModel;
@@ -114,7 +115,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             getJGraph().getLayouter().start(false);
             this.ltsListener.stateAdded = false;
         }
-        getJGraph().scrollTo(state);
+        // getJGraph().scrollTo(state);
+        conditionalScrollTo(state);
     }
 
     /**
@@ -125,9 +127,11 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     public synchronized void setTransitionUpdate(GraphTransition transition) {
         getJModel().setActive(transition.source(), transition);
         if (getSimulator().isAbstractSimulation()) {
-            getJGraph().scrollTo(getJModel().getActiveState());
+            // getJGraph().scrollTo(getJModel().getActiveState());
+            conditionalScrollTo(getJModel().getActiveState());
         } else {
-            getJGraph().scrollTo(getJModel().getActiveTransition());
+            // getJGraph().scrollTo(getJModel().getActiveTransition());
+            conditionalScrollTo(getJModel().getActiveTransition());
         }
     }
 
@@ -160,7 +164,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     /**
      * Sets the value of the gts field, and changes the subject of the GTS
      * listener. The return value indicates if this changes the value.
-     * @param gts the new value for the gts fiels; may be <code>null</code>
+     * @param gts the new value for the gts field; may be <code>null</code>
      * @return <code>true</code> if the new value differs from the old
      */
     private boolean setGTS(GTS gts) {
@@ -233,8 +237,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     @Override
     public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        this.simulator.setGraphPanelEnabled(this, enabled);
+        if (this.isVisible && enabled) {
+            super.setEnabled(enabled);
+            this.simulator.setGraphPanelEnabled(this, enabled);
+        }
+    }
+    
+    /***
+     * Only scroll when the panel is visible.
+    */
+    private void conditionalScrollTo(Element nodeOrEdge) {
+        if (this.isVisible)
+            getJGraph().scrollTo(nodeOrEdge);
     }
 
     /**
@@ -267,7 +281,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     counterExamples.size());
         }
         // reset lts display visibility
-        getSimulator().setGraphPanel(this);
+        if (this.isVisible)
+            getSimulator().setGraphPanel(this);
         Set<JCell> jCells = new HashSet<JCell>();
         for (State counterExample : counterExamples) {
             jCells.add(getJModel().getJCell(counterExample));
@@ -286,8 +301,19 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;
 
-    /** The graph lisener permanently associated with this exploration strategy. */
+    /** The graph listener permanently associated with this exploration strategy. */
     private final MyLTSListener ltsListener = new MyLTSListener();
+    
+    /** Indicator of the visibility of the LTSPanel. */
+    private boolean isVisible = true;
+    
+    /***
+     * Notifies the LTSPanel that its visibility (inclusion in the GUI) has changed.
+     * The visibility changes the behavior of scrolling only (nothing else is affected). 
+     */
+    public void setGUIVisibility(boolean visible){
+        this.isVisible = visible;
+    }
 
     /**
      * Listener that makes sure the panel status gets updated when the LYS is
