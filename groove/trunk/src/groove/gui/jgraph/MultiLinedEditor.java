@@ -16,6 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import groove.view.aspect.Aspect;
+import groove.view.aspect.AspectValue;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -25,6 +28,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.EventObject;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -112,8 +117,11 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             JModel jmodel = (JModel) graph.getModel();
             for (int i = 0; i < jmodel.getRootCount(); i++) {
                 JCell cell = (JCell) jmodel.getRootAt(i);
-                this.labels.addAll(cell.getListLabels());
+                for (String listLabel : cell.getListLabels()) {
+                    this.labels.add(stripPrefixes(listLabel));
+                }
             }
+            this.labels.addAll(this.prefixes);
             JTextArea result = getEditorComponent();
             String editString =
                 ((EditableJCell) value).getUserObject().toEditString();
@@ -191,10 +199,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         }
 
         public void insertUpdate(DocumentEvent ev) {
-            // if (ev.getLength() != 1) {
-            // return;
-            // }
-
             int pos = ev.getOffset();
             String content = null;
 
@@ -223,13 +227,14 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 // Too few chars
                 return;
             }
-
-            String prefix = content.substring(w + 1);
+            // Identify the root of the word to be completed
+            String root = content.substring(w + 1);
+            root = stripPrefixes(root);
             SortedSet<String> tailSet =
-                RealCellEditor.this.labels.tailSet(prefix);
+                RealCellEditor.this.labels.tailSet(root);
             if (!tailSet.isEmpty()) {
                 String match = tailSet.first();
-                if (match.startsWith(prefix)) {
+                if (match.startsWith(root)) {
                     // A completion is found
                     String completion = match.substring(pos - w);
                     // We cannot modify Document from within notification,
@@ -238,6 +243,22 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                         pos + 1));
                 }
             }
+        }
+
+        /** Strips all aspect prefixes from the root. */
+        private String stripPrefixes(String root) {
+            boolean strip = true;
+            while (strip) {
+                strip = false;
+                for (String prefix : this.prefixes) {
+                    if (root.startsWith(prefix)) {
+                        root = root.substring(prefix.length());
+                        strip = true;
+                        break;
+                    }
+                }
+            }
+            return root;
         }
 
         /** Adds the cell editor as listener to the editor component's document. */
@@ -257,6 +278,13 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         private JTextArea editorComponent;
         /** The existing labels of the current graph. */
         private final SortedSet<String> labels = new TreeSet<String>();
+        /** The existing aspect prefixes. */
+        private final List<String> prefixes = new LinkedList<String>();
+        {
+            for (String name : AspectValue.getValueNames()) {
+                this.prefixes.add(name + Aspect.VALUE_SEPARATOR);
+            }
+        }
 
         private class CompletionTask implements Runnable {
             CompletionTask(String completion, int position) {
