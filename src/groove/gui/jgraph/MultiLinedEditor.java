@@ -216,20 +216,23 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                     "Impossible error: %s", e));
             }
 
-            // Find where the word starts
+            // Find where the word starts in content
             int w;
             for (w = pos; w >= 0; w--) {
                 if (Character.isWhitespace(content.charAt(w))) {
                     break;
                 }
             }
+            // Identify the root of the word to be completed
+            String root = content.substring(w + 1);
+            int rootLength = root.length();
+            root = stripPrefixes(root);
+            int shift = rootLength - root.length();
+            w += shift;
             if (pos - w < 2) {
                 // Too few chars
                 return;
             }
-            // Identify the root of the word to be completed
-            String root = content.substring(w + 1);
-            root = stripPrefixes(root);
             SortedSet<String> tailSet =
                 RealCellEditor.this.labels.tailSet(root);
             if (!tailSet.isEmpty()) {
