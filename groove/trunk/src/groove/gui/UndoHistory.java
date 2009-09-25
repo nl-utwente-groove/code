@@ -75,8 +75,9 @@ class UndoHistory implements SimulationListener {
         this.ignoreSimulationUpdates = false;
     }
 
-    /** Sets the start state. */
+    /** Clears the history and sets the start state. */
     public synchronized void startSimulationUpdate(GTS gts) {
+        this.history.clear();
         this.history.add(new SetStateAction(gts.startState()));
         setActionEnablings();
         this.ignoreSimulationUpdates = false;
@@ -309,8 +310,8 @@ class UndoHistory implements SimulationListener {
         }
 
         /**
-         * The state stored in this history action; may be <code>null</code>
-         * if the action is setting a transition.
+         * The state stored in this history action; may be <code>null</code> if
+         * the action is setting a transition.
          */
         private final GraphState state;
         /**
