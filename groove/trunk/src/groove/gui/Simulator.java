@@ -146,7 +146,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.tree.TreePath;
 
 /**
  * Program that applies a production system to an initial graph.
@@ -370,9 +369,9 @@ public class Simulator {
         return this.currentRule;
     }
 
-    /** mzimakova
-     * Returns the currently selected rule set, or <tt>null</tt> if none is
-     * selected. 
+    /**
+     * mzimakova Returns the currently selected rule set, or <tt>null</tt> if
+     * none is selected.
      */
     public ArrayList<AspectualRuleView> getCurrentRuleSet() {
         return this.currentRuleSet;
@@ -821,7 +820,7 @@ public class Simulator {
      * {@link #doAddGraph(Graph)} for the actual saving.
      * @param state <tt>true</tt> if it is a state that has to be saved
      *        (otherwise it is an LTS)
-     * @param graph the j-model from which the graph is to be obtained
+     * @param graph the graph to be saved
      * @return the file to which the graph has been saved; <tt>null</tt> if the
      *         graph has not been saved
      */
@@ -939,15 +938,15 @@ public class Simulator {
 
     /** Inverts the enabledness of the current rule, and stores the result. */
     void doEnableRule() {
-        //Multiple selection - mzimakova
-        for (int i = 0; i < getCurrentRuleSet().size(); i++)
-        { 
-          //AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
-          AspectGraph ruleGraph = getCurrentRuleSet().get(i).getAspectGraph();
-          GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
-          properties.setEnabled(!properties.isEnabled());
-          boolean last = (i==getCurrentRuleSet().size()-1);
-          doAddRule(getCurrentRuleSet().get(i).getRuleName(), ruleGraph, last);
+        // Multiple selection - mzimakova
+        for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+            // AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
+            AspectGraph ruleGraph = getCurrentRuleSet().get(i).getAspectGraph();
+            GraphProperties properties =
+                GraphInfo.getProperties(ruleGraph, true);
+            properties.setEnabled(!properties.isEnabled());
+            boolean last = (i == getCurrentRuleSet().size() - 1);
+            doAddRule(getCurrentRuleSet().get(i).getRuleName(), ruleGraph, last);
         }
     }
 
@@ -1443,13 +1442,13 @@ public class Simulator {
         refreshActions();
     }
 
-    /** mzimakova
-     * Sets the current production rule set.
+    /**
+     * mzimakova Sets the current production rule set.
      */
     public synchronized void setMultipleRule(RuleName name) {
-        //setCurrentRule(getGrammarView().getRuleView(name));
+        // setCurrentRule(getGrammarView().getRuleView(name));
         if (this.currentRuleSet.indexOf(getGrammarView().getRuleView(name)) < 0) {
-          this.currentRuleSet.add(getGrammarView().getRuleView(name));
+            this.currentRuleSet.add(getGrammarView().getRuleView(name));
         }
     }
 
@@ -2648,8 +2647,8 @@ public class Simulator {
      */
     private AspectualRuleView currentRule;
 
-    /** mzimakova
-     * The currently selected production rule set.
+    /**
+     * mzimakova The currently selected production rule set.
      */
     private final ArrayList<AspectualRuleView> currentRuleSet =
         new ArrayList<AspectualRuleView>();
@@ -3194,20 +3193,21 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //Multiple selection - mzimakova
+            // Multiple selection - mzimakova
             if (confirmAbandon(false)) {
-                for (int i = 0; i < getCurrentRuleSet().size(); i++)
-                { 
-                  //AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
-                  AspectGraph oldRuleGraph = getCurrentRuleSet().get(i).getAspectGraph();
-                  RuleName newRuleName =
-                      askNewRuleName("Select new rule name",
-                          //getCurrentRule().getName(), true);
-                          getCurrentRuleSet().get(i).getName(), true);
-                  if (newRuleName != null) {
-                      boolean last = (i==getCurrentRuleSet().size()-1);
-                      doAddRule(newRuleName, oldRuleGraph.clone(), last);
-                  }
+                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                    // AspectGraph oldRuleGraph =
+                    // getCurrentRule().getAspectGraph();
+                    AspectGraph oldRuleGraph =
+                        getCurrentRuleSet().get(i).getAspectGraph();
+                    RuleName newRuleName =
+                        askNewRuleName("Select new rule name",
+                        // getCurrentRule().getName(), true);
+                            getCurrentRuleSet().get(i).getName(), true);
+                    if (newRuleName != null) {
+                        boolean last = (i == getCurrentRuleSet().size() - 1);
+                        doAddRule(newRuleName, oldRuleGraph.clone(), last);
+                    }
                 }
             }
         }
@@ -3256,29 +3256,27 @@ public class Simulator {
                 && getGrammarStore().isModifiable());
         }
 
-
         public void actionPerformed(ActionEvent e) {
-            //Multiple selection - mzimakova
-            //RuleName ruleName = getCurrentRule().getRuleName();
+            // Multiple selection - mzimakova
+            // RuleName ruleName = getCurrentRule().getRuleName();
             String question = "Delete rule '%s'";
-            for (int i = 0; i < getCurrentRuleSet().size(); i++)
-            { 
-              RuleName ruleName = getCurrentRuleSet().get(i).getRuleName();
-              question = String.format(question, ruleName);
-              if (i < getCurrentRuleSet().size() - 1) {
-                  question = question + ", '%s'";  
-              } else {
-                  question = question + "?";
-              }
+            for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                RuleName ruleName = getCurrentRuleSet().get(i).getRuleName();
+                question = String.format(question, ruleName);
+                if (i < getCurrentRuleSet().size() - 1) {
+                    question = question + ", '%s'";
+                } else {
+                    question = question + "?";
+                }
             }
-               if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
-                   for (int i = 0; i < getCurrentRuleSet().size(); i++)
-                   { 
-                     RuleName ruleName = getCurrentRuleSet().get(i).getRuleName();
-                     doDeleteRule(ruleName);
-                   }
-              }
-            
+            if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
+                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                    RuleName ruleName =
+                        getCurrentRuleSet().get(i).getRuleName();
+                    doDeleteRule(ruleName);
+                }
+            }
+
         }
     }
 
@@ -3344,8 +3342,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentRule() != null
-                && getGrammarStore().isModifiable());
+            getGrammarStore().isModifiable();
         }
 
         /**
@@ -3390,28 +3387,26 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-          //Multiple selection - mzimakova
-          AspectualRuleView rule = getCurrentRule(); 
-          AspectGraph ruleGraph = rule.getAspectGraph();
-          GraphProperties ruleProperties =
-              GraphInfo.getProperties(ruleGraph, true);
-          PropertiesDialog dialog =
-              new PropertiesDialog(ruleProperties,
-                  GraphProperties.DEFAULT_USER_KEYS, true);
-          if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
-            for (int i = 0; i < getCurrentRuleSet().size(); i++)
-            { 
-              rule = getCurrentRuleSet().get(i); 
-              ruleGraph = rule.getAspectGraph();
-              ruleProperties =
-                  GraphInfo.getProperties(ruleGraph, true);
-              ruleProperties.clear();
-              ruleProperties.putAll(dialog.getEditedProperties());
-              doDeleteRule(rule.getRuleName());
-              boolean last = (i==getCurrentRuleSet().size()-1);
-              doAddRule(rule.getRuleName(), ruleGraph, last);
-             }
-           }
+            // Multiple selection - mzimakova
+            AspectualRuleView rule = getCurrentRule();
+            AspectGraph ruleGraph = rule.getAspectGraph();
+            GraphProperties ruleProperties =
+                GraphInfo.getProperties(ruleGraph, true);
+            PropertiesDialog dialog =
+                new PropertiesDialog(ruleProperties,
+                    GraphProperties.DEFAULT_USER_KEYS, true);
+            if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
+                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                    rule = getCurrentRuleSet().get(i);
+                    ruleGraph = rule.getAspectGraph();
+                    ruleProperties = GraphInfo.getProperties(ruleGraph, true);
+                    ruleProperties.clear();
+                    ruleProperties.putAll(dialog.getEditedProperties());
+                    doDeleteRule(rule.getRuleName());
+                    boolean last = (i == getCurrentRuleSet().size() - 1);
+                    doAddRule(rule.getRuleName(), ruleGraph, last);
+                }
+            }
         }
     }
 
