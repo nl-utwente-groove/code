@@ -31,9 +31,9 @@ import groove.gui.layout.LayoutMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Formatter;
 import java.util.List;
 
 import org.jgraph.graph.GraphConstants;
@@ -69,7 +69,7 @@ public final class GraphToTikz {
                 layout = layoutMap.getNode(node);
             }
             result.append(convertNodeToTikzStr(model.getJVertex(node),
-                layout, showBackground));
+                                               layout, showBackground));
         }
         
         for (Edge edge : graph.edgeSet()) {
@@ -77,7 +77,8 @@ public final class GraphToTikz {
             if (layoutMap != null) {
                 layout = layoutMap.getEdge(edge);
             }
-            result.append(convertEdgeToTikzStr(model.getJCell(edge), layout));
+            result.append(convertEdgeToTikzStr(model.getJCell(edge),
+                                               layout, layoutMap));
         }
         
         result.append(endTikzFig());
@@ -113,7 +114,7 @@ public final class GraphToTikz {
                 result.append(encloseSpace(AT_KEYWORD));
                 Rectangle2D bounds = layout.getBounds();
                 double x = bounds.getCenterX();
-                double y = bounds.getCenterY() * -1;
+                double y = bounds.getCenterY();
                 appendPoint(x, y, result);
             }
             
@@ -147,10 +148,11 @@ public final class GraphToTikz {
      */
     private static StringBuilder convertEdgeToTikzStr(
             JCell cell,
-            JEdgeLayout layout) {
+            JEdgeLayout layout,
+            LayoutMap<Node,Edge> layoutMap) {
         
         if (cell instanceof GraphJEdge) {
-            return convertEdgeToTikzStr((GraphJEdge) cell, layout);
+            return convertEdgeToTikzStr((GraphJEdge) cell, layout, layoutMap);
         } else {
             return new StringBuilder();
         }
@@ -164,7 +166,8 @@ public final class GraphToTikz {
      */
     private static StringBuilder convertEdgeToTikzStr(
             GraphJEdge edge,
-            JEdgeLayout layout) {
+            JEdgeLayout layout,
+            LayoutMap<Node,Edge> layoutMap) {
         
         StringBuilder result = new StringBuilder();
         
@@ -179,7 +182,7 @@ public final class GraphToTikz {
             if (layout != null) {
                 switch (layout.getLineStyle()) {
                     case GraphConstants.STYLE_ORTHOGONAL: 
-                        appendOrthogonalLayout(edge, layout, labStyle, result);
+                        appendOrthogonalLayout(edge, layout, labStyle, layoutMap, result);
                         break;
                     case GraphConstants.STYLE_BEZIER:
                         appendBezierLayout(edge, layout, labStyle, result);
@@ -188,14 +191,14 @@ public final class GraphToTikz {
                         appendSplineLayout(edge, layout, labStyle, result);
                         break;
                     case JAttr.STYLE_MANHATTAN:
-                        appendManhattanLayout(edge, layout, labStyle, result);
+                        appendManhattanLayout(edge, layout, labStyle, layoutMap, result);
                         break;
                     default:
                         throw new IllegalArgumentException(
                             "Unknown line style!");
                 }
             } else {
-                appendDefaultLayout(edge, labStyle, result);
+                appendDefaultLayout(edge, labStyle, layoutMap, result);
             }
         }
         
@@ -212,12 +215,14 @@ public final class GraphToTikz {
     private static void appendDefaultLayout(
             GraphJEdge edge,
             String labStyle,
+            LayoutMap<Node,Edge> layoutMap,
             StringBuilder s) {
         
         appendSourceNode(edge, s);
         s.append(encloseSpace(DOUBLE_DASH));
         appendEdgeLabelInPath(edge, labStyle, s);
-        appendTargetNode(edge, s);
+        double angle = calculateConnectionAngle(edge, layoutMap);
+        appendTargetNode(edge, angle, s);
         s.append(END_EDGE);
     }
     
@@ -234,18 +239,34 @@ public final class GraphToTikz {
             GraphJEdge edge,
             JEdgeLayout layout,
             String labStyle,
+            LayoutMap<Node,Edge> layoutMap,
             StringBuilder s) {
         
         List<Point2D> points = layout.getPoints();
         
-        appendSourceNode(edge, s);
+        Node srcNode = edge.getSourceVertex().getNode();
+        if (isOrthogonalLine(srcNode, points.get(1), layoutMap)) {
+            double angle = calculateConnectionAngle(srcNode, points.get(1), layoutMap);
+            appendSourceNode(edge, angle, s);
+        } else {
+            appendSourceNode(edge, s);
+        }
+        
         s.append(encloseSpace(DOUBLE_DASH));
         // Intermediate points
         for (int i = 1; i < points.size() - 1; i++) {
             appendPoint(points, i, s);
             s.append(encloseSpace(DOUBLE_DASH));
         }
-        appendTargetNode(edge, s);
+
+        Node tgtNode = edge.getTargetVertex().getNode();
+        if (isOrthogonalLine(tgtNode, points.get(points.size() - 2), layoutMap)) {
+            double angle = calculateConnectionAngle(tgtNode, points.get(points.size() - 2), layoutMap);
+            appendTargetNode(edge, angle, s);
+        } else {
+            appendTargetNode(edge, s);
+        }
+        
         s.append(END_PATH);
         appendEdgeLabel(edge, layout, labStyle, points, s);   
         s.append(END_EDGE);
@@ -343,18 +364,49 @@ public final class GraphToTikz {
             GraphJEdge edge,
             JEdgeLayout layout,
             String labStyle,
+            LayoutMap<Node,Edge> layoutMap,
             StringBuilder s) {
         
         System.err.println("Sorry, the MANHATTAN line style is not yet " + 
                            "supported, using ORTOGHONAL style...");
-        appendOrthogonalLayout(edge, layout, labStyle, s);
+        appendOrthogonalLayout(edge, layout, labStyle, layoutMap, s);
     }
 
     /* Helper methods */
     
+    private static void appendSourceNode(
+            GraphJEdge edge,
+            double angle,
+            StringBuilder s) {
+        if (angle < 0.0) {
+            appendSourceNode(edge, s);
+        } else {
+            Formatter f = new Formatter();
+            String angleStr = f.format("%3.1f", angle).toString();
+            String nodeName = edge.getSourceVertex().getNode().toString();
+            s.append(encloseSpace(
+                            enclosePar(nodeName + "." + angleStr)));
+        }
+    }
+    
     private static void appendSourceNode(GraphJEdge edge, StringBuilder s) {
         s.append(encloseSpace(enclosePar(
             edge.getSourceVertex().getNode().toString())));
+    }
+    
+    private static void appendTargetNode(
+            GraphJEdge edge,
+            double angle,
+            StringBuilder s) {
+        if (angle < 0.0) {
+            appendTargetNode(edge, s);
+        } else {
+            Formatter f = new Formatter();
+            String angleStr = f.format("%3.1f", angle).toString();
+            String nodeName = edge.getTargetVertex().getNode().toString();
+            s.append(encloseSpace(
+                            enclosePar(nodeName + "." + angleStr)));
+        }
     }
     
     private static void appendTargetNode(GraphJEdge edge, StringBuilder s) {
@@ -399,15 +451,18 @@ public final class GraphToTikz {
 
     private static void appendPoint(Point2D point, StringBuilder s) {
         double x = point.getX();
-        double y = point.getY() * -1;
+        double y = point.getY();
         appendPoint(x, y, s);
     }
     
     private static void appendPoint(double x, double y, StringBuilder s) {
-        DecimalFormat df = new DecimalFormat("0.0");
-        s.append(enclosePar(df.format(x) + ", " + df.format(y)));
+        double scale = 100.0;
+        double adjX = x / scale;
+        double adjY = -1.0 * (y / scale);
+        Formatter f = new Formatter();
+        s.append(f.format("(%5.3f, %5.3f)", adjX, adjY).toString());
     }
-    
+
     /**
      * Adapted from jGraph.
      * Converts an relative label position (x is distance along edge and y is
@@ -498,6 +553,150 @@ public final class GraphToTikz {
         }
 
         return null;
+    }
+    
+    private static boolean isOrthogonalLine(
+            Node node,
+            Point2D point,
+            LayoutMap<Node,Edge> layoutMap) {
+        
+        boolean result = false;
+        JVertexLayout layout = null;
+        if (layoutMap != null) {
+            layout = layoutMap.getNode(node);
+            if (layout != null) {
+                Rectangle2D bounds = layout.getBounds();
+                result = isOrthogonalLine(bounds, point);
+            }
+        }
+        
+        return result;
+    }
+    
+    private static boolean isOrthogonalLine(Rectangle2D bounds, Point2D point) {
+        double ulx, uly, brx, bry, px, py;
+        boolean result = false;
+        
+        ulx = bounds.getX();
+        uly = bounds.getY();
+        brx = ulx + bounds.getWidth();
+        bry = uly + bounds.getHeight();
+        px = point.getX();
+        py = point.getY();
+        
+        if ((px > brx && py > uly && py < bry) ||
+            (px < ulx && py > uly && py < bry) ||
+            (py > uly && px > ulx && px < brx) ||
+            (py < bry && px > ulx && px < brx)) {
+            result = true;
+        }
+        
+        return result;
+    }
+    
+    private static double calculateConnectionAngle(
+            Node node,
+            Point2D point,
+            LayoutMap<Node,Edge> layoutMap) {
+        
+        double angle = -1;
+        JVertexLayout layout = null;
+        if (layoutMap != null) {
+            layout = layoutMap.getNode(node);
+            if (layout != null) {
+                Rectangle2D bounds = layout.getBounds();
+                angle = calculateConnectionAngle(bounds, point);
+            }
+        }
+        return angle;
+    }
+    
+    private static double calculateConnectionAngle(
+            Rectangle2D bounds,
+            Point2D point) {
+
+        double angle = -1.0;
+        double x0 = point.getX();
+        double y0 = point.getY();
+        double x1 = bounds.getCenterX();
+        double y1 = bounds.getCenterY();
+        double x2 = 0.0;
+        double sign = 0.0;
+        double incAngle = 0.0;
+        
+        if (x0 != x1 && y0 != y1) {
+            if (x0 > x1 && y0 > y1) {
+                x2 = bounds.getMaxX();
+                sign = -1.0;
+                incAngle = 360.0;
+            } else if (x0 > x1 && y0 < y1) {
+                x2 = bounds.getMaxX();
+                sign = 1.0;
+                incAngle = 0.0;
+            } else if (x0 < x1 && y0 > y1) {
+                x2 = bounds.getMinX();
+                sign = 1.0;
+                incAngle = 180.0;
+            } else if (x0 < x1 && y0 < y1) {
+                x2 = bounds.getMinX();
+                sign = -1.0;
+                incAngle = 180.0;
+            }
+            double atan = Math.atan(Math.abs(y0-y1) / Math.abs(x2-x1));
+            angle = sign * Math.toDegrees(atan) + incAngle;
+        }
+        
+        return angle;
+    }
+    
+    private static double calculateConnectionAngle(
+            GraphJEdge edge,
+            LayoutMap<Node,Edge> layoutMap) {
+
+        double angle = -1.0;
+        JVertexLayout srcLayout = null;
+        JVertexLayout tgtLayout = null;
+        
+        if (layoutMap != null) {
+            srcLayout = layoutMap.getNode(edge.getSourceVertex().getNode());
+            tgtLayout = layoutMap.getNode(edge.getTargetVertex().getNode());
+            
+            if (srcLayout != null && tgtLayout != null) {
+                Rectangle2D srcBounds = srcLayout.getBounds();
+                Rectangle2D tgtBounds = tgtLayout.getBounds();
+                
+                double x0 = srcBounds.getCenterX();
+                double y0 = srcBounds.getCenterY();
+                double x1 = tgtBounds.getCenterX();
+                double y1 = tgtBounds.getCenterY();
+                double x2 = 0.0;
+                double sign = 0.0;
+                double incAngle = 0.0;
+                
+                if (x0 != x1 && y0 != y1) {
+                    if (x0 > x1 && y0 > y1) {
+                        x2 = tgtBounds.getMaxX();
+                        sign = -1.0;
+                        incAngle = 360.0;
+                    } else if (x0 > x1 && y0 < y1) {
+                        x2 = tgtBounds.getMaxX();
+                        sign = 1.0;
+                        incAngle = 0.0;
+                    } else if (x0 < x1 && y0 > y1) {
+                        x2 = tgtBounds.getMinX();
+                        sign = 1.0;
+                        incAngle = 180.0;
+                    } else if (x0 < x1 && y0 < y1) {
+                        x2 = tgtBounds.getMinX();
+                        sign = -1.0;
+                        incAngle = 180.0;
+                    }
+                    double atan = Math.atan(Math.abs(y0-y1) / Math.abs(x2-x1));
+                    angle = sign * Math.toDegrees(atan) + incAngle;
+                }
+            }
+        }
+        return angle;
     }
     
     /**
@@ -673,7 +872,7 @@ public final class GraphToTikz {
      * @return the line necessary to begin a Tikz figure.
      */
     public static String beginTikzFig() {
-        return BEGIN_TIKZ_FIG + "\n";
+        return DOC + BEGIN_TIKZ_FIG + "\n";
     }
     
     /**
@@ -696,7 +895,7 @@ public final class GraphToTikz {
     
     // Tikz output
     private static final String CRLF = "\\\\";
-    private static final String BEGIN_TIKZ_FIG = "\\begin{tikzpicture}[scale=0.02]";
+    private static final String BEGIN_TIKZ_FIG = "\\begin{tikzpicture}[scale=2]";
     private static final String END_TIKZ_FIG = "\\end{tikzpicture}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
@@ -743,4 +942,5 @@ public final class GraphToTikz {
     private static final String TILDE = "\\~{}";
     private static final String BACKSLASH = "$\\backslash$";
     private static final String PI = "$\\pi$";
+    private static final String DOC = "% To use this figure in your LaTeX document\n% import groove/resources/tikz_groove.tex\n";
 }
