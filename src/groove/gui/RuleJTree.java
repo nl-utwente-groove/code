@@ -83,7 +83,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         setEnabled(false);
         setToggleClickCount(0);
         setCellRenderer(new MyTreeCellRenderer());
-        //mzimakova - Multiple selection
+        // mzimakova - Multiple selection
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // set icons
@@ -628,52 +628,58 @@ public class RuleJTree extends JTree implements SimulationListener {
         public void valueChanged(TreeSelectionEvent evt) {
             // only do something if a path was added to the selection
             if (isListenToSelectionChanges() && evt.isAddedPath()) {
-                //mzimakova - Multiple selection
+                // mzimakova - Multiple selection
                 TreePath[] paths = getSelectionPaths();
-              for (int i = 0; i < paths.length; i++)
-              { 
-                Object selectedNode = paths[i].getLastPathComponent();
-                if (selectedNode instanceof RuleTreeNode) {
-                    // selected tree node is a production rule (level 1 node)
-                  if (paths.length == 1) {  //mzimakova - Multiple selection
-                    RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
-                    RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
-                  } else {
-                      RuleJTree.this.simulator.setMultipleRule(((RuleTreeNode) selectedNode).getRule().getRuleName());                      
-                  }
-                 } else if (selectedNode instanceof MatchTreeNode) {
-                    // selected tree node is a match (level 2 node)
-                    RuleEvent event = ((MatchTreeNode) selectedNode).event();
-                    GraphTransition trans =
-                        RuleJTree.this.matchTransitionMap.get(event);
-                    if (trans == null) {
-                        // possibly there is a transition associated with this
-                        // event
-                        // that has not yet made it to the matchTransitionMap
-                        // because the refresh is only occurring after setting
-                        // the event; so look it up among the outgoing
-                        // transitions
-                        Iterator<GraphTransition> outTransitions =
-                            getCurrentState().getTransitionIter();
-                        while (outTransitions.hasNext()) {
-                            GraphTransition outTrans = outTransitions.next();
-                            if (outTrans.getEvent().equals(event)) {
-                                RuleJTree.this.matchTransitionMap.put(event,
-                                    trans = outTrans);
-                                break;
+                for (int i = 0; i < paths.length; i++) {
+                    Object selectedNode = paths[i].getLastPathComponent();
+                    if (selectedNode instanceof RuleTreeNode) {
+                        // selected tree node is a production rule (level 1
+                        // node)
+                        if (paths.length == 1) { // mzimakova - Multiple
+                                                 // selection
+                            RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
+                            RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
+                        } else {
+                            RuleJTree.this.simulator.setMultipleRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
+                        }
+                    } else if (selectedNode instanceof MatchTreeNode) {
+                        // selected tree node is a match (level 2 node)
+                        RuleEvent event =
+                            ((MatchTreeNode) selectedNode).event();
+                        GraphTransition trans =
+                            RuleJTree.this.matchTransitionMap.get(event);
+                        if (trans == null) {
+                            // possibly there is a transition associated with
+                            // this
+                            // event
+                            // that has not yet made it to the
+                            // matchTransitionMap
+                            // because the refresh is only occurring after
+                            // setting
+                            // the event; so look it up among the outgoing
+                            // transitions
+                            Iterator<GraphTransition> outTransitions =
+                                getCurrentState().getTransitionIter();
+                            while (outTransitions.hasNext()) {
+                                GraphTransition outTrans =
+                                    outTransitions.next();
+                                if (outTrans.getEvent().equals(event)) {
+                                    RuleJTree.this.matchTransitionMap.put(
+                                        event, trans = outTrans);
+                                    break;
+                                }
                             }
                         }
-                    }
-                    if (trans != null) {
-                        RuleJTree.this.simulator.setTransition(trans);
-                    } else {
-                        RuleJTree.this.simulator.setEvent(event);
-                    }
-                    if (RuleJTree.this.simulator.getGraphPanel() == RuleJTree.this.simulator.getRulePanel()) {
-                        RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getStatePanel());
+                        if (trans != null) {
+                            RuleJTree.this.simulator.setTransition(trans);
+                        } else {
+                            RuleJTree.this.simulator.setEvent(event);
+                        }
+                        if (RuleJTree.this.simulator.getGraphPanel() == RuleJTree.this.simulator.getRulePanel()) {
+                            RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getStatePanel());
+                        }
                     }
                 }
-              }
             }
         }
     }
@@ -695,18 +701,18 @@ public class RuleJTree extends JTree implements SimulationListener {
             if (evt.getButton() == MouseEvent.BUTTON3) {
                 TreePath selectedPath =
                     getPathForLocation(evt.getX(), evt.getY());
-                //mzimakova - Multiple selection
+                // mzimakova - Multiple selection
                 if (selectedPath != null) {
-                  TreePath[] paths = getSelectionPaths();
-                  boolean pathIsSelected = false;
-                  for (int i = 0; i < paths.length; i++) {
-                    if (selectedPath == paths[i]) {
-                      pathIsSelected = true; 
-                    }                     
-                  }
-                  if (pathIsSelected == false) {
-                    setSelectionPath(selectedPath);
-                  }
+                    TreePath[] paths = getSelectionPaths();
+                    boolean pathIsSelected = false;
+                    for (int i = 0; paths != null && i < paths.length; i++) {
+                        if (selectedPath == paths[i]) {
+                            pathIsSelected = true;
+                        }
+                    }
+                    if (pathIsSelected == false) {
+                        setSelectionPath(selectedPath);
+                    }
                 }
             }
             maybeShowPopup(evt);
