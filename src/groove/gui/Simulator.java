@@ -113,10 +113,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -3387,28 +3389,86 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
-            AspectualRuleView rule = getCurrentRule();
-            AspectGraph ruleGraph = rule.getAspectGraph();
-            GraphProperties ruleProperties =
-                GraphInfo.getProperties(ruleGraph, true);
-            PropertiesDialog dialog =
+            //Multiple selection - mzimakova
+               AspectualRuleView rule =  getCurrentRule(); 
+               AspectGraph ruleGraph = rule.getAspectGraph();
+               GraphProperties ruleProperties =
+                   GraphInfo.getProperties(ruleGraph, true);
+               String currentPriority = null;
+               String currentEnabled = null;
+               String currentConfluent = null;
+               String currentRemark = null;
+               //save current rule properties
+               if (getCurrentRuleSet().size() > 1) {
+                  currentPriority = Integer.toString(ruleProperties.getPriority());
+                  currentEnabled = Boolean.toString(ruleProperties.isEnabled());
+                  currentConfluent = Boolean.toString(ruleProperties.isConfluent());
+                  currentRemark = ruleProperties.getRemark();                 
+                  ruleProperties.clear();
+               } 
+               PropertiesDialog dialog =
                 new PropertiesDialog(ruleProperties,
                     GraphProperties.DEFAULT_USER_KEYS, true);
+            
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
-                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
-                    rule = getCurrentRuleSet().get(i);
-                    ruleGraph = rule.getAspectGraph();
-                    ruleProperties = GraphInfo.getProperties(ruleGraph, true);
-                    ruleProperties.clear();
-                    ruleProperties.putAll(dialog.getEditedProperties());
-                    doDeleteRule(rule.getRuleName());
-                    boolean last = (i == getCurrentRuleSet().size() - 1);
-                    doAddRule(rule.getRuleName(), ruleGraph, last);
+              
+              //Get properties from the dialog frame 
+              Map<String,String> editedProperties = dialog.getEditedProperties();
+              String editedPriority = editedProperties.get(GraphProperties.PRIORITY_KEY);
+              String editedEnabled = editedProperties.get(GraphProperties.ENABLED_KEY);
+              String editedConfluent = editedProperties.get(GraphProperties.CONFLUENT_KEY);
+              String editedRemark = editedProperties.get(GraphProperties.REMARK_KEY);
+              for (int i = 0; i < getCurrentRuleSet().size(); i++)
+              { 
+                rule = getCurrentRuleSet().get(i); 
+                ruleGraph = rule.getAspectGraph();
+                ruleProperties =
+                    GraphInfo.getProperties(ruleGraph, true);
+                
+               if (getCurrentRuleSet().size() > 1) {
+                   
+                   //restore current rule properties
+                   if (i==0) {
+                    ruleProperties.put(GraphProperties.PRIORITY_KEY, currentPriority); 
+                    ruleProperties.put(GraphProperties.ENABLED_KEY, currentEnabled); 
+                    ruleProperties.put(GraphProperties.CONFLUENT_KEY, currentConfluent); 
+                    ruleProperties.put(GraphProperties.REMARK_KEY, currentRemark); 
+                   }
+                
+                //Check that properties in the dialog frame were changed
+                if (editedPriority == null) {
+                    editedProperties.put(GraphProperties.PRIORITY_KEY, Integer.toString(ruleProperties.getPriority()));
+                } else {
+                    editedProperties.put(GraphProperties.PRIORITY_KEY, editedPriority); 
                 }
-            }
-        }
-    }
+                if (editedEnabled == null) {
+                    editedProperties.put(GraphProperties.ENABLED_KEY, Boolean.toString(ruleProperties.isEnabled()));
+                } else {
+                    editedProperties.put(GraphProperties.ENABLED_KEY, editedEnabled); 
+                }
+                if (editedConfluent == null) {
+                    editedProperties.put(GraphProperties.CONFLUENT_KEY, Boolean.toString(ruleProperties.isConfluent()));
+                } else {
+                    editedProperties.put(GraphProperties.CONFLUENT_KEY, editedConfluent); 
+                }
+                if (editedRemark == null) {
+                    editedProperties.put(GraphProperties.REMARK_KEY, ruleProperties.getRemark());
+                } else {
+                    editedProperties.put(GraphProperties.REMARK_KEY, editedRemark);
+                }
+                
+               }
+                
+                //Set new properties
+                ruleProperties.clear();
+                ruleProperties.putAll(editedProperties);
+                doDeleteRule(rule.getRuleName());
+                boolean last = (i==getCurrentRuleSet().size()-1);
+                doAddRule(rule.getRuleName(), ruleGraph, last);
+               }
+             }
+          }
+      }
 
     /**
      * Action for editing the current state or rule.
@@ -4234,15 +4294,21 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-                RuleName oldRuleName = getCurrentRule().getRuleName();
-                AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
+                //Multiple selection - mzimakova
+                //RuleName oldRuleName = getCurrentRule().getRuleName();
+               for (int i = 0; i < getCurrentRuleSet().size(); i++)
+               {
+                RuleName oldRuleName = getCurrentRuleSet().get(i).getRuleName();
+                AspectGraph ruleGraph = getCurrentRuleSet().get(i).getAspectGraph();
                 RuleName newRuleName =
                     askNewRuleName("Select new rule name", oldRuleName.text(),
                         true);
                 if (newRuleName != null) {
                     doDeleteRule(oldRuleName);
-                    doAddRule(newRuleName, ruleGraph, true);
+                    boolean last = (i==getCurrentRuleSet().size()-1);
+                    doAddRule(newRuleName, ruleGraph, last);
                 }
+               }
             }
         }
     }
