@@ -215,9 +215,7 @@ public class Simulator {
     public void start() {
         getFrame().pack();
         groove.gui.UserSettings.applyUserSettings(this.frame); // Applies
-        // previous user
-        // settings
-        // (mzimakova)
+        // previous user settings (mzimakova)
         getFrame().setVisible(true);
     }
 
@@ -838,7 +836,7 @@ public class Simulator {
         if (selectedFile != null) {
             name = this.stateFilter.stripExtension(selectedFile.getName());
             GraphInfo.setName(graph, name);
-            doAddGraph(graph);
+            doAddGraph(graph, true);
         }
         return selectedFile;
     }
@@ -872,7 +870,7 @@ public class Simulator {
     /**
      * Saves a given graph to a given file.
      */
-    void doAddGraph(Graph graph) {
+    void doAddGraph(Graph graph, boolean graphLast) {
         try {
             AspectGraph saveGraph = AspectGraph.newInstance(graph);
             if (saveGraph.hasErrors()) {
@@ -880,7 +878,9 @@ public class Simulator {
                     saveGraph.getErrors()));
             } else {
                 getGrammarStore().putGraph(saveGraph);
-                getStateList().refreshList(true);
+                if (graphLast) {
+                   getStateList().refreshList(true);
+                }
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving graph '%s'",
@@ -1196,7 +1196,7 @@ public class Simulator {
      * Renames one of the graphs in the graph list. If the graph was the start
      * graph, uses the renamed graph again as start graph.
      */
-    void doRenameGraph(AspectGraph graph, String newName) {
+    void doRenameGraph(AspectGraph graph, String newName, boolean graphLast) {
         String oldName = GraphInfo.getName(graph);
         // test now if this is the start state, before it is deleted from the
         // grammar
@@ -1204,12 +1204,14 @@ public class Simulator {
             oldName.equals(getGrammarView().getStartGraphName());
         getGrammarStore().deleteGraph(oldName);
         GraphInfo.setName(graph, newName);
-        doAddGraph(graph);
+        doAddGraph(graph, graphLast);
         if (isStartGraph) {
             // reset the start graph to the renamed graph
             getGrammarView().setStartGraph(newName);
         } else {
-            this.stateJList.refreshList(true);
+            if (graphLast) {
+               this.stateJList.refreshList(true);
+            }
         }
     }
 
@@ -3169,16 +3171,21 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String oldGraphName =
-                (String) Simulator.this.stateJList.getSelectedValue();
-            if (oldGraphName != null) {
-                AspectualGraphView oldGraphView =
-                    getGrammarView().getGraphView(oldGraphName);
-                String newGraphName =
-                    askNewGraphName("Select new graph name", oldGraphName, true);
-                AspectGraph newGraph = oldGraphView.getAspectGraph().clone();
-                GraphInfo.setName(newGraph, newGraphName);
-                doAddGraph(newGraph);
+            //Multiple selection - mzimakova
+            for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
+               String oldGraphName =
+                   //(String) Simulator.this.stateJList.getSelectedValue();
+                   (String) Simulator.this.stateJList.getSelectedValues()[i];
+               if (oldGraphName != null) {
+                   AspectualGraphView oldGraphView =
+                       getGrammarView().getGraphView(oldGraphName);
+                   String newGraphName =
+                       askNewGraphName("Select new graph name", oldGraphName, true);
+                   AspectGraph newGraph = oldGraphView.getAspectGraph().clone();
+                   GraphInfo.setName(newGraph, newGraphName);
+                   boolean last = (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
+                   doAddGraph(newGraph, last);
+               }
             }
         }
     }
@@ -3229,17 +3236,34 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String graphName =
-                (String) Simulator.this.stateJList.getSelectedValue();
-            if (graphName != null) {
-                boolean isStartGraph =
-                    graphName.equals(getGrammarView().getStartGraphName());
-                String question =
-                    String.format(isStartGraph ? "Delete start graph '%s'?"
-                            : "Delete graph '%s'", graphName);
-                if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
-                    doDeleteGraph(graphName);
+            //Multiple selection - mzimakova
+            String question = "Delete graph(s) '%s'";
+            for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
+              String graphName =
+                  //(String) Simulator.this.stateJList.getSelectedValue();
+                  (String) Simulator.this.stateJList.getSelectedValues()[i];
+              if (graphName != null) {
+                  question = String.format(question, graphName);
+                  boolean isStartGraph =
+                      graphName.equals(getGrammarView().getStartGraphName());
+                  if (isStartGraph) {
+                      question = question + " (start graph)";
+                  }
+                  if (i < Simulator.this.stateJList.getSelectedIndices().length - 1) {
+                      question = question + ", '%s'";
+                  } else {
+                      question = question + "?";
+                  }
+              }
+            }
+            if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
+              for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {            
+                String graphName =
+                      (String) Simulator.this.stateJList.getSelectedValues()[i];
+                if (graphName != null) {
+                        doDeleteGraph(graphName);
                 }
+              }
             }
         }
     }
@@ -3261,7 +3285,7 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             // Multiple selection - mzimakova
             // RuleName ruleName = getCurrentRule().getRuleName();
-            String question = "Delete rule '%s'";
+            String question = "Delete rule(s) '%s'";
             for (int i = 0; i < getCurrentRuleSet().size(); i++) {
                 RuleName ruleName = getCurrentRuleSet().get(i).getRuleName();
                 question = String.format(question, ruleName);
@@ -4259,8 +4283,11 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
+          //Multiple selection - mzimakova
+          for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
             String oldGraphName =
-                (String) Simulator.this.stateJList.getSelectedValue();
+                //(String) Simulator.this.stateJList.getSelectedValue();
+                (String) Simulator.this.stateJList.getSelectedValues()[i];
             if (oldGraphName != null) {
                 AspectualGraphView graph =
                     getGrammarView().getGraphView(oldGraphName);
@@ -4270,9 +4297,11 @@ public class Simulator {
                     askNewGraphName("Select new graph name", oldGraphName,
                         false);
                 if (!oldGraphName.equals(newGraphName)) {
-                    doRenameGraph(graph.getAspectGraph(), newGraphName);
+                    boolean last = (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
+                    doRenameGraph(graph.getAspectGraph(), newGraphName, last);
                 }
             }
+          }
         }
     }
 
