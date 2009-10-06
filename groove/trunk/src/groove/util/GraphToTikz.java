@@ -115,7 +115,7 @@ public final class GraphToTikz {
                 Rectangle2D bounds = layout.getBounds();
                 double x = bounds.getCenterX();
                 double y = bounds.getCenterY();
-                appendPoint(x, y, result);
+                appendPoint(x, y, true, result);
             }
             
             // Node Labels.
@@ -259,7 +259,7 @@ public final class GraphToTikz {
         appendNode(srcVertex, points.get(firstPoint), layoutMap, s);
         s.append(encloseSpace(DOUBLE_DASH));
         // Intermediate points
-        for (int i = firstPoint; i < lastPoint + 1; i++) {
+        for (int i = firstPoint; i <= lastPoint; i++) {
             appendPoint(points, i, s);
             s.append(encloseSpace(DOUBLE_DASH));
         }
@@ -383,12 +383,13 @@ public final class GraphToTikz {
             LayoutMap<Node,Edge> layoutMap,
             StringBuilder s) {
         
-        int quad = getQuadrant(node, point, layoutMap);
-        if (quad == 0) {
+        int side = getSide(node, point, layoutMap);
+        if (side == 0) {
             appendNode(node, s);
         } else {
-            // TODO
-            // Get coordinate string from quadrant, print it and print point.
+            String coord = getCoordString(side);
+            String nodeName = node.getNode().toString();
+            s.append(enclosePar(nodeName + coord + appendPoint(point, false)));
         }
     }
     
@@ -427,18 +428,36 @@ public final class GraphToTikz {
         appendPoint(points.get(i),s);
     }
 
+    private static String appendPoint(Point2D point, boolean usePar) {
+        double x = point.getX();
+        double y = point.getY();
+        StringBuilder s = new StringBuilder();
+        appendPoint(x, y, usePar, s);
+        return s.toString();
+    }
+    
     private static void appendPoint(Point2D point, StringBuilder s) {
         double x = point.getX();
         double y = point.getY();
-        appendPoint(x, y, s);
+        appendPoint(x, y, true, s);
     }
     
-    private static void appendPoint(double x, double y, StringBuilder s) {
+    private static void appendPoint(
+            double x,
+            double y,
+            boolean usePar,
+            StringBuilder s) {
+        
         double scale = 100.0;
         double adjX = x / scale;
         double adjY = -1.0 * (y / scale);
+        String format = "%5.3f, %5.3f";
         Formatter f = new Formatter();
-        s.append(f.format("(%5.3f, %5.3f)", adjX, adjY).toString());
+        
+        if (usePar) {
+            format = enclosePar(format);
+        }
+        s.append(f.format(format, adjX, adjY).toString());
     }
 
     /**
@@ -534,25 +553,64 @@ public final class GraphToTikz {
         return null;
     }
     
-    private static int getQuadrant(
+    private static int getSide(
             GraphJVertex vertex,
             Point2D point,
             LayoutMap<Node,Edge> layoutMap) {
         
-        int quad = 0;
+        int side = 0;
         if (layoutMap != null) {
             JVertexLayout layout = layoutMap.getNode(vertex.getNode());
             if (layout != null) {
                 Rectangle2D bounds = layout.getBounds();
-                quad = getQuadrant(bounds, point);
+                side = getSide(bounds, point);
             }
         }
-        return quad;
+        return side;
     }
     
+    private static int getSide(Rectangle2D bounds, Point2D point) {
+        double x = point.getX();
+        double y = point.getY();
+        double ulx = bounds.getX();
+        double uly = bounds.getY();
+        double brx = bounds.getMaxX();
+        double bry = bounds.getMaxY();
+        double scale = 0.1;
+        double dx = (bounds.getWidth() * scale) / 2;
+        double dy = (bounds.getHeight() * scale) / 2;
+        double minX = ulx + dx;
+        double minY = uly + dy;
+        double maxX = brx - dx;
+        double maxY = bry - dy;
+
+        int side = 0;
+        
+        if (x >= brx && y >= minY && y <= maxY) {
+            side = 1;
+        } else if (y <= uly && x >= minX && x <= maxX) {
+            side = 2;
+        } else if (x <= ulx && y >= minY && y <= maxY) {
+            side = 3;
+        } else if (y >= bry && x >= minX && x <= maxX) {
+            side = 4;
+        }
+        
+        return side;
+    }
     
-    private static int getQuadrant(Rectangle2D bounds, Point2D point) {
-        return 0;
+    private static String getCoordString(int side) {
+        String result;
+        
+        switch (side) {
+            case 1:  result = EAST;  break;
+            case 2:  result = NORTH; break;
+            case 3:  result = WEST;  break;
+            case 4:  result = SOUTH; break;
+            default: result = "";
+        }
+        
+        return result;
     }
     
     /**
