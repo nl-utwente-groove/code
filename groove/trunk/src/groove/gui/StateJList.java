@@ -55,7 +55,9 @@ public class StateJList extends JList implements SimulationListener {
         this.simulator = simulator;
         this.simulator.addSimulationListener(this);
         this.setEnabled(false);
-        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //Multiple selection - mzimakova
+        this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.setCellRenderer(new MyCellRenderer());
         this.addMouseListener(new MyMouseListener());
     }
@@ -131,6 +133,8 @@ public class StateJList extends JList implements SimulationListener {
 
     private void doPreviewGraph() {
         if (!isSelectionEmpty()) {
+            //Multiple selection - mzimakova
+            this.setSelectedIndex(this.getSelectedIndex());
             String selection = (String) this.getSelectedValue();
             AspectualGraphView graphView =
                 this.simulator.getGrammarView().getGraphView(selection);
@@ -270,8 +274,11 @@ public class StateJList extends JList implements SimulationListener {
                 // Determine if index was really selected
                 if (index >= 0
                     && getCellBounds(index, index).contains(evt.getPoint())) {
-                    // Adjust list selection accordingly.
-                    StateJList.this.setSelectedIndex(index);
+                    //Multiple selection - mzimakova
+                    if (StateJList.this.getSelectedIndices().length < 2) {
+                      // Adjust list selection accordingly.
+                      StateJList.this.setSelectedIndex(index);
+                    }
                 }
                 createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                     evt.getX(), evt.getY());
