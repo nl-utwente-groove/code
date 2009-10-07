@@ -912,7 +912,7 @@ public class Simulator {
     /**
      * Deletes a graph from the start graph view.
      */
-    void doDeleteGraph(String name) {
+    void doDeleteGraph(String name, boolean graphLast) {
         // test now if this is the start state, before it is deleted from the
         // grammar
         boolean isStartGraph =
@@ -923,7 +923,9 @@ public class Simulator {
             getGrammarView().removeStartGraph();
             setGrammar(getGrammarView());
         } else {
+           if (graphLast) {
             this.stateJList.refreshList(true);
+           }
         }
     }
 
@@ -3261,7 +3263,8 @@ public class Simulator {
                 String graphName =
                       (String) Simulator.this.stateJList.getSelectedValues()[i];
                 if (graphName != null) {
-                        doDeleteGraph(graphName);
+                    boolean last = (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
+                    doDeleteGraph(graphName, last);
                 }
               }
             }
