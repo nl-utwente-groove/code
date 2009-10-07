@@ -1186,20 +1186,27 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                         result = JAttr.DEFAULT_NODE_SIZE;
                     } else {
                         result = super.getPreferredSize(graph, vertexView);
+                        // normalise for view insets
+                        Insets i = vertexView.getInsets();
+                        result.setSize(result.getWidth() - i.left - i.right,
+                            result.getHeight() - i.top - i.bottom);
                     }
-                    // // normalize for linewidth of the border
-                    // float linewidth =
-                    // GraphConstants.getLineWidth(vertexView.getAllAttributes());
-                    // result.setSize(result.getWidth()-linewidth,
-                    // result.getHeight()-linewidth);
                     this.sizeMap.put(text, result);
                 }
-                // // adjust for linewidth of the border
-                // float linewidth =
-                // GraphConstants.getLineWidth(vertexView.getAllAttributes());
-                // result = new Dimension((int)
-                // Math.round(result.getWidth()+linewidth), (int)
-                // Math.round(result.getHeight()+linewidth));
+                // adjust for view insets
+                Insets i = vertexView.getInsets();
+                // try to avoid conversion back and forth to double
+                if (result instanceof Dimension) {
+                    Dimension r = (Dimension) result;
+                    result =
+                        new Dimension(r.width + i.left + i.right, r.height
+                            + i.top + i.bottom);
+                } else {
+                    result =
+                        new Dimension((int) result.getWidth() + i.left
+                            + i.right, (int) result.getHeight() + i.top
+                            + i.bottom);
+                }
             } else {
                 result = super.getPreferredSize(graph, view);
             }
