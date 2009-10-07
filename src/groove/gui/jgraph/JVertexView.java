@@ -106,16 +106,6 @@ public class JVertexView extends VertexView {
         this.text = computeText();
         // jGraph.updateAutoSize(this);
         this.insets = computeInsets(this.text.length() == 0);
-        adjustBounds(this.insets);
-    }
-
-    /**
-     * Adjusts the cached bounds for this vertex by a given inset.
-     */
-    private void adjustBounds(Insets i) {
-        Rectangle2D b = getCachedBounds();
-        b.setFrame(b.getX(), b.getY(), b.getWidth() + i.left + i.right,
-            b.getHeight() + i.top + i.bottom);
     }
 
     /**
@@ -344,8 +334,8 @@ public class JVertexView extends VertexView {
      * entering horizontally or vertically.
      * @param bounds the bounds of the rectangle
      * @param p the reference point for the perimeter point
-     * @param horizontal if <code>true</code>, the line will enter
-     *        horizontally; look for a point on one of the sides
+     * @param horizontal if <code>true</code>, the line will enter horizontally;
+     *        look for a point on one of the sides
      */
     private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p,
             boolean horizontal) {
@@ -502,8 +492,8 @@ public class JVertexView extends VertexView {
      * @param y2 Start point of the second line (y-coordinate)
      * @param dx2 vector of the second line (x-direction)
      * @param dy2 vector of the second line (y-direction)
-     * @return Intersection point of the two lines, of <code>null</code> if
-     *         they are parallel
+     * @return Intersection point of the two lines, of <code>null</code> if they
+     *         are parallel
      */
     private Point2D lineIntersection(double x1, double y1, double dx1,
             double dy1, double x2, double y2, double dx2, double dy2) {
@@ -626,9 +616,9 @@ public class JVertexView extends VertexView {
             AttributeMap attributes = view.getAllAttributes();
             this.dash = GraphConstants.getDashPattern(attributes);
             this.lineColor = GraphConstants.getLineColor(attributes);
-            
+
             AttributeMap secondMap = (AttributeMap) attributes.get("line2map");
-            if( secondMap != null ) { 
+            if (secondMap != null) {
                 this.twoLines = true;
                 this.line2color = GraphConstants.getLineColor(secondMap);
                 this.line2width = GraphConstants.getLineWidth(secondMap);
@@ -636,9 +626,7 @@ public class JVertexView extends VertexView {
             } else {
                 this.twoLines = false;
             }
-            
-            
-            
+
             setOpaque(GraphConstants.isOpaque(attributes));
             Color foreground = GraphConstants.getForeground(attributes);
             setForeground((foreground != null) ? foreground
@@ -648,6 +636,7 @@ public class JVertexView extends VertexView {
                     : graph.getBackground());
             Font font = GraphConstants.getFont(attributes);
             setFont((font != null) ? font : graph.getFont());
+            setBorder(createEmptyBorder());
             setText(this.view.getText());
             return this;
         }
@@ -656,15 +645,15 @@ public class JVertexView extends VertexView {
         @Override
         public synchronized Dimension getPreferredSize() {
             // unset the border
-            Border border = getBorder();
-            setBorder(null);
+            // Border border = getBorder();
+            // setBorder(null);
             Dimension dimension = super.getPreferredSize();
             // the preferred size may be too high because line breaks are
             // taken into account, so try again after the width has been set
             setSize(dimension);
             Dimension result = super.getPreferredSize();
             // reset the border
-            setBorder(border);
+            // setBorder(border);
             return result;
         }
 
@@ -686,11 +675,10 @@ public class JVertexView extends VertexView {
             }
         }
 
-        /** Paints this vertex with an oval border. */
+        /** Paints the text in the foreground colour. */
         private void paintText(Graphics2D g) {
             boolean tmp = this.selected;
             try {
-                setBorder(createEmptyBorder());
                 setOpaque(false);
                 this.selected = false;
                 g.setColor(getForeground());
@@ -707,7 +695,7 @@ public class JVertexView extends VertexView {
             g.setColor(this.lineColor);
             g.setStroke(JAttr.createStroke(this.view.getLinewidth(), this.dash));
             g.draw(shape);
-            if( this.twoLines ) {
+            if (this.twoLines) {
                 g.setColor(this.line2color);
                 g.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
                 g.draw(shape);
@@ -724,7 +712,7 @@ public class JVertexView extends VertexView {
 
         /**
          * Creates and returns an empty border with the right insets to position
-         * text in an oval vertex correctly.
+         * text correctly.
          */
         private Border createEmptyBorder() {
             Insets i = this.view.getInsets();
@@ -733,7 +721,7 @@ public class JVertexView extends VertexView {
         }
 
         /**
-         * Paint a selection border, witha a given shape.
+         * Paint a selection border, with a a given shape.
          */
         private void paintSelectionBorder(Graphics2D g, Shape shape) {
             g.setStroke(GraphConstants.SELECTION_STROKE);
@@ -880,12 +868,12 @@ public class JVertexView extends VertexView {
         private Color lineColor;
         /** Dash pattern for the border. */
         private float[] dash;
-        
+
         // secondary options for drawing another line over the primary line
         private boolean twoLines = false;
         private Color line2color;
         private float[] line2dash;
         private float line2width;
-        
+
     }
 }
