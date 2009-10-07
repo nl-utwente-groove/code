@@ -41,6 +41,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -62,6 +63,7 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -84,6 +86,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.TableCellEditor;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -1458,7 +1461,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
         JOptionPane previewPane =
             new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
-        previewPane.setOptions(new String[] {okOption, Options.CANCEL_BUTTON});
+        previewPane.setOptions(new Object[] {createOkButtonOnPreviewDialog(okOption, previewPane, propertiesDialog),
+                                             createCancelButtonOnPreviewDialog(Options.CANCEL_BUTTON, previewPane, propertiesDialog)});
         JDialog dialog =
             previewPane.createDialog(getFrame(), String.format("%s preview",
                 getRole(true)));
@@ -1470,7 +1474,55 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             propertiesDialog.getEditedProperties()));
         Object response = previewPane.getValue();
         this.previewSize = dialog.getSize();
-        return okOption.equals(response) ? previewModel : null;
+        return okOption.equals(((JButton) response).getText()) ? previewModel : null;
+    }
+
+    /*
+     * Specialized listeners for the buttons on the showPreviewDialog.
+     * Same functionality as in PropertiesDialog.
+     */
+    private class CloseListener implements ActionListener {
+        JOptionPane previewPane;
+        PropertiesDialog propertiesDialog;
+    
+        public CloseListener(JOptionPane previewPane, PropertiesDialog propertiesDialog) {
+            this.previewPane = previewPane;
+            this.propertiesDialog = propertiesDialog;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            this.previewPane.setValue(e.getSource());
+            this.previewPane.setVisible(false);
+        }
+    }
+
+    /*
+     * Specialized OK button for the showPreviewDialog.
+     * Same functionality as in PropertiesDialog.
+     * Signals the editors to stop editing, which ensures that partially edited results are not lost.
+     */
+    private JButton createOkButtonOnPreviewDialog(String message, JOptionPane previewPane, PropertiesDialog propertiesDialog) {
+        JButton theButton = new JButton(message);
+        theButton.addActionListener(new CloseListener(previewPane, propertiesDialog) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TableCellEditor editor = this.propertiesDialog.getInnerTable().getCellEditor();
+                if (editor == null || editor.stopCellEditing()) {
+                    super.actionPerformed(e);
+                }
+            }
+        });
+        return theButton;
+    }
+
+    /*
+     * Specialized cancel button for the showPreviewDialog.
+     * Same functionality as in PropertiesDialog.
+     */
+    private JButton createCancelButtonOnPreviewDialog(String message, JOptionPane previewPane, PropertiesDialog propertiesDialog) {
+        JButton theButton = new JButton(message);
+        theButton.addActionListener(new CloseListener(previewPane, propertiesDialog));
+        return theButton;
     }
 
     /**

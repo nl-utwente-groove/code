@@ -98,12 +98,14 @@ public class ScenarioFactory {
             final ModelCheckingStrategy strategy, final String description,
             final String name, final Simulator sim) {
         return new ModelCheckingScenario(strategy, name, description) {
+            /*
             @Override
             protected String getProperty() {
                 FormulaDialog dialog = sim.getFormulaDialog();
                 dialog.showDialog(sim.getFrame());
                 return dialog.getProperty();
             }
+            */
         };
     }
 
@@ -121,12 +123,14 @@ public class ScenarioFactory {
             final BoundedModelCheckingStrategy strategy,
             final String description, final String name, final Simulator sim) {
         return new ModelCheckingScenario(strategy, name, description) {
+            /*
             @Override
             protected String getProperty() {
                 FormulaDialog dialog = sim.getFormulaDialog();
                 dialog.showDialog(sim.getFrame());
                 return dialog.getProperty();
             }
+            */
 
             @Override
             protected Boundary getBoundary() {
