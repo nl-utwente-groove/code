@@ -117,8 +117,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Returns the (possibly <code>null</code>) set of filtered labels of
-     * this {@link JGraph}.
+     * Returns the (possibly <code>null</code>) set of filtered labels of this
+     * {@link JGraph}.
      */
     public final ObservableSet<String> getFilteredLabels() {
         return this.filteredLabels;
@@ -362,7 +362,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 if (this.layouter != null && !jModel.isLayedOut()) {
                     int layoutCount = jModel.freeze();
                     if (layoutCount > 0) {
-                        Layouter layouter = layoutCount == jModel.getRootCount() ? this.layouter : this.incrementalLayouter;
+                        Layouter layouter =
+                            layoutCount == jModel.getRootCount()
+                                    ? this.layouter : this.incrementalLayouter;
                         layouter.start(false);
                         final Timer timer = new Timer();
                         timer.schedule(new TimerTask() {
@@ -389,8 +391,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * In addition to delegating the method to the label list and to
-     * <tt>super</tt>, sets the background color to <tt>null</tt> when
-     * disabled and back to the default when enabled.
+     * <tt>super</tt>, sets the background color to <tt>null</tt> when disabled
+     * and back to the default when enabled.
      */
     @Override
     public void setEnabled(boolean enabled) {
@@ -495,8 +497,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Indicates whether this jgraph is currently registered at the tool tip
      * manager.
-     * @return <tt>true</tt> if this jgraph is currently registered at the
-     *         tool tip manager
+     * @return <tt>true</tt> if this jgraph is currently registered at the tool
+     *         tip manager
      */
     public boolean getToolTipEnabled() {
         return this.toolTipEnabled;
@@ -506,8 +508,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Registers ur unregisters this jgraph with the tool tip manager. The
      * current registration state can be queried using
      * <tt>getToolTipEnabled()</tt>
-     * @param enabled <tt>true</tt> if this jgraph is to be registered with
-     *        the tool tip manager
+     * @param enabled <tt>true</tt> if this jgraph is to be registered with the
+     *        tool tip manager
      * @see #getToolTipEnabled()
      * @see ToolTipManager#registerComponent(javax.swing.JComponent)
      * @see ToolTipManager#unregisterComponent(javax.swing.JComponent)
@@ -599,10 +601,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * Adds an intermediate point to a given j-edge, controlled by a given
-     * location. If the location if <tt>null</tt>, the point is added
-     * directly after the initial point of the edge, at a slightly randomized
-     * position. Otherwise, the point is added at the given location, between
-     * the (existing) points closest to the location.
+     * location. If the location if <tt>null</tt>, the point is added directly
+     * after the initial point of the edge, at a slightly randomized position.
+     * Otherwise, the point is added at the given location, between the
+     * (existing) points closest to the location.
      * @param jEdge the j-edge to be modified
      * @param location the point to be added
      */
@@ -933,13 +935,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     protected RemovePointAction removePointAction;
     /**
-     * The permanent <code>EditLabelAction</code> associated with this
-     * j-graph.
+     * The permanent <code>EditLabelAction</code> associated with this j-graph.
      */
     protected EditLabelAction editLabelAction;
     /**
-     * The permanent <code>ResetLabelPositionAction</code> associated with
-     * this j-graph.
+     * The permanent <code>ResetLabelPositionAction</code> associated with this
+     * j-graph.
      */
     protected ResetLabelPositionAction resetLabelPositionAction;
     /** Map from line style names to corresponding actions. */
@@ -964,8 +965,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     private final boolean initialized = true;
     /** Layouter used if only part of the model should be layed out. */
-    private final Layouter incrementalLayouter = new SpringLayouter().newInstance(this);
-    
+    private final Layouter incrementalLayouter =
+        new SpringLayouter().newInstance(this);
+
     /** Maximum duration for layouting a new model. */
     static private final long MAX_LAYOUT_DURATION = 1000;
 
@@ -991,8 +993,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
          * Constructs an edit action that is enabled for only j-vertices or
          * j-edges.
          * @param name the name of the action
-         * @param vertexOnly <tt>true</tt> if the action is for j-vertices
-         *        only
+         * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
          */
         protected JCellEditAction(String name, boolean vertexOnly) {
             super(name);
