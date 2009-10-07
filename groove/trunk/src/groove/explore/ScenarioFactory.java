@@ -99,6 +99,7 @@ public class ScenarioFactory {
             final String name, final Simulator sim) {
         return new ModelCheckingScenario(strategy, name, description) {
             /*
+             * Moved the check below to the 'doGenerate' method of the Simulator - Maarten de Mol
             @Override
             protected String getProperty() {
                 FormulaDialog dialog = sim.getFormulaDialog();
@@ -124,6 +125,7 @@ public class ScenarioFactory {
             final String description, final String name, final Simulator sim) {
         return new ModelCheckingScenario(strategy, name, description) {
             /*
+             * Moved the check below to the 'doGenerate' method of the Simulator - Maarten de Mol
             @Override
             protected String getProperty() {
                 FormulaDialog dialog = sim.getFormulaDialog();
