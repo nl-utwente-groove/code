@@ -242,6 +242,7 @@ public final class GraphToTikz {
      * @param layout information regarding layout of the edge.
      * @param layoutMap the layout information associated with the graph.
      * @param labStyle a string describing the style to be used in the label.
+     * @param connection the string with the type of Tikz connection to be used.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static void appendOrthogonalLayout(
@@ -263,10 +264,16 @@ public final class GraphToTikz {
         // Intermediate points
         for (int i = firstPoint; i <= lastPoint; i++) {
             appendPoint(points, i, s);
+            // When using the MANHATTAN style sometimes we cannot use the ANGLE
+            // routing when going from the last point to the node because the
+            // arrow will be in the wrong direction.
+            // We test this condition here.
             if (i == lastPoint && connection.equals(ANGLE) &&
-                isHorizontal(points, i, tgtVertex, layoutMap)) {
+                isHorizontalOrVertical(points, i, tgtVertex, layoutMap)) {
+                // We are in this special case, use straight routing.
                 s.append(encloseSpace(DOUBLE_DASH));
             } else {
+                // A normal case, just use the provided connection string.
                 s.append(encloseSpace(connection));
             }
         }
@@ -276,6 +283,16 @@ public final class GraphToTikz {
         s.append(END_EDGE);
     }
     
+    /**
+     * Creates an edge with orthogonal lines. Only the intermediate points of
+     * the layout information are used, the first and last points are discarded
+     * and replaced by Tikz node names and we let Tikz find the anchors.
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param layoutMap the layout information associated with the graph.
+     * @param labStyle a string describing the style to be used in the label.
+     * @param s a StringBuilder where the Tikz string will be appended.
+     */
     private static void appendOrthogonalLayout(
             GraphJEdge edge,
             JEdgeLayout layout,
@@ -369,7 +386,9 @@ public final class GraphToTikz {
     }    
 
     /**
-     * TODO
+     * Creates an edge with Manhattan lines. Only the intermediate points of
+     * the layout information are used, the first and last points are discarded
+     * and replaced by Tikz node names and we let Tikz find the anchors.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      * @param layoutMap the layout information associated with the graph.
@@ -387,10 +406,18 @@ public final class GraphToTikz {
 
     /* Helper methods */
     
+    /**
+     * Appends the node name to the given string builder.
+     */
     private static void appendNode(GraphJVertex node, StringBuilder s) {
         s.append(encloseSpace(enclosePar(node.getNode().toString())));
     }
     
+    /**
+     * Checks whether the given point is in a proper position with respect to
+     * the given node and appends the node to the string builder, together
+     * with a node anchor that keeps the edge horizontal or vertical.
+     */
     private static void appendNode(
             GraphJVertex node,
             Point2D point,
@@ -399,6 +426,7 @@ public final class GraphToTikz {
         
         int side = getSide(node, point, layoutMap);
         if (side == 0) {
+            // The point is not aligned with the node, just use normal routing.
             appendNode(node, s);
         } else {
             String coord = getCoordString(side);
@@ -407,6 +435,12 @@ public final class GraphToTikz {
         }
     }
     
+    /**
+     * Checks whether the given target node is in a proper position with
+     * respect to the given source node and appends the source node to the
+     * string builder, together with a node anchor that keeps the edge
+     * horizontal or vertical.
+     */
     private static void appendSourceNode(
             GraphJVertex srcNode,
             GraphJVertex tgtNode,
@@ -426,6 +460,12 @@ public final class GraphToTikz {
         }
     }
     
+    /**
+     * Checks whether the given source node is in a proper position with
+     * respect to the given target node and appends the target node to the
+     * string builder, together with a node anchor that keeps the edge
+     * horizontal or vertical.
+     */
     private static void appendTargetNode(
             GraphJVertex srcNode,
             GraphJVertex tgtNode,
@@ -455,6 +495,9 @@ public final class GraphToTikz {
         }
     }
     
+    /**
+     * Appends the edge label along the path that is being drawn.
+     */
     private static void appendEdgeLabelInPath(
             GraphJEdge edge,
             String labStyle,
@@ -465,6 +508,10 @@ public final class GraphToTikz {
         s.append(encloseCurly(escapeSpecialChars(edge.getText())));
     }
     
+    /**
+     * Creates an extra path to place the edge label which has especial
+     * placement requirements.
+     */
     private static void appendEdgeLabel (
             GraphJEdge edge,
             JEdgeLayout layout,
@@ -482,6 +529,9 @@ public final class GraphToTikz {
         s.append(encloseCurly(escapeSpecialChars(edge.getText())));
     }
     
+    /**
+     * Appends the point in position i of a list of points to a string builder.
+     */
     private static void appendPoint(
             List<Point2D> points,
             int i,
@@ -490,6 +540,13 @@ public final class GraphToTikz {
         appendPoint(points.get(i),s);
     }
 
+    /**
+     * Converts a point to a string.
+     * @param point the point to be converted.
+     * @param usePar flag to indicate whether the point coordinates should be
+     *               enclosed in parentheses or not.
+     * @return the string representation of the given point.
+     */
     private static String appendPoint(Point2D point, boolean usePar) {
         double x = point.getX();
         double y = point.getY();
@@ -498,12 +555,25 @@ public final class GraphToTikz {
         return s.toString();
     }
     
+    /**
+     * Appends the given point to the string builder.
+     */
     private static void appendPoint(Point2D point, StringBuilder s) {
         double x = point.getX();
         double y = point.getY();
         appendPoint(x, y, true, s);
     }
     
+    /**
+     * Appends the given points to the string builder. The coordinates are
+     * scaled by a constant factor and the y-coordinate is inverted as the
+     * jGraph and Tikz representation are different.
+     * @param x the x coordinate of the point.
+     * @param y the y coordinate of the point.
+     * @param usePar flag to indicate whether the point coordinates should be
+     *               enclosed in parentheses or not.
+     * @param s a StringBuilder where the Tikz string will be appended.
+     */
     private static void appendPoint(
             double x,
             double y,
@@ -526,9 +596,9 @@ public final class GraphToTikz {
      * Adapted from jGraph.
      * Converts an relative label position (x is distance along edge and y is
      * distance above/below edge vector) into an absolute coordination point.
-     * @param geometry the relative label position
-     * @param points the list of points along the edge
-     * @return the absolute label position
+     * @param geometry the relative label position.
+     * @param points the list of points along the edge.
+     * @return the absolute label position.
      */
     private static Point2D convertRelativeLabelPositionToAbsolute(
             Point2D geometry,
@@ -542,7 +612,7 @@ public final class GraphToTikz {
             int pointCount = points.size();
             double[] segments = new double[pointCount];
             // Find the total length of the segments and also store the length
-            // of each segment
+            // of each segment.
             for (int i = 1; i < pointCount; i++)
             {
                 Point2D tmp = points.get(i);
@@ -561,11 +631,11 @@ public final class GraphToTikz {
             }
 
             // Change x to be a value between 0 and 1 indicating how far
-            // along the edge the label is
+            // along the edge the label is.
             double x = geometry.getX()/GraphConstants.PERMILLE;
             double y = geometry.getY();
 
-            // dist is the distance along the edge the label is
+            // dist is the distance along the edge the label is.
             double dist = x * length;
             length = 0;
 
@@ -573,14 +643,14 @@ public final class GraphToTikz {
             double segment = segments[0];
 
             // Find the length up to the start of the segment the label is
-            // on (length) and retrieve the length of that segment (segment)
+            // on (length) and retrieve the length of that segment (segment).
             while (dist > length + segment && index < pointCount - 1)
             {
                 length += segment;
                 segment = segments[index++];
             }
 
-            // factor is the proportion along this segment the label lies at
+            // factor is the proportion along this segment the label lies at.
             double factor = (dist - length) / segment;
 
             Point2D p0 = points.get(index - 1);
@@ -589,11 +659,11 @@ public final class GraphToTikz {
             if (p0 != null && pe != null)
             {
                 // The x and y offsets of the label from the start point
-                // of the segment
+                // of the segment.
                 double dx = pe.getX() - p0.getX();
                 double dy = pe.getY() - p0.getY();
 
-                // The normal vectors of
+                // The normal vectors.
                 double nx = dy / segment;
                 double ny = dx / segment;
 
@@ -615,7 +685,16 @@ public final class GraphToTikz {
         return null;
     }
     
-    private static boolean isHorizontal(
+    /**
+     * Checks if two points or a point and a node form an horizontal or
+     * vertical edge.
+     * @param points a list of points.
+     * @param index the index of the point to be checked.
+     * @param tgtVertex the target node.
+     * @param layoutMap the layout information associated with the graph.
+     * @return true if the edge is horizontal or vertical and false otherwise.
+     */
+    private static boolean isHorizontalOrVertical(
             List<Point2D> points, 
             int index,
             GraphJVertex tgtVertex,
@@ -637,6 +716,14 @@ public final class GraphToTikz {
         return result;
     }
 
+    /**
+     * Checks on which side of a node a point lies.
+     * @param vertex the node to be checked.
+     * @param point the point to be checked.
+     * @param layoutMap the layout information associated with the graph.
+     * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
+     *         4 if it lies south, and 0 if its outside a proper position.
+     */
     private static int getSide(
             GraphJVertex vertex,
             Point2D point,
@@ -653,6 +740,14 @@ public final class GraphToTikz {
         return side;
     }
     
+    /**
+     * Checks on which side of a rectangle a point lies. To avoid anchoring in
+     * points very close to an angle we take a 0.9 scale on each side.
+     * @param bounds the bounding box.
+     * @param point the point to be checked.
+     * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
+     *         4 if it lies south, and 0 if its outside a proper position.
+     */
     private static int getSide(Rectangle2D bounds, Point2D point) {
         double x = point.getX();
         double y = point.getY();
@@ -683,6 +778,12 @@ public final class GraphToTikz {
         return side;
     }
     
+    /**
+     * Provides the string that is to be appended at a node name.
+     * @param side the side of the node where a point lies.
+     * @return the empty string if side is 0 and one of the four coordinates
+     *         otherwise.
+     */
     private static String getCoordString(int side) {
         String result;
         
@@ -765,9 +866,16 @@ public final class GraphToTikz {
         return result;
     }
 
+    /**
+     * Escapes the special LaTeX characters in the line and copies the rest.
+     * @param line the string to be escaped.
+     * @return the line with escaped characters, if any.
+     */
     private static String escapeSpecialChars(String line) {
         return escapeSpecialChars(new StringBuilder(line)).toString();
     }
+    
+    // Methods to enclose a string with extra characters.
     
     private static String enclose(String string, String start, String end) {
         return start + string + end;
@@ -949,5 +1057,5 @@ public final class GraphToTikz {
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
     private static final String DOC = "% To use this figure in your LaTeX " + 
-                       "document\n% import groove/resources/tikz_groove.tex\n";
+        "document\n% import the package groove/resources/groove2tikz.sty\n";
 }
