@@ -961,30 +961,16 @@ public class Simulator {
      */
     public void doGenerate(Scenario scenario) {
         
-        /* When a (LTL) ModelCheckingScenario is started, perform the following preparations:
-         * (1) Warn the user if there are still open states.
-         * (2) Ask for a property (via a getFormulaDialog).
+        /* When a (LTL) ModelCheckingScenario is started, initialize by asking the user to
+         * enter a property (via a getFormulaDialog).
          */
         if (scenario instanceof ModelCheckingScenario){
-            int goOn = JOptionPane.YES_OPTION;
-
-            if (getGTS().hasOpenStates()) {
-                String message =
-                    "The transition system still contains open states. Do you want to contiue verifying it?";
-                goOn =
-                    JOptionPane.showConfirmDialog(getFrame(), message,
-                        "Open states", JOptionPane.YES_NO_OPTION);
-            }
-
-            if (goOn == JOptionPane.YES_OPTION) {
-                FormulaDialog dialog = getFormulaDialog();
-                dialog.showDialog(getFrame());
-                String property = dialog.getProperty();
-                if (property == null)
-                    return;
-                ((ModelCheckingScenario) scenario).setProperty(property);
-            } else
-                return;
+            FormulaDialog dialog = getFormulaDialog();
+            dialog.showDialog(getFrame());
+            String property = dialog.getProperty();
+            if (property == null)
+               return;
+            ((ModelCheckingScenario) scenario).setProperty(property);
         }
         
         scenario.prepare(getGTS(), getCurrentState());
