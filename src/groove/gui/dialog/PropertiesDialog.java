@@ -237,6 +237,15 @@ public class PropertiesDialog {
     public boolean isEditable() {
         return this.editable;
     }
+    
+    /**
+     * Public getter for the inner JTable.
+     * Used within Editor.java to create the proper 'Ok' button on the preview
+     * dialog (which is displayed after rule editing).
+     */
+    public JTable getInnerTable() {
+        return this.table;
+    }
 
     /**
      * Creates a table of properties, which is editable according to the

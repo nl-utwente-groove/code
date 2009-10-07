@@ -36,6 +36,7 @@ import groove.abs.Abstraction;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
+import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
@@ -955,10 +956,37 @@ public class Simulator {
     }
 
     /**
-     * Can be called from the ExplorationDialog.
+     * Can be called from the ExplorationDialog, or from the popup-menu in the LTSPanel.
      * @param scenario
      */
     public void doGenerate(Scenario scenario) {
+        
+        /* When a (LTL) ModelCheckingScenario is started, perform the following preparations:
+         * (1) Warn the user if there are still open states.
+         * (2) Ask for a property (via a getFormulaDialog).
+         */
+        if (scenario instanceof ModelCheckingScenario){
+            int goOn = JOptionPane.YES_OPTION;
+
+            if (getGTS().hasOpenStates()) {
+                String message =
+                    "The transition system still contains open states. Do you want to contiue verifying it?";
+                goOn =
+                    JOptionPane.showConfirmDialog(getFrame(), message,
+                        "Open states", JOptionPane.YES_NO_OPTION);
+            }
+
+            if (goOn == JOptionPane.YES_OPTION) {
+                FormulaDialog dialog = getFormulaDialog();
+                dialog.showDialog(getFrame());
+                String property = dialog.getProperty();
+                if (property == null)
+                    return;
+                ((ModelCheckingScenario) scenario).setProperty(property);
+            } else
+                return;
+        }
+        
         scenario.prepare(getGTS(), getCurrentState());
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {

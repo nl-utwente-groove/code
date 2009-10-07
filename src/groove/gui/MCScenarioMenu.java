@@ -57,6 +57,15 @@ public class MCScenarioMenu extends ScenarioMenu {
     protected void createAddMenuItems() {
         Scenario scenario;
 
+        /*
+        // Maarten de Mol - temporary fix to test GUI on the MAC
+        scenario =
+            ScenarioFactory.getModelCheckingScenario(
+                new NestedDFSStrategy(), "", "Nested Depth-First Search",
+                this.simulator);
+        addScenarioHandler(scenario);
+        */
+
         // the following explore-strategies are only provided
         // if the LTL module is loaded
         if (System.getProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION).equals(
