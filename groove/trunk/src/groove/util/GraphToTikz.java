@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.Bezier;
@@ -226,10 +227,10 @@ public final class GraphToTikz {
         GraphJVertex srcVertex = edge.getSourceVertex();
         GraphJVertex tgtVertex = edge.getTargetVertex();
         
-        appendNode(srcVertex, s);
+        appendSourceNode(srcVertex, tgtVertex, layoutMap, s);
         s.append(encloseSpace(DOUBLE_DASH));
         appendEdgeLabelInPath(edge, labStyle, s);
-        appendNode(tgtVertex, s);
+        appendTargetNode(srcVertex, tgtVertex, layoutMap, s);
         s.append(END_EDGE);
     }
     
@@ -248,6 +249,7 @@ public final class GraphToTikz {
             JEdgeLayout layout,
             LayoutMap<Node,Edge> layoutMap,
             String labStyle,
+            String connection,
             StringBuilder s) {
         
         GraphJVertex srcVertex = edge.getSourceVertex();
@@ -257,16 +259,31 @@ public final class GraphToTikz {
         int lastPoint = points.size() - 2;
         
         appendNode(srcVertex, points.get(firstPoint), layoutMap, s);
-        s.append(encloseSpace(DOUBLE_DASH));
+        s.append(encloseSpace(connection));
         // Intermediate points
         for (int i = firstPoint; i <= lastPoint; i++) {
             appendPoint(points, i, s);
-            s.append(encloseSpace(DOUBLE_DASH));
+            if (i == lastPoint && connection.equals(ANGLE) &&
+                isHorizontal(points, i, tgtVertex, layoutMap)) {
+                s.append(encloseSpace(DOUBLE_DASH));
+            } else {
+                s.append(encloseSpace(connection));
+            }
         }
         appendNode(tgtVertex, points.get(lastPoint), layoutMap, s);
         s.append(END_PATH);
         appendEdgeLabel(edge, layout, labStyle, points, s);   
         s.append(END_EDGE);
+    }
+    
+    private static void appendOrthogonalLayout(
+            GraphJEdge edge,
+            JEdgeLayout layout,
+            LayoutMap<Node,Edge> layoutMap,
+            String labStyle,
+            StringBuilder s) {
+        appendOrthogonalLayout(edge, layout, layoutMap,
+                               labStyle, DOUBLE_DASH, s);
     }
 
     /**
@@ -352,7 +369,7 @@ public final class GraphToTikz {
     }    
 
     /**
-     * This is not implemented yet. The Manhattan style is used instead.
+     * TODO
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      * @param layoutMap the layout information associated with the graph.
@@ -365,10 +382,7 @@ public final class GraphToTikz {
             LayoutMap<Node,Edge> layoutMap,
             String labStyle,
             StringBuilder s) {
-        
-        System.err.println("Sorry, the MANHATTAN line style is not yet " + 
-                           "supported, using ORTOGHONAL style...");
-        appendOrthogonalLayout(edge, layout, layoutMap, labStyle, s);
+        appendOrthogonalLayout(edge, layout, layoutMap, labStyle, ANGLE, s);
     }
 
     /* Helper methods */
@@ -390,6 +404,54 @@ public final class GraphToTikz {
             String coord = getCoordString(side);
             String nodeName = node.getNode().toString();
             s.append(enclosePar(nodeName + coord + appendPoint(point, false)));
+        }
+    }
+    
+    private static void appendSourceNode(
+            GraphJVertex srcNode,
+            GraphJVertex tgtNode,
+            LayoutMap<Node,Edge> layoutMap,
+            StringBuilder s) {
+        
+        if (layoutMap != null) {
+            JVertexLayout tgtLayout = layoutMap.getNode(tgtNode.getNode());
+            if (tgtLayout != null) {
+                Rectangle2D tgtBounds = tgtLayout.getBounds();
+                Point2D tgtCenter = new Point2D.Double(tgtBounds.getCenterX(),
+                                                       tgtBounds.getCenterY());
+                appendNode(srcNode, tgtCenter, layoutMap, s);
+            }
+        } else {
+            appendNode(srcNode, s);
+        }
+    }
+    
+    private static void appendTargetNode(
+            GraphJVertex srcNode,
+            GraphJVertex tgtNode,
+            LayoutMap<Node,Edge> layoutMap,
+            StringBuilder s) {
+        
+        if (layoutMap != null) {
+            JVertexLayout srcLayout = layoutMap.getNode(srcNode.getNode());
+            JVertexLayout tgtLayout = layoutMap.getNode(tgtNode.getNode());
+            if (srcLayout != null && tgtLayout != null) {
+                Rectangle2D tgtBounds = tgtLayout.getBounds();
+                Point2D tgtCenter = new Point2D.Double(tgtBounds.getCenterX(),
+                                                       tgtBounds.getCenterY());
+                int side = getSide(srcNode, tgtCenter, layoutMap);
+                if (side == 0) {
+                    Rectangle2D srcBounds = srcLayout.getBounds();
+                    Point2D srcCenter =
+                        new Point2D.Double(srcBounds.getCenterX(),
+                                           srcBounds.getCenterY());
+                    appendNode(tgtNode, srcCenter, layoutMap, s);
+                } else {
+                    appendNode(tgtNode, s);
+                }
+            }
+        } else {
+            appendNode(tgtNode, s);
         }
     }
     
@@ -457,7 +519,7 @@ public final class GraphToTikz {
         if (usePar) {
             format = enclosePar(format);
         }
-        s.append(f.format(format, adjX, adjY).toString());
+        s.append(f.format(Locale.US, format, adjX, adjY).toString());
     }
 
     /**
@@ -553,6 +615,28 @@ public final class GraphToTikz {
         return null;
     }
     
+    private static boolean isHorizontal(
+            List<Point2D> points, 
+            int index,
+            GraphJVertex tgtVertex,
+            LayoutMap<Node,Edge> layoutMap) {
+
+        boolean result = false;
+        
+        if (layoutMap != null) {
+            JVertexLayout layout = layoutMap.getNode(tgtVertex.getNode());
+            if (layout != null) {
+                Rectangle2D tgtBounds = layout.getBounds();
+                if (points.get(index).getY() == points.get(index + 1).getY() ||
+                    getSide(tgtBounds, points.get(index)) != 0) {
+                    result = true;
+                }
+            }
+        }
+
+        return result;
+    }
+
     private static int getSide(
             GraphJVertex vertex,
             Point2D point,
@@ -812,7 +896,8 @@ public final class GraphToTikz {
     private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG =
                                                "\\begin{tikzpicture}[scale=2]";
-    private static final String END_TIKZ_FIG = "\\end{tikzpicture}";
+    private static final String END_TIKZ_FIG = "\\userdefinedmacro\n" +
+        "\\end{tikzpicture}\n" + "\\renewcommand{\\userdefinedmacro}{\\relax}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
@@ -844,6 +929,7 @@ public final class GraphToTikz {
     private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
     private static final String WHITE_FILL = "whitefill";
     private static final String DOUBLE_DASH = "--";
+    private static final String ANGLE = "-|";
     private static final String BEGIN_CONTROLS = ".. controls ";
     private static final String END_CONTROLS = " .. ";
     private static final String AND = " and ";
