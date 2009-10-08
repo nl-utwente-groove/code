@@ -120,6 +120,13 @@ public class Exporter {
         return PngFormat.getInstance();
     }
 
+    /** Removes the Tikz format from the list of possible exports. */
+    public void removeTikzFormat() {
+        Format format = this.formats.get(
+                               this.formats.indexOf(TikzFormat.getInstance()));
+        this.fileChooser.removeChoosableFileFilter(format.getFilter());
+    }
+    
     /** Returns the (modifiable) list of currently supported formats. */
     private List<Format> getFormatList() {
         if (this.formats == null) {
