@@ -1816,6 +1816,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         protected ExportGraphAction() {
             super(Options.EXPORT_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
+            this.exporter.getFileChooser();
+            // Tikz export is not supported in Editor.
+            this.exporter.removeTikzFormat();
         }
 
         public void actionPerformed(ActionEvent evt) {
