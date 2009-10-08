@@ -38,6 +38,8 @@ import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
+import groove.explore.strategy.Boundary;
+import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -961,7 +963,8 @@ public class Simulator {
      */
     public void doGenerate(Scenario scenario) {
         
-        /* When a (LTL) ModelCheckingScenario is started, initialize by asking the user to
+        /* 
+         * When a (LTL) ModelCheckingScenario is started, initialize by asking the user to
          * enter a property (via a getFormulaDialog).
          */
         if (scenario instanceof ModelCheckingScenario){
@@ -971,6 +974,21 @@ public class Simulator {
             if (property == null)
                return;
             ((ModelCheckingScenario) scenario).setProperty(property);
+        }
+        
+        /* 
+         * When a (LTL) BoundedModelCheckingScenario is started, also prompt the user to
+         * enter a boundary (via a BoundedModelCheckingDialog).
+         */
+        if (scenario.getStrategy() instanceof BoundedModelCheckingStrategy){
+            BoundedModelCheckingDialog dialog =
+                new BoundedModelCheckingDialog();
+            dialog.setGrammar(getGTS().getGrammar());
+            dialog.showDialog(getFrame());
+            Boundary boundary = dialog.getBoundary();
+            if (boundary == null)
+                return;
+            ((BoundedModelCheckingStrategy) scenario.getStrategy()).setBoundary(boundary);
         }
         
         scenario.prepare(getGTS(), getCurrentState());

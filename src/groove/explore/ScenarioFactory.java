@@ -134,6 +134,8 @@ public class ScenarioFactory {
             }
             */
 
+            /*
+             * Moved the check below to the 'doGenerate' method of the Simulator - Maarten de Mol
             @Override
             protected Boundary getBoundary() {
                 BoundedModelCheckingDialog dialog =
@@ -142,6 +144,7 @@ public class ScenarioFactory {
                 dialog.showDialog(sim.getFrame());
                 return dialog.getBoundary();
             }
+            */
         };
     }
 }
