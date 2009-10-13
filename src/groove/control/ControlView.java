@@ -42,19 +42,20 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 public class ControlView {
     /**
      * Constructs a control view from a given control program.
-     * @param control the control program
+     * @param control the control program; non-null
+     * @param controlName the name of the control program
      */
     public ControlView(String control, String controlName) {
         this.controlName = controlName;
         this.controlProgram = control;
     }
 
-    /** returns the control automaton */
+    /** Returns the control automaton. */
     public ControlAutomaton getAutomaton() {
         return this.automaton;
     }
 
-    /** returns the textual control program */
+    /** Returns the textual control program. */
     public String getProgram() {
         return this.controlProgram;
     }

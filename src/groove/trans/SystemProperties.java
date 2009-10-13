@@ -158,7 +158,10 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * control program is set explicitly.
      */
     public String getControlName() {
-        return getProperty(CONTROL_NAME_KEY);
+        // for compatibility, strip the extension from the stored control name
+        String result = getProperty(CONTROL_NAME_KEY);
+        return result == null ? null
+                : Groove.createControlFilter().stripExtension(result);
     }
 
     /**
@@ -378,7 +381,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * Name of the file containing the used control program. Will only be loaded
      * when the file exists in the grammar directory.
      */
-    static public final String CONTROL_NAME_KEY = "controlName";
+    static public final String CONTROL_NAME_KEY = "controlProgram";
 
     /**
      * Property name of the list of control labels of a graph grammar. The

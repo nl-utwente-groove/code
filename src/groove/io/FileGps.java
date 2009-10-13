@@ -37,6 +37,8 @@ import java.util.Map;
 /**
  * @author Tom Staijen
  * @version $Revision $
+ * @deprecated use {@link DefaultFileSystemStore} or one of the factory methods
+ *             in {@link SystemStoreFactory}
  */
 @Deprecated
 public class FileGps extends AspectualViewGps {
