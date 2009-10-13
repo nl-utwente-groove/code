@@ -37,6 +37,7 @@ import java.util.TreeMap;
 
 /**
  * Graph grammar with {@link RuleView} information for each rule.
+ * @deprecated Use {@link GrammarView} or {@link StoredGrammarView} instead
  */
 @Deprecated
 public class DefaultGrammarView implements GrammarView {

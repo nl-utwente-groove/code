@@ -28,6 +28,8 @@ import java.net.URL;
  * documents.
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated use {@link SystemStore} or one of the {@link SystemStoreFactory}
+ *             methods
  */
 @Deprecated
 public interface GrammarViewXml<GG extends GenericGrammarView<?,?,?>> extends
