@@ -46,6 +46,8 @@ import java.util.jar.JarFile;
  *          jar:http://www.someurl.com/some.jar!/java.gps/#scenario1 (default
  *          start graph used)
  * 
+ * @deprecated use {@link DefaultArchiveSystemStore} or one of the factory
+ *             methods in {@link SystemStoreFactory}
  */
 @Deprecated
 public abstract class ArchiveGps extends AspectualViewGps {

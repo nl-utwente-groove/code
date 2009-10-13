@@ -237,9 +237,10 @@ public class StoredGrammarView implements GrammarView, Observer {
      * explicitly set through {@link #setControl(String)}, or taken from the
      * system properties. If no explicit control name is given, either
      * {@link Groove#DEFAULT_CONTROL_NAME} or <code>null</code> is returned.
-     * @param useDefault flag to control if {@link Groove#DEFAULT_CONTROL_NAME}
-     *        is used in case no explicit control name is set using
-     *        {@link #setControl(String)} or in the system properties.
+     * @param useDefault flag to determine if
+     *        {@link Groove#DEFAULT_CONTROL_NAME} is used in case no explicit
+     *        control name is set using {@link #setControl(String)} or in the
+     *        system properties.
      * @see SystemProperties#getControlName()
      */
     private String getControlName(boolean useDefault) {
@@ -248,7 +249,10 @@ public class StoredGrammarView implements GrammarView, Observer {
             result = getProperties().getControlName();
         }
         if (result == null || result.length() == 0) {
-            result = useDefault ? Groove.DEFAULT_CONTROL_NAME : null;
+            result =
+                useDefault
+                    || this.controlMap.containsKey(Groove.DEFAULT_CONTROL_NAME)
+                        ? Groove.DEFAULT_CONTROL_NAME : null;
         }
         return result;
     }
