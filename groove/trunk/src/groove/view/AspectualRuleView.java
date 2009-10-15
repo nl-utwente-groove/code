@@ -320,7 +320,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         SPORule rule;
         NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
         // ParameterAspect map with id's bound to nodes
-        SortedMap<Integer,Node> parameterMap = new TreeMap<Integer,Node>();
+        SortedMap<Integer,Node> lhsParameterMap = new TreeMap<Integer,Node>();
+        SortedMap<Integer,Node> creatorParameterMap = new TreeMap<Integer,Node>();
         Set<Node> parameters = new HashSet<Node>();
 
         Set<String> errors = new TreeSet<String>(this.graph.getErrors());
@@ -355,6 +356,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         }
         try {
             // add nodes to nesting data structures
+            int creatorParametersStartAt = -1;
             for (AspectNode node : this.graph.nodeSet()) {
                 if (RuleAspect.inRule(node)) {
                     AspectNode nestingNode = getNestingNode(node);
@@ -400,6 +402,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     Integer nr = ParameterAspect.getParNumber(node);
                     if (nr != null) {
                         if (!RuleAspect.inLHS(node)) {
+                            if (creatorParametersStartAt == -1 || creatorParametersStartAt > nr) creatorParametersStartAt = nr;
+                            //throw new FormatException("Rule parameter %d only allowed on LHS nodes", nr);
                             throw new FormatException(
                                 "Rule parameter %d only allowed on LHS nodes",
                                 nr);
@@ -410,9 +414,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                                 nr);
                         }
                         parameters.add(nodeImage);
-                        if (!nr.equals(0)) {
+                        if (!nr.equals(0) && RuleAspect.inLHS(node)) {
                             // store the node w.r.t the ID
-                            Node oldValue = parameterMap.put(nr, nodeImage);
+                            Node oldValue = lhsParameterMap.put(nr, nodeImage);
+                            if (oldValue != null) {
+                                throw new FormatException(
+                                    "Parameter number %d occurs more than once",
+                                    nr);
+                            }
+                        } else if (!nr.equals(0) && !RuleAspect.inLHS(node)) {
+                            Node oldValue = creatorParameterMap.put(nr, nodeImage);
                             if (oldValue != null) {
                                 throw new FormatException(
                                     "Parameter number %d occurs more than once",
@@ -423,19 +434,44 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     viewToRuleMap.putNode(node, nodeImage);
                 }
             }
-            // test if the parameter nodes form a consecutive sequence, starting
-            // at 1
-            Iterator<Integer> parameterNrIter =
-                parameterMap.keySet().iterator();
+            
+            // test if the parameter nodes form a consecutive sequence, starting at 1, 
+            // and are not interleaved with creator-parameters
+            Iterator<Integer> parameterNrIter = lhsParameterMap.keySet().iterator();
             int nr = 0;
             while (parameterNrIter.hasNext()) {
                 int nextNr = parameterNrIter.next();
+                if (nextNr >= creatorParametersStartAt && creatorParameterMap.size() > 0) {
+                    throw new FormatException("Non-creator parameters should come before creator-parameters");
+                }
                 if (nextNr != nr + 1) {
                     throw new FormatException("Parameter number %d missing",
                         nr + 1);
                 }
                 nr = nextNr;
             }
+            
+            // test if the creator-parameters start at the last non-creator-parameter + 1
+            if (creatorParametersStartAt != -1 && creatorParametersStartAt != nr+1) {
+                throw new FormatException("Creator parameters should continue the sequence of non-creator-parameters, start at %d", nr+1);
+            }
+            
+            // test if there are no creator-parameters that come before non-creator-parameters,
+            // and if they form a consecutive sequence
+            Iterator<Integer> creatorParameterNrIter = creatorParameterMap.keySet().iterator();
+            nr = creatorParametersStartAt-1;
+            while (creatorParameterNrIter.hasNext()) {
+                int nextNr = creatorParameterNrIter.next();
+                System.err.println("doing nr: "+nextNr);
+                if (nextNr < creatorParametersStartAt) {
+                    throw new FormatException("Non-creator parameters should come before creator-parameters (%d)", nextNr);
+                }
+                if (nextNr != nr + 1) {
+                    throw new FormatException("Creator-parameter %d missing", nr);
+                }
+                nr = nextNr;
+            }
+            
             // add edges to nesting data structures
             for (AspectEdge edge : this.graph.edgeSet()) {
                 if (RuleAspect.inRule(edge)) {
@@ -542,8 +578,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             rule = (SPORule) levelRuleMap.get(topLevel);
             rule.setPriority(getPriority());
             rule.setConfluent(isConfluent());
-            rule.setParameters(new ArrayList<Node>(parameterMap.values()),
-                parameters);
+            rule.setParameters(new ArrayList<Node>(lhsParameterMap.values()), parameters);
+            rule.setCreatorParameters(new ArrayList<Node>(creatorParameterMap.values()));
             rule.setFixed();
 
             if (TO_RULE_DEBUG) {

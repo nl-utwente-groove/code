@@ -16,18 +16,24 @@
  */
 package groove.control;
 
+import groove.control.parse.ASTFrame;
 import groove.control.parse.AutomatonBuilder;
 import groove.control.parse.Counter;
 import groove.control.parse.GCLBuilder;
 import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
+import groove.gui.CAPanel;
+import groove.gui.jgraph.ControlJGraph;
+import groove.gui.jgraph.ControlJModel;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
+
+import javax.swing.JDialog;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -69,6 +75,7 @@ public class ControlView {
         if (this.automaton == null) {
             this.automaton = computeAutomaton(grammar);
         }
+       
         return this.automaton;
     }
 
@@ -90,11 +97,23 @@ public class ControlView {
         }
         AutomatonBuilder builder = new AutomatonBuilder();
         builder.setRuleNames(grammar.getRuleNames());
+        builder.setRules(grammar.getRules());
 
         try {
             GCLLexer lexer = new GCLLexer(new ANTLRStringStream(getProgram()));
             GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
             GCLParser.program_return r = parser.program();
+            
+            boolean DEBUG = false;
+            
+            if( DEBUG ) {
+                ASTFrame frame = new ASTFrame("parser result", (org.antlr.runtime.tree.CommonTree) r.getTree());
+                frame.setSize(500, 1000);
+                frame.setVisible(true);
+            } 
+
+            
+            
             List<String> errors = parser.getErrors();
             if (errors.size() != 0) {
                 errors.add(0, "Encountered parse errors in control program");
@@ -107,6 +126,20 @@ public class ControlView {
             GCLChecker checker = new GCLChecker(nodes);
             checker.setNamespace(builder);
             GCLChecker.program_return c_r = checker.program();
+
+            errors = checker.getErrors();
+            if (errors.size() != 0) {
+                errors.add(0, "Encountered checker errors in control program");
+                throw new FormatException(errors);
+            }
+            
+            if( DEBUG ) {
+                ASTFrame frame = new ASTFrame("checker result", (org.antlr.runtime.tree.CommonTree) c_r.getTree());
+                frame.setSize(500, 1000);
+                frame.setVisible(true);
+            } 
+
+
             // fetch checker tree (since it was edited)
             nodes = new CommonTreeNodeStream(c_r.getTree());
 
@@ -117,6 +150,22 @@ public class ControlView {
             ControlAutomaton aut = gclb.program();
             builder.optimize();
             builder.finalize(grammar);
+//
+//            groove.gui.Simulator sim = new groove.gui.Simulator();
+//            ControlJGraph cjg = new ControlJGraph(new ControlJModel(aut, sim.getOptions()));
+//            groove.gui.JGraphPanel autPanel = new groove.gui.JGraphPanel(cjg, true, sim.getOptions());
+//
+//            JDialog jf = new JDialog(sim.getFrame(), "Control Automaton");
+//            jf.add(autPanel);
+//            jf.setSize(600, 700);
+//            Point p = sim.getFrame().getLocation();
+//            jf.setLocation(new Point(p.x + 50, p.y + 50));
+//            System.err.println("showing panel");
+//            jf.setVisible(true);
+//            
+//            cjg.getLayouter().start(true);            
+            
+            
             return aut;
         } catch (RecognitionException re) {
             throw new FormatException(re);

@@ -12,6 +12,8 @@ tokens {
 	FUNCTION;
 	CALL;
 	DO;
+	VAR;
+	PARAM;
 }
 
 @lexer::header {
@@ -62,10 +64,11 @@ statement
 	| IF '(' condition ')' block (ELSE block)? -> ^(IF condition block+)
     | CHOICE block (CH_OR block)* -> ^(CHOICE block+)
 	| expression ';' -> expression
+	| var_declaration ';' -> var_declaration 
     ;
 
 conditionliteral
-	: TRUE | rule ;
+	: TRUE | IDENTIFIER ;
 
 expression	
 	: expression2 (OR^ expression)?
@@ -77,17 +80,35 @@ expression2
     ;
 
 expression_atom
-	: rule
-	| ANY
+	: ANY
 	| OTHER
+	| rule
 	| '('! expression ')'!
 	| call
 	; 
 
 call
-	: IDENTIFIER '(' ')' -> ^(CALL IDENTIFIER);
+	: IDENTIFIER '(' var_list? ')' -> ^(CALL IDENTIFIER var_list?);
 
-rule 	: IDENTIFIER;
+rule 	: IDENTIFIER -> ^(CALL IDENTIFIER);
+
+var_declaration
+	: var_type IDENTIFIER (',' IDENTIFIER)* -> ^(VAR var_type IDENTIFIER)+
+	;
+
+var_type
+	: NODE_TYPE
+	;
+	
+var_list
+	: variable (COMMA! var_list)?
+	;
+	
+variable
+	: OUT IDENTIFIER -> ^(PARAM OUT IDENTIFIER)
+	| IDENTIFIER -> ^(PARAM IDENTIFIER)
+	| DONT_CARE -> ^(PARAM DONT_CARE)
+	;
 
 // LEXER rules
 
@@ -104,9 +125,11 @@ FUNCTION:	'function';
 TRUE	:	'true';
 OTHER	:	'other';
 ANY		:	'any';
+NODE_TYPE : 'node';
+OUT		:	'out';
 
 
-IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_')*;
+IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_'|'.')*;
 
 AND 	:	 '&';
 COMMA 	:	 ',' ;
@@ -116,6 +139,7 @@ OR 	:	 '|';
 SHARP 	:	 '#' ;
 PLUS 	:	 '+' ;
 STAR 	:	 '*' ;
+DONT_CARE	: '_';
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };

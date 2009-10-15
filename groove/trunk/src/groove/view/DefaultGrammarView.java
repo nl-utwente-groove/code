@@ -101,6 +101,7 @@ public class DefaultGrammarView implements GrammarView {
         return Collections.unmodifiableSet(this.ruleMap.keySet());
     }
 
+
     /**
      * Adds a rule based on a given rule view.
      * @see #getRuleView(RuleName)
