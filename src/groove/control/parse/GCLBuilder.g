@@ -8,6 +8,8 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
+import groove.util.Pair;
+import groove.trans.Rule;
 }
 
 @init {
@@ -27,8 +29,14 @@ import groove.control.*;
     	block();
     	this.input = restore;
     }
-
     
+    private ArrayList<Pair<String,Integer>> parameters = new ArrayList<Pair<String,Integer>>();
+    
+    private void debug(String msg) {
+    	if (builder.usesVariables()) {
+    		System.err.println("Variables debug (GCLBuilder): "+msg);
+    	}
+    }
 }
 
 program returns [ControlAutomaton aut=null] 
@@ -132,11 +140,13 @@ statement
 ) | ^(TRY
     { 
 		newState = builder.newState(); 
+		builder.copyInitializedVariables(start, newState);
+		builder.copyInitializedVariables(start, end);
 		builder.restore(start, newState); 
 		fail = builder.addElse(); 
 		builder.restore(start, end);
 	} block {
-		builder.fail(start, fail); 
+		builder.fail(start, fail);
 		builder.restore(newState, end); 
 		boolean block = false;
 	} ( block {
@@ -179,7 +189,8 @@ statement
 	} block {
 		start.addInit(newState); 
 	}
-)+) | expression;
+)+) | expression
+	| var_declaration;
 
 expression
 @init{
@@ -187,6 +198,7 @@ expression
 	ControlState end = builder.getEnd();
 	ControlState newState;
 	ControlTransition fail;
+	parameters.clear();
 } : ^( OR expression {
 		builder.restore(start, end);
 	} expression 
@@ -209,11 +221,17 @@ expression
 	} expression { 
 		builder.fail(start,fail); 
 	}
-) | ^(CALL IDENTIFIER) {
+) | ^(CALL IDENTIFIER parameter*) {
 		if (builder.hasProc($IDENTIFIER.text)) {
+			debug("adding proc:"+$IDENTIFIER.text);
 			proc(builder.getProc($IDENTIFIER.text)); 
 		} else {
-			builder.addTransition($IDENTIFIER.text);
+			ControlTransition ct = builder.addTransition($IDENTIFIER.text);
+			for(Pair<String,Integer> parameter : parameters) {
+				debug("adding a parameter: "+$IDENTIFIER.text);
+				ct.addParameter(parameter.first(), parameter.second()); 
+				ct.setRule(builder.getRule($IDENTIFIER.text));
+			}
 		}
 	}
   | TRUE { 
@@ -227,7 +245,7 @@ expression
   		builder.addAny(); 
   	}
   | rule
-	; 
+  ; 
 
 condition 
   : expression
@@ -236,4 +254,24 @@ condition
 rule
   : IDENTIFIER
   { builder.addTransition($IDENTIFIER.text); }
+  ;
+
+var_declaration
+  : ^(VAR var_type IDENTIFIER) { builder.addLambda(); }
+  ;
+  
+var_type
+  : NODE_TYPE;
+  
+parameter
+  : ^(PARAM OUT IDENTIFIER {
+  		builder.getEnd().initializeVariable($IDENTIFIER.text); 
+  		parameters.add(new Pair<String,Integer>($IDENTIFIER.text, Rule.PARAMETER_OUTPUT));
+  	})
+  | ^(PARAM IDENTIFIER {
+  		parameters.add(new Pair<String,Integer>($IDENTIFIER.text, Rule.PARAMETER_INPUT));
+  	})
+  | ^(PARAM DONT_CARE {
+  		parameters.add(new Pair<String,Integer>("", Rule.PARAMETER_DONT_CARE));
+  	})
   ;

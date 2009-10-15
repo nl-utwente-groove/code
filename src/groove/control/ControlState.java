@@ -79,7 +79,8 @@ public class ControlState implements Node {
 
     @Override
     public String toString() {
-        return (isSuccess() ? "S" : "q") + this.stateNumber; // + " " +
+        String variables = initializedVariables.isEmpty() ? "" : " "+initializedVariables.toString();
+        return (isSuccess() ? "S" : "q") + this.stateNumber + variables; // + " " +
                                                                 // getInit();
     }
 
@@ -154,6 +155,35 @@ public class ControlState implements Node {
         this.init.remove(label);
     }
 
+    /**
+     * Marks a variable as active (ready to use as input)
+     * @param varName the name of the variable
+     */
+    public void initializeVariable(String varName) {
+        initializedVariables.add(varName);
+    }
+    
+    public Set<String> getInitializedVariables() {
+        return initializedVariables;
+    }
+    
+    public void initializeVariables(Set<String> variables) {
+        initializedVariables.addAll(variables);
+    }
+    
+    public void setInitializedVariables(Set<String> variables) {
+        initializedVariables.clear();
+        initializeVariables(variables);
+    }
+    
+    public void setMerged() {
+        hasMerged = true;
+    }
+    
+    public boolean getMerged() {
+        return hasMerged;
+    }
+
     private final HashSet<String> init = new HashSet<String>();
     private final ControlShape parent;
     /** Internal number to identify the state. */
@@ -168,4 +198,7 @@ public class ControlState implements Node {
     /** Set of outgoing failure transitions. */
     private final Set<ControlTransition> elseTransitions =
         new HashSet<ControlTransition>();
+    private final Set<String> initializedVariables = new HashSet<String>();
+    
+    private boolean hasMerged = false;
 }

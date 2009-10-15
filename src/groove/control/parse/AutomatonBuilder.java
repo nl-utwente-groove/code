@@ -95,6 +95,21 @@ public class AutomatonBuilder extends Namespace {
     }
 
     /**
+     * Copies initialized variables from state1 to state2
+     * @param s1 the state to copy from 
+     * @param s2 the state to copy to
+     */
+    public void copyInitializedVariables(ControlState s1, ControlState s2) {
+        s2.initializeVariables(s1.getInitializedVariables());
+    }
+    
+    public void mergeInitializedVariables(ControlState s1, ControlState s2, ControlState tar) {
+        Set<String> variables = s1.getInitializedVariables();
+        variables.retainAll(s2.getInitializedVariables());
+        tar.setInitializedVariables(variables);
+    }
+    
+    /**
      * Start method for building the automaton of a program
      */
     public ControlAutomaton startProgram() {
@@ -120,10 +135,14 @@ public class AutomatonBuilder extends Namespace {
     /**
      * Adds a new labelled transition between the current start and end states.
      * @param label the label of the new transition
+     * @return the created transition
      */
-    public void addTransition(String label) {
+    public ControlTransition addTransition(String label) {
         ControlTransition ct =
             new ControlTransition(this.currentStart, this.currentEnd, label);
+        
+        this.currentEnd.initializeVariables(this.currentStart.getInitializedVariables());
+        
         // basic init stuff: if an outgoing transitions is added, the init of
         // the state gets the label added
         this.currentStart.addInit(label);
@@ -131,6 +150,7 @@ public class AutomatonBuilder extends Namespace {
         debug("addTransition: " + ct);
 
         storeTransition(ct);
+        return ct;
     }
 
     /**
@@ -320,6 +340,14 @@ public class AutomatonBuilder extends Namespace {
         // the target init is reachable from the source also
         this.currentEnd.addInit(this.currentStart);
 
+        // also merge the variables
+        if (this.currentEnd.getMerged()) {
+            mergeInitializedVariables(this.currentStart, this.currentEnd, this.currentEnd);
+        } else {
+            this.currentEnd.setMerged();
+            copyInitializedVariables(this.currentStart, this.currentEnd);
+        }
+        
         rmState(this.currentStart);
 
         debug("merge: removed " + this.currentStart);
@@ -546,6 +574,6 @@ public class AutomatonBuilder extends Namespace {
     }
 
     private void debug(String msg) {
-        // System.err.println("debug: " + msg);
+//        System.err.println("debug: " + msg);
     }
 }

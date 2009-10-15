@@ -111,7 +111,10 @@ final public class SPOEvent extends
         for (int i = 0; i < hashedAnchorCount; i++) {
             Element anchor = anchors[i];
             if (anchor instanceof Node) {
-                result += anchorMap.getNode((Node) anchor).hashCode() << i;
+                Node anchorNode = anchorMap.getNode((Node) anchor);
+                // this can happen if we're looking for a creator node
+                if (anchorNode != null)
+                    result += anchorMap.getNode((Node) anchor).hashCode() << i;
             } else {
                 result += anchorMap.getEdge((Edge) anchor).hashCode() << i;
             }
@@ -174,7 +177,7 @@ final public class SPOEvent extends
     public String getParameterString() {
         StringBuilder result = new StringBuilder();
         result.append('(');
-        List<Node> map = getRule().getVisibleParameters();
+        List<Node> map = getRule().getLHSParameters();
         if (map != null) {
             for (int i = 0; i < map.size(); i++) {
                 Node node = getAnchorMap().getNode(map.get(i));
@@ -242,7 +245,8 @@ final public class SPOEvent extends
         // find the first index in which the anchor images differ
         int upper = Math.min(anchorImage.length, otherAnchorImage.length);
         for (int i = 0; result == 0 && i < upper; i++) {
-            result = anchorImage[i].compareTo(otherAnchorImage[i]);
+            if (anchorImage[i] != null)
+                result = anchorImage[i].compareTo(otherAnchorImage[i]);
         }
         if (result == 0) {
             return anchorImage.length - otherAnchorImage.length;

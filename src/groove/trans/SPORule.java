@@ -209,21 +209,102 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Sets the parameters of this rule. The rule can have numbered and
      * anonymous parameters. Numbered parameters are visible on the transition
-     * label.
-     * @param visibleParameters an ordered list of numbered parameter nodes
+     * label. Numbered parameters can only be in the LHS.
+     * @param lhsParameters an ordered list of numbered parameter nodes
      * @param allParameters the set of all parameter nodes (including the
-     *        visible ones)
+     *        lhs ones)
      */
-    public void setParameters(List<Node> visibleParameters,
+    public void setParameters(List<Node> lhsParameters,
             Set<Node> allParameters) {
         testFixed(false);
-        this.visibleParameters = visibleParameters;
+        this.lhsParameters = lhsParameters;
+        debug("set "+this.lhsParameters.size()+" lhs params");
         this.allParameters = allParameters;
     }
-
+    
+    /**
+     * Sets the creator parameters (i.e. nodes which are only in the RHS)
+     * @param creatorParameters an ordered list of numbered RHS-only parameters
+     */
+    public void setCreatorParameters(List<Node> creatorParameters) {
+        this.creatorParameters = creatorParameters;
+        debug("set "+this.creatorParameters.size()+" creator params");
+    }
+    
+    /**
+     * Gets the parameter type from a numbered parameter
+     * @param the number of the parameter under inquiry
+     * @return PARAMETER_INPUT, PARAMETER_OUTPUT, PARAMETER_BOTH
+     */
+    private int getParameterType(int param) {
+        // check if this parameter even exists
+        if (param > getNumParameters()) {
+            debug("nonexistant parameter: "+param);
+            return PARAMETER_DOES_NOT_EXIST;
+        }
+        
+        // check if the result is cached
+        if (this.parameterTypes.get(param) == null) {
+            int result = PARAMETER_DOES_NOT_EXIST;
+            
+            // if it's in creatorParameters, it may only be an output node
+            if (param > this.lhsParameters.size()) {
+                result = PARAMETER_OUTPUT;
+            } else {
+                
+                // if it's in lhsParameters, it could be both
+                Node n = this.lhsParameters.get(param-1);
+                if (Arrays.binarySearch(getEraserNodes(), n) >= 0) {
+                    result = PARAMETER_INPUT;
+                } else {
+                    result = PARAMETER_BOTH;
+                }
+            }
+            
+            this.parameterTypes.put(param, result);
+        }
+        return this.parameterTypes.get(param);
+    }
+    
+    /**
+     * Gets the number of parameters for a given type (input or output)
+     * @param type either PARAMETER_INPUT or PARAMETER_OUTPUT
+     * @return the number of parameters for this type
+     */
+    public int getNumberOfParameters(int type) {
+        int count = 0;
+        for(int thisType : parameterTypes.values()) {
+            if (thisType == type || thisType == PARAMETER_BOTH) count++;
+        }
+        return count;
+    }
+    
+    /**
+     * Returns whether a numbered parameter can be used as an output parameter
+     * @param the number of the parameter under inquiry
+     * @return true if this parameter can be used as output parameter
+     */
+    public boolean isOutputParameter(int param) {
+        debug("params: "+this.parameterTypes.size());
+        return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
+    }
+    
+    /**
+     * Returns whether a numbered parameter can be used as an input parameter
+     * @param the number of the parameter under inquiry
+     * @return true if this parameter can be used as input parameter
+     */
+    public boolean isInputParameter(int param) {
+        return (getParameterType(param) == PARAMETER_INPUT || getParameterType(param) == PARAMETER_BOTH);
+    }
+    
+    public int getNumParameters() {
+        return lhsParameters.size() + creatorParameters.size();
+    }
+    
     /** Returns the ordered list of visible (i.e., numbered) parameters. */
-    public List<Node> getVisibleParameters() {
-        return this.visibleParameters;
+    public List<Node> getLHSParameters() {
+        return this.lhsParameters;
     }
 
     /** Returns the set of all parameter nodes of this rule. */
@@ -1245,7 +1326,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * List of numbered parameters.
      */
-    private List<Node> visibleParameters;
+    private List<Node> lhsParameters;
+    /**
+     * List of numbered creator-parameters
+     */
+    private List<Node> creatorParameters;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
@@ -1279,6 +1364,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     static public long getMatchingTime() {
         return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
     }
+    
+    private void debug(String msg) {
+        //System.err.println("Variable debug (SPORule): "+msg);
+    }
 
     /**
      * The factory used for creating rule anchors.
@@ -1287,4 +1376,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
+    
+    private HashMap<Integer,Integer> parameterTypes = new HashMap<Integer,Integer>();
 }

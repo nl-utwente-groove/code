@@ -132,4 +132,11 @@ public interface Rule extends Comparable<Rule>, Condition {
             }
 
         };
+
+    /** different flags parameters can have */
+    public static final int PARAMETER_INPUT = 1;
+    public static final int PARAMETER_OUTPUT = 2;
+    public static final int PARAMETER_BOTH = 3;
+    public static final int PARAMETER_DONT_CARE = 0;
+    public static final int PARAMETER_DOES_NOT_EXIST = -1;
 }
