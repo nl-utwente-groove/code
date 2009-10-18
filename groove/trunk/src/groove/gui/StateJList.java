@@ -97,6 +97,10 @@ public class StateJList extends JList implements SimulationListener {
             result.add(getSetStartGraphAction());
             result.add(getPreviewGraphAction());
             result.add(this.simulator.getEditGraphAction());
+            boolean isEnabledState = (StateJList.this.getSelectedIndices().length==1);
+            result.getComponent(6).setEnabled(isEnabledState);
+            result.getComponent(7).setEnabled(isEnabledState);
+            result.getComponent(8).setEnabled(isEnabledState);
         }
         return result;
     }
