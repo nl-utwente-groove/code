@@ -511,6 +511,8 @@ public class RuleJTree extends JTree implements SimulationListener {
             res.addSeparator();
             res.add(this.simulator.getEditRulePropertiesAction());
             res.add(this.simulator.getEditRuleAction());
+            boolean isEnabledRule = (getSelectionPaths().length == 1);
+            res.getComponent(9).setEnabled(isEnabledRule);
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();
             res.add(this.simulator.getApplyTransitionAction());
@@ -635,8 +637,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                     if (selectedNode instanceof RuleTreeNode) {
                         // selected tree node is a production rule (level 1
                         // node)
-                        if (paths.length == 1) { // mzimakova - Multiple
-                                                 // selection
+                        if (paths.length == 1) {
                             RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
                             RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
                         } else {
