@@ -127,6 +127,20 @@ public class Exporter {
         this.fileChooser.removeChoosableFileFilter(format.getFilter());
     }
     
+    /**
+     * Checks if the given file is accepted by at least one of the image
+     * exporters.
+     */
+    public boolean acceptsImageFormat(File file) {
+        if (JpgFormat.getInstance().getFilter().accept(file) ||
+            PngFormat.getInstance().getFilter().accept(file) ||
+            EpsFormat.getInstance().getFilter().accept(file)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /** Returns the (modifiable) list of currently supported formats. */
     private List<Format> getFormatList() {
         if (this.formats == null) {
