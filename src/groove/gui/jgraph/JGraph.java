@@ -276,6 +276,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 }
             }
         }
+        // if the backing JModel has an underlying Groove graph, then
+        // store the changed layout information in that Groove graph
+        for (Object jCell : evt.getChange().getChanged()) {
+            if (jCell instanceof GraphJCell
+                && getModel() instanceof GraphJModel) {
+                ((GraphJModel) getModel()).synchroniseLayout((GraphJCell) jCell);
+            }
+        }
     }
 
     /**

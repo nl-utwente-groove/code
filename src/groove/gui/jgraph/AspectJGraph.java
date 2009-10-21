@@ -27,8 +27,6 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.jgraph.event.GraphModelEvent;
-
 /**
  * Extension of {@link JGraph} that provides the proper popup menu.
  */
@@ -47,17 +45,6 @@ public class AspectJGraph extends JGraph {
     @Override
     public AspectJModel getModel() {
         return (AspectJModel) super.getModel();
-    }
-
-    /** In addition to the super method, synchronises layout changes. */
-    @Override
-    public void graphChanged(GraphModelEvent evt) {
-        super.graphChanged(evt);
-        for (Object jCell : evt.getChange().getChanged()) {
-            if (jCell instanceof GraphJCell) {
-                getModel().synchroniseLayout((GraphJCell) jCell);
-            }
-        }
     }
 
     @Override
