@@ -28,6 +28,7 @@ import groove.gui.jgraph.JCell;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.lts.LTS;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -933,6 +934,15 @@ public final class GraphToTikz {
             styles.add(QUANTIFIER_NODE_STYLE);
         }
         
+        // LTS nodes
+        if (allLabels.contains(LTS.FINAL_LABEL_TEXT)) {
+            styles.add(FINAL_NODE_STYLE);
+        } else if (allLabels.contains(LTS.OPEN_LABEL_TEXT)) {
+            styles.add(OPEN_NODE_STYLE);
+        } else if (allLabels.contains(LTS.START_LABEL_TEXT)) {
+            styles.add(START_NODE_STYLE);
+        }
+        
         // Check background flag
         if (!showBackground) {
             styles.add(WHITE_FILL);
@@ -1035,6 +1045,9 @@ public final class GraphToTikz {
     private static final String PRODUCT_NODE_STYLE = "prod";
     private static final String QUANTIFIER_NODE_STYLE = "quantnode";
     private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
+    private static final String FINAL_NODE_STYLE = "final";
+    private static final String START_NODE_STYLE = "start";
+    private static final String OPEN_NODE_STYLE = "open";
     private static final String WHITE_FILL = "whitefill";
     private static final String DOUBLE_DASH = "--";
     private static final String ANGLE = "-|";
