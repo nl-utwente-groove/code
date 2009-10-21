@@ -173,7 +173,13 @@ public class Imager extends CommandLineTool {
 
                     JGraph jGraph = new JGraph(model, false);
                     jGraph.setModel(model);
-                    jGraph.setSize(jGraph.getPreferredSize());
+                    // Ugly hack to prevent clipping of the image. We set the jGraph size
+                    // to twice its normal size. This does not affect the final size of
+                    // the exported figure, hence it can be considered harmless... ;P
+                    Dimension oldPrefSize = jGraph.getPreferredSize();
+                    Dimension newPrefSize = new Dimension(oldPrefSize.width * 2,
+                                                          oldPrefSize.height * 2);
+                    jGraph.setSize(newPrefSize);
                     printlnMedium("Imaging " + inFile + " as " + outFile);
 
                     this.exporter.export(jGraph, outFile);

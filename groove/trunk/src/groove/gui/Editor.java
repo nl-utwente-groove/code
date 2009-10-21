@@ -1474,7 +1474,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             propertiesDialog.getEditedProperties()));
         Object response = previewPane.getValue();
         this.previewSize = dialog.getSize();
-        return okOption.equals(((JButton) response).getText()) ? previewModel : null;
+        if (response instanceof JButton &&
+            okOption.equals(((JButton) response).getText())) {
+            return previewModel;
+        } else {
+            return null;
+        }
     }
 
     /*
@@ -1582,6 +1587,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         return this.jgraph;
     }
 
+    JGraph getAspectJGraph() {
+        AspectJModel model = AspectJModel.newInstance(toView(), getOptions());
+        JGraph jGraph = new JGraph(model, false);
+        jGraph.setModel(model);
+        // Ugly hack to prevent clipping of the image. We set the jGraph size
+        // to twice its normal size. This does not affect the final size of
+        // the exported figure, hence it can be considered harmless... ;P
+        Dimension oldPrefSize = jGraph.getPreferredSize();
+        Dimension newPrefSize = new Dimension(oldPrefSize.width * 2,
+                                              oldPrefSize.height * 2);
+        jGraph.setSize(newPrefSize);
+        return jGraph;
+    }
+    
     /**
      * Sets the current file to a given value.
      */
@@ -1831,7 +1850,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
                     getFrame(), null);
             if (toFile != null) {
                 try {
-                    this.exporter.export(getJGraph(), toFile);
+                    JGraph jGraph;
+                    if (this.exporter.acceptsImageFormat(toFile)) {
+                        jGraph = getAspectJGraph();
+                    } else {
+                        jGraph = getJGraph();
+                    }
+                    this.exporter.export(jGraph, toFile);
                 } catch (IOException exc) {
                     showErrorDialog("Error while saving to " + toFile, exc);
                 }
