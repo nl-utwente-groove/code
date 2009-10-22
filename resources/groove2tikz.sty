@@ -6,8 +6,13 @@
 % Includes for Tikz
 \usetikzlibrary{arrows,automata,positioning,er}
 
-% Set the font to \footnotesize and \sf
-\tikzstyle every node=[font=\footnotesize\sffamily,inner sep=2.5pt,minimum size=9pt]
+% Dimension styles
+\newcommand{\tikzfontsize}{\footnotesize}
+\newcommand{\tikzscale}{2}
+\newcommand{\nodeinsep}{2.5pt}
+\newcommand{\labinsep}{2pt}
+
+\tikzstyle every node=[font=\tikzfontsize\sffamily,inner sep=\nodeinsep,minimum size=9pt]
 
 % Colours
 \newcommand{\red}{red}
@@ -26,22 +31,22 @@
 % Readers
 \tikzstyle{node}=[draw=black,fill=\grey,shape=rectangle]
 \tikzstyle{edge}=[draw,black,-stealth']
-\tikzstyle{lab}=[fill=white,inner sep=2pt]
+\tikzstyle{lab}=[fill=white,inner sep=\labinsep]
 
 % Erasers
 \tikzstyle{delnode}=[draw=\blue,fill=\bluefill,text=\blue,shape=rectangle,densely dashed]
 \tikzstyle{deledge}=[draw,\blue,densely dashed,-stealth']
-\tikzstyle{dellab}=[text=\blue,fill=white,inner sep=2pt]
+\tikzstyle{dellab}=[text=\blue,fill=white,inner sep=\labinsep]
 
 % Creators
 \tikzstyle{newnode}=[draw=\green,fill=\greenfill,very thick,text=\green,shape=rectangle]
 \tikzstyle{newedge}=[draw,\green,very thick,-stealth']
-\tikzstyle{newlab}=[text=\green,fill=white,inner sep=2pt]
+\tikzstyle{newlab}=[text=\green,fill=white,inner sep=\labinsep]
 
 % NACs
 \tikzstyle{nacnode}=[draw=\red,fill=\redfill,text=\red,line width=2pt,dotted,shape=rectangle]
 \tikzstyle{nacedge}=[draw,\red,line width=2pt,dotted,-stealth']
-\tikzstyle{naclab}=[text=\red,fill=white,inner sep=2pt]
+\tikzstyle{naclab}=[text=\red,fill=white,inner sep=\labinsep]
 
 % Quantifiers
 \tikzstyle{quantnode}=[dotted,fill=white]
@@ -54,7 +59,7 @@
 \tikzstyle{bold}=[very thick]
 \tikzstyle{thinnode}=[draw=\thin,text=\thin,fill=white,,shape=rectangle]
 \tikzstyle{thinedge}=[draw,\thin,text=\thin,,-stealth']
-\tikzstyle{thinlab}=[text=\thin,fill=white,inner sep=2pt]
+\tikzstyle{thinlab}=[text=\thin,fill=white,inner sep=\labinsep]
 
 % Ugly hack to allow nodes with multiple lines
 \newcommand{\ml}[1]{
