@@ -1605,12 +1605,18 @@ public class Simulator {
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, getRuleJTreePanel(),
                     getStartStatesListPanel());
 
+            //Embedded Editor - mzimakova
+            JSplitPane rightPanel =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphViewsPanel(),
+                    getEditorPanel());
+            getEditorPanel().setVisible(false);
+
             // set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
             // right
             JSplitPane splitPane =
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
-                    getGraphViewsPanel());
+                    rightPanel);
 
             Container contentPane = this.frame.getContentPane();
             contentPane.setLayout(new BorderLayout());
@@ -1692,6 +1698,27 @@ public class Simulator {
         };
         labelPane.add(startGraphsPane, BorderLayout.CENTER);
         return labelPane;
+    }
+
+    /**
+     * Creates and returns the panel with the Embedded Editor (mzimakova).
+     */
+    JPanel getEditorPanel() {
+        if (this.editorPanel == null) {
+            // panel for Editor display
+            this.editorPanel = new JPanel(new BorderLayout(), false);
+            
+            JScrollPane editorPane = new JScrollPane(/*this.getStateList()*/) {
+               @Override
+               public Dimension getPreferredSize() {
+                   Dimension superSize = super.getPreferredSize();
+                   return new Dimension((int) superSize.getWidth(),
+                       START_LIST_MINIMUM_HEIGHT);
+               }
+            };
+            this.editorPanel.add(editorPane, BorderLayout.CENTER);
+        }
+        return this.editorPanel;
     }
 
     /**
@@ -2818,6 +2845,9 @@ public class Simulator {
 
     /** State display panel. */
     private StatePanel statePanel;
+
+    /** Editor display panel. */
+    private JPanel editorPanel;
 
     /** Control display panel. */
     private CAPanel controlPanel;
