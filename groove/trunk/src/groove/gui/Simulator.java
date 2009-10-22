@@ -121,7 +121,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -820,7 +819,7 @@ public class Simulator {
 
     /**
      * Handles the execution of a {@link SaveGraphAction}. Calls
-     * {@link #doAddGraph(Graph)} for the actual saving.
+     * {@link #doAddGraph(AspectGraph, boolean)} for the actual saving.
      * @param state <tt>true</tt> if it is a state that has to be saved
      *        (otherwise it is an LTS)
      * @param graph the graph to be saved
@@ -873,16 +872,15 @@ public class Simulator {
     /**
      * Saves a given graph to a given file.
      */
-    void doAddGraph(Graph graph, boolean graphLast) {
+    void doAddGraph(AspectGraph graph, boolean graphLast) {
         try {
-            AspectGraph saveGraph = AspectGraph.newInstance(graph);
-            if (saveGraph.hasErrors()) {
+            if (graph.hasErrors()) {
                 showErrorDialog("Errors in graph", new FormatException(
-                    saveGraph.getErrors()));
+                    graph.getErrors()));
             } else {
-                getGrammarStore().putGraph(saveGraph);
+                getGrammarStore().putGraph(graph);
                 if (graphLast) {
-                   getStateList().refreshList(true);
+                    getStateList().refreshList(true);
                 }
             }
         } catch (IOException exc) {
@@ -926,9 +924,9 @@ public class Simulator {
             getGrammarView().removeStartGraph();
             setGrammar(getGrammarView());
         } else {
-           if (graphLast) {
-            this.stateJList.refreshList(true);
-           }
+            if (graphLast) {
+                this.stateJList.refreshList(true);
+            }
         }
     }
 
@@ -958,29 +956,30 @@ public class Simulator {
     }
 
     /**
-     * Can be called from the ExplorationDialog, or from the popup-menu in the LTSPanel.
+     * Can be called from the ExplorationDialog, or from the popup-menu in the
+     * LTSPanel.
      * @param scenario
      */
     public void doGenerate(Scenario scenario) {
-        
-        /* 
-         * When a (LTL) ModelCheckingScenario is started, initialize by asking the user to
-         * enter a property (via a getFormulaDialog).
+
+        /*
+         * When a (LTL) ModelCheckingScenario is started, initialize by asking
+         * the user to enter a property (via a getFormulaDialog).
          */
-        if (scenario instanceof ModelCheckingScenario){
+        if (scenario instanceof ModelCheckingScenario) {
             FormulaDialog dialog = getFormulaDialog();
             dialog.showDialog(getFrame());
             String property = dialog.getProperty();
             if (property == null)
-               return;
+                return;
             ((ModelCheckingScenario) scenario).setProperty(property);
         }
-        
-        /* 
-         * When a (LTL) BoundedModelCheckingScenario is started, also prompt the user to
-         * enter a boundary (via a BoundedModelCheckingDialog).
+
+        /*
+         * When a (LTL) BoundedModelCheckingScenario is started, also prompt the
+         * user to enter a boundary (via a BoundedModelCheckingDialog).
          */
-        if (scenario.getStrategy() instanceof BoundedModelCheckingStrategy){
+        if (scenario.getStrategy() instanceof BoundedModelCheckingStrategy) {
             BoundedModelCheckingDialog dialog =
                 new BoundedModelCheckingDialog();
             dialog.setGrammar(getGTS().getGrammar());
@@ -990,7 +989,7 @@ public class Simulator {
                 return;
             ((BoundedModelCheckingStrategy) scenario.getStrategy()).setBoundary(boundary);
         }
-        
+
         scenario.prepare(getGTS(), getCurrentState());
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
@@ -1244,7 +1243,7 @@ public class Simulator {
             getGrammarView().setStartGraph(newName);
         } else {
             if (graphLast) {
-               this.stateJList.refreshList(true);
+                this.stateJList.refreshList(true);
             }
         }
     }
@@ -1605,7 +1604,7 @@ public class Simulator {
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, getRuleJTreePanel(),
                     getStartStatesListPanel());
 
-            //Embedded Editor - mzimakova
+            // Embedded Editor - mzimakova
             JSplitPane rightPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphViewsPanel(),
                     getEditorPanel());
@@ -1707,15 +1706,16 @@ public class Simulator {
         if (this.editorPanel == null) {
             // panel for Editor display
             this.editorPanel = new JPanel(new BorderLayout(), false);
-            
-            JScrollPane editorPane = new JScrollPane(/*this.getStateList()*/) {
-               @Override
-               public Dimension getPreferredSize() {
-                   Dimension superSize = super.getPreferredSize();
-                   return new Dimension((int) superSize.getWidth(),
-                       START_LIST_MINIMUM_HEIGHT);
-               }
-            };
+
+            JScrollPane editorPane =
+                new JScrollPane(/* this.getStateList() */) {
+                    @Override
+                    public Dimension getPreferredSize() {
+                        Dimension superSize = super.getPreferredSize();
+                        return new Dimension((int) superSize.getWidth(),
+                            START_LIST_MINIMUM_HEIGHT);
+                    }
+                };
             this.editorPanel.add(editorPane, BorderLayout.CENTER);
         }
         return this.editorPanel;
@@ -3235,21 +3235,24 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //Multiple selection - mzimakova
+            // Multiple selection - mzimakova
             for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-               String oldGraphName =
-                   //(String) Simulator.this.stateJList.getSelectedValue();
-                   (String) Simulator.this.stateJList.getSelectedValues()[i];
-               if (oldGraphName != null) {
-                   AspectualGraphView oldGraphView =
-                       getGrammarView().getGraphView(oldGraphName);
-                   String newGraphName =
-                       askNewGraphName("Select new graph name", oldGraphName, true);
-                   AspectGraph newGraph = oldGraphView.getAspectGraph().clone();
-                   GraphInfo.setName(newGraph, newGraphName);
-                   boolean last = (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
-                   doAddGraph(newGraph, last);
-               }
+                String oldGraphName =
+                // (String) Simulator.this.stateJList.getSelectedValue();
+                    (String) Simulator.this.stateJList.getSelectedValues()[i];
+                if (oldGraphName != null) {
+                    AspectualGraphView oldGraphView =
+                        getGrammarView().getGraphView(oldGraphName);
+                    String newGraphName =
+                        askNewGraphName("Select new graph name", oldGraphName,
+                            true);
+                    AspectGraph newGraph =
+                        oldGraphView.getAspectGraph().clone();
+                    GraphInfo.setName(newGraph, newGraphName);
+                    boolean last =
+                        (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
+                    doAddGraph(newGraph, last);
+                }
             }
         }
     }
@@ -3300,35 +3303,36 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //Multiple selection - mzimakova
+            // Multiple selection - mzimakova
             String question = "Delete graph(s) '%s'";
             for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-              String graphName =
-                  //(String) Simulator.this.stateJList.getSelectedValue();
-                  (String) Simulator.this.stateJList.getSelectedValues()[i];
-              if (graphName != null) {
-                  question = String.format(question, graphName);
-                  boolean isStartGraph =
-                      graphName.equals(getGrammarView().getStartGraphName());
-                  if (isStartGraph) {
-                      question = question + " (start graph)";
-                  }
-                  if (i < Simulator.this.stateJList.getSelectedIndices().length - 1) {
-                      question = question + ", '%s'";
-                  } else {
-                      question = question + "?";
-                  }
-              }
+                String graphName =
+                // (String) Simulator.this.stateJList.getSelectedValue();
+                    (String) Simulator.this.stateJList.getSelectedValues()[i];
+                if (graphName != null) {
+                    question = String.format(question, graphName);
+                    boolean isStartGraph =
+                        graphName.equals(getGrammarView().getStartGraphName());
+                    if (isStartGraph) {
+                        question = question + " (start graph)";
+                    }
+                    if (i < Simulator.this.stateJList.getSelectedIndices().length - 1) {
+                        question = question + ", '%s'";
+                    } else {
+                        question = question + "?";
+                    }
+                }
             }
             if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
-              for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {            
-                String graphName =
-                      (String) Simulator.this.stateJList.getSelectedValues()[i];
-                if (graphName != null) {
-                    boolean last = (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
-                    doDeleteGraph(graphName, last);
+                for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
+                    String graphName =
+                        (String) Simulator.this.stateJList.getSelectedValues()[i];
+                    if (graphName != null) {
+                        boolean last =
+                            (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
+                        doDeleteGraph(graphName, last);
+                    }
                 }
-              }
             }
         }
     }
@@ -3478,86 +3482,104 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //Multiple selection - mzimakova
-               AspectualRuleView rule =  getCurrentRule(); 
-               AspectGraph ruleGraph = rule.getAspectGraph();
-               GraphProperties ruleProperties =
-                   GraphInfo.getProperties(ruleGraph, true);
-               String currentPriority = null;
-               String currentEnabled = null;
-               String currentConfluent = null;
-               String currentRemark = null;
-               //save current rule properties
-               if (getCurrentRuleSet().size() > 1) {
-                  currentPriority = Integer.toString(ruleProperties.getPriority());
-                  currentEnabled = Boolean.toString(ruleProperties.isEnabled());
-                  currentConfluent = Boolean.toString(ruleProperties.isConfluent());
-                  currentRemark = ruleProperties.getRemark();                 
-                  ruleProperties.clear();
-               } 
-               PropertiesDialog dialog =
+            // Multiple selection - mzimakova
+            AspectualRuleView rule = getCurrentRule();
+            AspectGraph ruleGraph = rule.getAspectGraph();
+            GraphProperties ruleProperties =
+                GraphInfo.getProperties(ruleGraph, true);
+            String currentPriority = null;
+            String currentEnabled = null;
+            String currentConfluent = null;
+            String currentRemark = null;
+            // save current rule properties
+            if (getCurrentRuleSet().size() > 1) {
+                currentPriority =
+                    Integer.toString(ruleProperties.getPriority());
+                currentEnabled = Boolean.toString(ruleProperties.isEnabled());
+                currentConfluent =
+                    Boolean.toString(ruleProperties.isConfluent());
+                currentRemark = ruleProperties.getRemark();
+                ruleProperties.clear();
+            }
+            PropertiesDialog dialog =
                 new PropertiesDialog(ruleProperties,
                     GraphProperties.DEFAULT_USER_KEYS, true);
-            
+
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
-              
-              //Get properties from the dialog frame 
-              Map<String,String> editedProperties = dialog.getEditedProperties();
-              String editedPriority = editedProperties.get(GraphProperties.PRIORITY_KEY);
-              String editedEnabled = editedProperties.get(GraphProperties.ENABLED_KEY);
-              String editedConfluent = editedProperties.get(GraphProperties.CONFLUENT_KEY);
-              String editedRemark = editedProperties.get(GraphProperties.REMARK_KEY);
-              for (int i = 0; i < getCurrentRuleSet().size(); i++)
-              { 
-                rule = getCurrentRuleSet().get(i); 
-                ruleGraph = rule.getAspectGraph();
-                ruleProperties =
-                    GraphInfo.getProperties(ruleGraph, true);
-                
-               if (getCurrentRuleSet().size() > 1) {
-                   
-                   //restore current rule properties
-                   if (i==0) {
-                    ruleProperties.put(GraphProperties.PRIORITY_KEY, currentPriority); 
-                    ruleProperties.put(GraphProperties.ENABLED_KEY, currentEnabled); 
-                    ruleProperties.put(GraphProperties.CONFLUENT_KEY, currentConfluent); 
-                    ruleProperties.put(GraphProperties.REMARK_KEY, currentRemark); 
-                   }
-                
-                //Check that properties in the dialog frame were changed
-                if (editedPriority == null) {
-                    editedProperties.put(GraphProperties.PRIORITY_KEY, Integer.toString(ruleProperties.getPriority()));
-                } else {
-                    editedProperties.put(GraphProperties.PRIORITY_KEY, editedPriority); 
+
+                // Get properties from the dialog frame
+                Map<String,String> editedProperties =
+                    dialog.getEditedProperties();
+                String editedPriority =
+                    editedProperties.get(GraphProperties.PRIORITY_KEY);
+                String editedEnabled =
+                    editedProperties.get(GraphProperties.ENABLED_KEY);
+                String editedConfluent =
+                    editedProperties.get(GraphProperties.CONFLUENT_KEY);
+                String editedRemark =
+                    editedProperties.get(GraphProperties.REMARK_KEY);
+                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                    rule = getCurrentRuleSet().get(i);
+                    ruleGraph = rule.getAspectGraph();
+                    ruleProperties = GraphInfo.getProperties(ruleGraph, true);
+
+                    if (getCurrentRuleSet().size() > 1) {
+
+                        // restore current rule properties
+                        if (i == 0) {
+                            ruleProperties.put(GraphProperties.PRIORITY_KEY,
+                                currentPriority);
+                            ruleProperties.put(GraphProperties.ENABLED_KEY,
+                                currentEnabled);
+                            ruleProperties.put(GraphProperties.CONFLUENT_KEY,
+                                currentConfluent);
+                            ruleProperties.put(GraphProperties.REMARK_KEY,
+                                currentRemark);
+                        }
+
+                        // Check that properties in the dialog frame were
+                        // changed
+                        if (editedPriority == null) {
+                            editedProperties.put(GraphProperties.PRIORITY_KEY,
+                                Integer.toString(ruleProperties.getPriority()));
+                        } else {
+                            editedProperties.put(GraphProperties.PRIORITY_KEY,
+                                editedPriority);
+                        }
+                        if (editedEnabled == null) {
+                            editedProperties.put(GraphProperties.ENABLED_KEY,
+                                Boolean.toString(ruleProperties.isEnabled()));
+                        } else {
+                            editedProperties.put(GraphProperties.ENABLED_KEY,
+                                editedEnabled);
+                        }
+                        if (editedConfluent == null) {
+                            editedProperties.put(GraphProperties.CONFLUENT_KEY,
+                                Boolean.toString(ruleProperties.isConfluent()));
+                        } else {
+                            editedProperties.put(GraphProperties.CONFLUENT_KEY,
+                                editedConfluent);
+                        }
+                        if (editedRemark == null) {
+                            editedProperties.put(GraphProperties.REMARK_KEY,
+                                ruleProperties.getRemark());
+                        } else {
+                            editedProperties.put(GraphProperties.REMARK_KEY,
+                                editedRemark);
+                        }
+
+                    }
+
+                    // Set new properties
+                    ruleProperties.clear();
+                    ruleProperties.putAll(editedProperties);
+                    doDeleteRule(rule.getRuleName());
+                    boolean last = (i == getCurrentRuleSet().size() - 1);
+                    doAddRule(rule.getRuleName(), ruleGraph, last);
                 }
-                if (editedEnabled == null) {
-                    editedProperties.put(GraphProperties.ENABLED_KEY, Boolean.toString(ruleProperties.isEnabled()));
-                } else {
-                    editedProperties.put(GraphProperties.ENABLED_KEY, editedEnabled); 
-                }
-                if (editedConfluent == null) {
-                    editedProperties.put(GraphProperties.CONFLUENT_KEY, Boolean.toString(ruleProperties.isConfluent()));
-                } else {
-                    editedProperties.put(GraphProperties.CONFLUENT_KEY, editedConfluent); 
-                }
-                if (editedRemark == null) {
-                    editedProperties.put(GraphProperties.REMARK_KEY, ruleProperties.getRemark());
-                } else {
-                    editedProperties.put(GraphProperties.REMARK_KEY, editedRemark);
-                }
-                
-               }
-                
-                //Set new properties
-                ruleProperties.clear();
-                ruleProperties.putAll(editedProperties);
-                doDeleteRule(rule.getRuleName());
-                boolean last = (i==getCurrentRuleSet().size()-1);
-                doAddRule(rule.getRuleName(), ruleGraph, last);
-               }
-             }
-          }
-      }
+            }
+        }
+    }
 
     /**
      * Action for editing the current state or rule.
@@ -4348,25 +4370,28 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-          //Multiple selection - mzimakova
-          for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-            String oldGraphName =
-                //(String) Simulator.this.stateJList.getSelectedValue();
-                (String) Simulator.this.stateJList.getSelectedValues()[i];
-            if (oldGraphName != null) {
-                AspectualGraphView graph =
-                    getGrammarView().getGraphView(oldGraphName);
-                assert graph != null : String.format(
-                    "Graph '%s' in graph list but not in grammar", oldGraphName);
-                String newGraphName =
-                    askNewGraphName("Select new graph name", oldGraphName,
-                        false);
-                if (!oldGraphName.equals(newGraphName)) {
-                    boolean last = (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
-                    doRenameGraph(graph.getAspectGraph(), newGraphName, last);
+            // Multiple selection - mzimakova
+            for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
+                String oldGraphName =
+                // (String) Simulator.this.stateJList.getSelectedValue();
+                    (String) Simulator.this.stateJList.getSelectedValues()[i];
+                if (oldGraphName != null) {
+                    AspectualGraphView graph =
+                        getGrammarView().getGraphView(oldGraphName);
+                    assert graph != null : String.format(
+                        "Graph '%s' in graph list but not in grammar",
+                        oldGraphName);
+                    String newGraphName =
+                        askNewGraphName("Select new graph name", oldGraphName,
+                            false);
+                    if (!oldGraphName.equals(newGraphName)) {
+                        boolean last =
+                            (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
+                        doRenameGraph(graph.getAspectGraph(), newGraphName,
+                            last);
+                    }
                 }
             }
-          }
         }
     }
 
@@ -4388,21 +4413,22 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-                //Multiple selection - mzimakova
-                //RuleName oldRuleName = getCurrentRule().getRuleName();
-               for (int i = 0; i < getCurrentRuleSet().size(); i++)
-               {
-                RuleName oldRuleName = getCurrentRuleSet().get(i).getRuleName();
-                AspectGraph ruleGraph = getCurrentRuleSet().get(i).getAspectGraph();
-                RuleName newRuleName =
-                    askNewRuleName("Select new rule name", oldRuleName.text(),
-                        true);
-                if (newRuleName != null) {
-                    doDeleteRule(oldRuleName);
-                    boolean last = (i==getCurrentRuleSet().size()-1);
-                    doAddRule(newRuleName, ruleGraph, last);
+                // Multiple selection - mzimakova
+                // RuleName oldRuleName = getCurrentRule().getRuleName();
+                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                    RuleName oldRuleName =
+                        getCurrentRuleSet().get(i).getRuleName();
+                    AspectGraph ruleGraph =
+                        getCurrentRuleSet().get(i).getAspectGraph();
+                    RuleName newRuleName =
+                        askNewRuleName("Select new rule name",
+                            oldRuleName.text(), true);
+                    if (newRuleName != null) {
+                        doDeleteRule(oldRuleName);
+                        boolean last = (i == getCurrentRuleSet().size() - 1);
+                        doAddRule(newRuleName, ruleGraph, last);
+                    }
                 }
-               }
             }
         }
     }
