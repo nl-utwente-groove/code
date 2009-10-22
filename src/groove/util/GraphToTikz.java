@@ -70,8 +70,11 @@ public final class GraphToTikz {
             if (layoutMap != null) {
                 layout = layoutMap.getNode(node);
             }
-            result.append(convertNodeToTikzStr(model.getJVertex(node),
-                                               layout, showBackground));
+            GraphJVertex vertex = model.getJVertex(node);
+            boolean isEmphasized = model.isEmphasized(vertex);
+            boolean isGrayedOut = model.isGrayedOut(vertex);
+            result.append(convertNodeToTikzStr(vertex, layout, showBackground,
+                                               isEmphasized, isGrayedOut));
         }
         
         for (Edge edge : graph.edgeSet()) {
@@ -79,8 +82,11 @@ public final class GraphToTikz {
             if (layoutMap != null) {
                 layout = layoutMap.getEdge(edge);
             }
-            result.append(convertEdgeToTikzStr(model.getJCell(edge),
-                                               layout, layoutMap));
+            JCell jCell = model.getJCell(edge);
+            boolean isEmphasized = model.isEmphasized(jCell);
+            boolean isGrayedOut = model.isGrayedOut(jCell);
+            result.append(convertEdgeToTikzStr(jCell, layout, layoutMap,
+                                               isEmphasized, isGrayedOut));
         }
         
         result.append(endTikzFig());
@@ -93,12 +99,16 @@ public final class GraphToTikz {
      * @param node the node to be converted.
      * @param layout information regarding layout of the node. 
      * @param showBackground flag to indicate if the node should be filled.
+     * @param isEmphasized flag that indicates if the node is emphasized.
+     * @param isGrayedOut flag that indicates if the node is grayed out.
      * @return a StringBuilder filled with the Tikz string.
      */
     private static StringBuilder convertNodeToTikzStr(
             GraphJVertex node,
             JVertexLayout layout,
-            boolean showBackground) {
+            boolean showBackground,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
         
         StringBuilder result = new StringBuilder();
         
@@ -106,7 +116,8 @@ public final class GraphToTikz {
             result.append(BEGIN_NODE);
             
             // Styles.
-            result.append(convertStyles(node, showBackground));
+            result.append(convertStyles(node, showBackground,
+                                        isEmphasized, isGrayedOut));
             
             // Node ID.
             appendNode(node, result);
@@ -146,16 +157,21 @@ public final class GraphToTikz {
      * @param cell the edge to be converted.
      * @param layout information regarding layout of the node.
      * @param layoutMap the layout information associated with the graph.
+     * @param isEmphasized flag that indicates if the edge is emphasized.
+     * @param isGrayedOut flag that indicates if the edge is grayed out.
      * @return a StringBuilder filled with the Tikz string if the JCell could
      *         cast into a valid sub-type or an empty StringBuilder otherwise.
      */
     private static StringBuilder convertEdgeToTikzStr(
             JCell cell,
             JEdgeLayout layout,
-            LayoutMap<Node,Edge> layoutMap) {
+            LayoutMap<Node,Edge> layoutMap,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
         
         if (cell instanceof GraphJEdge) {
-            return convertEdgeToTikzStr((GraphJEdge) cell, layout, layoutMap);
+            return convertEdgeToTikzStr((GraphJEdge) cell, layout, layoutMap,
+                                        isEmphasized, isGrayedOut);
         } else {
             return new StringBuilder();
         }
@@ -166,17 +182,22 @@ public final class GraphToTikz {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      * @param layoutMap the layout information associated with the graph.
+     * @param isEmphasized flag that indicates if the edge is emphasized.
+     * @param isGrayedOut flag that indicates if the edge is grayed out.
      * @return a StringBuilder filled with the Tikz string.
      */
     private static StringBuilder convertEdgeToTikzStr(
             GraphJEdge edge,
             JEdgeLayout layout,
-            LayoutMap<Node,Edge> layoutMap) {
+            LayoutMap<Node,Edge> layoutMap,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
         
         StringBuilder result = new StringBuilder();
         
         if (edge.isVisible()) {
-            ArrayList<String> styles = convertStyles(edge);
+            ArrayList<String> styles =
+                                convertStyles(edge, isEmphasized, isGrayedOut);
             String edgeStyle = styles.get(0); 
             String labStyle = styles.get(1);
             
@@ -902,11 +923,15 @@ public final class GraphToTikz {
      * Produces a string with the proper Tikz styles of a given node.
      * @param node the node to be converted.
      * @param showBackground flag to indicate if the node should be filled.
+     * @param isEmphasized flag that indicates if the node is emphasized.
+     * @param isGrayedOut flag that indicates if the node is grayed out.
      * @return a string with all the Tikz styles to be used.
      */
     private static String convertStyles(
             GraphJVertex node,
-            boolean showBackground) {
+            boolean showBackground,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
         
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
@@ -922,7 +947,11 @@ public final class GraphToTikz {
             styles.add(EMBARGO_NODE_STYLE);
         } else {
             // Reader node
-            styles.add(BASIC_NODE_STYLE);
+            if (isGrayedOut) {
+                styles.add(THIN_NODE_STYLE);
+            } else {
+                styles.add(BASIC_NODE_STYLE);
+            }
         }
         
         if (node.isValueNode()) {
@@ -943,7 +972,10 @@ public final class GraphToTikz {
             styles.add(START_NODE_STYLE);
         }
         
-        // Check background flag
+        if (isEmphasized) {
+            styles.add(BOLD_LINE);
+        }
+        
         if (!showBackground) {
             styles.add(WHITE_FILL);
         }
@@ -954,10 +986,16 @@ public final class GraphToTikz {
     /**
      * Find the proper Tikz styles for a given edge.
      * @param edge the edge to be analysed.
+     * @param isEmphasized flag that indicates if the edge is emphasized.
+     * @param isGrayedOut flag that indicates if the edge is grayed out.
      * @return an array of size two. The first string is the edge style and the
      *         second one is the label style.
      */
-    private static ArrayList<String> convertStyles(GraphJEdge edge) {
+    private static ArrayList<String> convertStyles(
+            GraphJEdge edge,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
+        
         ArrayList<String> styles = new ArrayList<String>();
         
         if (edge.getRole().equals(DEL)) {
@@ -980,6 +1018,15 @@ public final class GraphToTikz {
                 styles.add(BASIC_EDGE_STYLE);
             }
             styles.add(BASIC_LABEL_STYLE);
+        }
+        
+        if (isGrayedOut) {
+            styles.set(0, THIN_EDGE_STYLE);
+            styles.set(1, THIN_LABEL_STYLE);
+        }
+        
+        if (isEmphasized) {
+            styles.set(0, styles.get(0) + ", " + BOLD_LINE);
         }
         
         return styles;
@@ -1041,6 +1088,9 @@ public final class GraphToTikz {
     private static final String EMBARGO_NODE_STYLE = "nacnode";
     private static final String EMBARGO_EDGE_STYLE = "nacedge";
     private static final String EMBARGO_LABEL_STYLE = "naclab";
+    private static final String THIN_NODE_STYLE = "thinnode";
+    private static final String THIN_EDGE_STYLE = "thinedge";
+    private static final String THIN_LABEL_STYLE = "thinlab";
     private static final String ATTRIBUTE_NODE_STYLE = "attr";
     private static final String PRODUCT_NODE_STYLE = "prod";
     private static final String QUANTIFIER_NODE_STYLE = "quantnode";
@@ -1049,6 +1099,7 @@ public final class GraphToTikz {
     private static final String START_NODE_STYLE = "start";
     private static final String OPEN_NODE_STYLE = "open";
     private static final String WHITE_FILL = "whitefill";
+    private static final String BOLD_LINE = "bold";
     private static final String DOUBLE_DASH = "--";
     private static final String ANGLE = "-|";
     private static final String BEGIN_CONTROLS = ".. controls ";

@@ -17,7 +17,7 @@
 \newcommand{\blue}{blue!75!white}
 \newcommand{\bluefill}{blue!10}
 \newcommand{\grey}{black!8}
-\tikzstyle{whitefill}=[fill=white]
+\newcommand{\thin}{black!10}
 % LTS colours
 \tikzstyle{final}=[fill=red]
 \tikzstyle{start}=[fill=green]
@@ -50,6 +50,11 @@
 % Special styles (can be combined with the above)
 \tikzstyle{attr}=[shape=ellipse,inner sep=1pt]
 \tikzstyle{prod}=[shape=diamond,inner sep=1pt]
+\tikzstyle{whitefill}=[fill=white]
+\tikzstyle{bold}=[very thick]
+\tikzstyle{thinnode}=[draw=\thin,text=\thin,fill=white,,shape=rectangle]
+\tikzstyle{thinedge}=[draw,\thin,text=\thin,,-stealth']
+\tikzstyle{thinlab}=[text=\thin,fill=white,inner sep=2pt]
 
 % Ugly hack to allow nodes with multiple lines
 \newcommand{\ml}[1]{
