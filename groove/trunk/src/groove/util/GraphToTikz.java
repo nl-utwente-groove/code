@@ -66,11 +66,12 @@ public final class GraphToTikz {
         result.append(beginTikzFig());
         
         for (Node node : graph.nodeSet()) {
+            GraphJVertex vertex = model.getJVertex(node);
+            model.synchroniseLayout(vertex);
             JVertexLayout layout = null;
             if (layoutMap != null) {
                 layout = layoutMap.getNode(node);
             }
-            GraphJVertex vertex = model.getJVertex(node);
             boolean isEmphasized = model.isEmphasized(vertex);
             boolean isGrayedOut = model.isGrayedOut(vertex);
             result.append(convertNodeToTikzStr(vertex, layout, showBackground,
@@ -1060,7 +1061,7 @@ public final class GraphToTikz {
     // Tikz output
     private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG =
-                                               "\\begin{tikzpicture}[scale=2]";
+                                     "\\begin{tikzpicture}[scale=\\tikzscale]";
     private static final String END_TIKZ_FIG = "\\userdefinedmacro\n" +
         "\\end{tikzpicture}\n" + "\\renewcommand{\\userdefinedmacro}{\\relax}";
     private static final String BEGIN_NODE = "\\node";

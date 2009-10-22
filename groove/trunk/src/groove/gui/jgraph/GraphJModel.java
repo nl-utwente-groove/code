@@ -309,7 +309,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /** Stores the layout from the JModel back into the graph. */
-    void synchroniseLayout(GraphJCell jCell) {
+    public void synchroniseLayout(GraphJCell jCell) {
         LayoutMap<Node,Edge> currentLayout = GraphInfo.getLayoutMap(getGraph());
         // create the layout map if it does not yet exist
         if (currentLayout == null) {
