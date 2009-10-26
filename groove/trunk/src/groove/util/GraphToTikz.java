@@ -212,10 +212,12 @@ public final class GraphToTikz {
                                                labStyle, result);
                         break;
                     case GraphConstants.STYLE_BEZIER:
-                        appendBezierLayout(edge, layout, labStyle, result);
+                        appendBezierLayout(edge, layout, layoutMap, labStyle,
+                                           result);
                         break;
                     case GraphConstants.STYLE_SPLINE:
-                        appendSplineLayout(edge, layout, labStyle, result);
+                        appendSplineLayout(edge, layout, layoutMap, labStyle,
+                                           result);
                         break;
                     case JAttr.STYLE_MANHATTAN:
                         appendManhattanLayout(edge, layout, layoutMap,
@@ -226,7 +228,7 @@ public final class GraphToTikz {
                             "Unknown line style!");
                 }
             } else {
-                appendDefaultLayout(edge, labStyle, layoutMap, result);
+                appendDefaultLayout(edge, layoutMap, labStyle, result);
             }
         }
         
@@ -237,14 +239,14 @@ public final class GraphToTikz {
      * Creates an edge with a default layout. The edge is drawn as a straight
      * line from source to target node and the label is placed half-way.
      * @param edge the edge to be converted.
-     * @param labStyle a string describing the style to be used in the label.
      * @param layoutMap the layout information associated with the graph.
+     * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static void appendDefaultLayout(
             GraphJEdge edge,
-            String labStyle,
             LayoutMap<Node,Edge> layoutMap,
+            String labStyle,
             StringBuilder s) {
         
         GraphJVertex srcVertex = edge.getSourceVertex();
@@ -334,12 +336,14 @@ public final class GraphToTikz {
      * from the bezier lines.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
+     * @param layoutMap the layout information associated with the graph.
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static void appendBezierLayout(
             GraphJEdge edge,
             JEdgeLayout layout,
+            LayoutMap<Node,Edge> layoutMap,
             String labStyle,
             StringBuilder s) {
         
@@ -348,11 +352,18 @@ public final class GraphToTikz {
         List<Point2D> points = layout.getPoints();
         boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
 
-        appendNode(srcVertex, s); 
-        
         // Compute the bezier line.
         Bezier bezier = new Bezier(points.toArray(new Point2D[0]));
         Point2D[] bPoints = bezier.getPoints();
+        
+        if (bPoints == null) {
+            // The edge is with a bezier style but it does not have any bezier
+            // points, just use standard layout.
+            appendDefaultLayout(edge, layoutMap, labStyle, s);
+            return;
+        }
+        
+        appendNode(srcVertex, s);
         
         int i = 1; // Index for edge points.
         for (int j = 0; j < bPoints.length - 1; j++) {
@@ -394,18 +405,20 @@ public final class GraphToTikz {
      * This is not implemented yet. The Bezier style is used instead.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
+     * @param layoutMap the layout information associated with the graph.
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static void appendSplineLayout(
             GraphJEdge edge,
             JEdgeLayout layout,
+            LayoutMap<Node,Edge> layoutMap,
             String labStyle,
             StringBuilder s) {
     
         System.err.println("Sorry, the SPLINE line style is not yet " + 
                            "supported, using BEZIER style...");
-        appendBezierLayout(edge, layout, labStyle, s);
+        appendBezierLayout(edge, layout, layoutMap, labStyle, s);
     }    
 
     /**
