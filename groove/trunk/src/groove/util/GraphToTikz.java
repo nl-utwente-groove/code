@@ -843,7 +843,9 @@ public final class GraphToTikz {
         StringBuilder result = new StringBuilder();
         
         StringBuilder line = escapeSpecialChars(htmlLine);
-        if (line.indexOf(Converter.HTML_EXISTS) > -1) {
+        int i = line.indexOf(Converter.HTML_EXISTS);
+        if (i > -1) {
+            result.append(line.substring(0, i));
             result.append(EXISTS_STR);
         } else if (line.indexOf(Converter.HTML_FORALL) > -1) {
             if (line.indexOf("<" + Converter.SUPER_TAG_NAME + ">") > -1) {
@@ -972,9 +974,15 @@ public final class GraphToTikz {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (node.isProductNode()) {
             styles.add(PRODUCT_NODE_STYLE);
-        } else if (allLabels.contains(EXISTS) || allLabels.contains(FORALL) ||
-                   allLabels.contains(FORALLX)) {
-            styles.add(QUANTIFIER_NODE_STYLE);
+        } else {
+            for (String label : allLabels) {
+                if (label.contains(FORALL) || label.contains(EXISTS + ":") ||
+                    label.contains(FORALLX) || label.contains(EXISTS + "=")) {
+                    styles.add(QUANTIFIER_NODE_STYLE);
+                    break;
+                }
+            }
+            
         }
         
         // LTS nodes
@@ -1063,7 +1071,7 @@ public final class GraphToTikz {
     // Labels
     private static final String DEL_COL = "del:";
     private static final String DEL = "del";
-    private static final String EXISTS = "exists:";
+    private static final String EXISTS = "exists";
     private static final String FORALL = "forall:";
     private static final String FORALLX = "forallx:";
     private static final String NEW_COL = "new:";
