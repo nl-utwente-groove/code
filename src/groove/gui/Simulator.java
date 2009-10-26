@@ -3499,6 +3499,9 @@ public class Simulator {
                 currentConfluent =
                     Boolean.toString(ruleProperties.isConfluent());
                 currentRemark = ruleProperties.getRemark();
+                if (currentRemark == null) {
+                    currentRemark = "";
+                }
                 ruleProperties.clear();
             }
             PropertiesDialog dialog =
@@ -3539,34 +3542,17 @@ public class Simulator {
 
                         // Check that properties in the dialog frame were
                         // changed
-                        if (editedPriority == null) {
-                            editedProperties.put(GraphProperties.PRIORITY_KEY,
-                                Integer.toString(ruleProperties.getPriority()));
-                        } else {
-                            editedProperties.put(GraphProperties.PRIORITY_KEY,
-                                editedPriority);
-                        }
-                        if (editedEnabled == null) {
-                            editedProperties.put(GraphProperties.ENABLED_KEY,
-                                Boolean.toString(ruleProperties.isEnabled()));
-                        } else {
-                            editedProperties.put(GraphProperties.ENABLED_KEY,
-                                editedEnabled);
-                        }
-                        if (editedConfluent == null) {
-                            editedProperties.put(GraphProperties.CONFLUENT_KEY,
-                                Boolean.toString(ruleProperties.isConfluent()));
-                        } else {
-                            editedProperties.put(GraphProperties.CONFLUENT_KEY,
-                                editedConfluent);
-                        }
-                        if (editedRemark == null) {
-                            editedProperties.put(GraphProperties.REMARK_KEY,
-                                ruleProperties.getRemark());
-                        } else {
-                            editedProperties.put(GraphProperties.REMARK_KEY,
-                                editedRemark);
-                        }
+                        editedProperties.put(GraphProperties.PRIORITY_KEY,
+                            editedPriority == null ? currentPriority
+                                    : editedPriority);
+                        editedProperties.put(GraphProperties.ENABLED_KEY,
+                            editedEnabled == null ? currentEnabled
+                                    : editedEnabled);
+                        editedProperties.put(GraphProperties.CONFLUENT_KEY,
+                            editedConfluent == null ? currentConfluent
+                                    : editedConfluent);
+                        editedProperties.put(GraphProperties.REMARK_KEY,
+                            editedRemark == null ? currentRemark : editedRemark);
 
                     }
 
