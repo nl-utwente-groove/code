@@ -940,8 +940,9 @@ public class Simulator {
             // reset the start graph to null
             getGrammarView().removeStartGraph();
             setGrammar(getGrammarView());
+        } else {
+            this.stateJList.refreshList(true);
         }
-        this.stateJList.refreshList(true);
     }
 
     /**
@@ -1253,8 +1254,10 @@ public class Simulator {
         if (isStartGraph) {
             // reset the start graph to the renamed graph
             getGrammarView().setStartGraph(newName);
+            setGrammar(getGrammarView());
+        } else {
+            this.stateJList.refreshList(true);
         }
-        this.stateJList.refreshList(true);
     }
 
     /**
@@ -3257,10 +3260,12 @@ public class Simulator {
                     String newGraphName =
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
-                    AspectGraph newGraph =
-                        oldGraphView.getAspectGraph().clone();
-                    GraphInfo.setName(newGraph, newGraphName);
-                    doAddGraph(newGraph);
+                    if (newGraphName != null) {
+                        AspectGraph newGraph =
+                            oldGraphView.getAspectGraph().clone();
+                        GraphInfo.setName(newGraph, newGraphName);
+                        doAddGraph(newGraph);
+                    }
                 }
             }
         }
