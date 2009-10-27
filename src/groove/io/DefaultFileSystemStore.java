@@ -239,10 +239,10 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     }
 
     public String getLocation() {
-        if (this.url == null) {
-            return this.file.toString();
-        } else {
+        if (this.file == null) {
             return this.url.toString();
+        } else {
+            return this.file.toString();
         }
     }
 
