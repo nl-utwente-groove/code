@@ -64,6 +64,7 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.io.AspectGxl;
 import groove.io.Aut;
+import groove.io.DefaultFileSystemStore;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
@@ -819,7 +820,7 @@ public class Simulator {
 
     /**
      * Handles the execution of a {@link SaveGraphAction}. Calls
-     * {@link #doAddGraph(AspectGraph, boolean)} for the actual saving.
+     * {@link #doAddGraph(AspectGraph)} for the actual saving.
      * @param state <tt>true</tt> if it is a state that has to be saved
      *        (otherwise it is an LTS)
      * @param graph the graph to be saved
@@ -838,9 +839,30 @@ public class Simulator {
         if (selectedFile != null) {
             name = this.stateFilter.stripExtension(selectedFile.getName());
             GraphInfo.setName(graph, name);
-            doAddGraph(graph, true);
+            if (isFileInStore(selectedFile, getGrammarStore())) {
+                doAddGraph(graph);
+            } else {
+                try {
+                    this.graphLoader.marshalGraph(graph, selectedFile);
+                } catch (IOException exc) {
+                    showErrorDialog(String.format(
+                        "Error while saving graph to '%s'", selectedFile), exc);
+                }
+            }
         }
         return selectedFile;
+    }
+
+    /** Tests if a given file refers to a graph within the current system store. */
+    private boolean isFileInStore(File file, SystemStore store) {
+        if (store instanceof DefaultFileSystemStore) {
+            String storeLocation =
+                new File(store.getLocation()).getAbsolutePath();
+            String fileLocation = file.getParentFile().getAbsolutePath();
+            return storeLocation.equals(fileLocation);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -870,18 +892,16 @@ public class Simulator {
     }
 
     /**
-     * Saves a given graph to a given file.
+     * Adds a given graph to the graphs in this grammar
      */
-    void doAddGraph(AspectGraph graph, boolean graphLast) {
+    void doAddGraph(AspectGraph graph) {
         try {
             if (graph.hasErrors()) {
                 showErrorDialog("Errors in graph", new FormatException(
                     graph.getErrors()));
             } else {
                 getGrammarStore().putGraph(graph);
-                if (graphLast) {
-                    getStateList().refreshList(true);
-                }
+                getStateList().refreshList(true);
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving graph '%s'",
@@ -895,14 +915,11 @@ public class Simulator {
      * @param ruleName the name of the new rule
      * @param ruleAsGraph the new rule, given as an aspect graph
      */
-    void doAddRule(RuleName ruleName, AspectGraph ruleAsGraph, boolean ruleLast) {
+    void doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
         try {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             getGrammarStore().putRule(ruleAsGraph);
             setGrammar(getGrammarView());
-            if (ruleLast) {
-                setRule(ruleName);
-            }
         } catch (IOException exc) {
             showErrorDialog("Error while saving rule", exc);
         } catch (UnsupportedOperationException u) {
@@ -913,7 +930,7 @@ public class Simulator {
     /**
      * Deletes a graph from the start graph view.
      */
-    void doDeleteGraph(String name, boolean graphLast) {
+    void doDeleteGraph(String name) {
         // test now if this is the start state, before it is deleted from the
         // grammar
         boolean isStartGraph =
@@ -923,11 +940,8 @@ public class Simulator {
             // reset the start graph to null
             getGrammarView().removeStartGraph();
             setGrammar(getGrammarView());
-        } else {
-            if (graphLast) {
-                this.stateJList.refreshList(true);
-            }
         }
+        this.stateJList.refreshList(true);
     }
 
     /**
@@ -944,14 +958,12 @@ public class Simulator {
     /** Inverts the enabledness of the current rule, and stores the result. */
     void doEnableRule() {
         // Multiple selection - mzimakova
-        for (int i = 0; i < getCurrentRuleSet().size(); i++) {
-            // AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
-            AspectGraph ruleGraph = getCurrentRuleSet().get(i).getAspectGraph();
+        for (AspectualRuleView rule : getCurrentRuleSet()) {
+            AspectGraph ruleGraph = rule.getAspectGraph();
             GraphProperties properties =
                 GraphInfo.getProperties(ruleGraph, true);
             properties.setEnabled(!properties.isEnabled());
-            boolean last = (i == getCurrentRuleSet().size() - 1);
-            doAddRule(getCurrentRuleSet().get(i).getRuleName(), ruleGraph, last);
+            doAddRule(rule.getRuleName(), ruleGraph);
         }
     }
 
@@ -1229,7 +1241,7 @@ public class Simulator {
      * Renames one of the graphs in the graph list. If the graph was the start
      * graph, uses the renamed graph again as start graph.
      */
-    void doRenameGraph(AspectGraph graph, String newName, boolean graphLast) {
+    void doRenameGraph(AspectGraph graph, String newName) {
         String oldName = GraphInfo.getName(graph);
         // test now if this is the start state, before it is deleted from the
         // grammar
@@ -1237,15 +1249,12 @@ public class Simulator {
             oldName.equals(getGrammarView().getStartGraphName());
         getGrammarStore().deleteGraph(oldName);
         GraphInfo.setName(graph, newName);
-        doAddGraph(graph, graphLast);
+        doAddGraph(graph);
         if (isStartGraph) {
             // reset the start graph to the renamed graph
             getGrammarView().setStartGraph(newName);
-        } else {
-            if (graphLast) {
-                this.stateJList.refreshList(true);
-            }
         }
+        this.stateJList.refreshList(true);
     }
 
     /**
@@ -3236,10 +3245,12 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection - mzimakova
-            for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-                String oldGraphName =
-                // (String) Simulator.this.stateJList.getSelectedValue();
-                    (String) Simulator.this.stateJList.getSelectedValues()[i];
+            // copy selected graph names
+            List<String> selectedGraphs = new ArrayList<String>();
+            for (Object name : Simulator.this.stateJList.getSelectedValues()) {
+                selectedGraphs.add((String) name);
+            }
+            for (String oldGraphName : selectedGraphs) {
                 if (oldGraphName != null) {
                     AspectualGraphView oldGraphView =
                         getGrammarView().getGraphView(oldGraphName);
@@ -3249,9 +3260,7 @@ public class Simulator {
                     AspectGraph newGraph =
                         oldGraphView.getAspectGraph().clone();
                     GraphInfo.setName(newGraph, newGraphName);
-                    boolean last =
-                        (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
-                    doAddGraph(newGraph, last);
+                    doAddGraph(newGraph);
                 }
             }
         }
@@ -3271,19 +3280,21 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             // Multiple selection - mzimakova
             if (confirmAbandon(false)) {
-                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
+                RuleName newRuleName = null;
+                for (AspectualRuleView rule : getCurrentRuleSet()) {
                     // AspectGraph oldRuleGraph =
                     // getCurrentRule().getAspectGraph();
-                    AspectGraph oldRuleGraph =
-                        getCurrentRuleSet().get(i).getAspectGraph();
-                    RuleName newRuleName =
-                        askNewRuleName("Select new rule name",
-                        // getCurrentRule().getName(), true);
-                            getCurrentRuleSet().get(i).getName(), true);
+                    AspectGraph oldRuleGraph = rule.getAspectGraph();
+                    newRuleName =
+                        askNewRuleName("Select new rule name", rule.getName(),
+                            true);
                     if (newRuleName != null) {
-                        boolean last = (i == getCurrentRuleSet().size() - 1);
-                        doAddRule(newRuleName, oldRuleGraph.clone(), last);
+                        doAddRule(newRuleName, oldRuleGraph.clone());
                     }
+                }
+                // select last copied rule
+                if (newRuleName != null) {
+                    setRule(newRuleName);
                 }
             }
         }
@@ -3304,11 +3315,14 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection - mzimakova
+            // copy selected graph names
+            List<String> selectedGraphs = new ArrayList<String>();
+            for (Object name : Simulator.this.stateJList.getSelectedValues()) {
+                selectedGraphs.add((String) name);
+            }
             String question = "Delete graph(s) '%s'";
-            for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-                String graphName =
-                // (String) Simulator.this.stateJList.getSelectedValue();
-                    (String) Simulator.this.stateJList.getSelectedValues()[i];
+            for (int i = 0; i < selectedGraphs.size(); i++) {
+                String graphName = selectedGraphs.get(i);
                 if (graphName != null) {
                     question = String.format(question, graphName);
                     boolean isStartGraph =
@@ -3316,7 +3330,7 @@ public class Simulator {
                     if (isStartGraph) {
                         question = question + " (start graph)";
                     }
-                    if (i < Simulator.this.stateJList.getSelectedIndices().length - 1) {
+                    if (i < selectedGraphs.size() - 1) {
                         question = question + ", '%s'";
                     } else {
                         question = question + "?";
@@ -3324,14 +3338,8 @@ public class Simulator {
                 }
             }
             if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
-                for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-                    String graphName =
-                        (String) Simulator.this.stateJList.getSelectedValues()[i];
-                    if (graphName != null) {
-                        boolean last =
-                            (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
-                        doDeleteGraph(graphName, last);
-                    }
+                for (String graphName : selectedGraphs) {
+                    doDeleteGraph(graphName);
                 }
             }
         }
@@ -3365,13 +3373,10 @@ public class Simulator {
                 }
             }
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
-                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
-                    RuleName ruleName =
-                        getCurrentRuleSet().get(i).getRuleName();
-                    doDeleteRule(ruleName);
+                for (AspectualRuleView rule : getCurrentRuleSet()) {
+                    doDeleteRule(rule.getRuleName());
                 }
             }
-
         }
     }
 
@@ -3509,7 +3514,6 @@ public class Simulator {
                     GraphProperties.DEFAULT_USER_KEYS, true);
 
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
-
                 // Get properties from the dialog frame
                 Map<String,String> editedProperties =
                     dialog.getEditedProperties();
@@ -3560,8 +3564,7 @@ public class Simulator {
                     ruleProperties.clear();
                     ruleProperties.putAll(editedProperties);
                     doDeleteRule(rule.getRuleName());
-                    boolean last = (i == getCurrentRuleSet().size() - 1);
-                    doAddRule(rule.getRuleName(), ruleGraph, last);
+                    doAddRule(rule.getRuleName(), ruleGraph);
                 }
             }
         }
@@ -3612,7 +3615,7 @@ public class Simulator {
                                 askNewRuleName("Name for edited rule",
                                     ruleName, false);
                             if (newRuleName != null) {
-                                doAddRule(newRuleName, ruleAsAspectGraph, true);
+                                doAddRule(newRuleName, ruleAsAspectGraph);
                             }
                         }
                     }
@@ -3961,7 +3964,6 @@ public class Simulator {
                     states.add((GraphState) object);
                 }
             }
-            visualize = states;
         }
 
         /** LTS generation strategy of this thread. */
@@ -4055,7 +4057,8 @@ public class Simulator {
                         new RuleName(GraphInfo.getName(ruleGraph));
                     if (getGrammarView().getRuleView(ruleName) == null
                         || confirmOverwriteRule(ruleName)) {
-                        doAddRule(ruleName, ruleGraph, true);
+                        doAddRule(ruleName, ruleGraph);
+                        setRule(ruleName);
                     }
                 } catch (IOException e) {
                     showErrorDialog("Error loading rule", e);
@@ -4224,7 +4227,8 @@ public class Simulator {
                         new EditorDialog(getFrame(), getOptions(), newRule) {
                             @Override
                             public void finish() {
-                                doAddRule(ruleName, toAspectGraph(), true);
+                                doAddRule(ruleName, toAspectGraph());
+                                setRule(ruleName);
                             }
                         };
                     dialog.start();
@@ -4357,10 +4361,12 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection - mzimakova
-            for (int i = 0; i < Simulator.this.stateJList.getSelectedIndices().length; i++) {
-                String oldGraphName =
-                // (String) Simulator.this.stateJList.getSelectedValue();
-                    (String) Simulator.this.stateJList.getSelectedValues()[i];
+            // copy selected graph names
+            List<String> selectedGraphs = new ArrayList<String>();
+            for (Object name : Simulator.this.stateJList.getSelectedValues()) {
+                selectedGraphs.add((String) name);
+            }
+            for (String oldGraphName : selectedGraphs) {
                 if (oldGraphName != null) {
                     AspectualGraphView graph =
                         getGrammarView().getGraphView(oldGraphName);
@@ -4371,10 +4377,7 @@ public class Simulator {
                         askNewGraphName("Select new graph name", oldGraphName,
                             false);
                     if (!oldGraphName.equals(newGraphName)) {
-                        boolean last =
-                            (i == Simulator.this.stateJList.getSelectedIndices().length - 1);
-                        doRenameGraph(graph.getAspectGraph(), newGraphName,
-                            last);
+                        doRenameGraph(graph.getAspectGraph(), newGraphName);
                     }
                 }
             }
@@ -4393,6 +4396,16 @@ public class Simulator {
              */
         }
 
+        /** This action is disabled if there is more than one selected rule. */
+        @Override
+        public boolean isEnabled() {
+            if (getCurrentRuleSet().size() != 1) {
+                return false;
+            } else {
+                return super.isEnabled();
+            }
+        }
+
         public void refresh() {
             setEnabled(getCurrentRule() != null);
         }
@@ -4401,19 +4414,20 @@ public class Simulator {
             if (confirmAbandon(true)) {
                 // Multiple selection - mzimakova
                 // RuleName oldRuleName = getCurrentRule().getRuleName();
-                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
-                    RuleName oldRuleName =
-                        getCurrentRuleSet().get(i).getRuleName();
-                    AspectGraph ruleGraph =
-                        getCurrentRuleSet().get(i).getAspectGraph();
-                    RuleName newRuleName =
+                RuleName newRuleName = null;
+                for (AspectualRuleView rule : getCurrentRuleSet()) {
+                    RuleName oldRuleName = rule.getRuleName();
+                    AspectGraph ruleGraph = rule.getAspectGraph();
+                    newRuleName =
                         askNewRuleName("Select new rule name",
                             oldRuleName.text(), true);
                     if (newRuleName != null) {
                         doDeleteRule(oldRuleName);
-                        boolean last = (i == getCurrentRuleSet().size() - 1);
-                        doAddRule(newRuleName, ruleGraph, last);
+                        doAddRule(newRuleName, ruleGraph);
                     }
+                }
+                if (newRuleName != null) {
+                    setRule(newRuleName);
                 }
             }
         }
@@ -4472,7 +4486,7 @@ public class Simulator {
     /**
      * Action to save the state or LTS as a graph.
      * @see Simulator#handleSaveGraph(boolean, AspectGraph)
-     * @see Simulator#doAddGraph(Graph)
+     * @see Simulator#doAddGraph(AspectGraph)
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
@@ -4913,7 +4927,4 @@ public class Simulator {
 
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
-
-    private static Collection<GraphState> visualize; // = new
-    // HashSet<GraphState>();
 }
