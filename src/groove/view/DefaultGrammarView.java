@@ -101,7 +101,6 @@ public class DefaultGrammarView implements GrammarView {
         return Collections.unmodifiableSet(this.ruleMap.keySet());
     }
 
-
     /**
      * Adds a rule based on a given rule view.
      * @see #getRuleView(RuleName)
@@ -156,11 +155,7 @@ public class DefaultGrammarView implements GrammarView {
         }
     }
 
-    /**
-     * Sets the start graph to a given graph.
-     * @throws IllegalArgumentException if <code>startGraph</code> does not have
-     *         a graph role
-     */
+    @Override
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (!GraphInfo.hasGraphRole(startGraph)) {

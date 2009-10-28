@@ -29,7 +29,10 @@ public interface GrammarView extends
         GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView>,
         View<GraphGrammar> {
     /**
-     * Sets the start graph to a given graph, or to <code>null</code>.
+     * Sets the start graph to a given graph, or to <code>null</code>. This
+     * implies the start graph is not one of the graphs stored in the rule
+     * system; correspondingly, the start graph name is set to <code>null</code>
+     * .
      * @param startGraph the new start graph; if <code>null</code>, the start
      *        graph is unset
      * @throws IllegalArgumentException if <code>startGraph</code> does not have

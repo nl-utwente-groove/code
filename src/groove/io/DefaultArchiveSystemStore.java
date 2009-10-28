@@ -322,7 +322,7 @@ public class DefaultArchiveSystemStore implements SystemStore {
      * Returns the string representation of the URL or file this store was
      * loaded from.
      */
-    public String getLocation() {
+    public Object getLocation() {
         return this.location;
     }
 

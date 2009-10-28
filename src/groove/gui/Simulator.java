@@ -855,14 +855,16 @@ public class Simulator {
 
     /** Tests if a given file refers to a graph within the current system store. */
     private boolean isFileInStore(File file, SystemStore store) {
+        boolean result = false;
         if (store instanceof DefaultFileSystemStore) {
-            String storeLocation =
-                new File(store.getLocation()).getAbsolutePath();
-            String fileLocation = file.getParentFile().getAbsolutePath();
-            return storeLocation.equals(fileLocation);
-        } else {
-            return false;
+            Object storeLocation = store.getLocation();
+            if (storeLocation instanceof File) {
+                String storePath = ((File) storeLocation).getAbsolutePath();
+                String filePath = file.getParentFile().getAbsolutePath();
+                result = storePath.equals(filePath);
+            }
         }
+        return result;
     }
 
     /**
@@ -983,8 +985,9 @@ public class Simulator {
             FormulaDialog dialog = getFormulaDialog();
             dialog.showDialog(getFrame());
             String property = dialog.getProperty();
-            if (property == null)
+            if (property == null) {
                 return;
+            }
             ((ModelCheckingScenario) scenario).setProperty(property);
         }
 
@@ -998,8 +1001,9 @@ public class Simulator {
             dialog.setGrammar(getGTS().getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
-            if (boundary == null)
+            if (boundary == null) {
                 return;
+            }
             ((BoundedModelCheckingStrategy) scenario.getStrategy()).setBoundary(boundary);
         }
 
@@ -4716,9 +4720,9 @@ public class Simulator {
          * of loaded grammars. This class will deal with any updates that have
          * to be made accordingly
          */
-        public void updateLoadGrammar(String location) {
+        public void updateLoadGrammar(Object location) {
             try {
-                LoadAction newAction = new LoadAction(location);
+                LoadAction newAction = new LoadAction(location.toString());
                 this.history.remove(newAction);
                 this.history.add(0, newAction);
                 // trimming list to 10 elements

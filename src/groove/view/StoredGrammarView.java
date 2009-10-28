@@ -44,9 +44,8 @@ import java.util.Set;
  */
 public class StoredGrammarView implements GrammarView, Observer {
     /**
-     * Constructs a grammar view from a rule system store. If the store is
-     * modifiable and the view should be kept in sync, it should be added as
-     * observer to the store. The start graph name is the default one.
+     * Constructs a grammar view from a rule system store. The start graph name
+     * is the default one.
      * @see Groove#DEFAULT_START_GRAPH_NAME
      */
     public StoredGrammarView(SystemStore store) {
@@ -55,16 +54,15 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /**
      * Constructs a grammar view from a rule system store and a start graph
-     * name. If the store is modifiable and the view should be kept in sync, it
-     * should be added as observer to the store.
-     * @param startGrameName the name of the graph to be used as start state; if
+     * name.
+     * @param startGraphName the name of the graph to be used as start state; if
      *        <code>null</code>, the default start graph name is used.
      */
-    public StoredGrammarView(SystemStore store, String startGrameName) {
+    public StoredGrammarView(SystemStore store, String startGraphName) {
         this.store = store;
         loadControlMap();
-        setStartGraph(this.startGraphName == null
-                ? Groove.DEFAULT_START_GRAPH_NAME : startGrameName);
+        setStartGraph(startGraphName == null ? Groove.DEFAULT_START_GRAPH_NAME
+                : startGraphName);
     }
 
     /** Returns the name of this grammar view. */
@@ -150,7 +148,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.startGraph;
     }
 
-    /** Sets the start graph to a given graph. */
+    @Override
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (!GraphInfo.hasGraphRole(startGraph)) {
