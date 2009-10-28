@@ -44,7 +44,7 @@ public interface GenericSystemStore<R,G> {
      * place from where the store was obtained.
      * @return the location of this store; cannot be <code>null</code> or empty.
      */
-    public String getLocation();
+    public Object getLocation();
 
     /** Immutable view on the rulename-to-rule map in the store. */
     public Map<RuleName,R> getRules();

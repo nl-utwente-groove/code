@@ -238,7 +238,7 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         return this.view;
     }
 
-    public String getLocation() {
+    public Object getLocation() {
         if (this.file == null) {
             return this.url.toString();
         } else {
@@ -286,7 +286,8 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     @Override
     public String toString() {
         String location =
-            this.file == null ? getLocation() : this.file.getParent();
+            this.file == null ? getLocation().toString()
+                    : this.file.getParent();
         return getName() + " - " + location;
     }
 

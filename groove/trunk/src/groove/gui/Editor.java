@@ -1461,8 +1461,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
         JOptionPane previewPane =
             new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
-        previewPane.setOptions(new Object[] {createOkButtonOnPreviewDialog(okOption, previewPane, propertiesDialog),
-                                             createCancelButtonOnPreviewDialog(Options.CANCEL_BUTTON, previewPane, propertiesDialog)});
+        previewPane.setOptions(new Object[] {
+            createOkButtonOnPreviewDialog(okOption, previewPane,
+                propertiesDialog),
+            createCancelButtonOnPreviewDialog(Options.CANCEL_BUTTON,
+                previewPane, propertiesDialog)});
         JDialog dialog =
             previewPane.createDialog(getFrame(), String.format("%s preview",
                 getRole(true)));
@@ -1474,8 +1477,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             propertiesDialog.getEditedProperties()));
         Object response = previewPane.getValue();
         this.previewSize = dialog.getSize();
-        if (response instanceof JButton &&
-            okOption.equals(((JButton) response).getText())) {
+        if (response instanceof JButton
+            && okOption.equals(((JButton) response).getText())) {
             return previewModel;
         } else {
             return null;
@@ -1483,14 +1486,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     }
 
     /*
-     * Specialized listeners for the buttons on the showPreviewDialog.
-     * Same functionality as in PropertiesDialog.
+     * Specialized listeners for the buttons on the showPreviewDialog. Same
+     * functionality as in PropertiesDialog.
      */
     private class CloseListener implements ActionListener {
         JOptionPane previewPane;
         PropertiesDialog propertiesDialog;
-    
-        public CloseListener(JOptionPane previewPane, PropertiesDialog propertiesDialog) {
+
+        public CloseListener(JOptionPane previewPane,
+                PropertiesDialog propertiesDialog) {
             this.previewPane = previewPane;
             this.propertiesDialog = propertiesDialog;
         }
@@ -1502,16 +1506,19 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     }
 
     /*
-     * Specialized OK button for the showPreviewDialog.
-     * Same functionality as in PropertiesDialog.
-     * Signals the editors to stop editing, which ensures that partially edited results are not lost.
+     * Specialized OK button for the showPreviewDialog. Same functionality as in
+     * PropertiesDialog. Signals the editors to stop editing, which ensures that
+     * partially edited results are not lost.
      */
-    private JButton createOkButtonOnPreviewDialog(String message, JOptionPane previewPane, PropertiesDialog propertiesDialog) {
+    private JButton createOkButtonOnPreviewDialog(String message,
+            JOptionPane previewPane, PropertiesDialog propertiesDialog) {
         JButton theButton = new JButton(message);
-        theButton.addActionListener(new CloseListener(previewPane, propertiesDialog) {
+        theButton.addActionListener(new CloseListener(previewPane,
+            propertiesDialog) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TableCellEditor editor = this.propertiesDialog.getInnerTable().getCellEditor();
+                TableCellEditor editor =
+                    this.propertiesDialog.getInnerTable().getCellEditor();
                 if (editor == null || editor.stopCellEditing()) {
                     super.actionPerformed(e);
                 }
@@ -1521,12 +1528,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     }
 
     /*
-     * Specialized cancel button for the showPreviewDialog.
-     * Same functionality as in PropertiesDialog.
+     * Specialized cancel button for the showPreviewDialog. Same functionality
+     * as in PropertiesDialog.
      */
-    private JButton createCancelButtonOnPreviewDialog(String message, JOptionPane previewPane, PropertiesDialog propertiesDialog) {
+    private JButton createCancelButtonOnPreviewDialog(String message,
+            JOptionPane previewPane, PropertiesDialog propertiesDialog) {
         JButton theButton = new JButton(message);
-        theButton.addActionListener(new CloseListener(previewPane, propertiesDialog));
+        theButton.addActionListener(new CloseListener(previewPane,
+            propertiesDialog));
         return theButton;
     }
 
@@ -1595,12 +1604,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         // to twice its normal size. This does not affect the final size of
         // the exported figure, hence it can be considered harmless... ;P
         Dimension oldPrefSize = jGraph.getPreferredSize();
-        Dimension newPrefSize = new Dimension(oldPrefSize.width * 2,
-                                              oldPrefSize.height * 2);
+        Dimension newPrefSize =
+            new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
         jGraph.setSize(newPrefSize);
         return jGraph;
     }
-    
+
     /**
      * Sets the current file to a given value.
      */
