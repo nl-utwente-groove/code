@@ -4695,9 +4695,8 @@ public class Simulator {
                 try {
                     this.history.add(new LoadAction(location));
                 } catch (IOException exc) {
-                    // url should never be malformed, since it appears only in
-                    // the history when we could previously load a grammar from
-                    // it...
+                    // if we can't load from a location, just
+                    // omit it from the history
                 }
             }
 
@@ -4731,9 +4730,8 @@ public class Simulator {
                 }
                 synch();
             } catch (IOException exc) {
-                // url should never be malformed, since it appears only in
-                // the history when we could previously load a grammar from
-                // it...
+                // if we can't load from a location, just
+                // omit it from the history
             }
         }
 
