@@ -988,7 +988,10 @@ public class Simulator {
     /** Inverts the enabledness of the current rule, and stores the result. */
     void doEnableRule() {
         // Multiple selection - mzimakova
-        for (AspectualRuleView rule : getCurrentRuleSet()) {
+        // copy the selected rules to avoid concurrent modifications
+        List<AspectualRuleView> rules =
+            new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+        for (AspectualRuleView rule : rules) {
             AspectGraph ruleGraph = rule.getAspectGraph();
             GraphProperties properties =
                 GraphInfo.getProperties(ruleGraph, true);
@@ -3336,7 +3339,10 @@ public class Simulator {
             // Multiple selection - mzimakova
             if (confirmAbandon(false)) {
                 RuleName newRuleName = null;
-                for (AspectualRuleView rule : getCurrentRuleSet()) {
+                // copy the selected rules to avoid concurrent modifications
+                List<AspectualRuleView> rules =
+                    new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+                for (AspectualRuleView rule : rules) {
                     // AspectGraph oldRuleGraph =
                     // getCurrentRule().getAspectGraph();
                     AspectGraph oldRuleGraph = rule.getAspectGraph();
@@ -3418,17 +3424,20 @@ public class Simulator {
             // Multiple selection - mzimakova
             // RuleName ruleName = getCurrentRule().getRuleName();
             String question = "Delete rule(s) '%s'";
-            for (int i = 0; i < getCurrentRuleSet().size(); i++) {
-                RuleName ruleName = getCurrentRuleSet().get(i).getRuleName();
+            // copy the selected rules to avoid concurrent modifications
+            List<AspectualRuleView> rules =
+                new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+            for (int i = 0; i < rules.size(); i++) {
+                RuleName ruleName = rules.get(i).getRuleName();
                 question = String.format(question, ruleName);
-                if (i < getCurrentRuleSet().size() - 1) {
+                if (i < rules.size() - 1) {
                     question = question + ", '%s'";
                 } else {
                     question = question + "?";
                 }
             }
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
-                for (AspectualRuleView rule : getCurrentRuleSet()) {
+                for (AspectualRuleView rule : rules) {
                     doDeleteRule(rule.getRuleName());
                 }
             }
@@ -3517,12 +3526,15 @@ public class Simulator {
                     editedProperties.get(GraphProperties.CONFLUENT_KEY);
                 String editedRemark =
                     editedProperties.get(GraphProperties.REMARK_KEY);
-                for (int i = 0; i < getCurrentRuleSet().size(); i++) {
-                    rule = getCurrentRuleSet().get(i);
+                // copy the selected rules to avoid concurrent modifications
+                List<AspectualRuleView> rules =
+                    new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+                for (int i = 0; i < rules.size(); i++) {
+                    rule = rules.get(i);
                     ruleGraph = rule.getAspectGraph();
                     ruleProperties = GraphInfo.getProperties(ruleGraph, true);
 
-                    if (getCurrentRuleSet().size() > 1) {
+                    if (rules.size() > 1) {
 
                         // restore current rule properties
                         if (i == 0) {
@@ -4432,7 +4444,10 @@ public class Simulator {
                 // Multiple selection - mzimakova
                 // RuleName oldRuleName = getCurrentRule().getRuleName();
                 RuleName newRuleName = null;
-                for (AspectualRuleView rule : getCurrentRuleSet()) {
+                // copy the selected rules to avoid concurrent modifications
+                List<AspectualRuleView> rules =
+                    new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+                for (AspectualRuleView rule : rules) {
                     RuleName oldRuleName = rule.getRuleName();
                     AspectGraph ruleGraph = rule.getAspectGraph();
                     newRuleName =
