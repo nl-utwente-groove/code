@@ -1044,7 +1044,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         protected final boolean allCells;
         /** Switch indication that the action is enabled for all j-vertices. */
         protected final boolean vertexOnly;
-        /** The first currently selected j-cell of the right tyope. */
+        /** The first currently selected j-cell of the right type. */
         protected JCell jCell;
         /** List list of currently selected j-cells of the right type. */
         protected final List<JCell> jCells;
@@ -1060,6 +1060,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         AddPointAction() {
             super(Options.ADD_POINT_ACTION, false);
             putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return this.jCells.size() == 1;
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -1109,6 +1114,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         RemovePointAction() {
             super(Options.REMOVE_POINT_ACTION, false);
             putValue(ACCELERATOR_KEY, Options.REMOVE_POINT_KEY);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return this.jCells.size() == 1;
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -1423,8 +1433,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Mouse listener that creates the popup menu and switches the view to the
-     * rule panel on double-clicks.
+     * Mouse listener that creates the popup menu and adds and deletes points on
+     * appropriate events.
      */
     private class MyMouseListener extends MouseAdapter {
         /** Empty constructor wit the correct visibility. */
