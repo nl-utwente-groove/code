@@ -61,6 +61,12 @@ public class AspectEdge extends
     AspectEdge(AspectNode source, AspectNode target, AspectParseData parseData)
         throws FormatException {
         super(source, parseData.getLabel(), target);
+        for (AspectValue value : parseData.getDeclaredValues()) {
+            if (!value.isEdgeValue()) {
+                throw new FormatException(
+                    "Aspect value '%s' cannot be used on edges", value);
+            }
+        }
         this.parseData = parseData;
         testLabel();
     }
@@ -171,9 +177,9 @@ public class AspectEdge extends
      * @param values the explicit aspect values for the edge
      * @return an aspect map combining the explicit and the inferred aspect
      *         values
-     * @throws FormatException if <code>values</code> contains duplicate
-     *         values for an aspect, or the values are inconsistent with the
-     *         inferred values
+     * @throws FormatException if <code>values</code> contains duplicate values
+     *         for an aspect, or the values are inconsistent with the inferred
+     *         values
      */
     final protected AspectMap computeDeclaredAspectMap(AspectValue[] values)
         throws FormatException {
