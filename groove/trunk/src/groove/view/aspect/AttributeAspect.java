@@ -16,8 +16,8 @@
  */
 package groove.view.aspect;
 
-import groove.algebra.AlgebraRegister;
 import groove.algebra.Algebra;
+import groove.algebra.AlgebraRegister;
 import groove.algebra.Operation;
 import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
@@ -50,12 +50,12 @@ public class AttributeAspect extends AbstractAspect {
 
     /**
      * Checks if the context of an attribute-valued aspect node in an aspect
-     * graph is correct, in the following sense. For a {@link #PRODUCT} node, correctness
-     * means all incident edges are outgoing, and the {@link #ARGUMENT} edges
-     * are numbered in the range <code>0..arity</code>, where
-     * <code>arity</code> is the number of arguments expected by the outgoing
-     * operation edges. For a {@link #VALUE} node, correctness means all
-     * incident edges are incoming, and of equal type if they are operation
+     * graph is correct, in the following sense. For a {@link #PRODUCT} node,
+     * correctness means all incident edges are outgoing, and the
+     * {@link #ARGUMENT} edges are numbered in the range <code>0..arity</code>,
+     * where <code>arity</code> is the number of arguments expected by the
+     * outgoing operation edges. For a {@link #VALUE} node, correctness means
+     * all incident edges are incoming, and of equal type if they are operation
      * edges.
      */
     @Override
@@ -109,7 +109,7 @@ public class AttributeAspect extends AbstractAspect {
                     // since these may be injectivity constraints
                     // real outgoing edges can never be matched, but that's a
                     // type error
-                    
+
                     // if edge edge represents a constant or operator,
                     // establish its (result) type
                     String edgeType = null;
@@ -162,244 +162,256 @@ public class AttributeAspect extends AbstractAspect {
     static public boolean isTypeElement(AspectElement elem) {
         return algebraMap.containsKey(elem);
     }
-//
-//    /**
-//     * Creates an attribute-related node from a given {@link AspectNode} found
-//     * in a given {@link AspectGraph}. The type of the resulting node depends
-//     * on the {@link AttributeAspect} value of the given node and its incident
-//     * edges. The result is a {@link VariableNode} or {@link ProductNode}, or
-//     * <code>null</code> if the node contains no special
-//     * {@link AttributeAspect} value. An exception is thrown if the context of
-//     * the node in the graph is incorrect.
-//     * @param node the node for which we want an attribute-related node
-//     * @param graph the graph containing <code>node</code>
-//     * @return a {@link VariableNode} or {@link ProductNode} corresponding to
-//     *         <code>node</code>, or <code>null</code>
-//     * @throws FormatException if attribute-related errors are found in
-//     *         <code>graph</code>
-//     */
-//    public static Node createAttributeNode(AspectNode node, AspectGraph graph)
-//        throws FormatException {
-//        Node result;
-//        AspectValue attributeValue = getAttributeValue(node);
-//        if (attributeValue == null) {
-//            result = null;
-//        } else if (attributeValue == VALUE) {
-//            result = createVariableNode(node, graph);
-//        } else {
-//            assert attributeValue == PRODUCT : String.format(
-//                "Illegal attribute aspect value: %s", attributeValue);
-//            result = createProductNode(node, graph);
-//        }
-//        return result;
-//    }
-//
-//    /**
-//     * Creates a {@link VariableNode} corresponding to a given aspect node whose
-//     * {@link AttributeAspect} value equals {@link #VALUE}. This is either a
-//     * variable node (if the original node has no outgoing edges), or a constant
-//     * node whose value depends on the label of the node's self-edge.
-//     * @param node the node for which a {@link VariableNode} is to be created
-//     * @param graph the graph in which <code>node</code> occurs
-//     * @throws FormatException if the outgoing edges of <code>node</code> are
-//     *         incorrect
-//     */
-//    private static VariableNode createVariableNode(AspectNode node, AspectGraph graph)
-//        throws FormatException {
-//        VariableNode result;
-//        // check if there is a single constant edge on this node
-//        Collection<AspectEdge> outEdges = graph.outEdgeSet(node);
-//        Set<AspectEdge> attributeEdges = new HashSet<AspectEdge>();
-//        for (AspectEdge outEdge : outEdges) {
-//            if (getAttributeValue(outEdge) != null) {
-//                attributeEdges.add(outEdge);
-//            }
-//        }
-//        if (attributeEdges.isEmpty()) {
-//            result = new VariableNode();
-//        } else if (attributeEdges.size() > 1) {
-//            throw new FormatException("Too many edges on constant node: %s",
-//                attributeEdges);
-//        } else {
-//            AspectEdge attributeEdge = attributeEdges.iterator().next();
-//            AspectValue algebraValue = getAttributeValue(attributeEdge);
-//            if (algebraValue == null) {
-//                throw new FormatException(
-//                    "Label %s on value node should be a constant",
-//                    attributeEdge.getLabelText());
-//            }
-//            Algebra algebra = algebraMap.get(algebraValue);
-//            if (algebra == null) {
-//                throw new FormatException(
-//                    "Label %s on value node should be a constant",
-//                    attributeEdge.getLabelText());
-//            }
-//            try {
-//                Operation nodeValue =
-//                    algebra.getOperation(attributeEdge.label().text());
-//                if (!(nodeValue instanceof Constant)) {
-//                    throw new FormatException(
-//                        "Operation %s on value node should be a constant",
-//                        attributeEdge.label());
-//                }
-//                result = new VariableNode((Constant) nodeValue);
-//            } catch (UnknownSymbolException exc) {
-//                throw new FormatException(exc.getMessage());
-//            }
-//        }
-//        return result;
-//    }
-//
-//    /**
-//     * Creates a product node corresponding to a node with
-//     * {@link AttributeAspect} value {@link #PRODUCT}. This only succeeds if
-//     * the outgoing edges form a consecutive range of argument numbers, without
-//     * duplication.
-//     * @param node the node for which a {@link ProductNode} is to be created
-//     * @param graph the graph in which <code>node</code> occurs
-//     * @throws FormatException if the outgoing edges of <code>node</code> are
-//     *         incorrect
-//     */
-//    private static ProductNode createProductNode(AspectNode node,
-//            AspectGraph graph) throws FormatException {
-//        return new ProductNode(arity(node, graph));
-//    }
-//
-//    /**
-//     * Returns the number of outgoing argument edges. Argument edges are aspect
-//     * edges with {@link AttributeAspect} value {@link #ARGUMENT}. Also checks
-//     * that the argument edges actually form a consecutive sequence ranging from
-//     * 0 to the arity.
-//     */
-//    private static int arity(AspectNode node, AspectGraph graph)
-//        throws FormatException {
-//        Set<Integer> argNumbers = new HashSet<Integer>();
-//        int maxArgNumber = -1;
-//        int result = 0;
-//        for (AspectEdge outEdge : graph.outEdgeSet(node)) {
-//            if (getAttributeValue(outEdge) == ARGUMENT) {
-//                try {
-//                    int argNumber = Integer.parseInt(outEdge.label().text());
-//                    if (!argNumbers.add(argNumber)) {
-//                        throw new FormatException("Duplicate argument edge %d",
-//                            argNumber);
-//                    }
-//                    maxArgNumber = Math.max(maxArgNumber, argNumber);
-//                    result++;
-//                } catch (NumberFormatException exc) {
-//                    throw new FormatException(
-//                        "Argument edge label %s is not a valid argument number",
-//                        outEdge.label());
-//                }
-//            }
-//        }
-//        if (result != maxArgNumber + 1) {
-//            throw new FormatException(
-//                "Argument numbers %s do not form a consecutive range",
-//                argNumbers);
-//        }
-//        return result;
-//    }
-//
-//    /**
-//     * Creates an attribute-related edge from a given {@link AspectEdge} found
-//     * in a given {@link AspectGraph}, between given end nodes. The type of the
-//     * resulting edge depends on the {@link AttributeAspect} value of the given
-//     * edge. The result is a {@link OperatorEdge} or {@link ArgumentEdge}, or
-//     * <code>null</code> if the edge contains no special
-//     * {@link AttributeAspect} value. The edge is assumed to ave passed
-//     * {@link #checkEdge(AspectEdge, AspectGraph)}.
-//     * @param edge the edge for which we want an attribute-related edge
-//     * @param ends the end nodes for the new edge
-//     * @return a {@link OperatorEdge} or {@link ArgumentEdge} corresponding to
-//     *         <code>edge</code>, or <code>null</code>
-//     * @throws FormatException if attribute-related errors are found in
-//     *         <code>graph</code>
-//     */
-//    public static Edge createAttributeEdge(AspectEdge edge, Node[] ends)
-//        throws FormatException {
-//        Edge result;
-//        AspectValue attributeValue = getAttributeValue(edge);
-//        if (attributeValue == null || ends[Edge.SOURCE_INDEX] == ends[Edge.TARGET_INDEX]) {
-//            result = null;
-//        } else if (attributeValue == ARGUMENT) {
-//            int argNumber = Integer.parseInt(edge.label().text());
-//            ArgumentEdge argEdge = createArgumentEdge(argNumber, ends);
-//            result = argEdge;
-//        } else {
-//            assert algebraMap.containsKey(attributeValue);
-//            Operation operation = getOperation(edge);
-//            if (operation == null) {
-//                throw new FormatException("Unknown operator in edge label %s",
-//                    edge.getLabelText());
-//            }
-//            result = createOperatorEdge(operation, ends);
-//        }
-//        return result;
-//    }
-//
-//    /**
-//     * Creates and returns a fresh {@link OperatorEdge} derived from a given
-//     * aspect edge (which should have attribute value {@link #PRODUCT}).
-//     * @param operator the edge for which the image is to be created
-//     * @param ends the end nodes of the edge to be created
-//     * @return a fresh {@link OperatorEdge}
-//     * @throws FormatException if <code>edge</code> does not have a correct
-//     *         set of outgoing attribute edges in <code>graph</code>
-//     */
-//    private static Edge createOperatorEdge(Operation operator, Node[] ends)
-//        throws FormatException {
-//        assert operator != null : String.format(
-//            "Cannot create edge between nodes %s for empty operator",
-//            Arrays.toString(ends));
-//        Node source = ends[Edge.SOURCE_INDEX];
-//        Node target = ends[Edge.TARGET_INDEX];
-//        if (!(source instanceof ProductNode)) {
-//            throw new FormatException(
-//                "Source of '%s'-edge should be a product node", operator);
-//        } else if (operator.arity() != ((ProductNode) source).arity()) {
-//            throw new FormatException("Source arity of '%s'-edge should be %d",
-//                operator, operator.arity());
-//        }
-//        if (!(target instanceof VariableNode)) {
-//            throw new FormatException(
-//                "Target of '%s'-edge should be a variable node", operator);
-//        }
-//        return new OperatorEdge((ProductNode) source, (VariableNode) target,
-//            operator);
-//    }
-//
-//    /**
-//     * Returns an {@link ArgumentEdge} derived from a given aspect edge (which
-//     * should have attribute aspect value {@link #ARGUMENT}).
-//     * @param argNumber the argument number on the edge to be created
-//     * @param ends the end nodes of the edge to be created
-//     * @return a fresh {@link ArgumentEdge}
-//     * @throws FormatException if one of the ends is <code>null</code>
-//     */
-//    private static ArgumentEdge createArgumentEdge(int argNumber, Node[] ends)
-//        throws FormatException {
-//        Node source = ends[Edge.SOURCE_INDEX];
-//        if (source == null) {
-//            throw new FormatException("Source of '%d'-edge has no image",
-//                argNumber);
-//        } else if (!(source instanceof ProductNode)) {
-//            throw new FormatException(
-//                "Target of '%d'-edge should be product node", argNumber);
-//        }
-//        Node target = ends[Edge.TARGET_INDEX];
-//        if (target == null) {
-//            throw new FormatException("Target of '%d'-edge has no image",
-//                argNumber);
-//        } else if (!(target instanceof VariableNode)) {
-//            throw new FormatException(
-//                "Target of '%d'-edge should be a variable node", argNumber);
-//        }
-//        ArgumentEdge result =
-//            new ArgumentEdge((ProductNode) source, argNumber, (VariableNode) target);
-//        result.source().setArgument(argNumber, result.target());
-//        return result;
-//    }
+
+    //
+    // /**
+    // * Creates an attribute-related node from a given {@link AspectNode} found
+    // * in a given {@link AspectGraph}. The type of the resulting node depends
+    // * on the {@link AttributeAspect} value of the given node and its incident
+    // * edges. The result is a {@link VariableNode} or {@link ProductNode}, or
+    // * <code>null</code> if the node contains no special
+    // * {@link AttributeAspect} value. An exception is thrown if the context of
+    // * the node in the graph is incorrect.
+    // * @param node the node for which we want an attribute-related node
+    // * @param graph the graph containing <code>node</code>
+    // * @return a {@link VariableNode} or {@link ProductNode} corresponding to
+    // * <code>node</code>, or <code>null</code>
+    // * @throws FormatException if attribute-related errors are found in
+    // * <code>graph</code>
+    // */
+    // public static Node createAttributeNode(AspectNode node, AspectGraph
+    // graph)
+    // throws FormatException {
+    // Node result;
+    // AspectValue attributeValue = getAttributeValue(node);
+    // if (attributeValue == null) {
+    // result = null;
+    // } else if (attributeValue == VALUE) {
+    // result = createVariableNode(node, graph);
+    // } else {
+    // assert attributeValue == PRODUCT : String.format(
+    // "Illegal attribute aspect value: %s", attributeValue);
+    // result = createProductNode(node, graph);
+    // }
+    // return result;
+    // }
+    //
+    // /**
+    // * Creates a {@link VariableNode} corresponding to a given aspect node
+    // whose
+    // * {@link AttributeAspect} value equals {@link #VALUE}. This is either a
+    // * variable node (if the original node has no outgoing edges), or a
+    // constant
+    // * node whose value depends on the label of the node's self-edge.
+    // * @param node the node for which a {@link VariableNode} is to be created
+    // * @param graph the graph in which <code>node</code> occurs
+    // * @throws FormatException if the outgoing edges of <code>node</code> are
+    // * incorrect
+    // */
+    // private static VariableNode createVariableNode(AspectNode node,
+    // AspectGraph graph)
+    // throws FormatException {
+    // VariableNode result;
+    // // check if there is a single constant edge on this node
+    // Collection<AspectEdge> outEdges = graph.outEdgeSet(node);
+    // Set<AspectEdge> attributeEdges = new HashSet<AspectEdge>();
+    // for (AspectEdge outEdge : outEdges) {
+    // if (getAttributeValue(outEdge) != null) {
+    // attributeEdges.add(outEdge);
+    // }
+    // }
+    // if (attributeEdges.isEmpty()) {
+    // result = new VariableNode();
+    // } else if (attributeEdges.size() > 1) {
+    // throw new FormatException("Too many edges on constant node: %s",
+    // attributeEdges);
+    // } else {
+    // AspectEdge attributeEdge = attributeEdges.iterator().next();
+    // AspectValue algebraValue = getAttributeValue(attributeEdge);
+    // if (algebraValue == null) {
+    // throw new FormatException(
+    // "Label %s on value node should be a constant",
+    // attributeEdge.getLabelText());
+    // }
+    // Algebra algebra = algebraMap.get(algebraValue);
+    // if (algebra == null) {
+    // throw new FormatException(
+    // "Label %s on value node should be a constant",
+    // attributeEdge.getLabelText());
+    // }
+    // try {
+    // Operation nodeValue =
+    // algebra.getOperation(attributeEdge.label().text());
+    // if (!(nodeValue instanceof Constant)) {
+    // throw new FormatException(
+    // "Operation %s on value node should be a constant",
+    // attributeEdge.label());
+    // }
+    // result = new VariableNode((Constant) nodeValue);
+    // } catch (UnknownSymbolException exc) {
+    // throw new FormatException(exc.getMessage());
+    // }
+    // }
+    // return result;
+    // }
+    //
+    // /**
+    // * Creates a product node corresponding to a node with
+    // * {@link AttributeAspect} value {@link #PRODUCT}. This only succeeds if
+    // * the outgoing edges form a consecutive range of argument numbers,
+    // without
+    // * duplication.
+    // * @param node the node for which a {@link ProductNode} is to be created
+    // * @param graph the graph in which <code>node</code> occurs
+    // * @throws FormatException if the outgoing edges of <code>node</code> are
+    // * incorrect
+    // */
+    // private static ProductNode createProductNode(AspectNode node,
+    // AspectGraph graph) throws FormatException {
+    // return new ProductNode(arity(node, graph));
+    // }
+    //
+    // /**
+    // * Returns the number of outgoing argument edges. Argument edges are
+    // aspect
+    // * edges with {@link AttributeAspect} value {@link #ARGUMENT}. Also checks
+    // * that the argument edges actually form a consecutive sequence ranging
+    // from
+    // * 0 to the arity.
+    // */
+    // private static int arity(AspectNode node, AspectGraph graph)
+    // throws FormatException {
+    // Set<Integer> argNumbers = new HashSet<Integer>();
+    // int maxArgNumber = -1;
+    // int result = 0;
+    // for (AspectEdge outEdge : graph.outEdgeSet(node)) {
+    // if (getAttributeValue(outEdge) == ARGUMENT) {
+    // try {
+    // int argNumber = Integer.parseInt(outEdge.label().text());
+    // if (!argNumbers.add(argNumber)) {
+    // throw new FormatException("Duplicate argument edge %d",
+    // argNumber);
+    // }
+    // maxArgNumber = Math.max(maxArgNumber, argNumber);
+    // result++;
+    // } catch (NumberFormatException exc) {
+    // throw new FormatException(
+    // "Argument edge label %s is not a valid argument number",
+    // outEdge.label());
+    // }
+    // }
+    // }
+    // if (result != maxArgNumber + 1) {
+    // throw new FormatException(
+    // "Argument numbers %s do not form a consecutive range",
+    // argNumbers);
+    // }
+    // return result;
+    // }
+    //
+    // /**
+    // * Creates an attribute-related edge from a given {@link AspectEdge} found
+    // * in a given {@link AspectGraph}, between given end nodes. The type of
+    // the
+    // * resulting edge depends on the {@link AttributeAspect} value of the
+    // given
+    // * edge. The result is a {@link OperatorEdge} or {@link ArgumentEdge}, or
+    // * <code>null</code> if the edge contains no special
+    // * {@link AttributeAspect} value. The edge is assumed to ave passed
+    // * {@link #checkEdge(AspectEdge, AspectGraph)}.
+    // * @param edge the edge for which we want an attribute-related edge
+    // * @param ends the end nodes for the new edge
+    // * @return a {@link OperatorEdge} or {@link ArgumentEdge} corresponding to
+    // * <code>edge</code>, or <code>null</code>
+    // * @throws FormatException if attribute-related errors are found in
+    // * <code>graph</code>
+    // */
+    // public static Edge createAttributeEdge(AspectEdge edge, Node[] ends)
+    // throws FormatException {
+    // Edge result;
+    // AspectValue attributeValue = getAttributeValue(edge);
+    // if (attributeValue == null || ends[Edge.SOURCE_INDEX] ==
+    // ends[Edge.TARGET_INDEX]) {
+    // result = null;
+    // } else if (attributeValue == ARGUMENT) {
+    // int argNumber = Integer.parseInt(edge.label().text());
+    // ArgumentEdge argEdge = createArgumentEdge(argNumber, ends);
+    // result = argEdge;
+    // } else {
+    // assert algebraMap.containsKey(attributeValue);
+    // Operation operation = getOperation(edge);
+    // if (operation == null) {
+    // throw new FormatException("Unknown operator in edge label %s",
+    // edge.getLabelText());
+    // }
+    // result = createOperatorEdge(operation, ends);
+    // }
+    // return result;
+    // }
+    //
+    // /**
+    // * Creates and returns a fresh {@link OperatorEdge} derived from a given
+    // * aspect edge (which should have attribute value {@link #PRODUCT}).
+    // * @param operator the edge for which the image is to be created
+    // * @param ends the end nodes of the edge to be created
+    // * @return a fresh {@link OperatorEdge}
+    // * @throws FormatException if <code>edge</code> does not have a correct
+    // * set of outgoing attribute edges in <code>graph</code>
+    // */
+    // private static Edge createOperatorEdge(Operation operator, Node[] ends)
+    // throws FormatException {
+    // assert operator != null : String.format(
+    // "Cannot create edge between nodes %s for empty operator",
+    // Arrays.toString(ends));
+    // Node source = ends[Edge.SOURCE_INDEX];
+    // Node target = ends[Edge.TARGET_INDEX];
+    // if (!(source instanceof ProductNode)) {
+    // throw new FormatException(
+    // "Source of '%s'-edge should be a product node", operator);
+    // } else if (operator.arity() != ((ProductNode) source).arity()) {
+    // throw new FormatException("Source arity of '%s'-edge should be %d",
+    // operator, operator.arity());
+    // }
+    // if (!(target instanceof VariableNode)) {
+    // throw new FormatException(
+    // "Target of '%s'-edge should be a variable node", operator);
+    // }
+    // return new OperatorEdge((ProductNode) source, (VariableNode) target,
+    // operator);
+    // }
+    //
+    // /**
+    // * Returns an {@link ArgumentEdge} derived from a given aspect edge (which
+    // * should have attribute aspect value {@link #ARGUMENT}).
+    // * @param argNumber the argument number on the edge to be created
+    // * @param ends the end nodes of the edge to be created
+    // * @return a fresh {@link ArgumentEdge}
+    // * @throws FormatException if one of the ends is <code>null</code>
+    // */
+    // private static ArgumentEdge createArgumentEdge(int argNumber, Node[]
+    // ends)
+    // throws FormatException {
+    // Node source = ends[Edge.SOURCE_INDEX];
+    // if (source == null) {
+    // throw new FormatException("Source of '%d'-edge has no image",
+    // argNumber);
+    // } else if (!(source instanceof ProductNode)) {
+    // throw new FormatException(
+    // "Target of '%d'-edge should be product node", argNumber);
+    // }
+    // Node target = ends[Edge.TARGET_INDEX];
+    // if (target == null) {
+    // throw new FormatException("Target of '%d'-edge has no image",
+    // argNumber);
+    // } else if (!(target instanceof VariableNode)) {
+    // throw new FormatException(
+    // "Target of '%d'-edge should be a variable node", argNumber);
+    // }
+    // ArgumentEdge result =
+    // new ArgumentEdge((ProductNode) source, argNumber, (VariableNode) target);
+    // result.source().setArgument(argNumber, result.target());
+    // return result;
+    // }
 
     /**
      * Returns the aspect value corresponding to a given signature.
@@ -455,17 +467,19 @@ public class AttributeAspect extends AbstractAspect {
 
     /**
      * Extracts an algebra operation from an aspect edge. Returns
-     * <code>null</code> if the edge is not a (valid) operation edge.
+     * <code>false</code> if the edge is not a (valid) operation edge.
      */
     public static boolean isConstant(AspectEdge edge) {
+        boolean result = false;
         AspectValue edgeValue = getAttributeValue(edge);
         if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
             OperationLabelParser parser =
                 (OperationLabelParser) edgeValue.getLabelParser();
-            return parser.isConstant(edge.label().text());
-        } else {
-            return false;
+            // assert parser != null : String.format(
+            // "Can't find parser for edge '%s'", edge.label());
+            result = parser != null && parser.isConstant(edge.label().text());
         }
+        return result;
     }
 
     /**
@@ -513,30 +527,30 @@ public class AttributeAspect extends AbstractAspect {
     /** The product aspect value. */
     public static final AspectValue PRODUCT;
     /** Name of the integer aspect value. */
-//    public static final String INTEGER_NAME =
-//        Groove.getXMLProperty("label.integer.prefix");
-//    /** The integer aspect value. */
-//    public static final AspectValue INTEGER;
-//    /** Name of the real aspect value. */
-//    public static final String REAL_NAME =
-//        Groove.getXMLProperty("label.real.prefix");
-//    /** The real aspect value. */
-//    public static final AspectValue REAL;
-//    /** Name of the integer aspect value. */
-//    public static final String ABSTRACT_INTEGER_NAME =
-//        Groove.getXMLProperty("label.abstract.integer.prefix");
-//    /** The integer aspect value. */
-//    public static final AspectValue ABSTRACT_INTEGER;
-//    /** Name of the boolean aspect value. */
-//    public static final String BOOLEAN_NAME =
-//        Groove.getXMLProperty("label.boolean.prefix");
-//    /** The boolean aspect value. */
-//    public static final AspectValue BOOLEAN;
-//    /** Name of the string aspect value. */
-//    public static final String STRING_NAME =
-//        Groove.getXMLProperty("label.string.prefix");
-//    /** The string aspect value. */
-//    public static final AspectValue STRING;
+    // public static final String INTEGER_NAME =
+    // Groove.getXMLProperty("label.integer.prefix");
+    // /** The integer aspect value. */
+    // public static final AspectValue INTEGER;
+    // /** Name of the real aspect value. */
+    // public static final String REAL_NAME =
+    // Groove.getXMLProperty("label.real.prefix");
+    // /** The real aspect value. */
+    // public static final AspectValue REAL;
+    // /** Name of the integer aspect value. */
+    // public static final String ABSTRACT_INTEGER_NAME =
+    // Groove.getXMLProperty("label.abstract.integer.prefix");
+    // /** The integer aspect value. */
+    // public static final AspectValue ABSTRACT_INTEGER;
+    // /** Name of the boolean aspect value. */
+    // public static final String BOOLEAN_NAME =
+    // Groove.getXMLProperty("label.boolean.prefix");
+    // /** The boolean aspect value. */
+    // public static final AspectValue BOOLEAN;
+    // /** Name of the string aspect value. */
+    // public static final String STRING_NAME =
+    // Groove.getXMLProperty("label.string.prefix");
+    // /** The string aspect value. */
+    // public static final AspectValue STRING;
 
     /**
      * Map from aspect values to those algebras that they represent.
@@ -555,29 +569,30 @@ public class AttributeAspect extends AbstractAspect {
             ARGUMENT.setLabelParser(NumberLabelParser.getInstance());
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
-            for (String signatureName: AlgebraRegister.getSignatureNames()) {
+            for (String signatureName : AlgebraRegister.getSignatureNames()) {
                 AspectValue value = instance.addEdgeValue(signatureName);
                 value.setEdgeToTarget(VALUE);
                 addSignature(signatureName, value);
             }
-//            INTEGER = instance.addEdgeValue(INTEGER_NAME);
-//            ABSTRACT_INTEGER = instance.addEdgeValue(ABSTRACT_INTEGER_NAME);
-//            REAL = instance.addEdgeValue(REAL_NAME);
-//            BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
-//            STRING = instance.addEdgeValue(STRING_NAME);
-//            // initialise the algebra map
-//            addSignature(DefaultIntegerAlgebra.getInstance(), INTEGER);
-//            addSignature(DefaultRealAlgebra.getInstance(), REAL);
-//            addSignature(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
-//            addSignature(DefaultStringAlgebra.getInstance(), STRING);
-//            addSignature(AbstractIntegerAlgebra.getInstance(), ABSTRACT_INTEGER);
+            // INTEGER = instance.addEdgeValue(INTEGER_NAME);
+            // ABSTRACT_INTEGER = instance.addEdgeValue(ABSTRACT_INTEGER_NAME);
+            // REAL = instance.addEdgeValue(REAL_NAME);
+            // BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
+            // STRING = instance.addEdgeValue(STRING_NAME);
+            // // initialise the algebra map
+            // addSignature(DefaultIntegerAlgebra.getInstance(), INTEGER);
+            // addSignature(DefaultRealAlgebra.getInstance(), REAL);
+            // addSignature(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
+            // addSignature(DefaultStringAlgebra.getInstance(), STRING);
+            // addSignature(AbstractIntegerAlgebra.getInstance(),
+            // ABSTRACT_INTEGER);
             ARGUMENT.setEdgeToSource(PRODUCT);
             ARGUMENT.setEdgeToTarget(VALUE);
-//            INTEGER.setEdgeToTarget(VALUE);
-//            ABSTRACT_INTEGER.setEdgeToTarget(VALUE);
-//            REAL.setEdgeToTarget(VALUE);
-//            BOOLEAN.setEdgeToTarget(VALUE);
-//            STRING.setEdgeToTarget(VALUE);
+            // INTEGER.setEdgeToTarget(VALUE);
+            // ABSTRACT_INTEGER.setEdgeToTarget(VALUE);
+            // REAL.setEdgeToTarget(VALUE);
+            // BOOLEAN.setEdgeToTarget(VALUE);
+            // STRING.setEdgeToTarget(VALUE);
             // incompatibilities
             instance.setIncompatible(RuleAspect.CREATOR);
             instance.setIncompatible(RuleAspect.CNEW);
@@ -631,9 +646,9 @@ public class AttributeAspect extends AbstractAspect {
             }
         }
 
-        /** 
-         * Tests if a certain string is a constant of the signature
-         * wrapped in this parser.
+        /**
+         * Tests if a certain string is a constant of the signature wrapped in
+         * this parser.
          */
         public boolean isConstant(String text) {
             try {
@@ -642,7 +657,7 @@ public class AttributeAspect extends AbstractAspect {
                 return false;
             }
         }
-        
+
         /**
          * Extracts an operation of this algebra from a given string, if the
          * string indeed represents such an operation.
