@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -182,7 +183,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         // map from original graph nodes to aspect graph nodes
         Map<Node,AspectNode> nodeMap = new HashMap<Node,AspectNode>();
         for (Node node : graph.nodeSet()) {
-            AspectNode nodeImage = result.createNode();
+            AspectNode nodeImage = createNode(node.getNumber());
             result.addNode(nodeImage);
             // update the maps
             nodeMap.put(node, nodeImage);
@@ -315,7 +316,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     private Graph toPlainGraph(NodeEdgeMap elementMap) {
         Graph result = createPlainGraph();
         for (AspectNode node : nodeSet()) {
-            Node nodeImage = result.addNode();
+            Node nodeImage = createNodeImage(result, node);
             elementMap.putNode(node, nodeImage);
             for (AspectValue value : node.getDeclaredValues()) {
                 result.addEdge(nodeImage,
@@ -333,6 +334,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         }
         GraphInfo.transfer(this, result, elementMap);
         return result;
+    }
+
+    private Node createNodeImage(Graph result, AspectNode node) {
+        return DefaultNode.createNode(node.getNumber());
     }
 
     /**
@@ -394,6 +399,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     @Override
     public AspectNode createNode() {
         return new AspectNode(getNodeCounter().getNumber());
+    }
+
+    /** Factory method for an aspect node with a given number. */
+    private AspectNode createNode(int nr) {
+        return new AspectNode(nr);
     }
 
     /**

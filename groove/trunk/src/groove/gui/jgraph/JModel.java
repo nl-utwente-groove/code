@@ -223,7 +223,7 @@ abstract public class JModel extends DefaultGraphModel {
         // Create nodes
         for (Object root : getRoots()) {
             if (root instanceof JVertex) {
-                Node node = result.addNode();
+                Node node = createNode(result, ((JVertex) root));
                 nodeMap.put((JVertex) root, node);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
                 for (String label : ((JVertex) root).getPlainLabels()) {
@@ -261,6 +261,15 @@ abstract public class JModel extends DefaultGraphModel {
         GraphInfo.setProperties(result, getProperties());
         GraphInfo.setName(result, getName());
         return result;
+    }
+
+    /**
+     * Callback factory method to create a fresh node in a given graph,
+     * reflecting a JVertex. Subclasses may use this to determine the node
+     * number.
+     */
+    protected Node createNode(groove.graph.Graph result, JVertex root) {
+        return result.addNode();
     }
 
     /**
@@ -603,7 +612,8 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Calls {@link DefaultGraphModel}{@link #fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)}
+     * Calls {@link DefaultGraphModel}
+     * {@link #fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)}
      * with <code>this</code> as first parameter.
      */
     void fireGraphChanged(GraphModelEvent.GraphModelChange edit) {

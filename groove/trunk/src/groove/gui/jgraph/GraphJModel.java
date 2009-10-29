@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 
 import groove.graph.AbstractGraph;
 import groove.graph.BinaryEdge;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeHashMap;
@@ -276,12 +277,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 
     /**
      * Returns the <tt>JNode</tt> or <tt>JEdge</tt> associated with a given
-     * edge. The method returns a <tt>JNode</tt> if and only if <tt>edge</tt>
-     * is a self-edge and <tt>showNodeIdentities</tt> does not hold.
+     * edge. The method returns a <tt>JNode</tt> if and only if <tt>edge</tt> is
+     * a self-edge and <tt>showNodeIdentities</tt> does not hold.
      * @param edge the graph edge we're interested in
      * @return the <tt>JNode</tt> or <tt>JEdge</tt> modelling <tt>edge</tt>
-     * @ensure result instanceof JNode && result.labels().contains(edge.label()) ||
-     *         result instanceof JEdge && result.labels().contains(edge.label())
+     * @ensure result instanceof JNode && result.labels().contains(edge.label())
+     *         || result instanceof JEdge &&
+     *         result.labels().contains(edge.label())
      */
     public JCell getJCell(Edge edge) {
         return this.toJCellMap.getEdge(edge);
@@ -327,15 +329,19 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
-     * This method first sets the show-aspects property before calling the super
-     * method, and resets this afterwards. This makes sure that aspect
-     * information is included in the labels.
+     * This method also sets the role of the resulting graph.
      */
     @Override
     public Graph toPlainGraph() {
         Graph result = super.toPlainGraph();
         GraphInfo.setRole(result, getRole());
         return result;
+    }
+
+    /** This method reuses the node identity of the JVertex. */
+    @Override
+    protected Node createNode(Graph result, JVertex root) {
+        return DefaultNode.createNode(((GraphJVertex) root).getActualNode().getNumber());
     }
 
     /**
@@ -490,8 +496,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
-     * Creates a new j-edge using {@link #createJEdge(BinaryEdge)}, and sets
-     * the attributes using {@link #createJEdgeAttr(JEdge)} and adds available
+     * Creates a new j-edge using {@link #createJEdge(BinaryEdge)}, and sets the
+     * attributes using {@link #createJEdgeAttr(JEdge)} and adds available
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      */
