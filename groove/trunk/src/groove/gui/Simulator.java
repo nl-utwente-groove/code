@@ -818,39 +818,67 @@ public class Simulator {
     }
 
     /**
-     * Handles the execution of a {@link SaveGraphAction}. Calls
-     * {@link #doAddGraph(AspectGraph)} for the actual saving.
-     * @param state <tt>true</tt> if it is a state that has to be saved
-     *        (otherwise it is an LTS)
-     * @param graph the graph to be saved
-     * @return the file to which the graph has been saved; <tt>null</tt> if the
-     *         graph has not been saved
+     * Calls the editor for a certain graph, and stores the graph into the
+     * grammar afterwards, under a user-determined name.
+     * @param graph the graph to be edited.
+     * @param fresh flag indicating if the name for the graph should be fresh
      */
-    File handleSaveGraph(boolean state, AspectGraph graph) {
-        getStateFileChooser().setFileFilter(
-            state ? this.stateFilter : this.gxlFilter);
-        String name = state ? GraphInfo.getName(graph) : LTS_FILE_NAME;
-        getStateFileChooser().setSelectedFile(new File(name));
-        File selectedFile =
-            ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame(),
-                null);
-        // now save, if so required
-        if (selectedFile != null) {
-            name = this.stateFilter.stripExtension(selectedFile.getName());
-            GraphInfo.setName(graph, name);
-            if (isFileInStore(selectedFile, getGrammarStore())) {
-                doAddGraph(graph);
-            } else {
-                try {
-                    this.graphLoader.marshalGraph(graph, selectedFile);
-                } catch (IOException exc) {
-                    showErrorDialog(String.format(
-                        "Error while saving graph to '%s'", selectedFile), exc);
+    private void handleEditGraph(Graph graph, final boolean fresh) {
+        EditorDialog dialog =
+            new EditorDialog(getFrame(), getOptions(), graph) {
+                @Override
+                public void finish() {
+                    String graphName =
+                        askNewGraphName(null, NEW_GRAPH_NAME, fresh);
+                    if (graphName != null) {
+                        AspectGraph newGraph = toAspectGraph();
+                        GraphInfo.setName(newGraph, graphName);
+                        doAddGraph(newGraph);
+                        if (confirmLoadStartState(newGraph.getInfo().getName())) {
+                            doLoadStartGraph(graphName);
+                        }
+                    }
                 }
-            }
-        }
-        return selectedFile;
+            };
+        dialog.start();
     }
+
+    //
+    // /**
+    // * Handles the execution of a {@link SaveGraphAction}. Calls
+    // * {@link #doAddGraph(AspectGraph)} for the actual saving.
+    // * @param state <tt>true</tt> if it is a state that has to be saved
+    // * (otherwise it is an LTS)
+    // * @param graph the graph to be saved
+    // * @return the file to which the graph has been saved; <tt>null</tt> if
+    // the
+    // * graph has not been saved
+    // */
+    // File handleSaveGraph(boolean state, AspectGraph graph) {
+    // getStateFileChooser().setFileFilter(
+    // state ? this.stateFilter : this.gxlFilter);
+    // String name = state ? GraphInfo.getName(graph) : LTS_FILE_NAME;
+    // getStateFileChooser().setSelectedFile(new File(name));
+    // File selectedFile =
+    // ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame(),
+    // null);
+    // // now save, if so required
+    // if (selectedFile != null) {
+    // name = this.stateFilter.stripExtension(selectedFile.getName());
+    // GraphInfo.setName(graph, name);
+    // if (isFileInStore(selectedFile, getGrammarStore())) {
+    // doAddGraph(graph);
+    // } else {
+    // try {
+    // this.graphLoader.marshalGraph(graph, selectedFile);
+    // } catch (IOException exc) {
+    // showErrorDialog(String.format(
+    // "Error while saving graph to '%s'", selectedFile), exc);
+    // }
+    // }
+    // }
+    // return selectedFile;
+    // }
 
     /** Tests if a given file refers to a graph within the current system store. */
     private boolean isFileInStore(File file, SystemStore store) {
@@ -1136,8 +1164,6 @@ public class Simulator {
                     });
                 }
                 dialog.deactivate();
-                // updating history
-                Simulator.this.history.updateLoadGrammar(store.getLocation());
             }
         });
     }
@@ -1182,7 +1208,6 @@ public class Simulator {
             getStateFileChooser().setSelectedFile(new File(""));
             getGrammarFileChooser().setSelectedFile(grammarFile);
             setGrammar(grammar);
-            this.history.updateLoadGrammar(grammarFile.toString());
         } catch (IllegalArgumentException exc) {
             showErrorDialog(String.format("Can't create grammar at '%s'",
                 grammarFile), exc);
@@ -1290,7 +1315,16 @@ public class Simulator {
     void doSaveGrammar(File grammarFile) {
         try {
             SystemStore newStore = getGrammarStore().save(grammarFile);
-            setGrammarView(newStore.toGrammarView());
+            StoredGrammarView newView = newStore.toGrammarView();
+            String startGraphName = getGrammarView().getStartGraphName();
+            AspectualGraphView startGraphView =
+                getGrammarView().getStartGraphView();
+            if (startGraphName != null) {
+                newView.setStartGraph(startGraphName);
+            } else if (startGraphView != null) {
+                newView.setStartGraph(startGraphView.getAspectGraph());
+            }
+            setGrammarView(newView);
             // now we know saving succeeded, we can set the current names &
             // files
             setLastGrammarFile(grammarFile);
@@ -1298,9 +1332,18 @@ public class Simulator {
             setTitle();
             getGrammarFileChooser().setSelectedFile(grammarFile);
             setGrammar(getGrammarView());
-            this.history.updateLoadGrammar(grammarFile.toString());
         } catch (IOException exc) {
             showErrorDialog("Error while saving grammar to " + grammarFile, exc);
+        }
+    }
+
+    /** Saves a given graph to a given file. */
+    void doSaveGraph(AspectGraph graph, File selectedFile) {
+        try {
+            this.graphLoader.marshalGraph(graph, selectedFile);
+        } catch (IOException exc) {
+            showErrorDialog(String.format("Error while saving graph to '%s'",
+                selectedFile), exc);
         }
     }
 
@@ -1399,6 +1442,7 @@ public class Simulator {
                 startSimulation();
             }
         }
+        this.history.updateLoadGrammar();
     }
 
     /**
@@ -2569,7 +2613,8 @@ public class Simulator {
 
     /**
      * Asks whether the current start graph should be replaced by the edited
-     * version.
+     * version. Always returns <code>true</code> (without asking) if there is no
+     * current start graph.
      */
     boolean confirmLoadStartState(String stateName) {
         if (getGrammarView().getStartGraphView() == null) {
@@ -3391,57 +3436,6 @@ public class Simulator {
     }
 
     /**
-     * Action for editing the current state.
-     */
-    private class EditStateAction extends AbstractAction implements Refreshable {
-        /** Constructs an instance of the action. */
-        EditStateAction() {
-            super(Options.EDIT_STATE_ACTION_NAME);
-            addRefreshable(this);
-        }
-
-        /**
-         * Checks if the enabling condition is satisfied, and if so, calls
-         * {@link #setEnabled(boolean)}.
-         */
-        public void refresh() {
-            boolean enabled =
-                getGraphPanel() == getStatePanel() && getGrammarView() != null
-                    && getGrammarView().getStartGraphView() != null
-                    && getGrammarStore().isModifiable();
-            if (enabled != isEnabled()) {
-                setEnabled(enabled);
-            }
-            if (enabled) {
-                getEditItem().setAction(this);
-                getEditItem().setAccelerator(Options.EDIT_KEY);
-            }
-        }
-
-        /**
-         * Invokes the editor on the current state. Handles the execution of an
-         * <code>EditGraphAction</code>, if the current panel is the state
-         * panel.
-         */
-        public void actionPerformed(ActionEvent e) {
-            GraphJModel stateModel = getStatePanel().getJModel();
-            EditorDialog dialog =
-                new EditorDialog(getFrame(), getOptions(),
-                    stateModel.toPlainGraph()) {
-                    @Override
-                    public void finish() {
-                        File saveFile = handleSaveGraph(true, toAspectGraph());
-                        if (saveFile != null
-                            && confirmLoadStartState(saveFile.getName())) {
-                            doLoadStartGraph(saveFile);
-                        }
-                    }
-                };
-            dialog.start();
-        }
-    }
-
-    /**
      * Action for editing the currently selected graph in the graph list.
      */
     private class EditGraphAction extends AbstractAction implements Refreshable {
@@ -3466,20 +3460,8 @@ public class Simulator {
             if (oldGraphName != null) {
                 AspectualGraphView oldGraphView =
                     getGrammarView().getGraphView(oldGraphName);
-                EditorDialog dialog =
-                    new EditorDialog(getFrame(), getOptions(),
-                        oldGraphView.getAspectGraph().toPlainGraph()) {
-                        @Override
-                        public void finish() {
-                            File saveFile =
-                                handleSaveGraph(true, toAspectGraph());
-                            if (saveFile != null
-                                && confirmLoadStartState(saveFile.getName())) {
-                                doLoadStartGraph(saveFile);
-                            }
-                        }
-                    };
-                dialog.start();
+                handleEditGraph(oldGraphView.getAspectGraph().toPlainGraph(),
+                    false);
             }
         }
     }
@@ -3630,6 +3612,45 @@ public class Simulator {
                     }
                 };
             dialog.start();
+        }
+    }
+
+    /**
+     * Action for editing the current state.
+     */
+    private class EditStateAction extends AbstractAction implements Refreshable {
+        /** Constructs an instance of the action. */
+        EditStateAction() {
+            super(Options.EDIT_STATE_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        /**
+         * Checks if the enabling condition is satisfied, and if so, calls
+         * {@link #setEnabled(boolean)}.
+         */
+        public void refresh() {
+            boolean enabled =
+                getGraphPanel() == getStatePanel() && getGrammarView() != null
+                    && getGrammarView().getStartGraphView() != null
+                    && getGrammarStore().isModifiable();
+            if (enabled != isEnabled()) {
+                setEnabled(enabled);
+            }
+            if (enabled) {
+                getEditItem().setAction(this);
+                getEditItem().setAccelerator(Options.EDIT_KEY);
+            }
+        }
+
+        /**
+         * Invokes the editor on the current state. Handles the execution of an
+         * <code>EditGraphAction</code>, if the current panel is the state
+         * panel.
+         */
+        public void actionPerformed(ActionEvent e) {
+            GraphJModel stateModel = getStatePanel().getJModel();
+            handleEditGraph(stateModel.toPlainGraph(), true);
         }
     }
 
@@ -4194,23 +4215,7 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             Graph newGraph = GraphFactory.getInstance().newGraph();
             GraphInfo.setGraphRole(newGraph);
-            EditorDialog dialog =
-                new EditorDialog(getFrame(), getOptions(), newGraph) {
-                    @Override
-                    public void finish() {
-                        String graphName =
-                            askNewGraphName(null, NEW_GRAPH_NAME, true);
-                        if (graphName != null) {
-                            AspectGraph newGraph = toAspectGraph();
-                            GraphInfo.setName(newGraph, graphName);
-                            doAddGraph(newGraph);
-                            if (confirmLoadStartState(newGraph.getInfo().getName())) {
-                                doLoadStartGraph(graphName);
-                            }
-                        }
-                    }
-                };
-            dialog.start();
+            handleEditGraph(newGraph, true);
         }
 
         /** Enabled if there is a grammar loaded. */
@@ -4497,8 +4502,8 @@ public class Simulator {
 
     /**
      * Action to save the state or LTS as a graph.
-     * @see Simulator#handleSaveGraph(boolean, AspectGraph)
      * @see Simulator#doAddGraph(AspectGraph)
+     * @see Simulator#doSaveGraph(AspectGraph, File)
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
@@ -4511,10 +4516,24 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             AspectGraph graph =
                 AspectGraph.newInstance(getGraphPanel().getJModel().toPlainGraph());
-            if (getGraphPanel() == getLtsPanel()) {
-                handleSaveGraph(false, graph);
-            } else {
-                handleSaveGraph(true, graph);
+            boolean isState = (getGraphPanel() != getLtsPanel());
+            ExtensionFilter filter =
+                isState ? Simulator.this.stateFilter : Simulator.this.gxlFilter;
+            String name = isState ? GraphInfo.getName(graph) : LTS_FILE_NAME;
+            getStateFileChooser().setFileFilter(filter);
+            getStateFileChooser().setSelectedFile(new File(name));
+            File selectedFile =
+                ExtensionFilter.showSaveDialog(getStateFileChooser(),
+                    getFrame(), null);
+            // now save, if so required
+            if (selectedFile != null) {
+                name = filter.stripExtension(selectedFile.getName());
+                GraphInfo.setName(graph, name);
+                if (isState && isFileInStore(selectedFile, getGrammarStore())) {
+                    doAddGraph(graph);
+                } else {
+                    doSaveGraph(graph, selectedFile);
+                }
             }
         }
 
@@ -4696,7 +4715,7 @@ public class Simulator {
                     ",");
             for (String location : savedLocations) {
                 try {
-                    this.history.add(new LoadAction(location));
+                    this.history.add(new LoadAction(location, null));
                 } catch (IOException exc) {
                     // if we can't load from a location, just
                     // omit it from the history
@@ -4722,9 +4741,12 @@ public class Simulator {
          * of loaded grammars. This class will deal with any updates that have
          * to be made accordingly
          */
-        public void updateLoadGrammar(Object location) {
+        public void updateLoadGrammar() {
             try {
-                LoadAction newAction = new LoadAction(location.toString());
+                Object location = getGrammarStore().getLocation();
+                String startGraphName = getGrammarView().getStartGraphName();
+                LoadAction newAction =
+                    new LoadAction(location.toString(), startGraphName);
                 this.history.remove(newAction);
                 this.history.add(0, newAction);
                 // trimming list to 10 elements
@@ -4771,16 +4793,21 @@ public class Simulator {
              * Constructs an action that will load a grammar from a predefined
              * location.
              * @param location the location to load from; non-null
+             * @param startGraphName name of the start graph to be loaded; if
+             *        <code>null</code>, the default will be used.
+             * 
              */
-            LoadAction(String location) throws IOException {
+            LoadAction(String location, String startGraphName)
+                throws IOException {
                 this.location = location;
+                this.startGraphName = startGraphName;
                 this.store = SystemStoreFactory.newStore(location);
                 putValue(NAME, this.store.toString());
             }
 
             public void actionPerformed(ActionEvent evt) {
                 try {
-                    doLoadGrammar(this.store, null);
+                    doLoadGrammar(this.store, this.startGraphName);
                 } catch (Exception e) {
                     showErrorDialog("Can't load grammar: ", e);
                 }
@@ -4818,6 +4845,8 @@ public class Simulator {
 
             /** Location that this action loads from (non-null). */
             private final String location;
+            /** Start graph name that should be loaded with the grammar. */
+            private final String startGraphName;
             /** System store associated with this action (non-null). */
             private final SystemStore store;
         }
