@@ -4193,17 +4193,19 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             Graph newGraph = GraphFactory.getInstance().newGraph();
-            GraphInfo.setName(newGraph, NEW_GRAPH_NAME);
             GraphInfo.setGraphRole(newGraph);
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(), newGraph) {
                     @Override
                     public void finish() {
-                        AspectGraph newGraph = toAspectGraph();
-                        File saveFile = handleSaveGraph(true, newGraph);
-                        if (saveFile != null) {
+                        String graphName =
+                            askNewGraphName(null, NEW_GRAPH_NAME, true);
+                        if (graphName != null) {
+                            AspectGraph newGraph = toAspectGraph();
+                            GraphInfo.setName(newGraph, graphName);
+                            doAddGraph(newGraph);
                             if (confirmLoadStartState(newGraph.getInfo().getName())) {
-                                doLoadStartGraph(saveFile);
+                                doLoadStartGraph(graphName);
                             }
                         }
                     }
@@ -4226,22 +4228,23 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                final RuleName ruleName =
-                    askNewRuleName(null, NEW_RULE_NAME, true);
-                if (ruleName != null) {
-                    Graph newRule = GraphFactory.getInstance().newGraph();
-                    GraphInfo.setName(newRule, ruleName.text());
-                    GraphInfo.setRuleRole(newRule);
-                    EditorDialog dialog =
-                        new EditorDialog(getFrame(), getOptions(), newRule) {
-                            @Override
-                            public void finish() {
+                Graph newRule = GraphFactory.getInstance().newGraph();
+                GraphInfo.setRuleRole(newRule);
+                EditorDialog dialog =
+                    new EditorDialog(getFrame(), getOptions(), newRule) {
+                        @Override
+                        public void finish() {
+                            final RuleName ruleName =
+                                askNewRuleName(null, NEW_RULE_NAME, true);
+                            if (ruleName != null) {
+                                AspectGraph newRule = toAspectGraph();
+                                GraphInfo.setName(newRule, ruleName.text());
                                 doAddRule(ruleName, toAspectGraph());
                                 setRule(ruleName);
                             }
-                        };
-                    dialog.start();
-                }
+                        }
+                    };
+                dialog.start();
             }
         }
 
