@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -254,6 +255,24 @@ public class RuleJTree extends JTree implements SimulationListener {
         super.setEnabled(enabled);
     }
 
+    /** Returns the list of currently selected rule names. */
+    public List<AspectualRuleView> getSelectedRules() {
+        List<AspectualRuleView> result = new ArrayList<AspectualRuleView>();
+        int[] selectedRows = getSelectionRows();
+        if (selectedRows != null) {
+            for (int selectedRow : selectedRows) {
+                Object[] nodes = getPathForRow(selectedRow).getPath();
+                for (int i = nodes.length - 1; i >= 0; i--) {
+                    if (nodes[i] instanceof RuleTreeNode) {
+                        result.add(((RuleTreeNode) nodes[i]).getRule());
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Sets a listener to the anchor image option, if that has not yet been
      * done.
@@ -436,7 +455,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
-    GTS getCurrentGTS() {
+    private GTS getCurrentGTS() {
         return this.simulator.getGTS();
     }
 
@@ -460,7 +479,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Convenience method to retrieve the currently selected state from the
      * simulator.
      */
-    GraphState getCurrentState() {
+    private GraphState getCurrentState() {
         return this.simulator.getCurrentState();
     }
 
@@ -640,8 +659,6 @@ public class RuleJTree extends JTree implements SimulationListener {
                         if (paths.length == 1) {
                             RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
                             RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
-                        } else {
-                            RuleJTree.this.simulator.setMultipleRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
                         }
                     } else if (selectedNode instanceof MatchTreeNode) {
                         // selected tree node is a match (level 2 node)

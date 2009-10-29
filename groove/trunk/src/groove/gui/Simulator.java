@@ -262,17 +262,13 @@ public class Simulator {
     }
 
     /**
-     * Sets the {@link #grammarView} and {@link #currentRule} fields.
+     * Sets the {@link #grammarView} and {@link #currentRuleName} fields.
      * @return <code>true</code> if the new grammar is different from the
      *         previous
      */
     private boolean setGrammarView(StoredGrammarView grammar) {
         boolean result = this.grammarView != grammar;
         this.grammarView = grammar;
-        if (this.currentRule != null
-            && grammar.getRuleView(this.currentRule.getRuleName()) == null) {
-            this.currentRule = null;
-        }
         return result;
     }
 
@@ -369,15 +365,18 @@ public class Simulator {
      * selected. The selected rule is the one displayed in the rule panel.
      */
     public AspectualRuleView getCurrentRule() {
-        return this.currentRule;
+        return getGrammarView() == null ? null : getGrammarView().getRuleView(
+            this.currentRuleName);
     }
 
     /**
      * mzimakova Returns the currently selected rule set, or <tt>null</tt> if
      * none is selected.
      */
-    public ArrayList<AspectualRuleView> getCurrentRuleSet() {
-        return this.currentRuleSet;
+    public List<AspectualRuleView> getCurrentRuleSet() {
+        return this.ruleJTree == null
+                ? Collections.<AspectualRuleView>emptyList()
+                : this.ruleJTree.getSelectedRules();
     }
 
     /**
@@ -386,10 +385,10 @@ public class Simulator {
      * @return <code>true</code> if the new rule is different from the previous
      */
     private boolean setCurrentRule(AspectualRuleView rule) {
-        boolean result = this.currentRule != rule;
-        this.currentRule = rule;
-        this.currentRuleSet.clear();
-        this.currentRuleSet.add(rule);
+        boolean result = this.getCurrentRule() != rule;
+        this.currentRuleName = rule.getRuleName();
+        // this.currentRuleSet.clear();
+        // this.currentRuleSet.add(rule);
         return result;
     }
 
@@ -1495,15 +1494,17 @@ public class Simulator {
         refreshActions();
     }
 
-    /**
-     * mzimakova Sets the current production rule set.
-     */
-    public synchronized void setMultipleRule(RuleName name) {
-        // setCurrentRule(getGrammarView().getRuleView(name));
-        if (this.currentRuleSet.indexOf(getGrammarView().getRuleView(name)) < 0) {
-            this.currentRuleSet.add(getGrammarView().getRuleView(name));
-        }
-    }
+    //
+    // /**
+    // * mzimakova Sets the current production rule set.
+    // */
+    // public synchronized void setMultipleRule(RuleName name) {
+    // // setCurrentRule(getGrammarView().getRuleView(name));
+    // if (this.currentRuleSet.indexOf(getGrammarView().getRuleView(name)) < 0)
+    // {
+    // this.currentRuleSet.add(getGrammarView().getRuleView(name));
+    // }
+    // }
 
     /**
      * Activates a given derivation, given directly or via its corresponding
@@ -2726,13 +2727,13 @@ public class Simulator {
     /**
      * The currently selected production rule.
      */
-    private AspectualRuleView currentRule;
-
-    /**
-     * mzimakova The currently selected production rule set.
-     */
-    private final ArrayList<AspectualRuleView> currentRuleSet =
-        new ArrayList<AspectualRuleView>();
+    private RuleName currentRuleName;
+    //
+    // /**
+    // * mzimakova The currently selected production rule set.
+    // */
+    // private final ArrayList<AspectualRuleView> currentRuleSet =
+    // new ArrayList<AspectualRuleView>();
 
     /**
      * The currently activated derivation.
@@ -2851,7 +2852,7 @@ public class Simulator {
     private JFrame frame;
 
     /** Production rule directory. */
-    private JTree ruleJTree;
+    private RuleJTree ruleJTree;
 
     /** Production system graph list */
     private StateJList stateJList;
@@ -3572,7 +3573,6 @@ public class Simulator {
                     // Set new properties
                     ruleProperties.clear();
                     ruleProperties.putAll(editedProperties);
-                    doDeleteRule(rule.getRuleName());
                     doAddRule(rule.getRuleName(), ruleGraph);
                 }
             }
@@ -3666,6 +3666,35 @@ public class Simulator {
         public void refresh() {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable());
+        }
+    }
+
+    /**
+     * Action that changes the enabledness status of the currently selected
+     * rule.
+     * @see #doEnableRule()
+     */
+    private class EnableRuleAction extends AbstractAction implements
+            Refreshable {
+        EnableRuleAction() {
+            super(Options.DISABLE_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        public void refresh() {
+            boolean ruleSelected = getCurrentRule() != null;
+            setEnabled(ruleSelected && getGrammarStore().isModifiable());
+            if (ruleSelected && getCurrentRule().isEnabled()) {
+                putValue(NAME, Options.DISABLE_ACTION_NAME);
+            } else {
+                putValue(NAME, Options.ENABLE_ACTION_NAME);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(false)) {
+                doEnableRule();
+            }
         }
     }
 
@@ -3800,35 +3829,6 @@ public class Simulator {
             } else {
                 setEnabled(getCurrentRule() != null);
                 putValue(NAME, Options.EXPORT_RULE_ACTION_NAME);
-            }
-        }
-    }
-
-    /**
-     * Action that changes the enabledness status of the currently selected
-     * rule.
-     * @see #doEnableRule()
-     */
-    private class EnableRuleAction extends AbstractAction implements
-            Refreshable {
-        EnableRuleAction() {
-            super(Options.DISABLE_ACTION_NAME);
-            addRefreshable(this);
-        }
-
-        public void refresh() {
-            boolean ruleSelected = getCurrentRule() != null;
-            setEnabled(ruleSelected && getGrammarStore().isModifiable());
-            if (ruleSelected && getCurrentRule().isEnabled()) {
-                putValue(NAME, Options.DISABLE_ACTION_NAME);
-            } else {
-                putValue(NAME, Options.ENABLE_ACTION_NAME);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(false)) {
-                doEnableRule();
             }
         }
     }
