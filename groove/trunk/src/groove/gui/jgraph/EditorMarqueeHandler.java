@@ -18,7 +18,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
  */
 package groove.gui.jgraph;
 
@@ -28,6 +27,7 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
+import org.jgraph.JGraph;
 import org.jgraph.graph.AbstractCellView;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.VertexView;
@@ -58,6 +58,17 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     @Override
     public boolean isForceMarqueeEvent(MouseEvent evt) {
         return isMyMarqueeEvent(evt) || super.isForceMarqueeEvent(evt);
+    }
+
+    /** Ensure that the right mouse button never changes the selection. */
+    @Override
+    public boolean isMarqueeTriggerEvent(MouseEvent e, JGraph graph) {
+        if (super.isMarqueeTriggerEvent(e, graph)) {
+            return e.getButton() != MouseEvent.BUTTON3;
+            // || graph.getSelectionCellAt(e.getLocationOnScreen()) == null;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -176,8 +187,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     }
 
     /**
-     * In addition to <tt>super</tt>, draw node emphasis and edge being
-     * added.
+     * In addition to <tt>super</tt>, draw node emphasis and edge being added.
      * @see #drawEmphVertex(Graphics)
      * @see #drawAddingEdge(Graphics)
      */
@@ -277,9 +287,9 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     }
 
     /**
-     * Sets the starting point of the <i>adding edge</i> element on the
-     * overlay. if <tt>null</tt>, no adding edge is drawn. The change will be
-     * realized on the next invocation of {@link #redrawOverlay()}.
+     * Sets the starting point of the <i>adding edge</i> element on the overlay.
+     * if <tt>null</tt>, no adding edge is drawn. The change will be realized on
+     * the next invocation of {@link #redrawOverlay()}.
      */
     private void setAddingEdgeStartPoint(Point2D newStartPoint) {
         this.addingEdgeChanged |= (newStartPoint != this.addingEdgeStartPoint);
