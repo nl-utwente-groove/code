@@ -316,7 +316,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     private Graph toPlainGraph(NodeEdgeMap elementMap) {
         Graph result = createPlainGraph();
         for (AspectNode node : nodeSet()) {
-            Node nodeImage = createNodeImage(result, node);
+            Node nodeImage = addFreshNode(result, node);
             elementMap.putNode(node, nodeImage);
             for (AspectValue value : node.getDeclaredValues()) {
                 result.addEdge(nodeImage,
@@ -336,8 +336,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         return result;
     }
 
-    private Node createNodeImage(Graph result, AspectNode node) {
-        return DefaultNode.createNode(node.getNumber());
+    /**
+     * Adds a fresh node to a given graph, taking the node identity from an
+     * existing aspect node.
+     */
+    private Node addFreshNode(Graph graph, AspectNode node) {
+        Node result = DefaultNode.createNode(node.getNumber());
+        boolean fresh = graph.addNode(result);
+        assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
+            node, graph);
+        return result;
     }
 
     /**
