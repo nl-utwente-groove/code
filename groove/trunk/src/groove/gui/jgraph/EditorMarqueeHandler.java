@@ -27,7 +27,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
-import org.jgraph.JGraph;
 import org.jgraph.graph.AbstractCellView;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.VertexView;
@@ -58,17 +57,6 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     @Override
     public boolean isForceMarqueeEvent(MouseEvent evt) {
         return isMyMarqueeEvent(evt) || super.isForceMarqueeEvent(evt);
-    }
-
-    /** Ensure that the right mouse button never changes the selection. */
-    @Override
-    public boolean isMarqueeTriggerEvent(MouseEvent e, JGraph graph) {
-        if (super.isMarqueeTriggerEvent(e, graph)) {
-            return e.getButton() != MouseEvent.BUTTON3;
-            // || graph.getSelectionCellAt(e.getLocationOnScreen()) == null;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -283,7 +271,8 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      */
     protected boolean isMyMarqueeEvent(MouseEvent evt) {
         return isAddingEdge() || getJGraph().isNodeMode(evt)
-            || getJGraph().isEdgeMode(evt);
+            || getJGraph().isEdgeMode(evt)
+            || evt.getButton() == MouseEvent.BUTTON3;
     }
 
     /**

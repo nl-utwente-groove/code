@@ -223,7 +223,7 @@ abstract public class JModel extends DefaultGraphModel {
         // Create nodes
         for (Object root : getRoots()) {
             if (root instanceof JVertex) {
-                Node node = createNode(result, ((JVertex) root));
+                Node node = addFreshNode(result, ((JVertex) root));
                 nodeMap.put((JVertex) root, node);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
                 for (String label : ((JVertex) root).getPlainLabels()) {
@@ -264,11 +264,10 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Callback factory method to create a fresh node in a given graph,
-     * reflecting a JVertex. Subclasses may use this to determine the node
-     * number.
+     * Callback factory method to add a fresh node to a given graph, reflecting
+     * a JVertex. Subclasses may use this to determine the node number.
      */
-    protected Node createNode(groove.graph.Graph result, JVertex root) {
+    protected Node addFreshNode(groove.graph.Graph result, JVertex root) {
         return result.addNode();
     }
 

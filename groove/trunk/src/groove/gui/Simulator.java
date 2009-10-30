@@ -823,19 +823,22 @@ public class Simulator {
      * @param graph the graph to be edited.
      * @param fresh flag indicating if the name for the graph should be fresh
      */
-    private void handleEditGraph(Graph graph, final boolean fresh) {
+    private void handleEditGraph(final Graph graph, final boolean fresh) {
         EditorDialog dialog =
             new EditorDialog(getFrame(), getOptions(), graph) {
                 @Override
                 public void finish() {
-                    String graphName =
-                        askNewGraphName(null, NEW_GRAPH_NAME, fresh);
-                    if (graphName != null) {
+                    String oldGraphName = GraphInfo.getName(graph);
+                    String newGraphName =
+                        askNewGraphName("Select graph name",
+                            oldGraphName == null ? NEW_GRAPH_NAME
+                                    : oldGraphName, fresh);
+                    if (newGraphName != null) {
                         AspectGraph newGraph = toAspectGraph();
-                        GraphInfo.setName(newGraph, graphName);
+                        GraphInfo.setName(newGraph, newGraphName);
                         doAddGraph(newGraph);
-                        if (confirmLoadStartState(newGraph.getInfo().getName())) {
-                            doLoadStartGraph(graphName);
+                        if (confirmLoadStartState(newGraphName)) {
+                            doLoadStartGraph(newGraphName);
                         }
                     }
                 }
@@ -2622,6 +2625,8 @@ public class Simulator {
     boolean confirmLoadStartState(String stateName) {
         if (getGrammarView().getStartGraphView() == null) {
             return true;
+        } else if (stateName.equals(getGrammarView().getStartGraphName())) {
+            return true;
         } else {
             String question =
                 String.format("Replace start graph with '%s'?", stateName);
@@ -3662,7 +3667,7 @@ public class Simulator {
          */
         public void actionPerformed(ActionEvent e) {
             GraphJModel stateModel = getStatePanel().getJModel();
-            handleEditGraph(stateModel.toPlainGraph(), true);
+            handleEditGraph(stateModel.toPlainGraph(), false);
         }
     }
 

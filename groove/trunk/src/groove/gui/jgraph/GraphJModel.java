@@ -340,8 +340,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 
     /** This method reuses the node identity of the JVertex. */
     @Override
-    protected Node createNode(Graph result, JVertex root) {
-        return DefaultNode.createNode(((GraphJVertex) root).getActualNode().getNumber());
+    protected Node addFreshNode(Graph graph, JVertex root) {
+        Node result =
+            DefaultNode.createNode(((GraphJVertex) root).getActualNode().getNumber());
+        boolean fresh = graph.addNode(result);
+        assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
+            result, graph);
+        return result;
     }
 
     /**
