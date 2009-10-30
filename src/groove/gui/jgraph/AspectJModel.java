@@ -24,8 +24,8 @@ import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import static groove.view.aspect.NestingAspect.getNestingValue;
-import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.CNEW;
+import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
 import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
@@ -34,7 +34,7 @@ import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.GraphInfo;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -97,11 +97,13 @@ public class AspectJModel extends GraphJModel {
     }
 
     /**
-     * This implementation retrieves the role from the graph itself.
+     * This implementation directly computes the plain graph from the underlying
+     * aspect graph
+     * @see #getGraph()
      */
     @Override
-    public String getRole() {
-        return GraphInfo.getRole(getGraph());
+    public Graph toPlainGraph() {
+        return getGraph().toPlainGraph();
     }
 
     /** Returns the view on which this model is based. */
@@ -157,8 +159,8 @@ public class AspectJModel extends GraphJModel {
     }
 
     /**
-     * This implementation returns <code>false</code> if the node represented
-     * by the cell has a {@link RuleAspect#RULE_ASPECT_NAME} role.
+     * This implementation returns <code>false</code> if the node represented by
+     * the cell has a {@link RuleAspect#RULE_ASPECT_NAME} role.
      */
     @Override
     public boolean isMoveable(JCell jCell) {
@@ -666,7 +668,7 @@ public class AspectJModel extends GraphJModel {
         public String getRole() {
             return this.role.getName();
         }
-        
+
         private final AspectValue role;
 
         /** Separator between level name and edge label. */

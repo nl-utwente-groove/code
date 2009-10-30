@@ -60,7 +60,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be
-     * displayed as node labels. The node and adge attribute maps are cloned.
+     * displayed as node labels. The node and edge attribute maps are cloned.
      * @param graph the underlying Graph
      * @param defaultNodeAttr the attributes for displaying nodes
      * @param defaultEdgeAttr the attributes for displaying edges
@@ -109,14 +109,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             result = GraphInfo.getName(getGraph());
         }
         return result;
-    }
-
-    /**
-     * Returns the role of the underlying graph. This implementation retrieves
-     * the role from the graph itself.
-     */
-    public String getRole() {
-        return Groove.GRAPH_ROLE;
     }
 
     /**
@@ -334,15 +326,17 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     @Override
     public Graph toPlainGraph() {
         Graph result = super.toPlainGraph();
-        GraphInfo.setRole(result, getRole());
+        GraphInfo.setRole(result, Groove.GRAPH_ROLE);
         return result;
     }
 
     /** This method reuses the node identity of the JVertex. */
     @Override
     protected Node addFreshNode(Graph graph, JVertex root) {
-        Node result =
-            DefaultNode.createNode(((GraphJVertex) root).getActualNode().getNumber());
+        Node modelNode = ((GraphJVertex) root).getActualNode();
+        assert modelNode != null : String.format(
+            "JModel node '%s' does not have underlying graph node", root);
+        Node result = DefaultNode.createNode(modelNode.getNumber());
         boolean fresh = graph.addNode(result);
         assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
             result, graph);
