@@ -1793,7 +1793,7 @@ public class Simulator {
      * that this panel may currently not be visible.
      * @see #setGraphPanel(JGraphPanel)
      */
-    StatePanel getStatePanel() {
+    public StatePanel getStatePanel() {
         if (this.statePanel == null) {
             // panel for state display
             this.statePanel = new StatePanel(this);
@@ -1924,7 +1924,7 @@ public class Simulator {
      * @see #getConditionalLTSPanel()
      * @see #getGraphPanel()
      */
-    void setGraphPanel(JGraphPanel<?> component) {
+    public void setGraphPanel(JGraphPanel<?> component) {
         if (component == getLtsPanel()) {
             getGraphViewsPanel().setSelectedComponent(getConditionalLTSPanel());
         } else {
@@ -2518,7 +2518,7 @@ public class Simulator {
     /**
      * Refreshes the title bar, layout and actions.
      */
-    private void refresh() {
+    public void refresh() {
         setTitle();
         refreshActions();
     }

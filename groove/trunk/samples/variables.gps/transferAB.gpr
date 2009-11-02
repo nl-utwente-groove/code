@@ -1,45 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph id="graph" role="rule" edgeids="false" edgemode="directed">
+    <graph id="transferAB" role="rule" edgeids="false" edgemode="directed">
         <attr name="remark">
             <string>Transfers an edge label from an A-C edge to a B-self-edge</string>
         </attr>
-        <node id="n2"/>
-        <node id="n1"/>
-        <node id="n0"/>
-        <edge from="n0" to="n1">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n168"/>
+        <node id="n169"/>
+        <node id="n170"/>
+        <edge from="n170" to="n170">
             <attr name="label">
-                <string>del:?x</string>
+                <string>not:{?x}</string>
             </attr>
         </edge>
-        <edge from="n0" to="n2">
+        <edge from="n168" to="n169">
+            <attr name="label">
+                <string>del:{?x}</string>
+            </attr>
+        </edge>
+        <edge from="n168" to="n170">
             <attr name="label">
                 <string>new:transfer</string>
             </attr>
         </edge>
-        <edge from="n2" to="n2">
-            <attr name="label">
-                <string>B</string>
-            </attr>
-        </edge>
-        <edge from="n2" to="n2">
-            <attr name="label">
-                <string>not:?x</string>
-            </attr>
-        </edge>
-        <edge from="n0" to="n0">
-            <attr name="label">
-                <string>A</string>
-            </attr>
-        </edge>
-        <edge from="n1" to="n1">
+        <edge from="n169" to="n169">
             <attr name="label">
                 <string>C</string>
             </attr>
         </edge>
-        <edge from="n2" to="n2">
+        <edge from="n170" to="n170">
             <attr name="label">
-                <string>new:?x</string>
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n168" to="n168">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n170" to="n170">
+            <attr name="label">
+                <string>new:{?x}</string>
             </attr>
         </edge>
     </graph>
