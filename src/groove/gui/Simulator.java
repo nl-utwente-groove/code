@@ -3895,7 +3895,7 @@ public class Simulator {
     }
 
     /** An action used for launching a scenario. */
-    private class LaunchScenarioAction extends AbstractAction {
+    public class LaunchScenarioAction extends AbstractAction {
         LaunchScenarioAction(Scenario scenario) {
             super(scenario.getName());
             this.scenario = scenario;
