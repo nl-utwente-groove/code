@@ -13,6 +13,8 @@ import javax.swing.DefaultComboBoxModel;
  *
  * @author  io
  */
+@Deprecated
+@SuppressWarnings("all")
 public class RuleApplOptionsPanel extends javax.swing.JPanel
             implements ExploreConditionOptionsProvider<Rule> {
 

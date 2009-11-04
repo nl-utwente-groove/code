@@ -25,6 +25,8 @@ import javax.swing.DefaultComboBoxModel;
  * given as parameter.
  * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 class ChoiceComboBoxModel extends DefaultComboBoxModel {
 	
 	ChoiceComboBoxModel(Class<? extends Choice> choiceType) {

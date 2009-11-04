@@ -23,17 +23,12 @@ import groove.control.parse.GCLBuilder;
 import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
-import groove.gui.CAPanel;
-import groove.gui.jgraph.ControlJGraph;
-import groove.gui.jgraph.ControlJModel;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
-
-import javax.swing.JDialog;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;

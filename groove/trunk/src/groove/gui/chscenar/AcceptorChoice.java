@@ -23,6 +23,8 @@ import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 
 /** The possible choices for an acceptor. */
+@Deprecated
+@SuppressWarnings("all")
 public enum AcceptorChoice implements Choice {
 	FINAL_STATE,
 	CONDITIONAL,

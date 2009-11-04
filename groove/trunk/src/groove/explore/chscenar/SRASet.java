@@ -8,6 +8,8 @@ package groove.explore.chscenar;
  * a' is a subclass of a.
  * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public interface SRASet {
 
 	/** Tests whether a triple strategy - result - acceptor is contained in the set. */

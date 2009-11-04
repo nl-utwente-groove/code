@@ -233,7 +233,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     
     /**
      * Gets the parameter type from a numbered parameter
-     * @param the number of the parameter under inquiry
+     * @param param the number of the parameter under inquiry
      * @return PARAMETER_INPUT, PARAMETER_OUTPUT, PARAMETER_BOTH
      */
     private int getParameterType(int param) {
@@ -273,7 +273,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     public int getNumberOfParameters(int type) {
         int count = 0;
-        for(int thisType : parameterTypes.values()) {
+        for(int thisType : this.parameterTypes.values()) {
             if (thisType == type || thisType == PARAMETER_BOTH) count++;
         }
         return count;
@@ -281,25 +281,28 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     
     /**
      * Returns whether a numbered parameter can be used as an output parameter
-     * @param the number of the parameter under inquiry
+     * @param param the number of the parameter under inquiry
      * @return true if this parameter can be used as output parameter
      */
     public boolean isOutputParameter(int param) {
-        debug("params: "+this.parameterTypes.size());
+        debug("params: " + this.parameterTypes.size());
         return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
     }
     
     /**
      * Returns whether a numbered parameter can be used as an input parameter
-     * @param the number of the parameter under inquiry
+     * @param param the number of the parameter under inquiry
      * @return true if this parameter can be used as input parameter
      */
     public boolean isInputParameter(int param) {
         return (getParameterType(param) == PARAMETER_INPUT || getParameterType(param) == PARAMETER_BOTH);
     }
     
+    /**
+     * @return the number of parameters of the rule.
+     */
     public int getNumParameters() {
-        return lhsParameters.size() + creatorParameters.size();
+        return this.lhsParameters.size() + this.creatorParameters.size();
     }
     
     /** Returns the ordered list of visible (i.e., numbered) parameters. */

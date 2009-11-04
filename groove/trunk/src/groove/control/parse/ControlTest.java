@@ -46,7 +46,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 public class ControlTest {
     /**
      * Creates and a ControlTest object and displays the generated control automaton
-     * @param ctlFilename the path of the control file
+     * @param ctlFileName the path of the control file
      * @param grammarFileName the path of the grammar file (directory)
      * @param optimize whether or not the control automaton should be optimized (lambda transitions collapsed)
      */
@@ -124,7 +124,7 @@ public class ControlTest {
             groove.gui.Simulator sim = new groove.gui.Simulator();
             ControlJGraph cjg = new ControlJGraph(new ControlJModel(aut, sim.getOptions()));
             cjg.setEnabled(true);
-            groove.gui.JGraphPanel autPanel = new groove.gui.JGraphPanel(cjg, true, sim.getOptions());
+            groove.gui.JGraphPanel<ControlJGraph> autPanel = new groove.gui.JGraphPanel<ControlJGraph>(cjg, true, sim.getOptions());
     
             JDialog jf = new JDialog(sim.getFrame(), "grammar: "+grammarFile.getName()+", ctl: "+ctlFile.getName());
 
@@ -163,6 +163,7 @@ public class ControlTest {
      * Runs the test, displaying a control automaton 
      * @param args args[0] should be the path of a control file, args[1] should be the path of a grammar file
      */
+    @SuppressWarnings("unused")
     public static void main(String[] args) {
         // someone testing this will probably want to change this method ;)
         String testDirectory = "D:\\Studie\\Afstuderen\\Groove\\test";
@@ -177,7 +178,7 @@ public class ControlTest {
 
     /**
      * Loads a control program from a file
-     * @param filename the file to be read
+     * @param file the file to be read
      * @return the contents of the file as a string
      */
     private String loadProgram(File file) {

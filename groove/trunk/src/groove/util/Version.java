@@ -60,27 +60,12 @@ public class Version {
         return version == null || GXL_VERSION.equals(version);
     }
 
-    // /**
-    // * The set of known info keys.
-    // * These keys are the ones <i>not</i> stored as part of the graph
-    // properties.
-    // */
-    // public static final Set<String> KNOWN_KEYS =
-    // Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(ERRORS_KEY,
-    // FILE_KEY, ROLE_KEY, NAME_KEY, PROPERTIES_KEY, LAYOUT_KEY)));
-    // /**
-    // * Start character that distinguishes user-defined property keys from
-    // graph info keys.
-    // * Any string starting with this character is a graph info key.
-    // * @see #getInfoKey(String)
-    // */
-    // static public final char INFO_KEY_START = '$';
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "2007"; // eventually automatically set
+    public static final String BUILD = "2009"; // eventually automatically set
                                                 // during Ant compilation!
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "18.04.2007"; // eventually automatically
+    public static final String DATE = "11.06.2009"; // eventually automatically
                                                     // set during Ant
                                                     // compilation!
 
@@ -92,7 +77,7 @@ public class Version {
      * <li>z = bug fix version
      * </ul>
      */
-    public static final String NUMBER = "1.6.0";
+    public static final String NUMBER = "3.2.2";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.5";

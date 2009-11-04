@@ -50,7 +50,7 @@ import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.gui.chscenar.ScenarioSelectionDialog;
+//import groove.gui.chscenar.ScenarioSelectionDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
@@ -370,7 +370,7 @@ public class Simulator {
     }
 
     /**
-     * mzimakova Returns the currently selected rule set, or <tt>null</tt> if
+     * Returns the currently selected rule set, or <tt>null</tt> if
      * none is selected.
      */
     public List<AspectualRuleView> getCurrentRuleSet() {
@@ -403,12 +403,12 @@ public class Simulator {
         return this.applyTransitionAction;
     }
 
-    private ChooseCustomScenarioAction getChooseCustomScenarioAction() {
+    /*private ChooseCustomScenarioAction getChooseCustomScenarioAction() {
         if (this.chooseScenarioAction == null) {
             this.chooseScenarioAction = new ChooseCustomScenarioAction();
         }
         return this.chooseScenarioAction;
-    }
+    }*/
 
     /**
      * Returns the graph copying action permanently associated with this
@@ -592,22 +592,8 @@ public class Simulator {
         return this.loadStartGraphAction;
     }
 
-    //
-    // /**
-    // * Returns the start graph load action permanently associated with this
-    // * simulator.
-    // */
-    // public LoadControlFileAction getLoadControlFileAction() {
-    // // lazily create the action
-    // if (this.loadControlFileAction == null) {
-    // this.loadControlFileAction = new LoadControlFileAction();
-    // }
-    // return this.loadControlFileAction;
-    // }
-
     /**
-     * mzimakova Returns the rule load action permanently associated with this
-     * simulator.
+     * Returns the rule load action permanently associated with this simulator.
      */
     public LoadRuleAction getLoadRuleAction() {
         // lazily create the action
@@ -665,19 +651,6 @@ public class Simulator {
         return this.newRuleAction;
     }
 
-    //
-    // /**
-    // * Returns the rule creation action permanently associated with this
-    // * simulator.
-    // */
-    // public NewControlAction getNewControlAction() {
-    // // lazily create the action
-    // if (this.newControlAction == null) {
-    // this.newControlAction = new NewControlAction();
-    // }
-    // return this.newControlAction;
-    // }
-
     /** Returns the quit action permanently associated with this simulator. */
     public Action getQuitAction() {
         // lazily create the action
@@ -688,7 +661,7 @@ public class Simulator {
     }
 
     /**
-     * Returns the ctl formula providing action permanently associated with this
+     * Returns the CTL formula providing action permanently associated with this
      * simulator.
      */
     public Action getProvideTemporalFormulaAction() {
@@ -698,7 +671,7 @@ public class Simulator {
         return this.verifyAction;
     }
 
-    /** Returns the redo action permanently associated with this simulator. */
+    /** Returns the REDO action permanently associated with this simulator. */
     public Action getRedoAction() {
         if (this.redoAction == null) {
             this.redoAction = getUndoHistory().getRedoAction();
@@ -846,43 +819,6 @@ public class Simulator {
         dialog.start();
     }
 
-    //
-    // /**
-    // * Handles the execution of a {@link SaveGraphAction}. Calls
-    // * {@link #doAddGraph(AspectGraph)} for the actual saving.
-    // * @param state <tt>true</tt> if it is a state that has to be saved
-    // * (otherwise it is an LTS)
-    // * @param graph the graph to be saved
-    // * @return the file to which the graph has been saved; <tt>null</tt> if
-    // the
-    // * graph has not been saved
-    // */
-    // File handleSaveGraph(boolean state, AspectGraph graph) {
-    // getStateFileChooser().setFileFilter(
-    // state ? this.stateFilter : this.gxlFilter);
-    // String name = state ? GraphInfo.getName(graph) : LTS_FILE_NAME;
-    // getStateFileChooser().setSelectedFile(new File(name));
-    // File selectedFile =
-    // ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame(),
-    // null);
-    // // now save, if so required
-    // if (selectedFile != null) {
-    // name = this.stateFilter.stripExtension(selectedFile.getName());
-    // GraphInfo.setName(graph, name);
-    // if (isFileInStore(selectedFile, getGrammarStore())) {
-    // doAddGraph(graph);
-    // } else {
-    // try {
-    // this.graphLoader.marshalGraph(graph, selectedFile);
-    // } catch (IOException exc) {
-    // showErrorDialog(String.format(
-    // "Error while saving graph to '%s'", selectedFile), exc);
-    // }
-    // }
-    // }
-    // return selectedFile;
-    // }
-
     /** Tests if a given file refers to a graph within the current system store. */
     private boolean isFileInStore(File file, SystemStore store) {
         boolean result = false;
@@ -990,8 +926,8 @@ public class Simulator {
 
     /** Inverts the enabledness of the current rule, and stores the result. */
     void doEnableRule() {
-        // Multiple selection - mzimakova
-        // copy the selected rules to avoid concurrent modifications
+        // Multiple selection
+        // Copy the selected rules to avoid concurrent modifications
         List<AspectualRuleView> rules =
             new ArrayList<AspectualRuleView>(getCurrentRuleSet());
         for (AspectualRuleView rule : rules) {
@@ -1227,9 +1163,8 @@ public class Simulator {
      * Ends the program.
      */
     void doQuit() {
-        groove.gui.UserSettings.synchSettings(this.frame); // Saves a current
-        // user settings
-        // (mzimakova)
+        groove.gui.UserSettings.synchSettings(this.frame);
+        // Saves the current user settings.
         if (confirmAbandon(false)) {
             if (REPORT) {
                 try {
@@ -1544,18 +1479,6 @@ public class Simulator {
         refreshActions();
     }
 
-    //
-    // /**
-    // * mzimakova Sets the current production rule set.
-    // */
-    // public synchronized void setMultipleRule(RuleName name) {
-    // // setCurrentRule(getGrammarView().getRuleView(name));
-    // if (this.currentRuleSet.indexOf(getGrammarView().getRuleView(name)) < 0)
-    // {
-    // this.currentRuleSet.add(getGrammarView().getRuleView(name));
-    // }
-    // }
-
     /**
      * Activates a given derivation, given directly or via its corresponding
      * match. Adds the previous state or derivation to the history. Invokes
@@ -1671,13 +1594,13 @@ public class Simulator {
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, getRuleJTreePanel(),
                     getStartStatesListPanel());
 
-            // Embedded Editor - mzimakova
+            // Embedded Editor
             JSplitPane rightPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphViewsPanel(),
                     getEditorPanel());
             getEditorPanel().setVisible(false);
 
-            // set up the content pane of the frame as a split pane,
+            // Set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
             // right
             JSplitPane splitPane =
@@ -2031,9 +1954,7 @@ public class Simulator {
         result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(new LoadURLAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
-        // result.add(new JMenuItem(getLoadControlFileAction()));
         result.add(new JMenuItem(getLoadRuleAction()));
-        /** mzimakova* */
         result.add(new JMenuItem(getRefreshGrammarAction()));
         result.add(createOpenRecentMenu());
         result.addSeparator();
@@ -2059,12 +1980,10 @@ public class Simulator {
     private JMenu createNewMenu() {
         JMenu result = new JMenu(Options.CREATE_MENU_NAME);
         result.setMnemonic(Options.CREATE_MENU_MNEMONIC);
-        // result.setAccelerator(Options.NEW_KEY);
         String menuName = result.getText();
         result.add(createItem(getNewGrammarAction(), menuName));
         result.add(createItem(getNewGraphAction(), menuName));
         result.add(createItem(getNewRuleAction(), menuName));
-        // result.add(createItem(getNewControlAction(), menuName));
         return result;
     }
 
@@ -2175,7 +2094,7 @@ public class Simulator {
         result.addSeparator();
         result.add(new JMenuItem(getExplorationDialogAction()));
         // BEGIN_IOVKA
-        result.add(new JMenuItem(getChooseCustomScenarioAction()));
+        // result.add(new JMenuItem(getChooseCustomScenarioAction()));
         // END_IOVKA
         result.addSeparator();
         // copy the exploration menu
@@ -2321,24 +2240,8 @@ public class Simulator {
         return this.stateFileChooser;
     }
 
-    //
-    // /**
-    // * Returns the file chooser for control (GCP) files, lazily creating it
-    // * first.
-    // */
-    // JFileChooser getControlFileChooser() {
-    // if (this.controlFileChooser == null) {
-    // this.controlFileChooser = new GrooveFileChooser();
-    // this.controlFileChooser.addChoosableFileFilter(this.controlFilter);
-    // // controlFileChooser.addChoosableFileFilter(gxlFilter);
-    // this.controlFileChooser.setFileFilter(this.controlFilter);
-    // }
-    // return this.controlFileChooser;
-    // }
-
     /**
-     * mzimakova Returns the file chooser for rule (GPR) files, lazily creating
-     * it first.
+     * Returns the file chooser for rule (GPR) files, lazily creating it first.
      */
     JFileChooser getRuleFileChooser() {
         if (this.ruleFileChooser == null) {
@@ -2358,7 +2261,6 @@ public class Simulator {
     }
 
     /**
-     * Returns the explore-strategy for exploring a single state.
      * @return the explore-strategy for exploring a single state
      */
     private ExploreStateStrategy getExploreStateStrategy() {
@@ -2781,12 +2683,6 @@ public class Simulator {
      * The currently selected production rule.
      */
     private RuleName currentRuleName;
-    //
-    // /**
-    // * mzimakova The currently selected production rule set.
-    // */
-    // private final ArrayList<AspectualRuleView> currentRuleSet =
-    // new ArrayList<AspectualRuleView>();
 
     /**
      * The currently activated derivation.
@@ -2842,14 +2738,9 @@ public class Simulator {
      * File chooser for state files and LTS.
      */
     private JFileChooser stateFileChooser;
-    //
-    // /**
-    // * File chooser for control files.
-    // */
-    // private JFileChooser controlFileChooser;
 
     /**
-     * mzimakova File chooser for control files.
+     * File chooser for control files.
      */
     private JFileChooser ruleFileChooser;
 
@@ -2873,15 +2764,9 @@ public class Simulator {
      */
     private final ExtensionFilter autFilter =
         new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
-    //
-    // /**
-    // * Extension filter for control files.
-    // */
-    // private final ExtensionFilter controlFilter =
-    // Groove.createControlFilter();
 
     /**
-     * mzimakova Extension filter for rule files.
+     * Extension filter for rule files.
      */
     private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
 
@@ -2965,7 +2850,7 @@ public class Simulator {
      * The custom scenario choose action permanently associated with this
      * simulator.
      */
-    private ChooseCustomScenarioAction chooseScenarioAction;
+    //private ChooseCustomScenarioAction chooseScenarioAction;
 
     /**
      * The graph copying action permanently associated with this simulator.
@@ -3031,7 +2916,6 @@ public class Simulator {
 
     /**
      * The rule load action permanently associated with this simulator.
-     * --mzimakova
      */
     private LoadRuleAction loadRuleAction;
 
@@ -3054,10 +2938,6 @@ public class Simulator {
      * The rule creation action permanently associated with this simulator.
      */
     private NewRuleAction newRuleAction;
-    // /**
-    // * The control creation action permanently associated with this simulator.
-    // */
-    // private NewControlAction newControlAction;
     /**
      * The quit action permanently associated with this simulator.
      */
@@ -3268,6 +3148,7 @@ public class Simulator {
 
     // BEGIN_IOVKA
     /** Allows to select a custom scenario and run it. */
+    /*@Deprecated
     private class ChooseCustomScenarioAction extends AbstractAction implements
             Refreshable {
         ChooseCustomScenarioAction() {
@@ -3292,7 +3173,7 @@ public class Simulator {
             // getCurrentGrammar().getStartGraph() != null);
             setEnabled(false);
         }
-    }
+    }*/
 
     private class CopyGraphAction extends AbstractAction implements Refreshable {
         CopyGraphAction() {
@@ -3305,7 +3186,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
+            // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = new ArrayList<String>();
             for (Object name : Simulator.this.stateJList.getSelectedValues()) {
@@ -3341,7 +3222,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
+            // Multiple selection
             if (confirmAbandon(false)) {
                 RuleName newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
@@ -3380,7 +3261,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
+            // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = new ArrayList<String>();
             for (Object name : Simulator.this.stateJList.getSelectedValues()) {
@@ -3426,8 +3307,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
-            // RuleName ruleName = getCurrentRule().getRuleName();
+            // Multiple selection
             String question = "Delete rule(s) '%s'";
             // copy the selected rules to avoid concurrent modifications
             List<AspectualRuleView> rules =
@@ -3493,7 +3373,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
+            // Multiple selection
             AspectualRuleView rule = getCurrentRule();
             AspectGraph ruleGraph = rule.getAspectGraph();
             GraphProperties ruleProperties =
@@ -4053,38 +3933,8 @@ public class Simulator {
         }
     }
 
-    //
-    // /**
-    // * Action for loading and setting a different control program.
-    // * @see Simulator#doLoadControlFile(File)
-    // */
-    // private class LoadControlFileAction extends AbstractAction implements
-    // Refreshable {
-    // /** Constructs an instance of the action. */
-    // LoadControlFileAction() {
-    // super(Options.LOAD_CONTROL_FILE_ACTION_NAME);
-    // addRefreshable(this);
-    // }
-    //
-    // public void actionPerformed(ActionEvent evt) {
-    // int result = getControlFileChooser().showOpenDialog(getFrame());
-    // // now load, if so required
-    // if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-    // doLoadControlFile(getControlFileChooser().getSelectedFile());
-    // }
-    // }
-    //
-    // /**
-    // * Sets the enabling status of this action, depending on whether a
-    // * grammar is currently loaded.
-    // */
-    // public void refresh() {
-    // setEnabled(getCurrentGrammar() != null);
-    // }
-    // }
-
     /**
-     * mzimakova Action for loading and setting a different control program.
+     * Action for loading and setting a different control program.
      */
     private class LoadRuleAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
@@ -4277,64 +4127,6 @@ public class Simulator {
         }
     }
 
-    // private class NewControlAction extends AbstractAction implements
-    // Refreshable {
-    // NewControlAction() {
-    // super(Options.NEW_CONTROL_ACTION_NAME);
-    // addRefreshable(this);
-    // }
-    //
-    // public void actionPerformed(ActionEvent e) {
-    // if (confirmAbandon(false)) {
-    // File location =
-    // FileGps.toFile(Simulator.this.getCurrentGrammarURL());
-    // int offset = 0;
-    // File controlFile =
-    // new File(
-    // location,
-    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME));
-    // while (controlFile.exists()) {
-    // offset++;
-    // controlFile =
-    // new File(
-    // location,
-    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME
-    // + offset));
-    // }
-    //
-    // JFileChooser chooser = Simulator.this.getControlFileChooser();
-    // chooser.setSelectedFile(controlFile);
-    //
-    // int result = chooser.showOpenDialog(getFrame());
-    // // now load, if so required
-    // if (result == JFileChooser.APPROVE_OPTION
-    // && confirmAbandon(false)) {
-    //
-    // if (!chooser.getSelectedFile().exists()) {
-    //
-    // // ControlView cv = grammar.getControl();
-    // try {
-    // ControlView.store("", new FileOutputStream(
-    // chooser.getSelectedFile()));
-    // doLoadControlFile(chooser.getSelectedFile());
-    // Simulator.this.getGraphViewsPanel().setSelectedComponent(
-    // Simulator.this.getControlPanel());
-    // } catch (IOException ioe) {
-    // showErrorDialog(ioe.getMessage(), ioe);
-    // }
-    // }
-    // }
-    //
-    // }
-    // }
-    //
-    // /** Enabled if there is a grammar loaded. */
-    // public void refresh() {
-    // setEnabled(getCurrentGrammar() != null
-    // && Simulator.this.currentGrammarLoader.canWrite());
-    // }
-    // }
-
     /**
      * Action for quitting the simulator.
      * @see Simulator#doQuit()
@@ -4394,7 +4186,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection - mzimakova
+            // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = new ArrayList<String>();
             for (Object name : Simulator.this.stateJList.getSelectedValues()) {
@@ -4446,8 +4238,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-                // Multiple selection - mzimakova
-                // RuleName oldRuleName = getCurrentRule().getRuleName();
+                // Multiple selection
                 RuleName newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
                 List<AspectualRuleView> rules =
@@ -4624,65 +4415,7 @@ public class Simulator {
             setEnabled(enabled);
         }
     }
-
-    // private class NewControlAction extends AbstractAction implements
-    // Refreshable {
-    // NewControlAction() {
-    // super(Options.NEW_CONTROL_ACTION_NAME);
-    // addRefreshable(this);
-    // }
-    //
-    // public void actionPerformed(ActionEvent e) {
-    // if (confirmAbandon(false)) {
-    // File location =
-    // FileGps.toFile(Simulator.this.getCurrentGrammarURL());
-    // int offset = 0;
-    // File controlFile =
-    // new File(
-    // location,
-    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME));
-    // while (controlFile.exists()) {
-    // offset++;
-    // controlFile =
-    // new File(
-    // location,
-    // Simulator.this.controlFilter.addExtension(Groove.DEFAULT_CONTROL_NAME
-    // + offset));
-    // }
-    //
-    // JFileChooser chooser = Simulator.this.getControlFileChooser();
-    // chooser.setSelectedFile(controlFile);
-    //
-    // int result = chooser.showOpenDialog(getFrame());
-    // // now load, if so required
-    // if (result == JFileChooser.APPROVE_OPTION
-    // && confirmAbandon(false)) {
-    //
-    // if (!chooser.getSelectedFile().exists()) {
-    //
-    // // ControlView cv = grammar.getControl();
-    // try {
-    // ControlView.store("", new FileOutputStream(
-    // chooser.getSelectedFile()));
-    // doLoadControlFile(chooser.getSelectedFile());
-    // Simulator.this.getGraphViewsPanel().setSelectedComponent(
-    // Simulator.this.getControlPanel());
-    // } catch (IOException ioe) {
-    // showErrorDialog(ioe.getMessage(), ioe);
-    // }
-    // }
-    // }
-    //
-    // }
-    // }
-    //
-    // /** Enabled if there is a grammar loaded. */
-    // public void refresh() {
-    // setEnabled(getCurrentGrammar() != null
-    // && Simulator.this.currentGrammarLoader.canWrite());
-    // }
-    // }
-
+    
     /**
      * Action for verifying a CTL formula.
      */
@@ -4696,9 +4429,8 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
             int goOn = 0;
-            // if there are still open states the result might be different as
-            // expected
-            // ask the user whether really to continue
+            // If there are still open states the result might be different as
+            // expected. Ask the user whether really to continue.
             if (getGTS().hasOpenStates()) {
                 String message =
                     "The transition system still contains open states. Do you want to contiue verifying it?";

@@ -19,6 +19,8 @@ import java.awt.Component;
  *
  * @author  Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ExploreConditionSelectionPanel extends javax.swing.JPanel {
 
     /** Creates new form ExploreConditionPanel */

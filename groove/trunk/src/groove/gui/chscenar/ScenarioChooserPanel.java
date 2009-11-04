@@ -30,6 +30,8 @@ import javax.swing.JOptionPane;
  * 
  * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ScenarioChooserPanel extends javax.swing.JPanel {
 
     /** Creates new form ScenarioChooserPanel */

@@ -5,12 +5,10 @@
 
 package groove.gui.chscenar;
 
+import groove.trans.Rule;
+
 import java.awt.Component;
 
-import groove.trans.Rule;
-import groove.trans.GraphGrammar;
-
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
@@ -18,6 +16,8 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
  *
  * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 class RuleCellRenderer extends BasicComboBoxRenderer {
 
 	@Override

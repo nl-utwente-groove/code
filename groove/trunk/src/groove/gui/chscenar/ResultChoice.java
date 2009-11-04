@@ -24,6 +24,8 @@ import groove.lts.State;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
+@SuppressWarnings("all")
 public enum ResultChoice implements Choice {
 	FIND_ONE,
 	FIND_ALL;

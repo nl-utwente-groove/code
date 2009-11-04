@@ -40,7 +40,7 @@ public class AboutBox extends JDialog {
     /** Button text of the Cancel button. */
     public static final String CANCEL_BUTTON_TEXT = "OK";
 
-    /** Creates and displays a throwaway instance of this dialog. */
+    /** Creates and displays a throw-away instance of this dialog. */
     public AboutBox(JFrame context) {
         super(context, true);
         setTitle(TITLE);
@@ -84,7 +84,7 @@ public class AboutBox extends JDialog {
         result.append("GROOVE tool set\n");
         result.append("Version: ");
         result.append(Version.NUMBER);
-        result.append("\n(c) University of Twente, 2002, 2007\n\n");
+        result.append("\n(c) University of Twente, 2002, 2009\n\n");
         result.append("Libraries used: \n* ");
         result.append(getCastorText());
         result.append("\n* ");

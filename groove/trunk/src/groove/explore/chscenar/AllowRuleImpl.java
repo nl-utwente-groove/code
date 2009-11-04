@@ -9,6 +9,8 @@ import java.util.ArrayList;
  * - FC is a union of triples, each component of which is represented by a {@link SRASet}.
  * 
  */
+@Deprecated
+@SuppressWarnings("all")
 public class AllowRuleImpl implements AllowRule {
 	
     public boolean isAllowedConfiguration(Class<?> strategy,

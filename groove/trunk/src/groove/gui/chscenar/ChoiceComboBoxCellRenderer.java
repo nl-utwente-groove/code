@@ -26,6 +26,8 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 /** A cell renderer used by the JList. 
  * @author Iovka Boneva
  * */
+@Deprecated
+@SuppressWarnings("all")
 class ChoiceComboBoxCellRenderer extends BasicComboBoxRenderer {
 
 	@Override

@@ -282,6 +282,7 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
      * @param invertedDelta the change of <tt>newDelta</tt> w.r.t. this graph,
      *        as a array of removed and added elements
      */
+    @SuppressWarnings("all")
     protected synchronized void invertBasis(DeltaGraph newBasis,
             Element[] invertedDelta) {
         if (false) {// newBasis.getDepth() + 1 < getDepth()) {

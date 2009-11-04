@@ -25,6 +25,7 @@ import java.util.Set;
  * 
  * Class Scope, keeps track of variables declared and initialized in a given scope
  */
+@SuppressWarnings("all")
 public class Scope {
     public Scope() {
         declared = new HashSet<String>();

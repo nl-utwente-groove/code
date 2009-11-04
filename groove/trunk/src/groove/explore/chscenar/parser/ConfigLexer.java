@@ -9,6 +9,8 @@ import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
 
+@Deprecated
+@SuppressWarnings("all")
 public class ConfigLexer extends Lexer {
     public static final int WS=5;
     public static final int LINE_COMMENT=6;

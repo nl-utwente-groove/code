@@ -30,6 +30,8 @@ import javax.swing.JOptionPane;
 /** Allows to display a dialogue window for defining a scenario.
  * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ScenarioSelectionDialog {
 	
 	// FIELDS

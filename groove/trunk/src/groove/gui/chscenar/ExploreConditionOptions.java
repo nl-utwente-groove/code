@@ -17,6 +17,8 @@
 package groove.gui.chscenar;
 
 /** An object representing options for an explore condition. */
+@Deprecated
+@SuppressWarnings("all")
 public class ExploreConditionOptions<T> {
 
 	/** Constructs the options object. */

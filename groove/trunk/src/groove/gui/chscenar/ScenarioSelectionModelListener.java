@@ -5,6 +5,8 @@ package groove.gui.chscenar;
  * @author Iovka Boneva
  *
  */
+@Deprecated
+@SuppressWarnings("all")
 public interface ScenarioSelectionModelListener {
 	
 	/** Indicates a state change. */

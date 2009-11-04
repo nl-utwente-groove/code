@@ -79,9 +79,9 @@ public class ControlState implements Node {
 
     @Override
     public String toString() {
-        String variables = initializedVariables.isEmpty() ? "" : " "+initializedVariables.toString();
-        return (isSuccess() ? "S" : "q") + this.stateNumber + variables; // + " " +
-                                                                // getInit();
+        String variables = this.initializedVariables.isEmpty() ? "" :
+                                    " " + this.initializedVariables.toString();
+        return (isSuccess() ? "S" : "q") + this.stateNumber + variables;
     }
 
     /**
@@ -160,28 +160,43 @@ public class ControlState implements Node {
      * @param varName the name of the variable
      */
     public void initializeVariable(String varName) {
-        initializedVariables.add(varName);
+        this.initializedVariables.add(varName);
     }
     
+    /**
+     * @return a set of initialized variables
+     */
     public Set<String> getInitializedVariables() {
-        return initializedVariables;
+        return this.initializedVariables;
     }
     
+    /**
+     * @param variables
+     */
     public void initializeVariables(Set<String> variables) {
-        initializedVariables.addAll(variables);
+        this.initializedVariables.addAll(variables);
     }
     
+    /**
+     * @param variables
+     */
     public void setInitializedVariables(Set<String> variables) {
-        initializedVariables.clear();
+        this.initializedVariables.clear();
         initializeVariables(variables);
     }
     
+    /**
+     * Mark this state as merged.
+     */
     public void setMerged() {
-        hasMerged = true;
+        this.hasMerged = true;
     }
     
+    /**
+     * @return the merged flag of this state.
+     */
     public boolean getMerged() {
-        return hasMerged;
+        return this.hasMerged;
     }
 
     private final HashSet<String> init = new HashSet<String>();

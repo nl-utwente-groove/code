@@ -290,6 +290,7 @@ public abstract class ArchiveGps extends AspectualViewGps {
     }
 
     /** File filter for control files. */
+    @SuppressWarnings("unused")
     static private final ExtensionFilter CONTROL_FILTER =
         Groove.createControlFilter();
 }
