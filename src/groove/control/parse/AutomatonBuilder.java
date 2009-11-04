@@ -103,6 +103,11 @@ public class AutomatonBuilder extends Namespace {
         s2.initializeVariables(s1.getInitializedVariables());
     }
     
+    /**
+     * @param s1
+     * @param s2
+     * @param tar
+     */
     public void mergeInitializedVariables(ControlState s1, ControlState s2, ControlState tar) {
         Set<String> variables = s1.getInitializedVariables();
         variables.retainAll(s2.getInitializedVariables());

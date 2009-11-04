@@ -17,9 +17,6 @@
 package groove.control.parse;
 
 import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Olaf Keijsers
@@ -28,6 +25,7 @@ import java.util.Map;
  * Class SymbolTable
  * Keeps track of symbols used in the control language, including scopes
  */
+@SuppressWarnings("all")
 public class SymbolTable {
     /**
      * Creates a new SymbolTable

@@ -15,6 +15,8 @@ import javax.swing.JOptionPane;
  *
  * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public class EdgeBoundOptionsPanel extends javax.swing.JPanel
                 implements ExploreConditionOptionsProvider<Map<Label,Integer>> {
 

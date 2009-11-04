@@ -6,6 +6,8 @@ package groove.explore.chscenar;
  * @author Iovka Boneva
  *
  */
+@Deprecated
+@SuppressWarnings("all")
 public interface AllowRule {
     /**
      * Checks whether the rule allows a combination of a strategy, result and

@@ -882,6 +882,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         }
 
         /** Sets the containing block of this certificate. */
+        @SuppressWarnings("unused")
         final void setBlock(Block container) {
             this.block = container;
         }

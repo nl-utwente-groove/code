@@ -375,5 +375,6 @@ public class DefaultGrammarView implements GrammarView {
     private final Map<String,AspectualGraphView> graphMap =
         new HashMap<String,AspectualGraphView>();
 
+    @SuppressWarnings("unused")
     private final AspectGxl graphMarshaller = new AspectGxl(new LayedOutXml());
 }

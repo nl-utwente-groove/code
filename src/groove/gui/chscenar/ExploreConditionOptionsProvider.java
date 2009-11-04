@@ -21,6 +21,8 @@ package groove.gui.chscenar;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
+@SuppressWarnings("all")
 public interface ExploreConditionOptionsProvider<T> {
 
 	/** Provides options for an explore condition.

@@ -14,6 +14,9 @@ public class ASTtoTreeModelAdapter implements TreeModel {
 
 	CommonTree m_tree = null;
 
+	/**
+	 * @param t
+	 */
 	public ASTtoTreeModelAdapter(CommonTree t) {
 	    this.m_tree = t;
 	}

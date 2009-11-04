@@ -675,6 +675,7 @@ public class Bisimulator implements CertificateStrategy {
         /**
          * Adds a certain value to {@link #nextValue}.
          */
+        @SuppressWarnings("unused")
         protected void addNextValue(int value) {
             this.nextValue += value;
         }

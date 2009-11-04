@@ -19,13 +19,10 @@ package groove.explore;
 import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.ExploreCondition;
-import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
-import groove.gui.BoundedModelCheckingDialog;
 import groove.gui.Simulator;
-import groove.gui.dialog.FormulaDialog;
 
 /**
  * A factory for creating scenario handlers by composing a scenario from its

@@ -25,6 +25,8 @@ import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 
 /** Model for a scenario that is currently being constructed. */
+@Deprecated
+@SuppressWarnings("all")
 public class ScenarioSelectionModel {
 
 	/** The scenario checker, used for checking correctness of 

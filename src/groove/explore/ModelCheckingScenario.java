@@ -79,6 +79,7 @@ public class ModelCheckingScenario extends DefaultScenario {
      * Prints a report on {@link System#err} on memory usage, if
      * {@link #REPORT_COUNTER_EXAMPLE} is set.
      */
+    @SuppressWarnings("all")
     private void reportCounterExample() {
         if (REPORT_COUNTER_EXAMPLE && !getResult().getValue().isEmpty()) {
             System.err.println("A counter-example of length "

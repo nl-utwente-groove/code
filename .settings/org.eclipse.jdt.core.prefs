@@ -1,4 +1,4 @@
-#Wed Apr 15 11:04:00 CEST 2009
+#Wed Nov 04 11:14:28 CET 2009
 eclipse.preferences.version=1
 org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
 org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.6
@@ -11,6 +11,8 @@ org.eclipse.jdt.core.compiler.doc.comment.support=enabled
 org.eclipse.jdt.core.compiler.problem.annotationSuperInterface=warning
 org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
 org.eclipse.jdt.core.compiler.problem.autoboxing=ignore
+org.eclipse.jdt.core.compiler.problem.comparingIdentical=warning
+org.eclipse.jdt.core.compiler.problem.deadCode=ignore
 org.eclipse.jdt.core.compiler.problem.deprecation=error
 org.eclipse.jdt.core.compiler.problem.deprecationInDeprecatedCode=disabled
 org.eclipse.jdt.core.compiler.problem.deprecationWhenOverridingDeprecatedMethod=enabled
@@ -35,6 +37,7 @@ org.eclipse.jdt.core.compiler.problem.invalidJavadocTagsVisibility=private
 org.eclipse.jdt.core.compiler.problem.localVariableHiding=ignore
 org.eclipse.jdt.core.compiler.problem.methodWithConstructorName=warning
 org.eclipse.jdt.core.compiler.problem.missingDeprecatedAnnotation=error
+org.eclipse.jdt.core.compiler.problem.missingHashCodeMethod=ignore
 org.eclipse.jdt.core.compiler.problem.missingJavadocComments=warning
 org.eclipse.jdt.core.compiler.problem.missingJavadocCommentsOverriding=disabled
 org.eclipse.jdt.core.compiler.problem.missingJavadocCommentsVisibility=protected
@@ -44,6 +47,7 @@ org.eclipse.jdt.core.compiler.problem.missingJavadocTagsOverriding=enabled
 org.eclipse.jdt.core.compiler.problem.missingJavadocTagsVisibility=protected
 org.eclipse.jdt.core.compiler.problem.missingOverrideAnnotation=warning
 org.eclipse.jdt.core.compiler.problem.missingSerialVersion=ignore
+org.eclipse.jdt.core.compiler.problem.missingSynchronizedOnInheritedMethod=ignore
 org.eclipse.jdt.core.compiler.problem.noEffectAssignment=warning
 org.eclipse.jdt.core.compiler.problem.noImplicitStringConversion=warning
 org.eclipse.jdt.core.compiler.problem.nonExternalizedStringLiteral=ignore

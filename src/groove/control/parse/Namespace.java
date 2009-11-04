@@ -16,15 +16,13 @@
  */
 package groove.control.parse;
 
-import groove.trans.SPORule;
-import groove.trans.RuleName;
-import groove.view.FormatException;
 import groove.trans.Rule;
+import groove.trans.RuleName;
+import groove.trans.SPORule;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.tree.CommonTree;

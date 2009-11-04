@@ -20,6 +20,8 @@ import groove.explore.result.ExploreCondition;
 import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.Strategy;
 
+@Deprecated
+@SuppressWarnings("all")
 public enum StrategyChoice implements Choice {
 	//BREADTH_FIRST,
 	DEPTH_FIRST,

@@ -42,6 +42,8 @@ import javax.swing.JPanel;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ScenarioChooser {
 
     // -------------------------------------------------------

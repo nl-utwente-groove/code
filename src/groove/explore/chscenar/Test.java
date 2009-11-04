@@ -12,6 +12,8 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 
+@Deprecated
+@SuppressWarnings("all")
 public class Test {
 
     public static void main(String args[]) {

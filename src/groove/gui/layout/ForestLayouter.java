@@ -191,6 +191,7 @@ public class ForestLayouter extends AbstractLayouter {
      * Updates the full branching structure from the layout map, and stores it
      * in {@link #branchMap}.
      */
+    @SuppressWarnings("unused")
     private void updateBranchMap() {
         // the old indegree- and branch maps are kept and updated
         // count the incoming edges and compose the branch map

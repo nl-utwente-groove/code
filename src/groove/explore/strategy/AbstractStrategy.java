@@ -166,6 +166,7 @@ public abstract class AbstractStrategy implements Strategy {
      * {@link MatchesIterator} or an {@link AliasMatchesIterator}.
      * @param cache
      */
+    @SuppressWarnings("all")
     protected MatchesIterator getMatchesIterator(ExploreCache cache) {
         // Two cases where an alias iterator may be returned :
         // the parent is closed, or one of the successors is closed

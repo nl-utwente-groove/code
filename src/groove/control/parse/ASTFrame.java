@@ -21,6 +21,10 @@ public class ASTFrame extends JFrame {
 
     private static final long serialVersionUID = -92059391014955313L;
 
+    /**
+     * @param lab
+     * @param t
+     */
     public ASTFrame(String lab, CommonTree t) {
         super(lab);
 

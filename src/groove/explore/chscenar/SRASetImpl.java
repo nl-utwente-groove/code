@@ -14,6 +14,8 @@ import java.util.Set;
  * @author Iovka Boneva
  *
  */
+@Deprecated
+@SuppressWarnings("all")
 public class SRASetImpl implements SRASet {
 	
 	public boolean contains (Class<?> strategy, Class<?> result, Class<?> acceptor) {

@@ -883,17 +883,17 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         return new ShowHideMenu(this);
     }
 
-    /** Creates and returns a fresh layout setting meny upon this j-graph. */
+    /** Creates and returns a fresh layout setting menu upon this j-graph. */
     protected SetLayoutMenu createSetLayoutMenu() {
         return new SetLayoutMenu(this);
     }
 
     /**
-     * Cretes and returns a fresh line style menu for this j-graph.
+     * Creates and returns a fresh line style menu for this j-graph.
      */
     protected JMenu createLineStyleMenu() {
         JMenu result = new SetLineStyleMenu();
-        // initialize the line style manu
+        // initialize the line style menu
         result.add(getSetLineStyleAction(GraphConstants.STYLE_ORTHOGONAL));
         result.add(getSetLineStyleAction(GraphConstants.STYLE_SPLINE));
         result.add(getSetLineStyleAction(GraphConstants.STYLE_BEZIER));

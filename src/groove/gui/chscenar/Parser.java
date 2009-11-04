@@ -17,6 +17,8 @@
 package groove.gui.chscenar;
 
 /** An interface for a simple parser. */
+@Deprecated
+@SuppressWarnings("all")
 public interface Parser<T> {
 
 	/** Parses a string to an object. */ 

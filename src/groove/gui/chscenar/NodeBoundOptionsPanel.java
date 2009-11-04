@@ -12,6 +12,8 @@ import javax.swing.JOptionPane;
  *
  * @author  io
  */
+@Deprecated
+@SuppressWarnings("all")
 public class NodeBoundOptionsPanel extends javax.swing.JPanel 
             implements ExploreConditionOptionsProvider<Integer> {
 

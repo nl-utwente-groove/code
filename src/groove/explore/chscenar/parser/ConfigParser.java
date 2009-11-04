@@ -13,6 +13,8 @@ import java.util.ArrayList;
 
 import org.antlr.runtime.tree.*;
 
+@Deprecated
+@SuppressWarnings("all")
 public class ConfigParser extends Parser {
     public static final String[] tokenNames = new String[] {
         "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ID", "WS", "LINE_COMMENT", "'RULE'", "'::ALLOW'", "'::DENY'", "':STRATEGY'", "':RESULT'", "':ACCEPTOR'", "','", "'.'"

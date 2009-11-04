@@ -21,8 +21,10 @@ package groove.gui.chscenar;
  * determine what parameters are needed in order to instanciate
  * the corresponding strategy, acceptor, result or explore condition.
  * 
- * @authoc Iovka Boneva
+ * @author Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public interface Choice {
 	
 	/** A unique id. */
@@ -38,8 +40,7 @@ public interface Choice {
 	public Class<?> implementingClass();
 
 	/** The class of the options needed for instanciation. 
-	 * Is null if no options are needed.
-	 * @return
+	 * @return null if no options are needed.
 	 */
 	public Class<?> optionsClass();
 	

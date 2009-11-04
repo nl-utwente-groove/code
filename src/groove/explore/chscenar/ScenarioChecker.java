@@ -22,6 +22,8 @@ import org.antlr.runtime.RecognitionException;
  * @author Iovka Boneva
  * 
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ScenarioChecker {
 
     /** The super-class of all strategies. */

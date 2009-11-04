@@ -1,13 +1,4 @@
-/*
- * ScenarioSelectionPanel.java
- *
- * Created on June 13, 2008, 4:51 PM
- */
-
-
-
 package groove.gui.chscenar;
-
 
 import groove.explore.result.ExploreCondition;
 import groove.trans.GraphGrammar;
@@ -21,6 +12,8 @@ import javax.swing.JLabel;
  *
  * @author  Iovka Boneva
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ScenarioSelectionPanel extends javax.swing.JPanel {
 
     /** Creates new form ScenarioSelectionPanel */

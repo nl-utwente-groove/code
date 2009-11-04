@@ -26,6 +26,8 @@ import groove.explore.result.NodeBoundCondition;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
+@SuppressWarnings("all")
 public enum ExploreConditionChoice implements Choice {
 	EDGE_BOUND,
 	NODE_BOUND,

@@ -25,6 +25,8 @@ import groove.graph.Label;
 /** Parses a string representing a condition for an edge bound explore condition. 
  * @author Iovka Boneva
  * */
+@Deprecated
+@SuppressWarnings("all")
 public class EdgeBoundConstraintParser implements Parser<Map<Label,Integer>> {
 
 	public Map<Label,Integer> parse(String s) throws IllegalArgumentException {

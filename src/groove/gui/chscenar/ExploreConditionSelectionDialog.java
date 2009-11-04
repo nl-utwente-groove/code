@@ -19,13 +19,9 @@ package groove.gui.chscenar;
 import groove.explore.result.ExploreCondition;
 import groove.trans.GraphGrammar;
 
-import java.awt.Frame;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -37,6 +33,8 @@ import javax.swing.JOptionPane;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
+@SuppressWarnings("all")
 public class ExploreConditionSelectionDialog {
 
 	// FIELDS

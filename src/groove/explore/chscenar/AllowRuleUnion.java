@@ -5,6 +5,8 @@ import java.util.ArrayList;
  * @author Iovka Boneva
  *
  */
+@Deprecated
+@SuppressWarnings("all")
 public class AllowRuleUnion implements AllowRule {
 
 	public boolean isAllowedConfiguration(Class<?> strategy, Class<?> result, Class<?> acceptor) {
