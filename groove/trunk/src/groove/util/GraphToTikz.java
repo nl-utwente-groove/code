@@ -889,6 +889,7 @@ public final class GraphToTikz {
                           break;
                 case '$':  result.append(DOLLAR);      break;
                 case '#':  result.append(NUMBER);      break;
+                case '|':  result.append(VERT_BAR);    break;
                 case '%':  result.append(PERCENT);     break;
                 case '_':  result.append(UNDERSCORE);  break;
                 case '{':  result.append(LEFT_CURLY);  break;
@@ -1136,6 +1137,7 @@ public final class GraphToTikz {
     private static final String RIGHT_CURLY = "\\}";
     private static final String CIRCUNFLEX = "\\^{}";
     private static final String TILDE = "\\~{}";
+    private static final String VERT_BAR = "$|$";
     private static final String BACKSLASH = "$\\backslash$";
     private static final String PI = "$\\pi$";
     private static final String NORTH = ".north -| ";
