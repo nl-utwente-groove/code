@@ -57,18 +57,23 @@ public class GraphJEdge extends JEdge implements GraphJCell {
 
     /**
      * Returns <code>true</code> if the super method does so, and the edge has
-     * at least one non-filtered list label.
+     * at least one non-filtered list label, and all end nodes are visible.
      */
     @Override
     public boolean isVisible() {
-        return super.isVisible() && !isSourceLabel() && !isFiltered();
+        boolean result = super.isVisible() && !isSourceLabel() && !isFiltered();
+        if (result && GraphJVertex.NODE_FILTERS_WIN) {
+            result =
+                getSourceVertex().isVisible() && getTargetVertex().isVisible();
+        }
+        return result;
     }
 
     /**
      * Indicates if this edge is shown as a label on its source node, instead of
-     * an explicit edge. This implementation returns <code>true</code> if
-     * either {@link #isSelfEdgeSourceLabel()} or
-     * {@link #isDataEdgeSourceLabel()} return <code>true</code>.
+     * an explicit edge. This implementation returns <code>true</code> if either
+     * {@link #isSelfEdgeSourceLabel()} or {@link #isDataEdgeSourceLabel()}
+     * return <code>true</code>.
      */
     boolean isSourceLabel() {
         return isSelfEdgeSourceLabel() || isDataEdgeSourceLabel();
@@ -82,9 +87,9 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     boolean isSelfEdgeSourceLabel() {
         return getSourceVertex().getUserObject().contains(getEdge()); // &&
-                                                                        // GraphConstants.getPoints(getAttributes())
-                                                                        // ==
-                                                                        // null;
+        // GraphConstants.getPoints(getAttributes())
+        // ==
+        // null;
     }
 
     /**
@@ -302,7 +307,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     public String getRole() {
         return "Edge";
     }
-    
+
     /** Underlying {@link JModel} of this edge. */
     private final GraphJModel jModel;
     /** Source node of the underlying graph edges. */

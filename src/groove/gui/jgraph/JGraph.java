@@ -249,7 +249,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     if (!jCell.isVisible()) {
                         invisibleCells.add(jCell);
                         getSelectionModel().removeSelectionCell(jCell);
+                        if (jCell instanceof JVertex) {
+                            for (Object edge : ((JVertex) jCell).getPort().getEdges()) {
+                                if (!((JEdge) edge).isVisible()) {
+                                    invisibleCells.add((JEdge) edge);
+                                }
+                            }
+                        }
                     } else {
+                        // the display modus might have changed,
+                        // as for data edges; hence reaffirm the visibility
                         visibleCells.add(jCell);
                     }
                     jView.changeAttributes(getGraphLayoutCache(),
@@ -257,6 +266,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 } else {
                     if (jCell.isVisible()) {
                         visibleCells.add(jCell);
+                        if (jCell instanceof JVertex) {
+                            for (Object edge : ((JVertex) jCell).getPort().getEdges()) {
+                                if (((JEdge) edge).isVisible()) {
+                                    visibleCells.add((JEdge) edge);
+                                }
+                            }
+                        }
                     }
                 }
                 if (getModel().isGrayedOut(jCell)) {
