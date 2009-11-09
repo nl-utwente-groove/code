@@ -92,17 +92,22 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 
     @Override
     public boolean isVisible() {
-        // first test if the node has unfiltered self-edges
-        boolean result =
-            !hasValue()
-                || (isDataNode() ? this.jModel.isShowValueNodes()
-                        : !isFiltered());
-        Iterator<?> jEdgeIter = getPort().edges();
-        while (!result && jEdgeIter.hasNext()) {
-            GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
-            result =
-                !jEdge.isFiltered()
-                    && (jEdge.getSource() == this || !jEdge.isSourceLabel());
+        boolean result = !isFiltered();
+        // if (hasValue() || isDataNode() && this.jModel.isShowValueNodes()) {
+        // result = false;
+        // } else {
+        // result = !isFiltered();
+        // }
+        if (!result && !NODE_FILTERS_WIN) {
+            // unfiltered nodes are still visible if there are visible
+            // incoming or outgoing edges
+            Iterator<?> jEdgeIter = getPort().edges();
+            while (!result && jEdgeIter.hasNext()) {
+                GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
+                result =
+                    !jEdge.isFiltered()
+                        && (jEdge.getSource() == this || !jEdge.isSourceLabel());
+            }
         }
         return result;
     }
@@ -112,11 +117,16 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * invisible).
      */
     private boolean isFiltered() {
-        boolean result = !getSelfEdges().isEmpty();
-        Iterator<? extends Edge> listLabelIter = getSelfEdges().iterator();
-        while (result && listLabelIter.hasNext()) {
-            result =
-                this.jModel.isFiltering(getLabel(listLabelIter.next()).text());
+        boolean result;
+        if (hasValue()) {
+            result = this.jModel.isFiltering(getValueSymbol());
+        } else {
+            result = !getSelfEdges().isEmpty();
+            Iterator<? extends Edge> listLabelIter = getSelfEdges().iterator();
+            while (result && listLabelIter.hasNext()) {
+                result =
+                    this.jModel.isFiltering(getLabel(listLabelIter.next()).text());
+            }
         }
         return result;
     }
@@ -307,8 +317,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * Indicates in its return value if the edge has indeed been added.
      * @param edge the edge to be added
      * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if
-     *         <tt>edge</tt> is not compatible with this j-vertex and cannot
-     *         be added.
+     *         <tt>edge</tt> is not compatible with this j-vertex and cannot be
+     *         added.
      * @require <tt>edge.source() == edge.target() == getNode()</tt>
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
@@ -335,14 +345,14 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public boolean isValueNode() {
         return getActualNode() instanceof VariableNode;
     }
-    
+
     /**
      * @return true if this node is a product node, false otherwise.
      */
     public boolean isProductNode() {
         return getActualNode() instanceof ProductNode;
     }
-    
+
     /**
      * Callback method to determine whether the underlying graph node stores a
      * constant value.
@@ -355,9 +365,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * Callback method to return the symbolic representation of 
-     * the value stored in the underlying graph node,
-     * in case the graph node is a value node.
+     * Callback method to return the symbolic representation of the value stored
+     * in the underlying graph node, in case the graph node is a value node.
      * @see ValueNode#getSymbol()
      */
     String getValueSymbol() {
@@ -370,9 +379,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 
     /**
      * Callback method to return the algebra to which the underlying value node
-     * belongs, or <code>null</code> if the underlying node is not a value
-     * node. This method returns <code>null</code> if and only if
-     * {@link #hasValue()} holds.
+     * belongs, or <code>null</code> if the underlying node is not a value node.
+     * This method returns <code>null</code> if and only if {@link #hasValue()}
+     * holds.
      */
     groove.algebra.Algebra<?> getAlgebra() {
         if (getActualNode() instanceof ValueNode) {
@@ -389,8 +398,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * returned; otherwise this implementation delegates to
      * <code>getNode().toString()</code>. The result may be <code>null</code>,
      * if the node has no proper identity.
-     * @return A node descriptor, or <code>null</code> if the node has no
-     *         proper identity
+     * @return A node descriptor, or <code>null</code> if the node has no proper
+     *         identity
      */
     public String getNodeIdentity() {
         // if (isConstant()) {
@@ -437,6 +446,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         getUserObject().remove(edge);
     }
 
+    /** Returns the underlying GraphJModel. */
+    GraphJModel getGraphJModel() {
+        return this.jModel;
+    }
+
     /** The model in which this vertex exists. */
     private final GraphJModel jModel;
     /**
@@ -448,10 +462,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     private final Node node;
 
     static private final String ASSIGN_TEXT = " = ";
-
-    /** Returns the underlying GraphJModel. */
-    GraphJModel getGraphJModel() {
-        return this.jModel;
-    }
-
+    /** flag indicating if filtering a node always makes it disappear. */
+    static final boolean NODE_FILTERS_WIN = false;
 }
