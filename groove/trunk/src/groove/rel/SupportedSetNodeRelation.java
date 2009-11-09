@@ -72,8 +72,9 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
     }
 
     public NodeRelation doThen(NodeRelation other) {
+        Map<Edge,Collection<Element>> oldSupportMap = this.supportMap;
         this.supportMap = new HashMap<Edge,Collection<Element>>();
-        for (Map.Entry<Edge,Collection<Element>> supportEntry : this.supportMap.entrySet()) {
+        for (Map.Entry<Edge,Collection<Element>> supportEntry : oldSupportMap.entrySet()) {
             Edge rel = supportEntry.getKey();
             for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : ((SupportedNodeRelation) other).getSupportMap().entrySet()) {
                 Edge otherRel = otherSupportEntry.getKey();
