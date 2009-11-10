@@ -33,6 +33,7 @@ import groove.gui.jgraph.AbstrGraphJModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -348,6 +349,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                 newGrayedOut.add(targetCell);
             }
         }
+        Set<Edge> newEdges =
+            new HashSet<Edge>(newStateJModel.getGraph().edgeSet());
         for (Map.Entry<Edge,Edge> entry : derivationMap.edgeMap().entrySet()) {
             JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
             AttributeMap sourceAttributes = sourceCell.getAttributes();
@@ -371,9 +374,18 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             if (oldStateJModel.isGrayedOut(sourceCell)) {
                 newGrayedOut.add(targetCell);
             }
+            newEdges.remove(entry.getValue());
+        }
+        // new edges should be shown, including their source and target vertex
+        for (Edge newEdge : newEdges) {
+            JCell targetCell = newStateJModel.getJCell(newEdge);
+            if (targetCell instanceof JEdge) {
+                newGrayedOut.remove(((JEdge) targetCell).getSourceVertex());
+                newGrayedOut.remove(((JEdge) targetCell).getTargetVertex());
+            }
         }
         // remove for now; it's doing more harm than good
-        // newStateJModel.setGrayedOut(newGrayedOut);
+        newStateJModel.setGrayedOut(newGrayedOut);
     }
 
     /**
