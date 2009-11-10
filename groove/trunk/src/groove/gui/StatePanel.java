@@ -20,6 +20,7 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
+import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.abs.AbstrGraph;
 import groove.graph.Edge;
@@ -83,6 +84,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
+        addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
@@ -138,7 +140,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
 
     /**
      * Sets the underlying model of this state frame to a new graph. Creates a
-     * state model for the new graph, if it was not displayed before. 
+     * state model for the new graph, if it was not displayed before.
      * @param state the new underlying state graph
      */
     public synchronized void setStateUpdate(GraphState state) {
@@ -219,9 +221,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         return this.selectedMatch;
     }
 
-    /** 
+    /**
      * Clears the emphasis due to the currently selected match, if any.
-     * @return <code>true</code> if there was a match to be cleared. 
+     * @return <code>true</code> if there was a match to be cleared.
      */
     private boolean clearSelectedMatch() {
         boolean result = this.selectedMatch != null;
@@ -231,7 +233,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         }
         return result;
     }
-    
+
     /**
      * Text to indicate which state is chosen and which match is emphasised.
      */

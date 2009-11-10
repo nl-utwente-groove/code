@@ -674,6 +674,14 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
+     * Indicates whether unfiltered edges to filtered nodes should remain
+     * visible.
+     */
+    final boolean isShowUnfilteredEdges() {
+        return getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION);
+    }
+
+    /**
      * Indicates whether vertices can have their own labels. If false, j-vertex
      * inscriptions are (possibly empty) sets of self-edge labels.
      */
