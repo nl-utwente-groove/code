@@ -381,7 +381,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super.setModel(jModel);
             getLabelList().updateModel();
             jModel.addGraphModelListener(this);
-            // jModel.refresh();
+            jModel.refresh();
+            getSelectionModel().clearSelection();
             if (this.initialized) {
                 if (this.layouter != null && !jModel.isLayedOut()) {
                     int layoutCount = jModel.freeze();
