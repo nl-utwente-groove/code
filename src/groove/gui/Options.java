@@ -451,6 +451,9 @@ public class Options {
     /** Vertices are labels options */
     static public final String VERTEX_LABEL_OPTION =
         "Show self-edges as node labels";
+    /** Show unfiltered edges to filtered nodes. */
+    static public final String SHOW_UNFILTERED_EDGES_OPTION =
+        "Show all unfiltered edges";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show remark nodes and edges. */
@@ -503,6 +506,7 @@ public class Options {
         boolOptionDefaults.put(SHOW_REMARKS_OPTION, true);
         boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
+        boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
         boolOptionDefaults.put(PREVIEW_ON_CLOSE_OPTION, true);
         boolOptionDefaults.put(PREVIEW_ON_SAVE_OPTION, true);
         intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
@@ -622,7 +626,7 @@ public class Options {
         addCheckbox(SHOW_VALUE_NODES_OPTION);
         addCheckbox(VERTEX_LABEL_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
-        addCheckbox(SHOW_STATE_IDS_OPTION);
+        addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         // addCheckbox(IS_ATTRIBUTED_OPTION);
         addCheckbox(PREVIEW_ON_CLOSE_OPTION);
         addCheckbox(PREVIEW_ON_SAVE_OPTION);

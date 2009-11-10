@@ -27,6 +27,7 @@ import static groove.gui.Options.SHOW_BACKGROUND_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
@@ -50,7 +51,6 @@ import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-//import groove.gui.chscenar.ScenarioSelectionDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
@@ -370,8 +370,8 @@ public class Simulator {
     }
 
     /**
-     * Returns the currently selected rule set, or <tt>null</tt> if
-     * none is selected.
+     * Returns the currently selected rule set, or <tt>null</tt> if none is
+     * selected.
      */
     public List<AspectualRuleView> getCurrentRuleSet() {
         return this.ruleJTree == null
@@ -403,12 +403,11 @@ public class Simulator {
         return this.applyTransitionAction;
     }
 
-    /*private ChooseCustomScenarioAction getChooseCustomScenarioAction() {
-        if (this.chooseScenarioAction == null) {
-            this.chooseScenarioAction = new ChooseCustomScenarioAction();
-        }
-        return this.chooseScenarioAction;
-    }*/
+    /*
+     * private ChooseCustomScenarioAction getChooseCustomScenarioAction() { if
+     * (this.chooseScenarioAction == null) { this.chooseScenarioAction = new
+     * ChooseCustomScenarioAction(); } return this.chooseScenarioAction; }
+     */
 
     /**
      * Returns the graph copying action permanently associated with this
@@ -2064,6 +2063,7 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_BACKGROUND_OPTION));
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+        result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(START_SIMULATION_OPTION));
         result.add(getOptions().getItem(STOP_SIMULATION_OPTION));
@@ -2850,7 +2850,7 @@ public class Simulator {
      * The custom scenario choose action permanently associated with this
      * simulator.
      */
-    //private ChooseCustomScenarioAction chooseScenarioAction;
+    // private ChooseCustomScenarioAction chooseScenarioAction;
 
     /**
      * The graph copying action permanently associated with this simulator.
@@ -3148,32 +3148,22 @@ public class Simulator {
 
     // BEGIN_IOVKA
     /** Allows to select a custom scenario and run it. */
-    /*@Deprecated
-    private class ChooseCustomScenarioAction extends AbstractAction implements
-            Refreshable {
-        ChooseCustomScenarioAction() {
-            super("Run a custom scenario (work in progress)");
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            ScenarioSelectionDialog sd =
-                new ScenarioSelectionDialog(getFrame(), getGTS().getGrammar());
-            Scenario customScenario = sd.showDialog();
-            if (customScenario != null) {
-                LaunchScenarioAction action =
-                    getLaunchScenarioAction(customScenario);
-                action.actionPerformed(e);
-            }
-        }
-
-        public void refresh() {
-            // Temporarily disable the dialog.
-            // setEnabled(getCurrentGrammar() != null &&
-            // getCurrentGrammar().getStartGraph() != null);
-            setEnabled(false);
-        }
-    }*/
+    /*
+     * @Deprecated private class ChooseCustomScenarioAction extends
+     * AbstractAction implements Refreshable { ChooseCustomScenarioAction() {
+     * super("Run a custom scenario (work in progress)"); addRefreshable(this);
+     * }
+     * 
+     * public void actionPerformed(ActionEvent e) { ScenarioSelectionDialog sd =
+     * new ScenarioSelectionDialog(getFrame(), getGTS().getGrammar()); Scenario
+     * customScenario = sd.showDialog(); if (customScenario != null) {
+     * LaunchScenarioAction action = getLaunchScenarioAction(customScenario);
+     * action.actionPerformed(e); } }
+     * 
+     * public void refresh() { // Temporarily disable the dialog. //
+     * setEnabled(getCurrentGrammar() != null && //
+     * getCurrentGrammar().getStartGraph() != null); setEnabled(false); } }
+     */
 
     private class CopyGraphAction extends AbstractAction implements Refreshable {
         CopyGraphAction() {
@@ -4415,7 +4405,7 @@ public class Simulator {
             setEnabled(enabled);
         }
     }
-    
+
     /**
      * Action for verifying a CTL formula.
      */

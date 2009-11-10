@@ -98,7 +98,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         // } else {
         // result = !isFiltered();
         // }
-        if (!result && !NODE_FILTERS_WIN) {
+        if (!result && this.jModel.isShowUnfilteredEdges()) {
             // unfiltered nodes are still visible if there are visible
             // incoming or outgoing edges
             Iterator<?> jEdgeIter = getPort().edges();
@@ -120,8 +120,10 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         boolean result;
         if (hasValue()) {
             result = this.jModel.isFiltering(getValueSymbol());
+        } else if (getSelfEdges().isEmpty()) {
+            result = this.jModel.isFiltering(NO_LABEL);
         } else {
-            result = !getSelfEdges().isEmpty();
+            result = true;
             Iterator<? extends Edge> listLabelIter = getSelfEdges().iterator();
             while (result && listLabelIter.hasNext()) {
                 result =
@@ -211,11 +213,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         for (Edge edge : getSelfEdges()) {
             result.add(getLabel(edge).text());
         }
+        if (getSelfEdges().isEmpty()) {
+            result.add(NO_LABEL);
+        }
         for (Edge edge : getDataEdges()) {
             result.add(getLabel(edge).text());
-        }
-        if (result.isEmpty()) {
-            result.add(NO_LABEL);
         }
         return result;
     }
@@ -462,6 +464,4 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     private final Node node;
 
     static private final String ASSIGN_TEXT = " = ";
-    /** flag indicating if filtering a node always makes it disappear. */
-    static final boolean NODE_FILTERS_WIN = false;
 }

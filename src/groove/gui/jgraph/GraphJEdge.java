@@ -62,7 +62,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     @Override
     public boolean isVisible() {
         boolean result = super.isVisible() && !isSourceLabel() && !isFiltered();
-        if (result && GraphJVertex.NODE_FILTERS_WIN) {
+        if (result && this.jModel.isShowUnfilteredEdges()) {
             result =
                 getSourceVertex().isVisible() && getTargetVertex().isVisible();
         }
