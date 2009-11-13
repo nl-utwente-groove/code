@@ -31,14 +31,25 @@ import java.util.Map;
 public final class DefaultLabel extends AbstractLabel {
     /**
      * Constructs a standard implementation of Label on the basis of a given
-     * text.
+     * text. The constructed label is not a node type.
      * @param text the text of the label
      * @require <tt>text != null</tt>
      * @ensure <tt>text().equals(text)</tt>
      */
     private DefaultLabel(String text) {
+        this(text, false);
+    }
+
+    /**
+     * Constructs a standard implementation of Label on the basis of a given
+     * text.
+     * @param text the text of the label; non-null
+     * @param nodeType flag indicating if this label stands for a node type
+     */
+    private DefaultLabel(String text, boolean nodeType) {
         this.index = newLabelIndex(text);
         this.hashCode = computeHashCode();
+        this.nodeType = nodeType;
     }
 
     /**
@@ -51,10 +62,16 @@ public final class DefaultLabel extends AbstractLabel {
     private DefaultLabel(char index) {
         this.index = index;
         this.hashCode = computeHashCode();
+        this.nodeType = false;
     }
 
     public String text() {
         return getText(this.index);
+    }
+
+    /** Indicates if this label stands for a node type. */
+    public boolean isNodeType() {
+        return this.nodeType;
     }
 
     // ------------------------- OBJECT OVERRIDES ---------------------
@@ -64,8 +81,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof DefaultLabel && ((DefaultLabel) obj).index == this.index); // ||
-                                                                                            // super.equals(obj);
+        return (obj instanceof DefaultLabel && ((DefaultLabel) obj).index == this.index); // super.equals(obj);
     }
 
     /**
@@ -78,7 +94,8 @@ public final class DefaultLabel extends AbstractLabel {
 
     /** Computes a hash code for this label. */
     private int computeHashCode() {
-        return text().hashCode() * (this.index + 1);
+        int result = text().hashCode() * (this.index + 1);
+        return isNodeType() ? result ^ NODE_TYPE_MASK : result;
     }
 
     /**
@@ -98,6 +115,8 @@ public final class DefaultLabel extends AbstractLabel {
     private final char index;
     /** The hash code of this label. */
     private final int hashCode;
+    /** Flag indicating if this label stands for a node type. */
+    private final boolean nodeType;
 
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
@@ -107,6 +126,20 @@ public final class DefaultLabel extends AbstractLabel {
      * @return an existing or new label with the given text
      */
     public static DefaultLabel createLabel(String text) {
+        assert text != null : "Label text of default label should not be null";
+        return getLabel(newLabelIndex(text));
+    }
+
+    /**
+     * Returns the unique representative of a {@link DefaultLabel} for a given
+     * string. The string is used as-is, and is guaranteed to equal the text of
+     * the resulting label.
+     * @param text the text of the label; non-null
+     * @param nodeType flag indicating if the label stands for a node type
+     * @return an existing or new label with the given text and node type
+     *         property; non-null
+     */
+    public static DefaultLabel createLabel(String text, boolean nodeType) {
         assert text != null : "Label text of default label should not be null";
         return getLabel(newLabelIndex(text));
     }
@@ -159,7 +192,8 @@ public final class DefaultLabel extends AbstractLabel {
      * @return the index of <tt>text</tt>, if it is the list;
      *         <tt>Character.MAX_VALUE</tt> otherwise.
      * @require <tt>text != null</tt>
-     * @ensure <tt>result.equals(Character.MAX_VALUE) || labelText(result).equals(text)</tt>
+     * @ensure
+     *         <tt>result.equals(Character.MAX_VALUE) || labelText(result).equals(text)</tt>
      */
     static public char labelIndex(String text) {
         Character index = indexMap.get(text);
@@ -225,8 +259,7 @@ public final class DefaultLabel extends AbstractLabel {
     static private final List<String> textList = new ArrayList<String>();
     /**
      * The internal translation table from label indices to labels.
-     * @invariant <tt>labelList: Label^*</tt> consistent with
-     *            <tt>labelText</tt>
+     * @invariant <tt>labelList: Label^*</tt> consistent with <tt>labelText</tt>
      */
     static private final List<DefaultLabel> labelList =
         new ArrayList<DefaultLabel>();
@@ -239,4 +272,6 @@ public final class DefaultLabel extends AbstractLabel {
 
     /** Counter to support the generation of fresh labels. */
     static private int freshLabelIndex;
+    /** Mask to distinguish the hash code of node type labels. */
+    static private final int NODE_TYPE_MASK = 0xAAAA;
 }
