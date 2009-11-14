@@ -24,10 +24,13 @@ package groove.graph;
 public interface Label extends Comparable<Label>, java.io.Serializable {
     /**
      * Returns the text that this Label carries. As a rule, <code>text()</code>
-     * should equal <code>toString()</code>. The <tt>compareTo</tt> method
-     * of <tt>Comparable</tt> will, in a standard implementation, be delegated
-     * to <code>text()</code>.
+     * should equal <code>toString()</code>. The <tt>compareTo</tt> method of
+     * <tt>Comparable</tt> will, in a standard implementation, be delegated to
+     * <code>text()</code>.
      * @ensure result != null
      */
     String text();
+
+    /** Indicates if this label stands for a node type. */
+    boolean isNodeType();
 }

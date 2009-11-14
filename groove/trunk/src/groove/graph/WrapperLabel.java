@@ -35,6 +35,12 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
         return this.text;
     }
 
+    /** This implementation always returns <code>false</code>. */
+    @Override
+    public boolean isNodeType() {
+        return false;
+    }
+
     /**
      * Callback method from {@link #toString()}, to convert the wrapped object
      * to a string.
