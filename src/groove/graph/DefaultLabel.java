@@ -34,34 +34,26 @@ public final class DefaultLabel extends AbstractLabel {
      * @param text the text of the label
      * @require <tt>text != null</tt>
      * @ensure <tt>text().equals(text)</tt>
+     * @deprecated used only for the groove.util.Analyzer command line tool,
+     *             which is no longer maintained
      */
+    @Deprecated
     private DefaultLabel(String text) {
-        this(text, false);
-    }
-
-    /**
-     * Constructs a standard implementation of Label on the basis of a given
-     * text.
-     * @param text the text of the label; non-null
-     * @param nodeType flag indicating if this label stands for a node type
-     */
-    private DefaultLabel(String text, boolean nodeType) {
         this.index = newLabelIndex(text, false);
         this.hashCode = computeHashCode();
-        this.nodeType = nodeType;
+        this.nodeType = false;
     }
 
     /**
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.
      * @param index the index of the label text
-     * @require <tt>labelText.containsKey(index)</tt>
-     * @ensure <tt>this.index == index</tt>
+     * @param nodeType flag indicating if this label stands for a node type
      */
-    private DefaultLabel(char index) {
+    private DefaultLabel(char index, boolean nodeType) {
         this.index = index;
         this.hashCode = computeHashCode();
-        this.nodeType = false;
+        this.nodeType = nodeType;
     }
 
     public String text() {
@@ -160,7 +152,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     public static DefaultLabel createLabel(String text, boolean nodeType) {
         assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text, false));
+        return getLabel(newLabelIndex(text, nodeType));
     }
 
     /**
@@ -258,7 +250,7 @@ public final class DefaultLabel extends AbstractLabel {
         if (index == null) {
             char result = (char) textList.size();
             textList.add(text);
-            labelList.add(new DefaultLabel(result));
+            labelList.add(new DefaultLabel(result, nodeType));
             getIndexMap(nodeType).put(text, new Character(result));
             return result;
         } else {
