@@ -54,8 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -89,9 +89,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
-        getJGraph().getLabelList().addListSelectionListener(
-            new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
+        getJGraph().getLabelList().addTreeSelectionListener(
+            new TreeSelectionListener() {
+                public void valueChanged(TreeSelectionEvent e) {
                     if (getSelectedMatch() != null) {
                         simulator.setRule(getSelectedMatch().getRule().getName());
                     }
