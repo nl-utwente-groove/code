@@ -580,24 +580,23 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     @Override
     final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
-        AttributeMap result;
+        AttributeMap result = (AttributeMap) this.defaultEdgeAttr.clone();
         // if (jEdge.isVisible()) {
-        result = createJEdgeAttr(((GraphJEdge) jEdge).getEdges());
         if (result == null) {
             result = super.createJEdgeAttr(jEdge);
+        } else {
+            modifyJEdgeAttr(result, ((GraphJEdge) jEdge).getEdges());
         }
-        // } else {
-        // result = JAttr.INVISIBLE_ATTR;
-        // }
         return result;
     }
 
     /**
-     * Creates the attributes based on the set of edges contained in a j-edge.
-     * Callback method from {@link #createJEdgeAttr(JEdge)}
+     * Modifies the edge attributes based on the set of edges contained in a
+     * j-edge. Callback method from {@link #createJEdgeAttr(JEdge)}
+     * @param result the map to be modified
      */
-    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result = (AttributeMap) this.defaultEdgeAttr.clone();
+    protected void modifyJEdgeAttr(AttributeMap result,
+            Set<? extends Edge> edgeSet) {
         // change the font to bold if the edges contain a node type
         if (!edgeSet.isEmpty()) {
             Edge edge = edgeSet.iterator().next();
@@ -607,7 +606,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
                     currentFont.deriveFont(Font.BOLD));
             }
         }
-        return result;
     }
 
     /**

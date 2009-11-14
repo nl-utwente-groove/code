@@ -204,23 +204,22 @@ public class AspectJModel extends GraphJModel {
     }
 
     @Override
-    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result;
+    protected void modifyJEdgeAttr(AttributeMap result,
+            Set<? extends Edge> edgeSet) {
         assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
+        super.modifyJEdgeAttr(result, edgeSet);
         AspectEdge aspectEdge = (AspectEdge) edgeSet.iterator().next();
         AspectValue nestingValue = getNestingValue(aspectEdge);
         if (nestingValue != null && !nestingValue.isNodeValue()) {
-            result = NESTING_EDGE_ATTR.clone();
+            result.applyMap(NESTING_EDGE_ATTR);
         } else {
             AspectValue role = role(aspectEdge);
-            result = RULE_EDGE_ATTR.get(role).clone();
+            result.applyMap(RULE_EDGE_ATTR.get(role));
             if (RegExprLabel.isEmpty(aspectEdge.label())) {
                 // remove edge arrow
                 GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
             }
         }
-        result.applyMap(super.createJEdgeAttr(edgeSet));
-        return result;
     }
 
     /** Adds the correct line width emphasis. */
