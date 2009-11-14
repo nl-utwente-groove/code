@@ -351,11 +351,9 @@ public class RuleAspect extends AbstractAspect {
             ERASER.setLabelParser(EraserParser.getInstance());
             CREATOR.setLabelParser(CreatorParser.getInstance());
             EMBARGO.setLabelParser(RegExprLabelParser.getInstance());
-            CNEW.setLabelParser(CNewParser.getInstance());
+            CNEW.setLabelParser(CreatorParser.getInstance());
             READER.setLabelParser(RegExprLabelParser.getInstance());
             REMARK.setLabelParser(FreeLabelParser.getInstance());
-            // instance.addNodeValue(REMARK);
-            // instance.addEdgeValue(REMARK);
             // RULE = null; //new RuleAspectValue(); // currently not added to
             // values!
             instance.setDefaultValue(READER);
@@ -588,65 +586,5 @@ public class RuleAspect extends AbstractAspect {
 
         /** Singleton instance of this class. */
         static private CreatorParser instance = new CreatorParser();
-    }
-
-    /**
-     * Label parser for creator edges. Recognises atoms, named unguarded
-     * wildcards, and mergers.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    static private class CNewParser implements LabelParser {
-        /** Empty constructor to ensure a singleton class. */
-        private CNewParser() {
-            // empty
-        }
-
-        /**
-         * This implementation tries to parse the label text as a regular
-         * expression, but throws an exception if the result is anything other
-         * than an unguarded named wildcard, a merger, or an atom.
-         */
-        public Label parse(DefaultLabel label) throws FormatException {
-            Label result = this.preParser.parse(label);
-            boolean allowed;
-            if (result instanceof DefaultLabel) {
-                allowed = true;
-            } else {
-                RegExpr expr = ((RegExprLabel) result).getRegExpr();
-                allowed =
-                    expr.getWildcardId() != null
-                        && expr.getWildcardGuard() == null || expr.isEmpty();
-            }
-            if (!allowed) {
-                throw new FormatException(
-                    "Creator label %s should be named unguarded wildcard, merger or atom",
-                    label);
-            }
-            return result;
-        }
-
-        /** This implementation returns a default label based on the label text. */
-        public DefaultLabel unparse(Label label) {
-            if (label instanceof DefaultLabel) {
-                return (DefaultLabel) label;
-            } else {
-                return DefaultLabel.createLabel(label.text());
-            }
-        }
-
-        /**
-         * The parser used to decompose the label, after which a selection
-         * follows.
-         */
-        private final LabelParser preParser = RegExprLabelParser.getInstance();
-
-        /** Returns the singleton instance of this class. */
-        static public CNewParser getInstance() {
-            return instance;
-        }
-
-        /** Singleton instance of this class. */
-        static private CNewParser instance = new CNewParser();
     }
 }
