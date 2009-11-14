@@ -229,11 +229,11 @@ public class AspectualGraphView extends AspectualView<Graph> {
                                 "Double node type: '%s' and '%s'", oldType,
                                 edgeLabel);
                         }
-                    } else if (!isAllowedEdge(edgeImage)) {
-                        throw new FormatException(
-                            "Edge aspect value '%s' not allowed in graphs",
-                            getAttributeValue(viewEdge));
                     }
+                } else if (!isAllowedEdge(edgeImage)) {
+                    throw new FormatException(
+                        "Edge aspect value '%s' not allowed in graphs",
+                        getAttributeValue(viewEdge));
                 }
                 elementMap.putEdge(viewEdge, edgeImage);
             } catch (FormatException exc) {
