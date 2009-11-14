@@ -60,20 +60,16 @@ abstract public class AspectualView<Model> implements View<Model> {
      *         or the parser throws an exception
      */
     protected Label parse(AspectEdge aspectEdge) throws FormatException {
-        AspectValue parsingValue = null;
         LabelParser parser = null;
         for (AspectValue value : aspectEdge.getAspectMap().values()) {
             // find the parser for this aspect value
             LabelParser valueParser = value.getLabelParser();
-            // set it as the label parser, or compare it with the previously
+            // set it as the label parser, or compose it with the previously
             // found parser
             if (parser == null) {
                 parser = valueParser;
-                parsingValue = value;
             } else if (valueParser != null && !valueParser.equals(parser)) {
-                throw new FormatException(
-                    "Conflicting aspect values '%s' and '%s' on edge %s",
-                    parsingValue, value, aspectEdge);
+                parser = new ComposedLabelParser(parser, valueParser);
             }
         }
         // use the default parser if none is found
