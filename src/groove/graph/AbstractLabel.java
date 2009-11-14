@@ -23,6 +23,12 @@ package groove.graph;
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 public abstract class AbstractLabel implements Cloneable, Label {
+    /** This implementation always returns <code>false</code>. */
+    @Override
+    public boolean isNodeType() {
+        return false;
+    }
+
     /**
      * This implementation compares this label's {@link #text()} with that of
      * <code>obj</code>.

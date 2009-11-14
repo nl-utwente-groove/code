@@ -39,13 +39,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class to analyze the efectiveness and efficientcy of bisimilarity checking.
+ * Class to analyse the effectiveness and efficiency of bisimilarity checking.
  * Works upon a stream file of graphs.
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated no longer maintained
  */
+@Deprecated
 public class Analyzer extends CommandLineTool {
-    
+
     /** The message used for printing usage information. */
     static public final String USAGE_MESSAGE =
         "Usage: Analyzer <graph stream files>";
@@ -69,7 +71,7 @@ public class Analyzer extends CommandLineTool {
     static private final IsoChecker isoChecker =
         DefaultIsoChecker.getInstance(true);
 
-    /** main method for the Analyzer */ 
+    /** main method for the Analyzer */
     public static void main(String[] args) {
         Analyzer analyzer =
             new Analyzer(new LinkedList<String>(Arrays.asList(args)));

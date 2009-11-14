@@ -17,14 +17,13 @@
 package groove.graph;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Provides a standard implementation of the Label interface. An instance
- * contains just an index into a global list.
+ * Provides a standard implementation of the {@link Label} interface. An
+ * instance contains just an index into a global list.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -47,7 +46,7 @@ public final class DefaultLabel extends AbstractLabel {
      * @param nodeType flag indicating if this label stands for a node type
      */
     private DefaultLabel(String text, boolean nodeType) {
-        this.index = newLabelIndex(text);
+        this.index = newLabelIndex(text, false);
         this.hashCode = computeHashCode();
         this.nodeType = nodeType;
     }
@@ -69,7 +68,7 @@ public final class DefaultLabel extends AbstractLabel {
         return getText(this.index);
     }
 
-    /** Indicates if this label stands for a node type. */
+    @Override
     public boolean isNodeType() {
         return this.nodeType;
     }
@@ -81,7 +80,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof DefaultLabel && ((DefaultLabel) obj).index == this.index); // super.equals(obj);
+        return this == obj;
     }
 
     /**
@@ -96,6 +95,25 @@ public final class DefaultLabel extends AbstractLabel {
     private int computeHashCode() {
         int result = text().hashCode() * (this.index + 1);
         return isNodeType() ? result ^ NODE_TYPE_MASK : result;
+    }
+
+    /** All node type labels are smaller than all standard labels. */
+    @Override
+    public int compareTo(Label obj) {
+        int result = boolToInt(obj.isNodeType()) - boolToInt(isNodeType());
+        if (result == 0) {
+            result = super.compareTo(obj);
+        }
+        return result;
+    }
+
+    /**
+     * Converts a boolean value to an integer value.
+     * @return <code>1</code> if <code>bool</code> is <code>true</code>,
+     *         <code>0</code> otherwise.
+     */
+    private int boolToInt(boolean bool) {
+        return bool ? 1 : 0;
     }
 
     /**
@@ -121,13 +139,14 @@ public final class DefaultLabel extends AbstractLabel {
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
      * string. The string is used as-is, and is guaranteed to equal the text of
-     * the resulting label.
-     * @param text the text of the label
-     * @return an existing or new label with the given text
+     * the resulting label. The returned label is not a node type.
+     * @param text the text of the label; non-null
+     * @return an existing or new label with the given text; non-null
+     * @see #createLabel(String, boolean)
      */
     public static DefaultLabel createLabel(String text) {
         assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text));
+        return getLabel(newLabelIndex(text, false));
     }
 
     /**
@@ -141,7 +160,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     public static DefaultLabel createLabel(String text, boolean nodeType) {
         assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text));
+        return getLabel(newLabelIndex(text, false));
     }
 
     /**
@@ -149,11 +168,11 @@ public final class DefaultLabel extends AbstractLabel {
      * form "L"+index, where the index increases for every next fresh label.
      */
     public static DefaultLabel createFreshLabel() {
-        freshLabelIndex++;
         String text;
         do {
+            freshLabelIndex++;
             text = "L" + freshLabelIndex;
-        } while (labelIndex(text) < Character.MAX_VALUE);
+        } while (labelIndex(text, false) < Character.MAX_VALUE);
         return createLabel(text);
     }
 
@@ -189,14 +208,12 @@ public final class DefaultLabel extends AbstractLabel {
      * Returns the index of a certain label text, if it is in the list. Returns
      * a special value if the text is not in the list.
      * @param text the label text being looked up
+     * @param nodeType flag indicating if the result should be node type label
      * @return the index of <tt>text</tt>, if it is the list;
      *         <tt>Character.MAX_VALUE</tt> otherwise.
-     * @require <tt>text != null</tt>
-     * @ensure
-     *         <tt>result.equals(Character.MAX_VALUE) || labelText(result).equals(text)</tt>
      */
-    static public char labelIndex(String text) {
-        Character index = indexMap.get(text);
+    static private char labelIndex(String text, boolean nodeType) {
+        Character index = getIndexMap(nodeType).get(text);
         if (index == null) {
             return Character.MAX_VALUE;
         } else {
@@ -205,28 +222,23 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
-     * Returns an unmodifiable view upon the static index map of this class.
-     * Intended for serialization only.
-     */
-    static public List<String> getTextList() {
-        return Collections.unmodifiableList(textList);
-    }
-
-    /**
      * Modifies the static index map of this class. If the index map is not
      * empty at the time of invocation, an exception is thrown. Intended for
-     * serialization only.
+     * serialisation only.
      * @param textList modification to the index map
-     * @throws IllegalStateException if the sttic index map is not empty at the
+     * @throws IllegalStateException if the static index map is not empty at the
      *         time of invocation.
+     * @deprecated used only for the groove.util.Analyzer command line tool,
+     *             which is no longer maintained
      */
+    @Deprecated
     static public void putTextList(List<String> textList) {
         if (!DefaultLabel.textList.isEmpty()) {
             throw new IllegalStateException();
         }
         DefaultLabel.textList.addAll(textList);
         for (String text : textList) {
-            indexMap.put(text, new Character((char) labelList.size()));
+            standardIndexMap.put(text, new Character((char) labelList.size()));
             labelList.add(new DefaultLabel(text));
         }
     }
@@ -235,17 +247,19 @@ public final class DefaultLabel extends AbstractLabel {
      * Returns an index for a certain label text, creating a new entry if
      * required..
      * @param text the label text being looked up
+     * @param nodeType flag indicating that the label will be used for node
+     *        types
      * @return a valid index for <tt>text</tt>
      * @require <tt>text != null</tt>
      * @ensure <tt>labelText(result).equals(text)</tt>
      */
-    static private char newLabelIndex(String text) {
-        Character index = indexMap.get(text);
+    static private char newLabelIndex(String text, boolean nodeType) {
+        Character index = getIndexMap(nodeType).get(text);
         if (index == null) {
             char result = (char) textList.size();
             textList.add(text);
             labelList.add(new DefaultLabel(result));
-            indexMap.put(text, new Character(result));
+            getIndexMap(nodeType).put(text, new Character(result));
             return result;
         } else {
             return index.charValue();
@@ -253,21 +267,33 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
+     * Returns the appropriate index map, taking the node type property into
+     * account.
+     * @param nodeType if <code>true</code>, the node type map is returned.
+     */
+    static private Map<String,Character> getIndexMap(boolean nodeType) {
+        return nodeType ? nodeTypeIndexMap : standardIndexMap;
+    }
+
+    /**
      * The internal translation table from label indices to strings.
-     * @invariant <tt>textList: String^*</tt>
      */
     static private final List<String> textList = new ArrayList<String>();
     /**
      * The internal translation table from label indices to labels.
-     * @invariant <tt>labelList: Label^*</tt> consistent with <tt>labelText</tt>
      */
     static private final List<DefaultLabel> labelList =
         new ArrayList<DefaultLabel>();
     /**
-     * The internal translation table from strings to label indices.
-     * @invariant <tt>indexMap: String -> Character</tt>
+     * The internal translation table from strings to standard (non-node type)
+     * label indices.
      */
-    static private final Map<String,Character> indexMap =
+    static private final Map<String,Character> standardIndexMap =
+        new HashMap<String,Character>();
+    /**
+     * The internal translation table from strings to node type label indices.
+     */
+    static private final Map<String,Character> nodeTypeIndexMap =
         new HashMap<String,Character>();
 
     /** Counter to support the generation of fresh labels. */
