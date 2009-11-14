@@ -70,17 +70,17 @@ public class ControlJModel extends GraphJModel {
 
     @Override
     public ControlAutomaton getGraph() {
-        if (super.getGraph() instanceof ControlAutomaton)
+        if (super.getGraph() instanceof ControlAutomaton) {
             return (ControlAutomaton) super.getGraph();
-        else {
+        } else {
             return null;
         }
     }
 
     /**
      * Returns the active transition of the LTS, if any. The active transition
-     * is the one currently selected in the simulator. Returns <tt>null</tt>
-     * if no transition is selected.
+     * is the one currently selected in the simulator. Returns <tt>null</tt> if
+     * no transition is selected.
      */
     public ControlTransition getActiveTransition() {
         return this.activeTransition;
@@ -188,22 +188,21 @@ public class ControlJModel extends GraphJModel {
      * @see JAttr#LTS_EDGE_ACTIVE_CHANGE
      */
     @Override
-    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result;
-
+    protected void modifyJEdgeAttr(AttributeMap result,
+            Set<? extends Edge> edgeSet) {
+        super.modifyJEdgeAttr(result, edgeSet);
         // get the first node
         ControlTransition t = (ControlTransition) edgeSet.iterator().next();
 
         if (t instanceof ControlShape) {
-            result = JAttr.CONTROL_SHAPE_EDGE_ATTR.clone();
+            result.applyMap(JAttr.CONTROL_SHAPE_EDGE_ATTR);
         } else if (t.isLambda()) {
-            result = JAttr.CONTROL_LAMBDA_EDGE_ATTR.clone();
+            result.applyMap(JAttr.CONTROL_LAMBDA_EDGE_ATTR);
         } else if (t.hasFailures()) {
-            result = JAttr.CONTROL_FAILURE_EDGE_ATTR.clone();
+            result.applyMap(JAttr.CONTROL_FAILURE_EDGE_ATTR);
         } else {
-            result = JAttr.CONTROL_EDGE_ATTR.clone();
+            result.applyMap(JAttr.CONTROL_EDGE_ATTR);
         }
-        return result;
     }
 
     /**

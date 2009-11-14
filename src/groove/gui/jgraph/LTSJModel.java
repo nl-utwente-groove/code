@@ -181,13 +181,14 @@ public class LTSJModel extends GraphJModel {
      * @see JAttr#LTS_EDGE_ACTIVE_CHANGE
      */
     @Override
-    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result = LTS_EDGE_ATTR.clone();
+    protected void modifyJEdgeAttr(AttributeMap result,
+            Set<? extends Edge> edgeSet) {
+        super.modifyJEdgeAttr(result, edgeSet);
+        result.applyMap(LTS_EDGE_ATTR.clone());
         if (this.activeTransition != null
             && edgeSet.contains(this.activeTransition)) {
             result.applyMap(LTS_EDGE_ACTIVE_CHANGE);
         }
-        return result;
     }
 
     /** Adds the correct border emphasis. */

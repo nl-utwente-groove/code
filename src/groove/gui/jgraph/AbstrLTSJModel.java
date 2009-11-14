@@ -16,12 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jgraph.graph.AttributeMap;
-
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrGraphTransition;
 import groove.graph.Edge;
@@ -29,6 +23,12 @@ import groove.gui.Options;
 import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.Transition;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.jgraph.graph.AttributeMap;
 
 /** Extends an {@link LTSJModel} with a set of active transitions */
 public class AbstrLTSJModel extends LTSJModel {
@@ -46,8 +46,10 @@ public class AbstrLTSJModel extends LTSJModel {
     }
 
     @Override
-    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result = groove.gui.jgraph.JAttr.LTS_EDGE_ATTR.clone();
+    protected void modifyJEdgeAttr(AttributeMap result,
+            Set<? extends Edge> edgeSet) {
+        super.modifyJEdgeAttr(result, edgeSet);
+        result.applyMap(groove.gui.jgraph.JAttr.LTS_EDGE_ATTR.clone());
         if (this.activeTransitionsSet != null
             && this.activeTransitionsSet.containsAll(edgeSet)) {
             result.applyMap(groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE);
@@ -55,7 +57,6 @@ public class AbstrLTSJModel extends LTSJModel {
         // if (activeTransition != null && edgeSet.contains(activeTransition)) {
         // result.applyMap(groove.gui.jgraph.JAttrLTS_EDGE_ACTIVE_CHANGE);
         // }
-        return result;
     }
 
     @Override
