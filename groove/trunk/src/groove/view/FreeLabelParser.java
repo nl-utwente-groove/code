@@ -41,7 +41,7 @@ public class FreeLabelParser implements LabelParser {
      *         formatted. The message of the exception should make clear what
      *         the mismatch is.
      */
-    final public Label parse(DefaultLabel label) throws FormatException {
+    final public Label parse(Label label) throws FormatException {
         if (!isCorrect(label.text())) {
             throw new FormatException(getExceptionText(label.text()));
         }

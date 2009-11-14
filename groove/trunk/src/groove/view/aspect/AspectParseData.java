@@ -19,6 +19,7 @@ package groove.view.aspect;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.util.DefaultFixable;
 import groove.view.FormatException;
 import groove.view.LabelParser;
 
@@ -67,12 +68,14 @@ class AspectParseData {
      * Returns the combined map of all aspect values, declared and inferred.
      */
     public AspectMap getAspectMap() {
+        this.status.setFixed();
         return this.allAspectMap;
     }
 
     /**
      * Adds values to the aspect map that are inferred from source and target
-     * nodes.
+     * nodes. This method should not be called after {@link #getAspectMap()} or
+     * {@link #getLabel()} have been invoked.
      * @param sourceMap map of aspect values for the source node
      * @param targetMap map of aspect values for the target node
      * @throws FormatException if an explicitly declared aspect value is
@@ -80,6 +83,7 @@ class AspectParseData {
      */
     void addInferences(AspectMap sourceMap, AspectMap targetMap)
         throws FormatException {
+        this.status.testFixed(false);
         for (Aspect aspect : Aspect.allAspects) {
             AspectValue edgeValue = this.allAspectMap.get(aspect);
             AspectValue sourceValue = sourceMap.get(aspect);
@@ -101,7 +105,8 @@ class AspectParseData {
                 // value
                 LabelParser parser = result.getLabelParser();
                 if (parser != null) {
-                    parser.parse(getLabel());
+                    this.label =
+                        parser.parse(DefaultLabel.createLabel(getText()));
                 }
             }
         }
@@ -125,9 +130,10 @@ class AspectParseData {
 
     /**
      * Creates a label from the parse data, based on the text and the aspect
-     * values. This implementation always returns a {@link DefaultLabel}.
+     * values.
      */
-    public DefaultLabel getLabel() {
+    public Label getLabel() {
+        this.status.setFixed();
         if (this.label == null && hasText()) {
             this.label = DefaultLabel.createLabel(getText());
         }
@@ -172,9 +178,11 @@ class AspectParseData {
     private final boolean hasEnd;
     /** The actual label. */
     private final String text;
+    /** Fixed status of the parse data. */
+    private final DefaultFixable status = new DefaultFixable();
     /**
      * The label, either set at construction time or to be computed by
      * {@link #getLabel()}.
      */
-    private DefaultLabel label;
+    private Label label;
 }

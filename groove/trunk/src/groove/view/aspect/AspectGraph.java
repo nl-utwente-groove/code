@@ -208,7 +208,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                         getAspectParser(graph).getParseData(labelText);
                     edgeDataMap.put(edge, aspectLabel);
                     // add inferred aspect values to the source and target
-                    for (AspectValue edgeValue : aspectLabel.getAspectMap().values()) {
+                    for (AspectValue edgeValue : aspectLabel.getDeclaredValues()) {
                         AspectValue sourceValue = edgeValue.edgeToSource();
                         if (sourceValue != null) {
                             sourceImage.setInferredValue(sourceValue);

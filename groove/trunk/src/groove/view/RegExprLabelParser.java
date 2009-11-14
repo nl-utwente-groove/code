@@ -45,7 +45,7 @@ public class RegExprLabelParser implements LabelParser {
      * expression, and if successful, turns the expression into a
      * {@link RegExprLabel}.
      */
-    public Label parse(DefaultLabel label) throws FormatException {
+    public Label parse(Label label) throws FormatException {
         Label result;
         try {
             RegExpr expr = parseAsRegExpr(label.text());
@@ -65,7 +65,7 @@ public class RegExprLabelParser implements LabelParser {
      * Parses a given text as a regular expression, if it is surrounded by curly
      * brackets, starts with the negation symbol, or equals the merge
      * expression. If not, behaves as a QuotedLabelParser. Callback method from
-     * {@link #parse(DefaultLabel)} in case the parser is curly.
+     * {@link #parse(Label)} in case the parser is curly.
      */
     private RegExpr parseAsRegExpr(String text) throws FormatException {
         RegExpr result = null;
@@ -162,7 +162,7 @@ public class RegExprLabelParser implements LabelParser {
             boolean quote;
             try {
                 // only quote if the label cannot be parsed as itself
-                Label parsedLabel = parse((DefaultLabel) label);
+                Label parsedLabel = parse(label);
                 quote = !parsedLabel.equals(label);
             } catch (FormatException exc) {
                 quote = true;
