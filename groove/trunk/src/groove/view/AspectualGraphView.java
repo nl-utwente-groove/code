@@ -35,6 +35,7 @@ import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.AttributeElementFactory;
+import groove.view.aspect.NodeTypeAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
@@ -292,7 +293,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
      * graph view.
      */
     private boolean isAllowedValue(AspectValue value) {
-        return value.getAspect() instanceof AttributeAspect;
+        return value.getAspect() instanceof AttributeAspect
+            || value.getAspect() instanceof NodeTypeAspect;
     }
 
     /**

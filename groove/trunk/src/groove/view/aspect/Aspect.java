@@ -122,5 +122,6 @@ public interface Aspect {
      */
     public Aspect[] allAspects =
         {AttributeAspect.getInstance(), RuleAspect.getInstance(),
-            NestingAspect.getInstance(), ParameterAspect.getInstance()};
+            NestingAspect.getInstance(), ParameterAspect.getInstance(),
+            NodeTypeAspect.getInstance()};
 }
