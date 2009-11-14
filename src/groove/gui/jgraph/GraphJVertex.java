@@ -21,6 +21,7 @@ import static groove.util.Converter.STRONG_TAG;
 import static groove.util.Converter.UNDERLINE_TAG;
 import groove.abs.AbstrGraph;
 import groove.control.Location;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -94,22 +95,29 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 
     @Override
     public boolean isVisible() {
-        boolean result = !isFiltered();
-        // if (hasValue() || isDataNode() && this.jModel.isShowValueNodes()) {
-        // result = false;
-        // } else {
-        // result = !isFiltered();
-        // }
-        if (!result && this.jModel.isShowUnfilteredEdges()) {
-            // unfiltered nodes are still visible if there are visible
-            // incoming or outgoing edges
-            Iterator<?> jEdgeIter = getPort().edges();
-            while (!result && jEdgeIter.hasNext()) {
-                GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
-                result =
-                    !jEdge.isFiltered()
-                        && (jEdge.getSource() == this || !jEdge.isSourceLabel());
-            }
+        boolean result;
+        if (isFiltered()) {
+            result =
+                this.jModel.isShowUnfilteredEdges() && hasVisibleIncidentEdge();
+        } else if (hasValue() || isDataNode()) {
+            result = hasVisibleIncidentEdge();
+        } else {
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Tests if this node has a visible incident edge.
+     */
+    private boolean hasVisibleIncidentEdge() {
+        boolean result = false;
+        Iterator<?> jEdgeIter = getPort().edges();
+        while (!result && jEdgeIter.hasNext()) {
+            GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
+            result =
+                !jEdge.isFiltered()
+                    && (jEdge.getSource() == this || !jEdge.isSourceLabel());
         }
         return result;
     }
@@ -121,15 +129,23 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     private boolean isFiltered() {
         boolean result;
         if (hasValue()) {
-            result = this.jModel.isFiltering(getValueSymbol());
+            result = this.jModel.isFiltering(getValueLabel());
         } else if (getSelfEdges().isEmpty()) {
             result = this.jModel.isFiltering(NO_LABEL);
         } else {
             result = true;
-            Iterator<? extends Edge> listLabelIter = getSelfEdges().iterator();
-            while (result && listLabelIter.hasNext()) {
-                result =
-                    this.jModel.isFiltering(getLabel(listLabelIter.next()).text());
+            // filter if either there is a filtered node type,
+            // or all self-edges are filtered
+            for (Edge selfEdge : getSelfEdges()) {
+                Label label = getLabel(selfEdge);
+                if (this.jModel.isFiltering(label)) {
+                    if (label.isNodeType()) {
+                        result = true;
+                        break;
+                    }
+                } else {
+                    result = false;
+                }
             }
         }
         return result;
@@ -170,17 +186,17 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         }
 
         for (Edge edge : getSelfEdges()) {
-            if (!this.jModel.isFiltering(getLabel(edge).text())) {
+            if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
         for (Edge edge : getDataEdges()) {
-            if (!this.jModel.isFiltering(getLabel(edge).text())) {
+            if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
         if (result.size() == 0 && hasValue()) {
-            result.add(new StringBuilder(getValueSymbol()));
+            result.add(new StringBuilder(getValueLabel().text()));
         }
         return result;
     }
@@ -198,7 +214,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             GraphJVertex oppositeVertex =
                 this.jModel.getJVertex(edge.opposite());
             result.append(ASSIGN_TEXT);
-            result.append(oppositeVertex.getValueSymbol());
+            result.append(oppositeVertex.getValueLabel());
         }
         result = Converter.toHtml(result);
         return edgeLabel.isNodeType() ? UNDERLINE_TAG.on(STRONG_TAG.on(result))
@@ -210,19 +226,19 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * a constant, followed by the self-edge labels and data-edge labels; or
      * {@link JVertex#NO_LABEL} if the result would otherwise be empty.
      */
-    public Collection<String> getListLabels() {
-        Collection<String> result = new ArrayList<String>();
+    public Collection<Label> getListLabels() {
+        Collection<Label> result = new ArrayList<Label>();
         if (hasValue()) {
-            result.add(getValueSymbol());
+            result.add(getValueLabel());
         }
         for (Edge edge : getSelfEdges()) {
-            result.add(getLabel(edge).text());
+            result.add(getLabel(edge));
         }
         if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
         for (Edge edge : getDataEdges()) {
-            result.add(getLabel(edge).text());
+            result.add(getLabel(edge));
         }
         return result;
     }
@@ -234,7 +250,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public Collection<String> getPlainLabels() {
         Collection<String> result = new ArrayList<String>();
         if (hasValue()) {
-            String symbol = getValueSymbol();
+            Label symbol = getValueLabel();
             String prefix =
                 AttributeAspect.getAttributeValueFor(getAlgebra()).getPrefix();
             result.add(prefix + symbol);
@@ -365,7 +381,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * constant value.
      * @return <code>true</code> if {@link #getActualNode()} is a
      *         {@link ValueNode} storing a constant value.
-     * @see #getValueSymbol()
+     * @see #getValueLabel()
      */
     boolean hasValue() {
         return (getActualNode() instanceof ValueNode);
@@ -376,9 +392,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * in the underlying graph node, in case the graph node is a value node.
      * @see ValueNode#getSymbol()
      */
-    String getValueSymbol() {
+    Label getValueLabel() {
         if (getActualNode() instanceof ValueNode) {
-            return ((ValueNode) getActualNode()).getSymbol();
+            return DefaultLabel.createLabel(((ValueNode) getActualNode()).getSymbol());
         } else {
             return null;
         }

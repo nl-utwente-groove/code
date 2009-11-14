@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Label;
 import groove.gui.LabelList;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -97,7 +98,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public JGraph(JModel model, boolean hasFilters) {
         super((JModel) null);
         if (hasFilters) {
-            this.filteredLabels = new ObservableSet<String>();
+            this.filteredLabels = new ObservableSet<Label>();
             this.filteredLabels.addObserver(this.refreshListener);
         } else {
             this.filteredLabels = null;
@@ -120,7 +121,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Returns the (possibly <code>null</code>) set of filtered labels of this
      * {@link JGraph}.
      */
-    public final ObservableSet<String> getFilteredLabels() {
+    public final ObservableSet<Label> getFilteredLabels() {
         return this.filteredLabels;
     }
 
@@ -934,7 +935,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /** The set of labels currently filtered from view. */
-    private final ObservableSet<String> filteredLabels;
+    private final ObservableSet<Label> filteredLabels;
     /** The fixed refresh listener of this {@link JModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
     /**
@@ -1112,7 +1113,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Set<String> labels = new HashSet<String>();
+            Set<Label> labels = new HashSet<Label>();
             for (Object cell : this.cells) {
                 labels.addAll(((JCell) cell).getListLabels());
             }
@@ -1494,7 +1495,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         /** The method is called when a filtered set is changed. */
         @SuppressWarnings("unchecked")
         public void update(Observable o, Object arg) {
-            Set<String> changedLabelSet = null;
+            Set<Label> changedLabelSet = null;
             if (arg instanceof ObservableSet.AddUpdate) {
                 changedLabelSet = ((ObservableSet.AddUpdate) arg).getAddedSet();
             } else {
@@ -1502,7 +1503,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     ((ObservableSet.RemoveUpdate) arg).getRemovedSet();
             }
             Set<JCell> changedCellSet = new HashSet<JCell>();
-            for (String label : changedLabelSet) {
+            for (Label label : changedLabelSet) {
                 Set<JCell> labelledCells = getLabelList().getJCells(label);
                 if (labelledCells != null) {
                     for (JCell cell : labelledCells) {

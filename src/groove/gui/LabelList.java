@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.graph.Label;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -24,6 +25,7 @@ import groove.util.Converter;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -110,7 +112,7 @@ public class LabelList extends JList implements GraphModelListener,
      * Returns an unmodifiable view on the label set maintained by this label
      * list.
      */
-    public Collection<String> getLabels() {
+    public Collection<Label> getLabels() {
         return Collections.unmodifiableSet(this.labels.keySet());
     }
 
@@ -139,8 +141,8 @@ public class LabelList extends JList implements GraphModelListener,
     /**
      * Returns the set of jcells whose label sets contain a given label.
      * @param label the label looked for
-     * @return the set of {@link JCell}s for which
-     *         {@link  JCell#getListLabels()} contains <tt>label</tt>
+     * @return the set of {@link JCell}s for which {@link JCell#getListLabels()}
+     *         contains <tt>label</tt>
      */
     public Set<JCell> getJCells(Object label) {
         return this.labels.get(label);
@@ -191,8 +193,8 @@ public class LabelList extends JList implements GraphModelListener,
             for (Object changeEntry : changeMap.entrySet()) {
                 Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
                 if (isListable(obj)) { // &&
-                                        // attributes.containsKey(GraphConstants.VALUE))
-                                        // {
+                    // attributes.containsKey(GraphConstants.VALUE))
+                    // {
                     changed |= modifyLabels((JCell) obj);
                 }
             }
@@ -255,7 +257,7 @@ public class LabelList extends JList implements GraphModelListener,
             int i = getMinSelectionIndex();
             if (i >= 0) {
                 while (i <= getMaxSelectionIndex()) {
-                    String label = (String) this.listModel.getElementAt(i);
+                    Label label = (Label) this.listModel.getElementAt(i);
                     if (isSelectedIndex(i)) {
                         emphSet.addAll(this.labels.get(label));
                     }
@@ -276,7 +278,7 @@ public class LabelList extends JList implements GraphModelListener,
         clearSelection();
         // clear the list
         this.listModel.clear();
-        for (String label : getLabels()) {
+        for (Label label : getLabels()) {
             this.listModel.addElement(label);
         }
         // reinstate this component as selection listener
@@ -309,7 +311,7 @@ public class LabelList extends JList implements GraphModelListener,
      */
     protected boolean addToLabels(JCell cell) {
         boolean result = false;
-        for (String label : cell.getListLabels()) {
+        for (Label label : cell.getListLabels()) {
             result |= addToLabels(cell, label);
         }
         return result;
@@ -320,7 +322,7 @@ public class LabelList extends JList implements GraphModelListener,
      * in the map, insetrs it. The return value indicates if the label had to be
      * created.
      */
-    private boolean addToLabels(JCell cell, String label) {
+    private boolean addToLabels(JCell cell, Label label) {
         boolean result = false;
         Set<JCell> currentCells = this.labels.get(label);
         if (currentCells == null) {
@@ -339,10 +341,10 @@ public class LabelList extends JList implements GraphModelListener,
      */
     protected boolean removeFromLabels(JCell cell) {
         boolean result = false;
-        Iterator<Map.Entry<String,Set<JCell>>> labelIter =
+        Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
             this.labels.entrySet().iterator();
         while (labelIter.hasNext()) {
-            Map.Entry<String,Set<JCell>> labelEntry = labelIter.next();
+            Map.Entry<Label,Set<JCell>> labelEntry = labelIter.next();
             Set<JCell> cellSet = labelEntry.getValue();
             if (cellSet.remove(cell) && cellSet.isEmpty()) {
                 labelIter.remove();
@@ -358,20 +360,16 @@ public class LabelList extends JList implements GraphModelListener,
      */
     protected boolean modifyLabels(JCell cell) {
         boolean result = false;
-        Set<String> newLabelSet;
-        // if (cell.isVisible()) {
-        // // create the set of all labels for which cell should appear in the
-        // // label map
-        newLabelSet = new HashSet<String>(cell.getListLabels());
+        Set<Label> newLabelSet = new HashSet<Label>(cell.getListLabels());
         // } else {
         // newLabelSet = new HashSet<String>();
         // }
         // go over the existing label map
-        Iterator<Map.Entry<String,Set<JCell>>> labelIter =
+        Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
             this.labels.entrySet().iterator();
         while (labelIter.hasNext()) {
-            Map.Entry<String,Set<JCell>> labelEntry = labelIter.next();
-            String label = labelEntry.getKey();
+            Map.Entry<Label,Set<JCell>> labelEntry = labelIter.next();
+            Label label = labelEntry.getKey();
             Set<JCell> cellSet = labelEntry.getValue();
             if (newLabelSet.remove(label)) {
                 // the cell should be in the set
@@ -384,7 +382,7 @@ public class LabelList extends JList implements GraphModelListener,
             }
         }
         // any new labels left over were not in the label map; add them
-        for (String label : newLabelSet) {
+        for (Label label : newLabelSet) {
             Set<JCell> newCells = new HashSet<JCell>();
             newCells.add(cell);
             this.labels.put(label, newCells);
@@ -417,11 +415,11 @@ public class LabelList extends JList implements GraphModelListener,
     /**
      * The bag of labels in this jmodel.
      */
-    protected final Map<String,Set<JCell>> labels =
-        new TreeMap<String,Set<JCell>>();
+    protected final Map<Label,Set<JCell>> labels =
+        new TreeMap<Label,Set<JCell>>();
 
     /** Set of filtered labels. */
-    private final ObservableSet<String> filteredLabels;
+    private final ObservableSet<Label> filteredLabels;
 
     /**
      * The background colour of this component when it is enabled.
@@ -438,49 +436,66 @@ public class LabelList extends JList implements GraphModelListener,
             // empty
         }
 
+        /** Sets the internally stored label. */
         @Override
-        public void setText(String label) {
-            StringBuilder text = new StringBuilder();
-            StringBuilder toolTipText = new StringBuilder();
-            Color foreground = getForeground();
-            if (label.equals(JVertex.NO_LABEL)) {
-                text.append(Options.NO_LABEL_TEXT);
-                foreground = SPECIAL_COLOR;
-            } else if (label.length() == 0) {
-                text.append(Options.EMPTY_LABEL_TEXT);
-                foreground = SPECIAL_COLOR;
-            } else {
-                text.append(label);
-                int count = LabelList.this.labels.get(label).size();
-                toolTipText.append(count);
-                toolTipText.append(" occurrence");
-                if (count > 1) {
-                    toolTipText.append("s");
-                }
-            }
-            Converter.toHtml(text);
-            if (LabelList.this.filteredLabels != null) {
-                if (toolTipText.length() != 0) {
-                    toolTipText.append(Converter.HTML_LINEBREAK);
-                }
-                if (LabelList.this.filteredLabels.contains(label)) {
-                    Converter.STRIKETHROUGH_TAG.on(text);
-                    toolTipText.append("Filtered label; doubleclick to show");
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            this.label = (Label) value;
+            return super.getListCellRendererComponent(list, value, index,
+                isSelected, cellHasFocus);
+        }
+
+        @Override
+        public void setText(String labelText) {
+            if (this.label != null) {
+                StringBuilder text = new StringBuilder();
+                StringBuilder toolTipText = new StringBuilder();
+                Color foreground = getForeground();
+                if (this.label.equals(JVertex.NO_LABEL)) {
+                    text.append(Options.NO_LABEL_TEXT);
+                    foreground = SPECIAL_COLOR;
+                } else if (labelText.length() == 0) {
+                    text.append(Options.EMPTY_LABEL_TEXT);
+                    foreground = SPECIAL_COLOR;
                 } else {
-                    toolTipText.append("Visible label; doubleclick to filter");
+                    text.append(labelText);
+                    int count = LabelList.this.labels.get(this.label).size();
+                    toolTipText.append(count);
+                    toolTipText.append(" occurrence");
+                    if (count > 1) {
+                        toolTipText.append("s");
+                    }
                 }
+                Converter.toHtml(text);
+                if (this.label.isNodeType()) {
+                    Converter.STRONG_TAG.on(text);
+                }
+                if (LabelList.this.filteredLabels != null) {
+                    if (toolTipText.length() != 0) {
+                        toolTipText.append(Converter.HTML_LINEBREAK);
+                    }
+                    if (LabelList.this.filteredLabels.contains(this.label)) {
+                        Converter.STRIKETHROUGH_TAG.on(text);
+                        toolTipText.append("Filtered label; doubleclick to show");
+                    } else {
+                        toolTipText.append("Visible label; doubleclick to filter");
+                    }
+                }
+                Converter.createColorTag(foreground).on(text);
+                if (toolTipText.length() != 0) {
+                    setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
+                }
+                super.setText(Converter.HTML_TAG.on(text).toString());
             }
-            Converter.createColorTag(foreground).on(text);
-            if (toolTipText.length() != 0) {
-                setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
-            }
-            super.setText(Converter.HTML_TAG.on(text).toString());
         }
 
         @Override
         public void setBorder(Border border) {
             super.setBorder(new CompoundBorder(border, INSET_BORDER));
         }
+
+        /** The label for which the renderer has been last invoked. */
+        private Label label;
     }
 
     /** Class to deal with mouse events over the label list. */
@@ -517,7 +532,7 @@ public class LabelList extends JList implements GraphModelListener,
             if (LabelList.this.filteredLabels != null && e.getClickCount() == 2) {
                 int index = locationToIndex(e.getPoint());
                 if (index != -1) {
-                    String label = (String) LabelList.this.listModel.get(index);
+                    Label label = (Label) LabelList.this.listModel.get(index);
                     if (!LabelList.this.filteredLabels.add(label)) {
                         LabelList.this.filteredLabels.remove(label);
                     }
@@ -538,9 +553,9 @@ public class LabelList extends JList implements GraphModelListener,
             super(filter ? Options.FILTER_ACTION_NAME
                     : Options.UNFILTER_ACTION_NAME);
             this.filter = filter;
-            this.labels = new ArrayList<String>();
+            this.labels = new ArrayList<Label>();
             for (Object cell : cells) {
-                this.labels.add(cell.toString());
+                this.labels.add((Label) cell);
             }
         }
 
@@ -553,7 +568,7 @@ public class LabelList extends JList implements GraphModelListener,
         }
 
         private final boolean filter;
-        private final Collection<String> labels;
+        private final Collection<Label> labels;
     }
 
     /**

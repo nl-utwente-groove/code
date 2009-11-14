@@ -106,7 +106,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /** Indicates if this edge is filtered (and therefore invisible). */
     boolean isFiltered() {
         boolean result = true;
-        Iterator<String> listLabelIter = getListLabels().iterator();
+        Iterator<Label> listLabelIter = getListLabels().iterator();
         while (result && listLabelIter.hasNext()) {
             result = this.jModel.isFiltering(listLabelIter.next());
         }
@@ -174,12 +174,12 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * This implementation calls {@link #getLine(Edge)} on all edges in
      * {@link #getUserObject()} that are not being filtered by the model
-     * according to {@link JModel#isFiltering(String)}.
+     * according to {@link JModel#isFiltering(Label)}.
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         for (Edge edge : getUserObject()) {
-            if (!this.jModel.isFiltering(getLabel(edge).text())) {
+            if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
@@ -198,10 +198,10 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * This implementation calls {@link #getLabel(Edge)} on all edges in
      * {@link #getUserObject()}.
      */
-    public Collection<String> getListLabels() {
-        List<String> result = new ArrayList<String>();
+    public Collection<Label> getListLabels() {
+        List<Label> result = new ArrayList<Label>();
         for (Edge edge : getUserObject()) {
-            String label = getLabel(edge).text();
+            Label label = getLabel(edge);
             if (label != null) {
                 result.add(label);
             }

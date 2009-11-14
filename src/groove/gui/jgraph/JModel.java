@@ -23,6 +23,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
@@ -329,7 +330,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Returns the set of labels that is currently filtered from view. If
      * <code>null</code>, no filtering is going on.
      */
-    public final ObservableSet<String> getFilteredLabels() {
+    public final ObservableSet<Label> getFilteredLabels() {
         return this.filteredLabels;
     }
 
@@ -337,7 +338,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Sets filtering on a given set of labels. Filtered labels will be set to
      * invisible in the {@link JGraph}.
      */
-    public final void setFilteredLabels(ObservableSet<String> filteredLabels) {
+    public final void setFilteredLabels(ObservableSet<Label> filteredLabels) {
         // if (this.filteredLabels != null) {
         // this.filteredLabels.deleteObserver(getRefreshListener());
         // }
@@ -351,7 +352,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Indicates if a given label is currently being filtered from view. This is
      * the case if it is in the set of filtered labels.
      */
-    public boolean isFiltering(String label) {
+    public boolean isFiltering(Label label) {
         return this.filteredLabels != null
             && this.filteredLabels.contains(label);
     }
@@ -646,7 +647,7 @@ abstract public class JModel extends DefaultGraphModel {
     /** Set of options values to control the display. May be <code>null</code>. */
     private final Options options;
     /** Set of labels that is currently filtered from view. */
-    private ObservableSet<String> filteredLabels;
+    private ObservableSet<Label> filteredLabels;
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     /**

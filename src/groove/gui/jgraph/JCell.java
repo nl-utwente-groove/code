@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Label;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +55,7 @@ public interface JCell extends GraphCell, Serializable {
      * Returns the set of labels to be associated with this cell in a label
      * list.
      */
-    public abstract Collection<String> getListLabels();
+    public abstract Collection<Label> getListLabels();
 
     /**
      * Returns the set of labels to be shown on this cell in a plain graph view.
@@ -62,8 +64,8 @@ public interface JCell extends GraphCell, Serializable {
     public abstract Collection<String> getPlainLabels();
 
     /**
-     * Returns a {@link JCellContent}, which is a set of objects associated
-     * with this cell.
+     * Returns a {@link JCellContent}, which is a set of objects associated with
+     * this cell.
      * @ensure <tt>result instanceof JUserObject</tt>
      */
     public abstract JCellContent<?> getUserObject();

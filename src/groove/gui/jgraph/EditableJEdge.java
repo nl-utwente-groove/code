@@ -16,6 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
+import groove.graph.Label;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,8 +51,12 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     /** This implementation just returns the user object. */
-    public Collection<String> getListLabels() {
-        return getUserObject();
+    public Collection<Label> getListLabels() {
+        Collection<Label> result = new ArrayList<Label>();
+        for (String labelString : getUserObject()) {
+            result.add(DefaultLabel.createLabel(labelString));
+        }
+        return result;
     }
 
     /** This implementation just returns the user object. */
