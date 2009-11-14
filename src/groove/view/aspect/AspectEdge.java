@@ -31,9 +31,8 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends
-        AbstractBinaryEdge<AspectNode,DefaultLabel,AspectNode> implements
-        AspectElement {
+public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
+        implements AspectElement {
     /**
      * Constructs a new edge from an array of end nodes, a label, and a
      * collection of aspect values.

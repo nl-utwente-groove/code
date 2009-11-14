@@ -19,16 +19,16 @@ package groove.view;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 
-/** Interface for parsers from strings to labels. */
+/** Interface for parsers from preliminary labels to real labels. */
 public interface LabelParser {
     /**
      * Method turning a default label into a possibly structured label.
      * @param label the default label to be parsed
      * @return the label constructed from <code>label</code>
-     * @throws FormatException if <code>label</code> is not correctly
-     *         formatted according to this parser.
+     * @throws FormatException if <code>label</code> is not correctly formatted
+     *         according to this parser.
      */
-    Label parse(DefaultLabel label) throws FormatException;
+    Label parse(Label label) throws FormatException;
 
     /**
      * Method turning a structured label into a default label from which the

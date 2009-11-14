@@ -72,7 +72,7 @@ public class NodeTypeAspect extends AbstractAspect {
         }
 
         @Override
-        public Label parse(DefaultLabel label) throws FormatException {
+        public Label parse(Label label) throws FormatException {
             return DefaultLabel.createLabel(label.text(), true);
         }
 

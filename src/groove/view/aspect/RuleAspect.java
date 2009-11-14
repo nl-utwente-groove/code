@@ -495,7 +495,7 @@ public class RuleAspect extends AbstractAspect {
          * expression, but throws an exception if the result is anything other
          * than a wildcard or an atom.
          */
-        public Label parse(DefaultLabel label) throws FormatException {
+        public Label parse(Label label) throws FormatException {
             Label result = this.preParser.parse(label);
             if (!(result instanceof DefaultLabel || RegExprLabel.isWildcard(result))) {
                 throw new FormatException(
@@ -545,7 +545,7 @@ public class RuleAspect extends AbstractAspect {
          * expression, but throws an exception if the result is anything other
          * than an unguarded named wildcard, a merger, or an atom.
          */
-        public Label parse(DefaultLabel label) throws FormatException {
+        public Label parse(Label label) throws FormatException {
             Label result = this.preParser.parse(label);
             boolean allowed;
             if (result instanceof DefaultLabel) {
