@@ -22,6 +22,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -183,6 +184,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
             }
         }
         elementMap.nodeMap().putAll(viewToModelMap);
+        // set of nodes for which a node type label was found
+        Map<Node,Label> nodeTypes = new HashMap<Node,Label>();
         // copy the edges from view to model
         edgeLoop: for (AspectEdge viewEdge : view.edgeSet()) {
             if (AttributeAspect.isConstant(viewEdge)) {
@@ -212,10 +215,25 @@ public class AspectualGraphView extends AspectualView<Graph> {
                         endImages);
                 if (edgeImage == null) {
                     edgeImage = model.addEdge(endImages, parse(viewEdge));
-                } else if (!isAllowedEdge(edgeImage)) {
-                    throw new FormatException(
-                        "Edge aspect value '%s' not allowed in graphs",
-                        getAttributeValue(viewEdge));
+                    Label edgeLabel = edgeImage.label();
+                    if (edgeLabel.isNodeType()) {
+                        if (!edgeImage.source().equals(edgeImage.opposite())) {
+                            throw new FormatException(
+                                "Node type label '%s' only allowed on self-edges",
+                                edgeLabel);
+                        }
+                        Label oldType =
+                            nodeTypes.put(edgeImage.source(), edgeLabel);
+                        if (oldType != null) {
+                            throw new FormatException(
+                                "Double node type: '%s' and '%s'", oldType,
+                                edgeLabel);
+                        }
+                    } else if (!isAllowedEdge(edgeImage)) {
+                        throw new FormatException(
+                            "Edge aspect value '%s' not allowed in graphs",
+                            getAttributeValue(viewEdge));
+                    }
                 }
                 elementMap.putEdge(viewEdge, edgeImage);
             } catch (FormatException exc) {
