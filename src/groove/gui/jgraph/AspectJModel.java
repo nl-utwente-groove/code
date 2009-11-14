@@ -219,6 +219,7 @@ public class AspectJModel extends GraphJModel {
                 GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
             }
         }
+        result.applyMap(super.createJEdgeAttr(edgeSet));
         return result;
     }
 
@@ -381,10 +382,10 @@ public class AspectJModel extends GraphJModel {
 
         /** Adds a quantifier, if the nesting aspect justifies this. */
         @Override
-        public List<StringBuilder> getLines() {  
+        public List<StringBuilder> getLines() {
             List<StringBuilder> result = super.getLines();
             if (isShowAspects()) {
-                result.add(0,getRoleLine());
+                result.add(0, getRoleLine());
             }
             // adds a quantor if the node is a nesting node
             AspectValue nesting = getNestingValue(getNode());
@@ -425,16 +426,17 @@ public class AspectJModel extends GraphJModel {
             return result;
         }
 
-        /** 
-         * Returns a string with the aspect prefix for this node's role,
-         * of the empty string if the node has no special role.
+        /**
+         * Returns a string with the aspect prefix for this node's role, of the
+         * empty string if the node has no special role.
          */
         private StringBuilder getRoleLine() {
             AspectValue roleValue = RuleAspect.getRuleValue(getNode());
             boolean hasRoleValue = !RuleAspect.READER.equals(roleValue);
-            return new StringBuilder(hasRoleValue ? roleValue.toString()+RuleAspect.VALUE_SEPARATOR : "");
+            return new StringBuilder(hasRoleValue ? roleValue.toString()
+                + RuleAspect.VALUE_SEPARATOR : "");
         }
-        
+
         /** Returns an HTML-formatted line describing a given quantifier value. */
         private StringBuilder getQuantifierLine(NamedAspectValue nesting) {
             StringBuilder result = new StringBuilder();

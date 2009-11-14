@@ -38,6 +38,7 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.util.Groove;
 
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashSet;
@@ -387,17 +388,20 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     private GraphJEdge addBinaryEdge(BinaryEdge edge) {
         Node source = edge.source();
         Node target = edge.opposite();
-        // maybe a j-edge between this source and target is already in the graph
-        for (Edge edgeBetween : getGraph().outEdgeSet(source)) {
-            if (edgeBetween.opposite().equals(target)) {
-                // see if this edge is appropriate
-                JCell jEdge = getJCell(edgeBetween);
-                if (jEdge instanceof GraphJEdge
-                    && isLayoutCompatible((GraphJEdge) jEdge, edge)
-                    && ((GraphJEdge) jEdge).addEdge(edge)) {
-                    // yes, the edge could be added here; we're done
-                    this.toJCellMap.putEdge(edge, jEdge);
-                    return (GraphJEdge) jEdge;
+        if (!edge.label().isNodeType()) {
+            // maybe a j-edge between this source and target is already in the
+            // graph
+            for (Edge edgeBetween : getGraph().outEdgeSet(source)) {
+                if (edgeBetween.opposite().equals(target)) {
+                    // see if this edge is appropriate
+                    JCell jEdge = getJCell(edgeBetween);
+                    if (jEdge instanceof GraphJEdge
+                        && isLayoutCompatible((GraphJEdge) jEdge, edge)
+                        && ((GraphJEdge) jEdge).addEdge(edge)) {
+                        // yes, the edge could be added here; we're done
+                        this.toJCellMap.putEdge(edge, jEdge);
+                        return (GraphJEdge) jEdge;
+                    }
                 }
             }
         }
@@ -594,6 +598,15 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
         AttributeMap result = (AttributeMap) this.defaultEdgeAttr.clone();
+        // change the font to bold if the edges contain a node type
+        if (!edgeSet.isEmpty()) {
+            Edge edge = edgeSet.iterator().next();
+            if (edge.label().isNodeType()) {
+                Font currentFont = GraphConstants.getFont(result);
+                GraphConstants.setFont(result,
+                    currentFont.deriveFont(Font.BOLD));
+            }
+        }
         return result;
     }
 
