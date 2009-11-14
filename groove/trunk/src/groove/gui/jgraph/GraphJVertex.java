@@ -17,6 +17,8 @@
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
+import static groove.util.Converter.STRONG_TAG;
+import static groove.util.Converter.UNDERLINE_TAG;
 import groove.abs.AbstrGraph;
 import groove.control.Location;
 import groove.graph.Edge;
@@ -186,18 +188,21 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     /**
      * This implementation returns the label text of the edge; moreover, if the
      * opposite end is not also this vertex, the line is turned into an
-     * attribute-style assigment.
+     * attribute-style assignment.
      */
     public StringBuilder getLine(Edge edge) {
         StringBuilder result = new StringBuilder();
-        result.append(getLabel(edge));
+        Label edgeLabel = getLabel(edge);
+        result.append(edgeLabel);
         if (edge.opposite() != getNode()) {
             GraphJVertex oppositeVertex =
                 this.jModel.getJVertex(edge.opposite());
             result.append(ASSIGN_TEXT);
             result.append(oppositeVertex.getValueSymbol());
         }
-        return Converter.toHtml(result);
+        result = Converter.toHtml(result);
+        return edgeLabel.isNodeType() ? UNDERLINE_TAG.on(STRONG_TAG.on(result))
+                : result;
     }
 
     /**
