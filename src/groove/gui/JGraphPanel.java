@@ -16,16 +16,16 @@
  */
 package groove.gui;
 
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
+import groove.util.Pair;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.LinkedList;
 import java.util.List;
-
-import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
-import groove.util.Pair;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -53,8 +53,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 
      * @param jGraph the jgraph on which this panel is a view
-     * @param withStatusBar <tt>true</tt> if a status bar should be added to
-     *        the panel
+     * @param withStatusBar <tt>true</tt> if a status bar should be added to the
+     *        panel
      * @param options Options object used to create menu item listeners. If
      *        <code>null</code>, no listeners are created.
      * @ensure <tt>getJGraph() == jGraph</tt>
@@ -91,8 +91,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     }
 
     /**
-     * Returns the underlying {@link JModel}, or <code>null</code> if the
-     * jgraph is currently disabled.
+     * Returns the underlying {@link JModel}, or <code>null</code> if the jgraph
+     * is currently disabled.
      */
     public JModel getJModel() {
         if (isEnabled()) {
@@ -155,7 +155,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
 
             @Override
             public Dimension getPreferredSize() {
-                if (JGraphPanel.this.jGraph.getLabelList().getModel().getSize() == 0) {
+                if (JGraphPanel.this.jGraph.getLabelList().getRowCount() == 0) {
                     return getMinimumSize();
                 } else {
                     return super.getPreferredSize();

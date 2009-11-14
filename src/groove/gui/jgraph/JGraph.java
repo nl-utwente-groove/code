@@ -17,7 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Label;
-import groove.gui.LabelList;
+import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
@@ -617,9 +617,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Lazily creates and returns the label list associated with this jgraph.
      */
-    public LabelList getLabelList() {
+    public LabelTree getLabelList() {
         if (this.labelList == null) {
-            this.labelList = new LabelList(this);
+            this.labelList = new LabelTree(this);
             this.labelList.updateModel();
         }
         return this.labelList;
@@ -946,7 +946,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * The label list associated with this jgraph.
      */
-    protected LabelList labelList;
+    protected LabelTree labelList;
 
     /**
      * The currently selected prototype layouter.
