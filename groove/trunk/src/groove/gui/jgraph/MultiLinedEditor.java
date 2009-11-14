@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Label;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectValue;
 
@@ -117,8 +118,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             JModel jmodel = (JModel) graph.getModel();
             for (int i = 0; i < jmodel.getRootCount(); i++) {
                 JCell cell = (JCell) jmodel.getRootAt(i);
-                for (String listLabel : cell.getListLabels()) {
-                    this.labels.add(stripPrefixes(listLabel));
+                for (Label listLabel : cell.getListLabels()) {
+                    this.labels.add(stripPrefixes(listLabel.text()));
                 }
             }
             this.labels.addAll(this.prefixes);

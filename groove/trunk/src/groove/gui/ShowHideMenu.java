@@ -21,6 +21,7 @@ import groove.graph.Element;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphListener;
 import groove.graph.GraphShape;
+import groove.graph.Label;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
@@ -107,7 +108,9 @@ public class ShowHideMenu extends JMenu {
     static public final String INVERT_ACTION_NAME = "Inverse";
     /** Name of the action to process the context of a given element. */
     static public final String CONTEXT_ACTION_NAME = "Context";
-    /** Name of the action to process elements according to a regular expression. */
+    /**
+     * Name of the action to process elements according to a regular expression.
+     */
     static public final String REGEXPR_ACTION_NAME = "Pattern...";
     /** Name of the action to process elements from a file. */
     static public final String FILE_ACTION_NAME = "All From File...";
@@ -224,11 +227,11 @@ public class ShowHideMenu extends JMenu {
     protected ShowHideAction createFromFileAction(int showMode) {
         return new FromFileAction(this.jgraph, showMode);
     }
-    
+
     /**
      * Factory method for <tt>LabelAction</tt>s.
      */
-    protected ShowHideAction createLabelAction(int showMode, String label) {
+    protected ShowHideAction createLabelAction(int showMode, Label label) {
         return new LabelAction(this.jgraph, showMode, label);
     }
 
@@ -368,8 +371,7 @@ public class ShowHideMenu extends JMenu {
          * Convenience method to changes a set of jcells to hidden or visible in
          * the underlying jgraph.
          * @param cells the jcells to be changed
-         * @param hidden <tt>true</tt> if the cells are to be changed to
-         *        hidden
+         * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
         protected final void setHidden(Set<JCell> cells, boolean hidden) {
             this.jgraph.getModel().changeGrayedOut(cells, hidden);
@@ -390,8 +392,8 @@ public class ShowHideMenu extends JMenu {
          * action.
          * @param jCell the jgraph cell for which the involvement is to be
          *        decided
-         * @return <tt>true</tt> if <tt>cell</tt> should be shown/hidden by
-         *         this action
+         * @return <tt>true</tt> if <tt>cell</tt> should be shown/hidden by this
+         *         action
          */
         abstract protected boolean isInvolved(JCell jCell);
 
@@ -467,8 +469,8 @@ public class ShowHideMenu extends JMenu {
          * @param jgraph the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
-         * @param selected <code>true</code> if this action instance is for
-         *        the selected elements.
+         * @param selected <code>true</code> if this action instance is for the
+         *        selected elements.
          */
         protected SelectedAction(JGraph jgraph, int showMode, boolean selected) {
             super(jgraph, showMode, selected ? SELECTED_ACTION_NAME
@@ -550,21 +552,20 @@ public class ShowHideMenu extends JMenu {
          * @param showMode the show mode for this action
          * @param label the label on which this action should test; may not be
          *        <tt>null</tt>
-         * @throws IllegalArgumentException if <tt>cell</tt> does not give
-         *         rise to a valid label, i.e., <tt>getLabel(cell) == null</tt>
+         * @throws IllegalArgumentException if <tt>cell</tt> does not give rise
+         *         to a valid label, i.e., <tt>getLabel(cell) == null</tt>
          */
-        protected LabelAction(JGraph jgraph, int showMode, String label)
+        protected LabelAction(JGraph jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(NAME, label.length() == 0 ? Options.EMPTY_LABEL_TEXT
-                    : label);
-            this.label = label;
+            putValue(NAME, label.text().length() == 0
+                    ? Options.EMPTY_LABEL_TEXT : label);
+            this.label = label.text();
         }
 
         /**
-         * Returns <tt>true</tt> if the property that <tt>cell</tt> contains
-         * the label of this action equals the inclusion condition of this
-         * action.
+         * Returns <tt>true</tt> if the property that <tt>cell</tt> contains the
+         * label of this action equals the inclusion condition of this action.
          */
         @Override
         protected boolean isInvolved(JCell cell) {
@@ -757,8 +758,8 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
-     * Show/hide action based on a set of labels read from a text file.
-     * The text file format is one label per line.
+     * Show/hide action based on a set of labels read from a text file. The text
+     * file format is one label per line.
      * @author Eduardo Zambon
      */
     static protected class FromFileAction extends ShowHideAction {
@@ -778,12 +779,13 @@ public class ShowHideMenu extends JMenu {
             GrooveFileChooser fileChooser = new GrooveFileChooser();
             fileChooser.addChoosableFileFilter(Groove.createTextFilter());
             int result = fileChooser.showOpenDialog(this.jgraph);
-            if (result == JFileChooser.APPROVE_OPTION) { 
+            if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
                 String fileLine;
                 ArrayList<String> labelsList = new ArrayList<String>();
-                try {    
-                    BufferedReader in = new BufferedReader(new FileReader(labelsFile));
+                try {
+                    BufferedReader in =
+                        new BufferedReader(new FileReader(labelsFile));
                     if (!in.ready()) {
                         throw new IOException();
                     }
@@ -798,7 +800,7 @@ public class ShowHideMenu extends JMenu {
                 super.actionPerformed(evt);
             }
         }
-        
+
         /**
          * A cell is involved if it contains a label that is on the list of
          * labels read from the file.
@@ -814,19 +816,19 @@ public class ShowHideMenu extends JMenu {
             }
             return result;
         }
-        
+
         private ArrayList<String> labels;
     }
-    
+
     /**
      * A menu that creates, when it is selected, sub-items for all the labels
-     * currently in the graph. The sub-items are <tt>LabelAction</tt>
-     * instances. They are enabled only if the given action could effect a
-     * change upon cells with that label. There are three modes by which cells
-     * are selected: <i>only </i>, <i>also </i> or <i>except </i>.
+     * currently in the graph. The sub-items are <tt>LabelAction</tt> instances.
+     * They are enabled only if the given action could effect a change upon
+     * cells with that label. There are three modes by which cells are selected:
+     * <i>only </i>, <i>also </i> or <i>except </i>.
      * <ul>
-     * <li><i>Only </i> involves all cells: it shows/hides thse with the
-     * correct label and hdes/shows the others.
+     * <li><i>Only </i> involves all cells: it shows/hides thse with the correct
+     * label and hdes/shows the others.
      * <li><i>Also </i> involves only cells with the given label; they are
      * shown/hidden
      * <li><i>Except </i> involves only cells <i>not </i> with the given label;
@@ -855,7 +857,7 @@ public class ShowHideMenu extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (String labelAction : getJGraph().getLabelList().getLabels()) {
+                for (Label labelAction : getJGraph().getLabelList().getLabels()) {
                     add(new LabelAction(getJGraph(), this.showMode, labelAction));
                 }
             }

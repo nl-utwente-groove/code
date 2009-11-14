@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
+import groove.graph.Label;
 import groove.util.Converter;
 
 import java.util.ArrayList;
@@ -54,8 +56,11 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * This implementation just returns the user object, or a singleton
      * containing {@link JVertex#NO_LABEL} if the user object is empty.
      */
-    public Collection<String> getListLabels() {
-        Collection<String> result = getUserObject();
+    public Collection<Label> getListLabels() {
+        Collection<Label> result = new ArrayList<Label>();
+        for (String labelString : getUserObject()) {
+            result.add(DefaultLabel.createLabel(labelString));
+        }
         if (result.isEmpty()) {
             result = Collections.singleton(NO_LABEL);
         }
