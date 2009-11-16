@@ -559,7 +559,7 @@ public class ShowHideMenu extends JMenu {
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
             putValue(NAME, label.text().length() == 0
-                    ? Options.EMPTY_LABEL_TEXT : label);
+                    ? Options.EMPTY_LABEL_TEXT : label.text());
             this.label = label.text();
         }
 
