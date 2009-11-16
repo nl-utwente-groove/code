@@ -42,6 +42,7 @@ import groove.view.aspect.RuleAspect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
     public AspectualGraphView(AspectGraph view, SystemProperties properties) {
         this.view = view;
         this.attributeFactory = createAttributeFactory(properties);
+        this.labelSet = new HashSet<Label>();
         // we fix the view; is it conceptually right to do that here?
         view.setFixed();
         String name = GraphInfo.getName(view);
@@ -120,6 +122,11 @@ public class AspectualGraphView extends AspectualView<Graph> {
      */
     public boolean hasProperties(SystemProperties properties) {
         return this.attributeFactory.equals(createAttributeFactory(properties));
+    }
+
+    /** Returns the set of labels used in this graph. */
+    public Set<Label> getLabels() {
+        return this.labelSet;
     }
 
     @Override
@@ -236,6 +243,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
                         getAttributeValue(viewEdge));
                 }
                 elementMap.putEdge(viewEdge, edgeImage);
+                this.labelSet.add(edgeImage.label());
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }
@@ -341,6 +349,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
     private final List<String> errors;
     /** Map from view to model nodes. */
     private final NodeEdgeMap viewToModelMap;
+    /** Set of labels occurring in this graph. */
+    private final Set<Label> labelSet;
     /** The attribute element factory for this view. */
     private final AttributeElementFactory attributeFactory;
     /** The graph factory used by this view, to construct the model. */

@@ -19,6 +19,7 @@ package groove.view;
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.graph.GraphInfo;
+import groove.graph.LabelStore;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.GraphGrammar;
@@ -182,6 +183,14 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.errors;
     }
 
+    /** Returns the labels occurring in this grammar view. */
+    public final LabelStore getLabelStore() {
+        if (this.errors == null) {
+            initGrammar();
+        }
+        return this.grammar == null ? null : this.grammar.getLabelStore();
+    }
+
     /** Delegates to {@link #toGrammar()}. */
     public GraphGrammar toModel() throws FormatException {
         return toGrammar();
@@ -273,10 +282,12 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
+        LabelStore labelStore = new LabelStore();
         // set rules
         for (AspectGraph ruleGraph : getStore().getRules().values()) {
             AspectualRuleView ruleView = ruleGraph.toRuleView(getProperties());
             try {
+                labelStore.addLabels(ruleView.getLabels());
                 // only add the enabled rules
                 if (ruleView.isEnabled()) {
                     result.add(ruleView.toRule());
@@ -322,12 +333,14 @@ public class StoredGrammarView implements GrammarView, Observer {
         } else {
             try {
                 result.setStartGraph(getStartGraphView().toModel());
+                labelStore.addLabels(getStartGraphView().getLabels());
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
                     errors.add(String.format("Format error in start graph: %s",
                         error));
                 }
             }
+            result.setLabelStore(labelStore);
             try {
                 result.setFixed();
             } catch (FormatException exc) {

@@ -105,6 +105,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.rule = rule;
         this.properties = rule.getProperties();
         this.viewToRuleMap = new NodeEdgeHashMap();
+        this.labelSet = new HashSet<Label>();
         this.graph = computeAspectGraph(rule, this.viewToRuleMap);
         this.attributeFactory =
             new AttributeElementFactory(this.graph, this.properties);
@@ -123,6 +124,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.properties = properties;
         this.graph = graph;
         this.attributeFactory = new AttributeElementFactory(graph, properties);
+        this.labelSet = new HashSet<Label>();
         if (!graph.getErrors().isEmpty()) {
             this.errors = graph.getErrors();
         }
@@ -253,6 +255,19 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             }
         }
         return this.errors;
+    }
+
+    /** Returns the set of labels occurring in this rule. */
+    public Set<Label> getLabels() {
+        // first check if the rule has already been built
+        if (this.rule == null) {
+            try {
+                toRule();
+            } catch (FormatException exc) {
+                // ignore the exception
+            }
+        }
+        return this.labelSet;
     }
 
     @Override
@@ -553,7 +568,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     Edge edgeImage =
                         computeEdgeImage(edge, viewToRuleMap.nodeMap());
+                    Label edgeLabel = edgeImage.label();
+                    if (edgeLabel.isNodeType()) {
+                        if (!edgeImage.source().equals(edgeImage.opposite())) {
+                            throw new FormatException(
+                                "Node type label '%s' only allowed on self-edges",
+                                edgeLabel);
+                        }
+                    }
                     viewToRuleMap.putEdge(edge, edgeImage);
+                    this.labelSet.add(edgeLabel);
                 }
             }
             testVariableBinding();
@@ -1229,6 +1253,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     unparse(lhsEdge), edgeRole, lhsEdge);
             result.addEdge(edgeImage);
             viewToRuleMap.putEdge(edgeImage, lhsEdge);
+            this.labelSet.add(lhsEdge.label());
         }
         // now add the rhs
         Map<Node,AspectNode> rhsNodeMap = new HashMap<Node,AspectNode>();
@@ -1272,6 +1297,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                         rhsEdge));
                 result.addEdge(edgeImage);
                 viewToRuleMap.putEdge(edgeImage, rhsEdge);
+                this.labelSet.add(rhsEdge.label());
             }
         }
         // now add the NACs
@@ -1319,6 +1345,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                             nacEdge);
                     result.addEdge(nacEdgeImage);
                     viewToRuleMap.putEdge(nacEdgeImage, nacEdge);
+                    this.labelSet.add(nacEdge.label());
                     nacGraph.addEdge(nacEdgeImage);
                 }
                 testConnected(nacGraph);
@@ -1466,6 +1493,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     private final AspectGraph graph;
     /** The attribute element factory for this view. */
     private final AttributeElementFactory attributeFactory;
+    /** Set of labels occurring in this rule. */
+    private final Set<Label> labelSet;
     /** Errors found while converting the view to a rule. */
     private List<String> errors;
     /** The rule derived from this graph, once it is computed. */

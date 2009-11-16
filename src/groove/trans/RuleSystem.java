@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.graph.LabelStore;
 import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
 
@@ -287,11 +288,20 @@ public class RuleSystem {
         return this.properties;
     }
 
+    /** Sets the labels and subtypes used in this rule system. */
+    public void setLabelStore(LabelStore store) {
+        testFixed(false);
+        this.labelStore = store.clone();
+    }
+
+    /** Returns the labels and subtypes of this rule system. */
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
+    }
+
     /**
-     * Tests if a given rule is consistent with the properties of this rule
-     * system. If it is not consistent, then it cannot be added to the rule
-     * system. The reason for the inconsistency can be retrieved using
-     * #getInconsistency(Rule)
+     * Tests if the rule system is consistent. This is called in the course of
+     * {@link #setFixed()}.
      */
     public void testConsistent() throws FormatException {
         List<String> errors = new ArrayList<String>();
@@ -305,6 +315,9 @@ public class RuleSystem {
                         rule.getName(), error));
                 }
             }
+        }
+        if (this.labelStore == null) {
+            errors.add(String.format("Labels and subtypes not initialised"));
         }
         // if any exception was encountered, throw it
         if (!errors.isEmpty()) {
@@ -368,6 +381,8 @@ public class RuleSystem {
      * The properties bundle of this rule system.
      */
     private SystemProperties properties;
+    /** The labels and subtypes occurring in this rule system. */
+    private LabelStore labelStore;
     /**
      * Flag indicating that the rule system has been fixed and is ready for use.
      */

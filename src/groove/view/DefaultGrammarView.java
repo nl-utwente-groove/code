@@ -19,9 +19,11 @@ package groove.view;
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.graph.GraphInfo;
+import groove.graph.LabelStore;
 import groove.io.AspectGxl;
 import groove.io.LayedOutXml;
 import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.aspect.AspectGraph;
@@ -236,6 +238,14 @@ public class DefaultGrammarView implements GrammarView {
         return this.graphMap;
     }
 
+    /** Returns the labels occurring in this grammar view. */
+    public final LabelStore getLabelStore() {
+        if (this.errors == null) {
+            initGrammar();
+        }
+        return this.grammar == null ? null : this.grammar.getLabelStore();
+    }
+
     /** Delegates to {@link #toGrammar()}. */
     public GraphGrammar toModel() throws FormatException {
         return toGrammar();
@@ -253,7 +263,11 @@ public class DefaultGrammarView implements GrammarView {
         }
     }
 
-    /** Initialises the {@link #grammar} and {@link #errors} fields. */
+    /**
+     * Initialises the {@link #grammar} and {@link #errors} fields. Afterwards,
+     * either {@link #grammar} equals <code>null</code> or {@link #errors} is
+     * non-empty.
+     */
     private void initGrammar() {
         try {
             this.grammar = computeGrammar();
@@ -271,12 +285,15 @@ public class DefaultGrammarView implements GrammarView {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
-
+        LabelStore labelStore = new LabelStore();
         for (RuleView ruleView : this.ruleMap.values()) {
             try {
+                // convert all rules to get the complete set of labels
+                Rule rule = ruleView.toRule();
+                labelStore.addLabels(ruleView.getLabels());
                 // only add the enabled rules
                 if (ruleView.isEnabled()) {
-                    result.add(ruleView.toRule());
+                    result.add(rule);
                 }
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
@@ -317,12 +334,14 @@ public class DefaultGrammarView implements GrammarView {
         } else {
             try {
                 result.setStartGraph(getStartGraphView().toModel());
+                labelStore.addLabels(getStartGraphView().getLabels());
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
                     errors.add(String.format("Format error in start graph: %s",
                         error));
                 }
             }
+            result.setLabelStore(labelStore);
             try {
                 result.setFixed();
             } catch (FormatException exc) {
@@ -370,7 +389,6 @@ public class DefaultGrammarView implements GrammarView {
     private List<String> errors;
     /** The graph grammar derived from the rule views. */
     private GraphGrammar grammar;
-
     /** Contains the list of states found in the grammar location * */
     private final Map<String,AspectualGraphView> graphMap =
         new HashMap<String,AspectualGraphView>();
