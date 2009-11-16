@@ -16,8 +16,11 @@
  */
 package groove.view;
 
+import groove.graph.Label;
 import groove.trans.Rule;
 import groove.trans.RuleName;
+
+import java.util.Set;
 
 /**
  * Interface for a graphical view upon a transformation rule. Currently the only
@@ -34,6 +37,9 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * @throws FormatException if there are syntax errors in the view
      */
     public Rule toRule() throws FormatException;
+
+    /** Returns the set of labels occurring in this rule view. */
+    public Set<Label> getLabels();
 
     /**
      * Returns the name of the rule of which this is a view. Yields the same
