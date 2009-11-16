@@ -86,7 +86,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     public LabelTree(JGraph jgraph) {
         this.filteredLabels = jgraph.getFilteredLabels();
         this.filtering = this.filteredLabels != null;
-        if (this.filteredLabels != null) {
+        if (this.filtering) {
             this.filteredLabels.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {
                     LabelTree.this.repaint();
@@ -97,7 +97,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         this.topNode = new DefaultMutableTreeNode();
         this.treeModel = new DefaultTreeModel(this.topNode);
         setModel(this.treeModel);
-        // change the cell renderer so it adds a space in front of the labels
         setCellRenderer(new MyCellRenderer());
         setCellEditor(new MyCellEditor());
         setEditable(true);
@@ -314,7 +313,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
         TreePath[] selectedValues = getSelectionPaths();
-        if (this.filteredLabels != null && selectedValues != null) {
+        if (isFiltering() && selectedValues != null) {
             result.add(new FilterAction(selectedValues, true));
             result.add(new FilterAction(selectedValues, false));
             result.addSeparator();
@@ -449,10 +448,8 @@ public class LabelTree extends JTree implements GraphModelListener,
         if (label.isNodeType()) {
             Converter.STRONG_TAG.on(text);
         }
-        if (LabelTree.this.filteredLabels != null) {
-            if (LabelTree.this.filteredLabels.contains(label)) {
-                Converter.STRIKETHROUGH_TAG.on(text);
-            }
+        if (isFiltered(label)) {
+            Converter.STRIKETHROUGH_TAG.on(text);
         }
         return Converter.HTML_TAG.on(text).toString();
     }
@@ -573,9 +570,7 @@ public class LabelTree extends JTree implements GraphModelListener,
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (LabelTree.this.filtering
-                && LabelTree.this.filteredLabels != null
-                && e.getClickCount() == 2) {
+            if (isFiltering() && e.getClickCount() == 2) {
                 TreePath path =
                     getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
@@ -663,7 +658,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 if (count != 1) {
                     toolTipText.append("s");
                 }
-                if (LabelTree.this.filteredLabels != null) {
+                if (isFiltering()) {
                     if (toolTipText.length() != 0) {
                         toolTipText.append(Converter.HTML_LINEBREAK);
                     }
