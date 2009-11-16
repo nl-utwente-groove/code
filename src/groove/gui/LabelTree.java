@@ -24,14 +24,20 @@ import groove.gui.jgraph.JVertex;
 import groove.util.Converter;
 import groove.util.ObservableSet;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -41,17 +47,24 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellEditor;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -72,6 +85,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     public LabelTree(JGraph jgraph) {
         this.filteredLabels = jgraph.getFilteredLabels();
+        this.filtering = this.filteredLabels != null;
         if (this.filteredLabels != null) {
             this.filteredLabels.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {
@@ -85,8 +99,13 @@ public class LabelTree extends JTree implements GraphModelListener,
         setModel(this.treeModel);
         // change the cell renderer so it adds a space in front of the labels
         setCellRenderer(new MyCellRenderer());
+        setCellEditor(new MyCellEditor());
+        setEditable(true);
         setRootVisible(false);
         setShowsRootHandles(true);
+        getSelectionModel().setSelectionMode(
+            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        ToolTipManager.sharedInstance().registerComponent(this);
         this.jgraph = jgraph;
         addMouseListener(new MyMouseListener());
         // add a mouse listener to the jgraph to clear the selection of this
@@ -116,7 +135,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * list.
      */
     public Collection<Label> getLabels() {
-        return Collections.unmodifiableSet(this.labels.keySet());
+        return Collections.unmodifiableSet(this.labelCellMap.keySet());
     }
 
     /**
@@ -129,7 +148,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.jmodel.removeGraphModelListener(this);
         }
         this.jmodel = this.jgraph.getModel();
-        this.labels.clear();
+        this.labelCellMap.clear();
         this.jmodel.addGraphModelListener(this);
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
             JCell cell = (JCell) this.jmodel.getRootAt(i);
@@ -137,7 +156,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 addToLabels(cell);
             }
         }
-        updateList();
+        updateTree();
         setEnabled(true);
     }
 
@@ -148,7 +167,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      *         contains <tt>label</tt>
      */
     public Set<JCell> getJCells(Object label) {
-        return this.labels.get(label);
+        return this.labelCellMap.get(label);
     }
 
     /**
@@ -181,7 +200,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             changed = processRegularEdit(change, changed);
         }
         if (changed) {
-            updateList();
+            updateTree();
         }
     }
 
@@ -261,7 +280,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             for (TreePath selectedPath : selectionPaths) {
                 Label label =
                     ((LabelTreeNode) selectedPath.getLastPathComponent()).getLabel();
-                Set<JCell> occurrences = this.labels.get(label);
+                Set<JCell> occurrences = this.labelCellMap.get(label);
                 if (occurrences != null) {
                     emphSet.addAll(occurrences);
                 }
@@ -273,9 +292,10 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Updates the list from the internally kept label collection.
      */
-    protected void updateList() {
+    private void updateTree() {
         // temporarily remove this component as selection listener
         removeTreeSelectionListener(this);
+        computeMaxLabelWidth();
         // clear the selection first
         clearSelection();
         // clear the list
@@ -291,7 +311,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Creates a popup menu, consisting of show and hide actions.
      */
-    protected JPopupMenu createPopupMenu() {
+    private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
         TreePath[] selectedValues = getSelectionPaths();
         if (this.filteredLabels != null && selectedValues != null) {
@@ -312,7 +332,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * the cell is inserted in that label's image. The return value indicates if
      * any labels were added
      */
-    protected boolean addToLabels(JCell cell) {
+    private boolean addToLabels(JCell cell) {
         boolean result = false;
         for (Label label : cell.getListLabels()) {
             result |= addToLabels(cell, label);
@@ -327,10 +347,10 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     private boolean addToLabels(JCell cell, Label label) {
         boolean result = false;
-        Set<JCell> currentCells = this.labels.get(label);
+        Set<JCell> currentCells = this.labelCellMap.get(label);
         if (currentCells == null) {
             currentCells = new HashSet<JCell>();
-            this.labels.put(label, currentCells);
+            this.labelCellMap.put(label, currentCells);
             result = true;
         }
         currentCells.add(cell);
@@ -342,10 +362,10 @@ public class LabelTree extends JTree implements GraphModelListener,
      * there are no cells left for it. The return value indicates if there were
      * any labels removed.
      */
-    protected boolean removeFromLabels(JCell cell) {
+    private boolean removeFromLabels(JCell cell) {
         boolean result = false;
         Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
-            this.labels.entrySet().iterator();
+            this.labelCellMap.entrySet().iterator();
         while (labelIter.hasNext()) {
             Map.Entry<Label,Set<JCell>> labelEntry = labelIter.next();
             Set<JCell> cellSet = labelEntry.getValue();
@@ -361,12 +381,12 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Modifies the presence of the cell in the label map. The return value
      * indicates if there were any labels added or removed.
      */
-    protected boolean modifyLabels(JCell cell) {
+    private boolean modifyLabels(JCell cell) {
         boolean result = false;
         Set<Label> newLabelSet = new HashSet<Label>(cell.getListLabels());
         // go over the existing label map
         Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
-            this.labels.entrySet().iterator();
+            this.labelCellMap.entrySet().iterator();
         while (labelIter.hasNext()) {
             Map.Entry<Label,Set<JCell>> labelEntry = labelIter.next();
             Label label = labelEntry.getKey();
@@ -385,10 +405,84 @@ public class LabelTree extends JTree implements GraphModelListener,
         for (Label label : newLabelSet) {
             Set<JCell> newCells = new HashSet<JCell>();
             newCells.add(cell);
-            this.labels.put(label, newCells);
+            this.labelCellMap.put(label, newCells);
             result = true;
         }
         return result;
+    }
+
+    /**
+     * If the object to be displayed is a {@link Label}, this implementation
+     * returns an HTML-formatted string with the text of the label.
+     */
+    @Override
+    public String convertValueToText(Object value, boolean selected,
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        if (value instanceof LabelTreeNode) {
+            return getText(((LabelTreeNode) value).getLabel());
+        } else {
+            return super.convertValueToText(value, selected, expanded, leaf,
+                row, hasFocus);
+        }
+    }
+
+    /**
+     * Returns an HTML-formatted string indicating how a label should be
+     * displayed.
+     */
+    private String getText(Label label) {
+        StringBuilder text = new StringBuilder();
+        boolean specialLabelColour = false;
+        if (label.equals(JVertex.NO_LABEL)) {
+            text.append(Options.NO_LABEL_TEXT);
+            specialLabelColour = true;
+        } else if (label.text().length() == 0) {
+            text.append(Options.EMPTY_LABEL_TEXT);
+            specialLabelColour = true;
+        } else {
+            text.append(label.text());
+        }
+        Converter.toHtml(text);
+        if (specialLabelColour) {
+            Converter.createColorTag(SPECIAL_COLOR).on(text);
+        }
+        if (label.isNodeType()) {
+            Converter.STRONG_TAG.on(text);
+        }
+        if (LabelTree.this.filteredLabels != null) {
+            if (LabelTree.this.filteredLabels.contains(label)) {
+                Converter.STRIKETHROUGH_TAG.on(text);
+            }
+        }
+        return Converter.HTML_TAG.on(text).toString();
+    }
+
+    /** Recomputes the value returned by {@link #getMaxLabelWidth()}. */
+    private void computeMaxLabelWidth() {
+        int result = 0;
+        JLabel dummy = new JLabel();
+        dummy.setBorder(INSET_BORDER);
+        for (Label label : this.labelCellMap.keySet()) {
+            dummy.setText(getText(label));
+            int width = dummy.getPreferredSize().width;
+            result = Math.max(result, width);
+        }
+        this.maxLabelWidth = result;
+    }
+
+    /** Returns the display width of the longest label in this tree. */
+    public int getMaxLabelWidth() {
+        return this.maxLabelWidth;
+    }
+
+    /** Indicates if this label tree supports filtering of labels. */
+    public boolean isFiltering() {
+        return this.filtering;
+    }
+
+    /** Indicates if a given label is currently filtered. */
+    public boolean isFiltered(Label label) {
+        return isFiltering() && this.filteredLabels.contains(label);
     }
 
     /**
@@ -410,107 +504,40 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * The bag of labels in this jmodel.
      */
-    private final Map<Label,Set<JCell>> labels =
+    private final Map<Label,Set<JCell>> labelCellMap =
         new TreeMap<Label,Set<JCell>>();
-
+    /** Flag indicating if label filtering should be used. */
+    private final boolean filtering;
     /** Set of filtered labels. */
     private final ObservableSet<Label> filteredLabels;
-
+    /** The top node in the JTree. */
     private final DefaultMutableTreeNode topNode;
     /**
      * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
-
     /**
-     * Special cell renderer that visualises the NO_LABEL label as well as
-     * filtered labels.
+     * The width of the widest label in the tree. Updated by a call to
+     * {@link #updateTree()}.
      */
-    private class MyCellRenderer extends DefaultTreeCellRenderer {
-        /** Empty constructor with the correct visibility. */
-        MyCellRenderer() {
-            setLeafIcon(null);
-            setOpenIcon(null);
-            setClosedIcon(null);
+    private int maxLabelWidth;
+
+    private class LabelTreeNode extends DefaultMutableTreeNode {
+        LabelTreeNode(Label label) {
+            this.label = label;
         }
 
-        /** Sets the internally stored label. */
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value,
-                boolean sel, boolean expanded, boolean leaf, int row,
-                boolean hasfocus) {
-            if (value instanceof LabelTreeNode) {
-                this.label = ((LabelTreeNode) value).getLabel();
-            }
-            super.getTreeCellRendererComponent(tree, value, sel, expanded,
-                leaf, row, hasfocus);
-            if (value instanceof LabelTreeNode) {
-                StringBuilder toolTipText = new StringBuilder();
-                if (this.label.equals(JVertex.NO_LABEL)) {
-                    setForeground(SPECIAL_COLOR);
-                } else if (this.label.text().length() == 0) {
-                    setForeground(SPECIAL_COLOR);
-                } else {
-                    Set<JCell> occurrences =
-                        LabelTree.this.labels.get(this.label);
-                    int count = occurrences == null ? 0 : occurrences.size();
-                    toolTipText.append(count);
-                    toolTipText.append(" occurrence");
-                    if (count != 1) {
-                        toolTipText.append("s");
-                    }
-                }
-                if (LabelTree.this.filteredLabels != null) {
-                    if (toolTipText.length() != 0) {
-                        toolTipText.append(Converter.HTML_LINEBREAK);
-                    }
-                    if (LabelTree.this.filteredLabels.contains(this.label)) {
-                        toolTipText.append("Filtered label; doubleclick to show");
-                    } else {
-                        toolTipText.append("Visible label; doubleclick to filter");
-                    }
-                }
-                if (toolTipText.length() != 0) {
-                    setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
-                }
-            }
-            setOpaque(!sel);
-            return this;
+        /** Returns the label of this tree node. */
+        public final Label getLabel() {
+            return this.label;
         }
 
         @Override
-        public void setText(String labelText) {
-            if (this.label == null) {
-                super.setText(labelText);
-            } else {
-                StringBuilder text = new StringBuilder();
-                if (this.label.equals(JVertex.NO_LABEL)) {
-                    text.append(Options.NO_LABEL_TEXT);
-                } else if (labelText.length() == 0) {
-                    text.append(Options.EMPTY_LABEL_TEXT);
-                } else {
-                    text.append(labelText);
-                }
-                Converter.toHtml(text);
-                if (this.label.isNodeType()) {
-                    Converter.STRONG_TAG.on(text);
-                }
-                if (LabelTree.this.filteredLabels != null) {
-                    if (LabelTree.this.filteredLabels.contains(this.label)) {
-                        Converter.STRIKETHROUGH_TAG.on(text);
-                    }
-                }
-                super.setText(Converter.HTML_TAG.on(text).toString());
-            }
+        public final String toString() {
+            return this.label.text();
         }
 
-        @Override
-        public void setBorder(Border border) {
-            super.setBorder(new CompoundBorder(border, INSET_BORDER));
-        }
-
-        /** The label for which the renderer has been last invoked. */
-        private Label label;
+        private final Label label;
     }
 
     /** Class to deal with mouse events over the label list. */
@@ -522,20 +549,20 @@ public class LabelTree extends JTree implements GraphModelListener,
 
         @Override
         public void mousePressed(MouseEvent evt) {
-            if (evt.getButton() == MouseEvent.BUTTON3) {
-                int index =
-                    getRowForLocation(evt.getPoint().x, evt.getPoint().y);
-                if (index >= 0) {
-                    if (evt.isControlDown()) {
-                        addSelectionInterval(index, index);
-                    } else if (evt.isShiftDown()) {
-                        addSelectionInterval(
-                            getRowForPath(getAnchorSelectionPath()), index);
-                    } else {
-                        setSelectionRow(index);
-                    }
-                }
-            }
+            // if (evt.getButton() == MouseEvent.BUTTON3) {
+            // int index =
+            // getRowForLocation(evt.getPoint().x, evt.getPoint().y);
+            // if (index >= 0) {
+            // if (evt.isControlDown()) {
+            // addSelectionInterval(index, index);
+            // } else if (evt.isShiftDown()) {
+            // addSelectionInterval(
+            // getRowForPath(getAnchorSelectionPath()), index);
+            // } else {
+            // setSelectionRow(index);
+            // }
+            // }
+            // }
             maybeShowPopup(evt);
         }
 
@@ -546,7 +573,9 @@ public class LabelTree extends JTree implements GraphModelListener,
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (LabelTree.this.filteredLabels != null && e.getClickCount() == 2) {
+            if (LabelTree.this.filtering
+                && LabelTree.this.filteredLabels != null
+                && e.getClickCount() == 2) {
                 TreePath path =
                     getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
@@ -590,29 +619,270 @@ public class LabelTree extends JTree implements GraphModelListener,
         private final Collection<Label> labels;
     }
 
-    private class LabelTreeNode extends DefaultMutableTreeNode {
-        LabelTreeNode(Label label) {
-            this.label = label;
+    /**
+     * Special cell renderer that visualises the NO_LABEL label as well as
+     * filtered labels.
+     */
+    private class MyCellRenderer extends JPanel implements TreeCellRenderer {
+        /** Empty constructor with the correct visibility. */
+        MyCellRenderer() {
+            this.jLabel = new DefaultTreeCellRenderer();
+            this.jLabel.setOpenIcon(null);
+            this.jLabel.setLeafIcon(null);
+            this.jLabel.setClosedIcon(null);
+            this.jLabel.setBorder(LabelTree.INSET_BORDER);
+            this.checkbox = new JCheckBox();
+            this.checkbox.setBackground(this.jLabel.getBackgroundNonSelectionColor());
+            setLayout(new BorderLayout());
+            add(this.jLabel, BorderLayout.CENTER);
+            setOpaque(true);
         }
 
-        /** Returns the label of this tree node. */
-        public final Label getLabel() {
-            return this.label;
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+                boolean sel, boolean expanded, boolean leaf, int row,
+                boolean hasFocus) {
+            this.labelNode =
+                value instanceof LabelTree.LabelTreeNode
+                        ? (LabelTree.LabelTreeNode) value : null;
+            if (isFiltering() && this.labelNode != null) {
+                this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
+                add(this.checkbox, BorderLayout.EAST);
+            } else {
+                remove(this.checkbox);
+            }
+            this.jLabel.getTreeCellRendererComponent(tree, value, sel,
+                expanded, leaf, row, hasFocus);
+            setComponentOrientation(tree.getComponentOrientation());
+            if (value instanceof LabelTreeNode) {
+                Label label = ((LabelTreeNode) value).getLabel();
+                StringBuilder toolTipText = new StringBuilder();
+                Set<JCell> occurrences = LabelTree.this.labelCellMap.get(label);
+                int count = occurrences == null ? 0 : occurrences.size();
+                toolTipText.append(count);
+                toolTipText.append(" occurrence");
+                if (count != 1) {
+                    toolTipText.append("s");
+                }
+                if (LabelTree.this.filteredLabels != null) {
+                    if (toolTipText.length() != 0) {
+                        toolTipText.append(Converter.HTML_LINEBREAK);
+                    }
+                    if (LabelTree.this.filteredLabels.contains(label)) {
+                        toolTipText.append("Filtered label; doubleclick to show");
+                    } else {
+                        toolTipText.append("Visible label; doubleclick to filter");
+                    }
+                }
+                if (toolTipText.length() != 0) {
+                    setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
+                }
+            }
+            setOpaque(!sel);
+            return this;
+        }
+
+        /** Returns the label node last rendered. */
+        public LabelTree.LabelTreeNode getLabelTreeNode() {
+            return this.labelNode;
+        }
+
+        /** Returns the checkbox sub-component of this renderer. */
+        public JCheckBox getCheckbox() {
+            return this.checkbox;
+        }
+
+        /**
+         * Overrides <code>JComponent.getPreferredSize</code> to return slightly
+         * wider preferred size value.
+         */
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension retDimension = super.getPreferredSize();
+
+            if (retDimension != null) {
+                retDimension =
+                    new Dimension(Math.min(200, getMaxLabelWidth()
+                        + this.checkbox.getPreferredSize().width),
+                        retDimension.height);
+            }
+            return retDimension;
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        protected void firePropertyChange(String propertyName, Object oldValue,
+                Object newValue) {
+            // Strings get interned...
+            if (propertyName == "text"
+                || ((propertyName == "font" || propertyName == "foreground")
+                    && oldValue != newValue && getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey) != null)) {
+
+                super.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, byte oldValue,
+                byte newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, char oldValue,
+                char newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, short oldValue,
+                short newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, int oldValue,
+                int newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, long oldValue,
+                long newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, float oldValue,
+                float newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, double oldValue,
+                double newValue) {
+            // empty
+        }
+
+        /**
+         * Overridden for performance reasons. See the <a
+         * href="#override">Implementation Note</a> for more information.
+         */
+        @Override
+        public void firePropertyChange(String propertyName, boolean oldValue,
+                boolean newValue) {
+            // empty
+        }
+
+        /** JLabel on the center of the panel. */
+        private final DefaultTreeCellRenderer jLabel;
+        /** Checkbox on the right hand side of the panel. */
+        private final JCheckBox checkbox;
+        /** Label node last rendered. */
+        private LabelTree.LabelTreeNode labelNode;
+    }
+
+    /** Cell editor enabling the selection of the filtering checkboxes. */
+    private class MyCellEditor extends AbstractCellEditor implements
+            TreeCellEditor {
+        public MyCellEditor() {
+            ItemListener itemListener = new ItemListener() {
+                public void itemStateChanged(ItemEvent itemEvent) {
+                    stopCellEditing();
+                    LabelTreeNode editedNode =
+                        MyCellEditor.this.editor.getLabelTreeNode();
+                    if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                        LabelTree.this.filteredLabels.remove(editedNode.getLabel());
+                    } else {
+                        LabelTree.this.filteredLabels.add(editedNode.getLabel());
+                    }
+                }
+            };
+            this.editor.getCheckbox().addItemListener(itemListener);
+        }
+
+        /** Returns the {@link LabelTreeNode} currently being edited. */
+        public Object getCellEditorValue() {
+            return this.editor.getLabelTreeNode();
+        }
+
+        /** A cell is editable if it is a {@link LabelTreeNode}. */
+        @Override
+        public boolean isCellEditable(EventObject event) {
+            boolean result = false;
+            if (event instanceof MouseEvent) {
+                MouseEvent mouseEvent = (MouseEvent) event;
+                TreePath path =
+                    LabelTree.this.getPathForLocation(mouseEvent.getX(),
+                        mouseEvent.getY());
+                if (path != null) {
+                    Rectangle pathBounds = getPathBounds(path);
+                    int checkboxBorder =
+                        pathBounds.x
+                            + pathBounds.width
+                            - this.editor.getCheckbox().getPreferredSize().width;
+                    result =
+                        path.getLastPathComponent() instanceof LabelTreeNode
+                            && mouseEvent.getX() >= checkboxBorder;
+                }
+            }
+            return result;
         }
 
         @Override
-        public final String toString() {
-            return this.label.text();
+        public boolean shouldSelectCell(EventObject event) {
+            return false;
         }
 
-        private final Label label;
+        public Component getTreeCellEditorComponent(JTree tree, Object value,
+                boolean selected, boolean expanded, boolean leaf, int row) {
+
+            Component editor =
+                this.editor.getTreeCellRendererComponent(tree, value, selected,
+                    expanded, leaf, row, false);
+
+            return editor;
+        }
+
+        /** The actual editor is just an instance of the renderer. */
+        private final MyCellRenderer editor = new MyCellRenderer();
     }
 
     /**
      * Border to put some space to the left and right of the labels inside the
      * list.
      */
-    static final Border INSET_BORDER = new EmptyBorder(0, 3, 0, 3);
+    public static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     /** Colour HTML tag for the foreground colour of special labels. */
-    static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
+    private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
 }
