@@ -32,7 +32,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -285,12 +284,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             LabelTreeNode labelNode = new LabelTreeNode(label);
             this.topNode.add(labelNode);
         }
-        Enumeration<?> labelNodeEnum = this.topNode.children();
-        while (labelNodeEnum.hasMoreElements()) {
-            makeVisible(new TreePath(
-                ((LabelTreeNode) labelNodeEnum.nextElement()).getPath()));
-        }
-        // reinstate this component as selection listener
+        this.treeModel.reload(this.topNode);
         addTreeSelectionListener(this);
     }
 
@@ -370,9 +364,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     protected boolean modifyLabels(JCell cell) {
         boolean result = false;
         Set<Label> newLabelSet = new HashSet<Label>(cell.getListLabels());
-        // } else {
-        // newLabelSet = new HashSet<String>();
-        // }
         // go over the existing label map
         Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
             this.labels.entrySet().iterator();
