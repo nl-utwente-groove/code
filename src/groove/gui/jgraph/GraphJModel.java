@@ -339,8 +339,11 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             "JModel node '%s' does not have underlying graph node", root);
         Node result = DefaultNode.createNode(modelNode.getNumber());
         boolean fresh = graph.addNode(result);
-        assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
-            result, graph);
+        if (!fresh) {
+            result = graph.addNode();
+        }
+        // assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
+        // result, graph);
         return result;
     }
 
