@@ -26,6 +26,7 @@ import groove.abs.AbstrGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -42,6 +43,7 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
+import groove.trans.SystemProperties;
 import groove.view.AspectualGraphView;
 import groove.view.StoredGrammarView;
 
@@ -52,8 +54,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
@@ -97,6 +102,21 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                     }
                 }
             });
+        getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                assert arg instanceof LabelStore;
+                final SystemProperties newProperties =
+                    simulator.getGrammarView().getProperties().clone();
+                newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        simulator.doSaveProperties(newProperties);
+                    }
+                });
+            }
+        });
     }
 
     /**
