@@ -306,19 +306,25 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.topNode.add(labelNode);
             LabelStore labelStore = getJGraph().getLabelStore();
             if (labelStore != null) {
-                Set<Label> directSubtypes = labelStore.getDirectSubtypes(label);
-                assert directSubtypes != null : String.format(
-                    "Label '%s' does not occur in label store '%s'", label,
-                    labelStore.getLabels());
-                for (Label subtype : directSubtypes) {
-                    LabelTreeNode subtypeNode =
-                        new LabelTreeNode(subtype, false);
-                    labelNode.add(subtypeNode);
-                }
+                addSubtypes(labelNode, labelStore);
             }
         }
         this.treeModel.reload(this.topNode);
         addTreeSelectionListener(this);
+    }
+
+    /** Recursively adds subtypes to a given label node. */
+    private void addSubtypes(LabelTreeNode labelNode, LabelStore labelStore) {
+        Label label = labelNode.getLabel();
+        Set<Label> directSubtypes = labelStore.getDirectSubtypes(label);
+        assert directSubtypes != null : String.format(
+            "Label '%s' does not occur in label store '%s'", label,
+            labelStore.getLabels());
+        for (Label subtype : directSubtypes) {
+            LabelTreeNode subtypeNode = new LabelTreeNode(subtype, false);
+            labelNode.add(subtypeNode);
+            addSubtypes(subtypeNode, labelStore);
+        }
     }
 
     /**
