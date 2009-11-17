@@ -1297,11 +1297,11 @@ public class Simulator {
                     : !newControlName.equals(oldControlName);
         try {
             getGrammarStore().putProperties(newProperties);
-            if (refresh) {
-                doRefreshGrammar();
-            } else {
-                setGrammar(grammar);
-            }
+            // if (refresh) {
+            doRefreshGrammar();
+            // } else {
+            // setGrammar(grammar);
+            // }
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
         }

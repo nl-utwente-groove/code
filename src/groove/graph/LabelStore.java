@@ -156,7 +156,8 @@ public class LabelStore implements Cloneable {
      *         <code>label</code> is not a known type label.
      */
     public Set<Label> getSubtypes(Label label) {
-        return Collections.unmodifiableSet(this.subtypeMap.get(label));
+        Set<Label> result = this.subtypeMap.get(label);
+        return result == null ? null : Collections.unmodifiableSet(result);
     }
 
     /**

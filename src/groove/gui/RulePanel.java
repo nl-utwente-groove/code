@@ -33,6 +33,7 @@ import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SPORule;
+import groove.trans.SystemProperties;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
@@ -42,6 +43,8 @@ import groove.view.StoredGrammarView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.TreeMap;
 
 /**
@@ -58,7 +61,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
     /**
      * Constructs a new rule frame on the basis of a given graph.
      */
-    public RulePanel(Simulator simulator) {
+    public RulePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator), true, simulator.getOptions());
         this.simulator = simulator;
         setEnabled(false);
@@ -69,6 +72,16 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         simulator.addSimulationListener(this);
         this.jGraph.setToolTipEnabled(true);
+        getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                assert arg instanceof LabelStore;
+                SystemProperties newProperties =
+                    simulator.getGrammarView().getProperties().clone();
+                newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
+                simulator.doSaveProperties(newProperties);
+            }
+        });
     }
 
     /**
