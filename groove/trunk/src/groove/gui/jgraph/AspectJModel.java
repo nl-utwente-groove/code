@@ -39,6 +39,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.ArgumentEdge;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
@@ -50,7 +51,6 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
-import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.NamedAspectValue;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
@@ -501,7 +501,7 @@ public class AspectJModel extends GraphJModel {
 
         @Override
         public Label getLabel(Edge edge) {
-            return edge.label();
+            return getModelEdge((AspectEdge) edge).label();
         }
 
         /**
@@ -590,13 +590,14 @@ public class AspectJModel extends GraphJModel {
         /** This implementation returns the (unparsed) label of the model edge. */
         @Override
         public Label getLabel(Edge edge) {
-            Label result = edge.label();
-            if (AttributeAspect.ARGUMENT.equals(AttributeAspect.getAttributeValue((AspectEdge) edge))) {
-                return DefaultLabel.createLabel("" + Groove.LC_PI
-                    + result.toString());
+            Edge modelEdge = getModelEdge((AspectEdge) edge);
+            Label result = modelEdge.label();
+            if (modelEdge instanceof ArgumentEdge) {
+                result =
+                    DefaultLabel.createLabel("" + Groove.LC_PI
+                        + result.toString());
             }
             return result;
-            // return getView().unparse(edge.label());
         }
 
         /**

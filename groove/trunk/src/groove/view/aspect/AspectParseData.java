@@ -124,21 +124,22 @@ class AspectParseData {
      * Returns the actual label text (which may be <code>null</code> if the
      * plain label was a node decorator).
      */
-    private String getText() {
+    public String getText() {
         return this.text;
     }
 
-    /**
-     * Creates a label from the parse data, based on the text and the aspect
-     * values.
-     */
-    public Label getLabel() {
-        this.status.setFixed();
-        if (this.label == null && hasText()) {
-            this.label = DefaultLabel.createLabel(getText());
-        }
-        return this.label;
-    }
+    //
+    // /**
+    // * Creates a label from the parse data, based on the text and the aspect
+    // * values.
+    // */
+    // public Label getLabel() {
+    // this.status.setFixed();
+    // if (this.label == null && hasText()) {
+    // this.label = DefaultLabel.createLabel(getText());
+    // }
+    // return this.label;
+    // }
 
     /**
      * Indicates if there was an actual label text.

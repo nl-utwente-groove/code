@@ -21,6 +21,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
@@ -76,20 +77,21 @@ public class GraphSearchPlanFactory {
      * @param anchorNodes the set of pre-matched nodes when searching; may be
      *        <code>null</code> if there are no pre-matched nodes
      * @param anchorEdges the set of pre-matched edges when searching; may be
-     *        <code>null</code> if there are no pre-matched edges. It is
-     *        assumed that the end nodes of all pre-matched edges are themselves
+     *        <code>null</code> if there are no pre-matched edges. It is assumed
+     *        that the end nodes of all pre-matched edges are themselves
      *        pre-matched.
+     * @param labelStore the node subtype relation in the graph
      * @return a list of search items that will result in a matching of
-     *         <code>graph</code> when successfully executed in the given
-     *         order
+     *         <code>graph</code> when successfully executed in the given order
      */
     public SearchPlanStrategy createMatcher(GraphShape graph,
             Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges) {
+            Collection<? extends Edge> anchorEdges, LabelStore labelStore) {
         PlanData data = new PlanData(graph);
         SearchPlanStrategy result =
             new SearchPlanStrategy(graph,
-                data.getPlan(anchorNodes, anchorEdges), this.injective);
+                data.getPlan(anchorNodes, anchorEdges), labelStore,
+                this.injective);
         result.setFixed();
         return result;
     }
@@ -176,7 +178,8 @@ public class GraphSearchPlanFactory {
          * @param anchorEdges the set of pre-matched edges; may be
          *        <code>null</code> for an empty set
          */
-        public List<AbstractSearchItem> getPlan(Collection<? extends Node> anchorNodes,
+        public List<AbstractSearchItem> getPlan(
+                Collection<? extends Node> anchorNodes,
                 Collection<? extends Edge> anchorEdges) {
             if (this.used) {
                 throw new IllegalStateException(
@@ -184,7 +187,8 @@ public class GraphSearchPlanFactory {
             } else {
                 this.used = true;
             }
-            List<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
+            List<AbstractSearchItem> result =
+                new ArrayList<AbstractSearchItem>();
             Collection<AbstractSearchItem> items =
                 computeSearchItems(anchorNodes, anchorEdges);
             while (!items.isEmpty()) {
@@ -212,7 +216,8 @@ public class GraphSearchPlanFactory {
         Collection<AbstractSearchItem> computeSearchItems(
                 Collection<? extends Node> anchorNodes,
                 Collection<? extends Edge> anchorEdges) {
-            Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
+            Collection<AbstractSearchItem> result =
+                new ArrayList<AbstractSearchItem>();
             Set<Node> unmatchedNodes =
                 new LinkedHashSet<Node>(this.remainingNodes);
             Set<Edge> unmatchedEdges =
@@ -329,6 +334,8 @@ public class GraphSearchPlanFactory {
                             negOperand.toLabel(), edge.opposite());
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
+            } else if (label.isNodeType()) {
+                return new NodeTypeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.getWildcardId(label) != null) {
                 return new VarEdgeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.isWildcard(label)) {
@@ -674,6 +681,9 @@ public class GraphSearchPlanFactory {
             int result = 0;
             Class<?> itemClass = item.getClass();
             if (itemClass == NodeSearchItem.class) {
+                return result;
+            }
+            if (itemClass == NodeTypeSearchItem.class) {
                 return result;
             }
             if (itemClass == ConditionSearchItem.class) {

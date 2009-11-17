@@ -245,7 +245,7 @@ public class TestingPatternFamily extends junit.framework.TestCase {
 
         GraphSearchPlanFactory injspf =
             GraphSearchPlanFactory.getInstance(true, false);
-        SearchPlanStrategy mstr = injspf.createMatcher(g, null, null);
+        SearchPlanStrategy mstr = injspf.createMatcher(g, null, null, null);
         System.out.println(mstr.getMatchSet(g, null));
 
         Graph g2 = new DefaultGraph();
@@ -253,7 +253,7 @@ public class TestingPatternFamily extends junit.framework.TestCase {
         Node m1 = g2.addNode();
         g2.addEdge(m1, DefaultLabel.createLabel("a"), m0);
 
-        SearchPlanStrategy mstr2 = injspf.createMatcher(g2, null, null);
+        SearchPlanStrategy mstr2 = injspf.createMatcher(g2, null, null, null);
         System.out.println("---------------------------------\n");
         System.out.println(mstr2.getMatchSet(g, null));
 

@@ -17,6 +17,7 @@
 package groove.match;
 
 import groove.graph.Edge;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.AbstractCondition;
@@ -75,7 +76,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<? extends Node> anchorNodes,
             Collection<? extends Edge> anchorEdges) {
-        return createMatcher(condition, anchorNodes, anchorEdges, null);
+        return createMatcher(condition, anchorNodes, anchorEdges, null, null);
     }
 
     /**
@@ -86,19 +87,20 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @param condition the condition for which a search plan is to be
      *        constructed
      * @param anchorNodes the nodes of the condition that have been matched
-     *        already; if <code>null</code>, the condition's pattern map 
-     *        values are used
+     *        already; if <code>null</code>, the condition's pattern map values
+     *        are used
      * @param anchorEdges the edges of the condition that have been matched
-     *        already; if <code>null</code>, the condition's pattern map 
-     *        values are used
-     * @param relevantNodes nodes from the condition whose image should be a 
-     * distinguishing factor in the returned matches; if <code>null</code>,
-     * all nodes are relevant
+     *        already; if <code>null</code>, the condition's pattern map values
+     *        are used
+     * @param relevantNodes nodes from the condition whose image should be a
+     *        distinguishing factor in the returned matches; if
+     *        <code>null</code>, all nodes are relevant
+     * @param labelStore the subtype relation for the condition
      */
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<? extends Node> anchorNodes,
             Collection<? extends Edge> anchorEdges,
-            Collection<? extends Node> relevantNodes) {
+            Collection<? extends Node> relevantNodes, LabelStore labelStore) {
         assert (anchorNodes == null) == (anchorEdges == null) : "Anchor nodes and edges should be null simultaneously";
         if (anchorNodes == null) {
             NodeEdgeMap patternMap = condition.getRootMap();
@@ -106,16 +108,19 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
             anchorEdges = patternMap.edgeMap().values();
         }
         PlanData planData = new GrammarPlanData(condition);
-        List<AbstractSearchItem> plan = planData.getPlan(anchorNodes, anchorEdges);
+        List<AbstractSearchItem> plan =
+            planData.getPlan(anchorNodes, anchorEdges);
         if (relevantNodes != null) {
             Set<Node> unboundRelevantNodes = new HashSet<Node>(relevantNodes);
             Set<String> boundVars = new HashSet<String>();
             for (AbstractSearchItem item : plan) {
-                item.setRelevant(unboundRelevantNodes.removeAll(item.bindsNodes()) | boundVars.addAll(item.bindsVars()));
+                item.setRelevant(unboundRelevantNodes.removeAll(item.bindsNodes())
+                    | boundVars.addAll(item.bindsVars()));
             }
         }
-        SearchPlanStrategy result = 
-            new SearchPlanStrategy(condition.getTarget(), plan, isInjective());
+        SearchPlanStrategy result =
+            new SearchPlanStrategy(condition.getTarget(), plan, labelStore,
+                isInjective());
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",

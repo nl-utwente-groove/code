@@ -147,7 +147,7 @@ public class DefaultMorphism extends AbstractMorphism {
     @Override
     protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
         return GraphSearchPlanFactory.getInstance().createMatcher(dom(),
-            elementMap().nodeMap().keySet(), elementMap().edgeMap().keySet());
+            elementMap().nodeMap().keySet(), elementMap().edgeMap().keySet(), null);
     }
 
     /**
