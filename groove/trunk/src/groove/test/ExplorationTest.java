@@ -188,6 +188,11 @@ public class ExplorationTest extends TestCase {
         testExploration("wildcards.gps", 8, 12);
     }
 
+    /** tests the subtyping functionality. */
+    public void testInheritance() {
+        testExploration("inheritance.gps", 756, 5374);
+    }
+
     /** Tests various parameters settable through the system properties. */
     public void testSystemProperties() {
         StoredGrammarView gg = loadGrammar("simple.gps", null);
