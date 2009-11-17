@@ -1,9 +1,11 @@
 package groove.trans;
 
 import groove.algebra.AlgebraRegister;
+import groove.graph.LabelStore;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
+import groove.view.FormatException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,6 +109,24 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     public void setCommonLabels(List<String> commonLabels) {
         setProperty(COMMON_LABELS_KEY, Groove.toString(commonLabels.toArray(),
             "", "", " "));
+    }
+
+    /**
+     * Returns the string description of the subtype relation, or the empty
+     * string if the property is not set.
+     * @see #SUBTYPE_KEY
+     */
+    public String getSubtypes() {
+        String result = getProperty(SystemProperties.SUBTYPE_KEY);
+        return result == null ? "" : result;
+    }
+
+    /**
+     * Sets the subtype property.
+     * @see #SUBTYPE_KEY
+     */
+    public void setSubtypes(String subtypes) {
+        setProperty(SUBTYPE_KEY, subtypes);
     }
 
     /**
@@ -399,6 +419,12 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     static public final String COMMON_LABELS_KEY = "commonLabels";
 
     /**
+     * Property name of the list subtypes of a graph grammar. The property must
+     * be formatted according to {@link LabelStore#addDirectSubtypes(String)}.
+     */
+    static public final String SUBTYPE_KEY = "subtypes";
+
+    /**
      * (User) Property that holds the grammar history (max 10 separated by ',')
      * *
      */
@@ -495,6 +521,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
             new LinkedHashMap<String,Property<String>>();
         defaultKeys.put(REMARK_KEY, new Property.True<String>(
             "A one-line description of the graph production system"));
+        defaultKeys.put(SUBTYPE_KEY, new IsSubtypeString());
         defaultKeys.put(
             ALGEBRA_KEY,
             new Property.Choice<String>(
@@ -586,5 +613,33 @@ public class SystemProperties extends java.util.Properties implements Fixable,
                 return false;
             }
         }
+    }
+
+    /**
+     * Property testing if the value of {@link #SUBTYPE_KEY} is correctly
+     * formatted.
+     */
+    static private class IsSubtypeString extends Property<String> {
+        /**
+         * Returns an instance of this property, with appropriate description
+         * and comment.
+         */
+        public IsSubtypeString() {
+            super(
+                "string of the form 'type > sub [, sub]* [; type > sub [, sub]*]*",
+                "Specifies the subtype relation");
+        }
+
+        @Override
+        public boolean isSatisfied(String value) {
+            boolean result = true;
+            try {
+                LabelStore.parseDirectSubtypeString(value);
+            } catch (FormatException exc) {
+                result = false;
+            }
+            return result;
+        }
+
     }
 }

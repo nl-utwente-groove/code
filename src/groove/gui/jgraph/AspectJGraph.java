@@ -35,7 +35,7 @@ public class AspectJGraph extends JGraph {
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public AspectJGraph(Simulator simulator) {
-        super(AspectJModel.EMPTY_ASPECT_JMODEL, false);
+        super(AspectJModel.EMPTY_ASPECT_JMODEL, false, null);
         this.simulator = simulator;
         setLayouter(new SpringLayouter());
         doGraphLayout();

@@ -17,7 +17,6 @@
 package groove.match;
 
 import groove.graph.Edge;
-import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.AbstractCondition;
@@ -76,7 +75,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<? extends Node> anchorNodes,
             Collection<? extends Edge> anchorEdges) {
-        return createMatcher(condition, anchorNodes, anchorEdges, null, null);
+        return createMatcher(condition, anchorNodes, anchorEdges, null);
     }
 
     /**
@@ -95,12 +94,11 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @param relevantNodes nodes from the condition whose image should be a
      *        distinguishing factor in the returned matches; if
      *        <code>null</code>, all nodes are relevant
-     * @param labelStore the subtype relation for the condition
      */
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<? extends Node> anchorNodes,
             Collection<? extends Edge> anchorEdges,
-            Collection<? extends Node> relevantNodes, LabelStore labelStore) {
+            Collection<? extends Node> relevantNodes) {
         assert (anchorNodes == null) == (anchorEdges == null) : "Anchor nodes and edges should be null simultaneously";
         if (anchorNodes == null) {
             NodeEdgeMap patternMap = condition.getRootMap();
@@ -119,8 +117,8 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
             }
         }
         SearchPlanStrategy result =
-            new SearchPlanStrategy(condition.getTarget(), plan, labelStore,
-                isInjective());
+            new SearchPlanStrategy(condition.getTarget(), plan,
+                condition.getLabelStore(), isInjective());
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",

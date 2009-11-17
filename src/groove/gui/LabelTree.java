@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -49,6 +50,7 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -300,8 +302,20 @@ public class LabelTree extends JTree implements GraphModelListener,
         // clear the list
         this.topNode.removeAllChildren();
         for (Label label : getLabels()) {
-            LabelTreeNode labelNode = new LabelTreeNode(label);
+            LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
+            LabelStore labelStore = getJGraph().getLabelStore();
+            if (labelStore != null) {
+                Set<Label> directSubtypes = labelStore.getDirectSubtypes(label);
+                assert directSubtypes != null : String.format(
+                    "Label '%s' does not occur in label store '%s'", label,
+                    labelStore.getLabels());
+                for (Label subtype : directSubtypes) {
+                    LabelTreeNode subtypeNode =
+                        new LabelTreeNode(subtype, false);
+                    labelNode.add(subtypeNode);
+                }
+            }
         }
         this.treeModel.reload(this.topNode);
         addTreeSelectionListener(this);
@@ -520,8 +534,9 @@ public class LabelTree extends JTree implements GraphModelListener,
     private int maxLabelWidth;
 
     private class LabelTreeNode extends DefaultMutableTreeNode {
-        LabelTreeNode(Label label) {
+        LabelTreeNode(Label label, boolean filterControl) {
             this.label = label;
+            this.filterControl = filterControl;
         }
 
         /** Returns the label of this tree node. */
@@ -529,12 +544,18 @@ public class LabelTree extends JTree implements GraphModelListener,
             return this.label;
         }
 
+        /** Indicates if this tree node has a node filtering checkbox. */
+        public final boolean hasFilterControl() {
+            return isFiltering() && this.filterControl;
+        }
+
         @Override
         public final String toString() {
-            return this.label.text();
+            return "Tree node for " + this.label.text();
         }
 
         private final Label label;
+        private final boolean filterControl;
     }
 
     /** Class to deal with mouse events over the label list. */
@@ -636,18 +657,21 @@ public class LabelTree extends JTree implements GraphModelListener,
         public Component getTreeCellRendererComponent(JTree tree, Object value,
                 boolean sel, boolean expanded, boolean leaf, int row,
                 boolean hasFocus) {
+            JComponent result;
             this.labelNode =
                 value instanceof LabelTree.LabelTreeNode
                         ? (LabelTree.LabelTreeNode) value : null;
-            if (isFiltering() && this.labelNode != null) {
+            if (this.labelNode != null && this.labelNode.hasFilterControl()) {
                 this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
-                add(this.checkbox, BorderLayout.EAST);
+                add(this.jLabel, BorderLayout.CENTER);
+                add(this.checkbox, CHECKBOX_ORIENTATION);
+                result = this;
             } else {
-                remove(this.checkbox);
+                result = this.jLabel;
             }
             this.jLabel.getTreeCellRendererComponent(tree, value, sel,
                 expanded, leaf, row, hasFocus);
-            setComponentOrientation(tree.getComponentOrientation());
+            result.setComponentOrientation(tree.getComponentOrientation());
             if (value instanceof LabelTreeNode) {
                 Label label = ((LabelTreeNode) value).getLabel();
                 StringBuilder toolTipText = new StringBuilder();
@@ -669,11 +693,11 @@ public class LabelTree extends JTree implements GraphModelListener,
                     }
                 }
                 if (toolTipText.length() != 0) {
-                    setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
+                    result.setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
                 }
             }
-            setOpaque(!sel);
-            return this;
+            result.setOpaque(false);
+            return result;
         }
 
         /** Returns the label node last rendered. */
@@ -840,15 +864,27 @@ public class LabelTree extends JTree implements GraphModelListener,
                 TreePath path =
                     LabelTree.this.getPathForLocation(mouseEvent.getX(),
                         mouseEvent.getY());
-                if (path != null) {
+                if (path != null
+                    && path.getLastPathComponent() instanceof LabelTreeNode) {
+                    LabelTreeNode labelNode =
+                        (LabelTreeNode) path.getLastPathComponent();
                     Rectangle pathBounds = getPathBounds(path);
-                    int checkboxBorder =
-                        pathBounds.x
-                            + pathBounds.width
-                            - this.editor.getCheckbox().getPreferredSize().width;
-                    result =
-                        path.getLastPathComponent() instanceof LabelTreeNode
-                            && mouseEvent.getX() >= checkboxBorder;
+                    if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
+                        int checkboxBorder =
+                            pathBounds.x
+                                + this.editor.getCheckbox().getPreferredSize().width;
+                        result =
+                            labelNode.hasFilterControl()
+                                && mouseEvent.getX() < checkboxBorder;
+                    } else {
+                        int checkboxBorder =
+                            pathBounds.x
+                                + pathBounds.width
+                                - this.editor.getCheckbox().getPreferredSize().width;
+                        result =
+                            labelNode.hasFilterControl()
+                                && mouseEvent.getX() >= checkboxBorder;
+                    }
                 }
             }
             return result;
@@ -880,4 +916,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     public static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     /** Colour HTML tag for the foreground colour of special labels. */
     private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
+    /** Orientation of the filtering checkboxes in the label cells. */
+    private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
 }

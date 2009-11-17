@@ -44,12 +44,6 @@ import javax.swing.JSplitPane;
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
-     * The minimum width of the label pane. If the label list is empty, the
-     * preferred width is set to the minimum width.
-     */
-    public final static int MINIMUM_LABEL_PANE_WIDTH = 75;
-
-    /**
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 
      * @param jGraph the jgraph on which this panel is a view
@@ -147,19 +141,10 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         JPanel labelPane = new JPanel(new BorderLayout(), false);
         labelPane.add(new JLabel(" " + Options.LABEL_PANE_TITLE + " "),
             BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(this.jGraph.getLabelList()) {
+        JScrollPane scrollPane = new JScrollPane(this.jGraph.getLabelTree()) {
             @Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
-            }
-
-            @Override
-            public Dimension getPreferredSize() {
-                if (JGraphPanel.this.jGraph.getLabelList().getRowCount() == 0) {
-                    return getMinimumSize();
-                } else {
-                    return super.getPreferredSize();
-                }
             }
         };
         labelPane.add(scrollPane, BorderLayout.CENTER);
@@ -336,4 +321,10 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * The editor pane most recently installed by {@link #setPane}.
      */
     private JComponent currentPane;
+
+    /**
+     * The minimum width of the label pane. If the label list is empty, the
+     * preferred width is set to the minimum width.
+     */
+    public final static int MINIMUM_LABEL_PANE_WIDTH = 100;
 }

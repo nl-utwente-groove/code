@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.graph.LabelStore;
 import groove.graph.NodeEdgeMap;
 import groove.util.Fixable;
 import groove.view.FormatException;
@@ -68,6 +69,12 @@ public interface Condition extends Fixable {
 
     /** Returns the secondary properties of this graph condition. */
     public SystemProperties getProperties();
+
+    /**
+     * Returns the subtyping relation of this graph condition, or
+     * <code>null</code> if there is no subtyping relation.
+     */
+    public LabelStore getLabelStore();
 
     /**
      * Tests if this graph condition is internally consistent. Inconsistencies

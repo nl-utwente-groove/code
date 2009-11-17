@@ -22,6 +22,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
+import groove.graph.LabelStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JModel;
@@ -75,6 +76,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * and stores a model for each rule in the system.
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
+        LabelStore newLabelStore = null;
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {
@@ -84,18 +86,23 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
                         getOptions());
                 this.ruleJModelMap.put(ruleName, jModel);
             }
+            newLabelStore = grammar.getLabelStore();
         }
         // reset the display
         if (this.displayedRule != null) {
             if (this.ruleJModelMap.containsKey(this.displayedRule)) {
-                this.jGraph.setModel(this.ruleJModelMap.get(this.displayedRule));
-                refresh();
+                this.jGraph.setModel(
+                    this.ruleJModelMap.get(this.displayedRule), newLabelStore);
             } else {
-                this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
+                this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL,
+                    newLabelStore);
                 this.displayedRule = null;
-                refresh();
             }
+        } else {
+            this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL,
+                newLabelStore);
         }
+        refresh();
         // displayedGrammar = grammar;
     }
 

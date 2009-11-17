@@ -339,13 +339,7 @@ abstract public class JModel extends DefaultGraphModel {
      * invisible in the {@link JGraph}.
      */
     public final void setFilteredLabels(ObservableSet<Label> filteredLabels) {
-        // if (this.filteredLabels != null) {
-        // this.filteredLabels.deleteObserver(getRefreshListener());
-        // }
         this.filteredLabels = filteredLabels;
-        // if (filteredLabels != null) {
-        // filteredLabels.addObserver(getRefreshListener());
-        // }
     }
 
     /**

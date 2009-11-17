@@ -97,7 +97,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.priority = priority;
     }
 
-    /** Sets the confluency of this rule. */
+    /** Sets the confluence of this rule. */
     public void setConfluent(boolean confluent) {
         testFixed(false);
         this.confluent = confluent;
@@ -211,26 +211,25 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * anonymous parameters. Numbered parameters are visible on the transition
      * label. Numbered parameters can only be in the LHS.
      * @param lhsParameters an ordered list of numbered parameter nodes
-     * @param allParameters the set of all parameter nodes (including the
-     *        lhs ones)
+     * @param allParameters the set of all parameter nodes (including the lhs
+     *        ones)
      */
-    public void setParameters(List<Node> lhsParameters,
-            Set<Node> allParameters) {
+    public void setParameters(List<Node> lhsParameters, Set<Node> allParameters) {
         testFixed(false);
         this.lhsParameters = lhsParameters;
-        debug("set "+this.lhsParameters.size()+" lhs params");
+        debug("set " + this.lhsParameters.size() + " lhs params");
         this.allParameters = allParameters;
     }
-    
+
     /**
      * Sets the creator parameters (i.e. nodes which are only in the RHS)
      * @param creatorParameters an ordered list of numbered RHS-only parameters
      */
     public void setCreatorParameters(List<Node> creatorParameters) {
         this.creatorParameters = creatorParameters;
-        debug("set "+this.creatorParameters.size()+" creator params");
+        debug("set " + this.creatorParameters.size() + " creator params");
     }
-    
+
     /**
      * Gets the parameter type from a numbered parameter
      * @param param the number of the parameter under inquiry
@@ -239,33 +238,33 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private int getParameterType(int param) {
         // check if this parameter even exists
         if (param > getNumParameters()) {
-            debug("nonexistant parameter: "+param);
+            debug("nonexistant parameter: " + param);
             return PARAMETER_DOES_NOT_EXIST;
         }
-        
+
         // check if the result is cached
         if (this.parameterTypes.get(param) == null) {
             int result = PARAMETER_DOES_NOT_EXIST;
-            
+
             // if it's in creatorParameters, it may only be an output node
             if (param > this.lhsParameters.size()) {
                 result = PARAMETER_OUTPUT;
             } else {
-                
+
                 // if it's in lhsParameters, it could be both
-                Node n = this.lhsParameters.get(param-1);
+                Node n = this.lhsParameters.get(param - 1);
                 if (Arrays.binarySearch(getEraserNodes(), n) >= 0) {
                     result = PARAMETER_INPUT;
                 } else {
                     result = PARAMETER_BOTH;
                 }
             }
-            
+
             this.parameterTypes.put(param, result);
         }
         return this.parameterTypes.get(param);
     }
-    
+
     /**
      * Gets the number of parameters for a given type (input or output)
      * @param type either PARAMETER_INPUT or PARAMETER_OUTPUT
@@ -273,12 +272,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     public int getNumberOfParameters(int type) {
         int count = 0;
-        for(int thisType : this.parameterTypes.values()) {
-            if (thisType == type || thisType == PARAMETER_BOTH) count++;
+        for (int thisType : this.parameterTypes.values()) {
+            if (thisType == type || thisType == PARAMETER_BOTH) {
+                count++;
+            }
         }
         return count;
     }
-    
+
     /**
      * Returns whether a numbered parameter can be used as an output parameter
      * @param param the number of the parameter under inquiry
@@ -288,7 +289,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         debug("params: " + this.parameterTypes.size());
         return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
     }
-    
+
     /**
      * Returns whether a numbered parameter can be used as an input parameter
      * @param param the number of the parameter under inquiry
@@ -297,14 +298,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     public boolean isInputParameter(int param) {
         return (getParameterType(param) == PARAMETER_INPUT || getParameterType(param) == PARAMETER_BOTH);
     }
-    
+
     /**
      * @return the number of parameters of the rule.
      */
     public int getNumParameters() {
         return this.lhsParameters.size() + this.creatorParameters.size();
     }
-    
+
     /** Returns the ordered list of visible (i.e., numbered) parameters. */
     public List<Node> getLHSParameters() {
         return this.lhsParameters;
@@ -320,7 +321,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         if (this.eventMatcher == null) {
             this.eventMatcher =
                 getMatcherFactory().createMatcher(this,
-                    getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
+                    getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet(),
+                    null);
         }
         return this.eventMatcher;
     }
@@ -329,7 +331,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     @Override
     MatchStrategy<VarNodeEdgeMap> createMatcher() {
         return getMatcherFactory().createMatcher(this, null, null,
-            getMatchRelevantNodes(), null);
+            getMatchRelevantNodes());
     }
 
     @Override
@@ -1323,7 +1325,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private int priority;
     /**
-     * The confluency property of this rule.
+     * The confluence property of this rule.
      */
     private boolean confluent;
     /**
@@ -1367,9 +1369,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     static public long getMatchingTime() {
         return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
     }
-    
+
     private void debug(String msg) {
-        //System.err.println("Variable debug (SPORule): "+msg);
+        // System.err.println("Variable debug (SPORule): "+msg);
     }
 
     /**
@@ -1379,6 +1381,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
-    
-    private HashMap<Integer,Integer> parameterTypes = new HashMap<Integer,Integer>();
+
+    private final HashMap<Integer,Integer> parameterTypes =
+        new HashMap<Integer,Integer>();
 }
