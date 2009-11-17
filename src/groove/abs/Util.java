@@ -140,7 +140,7 @@ public class Util {
         SearchPlanStrategy mstr =
             GraphSearchPlanFactory.getInstance().createMatcher(morph.dom(),
                 morph.elementMap().nodeMap().keySet(),
-                morph.elementMap().edgeMap().keySet());
+                morph.elementMap().edgeMap().keySet(), null);
         return new DefaultMorphism(morph.dom(), morph.cod(), mstr.getMatchIter(
             morph.cod(), morph.elementMap()).next());
     }
@@ -176,7 +176,7 @@ public class Util {
             Graph cod, NodeEdgeMap toExtend) {
         SearchPlanStrategy mstr =
             Util.injspf.createMatcher(dom, toExtend.nodeMap().keySet(),
-                toExtend.edgeMap().keySet());
+                toExtend.edgeMap().keySet(), null);
         return mstr.getMatchSet(cod, toExtend);
     }
 
@@ -196,7 +196,7 @@ public class Util {
             Graph cod, NodeEdgeMap toExtend) {
         SearchPlanStrategy mstr =
             Util.injspf.createMatcher(dom, toExtend.nodeMap().keySet(),
-                toExtend.edgeMap().keySet());
+                toExtend.edgeMap().keySet(), null);
         return mstr.getMatches(cod, toExtend);
     }
 
@@ -215,7 +215,7 @@ public class Util {
             NodeEdgeMap toExtend) {
         SearchPlanStrategy mstr =
             Util.spf.createMatcher(dom, toExtend.nodeMap().keySet(),
-                toExtend.edgeMap().keySet());
+                toExtend.edgeMap().keySet(), null);
         return mstr.getMatchSet(cod, toExtend);
     }
 
@@ -235,7 +235,7 @@ public class Util {
             NodeEdgeMap toExtend) {
         SearchPlanStrategy mstr =
             Util.spf.createMatcher(dom, toExtend.nodeMap().keySet(),
-                toExtend.edgeMap().keySet());
+                toExtend.edgeMap().keySet(), null);
         return mstr.getMatches(cod, toExtend);
     }
 

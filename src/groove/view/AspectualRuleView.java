@@ -568,16 +568,18 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                     }
                     Edge edgeImage =
                         computeEdgeImage(edge, viewToRuleMap.nodeMap());
-                    Label edgeLabel = edgeImage.label();
-                    if (edgeLabel.isNodeType()) {
-                        if (!edgeImage.source().equals(edgeImage.opposite())) {
-                            throw new FormatException(
-                                "Node type label '%s' only allowed on self-edges",
-                                edgeLabel);
+                    if (edgeImage != null) {
+                        Label edgeLabel = edgeImage.label();
+                        if (edgeLabel.isNodeType()) {
+                            if (!edgeImage.source().equals(edgeImage.opposite())) {
+                                throw new FormatException(
+                                    "Node type label '%s' only allowed on self-edges",
+                                    edgeLabel);
+                            }
                         }
+                        viewToRuleMap.putEdge(edge, edgeImage);
+                        this.labelSet.add(edgeLabel);
                     }
-                    viewToRuleMap.putEdge(edge, edgeImage);
-                    this.labelSet.add(edgeLabel);
                 }
             }
             testVariableBinding();
@@ -806,7 +808,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
                         // "Regular label '%s' may not be used on creators",
                         // edgeImage.label());
                     } else {
-                        if (edgeImage.label().isNodeType()) {
+                        if (RuleAspect.inLHS(edge.source())
+                            && edgeImage.label().isNodeType()) {
                             addedTypes.put(edgeImage.source(),
                                 edgeImage.label());
                         }
@@ -1003,7 +1006,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * mapping is assumed to have images for all end nodes.
      * @param edge the edge for which an image is to be created
      * @param elementMap the mapping of the end nodes
-     * @return the newly added edge, if any
+     * @return the new edge; may be <code>null</code> if the edge stands for an
+     *         attribute value
      * @throws FormatException if <code>edge</code> does not occur in a correct
      *         way in <code>context</code>
      */

@@ -21,6 +21,7 @@ import groove.calc.GraphCalculator;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
+import groove.graph.LabelStore;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.gui.Exporter;
@@ -545,11 +546,27 @@ public class Groove {
      * @param source the graph to be embedded
      * @param target the graph into which it is to be embedded
      * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(GraphShape, GraphShape)
+     * @see #getEmbeddings(GraphShape, GraphShape, LabelStore, boolean)
      */
     static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
             GraphShape target) {
-        return getEmbeddings(source, target, false);
+        return getEmbeddings(source, target, null);
+    }
+
+    /**
+     * Returns an iterator over all (non-injective) embeddings of one graph into
+     * another. The source graph may contain regular expression edges, as well
+     * as variable edges. Label subtyping can be taken into account.
+     * @param source the graph to be embedded
+     * @param target the graph into which it is to be embedded
+     * @param labelStore subtype relation; if <code>null</code>, no subtyping
+     *        exists
+     * @return an iterator over maps from the source to the target graph.
+     * @see #getEmbeddings(GraphShape, GraphShape, LabelStore, boolean)
+     */
+    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+            GraphShape target, LabelStore labelStore) {
+        return getEmbeddings(source, target, labelStore, false);
     }
 
     /**
@@ -564,8 +581,26 @@ public class Groove {
      */
     static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
             GraphShape target, boolean injective) {
+        return getEmbeddings(source, target, null, injective);
+    }
+
+    /**
+     * Returns an iterator over all (injective or non-injective) embeddings of
+     * one graph into another. The source graph may contain regular expression
+     * edges, as well as variable edges. Label subtyping can be taken into
+     * account.
+     * @param source the graph to be embedded
+     * @param target the graph into which it is to be embedded
+     * @param labelStore subtype relation; if <code>null</code>, no subtyping
+     *        exists
+     * @param injective flag to indicate whether the embeddings should be
+     *        injective
+     * @return an iterator over maps from the source to the target graph.
+     */
+    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+            GraphShape target, LabelStore labelStore, boolean injective) {
         return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(
-            source, null, null).getMatchIter(target, null);
+            source, null, null, labelStore).getMatchIter(target, null);
     }
 
     /**

@@ -44,11 +44,11 @@ public class NodeTypeAspect extends AbstractAspect {
      */
     static private final NodeTypeAspect instance = new NodeTypeAspect();
     /** Name of this aspect. */
-    static private final String NODE_TYPE_ASPECT_NAME = "node type";
+    static public final String NODE_TYPE_ASPECT_NAME = "node type";
     /** Name of the node type aspect value. */
-    static private final String NODE_TYPE_NAME = "type";
+    static public final String NODE_TYPE_NAME = "type";
     /** Name of the node type aspect value. */
-    static private final AspectValue NODE_TYPE;
+    static public final AspectValue NODE_TYPE;
 
     static {
         try {

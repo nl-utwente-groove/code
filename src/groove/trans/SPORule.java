@@ -329,7 +329,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     @Override
     MatchStrategy<VarNodeEdgeMap> createMatcher() {
         return getMatcherFactory().createMatcher(this, null, null,
-            getMatchRelevantNodes());
+            getMatchRelevantNodes(), null);
     }
 
     @Override

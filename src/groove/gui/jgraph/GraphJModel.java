@@ -340,10 +340,11 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         Node result = DefaultNode.createNode(modelNode.getNumber());
         boolean fresh = graph.addNode(result);
         if (!fresh) {
+            // a node with this number already existed in the graph
+            // this may happen because value nodes use the same numbers
+            // as default nodes
             result = graph.addNode();
         }
-        // assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
-        // result, graph);
         return result;
     }
 

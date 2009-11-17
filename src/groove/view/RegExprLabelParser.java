@@ -50,7 +50,9 @@ public class RegExprLabelParser implements LabelParser {
         try {
             RegExpr expr = parseAsRegExpr(label.text());
             if (expr.isAtom()) {
-                result = DefaultLabel.createLabel(expr.getAtomText());
+                result =
+                    DefaultLabel.createLabel(expr.getAtomText(),
+                        label.isNodeType());
             } else {
                 result = expr.toLabel();
             }

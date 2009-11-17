@@ -59,7 +59,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      */
     AspectEdge(AspectNode source, AspectNode target, AspectParseData parseData)
         throws FormatException {
-        super(source, parseData.getLabel(), target);
+        super(source, DefaultLabel.createLabel(parseData.getText()), target);
         for (AspectValue value : parseData.getDeclaredValues()) {
             if (!value.isEdgeValue()) {
                 throw new FormatException(

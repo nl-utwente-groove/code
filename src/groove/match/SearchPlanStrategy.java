@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
@@ -48,15 +49,18 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
      * @param plan the search items that make up the search plan
+     * @param labelStore node subtype relation
      * @param injective flag to indicate that the matching should be injective
      */
-    public SearchPlanStrategy(GraphShape source, List<? extends SearchItem> plan,
+    public SearchPlanStrategy(GraphShape source,
+            List<? extends SearchItem> plan, LabelStore labelStore,
             boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
         this.edgeIxMap = new HashMap<Edge,Integer>();
         this.varIxMap = new HashMap<String,Integer>();
         this.plan = plan;
         this.injective = injective;
+        this.labelStore = labelStore;
     }
 
     public Iterator<VarNodeEdgeMap> getMatchIter(GraphShape host,
@@ -135,8 +139,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 
     /**
      * Indicates if a given node is already matched in this plan. This returns
-     * <code>true</code> if the node already has a result index. Callback
-     * method from search items, during activation.
+     * <code>true</code> if the node already has a result index. Callback method
+     * from search items, during activation.
      */
     boolean isNodeFound(Node node) {
         return this.nodeIxMap.get(node) != null;
@@ -144,8 +148,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 
     /**
      * Indicates if a given edge is already matched in this plan. This returns
-     * <code>true</code> if the edge already has a result index. Callback
-     * method from search items, during activation.
+     * <code>true</code> if the edge already has a result index. Callback method
+     * from search items, during activation.
      */
     boolean isEdgeFound(Edge edge) {
         return this.edgeIxMap.get(edge) != null;
@@ -250,6 +254,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     final List<? extends SearchItem> plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
+    /** Label subtype relation. */
+    final LabelStore labelStore;
     /**
      * Map from source graph nodes to (distinct) indices.
      */
@@ -262,9 +268,13 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * Map from source graph variables to (distinct) indices.
      */
     private final Map<String,Integer> varIxMap;
-    /** Array of source graph nodes, which is the inverse of {@link #nodeIxMap} . */
+    /**
+     * Array of source graph nodes, which is the inverse of {@link #nodeIxMap} .
+     */
     Node[] nodeKeys;
-    /** Array of source graph edges, which is the inverse of {@link #edgeIxMap} . */
+    /**
+     * Array of source graph edges, which is the inverse of {@link #edgeIxMap} .
+     */
     Edge[] edgeKeys;
     /**
      * Array of source graph variables, which is the inverse of
@@ -353,8 +363,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 
         /**
          * Computes the next search result. If the method returns
-         * <code>true</code>, the result can be obtained by
-         * {@link #getMatch()}.
+         * <code>true</code>, the result can be obtained by {@link #getMatch()}.
          * @return <code>true</code> if there is a next result.
          */
         public boolean find() {
@@ -366,13 +375,14 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             final boolean filtered = getFilter() != null;
             boolean found = this.found;
             boolean exhausted;
-            // if an image was found before, roll back the result 
+            // if an image was found before, roll back the result
             // until the last relevant search item
             int current;
             if (found) {
-                current = planSize-1;
+                current = planSize - 1;
                 SearchItem.Record currentRecord;
-                while (current >= 0 && ! (currentRecord = getRecord(current)).isRelevant()) {
+                while (current >= 0
+                    && !(currentRecord = getRecord(current)).isRelevant()) {
                     currentRecord.reset();
                     current--;
                 }
@@ -441,7 +451,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 Node oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
-                    assert removed: String.format("Node image %s not in used nodes %s", oldImage, getUsedNodes());
+                    assert removed : String.format(
+                        "Node image %s not in used nodes %s", oldImage,
+                        getUsedNodes());
                 }
                 if (image != null && !getUsedNodes().add(image)) {
                     this.nodeImages[index] = null;
@@ -504,8 +516,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         }
 
         /**
-         * Returns a copy of the search result, or <code>null</code> if the
-         * last invocation of {@link #find()} was not successful.
+         * Returns a copy of the search result, or <code>null</code> if the last
+         * invocation of {@link #find()} was not successful.
          */
         public VarNodeEdgeMap getMatch() {
             if (this.found && this.match == null) {
@@ -539,6 +551,15 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         /** Returns the target graph of the search. */
         public GraphShape getHost() {
             return this.host;
+        }
+
+        /**
+         * Returns the set of subtypes of a given label, or <code>null</code> if
+         * there are no subtypes set.
+         */
+        public Set<Label> getSubtypes(Label label) {
+            LabelStore store = SearchPlanStrategy.this.labelStore;
+            return store == null ? null : store.getSubtypes(label);
         }
 
         /**

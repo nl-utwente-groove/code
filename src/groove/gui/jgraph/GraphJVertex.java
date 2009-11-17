@@ -33,6 +33,7 @@ import groove.util.Converter;
 import groove.view.LabelParser;
 import groove.view.RegExprLabelParser;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.NodeTypeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -270,7 +271,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * This implementation returns <code>edge.label().text()</code>
      */
     public String getPlainLabel(Edge edge) {
-        return edge.label().text();
+        String result = edge.label().text();
+        if (edge.label().isNodeType()) {
+            result = NodeTypeAspect.NODE_TYPE.getPrefix() + result;
+        }
+        return result;
     }
 
     /** Callback factory method to create a label parser for this jnode. */

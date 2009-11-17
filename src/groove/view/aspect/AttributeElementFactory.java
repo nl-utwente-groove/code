@@ -199,7 +199,7 @@ public class AttributeElementFactory {
      * resulting edge depends on the {@link AttributeAspect} value of the given
      * edge. The result is a {@link OperatorEdge} or {@link ArgumentEdge}, or
      * <code>null</code> if the edge contains no special {@link AttributeAspect}
-     * value.
+     * value or stands for a constant.
      * @param edge the edge for which we want an attribute-related edge
      * @param ends the end nodes for the new edge
      * @return a {@link OperatorEdge} or {@link ArgumentEdge} corresponding to
