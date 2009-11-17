@@ -35,7 +35,7 @@ public class ControlJGraph extends JGraph {
      * @param model
      */
     public ControlJGraph(ControlJModel model) {
-        super(model, true);
+        super(model, true, null);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance((this)));

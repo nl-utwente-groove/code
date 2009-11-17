@@ -55,7 +55,7 @@ public class EditorJGraph extends JGraph {
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(new EditorJModel(editor.getOptions()), false);
+        super(new EditorJModel(editor.getOptions()), false, null);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
         getGraphLayoutCache().setSelectsLocalInsertedCells(true);

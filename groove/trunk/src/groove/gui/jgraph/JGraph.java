@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -94,8 +95,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Constructs a JGraph on the basis of a given j-model.
      * @param model the JModel for which to create a JGraph
      * @param hasFilters indicates if this JGraph is to use label filtering.
+     * @param labelStore set of labels and subtypes in the graph; may be
+     *        <code>null</code>
      */
-    public JGraph(JModel model, boolean hasFilters) {
+    public JGraph(JModel model, boolean hasFilters, LabelStore labelStore) {
         super((JModel) null);
         if (hasFilters) {
             this.filteredLabels = new ObservableSet<Label>();
@@ -107,7 +110,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
-        setModel(model);
+        setModel(model, labelStore);
         // Make Ports invisible by Default
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
@@ -123,6 +126,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public final ObservableSet<Label> getFilteredLabels() {
         return this.filteredLabels;
+    }
+
+    /**
+     * Returns the set of labels and subtypes in the graph. May be
+     * <code>null</code>.
+     */
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
     }
 
     /**
@@ -359,6 +370,19 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
+     * Sets a new model and label store. The model is set using
+     * {@link #setModel(GraphModel)}
+     * @param model the new graph model
+     * @param labelStore the new set of labels and subtypes; may be
+     *        <code>null</code>
+     * @see #setModel(GraphModel)
+     */
+    public void setModel(GraphModel model, LabelStore labelStore) {
+        this.labelStore = labelStore;
+        setModel(model);
+    }
+
+    /**
      * Overwrites the super implementation to add the following functionality:
      * <ul>
      * <li>The selection is cleared
@@ -380,7 +404,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             }
             jModel.setFilteredLabels(getFilteredLabels());
             super.setModel(jModel);
-            getLabelList().updateModel();
+            getLabelTree().updateModel();
             jModel.addGraphModelListener(this);
             jModel.refresh();
             getSelectionModel().clearSelection();
@@ -430,7 +454,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 setBackground(this.enabledBackground);
             }
         }
-        getLabelList().setEnabled(enabled);
+        getLabelTree().setEnabled(enabled);
         super.setEnabled(enabled);
     }
 
@@ -617,12 +641,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Lazily creates and returns the label list associated with this jgraph.
      */
-    public LabelTree getLabelList() {
-        if (this.labelList == null) {
-            this.labelList = new LabelTree(this);
-            this.labelList.updateModel();
+    public LabelTree getLabelTree() {
+        if (this.labelTree == null) {
+            this.labelTree = new LabelTree(this);
+            this.labelTree.updateModel();
         }
-        return this.labelList;
+        return this.labelTree;
     }
 
     /**
@@ -936,6 +960,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
+    /** Set of labels and subtypes in the graph. */
+    private LabelStore labelStore;
     /** The fixed refresh listener of this {@link JModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
     /**
@@ -946,7 +972,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * The label list associated with this jgraph.
      */
-    protected LabelTree labelList;
+    protected LabelTree labelTree;
 
     /**
      * The currently selected prototype layouter.
@@ -1504,7 +1530,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             }
             Set<JCell> changedCellSet = new HashSet<JCell>();
             for (Label label : changedLabelSet) {
-                Set<JCell> labelledCells = getLabelList().getJCells(label);
+                Set<JCell> labelledCells = getLabelTree().getJCells(label);
                 if (labelledCells != null) {
                     for (JCell cell : labelledCells) {
                         changedCellSet.add(cell);

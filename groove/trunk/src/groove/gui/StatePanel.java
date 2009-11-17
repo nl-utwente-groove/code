@@ -89,7 +89,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
-        getJGraph().getLabelList().addTreeSelectionListener(
+        getJGraph().getLabelTree().addTreeSelectionListener(
             new TreeSelectionListener() {
                 public void valueChanged(TreeSelectionEvent e) {
                     if (getSelectedMatch() != null) {
@@ -117,12 +117,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
             this.jGraph.setModel(this.startGraphJModel =
-                AspectJModel.EMPTY_ASPECT_JMODEL);
+                AspectJModel.EMPTY_ASPECT_JMODEL, null);
             setEnabled(false);
         } else {
             AspectualGraphView startGraph = grammar.getStartGraphView();
             this.jGraph.setModel(this.startGraphJModel =
-                createGraphJModel(startGraph));
+                createGraphJModel(startGraph), grammar.getLabelStore());
             setEnabled(true);
         }
         refreshStatus();

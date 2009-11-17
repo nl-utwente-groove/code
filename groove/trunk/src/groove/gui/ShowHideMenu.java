@@ -857,7 +857,7 @@ public class ShowHideMenu extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (Label labelAction : getJGraph().getLabelList().getLabels()) {
+                for (Label labelAction : getJGraph().getLabelTree().getLabels()) {
                     add(new LabelAction(getJGraph(), this.showMode, labelAction));
                 }
             }

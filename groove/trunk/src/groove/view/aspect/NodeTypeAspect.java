@@ -18,6 +18,7 @@ package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.util.ExprParser;
 import groove.view.FormatException;
 import groove.view.LabelParser;
 
@@ -73,12 +74,18 @@ public class NodeTypeAspect extends AbstractAspect {
 
         @Override
         public Label parse(Label label) throws FormatException {
-            return DefaultLabel.createLabel(label.text(), true);
+            String labelText = label.text();
+            if (ExprParser.isIdentifier(labelText)) {
+                return DefaultLabel.createLabel(labelText, true);
+            } else {
+                throw new FormatException(
+                    "Node type label '%s' is not a valid identifier", labelText);
+            }
         }
 
         @Override
         public DefaultLabel unparse(Label label) {
-            return DefaultLabel.createLabel(label.text());
+            return DefaultLabel.createLabel(label.text(), label.isNodeType());
         }
 
         /** Returns the singleton instance of this class. */

@@ -1432,7 +1432,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         boolean partial = view.getAspectGraph().hasErrors();
         AspectJModel previewModel =
             AspectJModel.newInstance(view, getOptions());
-        JGraph jGraph = new JGraph(previewModel, false);
+        JGraph jGraph = new JGraph(previewModel, false, null);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -1552,7 +1552,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
         AspectJModel previewModel =
             AspectJModel.newInstance(view, getOptions());
-        JGraph jGraph = new JGraph(previewModel, false);
+        JGraph jGraph = new JGraph(previewModel, false, null);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -1598,7 +1598,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
 
     JGraph getAspectJGraph() {
         AspectJModel model = AspectJModel.newInstance(toView(), getOptions());
-        JGraph jGraph = new JGraph(model, false);
+        JGraph jGraph = new JGraph(model, false, null);
         jGraph.setModel(model);
         // Ugly hack to prevent clipping of the image. We set the jGraph size
         // to twice its normal size. This does not affect the final size of

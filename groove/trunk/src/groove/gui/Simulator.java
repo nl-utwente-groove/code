@@ -2370,6 +2370,7 @@ public class Simulator {
      * @see SimulationListener#setMatchUpdate(RuleMatch)
      */
     private synchronized void fireSetMatch(RuleMatch match) {
+        assert match != null;
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -4683,7 +4684,7 @@ public class Simulator {
     /**
      * Minimum height of the rule tree component.
      */
-    static private final int RULE_TREE_MINIMUM_HEIGHT = 500;
+    static private final int RULE_TREE_MINIMUM_HEIGHT = 200;
 
     /**
      * Minimum height of the rule tree component.

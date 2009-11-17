@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -64,6 +65,19 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         this.rootMap = rootMap == null ? new NodeEdgeHashMap() : rootMap;
         this.target = target;
         this.properties = properties;
+        if (properties != null) {
+            try {
+                this.labelStore =
+                    LabelStore.createLabelStore(properties.getSubtypes());
+            } catch (FormatException exc) {
+                throw new IllegalArgumentException(
+                    String.format(
+                        "System property '%s' does not specify a valid subtyping relation",
+                        properties.getSubtypes()));
+            }
+        } else {
+            this.labelStore = null;
+        }
         this.name = name;
     }
 
@@ -81,6 +95,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      */
     public SystemProperties getProperties() {
         return this.properties;
+    }
+
+    @Override
+    public LabelStore getLabelStore() {
+        return this.labelStore;
     }
 
     public NodeEdgeMap getRootMap() {
@@ -470,6 +489,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * Factory instance for creating the correct simulation.
      */
     private final SystemProperties properties;
+    /** Subtyping relation, derived from the SystemProperties. */
+    private final LabelStore labelStore;
 
     /** Reporter instance for profiling this class. */
     static public final Reporter reporter = Reporter.register(Condition.class);

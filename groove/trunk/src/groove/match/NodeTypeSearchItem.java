@@ -74,7 +74,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Find %s", getEdge());
+        return String.format("Find node type %s", getEdge());
     }
 
     /**
@@ -285,7 +285,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return NodeTypeSearchItem.this.toString() + " = " + getEdgeImage();
+            return NodeTypeSearchItem.this.toString() + " <= " + getEdgeImage();
         }
 
         /** The pre-matched (fixed) source image, if any. */
@@ -338,7 +338,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         boolean setImage(Edge image) {
             assert image instanceof BinaryEdge;
-            assert image.opposite() != image.source();
+            assert image.opposite() == image.source();
             if (this.sourceFind == null) {
                 if (!this.search.putNode(this.sourceIx, image.source())) {
                     return false;
@@ -428,7 +428,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return NodeTypeSearchItem.this.toString() + " = " + this.selected;
+            return NodeTypeSearchItem.this.toString() + " <= " + this.selected;
         }
 
         /** The index of the edge in the search. */

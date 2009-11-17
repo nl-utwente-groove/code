@@ -171,7 +171,7 @@ public class Imager extends CommandLineTool {
                         model = GraphJModel.newInstance(graph, new Options());
                     }
 
-                    JGraph jGraph = new JGraph(model, false);
+                    JGraph jGraph = new JGraph(model, false, null);
                     jGraph.setModel(model);
                     // Ugly hack to prevent clipping of the image. We set the jGraph size
                     // to twice its normal size. This does not affect the final size of
