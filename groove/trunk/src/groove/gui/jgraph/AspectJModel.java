@@ -501,7 +501,11 @@ public class AspectJModel extends GraphJModel {
 
         @Override
         public Label getLabel(Edge edge) {
-            return getModelEdge((AspectEdge) edge).label();
+            // go to the model edge to get correct edge labels
+            Edge modelEdge = getModelEdge((AspectEdge) edge);
+            // the model edge may be null, for instance for value edges
+            // in that case, we use the edge itself
+            return (modelEdge == null ? edge : modelEdge).label();
         }
 
         /**

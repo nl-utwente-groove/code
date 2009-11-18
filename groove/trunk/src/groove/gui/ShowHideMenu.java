@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphAdapter;
@@ -32,6 +33,7 @@ import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
+import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.KeyPartition;
 import groove.view.FormatException;
@@ -559,8 +561,9 @@ public class ShowHideMenu extends JMenu {
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
             putValue(NAME, label.text().length() == 0
-                    ? Options.EMPTY_LABEL_TEXT : label.text());
-            this.label = label.text();
+                    ? Options.EMPTY_LABEL_TEXT
+                    : Converter.HTML_TAG.on(DefaultLabel.toHtmlString(label)));
+            this.label = label;
         }
 
         /**
@@ -577,7 +580,7 @@ public class ShowHideMenu extends JMenu {
         /**
          * The label on which this action selects.
          */
-        private final String label;
+        private final Label label;
     }
 
     /**

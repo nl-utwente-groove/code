@@ -33,6 +33,12 @@ public class NodeTypeAspect extends AbstractAspect {
         super(NODE_TYPE_ASPECT_NAME);
     }
 
+    /** Indicates if a given aspect edge stands for a node type. */
+    public static boolean isNodeType(AspectEdge edge) {
+        AspectValue value = edge.getValue(getInstance());
+        return NODE_TYPE.equals(value);
+    }
+
     /**
      * Returns the singleton instance of this aspect.
      */
