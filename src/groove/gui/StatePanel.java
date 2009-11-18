@@ -82,7 +82,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Constructs a new state panel.
      */
     public StatePanel(final Simulator simulator) {
-        super(new StateJGraph(simulator), true, simulator.getOptions());
+        super(new StateJGraph(simulator), true, true, simulator.getOptions());
         this.simulator = simulator;
         simulator.addSimulationListener(this);
         addRefreshListener(SHOW_NODE_IDS_OPTION);

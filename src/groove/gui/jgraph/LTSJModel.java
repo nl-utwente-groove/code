@@ -131,6 +131,15 @@ public class LTSJModel extends GraphJModel {
     }
 
     /**
+     * Node hiding doesn't mean much in the LTS, so always show the edges unless
+     * explicitly filtered.
+     */
+    @Override
+    boolean isShowUnfilteredEdges() {
+        return true;
+    }
+
+    /**
      * This implementation returns a {@link LTSJModel.TransitionJEdge}.
      */
     @Override
@@ -365,7 +374,7 @@ public class LTSJModel extends GraphJModel {
         /** A state is also visible if it is open, final, or the start state. */
         @Override
         public boolean isVisible() {
-            return isSpecialNode() || super.isVisible();
+            return isSpecialNode() || hasVisibleIncidentEdge();
         }
 
         /**
@@ -375,7 +384,7 @@ public class LTSJModel extends GraphJModel {
         private boolean isSpecialNode() {
             LTS lts = getGraph();
             State state = getNode();
-            return lts.startState().equals(state) || !state.isClosed()
+            return lts.startState().equals(state) // || !state.isClosed()
                 || lts.isFinal(state);
         }
 

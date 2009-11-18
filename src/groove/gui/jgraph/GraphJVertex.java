@@ -109,7 +109,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     /**
      * Tests if this node has a visible incident edge.
      */
-    private boolean hasVisibleIncidentEdge() {
+    boolean hasVisibleIncidentEdge() {
         boolean result = false;
         Iterator<?> jEdgeIter = getPort().edges();
         while (!result && jEdgeIter.hasNext()) {

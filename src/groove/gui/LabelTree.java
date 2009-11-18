@@ -30,6 +30,7 @@ import groove.util.ObservableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -52,15 +53,20 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
 import javax.swing.DropMode;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
@@ -89,12 +95,15 @@ import org.jgraph.event.GraphModelListener;
 public class LabelTree extends JTree implements GraphModelListener,
         TreeSelectionListener {
     /**
-     * Constructs a label list associated with a given jgraph and set of
-     * filtered labels. {@link #updateModel()} should be called before the list
-     * can be used.
+     * Constructs a label list associated with a given jgraph. A further
+     * parameter indicates if the label stree should support subtypes.
+     * {@link #updateModel()} should be called before the list can be used.
      * @param jgraph the jgraph with which this list is to be associated
+     * @param supportsSubtypes if <code>true</code>, the tree should support
+     *        subtype display and operations, by using the jgraph's label store.
      */
-    public LabelTree(JGraph jgraph) {
+    public LabelTree(JGraph jgraph, boolean supportsSubtypes) {
+        this.supportsSubtypes = supportsSubtypes;
         this.filteredLabels = jgraph.getFilteredLabels();
         this.filtering = this.filteredLabels != null;
         if (this.filtering) {
@@ -148,6 +157,64 @@ public class LabelTree extends JTree implements GraphModelListener,
         setEnabled(false);
     }
 
+    JToolBar getToolBar() {
+        if (this.toolbar == null && isSupportsSubtypes()) {
+            JToolBar result = new JToolBar();
+            result.setFloatable(false);
+            result.add(getShowSubtypesButton());
+            result.add(getShowSupertypesButton());
+            result.addSeparator();
+            result.add(getShowAllLabelsButton());
+            // put the sub- and supertype buttons in a button group
+            ButtonGroup modeButtonGroup = new ButtonGroup();
+            modeButtonGroup.add(getShowSubtypesButton());
+            modeButtonGroup.add(getShowSupertypesButton());
+            return this.toolbar = result;
+        }
+        return this.toolbar;
+    }
+
+    /**
+     * Returns the button for the show-subtypes action, lazily creating it
+     * first.
+     */
+    private JToggleButton getShowSubtypesButton() {
+        if (this.showSubtypesButton == null) {
+            this.showSubtypesButton =
+                new JToggleButton(new ShowModeAction(true));
+            this.showSubtypesButton.setSelected(true);
+            this.showSubtypesButton.setMargin(new Insets(1, 1, 1, 1));
+        }
+        return this.showSubtypesButton;
+    }
+
+    /**
+     * Returns the button for the show-supertypes action, lazily creating it
+     * first.
+     */
+    private JToggleButton getShowSupertypesButton() {
+        if (this.showSupertypesButton == null) {
+            this.showSupertypesButton =
+                new JToggleButton(new ShowModeAction(false));
+            this.showSupertypesButton.setMargin(new Insets(1, 1, 1, 1));
+        }
+        return this.showSupertypesButton;
+    }
+
+    /**
+     * Returns the button for the show-supertypes action, lazily creating it
+     * first.
+     */
+    private JToggleButton getShowAllLabelsButton() {
+        if (this.showAllLabelsButton == null) {
+            this.showAllLabelsButton =
+                new JToggleButton(new ShowAllLabelsAction());
+            this.showAllLabelsButton.setMargin(new Insets(1, 1, 1, 1));
+            // this.showAllLabelsButton.setMargin(new Insets(4, 4, 4, 4));
+        }
+        return this.showAllLabelsButton;
+    }
+
     /**
      * Returns the jgraph with which this label list is associated.
      */
@@ -162,7 +229,7 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /**
      * Returns an unmodifiable view on the label set maintained by this label
-     * list.
+     * tree.
      */
     public Collection<Label> getLabels() {
         return Collections.unmodifiableSet(this.labelCellMap.keySet());
@@ -215,6 +282,9 @@ public class LabelTree extends JTree implements GraphModelListener,
                 setBackground(this.enabledBackground);
             }
         }
+        getShowAllLabelsButton().setEnabled(enabled);
+        getShowSubtypesButton().setEnabled(enabled);
+        getShowSupertypesButton().setEnabled(enabled);
         super.setEnabled(enabled);
     }
 
@@ -329,29 +399,41 @@ public class LabelTree extends JTree implements GraphModelListener,
         clearSelection();
         // clear the list
         this.topNode.removeAllChildren();
-        for (Label label : getLabels()) {
+        Set<Label> labels = new TreeSet<Label>(getLabels());
+        LabelStore labelStore = getLabelStore();
+        if (isShowsAllLabels() && labelStore != null) {
+            labels.addAll(labelStore.getLabels());
+        }
+        Set<LabelTreeNode> newNodes = new HashSet<LabelTreeNode>();
+        for (Label label : labels) {
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
-            LabelStore labelStore = getLabelStore();
             if (labelStore != null && labelStore.getLabels().contains(label)) {
-                addSubtypes(labelNode, labelStore);
+                addRelatedTypes(labelNode, isShowsSubtypes()
+                        ? labelStore.getDirectSubtypeMap()
+                        : labelStore.getDirectSupertypeMap(), newNodes);
             }
         }
         this.treeModel.reload(this.topNode);
+        for (LabelTreeNode newNode : newNodes) {
+            expandPath(new TreePath(newNode.getPath()));
+        }
         addTreeSelectionListener(this);
     }
 
-    /** Recursively adds subtypes to a given label node. */
-    private void addSubtypes(LabelTreeNode labelNode, LabelStore labelStore) {
+    /** Recursively adds related types to a given label node. */
+    private void addRelatedTypes(LabelTreeNode labelNode,
+            Map<Label,Set<Label>> map, Set<LabelTreeNode> newNodes) {
         Label label = labelNode.getLabel();
-        Set<Label> directSubtypes = labelStore.getDirectSubtypes(label);
-        assert directSubtypes != null : String.format(
+        Set<Label> relatedTypes = map.get(label);
+        assert relatedTypes != null : String.format(
             "Label '%s' does not occur in label store '%s'", label,
-            labelStore.getLabels());
-        for (Label subtype : directSubtypes) {
-            LabelTreeNode subtypeNode = new LabelTreeNode(subtype, false);
-            labelNode.add(subtypeNode);
-            addSubtypes(subtypeNode, labelStore);
+            map.keySet());
+        for (Label type : relatedTypes) {
+            LabelTreeNode typeNode = new LabelTreeNode(type, false);
+            labelNode.add(typeNode);
+            newNodes.add(labelNode);
+            addRelatedTypes(typeNode, map, newNodes);
         }
     }
 
@@ -532,11 +614,39 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /**
-     * Indicates if this tree supports dragging and dropping subtypes. This is
-     * the case if the corresponding {@link JGraph} has a label store.
+     * Indicates if this tree supports subtypes.
      */
-    public boolean isSupportsDragAndDrop() {
-        return getLabelStore() != null;
+    private boolean isSupportsSubtypes() {
+        return this.supportsSubtypes;
+    }
+
+    /**
+     * Indicates if this tree is currently showing all labels, or just those
+     * existing in the graph.
+     */
+    private boolean isShowsAllLabels() {
+        return this.showsAllLabels;
+    }
+
+    /**
+     * Changes the value of the show-all-labels flag.
+     */
+    private void setShowsAllLabels(boolean show) {
+        this.showsAllLabels = show;
+    }
+
+    /**
+     * Indicates if this tree is currently showing subtype relations.
+     */
+    private boolean isShowsSubtypes() {
+        return this.showsSubtypes;
+    }
+
+    /**
+     * Changes the value of the show-subtype flag.
+     */
+    private void setShowsSubtypes(boolean show) {
+        this.showsSubtypes = show;
     }
 
     /**
@@ -546,11 +656,6 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     public void addLabelStoreObserver(Observer observer) {
         this.labelStoreChange.addObserver(observer);
-    }
-
-    private Icon getNonRootIcon() {
-        return this.showsSubtypes ? Groove.OPEN_DOWN_ARROW_ICON
-                : Groove.OPEN_UP_ARROW_ICON;
     }
 
     /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
@@ -615,19 +720,57 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     private Color enabledBackground;
 
+    /** Flag indicating if this instance of the label tree supports subtypes. */
+    private final boolean supportsSubtypes;
     /** Mode of the label tree: showing subtypes or supertypes. */
-    private final boolean showsSubtypes = true;
+    private boolean showsSubtypes = true;
+    /** Mode of the label tree: showing all labels or just those in the graph. */
+    private boolean showsAllLabels = false;
 
-    // /**
-    // * The width of the widest label in the tree. Updated by a call to
-    // * {@link #updateTree()}.
-    // */
-    // private int maxLabelWidth;
+    /** Toolbar for this label tree. */
+    private JToolBar toolbar;
+    /** Button for setting the show subtypes mode. */
+    private JToggleButton showSubtypesButton;
+    /** Button for setting the show supertypes mode. */
+    private JToggleButton showSupertypesButton;
+    /** Button for setting the show all actions mode. */
+    private JToggleButton showAllLabelsButton;
 
+    /**
+     * Returns the icon for subtype or supertype mode, depending on the
+     * parameter.
+     */
+    private static Icon getModeIcon(boolean subtypes) {
+        return subtypes ? Groove.OPEN_UP_ARROW_ICON
+                : Groove.OPEN_DOWN_ARROW_ICON;
+    }
+
+    /**
+     * Border to put some space to the left and right of the labels inside the
+     * list.
+     */
+    public static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
+
+    /** Colour HTML tag for the foreground colour of special labels. */
+    private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
+
+    /** Orientation of the filtering checkboxes in the label cells. */
+    private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
+
+    /** Preferred width of a checkbox. */
+    private static final int CHECKBOX_WIDTH =
+        new JCheckBox().getPreferredSize().width;
+
+    /** Tree node wrapping a label. */
     private class LabelTreeNode extends DefaultMutableTreeNode {
-        LabelTreeNode(Label label, boolean filterControl) {
+        /**
+         * Constructs a new node, for a given label.
+         * @param label The label wrapped in this node
+         * @param topNode flag indicating if this is a top type node in the tree
+         */
+        LabelTreeNode(Label label, boolean topNode) {
             this.label = label;
-            this.filterControl = filterControl;
+            this.topNode = topNode;
         }
 
         /** Returns the label of this tree node. */
@@ -635,9 +778,14 @@ public class LabelTree extends JTree implements GraphModelListener,
             return this.label;
         }
 
+        /** Indicates if this node is a top label type node in the tree. */
+        public final boolean isTopNode() {
+            return this.topNode;
+        }
+
         /** Indicates if this tree node has a node filtering checkbox. */
         public final boolean hasFilterControl() {
-            return isFiltering() && this.filterControl;
+            return isFiltering() && isTopNode();
         }
 
         @Override
@@ -646,7 +794,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
 
         private final Label label;
-        private final boolean filterControl;
+        private final boolean topNode;
     }
 
     /** Class to deal with mouse events over the label list. */
@@ -742,6 +890,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.checkbox.setBackground(this.jLabel.getBackgroundNonSelectionColor());
             setLayout(new BorderLayout());
             add(this.jLabel, BorderLayout.CENTER);
+            setComponentOrientation(LabelTree.this.getComponentOrientation());
             setOpaque(true);
         }
 
@@ -758,14 +907,19 @@ public class LabelTree extends JTree implements GraphModelListener,
                 this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
                 add(this.jLabel, BorderLayout.CENTER);
                 add(this.checkbox, CHECKBOX_ORIENTATION);
-                this.jLabel.setIcon(null);
                 result = this;
             } else {
-                this.jLabel.setIcon(getNonRootIcon());
+                this.jLabel.setIcon(getModeIcon(isShowsSubtypes()));
                 result = this.jLabel;
             }
-            result.setComponentOrientation(tree.getComponentOrientation());
-            if (value instanceof LabelTreeNode) {
+            // set a sub- or supertype icon if the node label is a subnode
+            Icon labelIcon = null;
+            if (this.labelNode != null && !this.labelNode.isTopNode()) {
+                labelIcon = getModeIcon(isShowsSubtypes());
+            }
+            this.jLabel.setIcon(labelIcon);
+            // set tool tip text
+            if (this.labelNode != null) {
                 Label label = ((LabelTreeNode) value).getLabel();
                 StringBuilder toolTipText = new StringBuilder();
                 Set<JCell> occurrences = LabelTree.this.labelCellMap.get(label);
@@ -1022,23 +1176,23 @@ public class LabelTree extends JTree implements GraphModelListener,
                 for (String dataRow : data.split("\n")) {
                     int separatorIndex = dataRow.indexOf(' ');
                     if (separatorIndex < 0) {
-                        Label subtype = DefaultLabel.createLabel(dataRow, true);
-                        if (!draggedLabels.containsKey(subtype)) {
-                            draggedLabels.put(subtype, new HashSet<Label>());
+                        Label keyType = DefaultLabel.createLabel(dataRow, true);
+                        if (!draggedLabels.containsKey(keyType)) {
+                            draggedLabels.put(keyType, new HashSet<Label>());
                         }
                     } else {
-                        Label subtype =
+                        Label keyType =
                             DefaultLabel.createLabel(dataRow.substring(0,
                                 separatorIndex), true);
-                        Label supertype =
+                        Label valueType =
                             DefaultLabel.createLabel(
                                 dataRow.substring(separatorIndex + 1), true);
-                        Set<Label> supertypes = draggedLabels.get(subtype);
-                        if (supertypes == null) {
-                            draggedLabels.put(subtype, supertypes =
+                        Set<Label> values = draggedLabels.get(keyType);
+                        if (values == null) {
+                            draggedLabels.put(keyType, values =
                                 new HashSet<Label>());
                         }
-                        supertypes.add(supertype);
+                        values.add(valueType);
                     }
                 }
                 JTree.DropLocation location =
@@ -1047,9 +1201,12 @@ public class LabelTree extends JTree implements GraphModelListener,
                 // first remove subtypings if action was move
                 if (support.getDropAction() == MOVE) {
                     for (Map.Entry<Label,Set<Label>> dragEntry : draggedLabels.entrySet()) {
-                        for (Label oldSupertype : dragEntry.getValue()) {
-                            newStore.removeSubtype(oldSupertype,
-                                dragEntry.getKey());
+                        for (Label value : dragEntry.getValue()) {
+                            Label oldSubtype =
+                                isShowsSubtypes() ? dragEntry.getKey() : value;
+                            Label oldSupertype =
+                                isShowsSubtypes() ? value : dragEntry.getKey();
+                            newStore.removeSubtype(oldSupertype, oldSubtype);
                         }
                     }
                 }
@@ -1059,9 +1216,14 @@ public class LabelTree extends JTree implements GraphModelListener,
                     TreePath dropPath = location.getPath();
                     Label targetType =
                         ((LabelTreeNode) dropPath.getLastPathComponent()).getLabel();
-                    for (Label subtype : draggedLabels.keySet()) {
-                        if (!newStore.getSubtypes(subtype).contains(targetType)) {
-                            newStore.addSubtype(targetType, subtype);
+                    for (Label keyType : draggedLabels.keySet()) {
+                        Label newSubtype =
+                            isShowsSubtypes() ? keyType : targetType;
+                        Label newSupertype =
+                            isShowsSubtypes() ? targetType : keyType;
+                        if (!newStore.getSubtypes(newSubtype).contains(
+                            newSupertype)) {
+                            newStore.addSubtype(newSupertype, newSubtype);
                         }
                     }
                 }
@@ -1078,7 +1240,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         @Override
         protected Transferable createTransferable(JComponent c) {
             Transferable result = null;
-            if (isSupportsDragAndDrop()) {
+            if (isSupportsSubtypes()) {
                 StringBuffer content = new StringBuffer();
                 List<TreePath> keepSelection = new ArrayList<TreePath>();
                 for (TreePath path : LabelTree.this.getSelectionPaths()) {
@@ -1106,16 +1268,69 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     }
 
+    /** Action changing the show mode to showing subtypes or supertypes. */
+    private class ShowModeAction extends AbstractAction {
+        /**
+         * Creates an action, with a parameter indicating if it is subtypes or
+         * supertypes that should be shown.
+         * @param subtypes if <code>true</code>, the action should show
+         *        subtypes; otherwise, it should show supertypes.
+         */
+        public ShowModeAction(boolean subtypes) {
+            super(null, getModeIcon(subtypes));
+            this.subtypes = subtypes;
+            putValue(Action.SHORT_DESCRIPTION, computeName());
+            setName(computeName());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isShowsSubtypes() != this.subtypes) {
+                setShowsSubtypes(this.subtypes);
+                updateTree();
+            }
+        }
+
+        /**
+         * Returns the appropriate name for this action, based on the current
+         * value of {@link #subtypes}
+         */
+        private String computeName() {
+            return this.subtypes ? Options.SHOW_SUBTYPES_ACTION_NAME
+                    : Options.SHOW_SUPERTYPES_ACTION_NAME;
+        }
+
+        /** Flag indicating if this action should show subtypes. */
+        private final boolean subtypes;
+    }
+
     /**
-     * Border to put some space to the left and right of the labels inside the
-     * list.
+     * Action flipping the show mode between all labels and just the labels in
+     * the current graph.
      */
-    public static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
-    /** Colour HTML tag for the foreground colour of special labels. */
-    private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
-    /** Orientation of the filtering checkboxes in the label cells. */
-    private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
-    /** Preferred width of a checkbox. */
-    private static final int CHECKBOX_WIDTH =
-        new JCheckBox().getPreferredSize().width;
+    private class ShowAllLabelsAction extends AbstractAction {
+        public ShowAllLabelsAction() {
+            super(null, Groove.E_A_CHOICE_ICON);
+            setName(computeName());
+            putValue(Action.SHORT_DESCRIPTION, computeName());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setShowsAllLabels(!isShowsAllLabels());
+            setName(computeName());
+            putValue(Action.SHORT_DESCRIPTION, computeName());
+            updateTree();
+        }
+
+        /**
+         * Returns the appropriate name for this action, based on the current
+         * value of {@link #isShowsAllLabels()}
+         */
+        private String computeName() {
+            return isShowsAllLabels()
+                    ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
+                    : Options.SHOW_ALL_LABELS_ACTION_NAME;
+        }
+    }
 }

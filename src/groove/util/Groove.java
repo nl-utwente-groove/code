@@ -198,15 +198,15 @@ public class Groove {
     /** Transparent open down-arrow icon. */
     public static final ImageIcon OPEN_DOWN_ARROW_ICON =
         new ImageIcon(getResource("open-down-arrow.gif"));
-    /** Transparent down-triangle icon. */
-    public static final ImageIcon DOWN_TRIANGLE_ICON =
-        new ImageIcon(getResource("down-triangle.gif"));
+    /** Transparent open down-arrow icon. */
+    public static final ImageIcon E_A_CHOICE_ICON =
+        new ImageIcon(getResource("e-a-choice.gif"));
     /** The file containing the configuration for allowed scenarios. */
     public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE =
         "configuration";
 
     /**
-     * Flag to indicate if variaous types of statistics should be computed. This
+     * Flag to indicate if various types of statistics should be computed. This
      * flag is intended to be used globally.
      */
     static public final boolean GATHER_STATISTICS = true;

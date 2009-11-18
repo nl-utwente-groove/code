@@ -331,7 +331,7 @@ public class CAPanel extends JPanel implements SimulationListener {
          * @param simulator
          */
         public AutomatonPanel(Simulator simulator, ControlJGraph graph) {
-            super(graph, true, simulator.getOptions());
+            super(graph, true, false, simulator.getOptions());
             this.getJGraph().setConnectable(false);
             this.getJGraph().setDisconnectable(false);
             this.getJGraph().setEnabled(true);

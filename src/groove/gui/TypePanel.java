@@ -62,7 +62,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * @param simulator The simulator this type panel belongs to.
      */
     public TypePanel(final Simulator simulator) {
-        super(new StateJGraph(simulator), true, simulator.getOptions());
+        super(new StateJGraph(simulator), true, true, simulator.getOptions());
         this.simulator = simulator;
 
         // create the layout for this JPanel
@@ -77,7 +77,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
         this.typeGraphPanel =
             new JGraphPanel<StateJGraph>(new StateJGraph(simulator), true,
-                simulator.getOptions());
+                true, simulator.getOptions());
 
         this.add(this.typeGraphPanel, BorderLayout.CENTER);
 
