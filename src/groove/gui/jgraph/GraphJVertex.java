@@ -17,8 +17,6 @@
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
-import static groove.util.Converter.STRONG_TAG;
-import static groove.util.Converter.UNDERLINE_TAG;
 import groove.abs.AbstrGraph;
 import groove.control.Location;
 import groove.graph.DefaultLabel;
@@ -187,7 +185,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         }
 
         for (Edge edge : getSelfEdges()) {
-            if (!this.jModel.isFiltering(getLabel(edge))) {
+            if (getLabel(edge).isNodeType()
+                || !this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
@@ -210,16 +209,19 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public StringBuilder getLine(Edge edge) {
         StringBuilder result = new StringBuilder();
         Label edgeLabel = getLabel(edge);
-        result.append(edgeLabel);
-        if (edge.opposite() != getNode()) {
-            GraphJVertex oppositeVertex =
-                this.jModel.getJVertex(edge.opposite());
-            result.append(ASSIGN_TEXT);
-            result.append(oppositeVertex.getValueLabel());
+        if (edgeLabel.isNodeType()) {
+            result.append(DefaultLabel.toHtmlString(edgeLabel));
+        } else {
+            result.append(edgeLabel);
+            if (edge.opposite() != getNode()) {
+                GraphJVertex oppositeVertex =
+                    this.jModel.getJVertex(edge.opposite());
+                result.append(ASSIGN_TEXT);
+                result.append(oppositeVertex.getValueLabel());
+            }
+            result = Converter.toHtml(result);
         }
-        result = Converter.toHtml(result);
-        return edgeLabel.isNodeType() ? UNDERLINE_TAG.on(STRONG_TAG.on(result))
-                : result;
+        return result;
     }
 
     /**

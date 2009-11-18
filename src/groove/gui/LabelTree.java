@@ -29,7 +29,6 @@ import groove.util.ObservableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -58,7 +57,6 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.DropMode;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -68,6 +66,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -116,6 +115,15 @@ public class LabelTree extends JTree implements GraphModelListener,
         setDragEnabled(true);
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new MyTransferHandler());
+        // make sure the checkbox never selects the label
+        setUI(new BasicTreeUI() {
+            @Override
+            protected void selectPathForEvent(TreePath path, MouseEvent event) {
+                if (!isOverCheckBox(path, event.getPoint().x)) {
+                    super.selectPathForEvent(path, event);
+                }
+            }
+        });
         // set selection mode
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -143,6 +151,11 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     public JGraph getJGraph() {
         return this.jgraph;
+    }
+
+    /** Convenience method to return the label store of the jgraph. */
+    private LabelStore getLabelStore() {
+        return this.jgraph.getLabelStore();
     }
 
     /**
@@ -310,7 +323,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     private void updateTree() {
         // temporarily remove this component as selection listener
         removeTreeSelectionListener(this);
-        computeMaxLabelWidth();
         // clear the selection first
         clearSelection();
         // clear the list
@@ -318,8 +330,8 @@ public class LabelTree extends JTree implements GraphModelListener,
         for (Label label : getLabels()) {
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
-            LabelStore labelStore = getJGraph().getLabelStore();
-            if (labelStore != null) {
+            LabelStore labelStore = getLabelStore();
+            if (labelStore != null && labelStore.getLabels().contains(label)) {
                 addSubtypes(labelNode, labelStore);
             }
         }
@@ -488,23 +500,24 @@ public class LabelTree extends JTree implements GraphModelListener,
         return Converter.HTML_TAG.on(text).toString();
     }
 
-    /** Recomputes the value returned by {@link #getMaxLabelWidth()}. */
-    private void computeMaxLabelWidth() {
-        int result = 0;
-        JLabel dummy = new JLabel();
-        dummy.setBorder(INSET_BORDER);
-        for (Label label : this.labelCellMap.keySet()) {
-            dummy.setText(getText(label));
-            int width = dummy.getPreferredSize().width;
-            result = Math.max(result, width);
-        }
-        this.maxLabelWidth = result;
-    }
-
-    /** Returns the display width of the longest label in this tree. */
-    public int getMaxLabelWidth() {
-        return this.maxLabelWidth;
-    }
+    //
+    // /** Recomputes the value returned by {@link #getMaxLabelWidth()}. */
+    // private void computeMaxLabelWidth() {
+    // int result = 0;
+    // JLabel dummy = new JLabel();
+    // dummy.setBorder(INSET_BORDER);
+    // for (Label label : this.labelCellMap.keySet()) {
+    // dummy.setText(getText(label));
+    // int width = dummy.getPreferredSize().width;
+    // result = Math.max(result, width);
+    // }
+    // this.maxLabelWidth = result;
+    // }
+    //
+    // /** Returns the display width of the longest label in this tree. */
+    // public int getMaxLabelWidth() {
+    // return this.maxLabelWidth;
+    // }
 
     /** Indicates if this label tree supports filtering of labels. */
     public boolean isFiltering() {
@@ -521,7 +534,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * the case if the corresponding {@link JGraph} has a label store.
      */
     public boolean isSupportsDragAndDrop() {
-        return this.jgraph.getLabelStore() != null;
+        return getLabelStore() != null;
     }
 
     /**
@@ -530,7 +543,27 @@ public class LabelTree extends JTree implements GraphModelListener,
      * the label tree.
      */
     public void addLabelStoreObserver(Observer observer) {
-        this.observable.addObserver(observer);
+        this.labelStoreChange.addObserver(observer);
+    }
+
+    /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
+    private boolean isOverCheckBox(TreePath path, int x) {
+        boolean result = false;
+        if (path != null
+            && path.getLastPathComponent() instanceof LabelTreeNode) {
+            LabelTreeNode labelNode =
+                (LabelTreeNode) path.getLastPathComponent();
+            Rectangle pathBounds = getPathBounds(path);
+            if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
+                int checkboxBorder = pathBounds.x + CHECKBOX_WIDTH;
+                result = labelNode.hasFilterControl() && x < checkboxBorder;
+            } else {
+                int checkboxBorder =
+                    pathBounds.x + pathBounds.width - CHECKBOX_WIDTH;
+                result = labelNode.hasFilterControl() && x >= checkboxBorder;
+            }
+        }
+        return result;
     }
 
     /**
@@ -560,7 +593,8 @@ public class LabelTree extends JTree implements GraphModelListener,
     private final ObservableSet<Label> filteredLabels;
     /** The top node in the JTree. */
     private final DefaultMutableTreeNode topNode;
-    private final Observable observable = new Observable() {
+    /** Observable used to signal changes to the label store. */
+    private final Observable labelStoreChange = new Observable() {
         @Override
         public void notifyObservers(Object arg) {
             // make sure the notification indeed reaches the observers
@@ -573,11 +607,12 @@ public class LabelTree extends JTree implements GraphModelListener,
      * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
-    /**
-     * The width of the widest label in the tree. Updated by a call to
-     * {@link #updateTree()}.
-     */
-    private int maxLabelWidth;
+
+    // /**
+    // * The width of the widest label in the tree. Updated by a call to
+    // * {@link #updateTree()}.
+    // */
+    // private int maxLabelWidth;
 
     private class LabelTreeNode extends DefaultMutableTreeNode {
         LabelTreeNode(Label label, boolean filterControl) {
@@ -756,22 +791,24 @@ public class LabelTree extends JTree implements GraphModelListener,
             return this.checkbox;
         }
 
-        /**
-         * Overrides <code>JComponent.getPreferredSize</code> to return slightly
-         * wider preferred size value.
-         */
-        @Override
-        public Dimension getPreferredSize() {
-            Dimension retDimension = super.getPreferredSize();
-
-            if (retDimension != null) {
-                retDimension =
-                    new Dimension(Math.min(200, getMaxLabelWidth()
-                        + this.checkbox.getPreferredSize().width),
-                        retDimension.height);
-            }
-            return retDimension;
-        }
+        //
+        // /**
+        // * Overrides <code>JComponent.getPreferredSize</code> to return
+        // slightly
+        // * wider preferred size value.
+        // */
+        // @Override
+        // public Dimension getPreferredSize() {
+        // Dimension retDimension = super.getPreferredSize();
+        //
+        // if (retDimension != null) {
+        // retDimension =
+        // new Dimension(Math.min(200, getMaxLabelWidth()
+        // + this.checkbox.getPreferredSize().width),
+        // retDimension.height);
+        // }
+        // return retDimension;
+        // }
 
         /**
          * Overridden for performance reasons. See the <a
@@ -910,28 +947,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 TreePath path =
                     LabelTree.this.getPathForLocation(mouseEvent.getX(),
                         mouseEvent.getY());
-                if (path != null
-                    && path.getLastPathComponent() instanceof LabelTreeNode) {
-                    LabelTreeNode labelNode =
-                        (LabelTreeNode) path.getLastPathComponent();
-                    Rectangle pathBounds = getPathBounds(path);
-                    if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
-                        int checkboxBorder =
-                            pathBounds.x
-                                + this.editor.getCheckbox().getPreferredSize().width;
-                        result =
-                            labelNode.hasFilterControl()
-                                && mouseEvent.getX() < checkboxBorder;
-                    } else {
-                        int checkboxBorder =
-                            pathBounds.x
-                                + pathBounds.width
-                                - this.editor.getCheckbox().getPreferredSize().width;
-                        result =
-                            labelNode.hasFilterControl()
-                                && mouseEvent.getX() >= checkboxBorder;
-                    }
-                }
+                result = isOverCheckBox(path, mouseEvent.getX());
             }
             return result;
         }
@@ -967,12 +983,13 @@ public class LabelTree extends JTree implements GraphModelListener,
             JTree.DropLocation location =
                 (JTree.DropLocation) support.getDropLocation();
             TreePath dropPath = location.getPath();
-            int dropIndex = location.getChildIndex();
             if (dropPath != null) {
                 if (dropPath.getLastPathComponent() instanceof LabelTreeNode) {
                     LabelTreeNode labelNode =
                         (LabelTreeNode) dropPath.getLastPathComponent();
-                    result = labelNode.getLabel().isNodeType() && dropIndex < 0;
+                    result =
+                        labelNode.getLabel().isNodeType()
+                            && location.getChildIndex() < 0;
                 } else {
                     result = true;
                 }
@@ -982,6 +999,7 @@ public class LabelTree extends JTree implements GraphModelListener,
 
         @Override
         public boolean importData(TransferSupport support) {
+            boolean result = false;
             try {
                 // decompose transferred data
                 Map<Label,Set<Label>> draggedLabels =
@@ -1013,8 +1031,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
                 JTree.DropLocation location =
                     (JTree.DropLocation) support.getDropLocation();
-                LabelStore newStore =
-                    LabelTree.this.jgraph.getLabelStore().clone();
+                LabelStore newStore = getLabelStore().clone();
                 // first remove subtypings if action was move
                 if (support.getDropAction() == MOVE) {
                     for (Map.Entry<Label,Set<Label>> dragEntry : draggedLabels.entrySet()) {
@@ -1036,11 +1053,14 @@ public class LabelTree extends JTree implements GraphModelListener,
                         }
                     }
                 }
-                LabelTree.this.observable.notifyObservers(newStore);
-                return true;
+                if (!newStore.equals(getLabelStore())) {
+                    LabelTree.this.labelStoreChange.notifyObservers(newStore);
+                    result = true;
+                }
             } catch (Exception exc) {
-                return false;
+                // do nothing
             }
+            return result;
         }
 
         @Override
@@ -1083,4 +1103,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
     /** Orientation of the filtering checkboxes in the label cells. */
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
+    /** Preferred width of a checkbox. */
+    private static final int CHECKBOX_WIDTH =
+        new JCheckBox().getPreferredSize().width;
 }

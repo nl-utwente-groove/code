@@ -54,9 +54,8 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     /**
-     * Looks up <tt>node</tt> by comparing it to each <tt>end(i)</tt> in
-     * turn, and returning the first <tt>i</tt> for which the comparison
-     * holds.
+     * Looks up <tt>node</tt> by comparing it to each <tt>end(i)</tt> in turn,
+     * and returning the first <tt>i</tt> for which the comparison holds.
      */
     public int endIndex(Node node) {
         int result = -1;
@@ -69,8 +68,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     /**
-     * Looks up <tt>node</tt> by comparing it to each <tt>end(i)</tt> in
-     * turn.
+     * Looks up <tt>node</tt> by comparing it to each <tt>end(i)</tt> in turn.
      */
     public boolean hasEnd(Node node) {
         boolean result = false;
@@ -137,26 +135,9 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     public int compareTo(Element obj) {
         int result;
         if (obj instanceof Node) {
-            // for nodes, we just need to look at the source of this edge
-            result = source().compareTo(obj);
-            // if the source equals the node, edges come later
-            if (result == 0) {
-                result++;
-            }
+            result = compareToNode((Node) obj);
         } else {
-            Edge other = (Edge) obj;
-            result = source().compareTo(other.source());
-            // for other edges, first the end count, then the label, then the
-            // other ends
-            if (result == 0) {
-                result = endCount() - other.endCount();
-            }
-            if (result == 0) {
-                result = label().compareTo(other.label());
-            }
-            for (int i = 1; result == 0 && i < endCount(); i++) {
-                result = end(i).compareTo(other.end(i));
-            }
+            result = compareToEdge((Edge) obj);
         }
         // assert result != 0 || this.equals(obj) : String.format("Ordering of
         // distinct objects %s and %s yields 0", this, obj);
@@ -164,9 +145,43 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     /**
-     * Returns <tt>true</tt> if <tt>obj</tt> is also an edge with the same
-     * label and number of endpoints, and equal endpoints at each index. The
-     * actual test is delegated to {@link #isTypeEqual(Object)} and
+     * Compares this edge to another edge.
+     */
+    protected int compareToEdge(Edge other) {
+        int result;
+        result = source().compareTo(other.source());
+        // for other edges, first the end count, then the label, then the
+        // other ends
+        if (result == 0) {
+            result = endCount() - other.endCount();
+        }
+        if (result == 0) {
+            result = label().compareTo(other.label());
+        }
+        for (int i = 1; result == 0 && i < endCount(); i++) {
+            result = end(i).compareTo(other.end(i));
+        }
+        return result;
+    }
+
+    /**
+     * Compares this edge to a node.
+     */
+    protected int compareToNode(Node node) {
+        int result;
+        // for nodes, we just need to look at the source of this edge
+        result = source().compareTo(node);
+        // if the source equals the node, edges come later
+        if (result == 0) {
+            result++;
+        }
+        return result;
+    }
+
+    /**
+     * Returns <tt>true</tt> if <tt>obj</tt> is also an edge with the same label
+     * and number of endpoints, and equal endpoints at each index. The actual
+     * test is delegated to {@link #isTypeEqual(Object)} and
      * {@link #isEndEqual(Edge)}.
      * @see #isTypeEqual(Object)
      * @see #isEndEqual(Edge)
@@ -191,7 +206,8 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
 
     /**
      * Tests if this composite has the same number of end points as well as
-     * equal end points as another. Callback method from {@link #equals(Object)}.
+     * equal end points as another. Callback method from {@link #equals(Object)}
+     * .
      */
     protected boolean isEndEqual(Edge other) {
         boolean result = endCount() == other.endCount();
@@ -203,7 +219,8 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
 
     /**
      * Tests if this composite has the same number of end points as well as
-     * equal end points as another. Callback method from {@link #equals(Object)}.
+     * equal end points as another. Callback method from {@link #equals(Object)}
+     * .
      */
     protected boolean isLabelEqual(Edge other) {
         return label().equals(other.label());

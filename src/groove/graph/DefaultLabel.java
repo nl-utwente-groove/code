@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.util.Converter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -194,6 +196,19 @@ public final class DefaultLabel extends AbstractLabel {
      */
     static public DefaultLabel getLabel(char index) {
         return labelList.get(index);
+    }
+
+    /**
+     * Returns a HTML-formatted string for a given label, without the
+     * surrounding html-tag. The string is set to bold if the label is a node
+     * type.
+     */
+    static public String toHtmlString(Label label) {
+        if (label.isNodeType()) {
+            return Converter.STRONG_TAG.on(label.text());
+        } else {
+            return label.text();
+        }
     }
 
     /**

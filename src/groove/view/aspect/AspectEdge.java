@@ -140,6 +140,36 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     }
 
     /**
+     * This implementation makes sure that edges with node type labels are
+     * ordered before other edge.
+     */
+    @Override
+    protected int compareToEdge(Edge obj) {
+        assert obj instanceof AspectEdge : String.format(
+            "Can't compare aspect edge '%s' to non-aspect edge '%s'", this, obj);
+        AspectEdge other = (AspectEdge) obj;
+        int result;
+        // first compare the source, then the node type property, then the
+        // label, then the target
+        result = source().compareTo(other.source());
+        if (result == 0) {
+            result = isNodeType() - other.isNodeType();
+        }
+        if (result == 0) {
+            result = label().compareTo(other.label());
+        }
+        if (result == 0) {
+            result = target().compareTo(other.target());
+        }
+        return result;
+    }
+
+    /** Tests if this aspect edge stands for a node type. */
+    private int isNodeType() {
+        return NodeTypeAspect.isNodeType(this) ? 0 : 1;
+    }
+
+    /**
      * This implementation defers to {@link #getPlainText()}
      */
     @Override
