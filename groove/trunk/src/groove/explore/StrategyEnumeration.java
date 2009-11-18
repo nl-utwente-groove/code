@@ -16,6 +16,10 @@
  */
 package groove.explore;
 
+import groove.explore.strategy.BFSStrategy;
+import groove.explore.strategy.BranchingStrategy;
+import groove.explore.strategy.ExploreRuleDFStrategy;
+import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 
@@ -30,54 +34,112 @@ public class StrategyEnumeration implements Enumeration<DocumentedStrategy> {
      * Internal administration of a list of strategies.
      * Will be filled in by the default constructor.
      */
-    private DocumentedStrategy[]        strategies;  
-    private int                         currentIndex;
-    private int                         nrStrategies;
+    public DocumentedStrategy[] documentedStrategies;
+    private int enumeratorIndex;
+    private int nrElements;
     
     /**
      * Constructor of the Enumeration. Responsible for adding DocumentedStrategies to the
      * internal administration one by one. The order in which the strategies are added is
      * also the order in which they will be displayed on the ExplorationDialog.
      */
-    public StrategyEnumeration(String commandLineArgument) {
+    public StrategyEnumeration() {
         // Prepare the internal administration.
-        this.currentIndex = 0;
-        this.nrStrategies = 0;
-        this.strategies = new DocumentedStrategy[100];
+        this.nrElements = 0;
+        this.enumeratorIndex = 0;
+        this.documentedStrategies = new DocumentedStrategy[100];
         
         // Create the strategies, one by one.
-        addStrategy(new DocumentedStrategy(new LinearStrategy(),
+        addDocumentedStrategy(new DocumentedStrategy(new BranchingStrategy(),
+            "Branching",
+            "Full Exploration (branching, aliasing)",
+            "TBA"));
+
+        addDocumentedStrategy(new DocumentedStrategy(new BFSStrategy(),
+            "Breadth-First",
+            "Full Exploration (breadth-first, aliasing)",
+            "TBA"));
+       
+        addDocumentedStrategy(new DocumentedStrategy(new ExploreRuleDFStrategy(),
+            "Depth-First",
+            "Full Exploration (depth-first, no aliasing)",
+            "TBA"));
+
+        addDocumentedStrategy(new DocumentedStrategy(new LinearConfluentRules(),
+            "LinearConfluent",
+            "Full Exploration (linear confluent rules)",
+            "TBA"));
+
+        addDocumentedStrategy(new DocumentedStrategy(new LinearStrategy(),
             "Linear",
             "Linear Exploration",
-            "TBA",
-            commandLineArgument));
+            "TBA"));
        
-        addStrategy(new DocumentedStrategy(new RandomLinearStrategy(),
+        addDocumentedStrategy(new DocumentedStrategy(new RandomLinearStrategy(),
             "RandomLinear",
             "Random Linear Exploration",
-            "TBA",
-            commandLineArgument));
+            "TBA"));
     }
     
     /**
      * Inserts a strategy into the internal administration.
-     * @param strategy - the documented strategy
+     * For internal use in the class constructor only.
+     * 
+     * @param documentedStrategy - the documented strategy
      */
-    public void addStrategy(DocumentedStrategy strategy) {
-        this.nrStrategies++;
-        this.strategies[this.nrStrategies-1] = strategy;
+    private void addDocumentedStrategy(DocumentedStrategy documentedStrategy) {
+        this.nrElements++;
+        this.documentedStrategies[this.nrElements-1] = documentedStrategy;
+    }
+    
+    /**
+     * Looks up a documentedStrategy using its keyword.
+     * Use this method to obtain stored strategies independent of an enumerated
+     * walk-through.
+     * 
+     * @param keyword - the keyword of the strategy to lookup
+     * @return the documentedStrategy associated with the keyword;
+     *         if keyword is unused, then returns null
+     */
+    public DocumentedStrategy lookupDocumentedStrategyByKeyword(String keyword) {
+        int i;
+        
+        for (i = 0; i < this.nrElements; i++) {
+            if (this.documentedStrategies[i].getKeyword() == keyword)
+                return this.documentedStrategies[i];
+        }
+        return null;
     }
   
+    /**
+     * Looks up a documentedStrategy using its short name.
+     * Use this method to obtain stored strategies independent of an enumerated
+     * walk-through.
+     * 
+     * @param name - the short name of the strategy to lookup
+     * @return the documentedStrategy associated with the name;
+     *         if keyword is unused, then returns null
+     */
+    public DocumentedStrategy lookupDocumentedStrategyByName(String name) {
+        int i;
+        
+        for (i = 0; i < this.nrElements; i++) {
+            if (this.documentedStrategies[i].getName() == name)
+                return this.documentedStrategies[i];
+        }
+        return null;
+    }
+    
     @Override
     public boolean hasMoreElements() {
-        return (this.currentIndex < this.nrStrategies);
+        return (this.enumeratorIndex < this.nrElements);
     }
 
     @Override
     public DocumentedStrategy nextElement() {
-        if (this.currentIndex < this.nrStrategies) {
-            this.currentIndex++;
-            return (this.strategies[this.currentIndex-1]);
+        if (this.enumeratorIndex < this.nrElements) {
+            this.enumeratorIndex++;
+            return (this.documentedStrategies[this.enumeratorIndex-1]);
         } else
             return null;
     }

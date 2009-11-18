@@ -2091,8 +2091,9 @@ public class Simulator {
 
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
-        result.addSeparator();
-        result.add(new JMenuItem(getExplorationDialogAction()));
+        // MdM - moved exploration dialog to the scenario menu
+        //result.addSeparator();
+        //result.add(new JMenuItem(getExplorationDialogAction()));
         // BEGIN_IOVKA
         // result.add(new JMenuItem(getChooseCustomScenarioAction()));
         // END_IOVKA
@@ -3621,10 +3622,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            // Temporarily disable the dialog.
-            // setEnabled(getCurrentGrammar() != null &&
-            // getCurrentGrammar().getStartGraph() != null);
-            setEnabled(false);
+            setEnabled(getGrammarView() != null &&
+                       getGrammarView().getStartGraphView() != null);
         }
     }
 

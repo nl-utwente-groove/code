@@ -182,6 +182,9 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 "Explores all the new states reachable from the current state until the invariant is violated.",
                 "Check invariant", true);
         addScenarioHandler(scenario);
+        
+        // MdM - add Exploration Dialog
+        add(this.simulator.getExplorationDialogAction());
 
         // IOVKA items related to model-checking are in the MCMMenu class
 
