@@ -70,6 +70,14 @@ public class Groove {
         System.getProperty("file.separator");
     /** Lower case letter pi. */
     public static final char LC_PI = '\u03C0';
+    /** Unicode character for up-triangle. */
+    public static final char UP_TRIANGLE = '\u25B3';
+    /** Unicode character for down-triangle. */
+    public static final char DOWN_TRIANGLE = '\u25BD';
+    /** Unicode character for down-triangle. */
+    public static final char UP_ARROW = '\u2191';
+    /** Unicode character for down-triangle. */
+    public static final char DOWN_ARROW = '\u2193';
     /** The default sample directory. */
     public static final String SAMPLE_DIR =
         WORKING_DIR + FILE_SEPARATOR + "samples";
@@ -184,7 +192,15 @@ public class Groove {
     /** GROOVE project icon in blue colour - 32x32 format. */
     public static final ImageIcon GROOVE_BLUE_ICON_32x32 =
         new ImageIcon(getResource("groove-blue-g-32x32.gif"));
-
+    /** Transparent open up-arrow icon. */
+    public static final ImageIcon OPEN_UP_ARROW_ICON =
+        new ImageIcon(getResource("open-up-arrow.gif"));
+    /** Transparent open down-arrow icon. */
+    public static final ImageIcon OPEN_DOWN_ARROW_ICON =
+        new ImageIcon(getResource("open-down-arrow.gif"));
+    /** Transparent down-triangle icon. */
+    public static final ImageIcon DOWN_TRIANGLE_ICON =
+        new ImageIcon(getResource("down-triangle.gif"));
     /** The file containing the configuration for allowed scenarios. */
     public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE =
         "configuration";
