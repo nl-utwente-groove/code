@@ -848,15 +848,17 @@ public final class GraphToTikz {
             result.append(line.substring(0, i));
             result.append(EXISTS_STR);
         } else if (line.indexOf(Converter.HTML_FORALL) > -1) {
-            if (line.indexOf("<" + Converter.SUPER_TAG_NAME + ">") > -1) {
+            if (line.indexOf(Converter.SUPER_TAG.tagBegin) > -1) {
                 result.append(FORALLX_STR);
             } else {
                 result.append(FORALL_STR);
             }
-        } else if (line.indexOf("<" + Converter.ITALIC_TAG_NAME + ">") > -1) {
-            line.delete(0,3);
-            line.delete(line.length() - 4, line.length());
-            result.append(enclose(line.toString(), ITALIC_STYLE, "}"));
+        } else if (line.indexOf(Converter.ITALIC_TAG.tagBegin) > -1) {
+            result.append(enclose(Converter.ITALIC_TAG.off(line),
+                                  ITALIC_STYLE, "}"));
+        } else if (line.indexOf(Converter.STRONG_TAG.tagBegin) > -1) {
+            result.append(enclose(Converter.STRONG_TAG.off(line),
+                                  BOLD_STYLE, "}"));
         } else {
             result.append(line);
         }
@@ -1095,6 +1097,7 @@ public final class GraphToTikz {
     private static final String FORALL_STR = "$\\forall$";
     private static final String FORALLX_STR = "$\\forall^{>0}$";
     private static final String ITALIC_STYLE = "\\textit{";
+    private static final String BOLD_STYLE = "\\textbf{";
     private static final String BEGIN_EDGE = "\\path";
     private static final String END_PATH = ";\n";
     private static final String END_EDGE = END_PATH;

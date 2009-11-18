@@ -420,6 +420,26 @@ public class Converter {
             return result;
         }
 
+        /**
+         * Strips the HTML tags from the string given.
+         * @param text the string to be analyzed.
+         * @return the input string unmodified if it did not contain the
+         *         the HTML tags or the string striped from the tags.
+         */
+        public String off(StringBuilder text) {
+            int tagEndStart = text.indexOf(this.tagEnd);
+            if (tagEndStart > -1) {
+                int end = tagEndStart + this.tagEnd.length();
+                text.replace(tagEndStart, end, "");
+            }
+            int tagBeginStart = text.indexOf(this.tagBegin);
+            if (tagBeginStart > -1) {
+                int end = tagBeginStart + this.tagBegin.length();
+                text.replace(tagBeginStart, end, "");
+            }
+            return text.toString();
+        }
+        
         /** Start text of this tag. */
         final String tagBegin;
         /** End text of this tag. */
