@@ -692,7 +692,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Indicates whether unfiltered edges to filtered nodes should remain
      * visible.
      */
-    final boolean isShowUnfilteredEdges() {
+    boolean isShowUnfilteredEdges() {
         return getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION);
     }
 

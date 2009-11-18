@@ -62,7 +62,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new rule frame on the basis of a given graph.
      */
     public RulePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator), true, simulator.getOptions());
+        super(new AspectJGraph(simulator), true, true, simulator.getOptions());
         this.simulator = simulator;
         setEnabled(false);
         addRefreshListener(SHOW_ANCHORS_OPTION);

@@ -301,6 +301,23 @@ public class Options {
     public static final String SET_RULE_ROLE_ACTION_NAME =
         "Set to rule editing";
     /**
+     * Show all labels action name
+     */
+    public static final String SHOW_ALL_LABELS_ACTION_NAME = "Show all labels";
+    /**
+     * Show graph labels action name
+     */
+    public static final String SHOW_EXISTING_LABELS_ACTION_NAME =
+        "Show only existing labels";
+    /**
+     * Show subtypes action name
+     */
+    public static final String SHOW_SUBTYPES_ACTION_NAME = "Show subtypes";
+    /**
+     * Show supertypes action name
+     */
+    public static final String SHOW_SUPERTYPES_ACTION_NAME = "Show supertypes";
+    /**
      * Edit action name
      */
     public static final String SYSTEM_PROPERTIES_ACTION_NAME =

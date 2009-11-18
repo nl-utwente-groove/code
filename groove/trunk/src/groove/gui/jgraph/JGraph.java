@@ -639,12 +639,23 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
+     * Creates, sets and returns a new label tree instance for this jgraph.
+     * @param supportsSubtypes if <code>true</code>, the new label tree supports
+     *        subtypes
+     */
+    public LabelTree initLabelTree(boolean supportsSubtypes) {
+        this.labelTree = new LabelTree(this, supportsSubtypes);
+        this.labelTree.updateModel();
+        this.labelTree.setEnabled(isEnabled());
+        return this.labelTree;
+    }
+
+    /**
      * Lazily creates and returns the label list associated with this jgraph.
      */
     public LabelTree getLabelTree() {
         if (this.labelTree == null) {
-            this.labelTree = new LabelTree(this);
-            this.labelTree.updateModel();
+            initLabelTree(false);
         }
         return this.labelTree;
     }

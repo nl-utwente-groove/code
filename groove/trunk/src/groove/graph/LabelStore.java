@@ -148,6 +148,14 @@ public class LabelStore implements Cloneable {
     }
 
     /**
+     * Returns an unmodifiable view on the map from labels to direct subtypes.
+     * @return A map from known labels to their direct subtypes
+     */
+    public Map<Label,Set<Label>> getDirectSubtypeMap() {
+        return Collections.unmodifiableMap(this.directSubtypeMap);
+    }
+
+    /**
      * Returns an unmodifiable view on the set of subtypes of a given * label.
      * The set of subtypes is reflexively defined, i.e., it includes the type
      * itself. Returns <code>null</code> if the label is unknown.
@@ -183,6 +191,15 @@ public class LabelStore implements Cloneable {
      */
     public Set<Label> getDirectSupertypes(Label label) {
         return getInverse(this.directSubtypeMap).get(label);
+    }
+
+    /**
+     * Returns the direct supertype map of this label store. Note that this
+     * method is inefficient, as it calculates the set of supertypes on the fly.
+     * @return A map from known labels to their direct supertypes
+     */
+    public Map<Label,Set<Label>> getDirectSupertypeMap() {
+        return getInverse(this.directSubtypeMap);
     }
 
     /**

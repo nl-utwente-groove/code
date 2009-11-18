@@ -27,6 +27,7 @@ import java.awt.event.ItemListener;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -34,6 +35,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
@@ -49,15 +51,19 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * @param jGraph the jgraph on which this panel is a view
      * @param withStatusBar <tt>true</tt> if a status bar should be added to the
      *        panel
+     * @param supportsSubtypes if <code>true</code>, the label tree of this
+     *        panel will support subtypes
      * @param options Options object used to create menu item listeners. If
      *        <code>null</code>, no listeners are created.
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JG jGraph, boolean withStatusBar, Options options) {
+    public JGraphPanel(JG jGraph, boolean withStatusBar,
+            boolean supportsSubtypes, Options options) {
         super(false);
         // right now we always want label panels; keep this option
         boolean withLabelPanel = true;
         this.jGraph = jGraph;
+        this.labelTree = jGraph.initLabelTree(supportsSubtypes);
         this.options = options;
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
         this.viewLabelListItem =
@@ -138,15 +144,24 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * list are shown.
      */
     protected JComponent createSplitPane() {
-        JPanel labelPane = new JPanel(new BorderLayout(), false);
-        labelPane.add(new JLabel(" " + Options.LABEL_PANE_TITLE + " "),
-            BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(this.jGraph.getLabelTree()) {
+        Box labelPaneTop = Box.createVerticalBox();
+        JLabel labelPaneTitle =
+            new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
+        labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
+        labelPaneTop.add(labelPaneTitle);
+        JToolBar labelTreeToolbar = this.labelTree.getToolBar();
+        if (labelTreeToolbar != null) {
+            labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
+            labelPaneTop.add(labelTreeToolbar);
+        }
+        JScrollPane scrollPane = new JScrollPane(this.labelTree) {
             @Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
             }
         };
+        JPanel labelPane = new JPanel(new BorderLayout(), false);
+        labelPane.add(labelPaneTop, BorderLayout.NORTH);
         labelPane.add(scrollPane, BorderLayout.CENTER);
         // set up the split editor pane
         JSplitPane result =
@@ -302,7 +317,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * The {@link JGraph}on which this panel provides a view.
      */
     protected final JG jGraph;
-
+    /** The label tree associated with this label pane. */
+    private final LabelTree labelTree;
     /** Options for this panel. */
     private final Options options;
     /** Change listener that calls {@link #refresh()} when activated. */

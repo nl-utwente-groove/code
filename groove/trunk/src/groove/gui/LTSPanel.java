@@ -54,7 +54,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
-        super(new LTSJGraph(simulator), true, simulator.getOptions());
+        super(new LTSJGraph(simulator), true, false, simulator.getOptions());
         this.simulator = simulator;
         getJGraph().addMouseListener(new MyMouseListener());
         addRefreshListener(SHOW_ANCHORS_OPTION);
@@ -242,13 +242,14 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             this.simulator.setGraphPanelEnabled(this, enabled);
         }
     }
-    
+
     /***
      * Only scroll when the panel is visible.
-    */
+     */
     private void conditionalScrollTo(Element nodeOrEdge) {
-        if (this.isVisible)
+        if (this.isVisible) {
             getJGraph().scrollTo(nodeOrEdge);
+        }
     }
 
     /**
@@ -281,8 +282,9 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     counterExamples.size());
         }
         // reset lts display visibility
-        if (this.isVisible)
+        if (this.isVisible) {
             getSimulator().setGraphPanel(this);
+        }
         Set<JCell> jCells = new HashSet<JCell>();
         for (State counterExample : counterExamples) {
             jCells.add(getJModel().getJCell(counterExample));
@@ -301,17 +303,20 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;
 
-    /** The graph listener permanently associated with this exploration strategy. */
+    /**
+     * The graph listener permanently associated with this exploration strategy.
+     */
     private final MyLTSListener ltsListener = new MyLTSListener();
-    
+
     /** Indicator of the visibility of the LTSPanel. */
     private boolean isVisible = true;
-    
+
     /***
-     * Notifies the LTSPanel that its visibility (inclusion in the GUI) has changed.
-     * The visibility changes the behavior of scrolling only (nothing else is affected). 
+     * Notifies the LTSPanel that its visibility (inclusion in the GUI) has
+     * changed. The visibility changes the behavior of scrolling only (nothing
+     * else is affected).
      */
-    public void setGUIVisibility(boolean visible){
+    public void setGUIVisibility(boolean visible) {
         this.isVisible = visible;
     }
 

@@ -973,7 +973,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     JGraphPanel<?> getGraphPanel() {
         if (this.jGraphPanel == null) {
             this.jGraphPanel =
-                new JGraphPanel<EditorJGraph>(this.jgraph, false, getOptions());
+                new JGraphPanel<EditorJGraph>(this.jgraph, false, false,
+                    getOptions());
         }
         return this.jGraphPanel;
     }

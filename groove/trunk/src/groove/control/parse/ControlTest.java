@@ -1,17 +1,17 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
  * $Id$
  */
 package groove.control.parse;
@@ -41,47 +41,52 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * @author Olaf Keijsers
  * @version $Revision $
  * 
- * Tests the creation of a control automaton from a given control file and grammar (args[0] and args[1] from main() respectively).
+ *          Tests the creation of a control automaton from a given control file
+ *          and grammar (args[0] and args[1] from main() respectively).
  */
 public class ControlTest {
     /**
-     * Creates and a ControlTest object and displays the generated control automaton
+     * Creates and a ControlTest object and displays the generated control
+     * automaton
      * @param ctlFileName the path of the control file
      * @param grammarFileName the path of the grammar file (directory)
-     * @param optimize whether or not the control automaton should be optimized (lambda transitions collapsed)
+     * @param optimize whether or not the control automaton should be optimized
+     *        (lambda transitions collapsed)
      */
-    public ControlTest(String ctlFileName, String grammarFileName, boolean optimize) {
+    public ControlTest(String ctlFileName, String grammarFileName,
+            boolean optimize) {
         try {
             File ctlFile = new File(ctlFileName);
             File grammarFile = new File(grammarFileName);
-            
+
             // load the program
             String program = loadProgram(ctlFile);
-            
+
             // load the grammar
-            DefaultFileSystemStore dfss = new DefaultFileSystemStore(grammarFile, false);
+            DefaultFileSystemStore dfss =
+                new DefaultFileSystemStore(grammarFile, false);
             dfss.reload();
             StoredGrammarView sgv = new StoredGrammarView(dfss);
-            
+
             AutomatonBuilder builder = new AutomatonBuilder();
             builder.setRuleNames(sgv.getRuleNames());
             builder.setRules(sgv.toGrammar().getRules());
             builder.finalize(sgv.toModel());
-    
+
             GCLLexer lexer = new GCLLexer(new ANTLRStringStream(program));
             GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
             GCLParser.program_return r = parser.program();
-            
+
             boolean DEBUG = false;
-            
-            if( DEBUG ) {
-                ASTFrame frame = new ASTFrame("parser result", (org.antlr.runtime.tree.CommonTree) r.getTree());
+
+            if (DEBUG) {
+                ASTFrame frame =
+                    new ASTFrame("parser result",
+                        (org.antlr.runtime.tree.CommonTree) r.getTree());
                 frame.setSize(500, 1000);
                 frame.setVisible(true);
-            } 
-    
-            
-            
+            }
+
             List<String> errors = parser.getErrors();
             if (errors.size() != 0) {
                 errors.add(0, "Encountered parse errors in control program");
@@ -89,79 +94,90 @@ public class ControlTest {
             }
             // fetch the resulting tree
             CommonTreeNodeStream nodes = new CommonTreeNodeStream(r.getTree());
-    
+
             // checker will store and remove functions
             GCLChecker checker = new GCLChecker(nodes);
             checker.setNamespace(builder);
             GCLChecker.program_return c_r = checker.program();
-    
+
             errors = checker.getErrors();
             if (errors.size() != 0) {
                 errors.add(0, "Encountered checker errors in control program");
                 throw new FormatException(errors);
             }
-            
-            if( DEBUG ) {
-                ASTFrame frame = new ASTFrame("checker result", (org.antlr.runtime.tree.CommonTree) c_r.getTree());
+
+            if (DEBUG) {
+                ASTFrame frame =
+                    new ASTFrame("checker result",
+                        (org.antlr.runtime.tree.CommonTree) c_r.getTree());
                 frame.setSize(500, 1000);
                 frame.setVisible(true);
-            } 
-    
-    
+            }
+
             // fetch checker tree (since it was edited)
             nodes = new CommonTreeNodeStream(c_r.getTree());
-    
+
             GCLBuilder gclb = new GCLBuilder(nodes);
             gclb.setBuilder(builder);
             // reset the counter for unique controlstate numbers to 0
             Counter.reset();
             ControlAutomaton aut = gclb.program();
-            
+
             // optimize if requested
-            if (optimize) builder.optimize();
-//            builder.finalize(grammar);
-    
+            if (optimize) {
+                builder.optimize();
+                // builder.finalize(grammar);
+            }
+
             groove.gui.Simulator sim = new groove.gui.Simulator();
-            ControlJGraph cjg = new ControlJGraph(new ControlJModel(aut, sim.getOptions()));
+            ControlJGraph cjg =
+                new ControlJGraph(new ControlJModel(aut, sim.getOptions()));
             cjg.setEnabled(true);
-            groove.gui.JGraphPanel<ControlJGraph> autPanel = new groove.gui.JGraphPanel<ControlJGraph>(cjg, true, sim.getOptions());
-    
-            JDialog jf = new JDialog(sim.getFrame(), "grammar: "+grammarFile.getName()+", ctl: "+ctlFile.getName());
+            groove.gui.JGraphPanel<ControlJGraph> autPanel =
+                new groove.gui.JGraphPanel<ControlJGraph>(cjg, true, false,
+                    sim.getOptions());
+
+            JDialog jf =
+                new JDialog(sim.getFrame(), "grammar: " + grammarFile.getName()
+                    + ", ctl: " + ctlFile.getName());
 
             jf.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     ControlTest.closeWindow();
                 }
-             });
-            
+            });
+
             jf.add(autPanel);
             jf.setSize(600, 700);
             Point p = sim.getFrame().getLocation();
             jf.setLocation(new Point(p.x + 50, p.y + 50));
             System.err.println("showing panel");
             jf.setVisible(true);
-            
-            
+
             cjg.getLayouter().start(true);
-            
+
             ControlTest.openWindows++;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /**
-     * Called after closing a window. Reduces the open window count and shuts down if no more windows are open.
+     * Called after closing a window. Reduces the open window count and shuts
+     * down if no more windows are open.
      */
     public static void closeWindow() {
         openWindows--;
-        if (openWindows == 0) System.exit(0);
+        if (openWindows == 0) {
+            System.exit(0);
+        }
     }
-    
+
     /**
-     * Runs the test, displaying a control automaton 
-     * @param args args[0] should be the path of a control file, args[1] should be the path of a grammar file
+     * Runs the test, displaying a control automaton
+     * @param args args[0] should be the path of a control file, args[1] should
+     *        be the path of a grammar file
      */
     @SuppressWarnings("unused")
     public static void main(String[] args) {
@@ -169,11 +185,15 @@ public class ControlTest {
         String testDirectory = "D:\\Studie\\Afstuderen\\Groove\\test";
         ControlTest ct;
         System.out.println("== test1.ctl:");
-        ct = new ControlTest(testDirectory+"\\test1.ctl", testDirectory+"\\varTest.gps", true);
-//        System.out.println("== test2.ctl:");
-//        ct = new ControlTest(testDirectory+"\\test2.ctl", testDirectory+"\\varTest.gps", true);
-//        System.out.println("== test3.ctl:");
-//        ct = new ControlTest(testDirectory+"\\test3.ctl", testDirectory+"\\varTest.gps", true);
+        ct =
+            new ControlTest(testDirectory + "\\test1.ctl", testDirectory
+                + "\\varTest.gps", true);
+        // System.out.println("== test2.ctl:");
+        // ct = new ControlTest(testDirectory+"\\test2.ctl",
+        // testDirectory+"\\varTest.gps", true);
+        // System.out.println("== test3.ctl:");
+        // ct = new ControlTest(testDirectory+"\\test3.ctl",
+        // testDirectory+"\\varTest.gps", true);
     }
 
     /**
@@ -184,17 +204,16 @@ public class ControlTest {
     private String loadProgram(File file) {
         StringBuilder contents = new StringBuilder();
         try {
-            BufferedReader br =
-                new BufferedReader(new FileReader(file));
+            BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             while (((line = br.readLine()) != null)) {
                 contents.append(line + "\r\n");
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
         return contents.toString();
     }
-    
+
     private static int openWindows = 0;
 }
