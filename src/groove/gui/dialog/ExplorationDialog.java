@@ -16,8 +16,10 @@
  */
 package groove.gui.dialog;
 
+import groove.explore.DocumentedStrategy;
 import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
+import groove.explore.StrategyEnumeration;
 import groove.explore.result.Acceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
@@ -36,6 +38,7 @@ import groove.trans.RuleName;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,6 +52,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.SpringLayout;
 
 /**
@@ -58,82 +62,58 @@ import javax.swing.SpringLayout;
  *          Acceptor.
  */
 public class ExplorationDialog extends JDialog implements ActionListener {
+    private static final String DEFAULT_STRATEGY = "Branching";                 // initially selected strategy (keyword)
+    
+    private static final String EXPLORE_COMMAND = "Explore State Space";        // button text/command
+    private static final String CANCEL_COMMAND = "Cancel";                      // button text/command
+    
+    private StrategyEnumeration strategyEnumeration = new StrategyEnumeration();
+    private DocumentedStrategy selectedDocumentedStrategy = this.strategyEnumeration.lookupDocumentedStrategyByKeyword(DEFAULT_STRATEGY);
 
-    // Constants to define the choices that can be made in this dialog.
-    private static final String FULL_EXPLORATION = "Full exploration"; // strategy
-    // type
-    private static final String PATH_EXPLORATION = "Path exploration"; // strategy
-    // type
-    private static final String BRANCHING = "Branching"; // full exploration
-    // strategy
-    private static final String BREADTH_FIRST = "Breadth First"; // full
-    // exploration
-    // strategy
-    private static final String DEPTH_FIRST = "Depth First"; // full exploration
-    // strategy
-    private static final String LINEAR_CONFLUENCE = "Linear Confluence"; // full
-    // exploration
-    // strategy
-    private static final String LINEAR = "Linear"; // path exploration strategy
-    private static final String RANDOM_LINEAR = "Random Linear"; // path
-    // exploration
-    // strategy
-    private static final String NONE_ACCEPTOR = "None"; // acceptor
-    private static final String FINAL_STATE = "Final State"; // acceptor
-    private static final String RULE_MATCH = "Rule Match"; // acceptor (with
-    // rule)
-    private static final String RULE_MISMATCH = "Rule Mismatch"; // acceptor
-    // (with rule)
-    private static final String EXPLORE_COMMAND = "Explore State Space"; // button
-    // command
-    private static final String CANCEL_COMMAND = "Cancel"; // button command
-
-    // The current selection state of the dialog, which consists of:
-    // * isFullExploration - boolean to indicate either full or path exploration
-    // * isConditionalAcceptor - boolean to indicate if the acceptor is
-    // conditional (needs rule) or not
-    // * selectedFullStrategy - selected strategy for full exploration
-    // * selectedPathStrategy - selected strategy for path exploration
-    // * selectedAcceptor - selected acceptor
-    private boolean isFullExploration = true;
-    private boolean isConditionalAcceptor = false;
-    private String selectedFullStrategy = ExplorationDialog.BRANCHING;
-    private final String selectedPathStrategy = ExplorationDialog.LINEAR;
-    private String selectedAcceptor = ExplorationDialog.NONE_ACCEPTOR;
-
-    // The panel that displays either the choices for full exploration or the
-    // choices for
-    // path exploration. This panel is referenced to change the visibility of
-    // its CardLayout.
-    private final JPanel eitherStrategySelection;
-
-    // The panel that displays either a rule selector or the empty space.
-    // This panel is referenced to change the visibility of its CardLayout.
-    private final JPanel optionalRulePanel;
-
-    // Local copy of the global Simulator. Used to run scenarios.
-    private final Simulator simulator;
-
+    private FormattedSelection strategyPanel;
+    private JPanel acceptorPanel;
+    private JPanel resultPanel;
+    private JPanel buttonPanel;
+    
+    private Simulator simulator;
+    
     /**
      * @param owner The JFrame of the parent of this dialog.
      */
     public ExplorationDialog(Simulator simulator, JFrame owner) {
 
-        // Open a modal dialog, which cannot be resized and can be closed by the
-        // user.
+        // Open a modal dialog, which cannot be resized and can be closed by
+        // the user.
         super(owner, "ExplorationDialog", true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
 
         // Remember simulator.
         this.simulator = simulator;
-
+        
         // Create the content panel, which is laid out as a single column.
         // Add an empty space of 10 pixels between the dialog and the content
         // panel.
         JPanel dialogContent = new JPanel(new SpringLayout());
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // Create the panels.
+        createButtonPanel();
+        createStrategyPanel();
+        
+        // Add the panels, and layout, to the dialog.
+        // dialogContent.add(new JLabel(" "));
+        dialogContent.add(this.strategyPanel);
+        dialogContent.add(this.buttonPanel);
+        SpringUtilities.makeCompactGrid(dialogContent, 2, 1, 0, 0, 0, 0);
+
+        // Add the dialogContent to the dialog and finish the dialog.
+        add(dialogContent);
+        pack();
+        setLocationRelativeTo(owner);
+        setVisible(true);
+        
+        /*
         // Query for the exploration method (full or path).
         FormattedSelection methodSelection =
             new FormattedSelection(
@@ -210,35 +190,53 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         this.optionalRulePanel.add(emptyPanel, "EMPTY");
         this.optionalRulePanel.add(rulePanel, "RULE");
         dialogContent.add(this.optionalRulePanel);
-
-        // Create an 'OK' and a 'Cancel' button.
-        // These have to be laid out horizontally, so they need to be placed in
-        // a new JPanel.
-        dialogContent.add(new JLabel(" "));
-        JPanel buttonPanel = new JPanel();
-        JButton exploreButton = new JButton(ExplorationDialog.EXPLORE_COMMAND);
+        */
+    }
+     
+    private void createButtonPanel() {
+        this.buttonPanel = new JPanel();
+        JButton exploreButton = new JButton(EXPLORE_COMMAND);
         exploreButton.addActionListener(this);
-        buttonPanel.add(exploreButton);
-        JButton cancelButton = new JButton(ExplorationDialog.CANCEL_COMMAND);
+        this.buttonPanel.add(exploreButton);
+        JButton cancelButton = new JButton(CANCEL_COMMAND);
         cancelButton.addActionListener(this);
-        buttonPanel.add(cancelButton);
-        dialogContent.add(buttonPanel);
-
-        // Lay out the dialog as a single column.
-        SpringUtilities.makeCompactGrid(dialogContent, 8, 1, 0, 0, 0, 0);
-
-        // Add the dialogContent to the dialog and finish the dialog.
-        add(dialogContent);
-        pack();
-        setLocationRelativeTo(owner);
-        setVisible(true);
+        this.buttonPanel.add(cancelButton);
     }
 
+    private void createStrategyPanel() {
+        this.strategyPanel = new FormattedSelection(this);
+        
+        for (;this.strategyEnumeration.hasMoreElements();) {
+            DocumentedStrategy currentOption = this.strategyEnumeration.nextElement();
+            Boolean selected = currentOption.getKeyword().equals(DEFAULT_STRATEGY);
+            this.strategyPanel.addOption(currentOption.getName(), currentOption.getExplanation(), currentOption.needsAdditionalArguments(), selected);
+        }
+        
+        this.strategyPanel.setBorder(BorderFactory.createTitledBorder("Choose an exploration strategy"));
+        this.strategyPanel.finalizeLayout();
+    }
+       
     // The action listener of the dialog. Uses the String content of the message
-    // to
-    // update the internal state of the dialog.
+    // to update the internal state of the dialog.
     public void actionPerformed(ActionEvent event) {
+        if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
+            // this.dispose();
+            // this.simulator.doGenerate(getScenario());
+            // return;
+        }
 
+        if (event.getActionCommand().equals(CANCEL_COMMAND)) {
+            this.dispose();
+            return;
+        }
+        
+        DocumentedStrategy newDocumentedStrategy = this.strategyEnumeration.lookupDocumentedStrategyByName(event.getActionCommand());
+        if (newDocumentedStrategy != null) {
+            this.selectedDocumentedStrategy = newDocumentedStrategy;
+            return;
+        }
+            
+    /*
         // Respond to changes of the strategy type.
         if (event.getActionCommand() == ExplorationDialog.FULL_EXPLORATION
             || event.getActionCommand() == ExplorationDialog.PATH_EXPLORATION) {
@@ -287,21 +285,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             this.selectedAcceptor = event.getActionCommand();
             return;
         }
-
-        // Respond to the 'Explore' button
-        if (event.getActionCommand() == ExplorationDialog.EXPLORE_COMMAND) {
-            this.dispose();
-            this.simulator.doGenerate(getScenario());
-            return;
-        }
-
-        // Respond to the 'Cancel' button
-        if (event.getActionCommand() == ExplorationDialog.CANCEL_COMMAND) {
-            this.dispose();
-            return;
-        }
+    */
     }
 
+    /*
     // Return the acceptor associated with the current selection state of the
     // dialog.
     // Should only be called when 'isConditionalAcceptor' is false.
@@ -357,59 +344,63 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         // Default case. Should never be reached.
         return (new BranchingStrategy());
     }
+    */
 
     // Auxiliary extension of JPanel which creates the formatted selection lists
     // in a uniform layout.
     private class FormattedSelection extends JPanel {
-
         // Separate button group for all the check boxes in this JPanel.
-        private final ButtonGroup buttonGroup;
+        private ButtonGroup buttonGroup;
 
-        // Local copy of the ActionListener (which is the surrounding Dialog as
-        // a whole)
+        // Local copy of the ActionListener (the surrounding Dialog).
         private final ActionListener listener;
-
-        // Variable used to identify the first check box (which should be
-        // selected initially).
-        private boolean noCheckBoxesCreatedYet = true;
-
+        
+        // Number of added elements. Needed for final layouting.
+        private int nrComponents = 0;
+        
         // Creates an initially empty JPanel with a leading label line only.
         // Add options by means of addOption.
-        FormattedSelection(String title, ActionListener listener) {
-            super(new GridLayout(0, 1));
+        FormattedSelection(ActionListener listener) {
+            super(new SpringLayout());
             this.buttonGroup = new ButtonGroup();
             this.listener = listener;
-            this.add(new JLabel("<HTML><FONT color=green><B>" + title
-                + "</B></FONT></HTML>"));
         }
 
         // Creates and formats a single option line.
-        public void addOption(String shortName, String explanation) {
-
-            // The option line is formatted as a panel, with three components:
-            // check box, empty space, explanation.
-            JPanel optionPanel = new JPanel(new SpringLayout());
+        public void addOption(String shortName, String toolTipText, Boolean needsArguments, Boolean selected) {
+            JPanel optionLine = new JPanel(new SpringLayout());
 
             // Create the check box.
             JCheckBox checkBox = new JCheckBox(shortName);
             checkBox.addActionListener(this.listener);
-            optionPanel.add(checkBox);
+            if (toolTipText != null) checkBox.setToolTipText(toolTipText);
+            optionLine.add(checkBox);
             this.buttonGroup.add(checkBox);
-            if (this.noCheckBoxesCreatedYet) {
-                checkBox.setSelected(true);
-                this.noCheckBoxesCreatedYet = false;
-            }
+            checkBox.setSelected(selected);
 
-            // Add the empty space.
-            optionPanel.add(new JLabel(" "));
+            // Add an empty space between the shortName and the additionalInfo.
+            optionLine.add(new JLabel(" "));
 
-            // Add the explanation
-            optionPanel.add(new JLabel("<HTML><FONT color=669966>("
-                + explanation + ")</FONT></HTML>"));
+            // Add the additional info.
+            if (needsArguments)
+                optionLine.add(new JLabel("<HTML><FONT color=669966>(needs additional arguments)</FONT></HTML>"));
+            else
+                optionLine.add(new JLabel(""));
 
             // Layout the panel as a whole.
-            SpringUtilities.makeCompactGrid(optionPanel, 1, 3, 0, 0, 0, 0);
-            this.add(optionPanel);
+            SpringUtilities.makeCompactGrid(optionLine, 1, 3, 0, 0, 0, 0);
+            this.add(optionLine);
+            this.nrComponents++;
+            // this.add(new JSeparator(JSeparator.HORIZONTAL));
+        }
+        
+        public void addSeparator() {
+            this.add(new JSeparator(JSeparator.HORIZONTAL));
+            this.nrComponents++;
+        }
+        
+        public void finalizeLayout() {
+            SpringUtilities.makeCompactGrid(this, this.nrComponents, 1, 0, 0, 0, 0);
         }
     }
 }

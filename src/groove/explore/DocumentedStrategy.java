@@ -28,11 +28,10 @@ import groove.explore.strategy.Strategy;
  * @version $Revision $
  */
 public class DocumentedStrategy {
-    private Strategy   strategy;
-    private String     keyword;
-    private String     name;
-    private String     explanation;
-    private String     commandLineArgument;
+    private Strategy strategy;
+    private String keyword;
+    private String name;
+    private String explanation;
         
     /**
      * All-purpose constructor.
@@ -42,36 +41,41 @@ public class DocumentedStrategy {
      * @param keyword - identification of the strategy on the command line
      * @param name - identification of the strategy in the user interface
      * @param explanation - explanation of the strategy in the user interface
-     * @param commandLineArgument - only relevant when the strategy is null;
-     *                              if the String is null, then the user is queried for the
-     *                              additional parameter by means of a call to 'queryUser';
-     *                                 (in this case queryUser must therefore be overridden!)
-     *                              if the String is not null, then it contains a command line
-     *                              argument that will be parsed with 'parseCommandLine' later
-     *                                 (in this case parseCommandLine must therefore be overridden!)
      */
-    public DocumentedStrategy(Strategy strategy, String keyword, String name, String explanation, String commandLineArgument) {
+    public DocumentedStrategy(Strategy strategy, String keyword, String name, String explanation) {
         this.strategy = strategy;
         this.keyword = keyword;
         this.name = name;
         this.explanation = explanation;
-        this.commandLineArgument = commandLineArgument;
     }
     
     /**
+     * Get the internally stored strategy. If additional arguments are required,
+     * they are obtained by means of a call to queryUser.
+     * 
      * @return the strategy, which is either fixed or must still be constructed
      */
-    public Strategy getStrategy() {
-        if (this.strategy == null) {
-            if (this.commandLineArgument != null)
-               this.strategy = parseCommandLine(this.commandLineArgument);
-            else
-               this.strategy = queryUser();
-        }
+    public Strategy getStrategyForUI() {
+        if (this.strategy == null)
+           this.strategy = queryUser();
             
         return this.strategy;
     }
 
+    /**
+     * Get the internally stored strategy. If additional arguments are required,
+     * they are obtained by means of a call to parseCommandLine.
+     * 
+     * @return the strategy, which is either fixed or must still be constructed
+     */
+    public Strategy getStrategyForCommandline(String commandLineArgument) {
+        if (this.strategy == null)
+           this.strategy = parseCommandLine(commandLineArgument);
+
+        return this.strategy;
+    }
+    
+    
     /**
      * @return the internally stored keyword
      */
@@ -91,6 +95,14 @@ public class DocumentedStrategy {
      */
     public String getExplanation() {
         return this.explanation;
+    }
+    
+    /**
+     * @return true when the strategy needs additional arguments to be computed,
+     *         false otherwise
+     */
+    public Boolean needsAdditionalArguments() {
+        return (this.strategy == null);
     }
     
     /**
