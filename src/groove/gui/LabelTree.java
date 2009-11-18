@@ -24,6 +24,7 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JVertex;
 import groove.util.Converter;
+import groove.util.Groove;
 import groove.util.ObservableSet;
 
 import java.awt.BorderLayout;
@@ -55,6 +56,7 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.DropMode;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -546,6 +548,11 @@ public class LabelTree extends JTree implements GraphModelListener,
         this.labelStoreChange.addObserver(observer);
     }
 
+    private Icon getNonRootIcon() {
+        return this.showsSubtypes ? Groove.OPEN_DOWN_ARROW_ICON
+                : Groove.OPEN_UP_ARROW_ICON;
+    }
+
     /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
     private boolean isOverCheckBox(TreePath path, int x) {
         boolean result = false;
@@ -607,6 +614,9 @@ public class LabelTree extends JTree implements GraphModelListener,
      * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
+
+    /** Mode of the label tree: showing subtypes or supertypes. */
+    private final boolean showsSubtypes = true;
 
     // /**
     // * The width of the widest label in the tree. Updated by a call to
@@ -739,6 +749,8 @@ public class LabelTree extends JTree implements GraphModelListener,
                 boolean sel, boolean expanded, boolean leaf, int row,
                 boolean hasFocus) {
             JComponent result;
+            this.jLabel.getTreeCellRendererComponent(tree, value, sel,
+                expanded, leaf, row, hasFocus);
             this.labelNode =
                 value instanceof LabelTree.LabelTreeNode
                         ? (LabelTree.LabelTreeNode) value : null;
@@ -746,12 +758,12 @@ public class LabelTree extends JTree implements GraphModelListener,
                 this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
                 add(this.jLabel, BorderLayout.CENTER);
                 add(this.checkbox, CHECKBOX_ORIENTATION);
+                this.jLabel.setIcon(null);
                 result = this;
             } else {
+                this.jLabel.setIcon(getNonRootIcon());
                 result = this.jLabel;
             }
-            this.jLabel.getTreeCellRendererComponent(tree, value, sel,
-                expanded, leaf, row, hasFocus);
             result.setComponentOrientation(tree.getComponentOrientation());
             if (value instanceof LabelTreeNode) {
                 Label label = ((LabelTreeNode) value).getLabel();

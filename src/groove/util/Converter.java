@@ -118,24 +118,26 @@ public class Converter {
             } else {
                 format = "(%d,%s,%d)%n";
             }
-            writer.printf(format, nodeNrMap.get(edge.source()),
-                edge.label(), nodeNrMap.get(edge.opposite()));
+            writer.printf(format, nodeNrMap.get(edge.source()), edge.label(),
+                nodeNrMap.get(edge.opposite()));
         }
     }
 
     /** Reads in a graph from CADP .aut format. */
-    static public Map<String,Node> autToGraph(InputStream reader, Graph graph) throws IOException {
+    static public Map<String,Node> autToGraph(InputStream reader, Graph graph)
+        throws IOException {
         Map<String,Node> result = new HashMap<String,Node>();
         BufferedReader in = new BufferedReader(new InputStreamReader(reader));
         int linenr = 0;
         try {
             String line = in.readLine();
             linenr++;
-            int rootStart = line.indexOf('(')+1;
-            int edgeCountStart = line.indexOf(',')+1;
-            int root = Integer.parseInt(line.substring(rootStart, edgeCountStart-1).trim());
+            int rootStart = line.indexOf('(') + 1;
+            int edgeCountStart = line.indexOf(',') + 1;
+            int root =
+                Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
             Node rootNode = DefaultNode.createNode(root);
-            result.put(""+root, rootNode);
+            result.put("" + root, rootNode);
             graph.addEdge(DefaultEdge.createEdge(rootNode, ROOT_LABEL, rootNode));
             for (line = in.readLine(); line != null; line = in.readLine()) {
                 linenr++;
@@ -159,15 +161,17 @@ public class Converter {
                 }
             }
         } catch (Exception e) {
-            throw new IOException(String.format("Format error in line %d: %s", linenr, e.getMessage()));
+            throw new IOException(String.format("Format error in line %d: %s",
+                linenr, e.getMessage()));
         }
         return result;
     }
-    
+
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public void graphToTikz(JGraph graph, PrintWriter writer) {
         GraphJModel model = (GraphJModel) graph.getModel();
-        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(model.getGraph());
+        LayoutMap<Node,Edge> layoutMap =
+            GraphInfo.getLayoutMap(model.getGraph());
         writer.print(GraphToTikz.convertGraphToTikzStr(model, layoutMap));
     }
 
@@ -187,6 +191,7 @@ public class Converter {
     static public StringBuilder toHtml(StringBuilder text) {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
+            String replacement = null;
             switch (c) {
             case '<':
                 text.replace(i, i + 1, "&lt;");
@@ -200,6 +205,12 @@ public class Converter {
                 text.replace(i, i + 1, HTML_LINEBREAK);
                 i += HTML_LINEBREAK.length() - 1;
                 break;
+            // default:
+            // if (c >= 0x100) {
+            // String encoding = "&#x" + ((int) c) + ";";
+            // text.replace(i, i + 1, encoding);
+            // i += encoding.length() - 1;
+            // }
             }
         }
         return text;
@@ -279,7 +290,8 @@ public class Converter {
     }
 
     /** HTML greater than symbol. */
-    // The readable codes do not work on the Mac in some situations. Replaced them with the numeric codes - this fixes it. -- Maarten 
+    // The readable codes do not work on the Mac in some situations. Replaced
+    // them with the numeric codes - this fixes it. -- Maarten
     static public final String HTML_GT = "&#62;"; // &gt;
     /** HTML forall symbol. */
     static public final String HTML_FORALL = "&#8704;"; // &forall;
@@ -342,7 +354,7 @@ public class Converter {
 
     /** Label used to identify the start state, when reading in from .aut */
     private static final String ROOT_LABEL = "$ROOT$";
-    
+
     /**
      * Class that allows some handling of HTML text.
      */
