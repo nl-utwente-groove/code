@@ -107,6 +107,18 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     }
 
     @Override
+    public String deleteControl(String name) {
+        testInit();
+        String result = this.controlMap.remove(name);
+        if (result != null) {
+            if (createControlFile(name).delete()) {
+                notify(SystemStore.CONTROL_CHANGE);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public AspectGraph deleteGraph(String name) {
         testInit();
         AspectGraph result = this.graphMap.remove(name);
@@ -391,8 +403,7 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     }
 
     private void saveControl(String name, String program) throws IOException {
-        File controlFile =
-            new File(this.file, CONTROL_FILTER.addExtension(name));
+        File controlFile = createControlFile(name);
         Writer writer = new FileWriter(controlFile);
         writer.write(program);
         writer.close();
@@ -457,6 +468,14 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
             throw new IllegalStateException(
                 "Operation should only be called after initialisation");
         }
+    }
+
+    /**
+     * Creates a file name from a given control program name. The file name
+     * consists of the store location, the program, and the control extension.
+     */
+    private File createControlFile(String controlName) {
+        return new File(this.file, CONTROL_FILTER.addExtension(controlName));
     }
 
     /**

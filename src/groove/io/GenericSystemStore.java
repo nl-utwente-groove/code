@@ -120,6 +120,16 @@ public interface GenericSystemStore<R,G> {
     public G renameGraph(String oldName, String newName) throws IOException;
 
     /**
+     * Deletes a control program from the store.
+     * @param name name of the control program to be deleted
+     * @return the program with name <code>name</code>, or <code>null</code> if
+     *         there was no such program
+     * @throws UnsupportedOperationException if the store is immutable
+     */
+    public String deleteControl(String name)
+        throws UnsupportedOperationException;
+
+    /**
      * Adds or replaces a control program in the store.
      * @param control the control program to be added
      * @return the old control program with name <code>name</code>, if any;
