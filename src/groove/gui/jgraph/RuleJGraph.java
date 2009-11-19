@@ -55,7 +55,6 @@ public class RuleJGraph extends JGraph {
         result.add(computeSetMenu());
         result.addSeparator();
         result.add(this.simulator.getEditRuleAction());
-        result.add(getExportAction());
         super.fillPopupMenu(result);
     }
 

@@ -80,7 +80,6 @@ public class StateJGraph extends JGraph {
         if (!this.simulator.isAbstractSimulation()) {
             result.addSeparator();
             result.add(this.simulator.getEditStateAction());
-            result.add(getExportAction());
         }
         super.fillPopupMenu(result);
     }
