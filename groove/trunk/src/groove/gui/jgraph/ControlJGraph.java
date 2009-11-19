@@ -26,8 +26,6 @@ import groove.gui.layout.SpringLayouter;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.swing.JPopupMenu;
-
 /**
  * This is the JGraph representation of a ControlAutomaton.
  * @author Tom Staijen
@@ -55,13 +53,6 @@ public class ControlJGraph extends JGraph {
     @Override
     public ControlJModel getModel() {
         return (ControlJModel) super.getModel();
-    }
-
-    @Override
-    protected void fillPopupMenu(JPopupMenu result) {
-        addSeparatorUnlessFirst(result);
-        result.add(getExportAction());
-        super.fillPopupMenu(result);
     }
 
     /**

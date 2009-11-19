@@ -97,7 +97,6 @@ public class LTSJGraph extends JGraph {
         result.add(getMCMenu());
         // export
         result.addSeparator();
-        result.add(getExportAction());
         // Goto sub-menu
         result.addSeparator();
         result.add(this.simulator.getGotoStartStateAction());
