@@ -602,6 +602,8 @@ public class AspectJModel extends GraphJModel {
                         + modelEdge.label().text());
             } else if (modelEdge != null) {
                 result = modelEdge.label();
+            } else {
+                result = edge.label();
             }
             return result;
         }
