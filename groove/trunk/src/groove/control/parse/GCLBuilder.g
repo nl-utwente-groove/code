@@ -10,6 +10,7 @@ package groove.control.parse;
 import groove.control.*;
 import groove.util.Pair;
 import groove.trans.Rule;
+import groove.graph.GraphInfo;
 }
 
 @init {
@@ -18,9 +19,18 @@ import groove.trans.Rule;
 
 @members{
 	AutomatonBuilder builder;
-    
+  String name;
+  
     public void setBuilder(AutomatonBuilder ab) {
     	this.builder = ab;
+    }
+    
+    public void setName(String name) {
+      this.name = name;
+    }
+    
+    public String getName() {
+      return name;
     }
     
     private void proc(CommonTree block) throws RecognitionException {
@@ -43,6 +53,7 @@ program returns [ControlAutomaton aut=null]
 @init{ ControlState start; ControlState end; }
   : ^(PROGRAM functions {
 		aut = builder.startProgram(); 
+		GraphInfo.setName(aut, getName());
   		start = builder.getStart(); 
   		end = builder.getEnd(); 
 	}

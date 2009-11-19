@@ -70,7 +70,7 @@ public class ControlView {
         if (this.automaton == null) {
             this.automaton = computeAutomaton(grammar);
         }
-       
+
         return this.automaton;
     }
 
@@ -95,20 +95,22 @@ public class ControlView {
         builder.setRules(grammar.getRules());
 
         try {
-            GCLLexer lexer = new GCLLexer(new ANTLRStringStream(getProgram()));
+            ANTLRStringStream stream = new ANTLRStringStream(getProgram());
+            stream.name = getName();
+            GCLLexer lexer = new GCLLexer(stream);
             GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
             GCLParser.program_return r = parser.program();
-            
+
             boolean DEBUG = false;
-            
-            if( DEBUG ) {
-                ASTFrame frame = new ASTFrame("parser result", (org.antlr.runtime.tree.CommonTree) r.getTree());
+
+            if (DEBUG) {
+                ASTFrame frame =
+                    new ASTFrame("parser result",
+                        (org.antlr.runtime.tree.CommonTree) r.getTree());
                 frame.setSize(500, 1000);
                 frame.setVisible(true);
-            } 
+            }
 
-            
-            
             List<String> errors = parser.getErrors();
             if (errors.size() != 0) {
                 errors.add(0, "Encountered parse errors in control program");
@@ -127,40 +129,43 @@ public class ControlView {
                 errors.add(0, "Encountered checker errors in control program");
                 throw new FormatException(errors);
             }
-            
-            if( DEBUG ) {
-                ASTFrame frame = new ASTFrame("checker result", (org.antlr.runtime.tree.CommonTree) c_r.getTree());
+
+            if (DEBUG) {
+                ASTFrame frame =
+                    new ASTFrame("checker result",
+                        (org.antlr.runtime.tree.CommonTree) c_r.getTree());
                 frame.setSize(500, 1000);
                 frame.setVisible(true);
-            } 
-
+            }
 
             // fetch checker tree (since it was edited)
             nodes = new CommonTreeNodeStream(c_r.getTree());
 
             GCLBuilder gclb = new GCLBuilder(nodes);
             gclb.setBuilder(builder);
+            gclb.setName(getName());
             // reset the counter for unique controlstate numbers to 0
             Counter.reset();
             ControlAutomaton aut = gclb.program();
             builder.optimize();
             builder.finalize(grammar);
-//
-//            groove.gui.Simulator sim = new groove.gui.Simulator();
-//            ControlJGraph cjg = new ControlJGraph(new ControlJModel(aut, sim.getOptions()));
-//            groove.gui.JGraphPanel autPanel = new groove.gui.JGraphPanel(cjg, true, sim.getOptions());
-//
-//            JDialog jf = new JDialog(sim.getFrame(), "Control Automaton");
-//            jf.add(autPanel);
-//            jf.setSize(600, 700);
-//            Point p = sim.getFrame().getLocation();
-//            jf.setLocation(new Point(p.x + 50, p.y + 50));
-//            System.err.println("showing panel");
-//            jf.setVisible(true);
-//            
-//            cjg.getLayouter().start(true);            
-            
-            
+            //
+            // groove.gui.Simulator sim = new groove.gui.Simulator();
+            // ControlJGraph cjg = new ControlJGraph(new ControlJModel(aut,
+            // sim.getOptions()));
+            // groove.gui.JGraphPanel autPanel = new groove.gui.JGraphPanel(cjg,
+            // true, sim.getOptions());
+            //
+            // JDialog jf = new JDialog(sim.getFrame(), "Control Automaton");
+            // jf.add(autPanel);
+            // jf.setSize(600, 700);
+            // Point p = sim.getFrame().getLocation();
+            // jf.setLocation(new Point(p.x + 50, p.y + 50));
+            // System.err.println("showing panel");
+            // jf.setVisible(true);
+            //            
+            // cjg.getLayouter().start(true);
+
             return aut;
         } catch (RecognitionException re) {
             throw new FormatException(re);

@@ -122,25 +122,25 @@ public class Exporter {
 
     /** Removes the Tikz format from the list of possible exports. */
     public void removeTikzFormat() {
-        Format format = this.formats.get(
-                               this.formats.indexOf(TikzFormat.getInstance()));
+        Format format =
+            this.formats.get(this.formats.indexOf(TikzFormat.getInstance()));
         this.fileChooser.removeChoosableFileFilter(format.getFilter());
     }
-    
+
     /**
      * Checks if the given file is accepted by at least one of the image
      * exporters.
      */
     public boolean acceptsImageFormat(File file) {
-        if (JpgFormat.getInstance().getFilter().accept(file) ||
-            PngFormat.getInstance().getFilter().accept(file) ||
-            EpsFormat.getInstance().getFilter().accept(file)) {
+        if (JpgFormat.getInstance().getFilter().accept(file)
+            || PngFormat.getInstance().getFilter().accept(file)
+            || EpsFormat.getInstance().getFilter().accept(file)) {
             return true;
         } else {
             return false;
         }
     }
-    
+
     /** Returns the (modifiable) list of currently supported formats. */
     private List<Format> getFormatList() {
         if (this.formats == null) {
@@ -524,8 +524,12 @@ public class Exporter {
         }
 
         public void export(JGraph jGraph, File file) throws IOException {
-            ImageIO.write(jGraph.toImage(),
-                this.jpgFilter.getExtension().substring(1), file);
+            BufferedImage image = jGraph.toImage();
+            if (image == null) {
+                throw new IOException("Cannot export blank image");
+            }
+            ImageIO.write(image, this.jpgFilter.getExtension().substring(1),
+                file);
         }
 
         /**
@@ -557,10 +561,10 @@ public class Exporter {
         public void export(JGraph jGraph, File file) throws IOException {
             BufferedImage image = jGraph.toImage();
             String format = this.pngFilter.getExtension().substring(1);
+            if (image == null) {
+                throw new IOException("Cannot export blank image");
+            }
             ImageIO.write(image, format, file);
-
-            // ImageIO.write(jGraph.toImage(),
-            // this.pngFilter.getExtension().substring(1), file);
         }
 
         /**
@@ -592,6 +596,9 @@ public class Exporter {
         public void export(JGraph jGraph, File file) throws IOException {
             // Create a graphics contents on the buffered image
             BufferedImage image = jGraph.toImage();
+            if (image == null) {
+                throw new IOException("Cannot export blank image");
+            }
             // Create an output stream
             OutputStream out = new FileOutputStream(file);
             // minX,minY,maxX,maxY

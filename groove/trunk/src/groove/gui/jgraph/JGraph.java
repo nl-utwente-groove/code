@@ -18,15 +18,18 @@ package groove.gui.jgraph;
 
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.gui.Exporter;
 import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
 import groove.gui.ZoomMenu;
+import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.JModel.RefreshEdit;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.io.ExtensionFilter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
 
@@ -43,6 +46,8 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -455,6 +460,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             }
         }
         getLabelTree().setEnabled(enabled);
+        getExportAction().setEnabled(enabled);
         super.setEnabled(enabled);
     }
 
@@ -756,6 +762,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         return this.resetLabelPositionAction;
     }
 
+    /** Returns the action to export this JGraph in various formats. */
+    public ExportAction getExportAction() {
+        if (this.exportAction == null) {
+            this.exportAction = new ExportAction();
+        }
+        return this.exportAction;
+    }
+
     /**
      * @return an action to edit the currently selected j-cell label.
      */
@@ -816,6 +830,22 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     protected BasicMarqueeHandler createMarqueeHandler() {
         return new BasicMarqueeHandler();
+    }
+
+    /**
+     * Callback method to lazily creates and return the exporter used in the
+     * {@link ExportAction}.
+     */
+    protected Exporter getExporter() {
+        if (this.exporter == null) {
+            this.exporter = new Exporter();
+        }
+        return this.exporter;
+    }
+
+    /** Callback method to return the export action name. */
+    protected String getExportActionName() {
+        return Options.EXPORT_ACTION_NAME;
     }
 
     /** Shows a popup menu if the event is a popup trigger. */
@@ -899,6 +929,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     protected void fillPopupMenu(JPopupMenu result) {
         fillOutEditMenu(result, false);
+        addSeparatorUnlessFirst(result);
+        result.add(new JMenuItem(getExportAction()));
         fillOutDisplayMenu(result);
         fillOutLayoutMenu(result);
     }
@@ -990,19 +1022,22 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     protected Layouter layouter;
 
-    /** The permanent <code>AddPointAction</code> associated with this j-graph. */
+    /** The permanent {@link AddPointAction} associated with this j-graph. */
     protected AddPointAction addPointAction;
     /**
-     * The permanent <code>RemovePointAction</code> associated with this
-     * j-graph.
+     * The permanent {@link RemovePointAction} associated with this j-graph.
      */
     protected RemovePointAction removePointAction;
     /**
-     * The permanent <code>EditLabelAction</code> associated with this j-graph.
+     * The permanent {@link EditLabelAction} associated with this j-graph.
      */
     protected EditLabelAction editLabelAction;
     /**
-     * The permanent <code>ResetLabelPositionAction</code> associated with this
+     * The permanent {@link ExportAction} associated with this j-graph.
+     */
+    protected ExportAction exportAction;
+    /**
+     * The permanent {@link ResetLabelPositionAction} associated with this
      * j-graph.
      */
     protected ResetLabelPositionAction resetLabelPositionAction;
@@ -1010,6 +1045,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     protected final Map<String,JCellEditAction> setLineStyleActionMap =
         new HashMap<String,JCellEditAction>();
 
+    /**
+     * The exporter used in the {@link ExportAction}. Lazily created in
+     * {@link #getExportAction()}.
+     */
+    private Exporter exporter;
     /**
      * The background color of this component when it is enabled.
      */
@@ -1139,6 +1179,39 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
         public void actionPerformed(ActionEvent evt) {
             startEditingAtCell(this.jCell);
+        }
+    }
+
+    /**
+     * Action to save the state, as a graph or in some export format.
+     * @see Exporter#export(JGraph, File)
+     */
+    private class ExportAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        ExportAction() {
+            super(getExportActionName());
+            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String fileName = getModel().getName();
+            if (fileName != null) {
+                getExporter().getFileChooser().setSelectedFile(
+                    new File(fileName));
+            }
+            File selectedFile =
+                ExtensionFilter.showSaveDialog(getExporter().getFileChooser(),
+                    JGraph.this, null);
+            // now save, if so required
+            if (selectedFile != null) {
+                try {
+                    getExporter().export(JGraph.this, selectedFile);
+                } catch (IOException exc) {
+                    new ErrorDialog(JGraph.this, "Error while exporting to "
+                        + selectedFile, exc);
+                }
+
+            }
         }
     }
 

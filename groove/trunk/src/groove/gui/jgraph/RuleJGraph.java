@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.gui.Exporter;
+import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleName;
@@ -30,11 +32,11 @@ import javax.swing.JPopupMenu;
 /**
  * Extension of {@link JGraph} that provides the proper popup menu.
  */
-public class AspectJGraph extends JGraph {
+public class RuleJGraph extends JGraph {
     /**
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
-    public AspectJGraph(Simulator simulator) {
+    public RuleJGraph(Simulator simulator) {
         super(AspectJModel.EMPTY_ASPECT_JMODEL, false, null);
         this.simulator = simulator;
         setLayouter(new SpringLayouter());
@@ -53,7 +55,21 @@ public class AspectJGraph extends JGraph {
         result.add(computeSetMenu());
         result.addSeparator();
         result.add(this.simulator.getEditRuleAction());
+        result.add(getExportAction());
         super.fillPopupMenu(result);
+    }
+
+    @Override
+    protected Exporter getExporter() {
+        return getSimulator().getExporter();
+    }
+
+    @Override
+    protected String getExportActionName() {
+        // return GraphInfo.hasGraphRole(getModel().getGraph())
+        // ? Options.EXPORT_STATE_ACTION_NAME
+        // : Options.EXPORT_RULE_ACTION_NAME;
+        return Options.EXPORT_RULE_ACTION_NAME;
     }
 
     /**

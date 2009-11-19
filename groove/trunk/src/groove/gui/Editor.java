@@ -565,16 +565,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     }
 
     /**
-     * Lazily creates and returns the action to export the current graph.
-     */
-    Action getExportGraphAction() {
-        if (this.exportAction == null) {
-            this.exportAction = new ExportGraphAction();
-        }
-        return this.exportAction;
-    }
-
-    /**
      * Lazily creates and returns the action to start editing a fresh graph.
      */
     Action getNewAction() {
@@ -1009,7 +999,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         result.add(getSaveGraphAction());
         // Save as not yet enabled (for backward compatibility reasons)
         // result.add(getSaveGraphAsAction());
-        result.add(getExportGraphAction());
+        result.add(getJGraph().getExportAction());
         result.addSeparator();
         result.add(getQuitAction());
         return result;
@@ -1720,8 +1710,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     private Action saveAction;
     /** Action to save the current graph in a new file. */
     private Action saveAsAction;
-    /** Action to export the current graph in an image format. */
-    private Action exportAction;
     /** Action to edit the graph properties. */
     private Action editPropertiesAction;
     /** Action to open a new graph for editing. */
@@ -1835,45 +1823,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
                 updateTitle();
             }
         }
-    }
-
-    /**
-     * Action to export the current state of the editor to an image file.
-     */
-    private class ExportGraphAction extends AbstractAction {
-        /** Constructs an instance of the action. */
-        protected ExportGraphAction() {
-            super(Options.EXPORT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
-            this.exporter.getFileChooser();
-            // Tikz export is not supported in Editor.
-            this.exporter.removeTikzFormat();
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            if (getModelName() != null) {
-                this.exporter.getFileChooser().setSelectedFile(
-                    new File(getModelName()));
-            }
-            File toFile =
-                ExtensionFilter.showSaveDialog(this.exporter.getFileChooser(),
-                    getFrame(), null);
-            if (toFile != null) {
-                try {
-                    JGraph jGraph;
-                    if (this.exporter.acceptsImageFormat(toFile)) {
-                        jGraph = getAspectJGraph();
-                    } else {
-                        jGraph = getJGraph();
-                    }
-                    this.exporter.export(jGraph, toFile);
-                } catch (IOException exc) {
-                    showErrorDialog("Error while saving to " + toFile, exc);
-                }
-            }
-        }
-
-        private final Exporter exporter = new Exporter();
     }
 
     /**
