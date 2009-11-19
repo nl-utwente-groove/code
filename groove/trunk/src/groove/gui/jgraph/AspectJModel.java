@@ -594,12 +594,14 @@ public class AspectJModel extends GraphJModel {
         /** This implementation returns the (unparsed) label of the model edge. */
         @Override
         public Label getLabel(Edge edge) {
+            Label result = null;
             Edge modelEdge = getModelEdge((AspectEdge) edge);
-            Label result = modelEdge.label();
             if (modelEdge instanceof ArgumentEdge) {
                 result =
                     DefaultLabel.createLabel("" + Groove.LC_PI
-                        + result.toString());
+                        + modelEdge.label().text());
+            } else if (modelEdge != null) {
+                result = modelEdge.label();
             }
             return result;
         }
