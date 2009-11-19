@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Element;
+import groove.gui.Exporter;
 import groove.gui.MCScenarioMenu;
 import groove.gui.Options;
 import groove.gui.ScenarioMenu;
@@ -94,7 +95,9 @@ public class LTSJGraph extends JGraph {
         result.add(this.simulator.getApplyTransitionAction());
         result.add(getExploreMenu());
         result.add(getMCMenu());
-
+        // export
+        result.addSeparator();
+        result.add(getExportAction());
         // Goto sub-menu
         result.addSeparator();
         result.add(this.simulator.getGotoStartStateAction());
@@ -164,6 +167,16 @@ public class LTSJGraph extends JGraph {
     /** Returns the simulator of this LTS jgraph. */
     public Simulator getSimulator() {
         return this.simulator;
+    }
+
+    @Override
+    protected Exporter getExporter() {
+        return getSimulator().getExporter();
+    }
+
+    @Override
+    protected String getExportActionName() {
+        return Options.EXPORT_LTS_ACTION_NAME;
     }
 
     /**

@@ -131,7 +131,8 @@ public class ControlTest {
 
             groove.gui.Simulator sim = new groove.gui.Simulator();
             ControlJGraph cjg =
-                new ControlJGraph(new ControlJModel(aut, sim.getOptions()));
+                new ControlJGraph(new ControlJModel(aut, sim.getOptions()),
+                    null);
             cjg.setEnabled(true);
             groove.gui.JGraphPanel<ControlJGraph> autPanel =
                 new groove.gui.JGraphPanel<ControlJGraph>(cjg, true, false,

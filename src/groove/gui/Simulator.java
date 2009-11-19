@@ -539,18 +539,6 @@ public class Simulator {
     }
 
     /**
-     * Returns the graph export action permanently associated with this
-     * simulator.
-     */
-    public ExportGraphAction getExportGraphAction() {
-        // lazily create the action
-        if (this.exportGraphAction == null) {
-            this.exportGraphAction = new ExportGraphAction();
-        }
-        return this.exportGraphAction;
-    }
-
-    /**
      * Returns the LTS export action permanently associated with this simulator.
      */
     public ExportAction getExportAction() {
@@ -1297,11 +1285,11 @@ public class Simulator {
                     : !newControlName.equals(oldControlName);
         try {
             getGrammarStore().putProperties(newProperties);
-            // if (refresh) {
-            doRefreshGrammar();
-            // } else {
-            // setGrammar(grammar);
-            // }
+            if (refresh) {
+                doRefreshGrammar();
+            } else {
+                setGrammar(grammar);
+            }
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
         }
@@ -1805,7 +1793,7 @@ public class Simulator {
     }
 
     /** Returns the exporter of the simulator. */
-    Exporter getExporter() {
+    public Exporter getExporter() {
         return this.exporter;
     }
 
@@ -1905,9 +1893,24 @@ public class Simulator {
      * currently selected view panel to allow registered refreshable elements to
      * refresh themselves.
      */
-    void refreshActions() {
+    private void refreshActions() {
+        refreshExportMenuItem();
         for (Refreshable action : this.refreshables) {
             action.refresh();
+        }
+    }
+
+    /**
+     * Refreshes the menu item for the export action to the most appropriate
+     * action, given the currently selected view panel.
+     */
+    private void refreshExportMenuItem() {
+        if (getGraphPanel() == null) {
+            getExportGraphMenuItem().setEnabled(false);
+        } else {
+            Action exportAction = getGraphPanel().getJGraph().getExportAction();
+            getExportGraphMenuItem().setAction(exportAction);
+            getExportGraphMenuItem().setEnabled(getGraphPanel().isEnabled());
         }
     }
 
@@ -1959,10 +1962,10 @@ public class Simulator {
         result.addSeparator();
         result.add(new JMenuItem(getSaveGrammarAction()));
         result.add(new JMenuItem(getSaveGraphAction()));
-        result.add(new JMenuItem(getExportGraphAction()));
+        result.add(getExportGraphMenuItem());
         result.add(new JMenuItem(getExportAction()));
         result.addSeparator();
-        result.add(getEditItem());
+        result.add(getEditMenuItem());
         result.add(new JMenuItem(getEditSystemPropertiesAction()));
         result.addSeparator();
         result.add(new JMenuItem(getQuitAction()));
@@ -2014,7 +2017,7 @@ public class Simulator {
      * Returns the menu item in the file menu that specifies saving the
      * currently displayed graph (in the currently selected graph panel).
      */
-    JMenuItem getEditItem() {
+    JMenuItem getEditMenuItem() {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
@@ -2028,6 +2031,18 @@ public class Simulator {
     }
 
     /**
+     * Returns the menu item that will contain the current export action.
+     */
+    private JMenuItem getExportGraphMenuItem() {
+        // lazily create the menu item
+        if (this.exportGraphMenuItem == null) {
+            this.exportGraphMenuItem =
+                new JMenuItem(getStatePanel().getJGraph().getExportAction());
+        }
+        return this.exportGraphMenuItem;
+    }
+
+    /**
      * Creates and returns a display menu for the menu bar. The menu is filled
      * out each time it gets selected so as to be sure it applies to the current
      * jgraph
@@ -2037,11 +2052,13 @@ public class Simulator {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
-                JGraph jgraph = getGraphPanel().getJGraph();
                 JPopupMenu popupMenu = getPopupMenu();
-                jgraph.fillOutEditMenu(popupMenu, true);
-                jgraph.fillOutDisplayMenu(popupMenu);
-                popupMenu.addSeparator();
+                if (getGraphPanel() != null) {
+                    JGraph jgraph = getGraphPanel().getJGraph();
+                    jgraph.fillOutEditMenu(popupMenu, true);
+                    jgraph.fillOutDisplayMenu(popupMenu);
+                    popupMenu.addSeparator();
+                }
                 popupMenu.add(createOptionsMenu());
                 super.menuSelectionChanged(selected);
             }
@@ -2088,12 +2105,11 @@ public class Simulator {
         result.add(new JMenuItem(getStartSimulationAction()));
         // IOVKA change to activate abstract simulation
         result.add(new JMenuItem(getStartAbstrSimulationAction()));
-
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
         // MdM - moved exploration dialog to the scenario menu
-        //result.addSeparator();
-        //result.add(new JMenuItem(getExplorationDialogAction()));
+        // result.addSeparator();
+        // result.add(new JMenuItem(getExplorationDialogAction()));
         // BEGIN_IOVKA
         // result.add(new JMenuItem(getChooseCustomScenarioAction()));
         // END_IOVKA
@@ -2836,6 +2852,9 @@ public class Simulator {
     /** Menu for externally provided actions. */
     private JMenu externalMenu;
 
+    /** The menu item containing the (current) export action. */
+    private JMenuItem exportGraphMenuItem;
+
     /** Dummy action for the {@link #externalMenu}. */
     private Action dummyExternalAction;
 
@@ -2904,9 +2923,6 @@ public class Simulator {
      * The exploration dialog action permanently associated with this simulator.
      */
     private ExplorationDialogAction explorationDialogAction;
-
-    /** The state export action permanently associated with this simulator. */
-    private ExportGraphAction exportGraphAction;
 
     /** The LTS export action permanently associated with this simulator. */
     private ExportAction exportAction;
@@ -3471,8 +3487,8 @@ public class Simulator {
                 setEnabled(enabled);
             }
             if (getGraphPanel() == getRulePanel()) {
-                getEditItem().setAction(this);
-                getEditItem().setAccelerator(Options.EDIT_KEY);
+                getEditMenuItem().setAction(this);
+                getEditMenuItem().setAccelerator(Options.EDIT_KEY);
             }
         }
 
@@ -3527,8 +3543,8 @@ public class Simulator {
                 setEnabled(enabled);
             }
             if (enabled) {
-                getEditItem().setAction(this);
-                getEditItem().setAccelerator(Options.EDIT_KEY);
+                getEditMenuItem().setAction(this);
+                getEditMenuItem().setAccelerator(Options.EDIT_KEY);
             }
         }
 
@@ -3622,8 +3638,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null &&
-                       getGrammarView().getStartGraphView() != null);
+            setEnabled(getGrammarView() != null
+                && getGrammarView().getStartGraphView() != null);
         }
     }
 
@@ -3678,66 +3694,6 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getGTS() != null);
-        }
-    }
-
-    /**
-     * Action to save the state, as a graph or in some export format.
-     * @see Exporter#export(JGraph, File)
-     */
-    private class ExportGraphAction extends AbstractAction implements
-            Refreshable {
-        /** Constructs an instance of the action. */
-        ExportGraphAction() {
-            super(Options.EXPORT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
-            addRefreshable(this);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String fileName;
-            JGraph jGraph;
-            if (getGraphPanel() == getLtsPanel()) {
-                fileName = "lts";
-                jGraph = getLtsPanel().getJGraph();
-            } else if (getGraphPanel() == getStatePanel()) {
-                fileName = getCurrentState().toString();
-                jGraph = getStatePanel().getJGraph();
-            } else {
-                fileName = getCurrentRule().getName();
-                jGraph = getRulePanel().getJGraph();
-            }
-            getExporter().getFileChooser().setSelectedFile(new File(fileName));
-            File selectedFile =
-                ExtensionFilter.showSaveDialog(getExporter().getFileChooser(),
-                    getFrame(), null);
-            // now save, if so required
-            if (selectedFile != null) {
-                try {
-                    getExporter().export(jGraph, selectedFile);
-                } catch (IOException exc) {
-                    new ErrorDialog(getFrame(), "Error while exporting to "
-                        + selectedFile, exc);
-                }
-
-            }
-        }
-
-        /**
-         * Tests if the action should be enabled according to the current state
-         * of the simulator, and also modifies the action name.
-         */
-        public void refresh() {
-            if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getGTS() != null);
-                putValue(NAME, Options.EXPORT_LTS_ACTION_NAME);
-            } else if (getGraphPanel() == getStatePanel()) {
-                setEnabled(getCurrentState() != null);
-                putValue(NAME, Options.EXPORT_STATE_ACTION_NAME);
-            } else {
-                setEnabled(getCurrentRule() != null);
-                putValue(NAME, Options.EXPORT_RULE_ACTION_NAME);
-            }
         }
     }
 

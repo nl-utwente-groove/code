@@ -186,6 +186,9 @@ public class Options {
         "Exploration Dialog (work in progress)";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
+    /** Export control action name */
+    public static final String EXPORT_CONTROL_ACTION_NAME =
+        "Export Control Automaton ...";
     /** Export rule action name */
     public static final String EXPORT_RULE_ACTION_NAME = "Export Rule ...";
     /** Export lts action name */

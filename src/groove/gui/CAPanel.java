@@ -306,7 +306,7 @@ public class CAPanel extends JPanel implements SimulationListener {
                 getSimulator().getGrammarView().getControlView().getAutomaton();
             ControlJGraph cjg =
                 new ControlJGraph(new ControlJModel(caut,
-                    getSimulator().getOptions()));
+                    getSimulator().getOptions()), simulator);
 
             AutomatonPanel autPanel =
                 new AutomatonPanel(CAPanel.this.simulator, cjg);

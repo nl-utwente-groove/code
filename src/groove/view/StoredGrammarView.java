@@ -236,18 +236,20 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         sense.
      */
     private boolean isUseControl() {
-        return getProperties().isUseControl() && getControlName(false) != null;
+        return getProperties().isUseControl() && getControlName() != null;
     }
 
     /**
      * Returns the name of the control program to be used. This is either
      * explicitly set through {@link #setControl(String)}, or taken from the
-     * system properties. If no explicit control name is given, either
-     * {@link Groove#DEFAULT_CONTROL_NAME} or <code>null</code> is returned.
-     * @param useDefault flag to determine if
-     *        {@link Groove#DEFAULT_CONTROL_NAME} is used in case no explicit
-     *        control name is set using {@link #setControl(String)} or in the
-     *        system properties.
+     * system properties. If no explicit control name is given,
+     * {@link Groove#DEFAULT_CONTROL_NAME} or {@link #getName()} is taken as
+     * default name, if any control program by that name exists; otherwise
+     * <code>null</code> is returned.
+     * @param useDefault flag to determine if either of the defaults (
+     *        {@link Groove#DEFAULT_CONTROL_NAME} or {@link #getName()}) should
+     *        be returned in case no explicit control name has been set using
+     *        {@link #setControl(String)} or in the system properties.
      * @see SystemProperties#getControlName()
      */
     private String getControlName(boolean useDefault) {
@@ -255,11 +257,14 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (result == null || result.length() == 0) {
             result = getProperties().getControlName();
         }
-        if (result == null || result.length() == 0) {
-            result =
-                useDefault
-                    || this.controlMap.containsKey(Groove.DEFAULT_CONTROL_NAME)
-                        ? Groove.DEFAULT_CONTROL_NAME : null;
+        if ((result == null || result.length() == 0) && useDefault) {
+            // first default name: Groove.DEFAULT_CONTROL_NAME
+            // second default name: grammar name
+            if (this.controlMap.containsKey(Groove.DEFAULT_CONTROL_NAME)) {
+                result = Groove.DEFAULT_CONTROL_NAME;
+            } else if (this.controlMap.containsKey(getName())) {
+                result = getName();
+            }
         }
         return result;
     }

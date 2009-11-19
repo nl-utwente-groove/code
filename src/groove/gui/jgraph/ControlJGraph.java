@@ -16,12 +16,17 @@
  */
 package groove.gui.jgraph;
 
+import groove.gui.Exporter;
+import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
+import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 
 import java.util.Collection;
 import java.util.Collections;
+
+import javax.swing.JPopupMenu;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
@@ -33,18 +38,30 @@ public class ControlJGraph extends JGraph {
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param model
+     * @param simulator the simulator that is the context of this jgraph; may be
+     *        <code>null</code>.
      */
-    public ControlJGraph(ControlJModel model) {
+    public ControlJGraph(ControlJModel model, Simulator simulator) {
         super(model, true, null);
+        this.exporter =
+            simulator == null ? super.getExporter() : simulator.getExporter();
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance((this)));
+        this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance(
+            (this)));
         setEnabled(false);
     }
 
     @Override
     public ControlJModel getModel() {
         return (ControlJModel) super.getModel();
+    }
+
+    @Override
+    protected void fillPopupMenu(JPopupMenu result) {
+        addSeparatorUnlessFirst(result);
+        result.add(getExportAction());
+        super.fillPopupMenu(result);
     }
 
     /**
@@ -64,6 +81,19 @@ public class ControlJGraph extends JGraph {
         result.addLayoutItem(createInitialLayouter());
         return result;
     }
+
+    @Override
+    protected Exporter getExporter() {
+        return this.exporter;
+    }
+
+    @Override
+    protected String getExportActionName() {
+        return Options.EXPORT_CONTROL_ACTION_NAME;
+    }
+
+    /** The context of this jgraph; possibly <code>null</code>. */
+    private final Exporter exporter;
 
     class MyForestLayouter extends groove.gui.layout.ForestLayouter {
         /**

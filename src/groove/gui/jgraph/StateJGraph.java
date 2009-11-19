@@ -20,7 +20,9 @@ import groove.abs.AbstrGraph;
 import groove.abs.GraphPattern;
 import groove.graph.DefaultGraph;
 import groove.graph.Node;
+import groove.gui.Exporter;
 import groove.gui.GraphPatternPopupWindow;
+import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.lts.GraphState;
 
@@ -78,24 +80,20 @@ public class StateJGraph extends JGraph {
         if (!this.simulator.isAbstractSimulation()) {
             result.addSeparator();
             result.add(this.simulator.getEditStateAction());
+            result.add(getExportAction());
         }
         super.fillPopupMenu(result);
     }
 
-    //
-    // /**
-    // * Returns the bounds of a set of graph elements.
-    // */
-    // public Rectangle2D getElementBounds(Set<Element> elemSet) {
-    // Set<JCell> jCellSet = new HashSet<JCell>();
-    // for (Element elem: elemSet) {
-    // JCell jCell = getModel().getJCell(elem);
-    // if (jCell != null) {
-    // jCellSet.add(jCell);
-    // }
-    // }
-    // return getCellBounds(jCellSet.toArray());
-    // }
+    @Override
+    protected Exporter getExporter() {
+        return this.simulator.getExporter();
+    }
+
+    @Override
+    protected String getExportActionName() {
+        return Options.EXPORT_STATE_ACTION_NAME;
+    }
 
     /**
      * The simulator to which this j-graph is associated.

@@ -68,6 +68,19 @@ public class LTSJModel extends GraphJModel {
     }
 
     /**
+     * If the super call returns <code>null</code>, use
+     * {@link #DEFAULT_LTS_NAME}.
+     */
+    @Override
+    public String getName() {
+        String result = super.getName();
+        if (result == null) {
+            result = DEFAULT_LTS_NAME;
+        }
+        return result;
+    }
+
+    /**
      * Returns the active transition of the LTS, if any. The active transition
      * is the one currently selected in the simulator. Returns <tt>null</tt> if
      * no transition is selected.
@@ -251,6 +264,11 @@ public class LTSJModel extends GraphJModel {
         return this.specialLabels != null && this.specialLabels.contains(label);
     }
 
+    /** Sets the active state. */
+    protected void setterActiveState(State s) {
+        this.activeState = s;
+    }
+
     /**
      * The active state of the LTS. Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
@@ -294,6 +312,9 @@ public class LTSJModel extends GraphJModel {
 
     /** Dummy LTS model. */
     static public final LTSJModel EMPTY_LTS_JMODEL = new LTSJModel();
+
+    /** Default name of an LTS model. */
+    static public final String DEFAULT_LTS_NAME = "lts";
 
     /**
      * JEdge class that describes the underlying edge as a graph transition.
@@ -450,10 +471,5 @@ public class LTSJModel extends GraphJModel {
         public StringBuilder getLine(Edge edge) {
             return Converter.toHtml(new StringBuilder(getLabel(edge).text()));
         }
-    }
-
-    /** Sets the active state. */
-    protected void setterActiveState(State s) {
-        this.activeState = s;
     }
 }
