@@ -169,6 +169,12 @@ public class DefaultArchiveSystemStore implements SystemStore {
     }
 
     @Override
+    public String deleteControl(String name) {
+        throw new UnsupportedOperationException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
     public AspectGraph deleteGraph(String name) {
         throw new UnsupportedOperationException(String.format(
             "Archived grammar '%s' is immutable", getName()));
