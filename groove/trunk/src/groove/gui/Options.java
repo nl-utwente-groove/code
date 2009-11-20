@@ -149,38 +149,55 @@ public class Options {
     /** Apply transition action name */
     public static final String APPLY_TRANSITION_ACTION_NAME =
         "Apply active match";
+    /** Action name for cancelling an edit. */
+    public static final String CANCEL_EDIT_ACTION_NAME = "Cancel Edit";
     /** Close action name */
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Copy action name */
     public static final String COPY_ACTION_NAME = "Copy";
+    /** Name of the "Copy Control Program" action. */
+    public static final String COPY_CONTROL_ACTION_NAME =
+        "Copy Control Program ...";
+    /** Name of the "Copy Graph" action. */
+    public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph ...";
     /** Copy rule action name */
-    public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
-    /** Copy graph action name */
-    public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
+    public static final String COPY_RULE_ACTION_NAME = "Copy Rule ...";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
-    /** Delete rule action name */
-    public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
+    /** Delete control program action name */
+    public static final String DELETE_CONTROL_ACTION_NAME =
+        "Delete Control Program";
     /** Delete graph action name */
     public static final String DELETE_GRAPH_ACTION_NAME = "Delete Graph";
-    /** Edit action name */
-    public static final String DISABLE_ACTION_NAME = "Disable Rule";
-    /** Edit graph action name */
-    public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
+    /** Delete rule action name */
+    public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
+    /** Name of the "Disable Control" action. */
+    public static final String DISABLE_CONTROL_ACTION_NAME =
+        "Disable Control Program";
+    /** Name of the "Disable Rule" action. */
+    public static final String DISABLE_RULE_ACTION_NAME = "Disable Rule";
     /** Edge mode action name */
     public static final String EDGE_MODE_NAME = "Edge mode";
+    /** Edit action name */
+    public static final String EDIT_ACTION_NAME = "Edit ...";
+    /** Edit control action name */
+    public static final String EDIT_CONTROL_ACTION_NAME =
+        "Edit Control Program ...";
+    /** Edit graph action name */
+    public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
     /** Edit label action name */
     static public final String EDIT_LABEL_ACTION = "Edit Label";
     /** Edit rule action name */
     public static final String EDIT_RULE_ACTION_NAME = "Edit Rule ...";
     /** Edit state action name */
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
-    /** Edit action name */
-    public static final String EDIT_ACTION_NAME = "Edit ...";
-    /** Edit action name */
-    public static final String ENABLE_ACTION_NAME = "Enable Rule";
+    /** Name of the "Enable Control Program" action */
+    public static final String ENABLE_CONTROL_ACTION_NAME =
+        "Enable Control Program";
+    /** Name of the "Enable Rule" action */
+    public static final String ENABLE_RULE_ACTION_NAME = "Enable Rule";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
         "Exploration Dialog (work in progress)";
@@ -487,13 +504,13 @@ public class Options {
     // /** Parse attributed graphs option */
     // static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed
     // graph";
-    /** Always start simulation after changes. */
-    static public final String START_SIMULATION_OPTION =
-        "Start new simulation?";
-    /** Automatically stop simulation at changes to the rule system. */
-    static public final String STOP_SIMULATION_OPTION =
-        "Stop current simulation?";
     /** Always delete rules without confirmation. */
+    static public final String CANCEL_CONTROL_EDIT_OPTION =
+        "Abandon edited control program?";
+    /** Option to delete control programs. */
+    static public final String DELETE_CONTROL_OPTION =
+        "Delete control program?";
+    /** Option to delete rules. */
     static public final String DELETE_RULE_OPTION = "Delete rule?";
     /** Always delete graphs without confirmation. */
     static public final String DELETE_GRAPH_OPTION = "Delete graph?";
@@ -507,6 +524,12 @@ public class Options {
     /** Always replace edited rules. */
     static public final String REPLACE_START_GRAPH_OPTION =
         "Replace start graph?";
+    /** Always start simulation after changes. */
+    static public final String START_SIMULATION_OPTION =
+        "Start new simulation?";
+    /** Automatically stop simulation at changes to the rule system. */
+    static public final String STOP_SIMULATION_OPTION =
+        "Stop current simulation?";
     /** Always replace edited rules. */
     static public final String VERIFY_ALL_STATES_OPTION = "Verify all states?";
 
@@ -529,12 +552,14 @@ public class Options {
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
         boolOptionDefaults.put(PREVIEW_ON_CLOSE_OPTION, true);
         boolOptionDefaults.put(PREVIEW_ON_SAVE_OPTION, true);
-        intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
-        intOptionDefaults.put(STOP_SIMULATION_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(CANCEL_CONTROL_EDIT_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(DELETE_CONTROL_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
+        intOptionDefaults.put(STOP_SIMULATION_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 
@@ -650,12 +675,14 @@ public class Options {
         // addCheckbox(IS_ATTRIBUTED_OPTION);
         addCheckbox(PREVIEW_ON_CLOSE_OPTION);
         addCheckbox(PREVIEW_ON_SAVE_OPTION);
-        addBehaviour(STOP_SIMULATION_OPTION, 2);
-        addBehaviour(START_SIMULATION_OPTION, 3);
-        addBehaviour(DELETE_RULE_OPTION, 2);
+        addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
+        addBehaviour(DELETE_CONTROL_OPTION, 2);
         addBehaviour(DELETE_GRAPH_OPTION, 2);
+        addBehaviour(DELETE_RULE_OPTION, 2);
         addBehaviour(REPLACE_RULE_OPTION, 3);
         addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
+        addBehaviour(STOP_SIMULATION_OPTION, 2);
+        addBehaviour(START_SIMULATION_OPTION, 3);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
 

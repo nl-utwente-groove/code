@@ -1280,7 +1280,6 @@ public class LabelTree extends JTree implements GraphModelListener,
             super(null, getModeIcon(subtypes));
             this.subtypes = subtypes;
             putValue(Action.SHORT_DESCRIPTION, computeName());
-            setName(computeName());
         }
 
         @Override
@@ -1311,7 +1310,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     private class ShowAllLabelsAction extends AbstractAction {
         public ShowAllLabelsAction() {
             super(null, Groove.E_A_CHOICE_ICON);
-            setName(computeName());
             putValue(Action.SHORT_DESCRIPTION, computeName());
         }
 

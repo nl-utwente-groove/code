@@ -846,6 +846,16 @@ public class Simulator {
         }
     }
 
+    /** Adds a control program to this grammar. */
+    void doAddControl(String name, String program) {
+        try {
+            getGrammarStore().putControl(name, program);
+            setGrammar(getGrammarView());
+        } catch (IOException exc) {
+            showErrorDialog("Error storing control program " + name, exc);
+        }
+    }
+
     /**
      * Adds a given graph to the graphs in this grammar
      */
@@ -879,6 +889,21 @@ public class Simulator {
             showErrorDialog("Error while saving rule", exc);
         } catch (UnsupportedOperationException u) {
             showErrorDialog("Current grammar is read-only", u);
+        }
+    }
+
+    /** Adds a control program to this grammar. */
+    void doDeleteControl(String name) {
+        boolean isCurrentControl =
+            name.equals(getGrammarView().getControlName());
+        getGrammarStore().deleteControl(name);
+        // we only need to refresh the grammar if the deleted
+        // control program was the currently active one
+        if (isCurrentControl) {
+            setGrammar(getGrammarView());
+        } else {
+            // otherwise, we only need to update the list
+            getControlPanel().refresh();
         }
     }
 
@@ -1276,20 +1301,16 @@ public class Simulator {
     }
 
     void doSaveProperties(SystemProperties newProperties) {
-        // check if we need to load a new control program
-        String newControlName = newProperties.getControlName();
-        StoredGrammarView grammar = this.getGrammarView();
-        String oldControlName = grammar.getProperties().getControlName();
-        boolean refresh =
-            newControlName == null ? oldControlName != null
-                    : !newControlName.equals(oldControlName);
+        // // check if we need to load a new control program
+        // String newControlName = newProperties.getControlName();
+        // StoredGrammarView grammar = this.getGrammarView();
+        // String oldControlName = grammar.getProperties().getControlName();
+        // boolean refresh =
+        // newControlName == null ? oldControlName != null
+        // : !newControlName.equals(oldControlName);
         try {
             getGrammarStore().putProperties(newProperties);
-            if (refresh) {
-                doRefreshGrammar();
-            } else {
-                setGrammar(grammar);
-            }
+            setGrammar(getGrammarView());
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
         }
@@ -1626,7 +1647,7 @@ public class Simulator {
                     // only refresh actions if the selected panel is not a
                     // control panel,
                     // since that is not a graphpane!
-                    if (!(source.getSelectedComponent() instanceof CAPanel)) {
+                    if (!(source.getSelectedComponent() instanceof ControlPanel)) {
                         refreshActions();
                     }
                 }
@@ -1712,9 +1733,9 @@ public class Simulator {
         return this.statePanel;
     }
 
-    CAPanel getControlPanel() {
+    ControlPanel getControlPanel() {
         if (this.controlPanel == null) {
-            this.controlPanel = new CAPanel(this);
+            this.controlPanel = new ControlPanel(this);
             this.controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.controlPanel;
@@ -2082,9 +2103,12 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.addSeparator();
+        result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
+        result.add(getOptions().getItem(Options.DELETE_CONTROL_OPTION));
+        result.add(getOptions().getItem(Options.DELETE_GRAPH_OPTION));
+        result.add(getOptions().getItem(DELETE_RULE_OPTION));
         result.add(getOptions().getItem(START_SIMULATION_OPTION));
         result.add(getOptions().getItem(STOP_SIMULATION_OPTION));
-        result.add(getOptions().getItem(DELETE_RULE_OPTION));
         result.add(getOptions().getItem(REPLACE_RULE_OPTION));
         result.add(getOptions().getItem(REPLACE_START_GRAPH_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
@@ -2456,11 +2480,9 @@ public class Simulator {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
             }
-            SystemProperties properties = getGrammarView().getProperties();
-            String controlName = properties.getControlName();
-            if (properties.isUseControl() && controlName != null) {
+            if (getGrammarView().isUseControl()) {
                 title.append(" | ");
-                title.append(controlName);
+                title.append(getGrammarView().getControlName());
 
             }
             if (!getGrammarStore().isModifiable()) {
@@ -2628,6 +2650,27 @@ public class Simulator {
         Set<String> existingNames = getGrammarView().getGraphNames();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
+                @Override
+                protected String createName(String name) {
+                    return name;
+                }
+            };
+        nameDialog.showDialog(getFrame(), title);
+        return nameDialog.getName();
+    }
+
+    /**
+     * Enters a dialog that results in a control name that does not yet occur in
+     * the current grammar, or <code>null</code> if the dialog was cancelled.
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param name an initially proposed name
+     * @return a control name not occurring in the current grammar, or
+     *         <code>null</code>
+     */
+    String askNewControlName(String title, String name) {
+        Set<String> existingNames = getGrammarView().getControlNames();
+        FreshNameDialog<String> nameDialog =
+            new FreshNameDialog<String>(existingNames, name, true) {
                 @Override
                 protected String createName(String name) {
                     return name;
@@ -2823,7 +2866,7 @@ public class Simulator {
     private JPanel editorPanel;
 
     /** Control display panel. */
-    private CAPanel controlPanel;
+    private ControlPanel controlPanel;
 
     /** LTS display panel. (which is contained in the ConditionalLTSPanel) */
     private LTSPanel ltsPanel;
@@ -3603,7 +3646,7 @@ public class Simulator {
     private class EnableRuleAction extends AbstractAction implements
             Refreshable {
         EnableRuleAction() {
-            super(Options.DISABLE_ACTION_NAME);
+            super(Options.DISABLE_RULE_ACTION_NAME);
             addRefreshable(this);
         }
 
@@ -3611,9 +3654,9 @@ public class Simulator {
             boolean ruleSelected = getCurrentRule() != null;
             setEnabled(ruleSelected && getGrammarStore().isModifiable());
             if (ruleSelected && getCurrentRule().isEnabled()) {
-                putValue(NAME, Options.DISABLE_ACTION_NAME);
+                putValue(NAME, Options.DISABLE_RULE_ACTION_NAME);
             } else {
-                putValue(NAME, Options.ENABLE_ACTION_NAME);
+                putValue(NAME, Options.ENABLE_RULE_ACTION_NAME);
             }
         }
 
