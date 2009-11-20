@@ -61,6 +61,19 @@
 \tikzstyle{thinedge}=[draw,\thin,text=\thin,,-stealth']
 \tikzstyle{thinlab}=[text=\thin,fill=white,inner sep=\labinsep]
 
+% Control automaton
+%  Nodes
+\tikzstyle{cnode}=[draw=black,fill=\grey,shape=rectangle]
+\tikzstyle{cstart}=[draw=black,fill=green,shape=rectangle]
+\tikzstyle{csuccess}=[draw=black,fill=red,shape=rectangle]
+%  Edges
+\tikzstyle{cedge}=[draw,black,-stealth']
+\tikzstyle{cshape}=[draw,\grey,-stealth']
+\tikzstyle{clambda}=[draw,green,-stealth']
+\tikzstyle{cfailure}=[draw,red,-stealth']
+%  Labels
+\tikzstyle{clab}=[black,fill=white,inner sep=\labinsep]
+
 % Ugly hack to allow nodes with multiple lines
 \newcommand{\ml}[1]{
 \begin{tabular}{@{}l@{}}#1\vspace{-2pt}\end{tabular}
