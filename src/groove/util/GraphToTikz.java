@@ -16,6 +16,8 @@
  */
 package groove.util;
 
+import groove.control.ControlShape;
+import groove.control.ControlTransition;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -25,6 +27,8 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.ControlJModel.StateJVertex;
+import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -952,6 +956,11 @@ public final class GraphToTikz {
             boolean isEmphasized,
             boolean isGrayedOut) {
         
+        if (node instanceof StateJVertex) {
+            return convertStyles((StateJVertex) node, showBackground,
+                                 isEmphasized, isGrayedOut);
+        }
+        
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
         
@@ -1009,6 +1018,45 @@ public final class GraphToTikz {
     }
 
     /**
+     * Produces a string with the proper Tikz styles of a given control node.
+     * @param node the control node to be converted.
+     * @param showBackground flag to indicate if the node should be filled.
+     * @param isEmphasized flag that indicates if the node is emphasized.
+     * @param isGrayedOut flag that indicates if the node is grayed out.
+     * @return a string with all the Tikz styles to be used.
+     */
+    private static String convertStyles(
+            StateJVertex node,
+            boolean showBackground,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
+        
+        ArrayList<String> styles = new ArrayList<String>();
+        
+        if (node.isStart()) {
+            styles.add(CONTROL_START_NODE_STYLE);
+        } else if (node.getNode().isSuccess()) {
+            styles.add(CONTROL_SUCCESS_NODE_STYLE);
+        } else {
+            styles.add(CONTROL_NODE_STYLE);
+        }
+        
+        if (isEmphasized) {
+            styles.add(BOLD_LINE);
+        }
+        
+        if (isGrayedOut) {
+            styles.add(THIN_NODE_STYLE);
+        }
+        
+        if (!showBackground) {
+            styles.add(WHITE_FILL);
+        }
+        
+        return styles.toString();
+    }
+    
+    /**
      * Find the proper Tikz styles for a given edge.
      * @param edge the edge to be analysed.
      * @param isEmphasized flag that indicates if the edge is emphasized.
@@ -1020,6 +1068,11 @@ public final class GraphToTikz {
             GraphJEdge edge,
             boolean isEmphasized,
             boolean isGrayedOut) {
+        
+        if (edge instanceof TransitionJEdge) {
+            return convertStyles((TransitionJEdge) edge,
+                                  isEmphasized, isGrayedOut);
+        }
         
         ArrayList<String> styles = new ArrayList<String>();
         
@@ -1058,7 +1111,46 @@ public final class GraphToTikz {
         
         return styles;
     }
+
+    /**
+     * Find the proper Tikz styles for a given control edge.
+     * @param edge the control edge to be analysed.
+     * @param isEmphasized flag that indicates if the edge is emphasized.
+     * @param isGrayedOut flag that indicates if the edge is grayed out.
+     * @return an array of size two. The first string is the edge style and the
+     *         second one is the label style.
+     */
+    private static ArrayList<String> convertStyles(
+            TransitionJEdge edge,
+            boolean isEmphasized,
+            boolean isGrayedOut) {
         
+        ArrayList<String> styles = new ArrayList<String>();
+        
+        ControlTransition t = edge.getTransition();
+        if (t instanceof ControlShape) {
+            styles.add(CONTROL_SHAPE_EDGE_STYLE);
+        } else if (t.isLambda()) {
+            styles.add(CONTROL_LAMBDA_EDGE_STYLE);
+        } else if (t.hasFailures()) {
+            styles.add(CONTROL_FAILURE_EDGE_STYLE);
+        } else {
+            styles.add(CONTROL_EDGE_STYLE);
+        }
+        styles.add(CONTROL_LABEL_STYLE);
+        
+        if (isGrayedOut) {
+            styles.set(0, THIN_EDGE_STYLE);
+            styles.set(1, THIN_LABEL_STYLE);
+        }
+        
+        if (isEmphasized) {
+            styles.set(0, styles.get(0) + ", " + BOLD_LINE);
+        }
+        
+        return styles;
+    }
+    
     /**
      * @return the line necessary to begin a Tikz figure.
      */
@@ -1123,8 +1215,14 @@ public final class GraphToTikz {
     private static final String PRODUCT_NODE_STYLE = "prod";
     private static final String QUANTIFIER_NODE_STYLE = "quantnode";
     private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
-    // private static final String CONTROL_EDGE_STYLE = "contedge";
-    // private static final String CONTROL_LABEL_STYLE = "contlab";
+    private static final String CONTROL_NODE_STYLE = "cnode";
+    private static final String CONTROL_START_NODE_STYLE = "cstart";
+    private static final String CONTROL_SUCCESS_NODE_STYLE = "csuccess";
+    private static final String CONTROL_EDGE_STYLE = "cedge";
+    private static final String CONTROL_SHAPE_EDGE_STYLE = "cshape";
+    private static final String CONTROL_LAMBDA_EDGE_STYLE = "clambda";
+    private static final String CONTROL_FAILURE_EDGE_STYLE = "cfailure";
+    private static final String CONTROL_LABEL_STYLE = "clab";
     private static final String FINAL_NODE_STYLE = "final";
     private static final String START_NODE_STYLE = "start";
     private static final String OPEN_NODE_STYLE = "open";

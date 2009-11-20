@@ -210,7 +210,7 @@ public class ControlJModel extends GraphJModel {
      * @author Tom Staijen
      * @version $Revision $
      */
-    private class TransitionJEdge extends GraphJEdge {
+    public class TransitionJEdge extends GraphJEdge {
         /**
          * Creates a new instance from a given edge (required to be a
          * {@link GraphTransition}).
@@ -255,6 +255,13 @@ public class ControlJModel extends GraphJModel {
             }
             return result.toString();
         }
+        
+        /**
+         * @return The first underlying transition.
+         */
+        public ControlTransition getTransition() {
+            return (ControlTransition) super.getEdge();
+        }
     }
 
     /**
@@ -262,7 +269,7 @@ public class ControlJModel extends GraphJModel {
      * @author Tom Staijen
      * @version $Revision $
      */
-    private class StateJVertex extends GraphJVertex {
+    public class StateJVertex extends GraphJVertex {
         /**
          * Creates a new instance for a given node (required to be a
          * {@link ControlState}) in an LTS model.
@@ -277,6 +284,13 @@ public class ControlJModel extends GraphJModel {
         @Override
         public ControlState getNode() {
             return (ControlState) super.getNode();
+        }
+        
+        /**
+         * @return True is this is a start node in the automaton.
+         */
+        public boolean isStart() {
+            return getNode().equals(getGraph().getStart());
         }
     }
 }
