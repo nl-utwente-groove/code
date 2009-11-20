@@ -141,10 +141,10 @@ public class JVertexView extends VertexView {
             break;
         case DIAMOND_SHAPE:
             bounds = getCachedBounds();
-            result.left += (int) bounds.getWidth() / 3;
-            result.right += (int) bounds.getWidth() / 3;
-            result.top += (int) bounds.getHeight() / 3;
-            result.bottom += (int) bounds.getHeight() / 3;
+            result.left += (int) bounds.getWidth() / 8;
+            result.right += (int) bounds.getWidth() / 8;
+            result.top += (int) bounds.getHeight() / 8;
+            result.bottom += (int) bounds.getHeight() / 8;
             break;
         }
         return result;

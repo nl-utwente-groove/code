@@ -78,7 +78,7 @@ public class DefaultNode implements Node {
      *         <tt>this</tt> and <tt>obj</tt> have the same node numbers
      */
     @Override
-    final public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         boolean result = (obj == this);
         assert result || !(obj instanceof DefaultNode)
             || testDiffers((DefaultNode) obj) : String.format(
