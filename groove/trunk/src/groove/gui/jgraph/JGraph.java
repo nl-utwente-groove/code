@@ -826,10 +826,18 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Factory method for the marquee handler.
+     * Factory method for the marquee handler. This marquee handler ensures that
+     * mouse right-clicks don't deselect unless they can select something else.
      */
     protected BasicMarqueeHandler createMarqueeHandler() {
-        return new BasicMarqueeHandler();
+        return new BasicMarqueeHandler() {
+            @Override
+            public void mousePressed(MouseEvent evt) {
+                if (evt.getButton() != MouseEvent.BUTTON3) {
+                    super.mousePressed(evt);
+                }
+            }
+        };
     }
 
     /**
