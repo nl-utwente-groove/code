@@ -137,8 +137,7 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     @Override
     public ControlView getControlView() {
-        return !getProperties().isUseControl() || getControlName() == null
-                ? null : getControlView(getControlName());
+        return isUseControl() ? getControlView(getControlName()) : null;
     }
 
     public String getStartGraphName() {
@@ -230,12 +229,11 @@ public class StoredGrammarView implements GrammarView, Observer {
     /**
      * Indicates if control is explicitly enabled. This means not only the
      * {@link SystemProperties#isUseControl()} yields <code>true</code>, but
-     * also {@link SystemProperties#getControlName()} is set to a non-empty
-     * value.
+     * also {@link #getControlName()} yields a non-<code>null</code> value.
      * @return <code>true</code> if control is explicitly enabled, in the above
      *         sense.
      */
-    private boolean isUseControl() {
+    public boolean isUseControl() {
         return getProperties().isUseControl() && getControlName() != null;
     }
 

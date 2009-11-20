@@ -141,6 +141,30 @@ public class Groove {
     public static final String TGR_EXTENSION = ".tgr";
     /** File name for Type Graph files */
     public static final String TGR_NAME = "typegraph";
+
+    // Icons
+
+    /** Cancel action icon. */
+    public static final ImageIcon CANCEL_ICON =
+        new ImageIcon(Groove.getResource("cancel-smaller.gif"));
+    /** Copy action icon. */
+    public static final ImageIcon COPY_ICON =
+        new ImageIcon(Groove.getResource("copy.gif"));
+    /** Delete action icon. */
+    public static final ImageIcon DELETE_ICON =
+        new ImageIcon(Groove.getResource("delete.gif"));
+    /** Disable action icon. */
+    public static final ImageIcon DISABLE_ICON =
+        new ImageIcon(Groove.getResource("disable.gif"));
+    /** Edit action icon. */
+    public static final ImageIcon EDIT_ICON =
+        new ImageIcon(Groove.getResource("edit.gif"));
+    /** Enable action icon. */
+    public static final ImageIcon ENABLE_ICON =
+        new ImageIcon(Groove.getResource("enable.gif"));
+    /** Rename action icon. */
+    public static final ImageIcon RENAME_ICON =
+        new ImageIcon(Groove.getResource("rename.gif"));
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON =
         new ImageIcon(getResource("gps.gif"));
@@ -183,6 +207,9 @@ public class Groove {
     /** Icon for Type Panel. */
     public static final ImageIcon TYPE_FRAME_ICON =
         new ImageIcon(getResource("type-frame.gif"));
+    /** Icon for a New action. */
+    public static final ImageIcon NEW_ICON =
+        new ImageIcon(getResource("new.gif"));
     /** GROOVE project icon in 16x16 format. */
     public static final ImageIcon GROOVE_ICON_16x16 =
         new ImageIcon(getResource("groove-g-16x16.gif"));
@@ -198,9 +225,15 @@ public class Groove {
     /** Transparent open down-arrow icon. */
     public static final ImageIcon OPEN_DOWN_ARROW_ICON =
         new ImageIcon(getResource("open-down-arrow.gif"));
-    /** Transparent open down-arrow icon. */
+    /** Special icon denoting choice e/a. */
     public static final ImageIcon E_A_CHOICE_ICON =
         new ImageIcon(getResource("e-a-choice.gif"));
+    /** Save action icon. */
+    public static final ImageIcon SAVE_ICON =
+        new ImageIcon(Groove.getResource("save.gif"));
+    /** Save as action icon. */
+    public static final ImageIcon SAVE_AS_ICON =
+        new ImageIcon(Groove.getResource("saveas.gif"));
     /** The file containing the configuration for allowed scenarios. */
     public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE =
         "configuration";

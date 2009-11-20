@@ -51,11 +51,6 @@ public class ControlView {
         this.controlProgram = control;
     }
 
-    /** Returns the control automaton. */
-    public ControlAutomaton getAutomaton() {
-        return this.automaton;
-    }
-
     /** Returns the textual control program. */
     public String getProgram() {
         return this.controlProgram;

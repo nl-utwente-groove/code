@@ -1831,8 +1831,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     private class NewGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         NewGraphAction() {
-            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(
-                Groove.getResource("new.gif")));
+            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, Groove.NEW_ICON);
             putValue(MNEMONIC_KEY, Options.NEW_MNEMONIC);
         }
 
@@ -1890,8 +1889,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     private class SaveGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(
-                Groove.getResource("save.gif")));
+            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, Groove.SAVE_ICON);
             putValue(MNEMONIC_KEY, Options.SAVE_MNEMONIC);
         }
 
