@@ -1033,16 +1033,18 @@ public final class GraphToTikz {
             styles.add(EMBARGO_EDGE_STYLE);
             styles.add(EMBARGO_LABEL_STYLE);
         } else { // role == "use"
-            Collection<String> src = edge.getSourceVertex().getPlainLabels();
-            Collection<String> tgt = edge.getTargetVertex().getPlainLabels();
-            if (src.contains(EXISTS)  || src.contains(FORALL) ||
-                src.contains(FORALLX) || tgt.contains(EXISTS) ||
-                tgt.contains(FORALL)  || tgt.contains(FORALLX)) {
-                styles.add(QUANTIFIER_EDGE_STYLE);
-            } else {
-                styles.add(BASIC_EDGE_STYLE);
-            }
+            styles.add(BASIC_EDGE_STYLE);
             styles.add(BASIC_LABEL_STYLE);
+        }
+        
+        // Quantification edges.
+        Collection<String> src = edge.getSourceVertex().getPlainLabels();
+        Collection<String> tgt = edge.getTargetVertex().getPlainLabels();
+        if (src.contains(EXISTS)  || src.contains(FORALL) ||
+            src.contains(FORALLX) || tgt.contains(EXISTS) ||
+            tgt.contains(FORALL)  || tgt.contains(FORALLX)) {
+            styles.set(0, QUANTIFIER_EDGE_STYLE);
+            styles.set(1, BASIC_LABEL_STYLE);
         }
         
         if (isGrayedOut) {
@@ -1121,6 +1123,8 @@ public final class GraphToTikz {
     private static final String PRODUCT_NODE_STYLE = "prod";
     private static final String QUANTIFIER_NODE_STYLE = "quantnode";
     private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
+    // private static final String CONTROL_EDGE_STYLE = "contedge";
+    // private static final String CONTROL_LABEL_STYLE = "contlab";
     private static final String FINAL_NODE_STYLE = "final";
     private static final String START_NODE_STYLE = "start";
     private static final String OPEN_NODE_STYLE = "open";
