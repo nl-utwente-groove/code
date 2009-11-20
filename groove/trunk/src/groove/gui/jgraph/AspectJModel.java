@@ -32,14 +32,12 @@ import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
 import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.algebra.ArgumentEdge;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
@@ -594,18 +592,8 @@ public class AspectJModel extends GraphJModel {
         /** This implementation returns the (unparsed) label of the model edge. */
         @Override
         public Label getLabel(Edge edge) {
-            Label result = null;
             Edge modelEdge = getModelEdge((AspectEdge) edge);
-            if (modelEdge instanceof ArgumentEdge) {
-                result =
-                    DefaultLabel.createLabel("" + Groove.LC_PI
-                        + modelEdge.label().text());
-            } else if (modelEdge != null) {
-                result = modelEdge.label();
-            } else {
-                result = edge.label();
-            }
-            return result;
+            return modelEdge == null ? edge.label() : modelEdge.label();
         }
 
         /**

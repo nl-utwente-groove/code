@@ -30,8 +30,8 @@ public abstract class AbstractLabel implements Cloneable, Label {
     }
 
     /**
-     * This implementation compares this label's {@link #text()} with that of
-     * <code>obj</code>.
+     * This implementation compares this label's class, and then its
+     * {@link #text()} with that of <code>obj</code>.
      */
     public int compareTo(Label obj) {
         if (obj.getClass() != getClass()) {

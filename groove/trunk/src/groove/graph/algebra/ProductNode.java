@@ -47,6 +47,25 @@ public class ProductNode extends DefaultNode {
     }
 
     /**
+     * This class does not guarantee unique representatives for the same number,
+     * so we need to override {@link #hashCode()} and {@link #equals(Object)}.
+     */
+    @Override
+    protected int computeHashCode() {
+        return getNumber() ^ getClass().hashCode();
+    }
+
+    /**
+     * This class does not guarantee unique representatives for the same number,
+     * so we need to override {@link #hashCode()} and {@link #equals(Object)}.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj.getClass().equals(getClass())
+            && ((ProductNode) obj).getNumber() == getNumber();
+    }
+
+    /**
      * Sets one of the arguments of the product node.
      * @throws IllegalArgumentException if argument number <code>i</code> has
      *         already been set
