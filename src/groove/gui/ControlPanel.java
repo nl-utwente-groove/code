@@ -52,6 +52,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -91,7 +92,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
         JToolBar result = new JToolBar();
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
+        result.add(createButton(getCopyAction()));
         result.add(createButton(getDeleteAction()));
+        result.add(createButton(getRenameAction()));
         result.addSeparator();
         result.add(createButton(getSaveAction()));
         result.add(createButton(getCancelAction()));
@@ -127,11 +130,11 @@ public class ControlPanel extends JPanel implements SimulationListener {
     }
 
     public void setGrammarUpdate(StoredGrammarView grammar) {
-        if (!isControlSelected()
-            || !grammar.getControlNames().contains(getSelectedControl())) {
-            setSelectedControl(grammar.getControlName());
+        if (!isControlSelected() || !grammarHasControl(getSelectedControl())) {
+            String newName = grammar.getControlName();
+            setSelectedControl(grammarHasControl(newName) ? newName : null);
         }
-        refresh();
+        refreshAll();
     }
 
     public void setRuleUpdate(RuleName name) {
@@ -154,6 +157,27 @@ public class ControlPanel extends JPanel implements SimulationListener {
         // nothing happens
     }
 
+    /**
+     * Creates and shows a confirmation dialog for abandoning the currently
+     * edited control program.
+     */
+    private boolean confirmAbandon() {
+        boolean result = true;
+        if (isDirty()) {
+            String name = getSelectedControl();
+            int answer =
+                JOptionPane.showConfirmDialog(this, String.format(
+                    "Save changes in '%s'?", name), null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            if (answer == JOptionPane.YES_OPTION) {
+                getSaveAction().doSave(name, getControlTextArea().getText());
+            } else {
+                result = answer == JOptionPane.NO_OPTION;
+            }
+        }
+        return result;
+    }
+
     /** Indicates if the currently loaded grammar is modifiable. */
     private boolean isModifiable() {
         SystemStore store = getSimulator().getGrammarStore();
@@ -166,6 +190,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private StoredGrammarView getGrammarView() {
         return getSimulator().getGrammarView();
+    }
+
+    /**
+     * Convenience method to test if the current grammar has a control program
+     * by a given name. Equivalent to
+     * <code>getGrammarView().getControlNames().contains(controlName)</code>
+     */
+    private boolean grammarHasControl(String controlName) {
+        return getGrammarView().getControlNames().contains(controlName);
     }
 
     /**
@@ -202,13 +235,10 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private boolean stopEditing(boolean confirm) {
         boolean result = true;
         if (isEditing()) {
-            if (!isDirty()
-                || !confirm
-                || getSimulator().confirmBehaviour(
-                    Options.CANCEL_CONTROL_EDIT_OPTION, null)) {
+            if (!confirm || confirmAbandon()) {
                 this.editing = false;
                 setDirty(false);
-                refresh();
+                refreshAll();
             } else {
                 result = false;
             }
@@ -225,7 +255,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private void startEditing() {
         assert !isEditing();
         this.editing = true;
-        refresh();
+        refreshAll();
     }
 
     /**
@@ -257,14 +287,14 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /**
      * Registers a refreshable.
-     * @see #refresh()
+     * @see #refreshAll()
      */
     private void addRefreshable(Refreshable refreshable) {
         this.refreshables.add(refreshable);
     }
 
     /** Refreshes all registered refreshables. */
-    public void refresh() {
+    public void refreshAll() {
         for (Refreshable refreshable : this.refreshables) {
             refreshable.refresh();
         }
@@ -324,7 +354,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
                 public void actionPerformed(ActionEvent e) {
                     if (getSelectedItem() != null && stopEditing(true)) {
                         setSelectedControl((String) getSelectedItem());
-                        ControlPanel.this.refresh();
+                        refreshAll();
                     }
                 }
             };
@@ -368,27 +398,35 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private class ControlTextArea extends RSyntaxTextArea implements
             Refreshable {
         public ControlTextArea() {
-            RSyntaxDocument document = new RSyntaxDocument("gcl");
-            document.setSyntaxStyle(new GCLTokenMaker());
-            setDocument(document);
+            super(new RSyntaxDocument("gcl"));
+            // RSyntaxDocument document = new RSyntaxDocument("gcl");
+            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new GCLTokenMaker());
+            // setDocument(document);
             setBackground(DISABLED_COLOUR);
             this.changeListener = new DocumentListener() {
                 @Override
                 public void removeUpdate(DocumentEvent e) {
-                    setDirty(true);
+                    notifyEdit();
                 }
 
                 @Override
                 public void insertUpdate(DocumentEvent e) {
-                    setDirty(true);
+                    notifyEdit();
                 }
 
                 @Override
                 public void changedUpdate(DocumentEvent e) {
+                    notifyEdit();
+                }
+
+                private void notifyEdit() {
                     setDirty(true);
+                    ControlTextArea.this.listenToRefresh = false;
+                    refreshAll();
+                    ControlTextArea.this.listenToRefresh = true;
                 }
             };
-            document.addDocumentListener(this.changeListener);
+            getDocument().addDocumentListener(this.changeListener);
             addRefreshable(this);
         }
 
@@ -400,42 +438,43 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            getDocument().removeDocumentListener(this.changeListener);
-            // we enable the area only if it is being edited.
-            setEditable(isEditing());
-            if (isEditing()) {
-                requestFocus();
-            }
-            // the area is editable (meaning it is lighter)
-            // if it is actually being edited, or if it is the
-            // currently used control program
-            boolean enabled = isEditing();
-            if (!enabled && isControlSelected()
-                && getGrammarView().isUseControl()) {
-                enabled =
-                    getSelectedControl().equals(
-                        getGrammarView().getControlName());
-            }
-            setEnabled(enabled);
-            // setEnabled(isControlSelected());
-            // if (isControlSelected()) {
-            // setBackground(getSelectedControl().equals(
-            // getGrammarView().getControlName()) ? ENABLED_COLOUR
-            // : DISABLED_COLOUR);
-            // }
-            String program = "";
-            if (isControlSelected()) {
-                ControlView cv =
-                    getGrammarView().getControlView(getSelectedControl());
-                if (cv != null) {
-                    program = cv.getProgram();
+            // if the text area has focus, don't do any refreshing
+            // as that would destroy the current state of the editing
+            if (this.listenToRefresh) {
+                getDocument().removeDocumentListener(this.changeListener);
+                // we enable the area only if it is being edited.
+                setEditable(isEditing());
+                // the area is editable (meaning it is lighter)
+                // if it is actually being edited, or if it is the
+                // currently used control program
+                boolean enabled = isEditing();
+                if (!enabled && isControlSelected()
+                    && getGrammarView().isUseControl()) {
+                    enabled =
+                        getSelectedControl().equals(
+                            getGrammarView().getControlName());
                 }
+                setEnabled(enabled);
+                String program = "";
+                if (isControlSelected()) {
+                    ControlView cv =
+                        getGrammarView().getControlView(getSelectedControl());
+                    if (cv != null) {
+                        program = cv.getProgram();
+                    }
+                }
+                setText(program);
+                discardAllEdits();
+                if (isEditing()) {
+                    requestFocus();
+                }
+                getDocument().addDocumentListener(this.changeListener);
             }
-            setText(program);
-            getDocument().addDocumentListener(this.changeListener);
         }
 
         private final DocumentListener changeListener;
+        /** Flag indicating if refresh actions should be currently listened to. */
+        private boolean listenToRefresh = true;
     }
 
     /** Lazily creates and returns the area displaying the control program. */
@@ -469,7 +508,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            stopEditing(false);
+            stopEditing(true);
         }
 
         @Override
@@ -495,26 +534,81 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /**
      * Action to delete the currently displayed control program.
      */
+    private class CopyAction extends RefreshableAction {
+        public CopyAction() {
+            super(Options.COPY_CONTROL_ACTION_NAME, Groove.COPY_ICON);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (stopEditing(true)) {
+                String oldName = getSelectedControl();
+                String newName =
+                    getSimulator().askNewControlName(null, oldName, true);
+                if (newName != null) {
+                    getSaveAction().doSave(newName,
+                        getControlTextArea().getText());
+                    setSelectedControl(newName);
+                    refreshAll();
+                }
+            }
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isControlSelected()
+                && grammarHasControl(getSelectedControl()));
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link CopyAction}.
+     */
+    private CopyAction getCopyAction() {
+        if (this.copyAction == null) {
+            this.copyAction = new CopyAction();
+        }
+        return this.copyAction;
+    }
+
+    /** Singular instance of the {@link CopyAction}. */
+    private CopyAction copyAction;
+
+    /**
+     * Action to delete the currently displayed control program.
+     */
     private class DeleteAction extends RefreshableAction {
         public DeleteAction() {
             super(Options.DELETE_CONTROL_ACTION_NAME, Groove.DELETE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (getSimulator().confirmBehaviour(
-                Options.DELETE_CONTROL_OPTION,
-                String.format("Delete control program '%s'?",
-                    getSelectedControl()))) {
+            String controlName = getSelectedControl();
+            if (getSimulator().confirmBehaviour(Options.DELETE_CONTROL_OPTION,
+                String.format("Delete control program '%s'?", controlName))) {
                 stopEditing(false);
-                getSimulator().doDeleteControl(getSelectedControl());
-                setSelectedControl(null);
-                ControlPanel.this.refresh();
+                int itemNr = getNameField().getSelectedIndex() + 1;
+                if (itemNr == getNameField().getItemCount()) {
+                    itemNr -= 2;
+                }
+                String newName =
+                    itemNr >= 0 ? (String) getNameField().getItemAt(itemNr)
+                            : null;
+                doDelete(controlName);
+                setSelectedControl(newName);
+                refreshAll();
             }
+        }
+
+        /** Deletes a given control program from the grammar. */
+        public void doDelete(String controlName) {
+            getSimulator().doDeleteControl(controlName);
         }
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected());
+            setEnabled(isControlSelected()
+                && grammarHasControl(getSelectedControl()));
         }
     }
 
@@ -574,15 +668,19 @@ public class ControlPanel extends JPanel implements SimulationListener {
             super(Options.ENABLE_CONTROL_ACTION_NAME, Groove.ENABLE_ICON);
         }
 
-        public void actionPerformed(ActionEvent arg0) {
+        public void actionPerformed(ActionEvent evt) {
             if (stopEditing(true)) {
-                SystemProperties oldProperties =
-                    getGrammarView().getProperties();
-                SystemProperties newProperties = oldProperties.clone();
-                newProperties.setUseControl(true);
-                newProperties.setControlName(getSelectedControl());
-                getSimulator().doSaveProperties(newProperties);
+                doEnable(getSelectedControl());
             }
+        }
+
+        /** Enables a control program with a given name. */
+        public void doEnable(String controlName) {
+            SystemProperties oldProperties = getGrammarView().getProperties();
+            SystemProperties newProperties = oldProperties.clone();
+            newProperties.setUseControl(true);
+            newProperties.setControlName(controlName);
+            getSimulator().doSaveProperties(newProperties);
         }
 
         @Override
@@ -648,10 +746,13 @@ public class ControlPanel extends JPanel implements SimulationListener {
             if (stopEditing(true)) {
                 String newName =
                     getSimulator().askNewControlName(null,
-                        Groove.DEFAULT_CONTROL_NAME);
-                setSelectedControl(newName);
-                ControlPanel.this.controlTextArea.setText("");
-                startEditing();
+                        Groove.DEFAULT_CONTROL_NAME, true);
+                if (newName != null) {
+                    setSelectedControl(newName);
+                    ControlPanel.this.controlTextArea.setText("");
+                    setDirty(true);
+                    startEditing();
+                }
             }
         }
 
@@ -738,15 +839,66 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Singular instance of the {@link PreviewAction}. */
     private PreviewAction previewAction;
 
+    /**
+     * Action to delete the currently displayed control program.
+     */
+    private class RenameAction extends RefreshableAction {
+        public RenameAction() {
+            super(Options.RENAME_CONTROL_ACTION_NAME, Groove.RENAME_ICON);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (stopEditing(true)) {
+                String oldName = getSelectedControl();
+                String newName =
+                    getSimulator().askNewControlName(null, oldName, false);
+                if (newName != null) {
+                    String program = getControlTextArea().getText();
+                    getDeleteAction().doDelete(oldName);
+                    getSaveAction().doSave(newName, program);
+                    if (oldName.equals(getGrammarView().getControlName())) {
+                        getEnableAction().doEnable(newName);
+                    }
+                    setSelectedControl(newName);
+                    refreshAll();
+                }
+            }
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isControlSelected()
+                && grammarHasControl(getSelectedControl()));
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link RenameAction}.
+     */
+    private RenameAction getRenameAction() {
+        if (this.renameAction == null) {
+            this.renameAction = new RenameAction();
+        }
+        return this.renameAction;
+    }
+
+    /** Singular instance of the {@link RenameAction}. */
+    private RenameAction renameAction;
+
     private class SaveAction extends RefreshableAction {
         public SaveAction() {
             super(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
-            String program = getControlTextArea().getText();
-            getSimulator().doAddControl(getSelectedControl(), program);
+            doSave(getSelectedControl(), getControlTextArea().getText());
             stopEditing(false);
+        }
+
+        /** Executes the save action. */
+        public void doSave(String name, String program) {
+            getSimulator().doAddControl(name, program);
         }
 
         @Override

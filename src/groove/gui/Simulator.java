@@ -903,7 +903,7 @@ public class Simulator {
             setGrammar(getGrammarView());
         } else {
             // otherwise, we only need to update the list
-            getControlPanel().refresh();
+            getControlPanel().refreshAll();
         }
     }
 
@@ -2664,13 +2664,15 @@ public class Simulator {
      * the current grammar, or <code>null</code> if the dialog was cancelled.
      * @param title dialog title; if <code>null</code>, a default title is used
      * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing names
      * @return a control name not occurring in the current grammar, or
      *         <code>null</code>
      */
-    String askNewControlName(String title, String name) {
+    String askNewControlName(String title, String name, boolean mustBeFresh) {
         Set<String> existingNames = getGrammarView().getControlNames();
         FreshNameDialog<String> nameDialog =
-            new FreshNameDialog<String>(existingNames, name, true) {
+            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
                 protected String createName(String name) {
                     return name;
@@ -4191,7 +4193,8 @@ public class Simulator {
                     String newGraphName =
                         askNewGraphName("Select new graph name", oldGraphName,
                             false);
-                    if (!oldGraphName.equals(newGraphName)) {
+                    if (newGraphName != null
+                        && !oldGraphName.equals(newGraphName)) {
                         doRenameGraph(graph.getAspectGraph(), newGraphName);
                     }
                 }
