@@ -157,11 +157,11 @@ public class Options {
     public static final String COPY_ACTION_NAME = "Copy";
     /** Name of the "Copy Control Program" action. */
     public static final String COPY_CONTROL_ACTION_NAME =
-        "Copy Control Program ...";
+        "Copy Control Program";
     /** Name of the "Copy Graph" action. */
-    public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph ...";
+    public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
     /** Copy rule action name */
-    public static final String COPY_RULE_ACTION_NAME = "Copy Rule ...";
+    public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
@@ -273,10 +273,12 @@ public class Options {
     static public final String REMOVE_POINT_ACTION = "Remove Point";
     /** Label replace action name */
     public static final String REPLACE_ACTION_NAME = "Replace Label";
-    /** Rule rename action name */
-    public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
+    /** Control program rename action name */
+    public static final String RENAME_CONTROL_ACTION_NAME = "Rename Control";
     /** Graph rename action name */
     public static final String RENAME_GRAPH_ACTION_NAME = "Rename Graph";
+    /** Rule rename action name */
+    public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /** Edit properties action name */
     public static final String RULE_PROPERTIES_ACTION_NAME =
         "Rule Properties ...";

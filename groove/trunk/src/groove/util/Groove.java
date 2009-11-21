@@ -155,7 +155,7 @@ public class Groove {
         new ImageIcon(Groove.getResource("delete.gif"));
     /** Disable action icon. */
     public static final ImageIcon DISABLE_ICON =
-        new ImageIcon(Groove.getResource("disable.gif"));
+        new ImageIcon(Groove.getResource("disable-smaller.gif"));
     /** Edit action icon. */
     public static final ImageIcon EDIT_ICON =
         new ImageIcon(Groove.getResource("edit.gif"));
