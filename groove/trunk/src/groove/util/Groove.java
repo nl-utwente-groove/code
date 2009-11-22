@@ -234,6 +234,9 @@ public class Groove {
     /** Save as action icon. */
     public static final ImageIcon SAVE_AS_ICON =
         new ImageIcon(Groove.getResource("saveas.gif"));
+    /** Start action icon. */
+    public static final ImageIcon START_ICON =
+        new ImageIcon(Groove.getResource("start.gif"));
     /** The file containing the configuration for allowed scenarios. */
     public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE =
         "configuration";

@@ -148,6 +148,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1221,6 +1222,8 @@ public class Simulator {
             JSplitPane leftPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                     createRuleTreePanel(), createStatesListPanel());
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
             // Embedded Editor
             JSplitPane rightPanel =
@@ -1308,6 +1311,8 @@ public class Simulator {
         JPanel result = new JPanel(new BorderLayout(), false);
         result.add(labelPaneTop, BorderLayout.NORTH);
         result.add(ruleJTreePanel, BorderLayout.CENTER);
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(result);
         return result;
     }
 
@@ -1350,6 +1355,8 @@ public class Simulator {
         JPanel result = new JPanel(new BorderLayout(), false);
         result.add(labelPaneTop, BorderLayout.NORTH);
         result.add(startGraphsPane, BorderLayout.CENTER);
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(result);
         return result;
     }
 
@@ -1362,6 +1369,10 @@ public class Simulator {
         result.add(getCopyGraphAction());
         result.add(getDeleteGraphAction());
         result.add(getRenameGraphAction());
+        result.addSeparator();
+        result.add(getSetStartGraphAction());
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(result);
         return result;
     }
 
@@ -2795,7 +2806,7 @@ public class Simulator {
         public void refresh() {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
-                && getStateList().isGraphSelected());
+                && !getStateList().getSelectedGraphs().isEmpty());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -2906,16 +2917,13 @@ public class Simulator {
         public void refresh() {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
-                && getStateList().isGraphSelected());
+                && !getStateList().getSelectedGraphs().isEmpty());
         }
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
-            List<String> selectedGraphs = new ArrayList<String>();
-            for (Object name : getStateList().getSelectedValues()) {
-                selectedGraphs.add((String) name);
-            }
+            List<String> selectedGraphs = getStateList().getSelectedGraphs();
             String question = "Delete graph(s) '%s'";
             for (int i = 0; i < selectedGraphs.size(); i++) {
                 String graphName = selectedGraphs.get(i);
@@ -3025,7 +3033,7 @@ public class Simulator {
         public void refresh() {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
-                && getStateList().isGraphSelected());
+                && getStateList().getSelectedGraphs().size() == 1);
         }
 
         /**
@@ -3071,7 +3079,8 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getCurrentRule() != null
-                && getGrammarStore().isModifiable());
+                && getGrammarStore().isModifiable()
+                && getCurrentRuleSet().size() == 1);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4114,16 +4123,13 @@ public class Simulator {
         public void refresh() {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable()
-                && getStateList().isGraphSelected());
+                && !getStateList().getSelectedGraphs().isEmpty());
         }
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
-            List<String> selectedGraphs = new ArrayList<String>();
-            for (Object name : getStateList().getSelectedValues()) {
-                selectedGraphs.add((String) name);
-            }
+            List<String> selectedGraphs = getStateList().getSelectedGraphs();
             for (String oldGraphName : selectedGraphs) {
                 if (oldGraphName != null) {
                     AspectualGraphView graph =
@@ -4363,6 +4369,39 @@ public class Simulator {
                 setEnabled(false);
                 putValue(NAME, Options.SAVE_ACTION_NAME);
             }
+        }
+    }
+
+    /**
+     * Lazily creates and returns an instance of {@link SetStartGraphAction}.
+     */
+    public Action getSetStartGraphAction() {
+        // lazily create the action
+        if (this.setStartGraphAction == null) {
+            this.setStartGraphAction = new SetStartGraphAction();
+        }
+        return this.setStartGraphAction;
+    }
+
+    /** Singleton instance of {@link SetStartGraphAction}. */
+    private SetStartGraphAction setStartGraphAction;
+
+    /** Action to set a new start graph. */
+    private class SetStartGraphAction extends AbstractAction implements
+            Refreshable {
+        /** Constructs an instance of the action. */
+        SetStartGraphAction() {
+            super(Options.START_GRAPH_ACTION_NAME, Groove.START_ICON);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String selection = (String) getStateList().getSelectedValue();
+            doLoadStartGraph(selection);
+        }
+
+        public void refresh() {
+            setEnabled(getStateList().getSelectedGraphs().size() == 1);
         }
     }
 

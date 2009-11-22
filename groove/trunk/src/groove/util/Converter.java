@@ -191,7 +191,6 @@ public class Converter {
     static public StringBuilder toHtml(StringBuilder text) {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            String replacement = null;
             switch (c) {
             case '<':
                 text.replace(i, i + 1, "&lt;");
@@ -205,12 +204,6 @@ public class Converter {
                 text.replace(i, i + 1, HTML_LINEBREAK);
                 i += HTML_LINEBREAK.length() - 1;
                 break;
-            // default:
-            // if (c >= 0x100) {
-            // String encoding = "&#x" + ((int) c) + ";";
-            // text.replace(i, i + 1, encoding);
-            // i += encoding.length() - 1;
-            // }
             }
         }
         return text;
@@ -435,8 +428,8 @@ public class Converter {
         /**
          * Strips the HTML tags from the string given.
          * @param text the string to be analyzed.
-         * @return the input string unmodified if it did not contain the
-         *         the HTML tags or the string striped from the tags.
+         * @return the input string unmodified if it did not contain the the
+         *         HTML tags or the string striped from the tags.
          */
         public String off(StringBuilder text) {
             int tagEndStart = text.indexOf(this.tagEnd);
@@ -451,7 +444,7 @@ public class Converter {
             }
             return text.toString();
         }
-        
+
         /** Start text of this tag. */
         final String tagBegin;
         /** End text of this tag. */
