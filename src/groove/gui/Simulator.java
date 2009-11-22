@@ -128,6 +128,7 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -144,7 +145,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTree;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -263,13 +264,9 @@ public class Simulator {
 
     /**
      * Sets the {@link #grammarView} and {@link #currentRuleName} fields.
-     * @return <code>true</code> if the new grammar is different from the
-     *         previous
      */
-    private boolean setGrammarView(StoredGrammarView grammar) {
-        boolean result = this.grammarView != grammar;
+    private void setGrammarView(StoredGrammarView grammar) {
         this.grammarView = grammar;
-        return result;
     }
 
     /**
@@ -392,383 +389,6 @@ public class Simulator {
         return result;
     }
 
-    /**
-     * Returns the transition application action permanently associated with
-     * this simulator.
-     */
-    public ApplyTransitionAction getApplyTransitionAction() {
-        if (this.applyTransitionAction == null) {
-            this.applyTransitionAction = new ApplyTransitionAction();
-        }
-        return this.applyTransitionAction;
-    }
-
-    /*
-     * private ChooseCustomScenarioAction getChooseCustomScenarioAction() { if
-     * (this.chooseScenarioAction == null) { this.chooseScenarioAction = new
-     * ChooseCustomScenarioAction(); } return this.chooseScenarioAction; }
-     */
-
-    /**
-     * Returns the graph copying action permanently associated with this
-     * simulator.
-     */
-    public CopyGraphAction getCopyGraphAction() {
-        // lazily create the action
-        if (this.copyGraphAction == null) {
-            this.copyGraphAction = new CopyGraphAction();
-        }
-        return this.copyGraphAction;
-    }
-
-    /**
-     * Returns the rule copying action permanently associated with this
-     * simulator.
-     */
-    public CopyRuleAction getCopyRuleAction() {
-        // lazily create the action
-        if (this.copyRuleAction == null) {
-            this.copyRuleAction = new CopyRuleAction();
-        }
-        return this.copyRuleAction;
-    }
-
-    /**
-     * Returns the rule deletion action permanently associated with this
-     * simulator.
-     */
-    public DeleteRuleAction getDeleteRuleAction() {
-        // lazily create the action
-        if (this.deleteRuleAction == null) {
-            this.deleteRuleAction = new DeleteRuleAction();
-        }
-        return this.deleteRuleAction;
-    }
-
-    /**
-     * Returns the graph deletion action permanently associated with this
-     * simulator.
-     */
-    public DeleteGraphAction getDeleteGraphAction() {
-        // lazily create the action
-        if (this.deleteGraphAction == null) {
-            this.deleteGraphAction = new DeleteGraphAction();
-        }
-        return this.deleteGraphAction;
-    }
-
-    /**
-     * Lazily creates and returns the graph edit action permanently associated
-     * with this simulator.
-     */
-    public EditGraphAction getEditGraphAction() {
-        // lazily create the action
-        if (this.editGraphAction == null) {
-            this.editGraphAction = new EditGraphAction();
-        }
-        return this.editGraphAction;
-    }
-
-    /**
-     * Lazily creates and returns the rule edit action permanently associated
-     * with this simulator.
-     */
-    public EditRuleAction getEditRuleAction() {
-        // lazily create the action
-        if (this.editRuleAction == null) {
-            this.editRuleAction = new EditRuleAction();
-        }
-        return this.editRuleAction;
-    }
-
-    /**
-     * Lazily creates and returns the state edit action permanently associated
-     * with this simulator.
-     */
-    public EditStateAction getEditStateAction() {
-        // lazily create the action
-        if (this.editStateAction == null) {
-            this.editStateAction = new EditStateAction();
-        }
-        return this.editStateAction;
-    }
-
-    /**
-     * Returns the properties edit action permanently associated with this
-     * simulator.
-     */
-    public EditRulePropertiesAction getEditRulePropertiesAction() {
-        // lazily create the action
-        if (this.editRulePropertiesAction == null) {
-            this.editRulePropertiesAction = new EditRulePropertiesAction();
-        }
-        return this.editRulePropertiesAction;
-    }
-
-    /** Returns the action to show the system properties of the current grammar. */
-    public Action getEditSystemPropertiesAction() {
-        // lazily create the action
-        if (this.editSystemPropertiesAction == null) {
-            this.editSystemPropertiesAction = new EditSystemPropertiesAction();
-        }
-        return this.editSystemPropertiesAction;
-    }
-
-    /**
-     * Returns the rule enabling action permanently associated with this
-     * simulator.
-     */
-    public EnableRuleAction getEnableRuleAction() {
-        // lazily create the action
-        if (this.enableRuleAction == null) {
-            this.enableRuleAction = new EnableRuleAction();
-        }
-        return this.enableRuleAction;
-    }
-
-    /**
-     * Returns the exploration dialog action permanently associated with this
-     * simulator.
-     */
-    public ExplorationDialogAction getExplorationDialogAction() {
-        // lazily create the action
-        if (this.explorationDialogAction == null) {
-            this.explorationDialogAction = new ExplorationDialogAction();
-        }
-        return this.explorationDialogAction;
-    }
-
-    /**
-     * Returns the LTS export action permanently associated with this simulator.
-     */
-    public ExportAction getExportAction() {
-        // lazily create the action
-        if (this.exportAction == null) {
-            this.exportAction = new ExportAction();
-        }
-        return this.exportAction;
-    }
-
-    /**
-     * Returns the go-to start state action permanently associated with this
-     * simulator.
-     */
-    public GotoStartStateAction getGotoStartStateAction() {
-        // lazily create the action
-        if (this.gotoStartStateAction == null) {
-            this.gotoStartStateAction = new GotoStartStateAction();
-        }
-        return this.gotoStartStateAction;
-    }
-
-    /** Creates an action associated to a scenario handler. */
-    public LaunchScenarioAction getLaunchScenarioAction(Scenario scenario) {
-        // no reuse: the action depends on the scenario
-        return new LaunchScenarioAction(scenario);
-    }
-
-    /**
-     * Returns the start graph load action permanently associated with this
-     * simulator.
-     */
-    public LoadStartGraphAction getLoadStartGraphAction() {
-        // lazily create the action
-        if (this.loadStartGraphAction == null) {
-            this.loadStartGraphAction = new LoadStartGraphAction();
-        }
-        return this.loadStartGraphAction;
-    }
-
-    /**
-     * Returns the rule load action permanently associated with this simulator.
-     */
-    public LoadRuleAction getLoadRuleAction() {
-        // lazily create the action
-        if (this.loadRuleAction == null) {
-            this.loadRuleAction = new LoadRuleAction();
-        }
-        return this.loadRuleAction;
-    }
-
-    /**
-     * Returns the grammar load action permanently associated with this
-     * simulator.
-     */
-    public Action getLoadGrammarAction() {
-        // lazily create the action
-        if (this.loadGrammarAction == null) {
-            this.loadGrammarAction = new LoadGrammarAction();
-        }
-        return this.loadGrammarAction;
-    }
-
-    /**
-     * Returns the rule system creation action permanently associated with this
-     * simulator.
-     */
-    public NewGrammarAction getNewGrammarAction() {
-        // lazily create the action
-        if (this.newGrammarAction == null) {
-            this.newGrammarAction = new NewGrammarAction();
-        }
-        return this.newGrammarAction;
-    }
-
-    /**
-     * Returns the graph creation action permanently associated with this
-     * simulator.
-     */
-    public NewGraphAction getNewGraphAction() {
-        // lazily create the action
-        if (this.newGraphAction == null) {
-            this.newGraphAction = new NewGraphAction();
-        }
-        return this.newGraphAction;
-    }
-
-    /**
-     * Returns the rule creation action permanently associated with this
-     * simulator.
-     */
-    public NewRuleAction getNewRuleAction() {
-        // lazily create the action
-        if (this.newRuleAction == null) {
-            this.newRuleAction = new NewRuleAction();
-        }
-        return this.newRuleAction;
-    }
-
-    /** Returns the quit action permanently associated with this simulator. */
-    public Action getQuitAction() {
-        // lazily create the action
-        if (this.quitAction == null) {
-            this.quitAction = new QuitAction();
-        }
-        return this.quitAction;
-    }
-
-    /**
-     * Returns the CTL formula providing action permanently associated with this
-     * simulator.
-     */
-    public Action getProvideTemporalFormulaAction() {
-        if (this.verifyAction == null) {
-            this.verifyAction = new VerifyCTLAction();
-        }
-        return this.verifyAction;
-    }
-
-    /** Returns the REDO action permanently associated with this simulator. */
-    public Action getRedoAction() {
-        if (this.redoAction == null) {
-            this.redoAction = getUndoHistory().getRedoAction();
-            addAccelerator(this.redoAction);
-        }
-        return this.redoAction;
-    }
-
-    /**
-     * Returns the grammar refresh action permanently associated with this
-     * simulator.
-     */
-    public RefreshGrammarAction getRefreshGrammarAction() {
-        // lazily create the action
-        if (this.refreshGrammarAction == null) {
-            this.refreshGrammarAction = new RefreshGrammarAction();
-        }
-        return this.refreshGrammarAction;
-    }
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public ReplaceLabelAction getRenameLabelAction() {
-        // lazily create the action
-        if (this.renameLabelAction == null) {
-            this.renameLabelAction = new ReplaceLabelAction();
-        }
-        return this.renameLabelAction;
-    }
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RenameGraphAction getRenameGraphAction() {
-        // lazily create the action
-        if (this.renameGraphAction == null) {
-            this.renameGraphAction = new RenameGraphAction();
-        }
-        return this.renameGraphAction;
-    }
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RenameRuleAction getRenameRuleAction() {
-        // lazily create the action
-        if (this.renameRuleAction == null) {
-            this.renameRuleAction = new RenameRuleAction();
-        }
-        return this.renameRuleAction;
-    }
-
-    /**
-     * Lazily creates and returns an instance of
-     * {@link Simulator.StartSimulationAction}.
-     */
-    public Action getStartSimulationAction() {
-        // lazily create the action
-        if (this.startSimulationAction == null) {
-            this.startSimulationAction = new StartSimulationAction();
-        }
-        return this.startSimulationAction;
-    }
-
-    /**
-     * A variant of {@link #getStartSimulationAction()} for abstract simulation.
-     */
-    public Action getStartAbstrSimulationAction() {
-        // lazily create the action
-        if (this.startAbstrSimulationAction == null) {
-            this.startAbstrSimulationAction = new StartAbstrSimulationAction();
-        }
-        return this.startAbstrSimulationAction;
-    }
-
-    /**
-     * Returns the graph save action permanently associated with this simulator.
-     */
-    public SaveGraphAction getSaveGraphAction() {
-        // lazily create the action
-        if (this.saveGraphAction == null) {
-            this.saveGraphAction = new SaveGraphAction();
-        }
-        return this.saveGraphAction;
-    }
-
-    /**
-     * Returns the graph save action permanently associated with this simulator.
-     */
-    public SaveGrammarAction getSaveGrammarAction() {
-        // lazily create the action
-        if (this.saveGrammarAction == null) {
-            this.saveGrammarAction = new SaveGrammarAction();
-        }
-        return this.saveGrammarAction;
-    }
-
-    /** Returns the undo action permanently associated with this simulator. */
-    public Action getUndoAction() {
-        if (this.undoAction == null) {
-            this.undoAction = getUndoHistory().getUndoAction();
-            addAccelerator(this.undoAction);
-        }
-        return this.undoAction;
-    }
-
     /** Returns (after lazily creating) the undo history for this simulator. */
     private UndoHistory getUndoHistory() {
         if (this.undoHistory == null) {
@@ -783,7 +403,7 @@ public class Simulator {
      * @param graph the graph to be edited.
      * @param fresh flag indicating if the name for the graph should be fresh
      */
-    private void handleEditGraph(final Graph graph, final boolean fresh) {
+    void handleEditGraph(final Graph graph, final boolean fresh) {
         EditorDialog dialog =
             new EditorDialog(getFrame(), getOptions(), graph) {
                 @Override
@@ -850,7 +470,7 @@ public class Simulator {
     void doAddControl(String name, String program) {
         try {
             getGrammarStore().putControl(name, program);
-            setGrammar(getGrammarView());
+            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error storing control program " + name, exc);
         }
@@ -884,7 +504,7 @@ public class Simulator {
         try {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             getGrammarStore().putRule(ruleAsGraph);
-            setGrammar(getGrammarView());
+            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error while saving rule", exc);
         } catch (UnsupportedOperationException u) {
@@ -900,7 +520,7 @@ public class Simulator {
         // we only need to refresh the grammar if the deleted
         // control program was the currently active one
         if (isCurrentControl) {
-            setGrammar(getGrammarView());
+            updateGrammar();
         } else {
             // otherwise, we only need to update the list
             getControlPanel().refreshAll();
@@ -919,9 +539,9 @@ public class Simulator {
         if (isStartGraph) {
             // reset the start graph to null
             getGrammarView().removeStartGraph();
-            setGrammar(getGrammarView());
+            updateGrammar();
         } else {
-            this.stateJList.refreshList(true);
+            getStateList().refreshList(true);
         }
     }
 
@@ -932,7 +552,7 @@ public class Simulator {
     void doDeleteRule(RuleName name) {
         AspectGraph rule = getGrammarStore().deleteRule(name);
         if (rule != null) {
-            setGrammar(getGrammarView());
+            updateGrammar();
         }
     }
 
@@ -1098,7 +718,8 @@ public class Simulator {
                     }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            setGrammar(grammar);
+                            setGrammarView(grammar);
+                            updateGrammar();
                         }
                     });
                     if (store instanceof Observable) {
@@ -1130,7 +751,7 @@ public class Simulator {
         try {
             AspectGraph startGraph = unmarshalGraph(file);
             getGrammarView().setStartGraph(startGraph);
-            setGrammar(getGrammarView());
+            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog(
                 "Could not load start graph from " + file.getName(), exc);
@@ -1143,7 +764,7 @@ public class Simulator {
      */
     void doLoadStartGraph(String name) {
         getGrammarView().setStartGraph(name);
-        setGrammar(getGrammarView());
+        updateGrammar();
     }
 
     /**
@@ -1161,7 +782,8 @@ public class Simulator {
             getStateFileChooser().setCurrentDirectory(grammarFile);
             getStateFileChooser().setSelectedFile(new File(""));
             getGrammarFileChooser().setSelectedFile(grammarFile);
-            setGrammar(grammar);
+            setGrammarView(grammar);
+            updateGrammar();
         } catch (IllegalArgumentException exc) {
             showErrorDialog(String.format("Can't create grammar at '%s'",
                 grammarFile), exc);
@@ -1211,7 +833,7 @@ public class Simulator {
         if (getGrammarStore() != null) {
             try {
                 getGrammarStore().reload();
-                setGrammar(getGrammarView());
+                updateGrammar();
             } catch (IOException exc) {
                 showErrorDialog("Error while refreshing grammar from "
                     + getGrammarStore().getLocation(), exc);
@@ -1235,9 +857,9 @@ public class Simulator {
         if (isStartGraph) {
             // reset the start graph to the renamed graph
             getGrammarView().setStartGraph(newName);
-            setGrammar(getGrammarView());
+            updateGrammar();
         } else {
-            this.stateJList.refreshList(true);
+            getStateList().refreshList(true);
         }
     }
 
@@ -1284,7 +906,7 @@ public class Simulator {
 
             setTitle();
             getGrammarFileChooser().setSelectedFile(grammarFile);
-            setGrammar(getGrammarView());
+            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error while saving grammar to " + grammarFile, exc);
         }
@@ -1310,7 +932,7 @@ public class Simulator {
         // : !newControlName.equals(oldControlName);
         try {
             getGrammarStore().putProperties(newProperties);
-            setGrammar(getGrammarView());
+            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
         }
@@ -1373,15 +995,13 @@ public class Simulator {
      * {@link #fireSetGrammar(StoredGrammarView)} to notify all observers of the
      * change.
      * 
-     * @param grammar the new graph transition system
      * @see #fireSetGrammar(StoredGrammarView)
      */
-    public synchronized void setGrammar(StoredGrammarView grammar) {
-        setGrammarView(grammar);
+    public synchronized void updateGrammar() {
         setGTS(null);
-        fireSetGrammar(grammar);
+        fireSetGrammar(getGrammarView());
         refresh();
-        List<String> grammarErrors = grammar.getErrors();
+        List<String> grammarErrors = getGrammarView().getErrors();
         boolean grammarCorrect = grammarErrors.isEmpty();
         getErrorPanel().setErrors(grammarErrors);
         if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
@@ -1599,8 +1219,8 @@ public class Simulator {
             this.frame.setJMenuBar(createMenuBar());
 
             JSplitPane leftPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getRuleJTreePanel(),
-                    getStartStatesListPanel());
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                    createRuleTreePanel(), createStatesListPanel());
 
             // Embedded Editor
             JSplitPane rightPanel =
@@ -1660,31 +1280,64 @@ public class Simulator {
     /**
      * Lazily creates and returns the panel with the rule tree.
      */
-    JScrollPane getRuleJTreePanel() {
-        if (this.ruleJTreePanel == null) {
-            // make sure the preferred width is not smaller than the minimum
-            // width
-            this.ruleJTreePanel = new JScrollPane(getRuleTree()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) Math.max(superSize.getWidth(),
-                        RULE_TREE_MINIMUM_WIDTH), (int) superSize.getHeight());
-                }
-            };
-            this.ruleJTreePanel.setMinimumSize(new Dimension(
-                RULE_TREE_MINIMUM_WIDTH, RULE_TREE_MINIMUM_HEIGHT));
-        }
-        return this.ruleJTreePanel;
+    private JPanel createRuleTreePanel() {
+        // set title and toolbar
+        JLabel labelPaneTitle =
+            new JLabel(" " + Options.RULES_PANE_TITLE + " ");
+        labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        JToolBar labelTreeToolbar = createRuleTreeToolBar();
+        labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+
+        Box labelPaneTop = Box.createVerticalBox();
+        labelPaneTop.add(labelPaneTitle);
+        labelPaneTop.add(labelTreeToolbar);
+
+        // make sure the preferred width is not smaller than the minimum
+        // width
+        JScrollPane ruleJTreePanel = new JScrollPane(getRuleTree()) {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension superSize = super.getPreferredSize();
+                return new Dimension((int) Math.max(superSize.getWidth(),
+                    RULE_TREE_MINIMUM_WIDTH), (int) superSize.getHeight());
+            }
+        };
+        ruleJTreePanel.setMinimumSize(new Dimension(RULE_TREE_MINIMUM_WIDTH,
+            RULE_TREE_MINIMUM_HEIGHT));
+
+        JPanel result = new JPanel(new BorderLayout(), false);
+        result.add(labelPaneTop, BorderLayout.NORTH);
+        result.add(ruleJTreePanel, BorderLayout.CENTER);
+        return result;
+    }
+
+    /** Creates a tool bar for the rule tree. */
+    private JToolBar createRuleTreeToolBar() {
+        JToolBar result = new JToolBar();
+        result.setFloatable(false);
+        result.add(getNewRuleAction());
+        result.add(getEditRuleAction());
+        result.add(getCopyRuleAction());
+        result.add(getDeleteRuleAction());
+        result.add(getRenameRuleAction());
+        return result;
     }
 
     /**
      * Creates and returns the panel with the start states list.
      */
-    JPanel getStartStatesListPanel() {
-        JPanel labelPane = new JPanel(new BorderLayout(), false);
-        labelPane.add(new JLabel(" " + Options.STATES_PANE_TITLE + " "),
-            BorderLayout.NORTH);
+    private JPanel createStatesListPanel() {
+        // set title and toolbar
+        JLabel labelPaneTitle =
+            new JLabel(" " + Options.STATES_PANE_TITLE + " ");
+        labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        JToolBar labelTreeToolbar = createStatesListToolBar();
+        labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+
+        Box labelPaneTop = Box.createVerticalBox();
+        labelPaneTop.add(labelPaneTitle);
+        labelPaneTop.add(labelTreeToolbar);
+
         JScrollPane startGraphsPane = new JScrollPane(this.getStateList()) {
             @Override
             public Dimension getPreferredSize() {
@@ -1693,8 +1346,23 @@ public class Simulator {
                     START_LIST_MINIMUM_HEIGHT);
             }
         };
-        labelPane.add(startGraphsPane, BorderLayout.CENTER);
-        return labelPane;
+
+        JPanel result = new JPanel(new BorderLayout(), false);
+        result.add(labelPaneTop, BorderLayout.NORTH);
+        result.add(startGraphsPane, BorderLayout.CENTER);
+        return result;
+    }
+
+    /** Creates a tool bar for the rule tree. */
+    private JToolBar createStatesListToolBar() {
+        JToolBar result = new JToolBar();
+        result.setFloatable(false);
+        result.add(getNewGraphAction());
+        result.add(getEditGraphAction());
+        result.add(getCopyGraphAction());
+        result.add(getDeleteGraphAction());
+        result.add(getRenameGraphAction());
+        return result;
     }
 
     /**
@@ -1806,7 +1474,7 @@ public class Simulator {
     /**
      * Returns the tree of rules and matches displayed in the simulator.
      */
-    JTree getRuleTree() {
+    RuleJTree getRuleTree() {
         if (this.ruleJTree == null) {
             this.ruleJTree = new RuleJTree(this);
         }
@@ -1914,7 +1582,7 @@ public class Simulator {
      * currently selected view panel to allow registered refreshable elements to
      * refresh themselves.
      */
-    private void refreshActions() {
+    public void refreshActions() {
         refreshExportMenuItem();
         for (Refreshable action : this.refreshables) {
             action.refresh();
@@ -1977,7 +1645,7 @@ public class Simulator {
         result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(new LoadURLAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
-        result.add(new JMenuItem(getLoadRuleAction()));
+        result.add(new JMenuItem(getImportRuleAction()));
         result.add(new JMenuItem(getRefreshGrammarAction()));
         result.add(createOpenRecentMenu());
         result.addSeparator();
@@ -2024,7 +1692,7 @@ public class Simulator {
         result.add(getDeleteRuleAction());
         result.add(getRenameRuleAction());
         result.addSeparator();
-        result.add(getRenameLabelAction());
+        result.add(getReplaceLabelAction());
         result.addSeparator();
         result.add(getEditRuleAction());
         result.add(getEditStateAction());
@@ -2335,7 +2003,7 @@ public class Simulator {
      * Notifies all listeners of a new graph grammar. As a result,
      * {@link SimulationListener#setGrammarUpdate(StoredGrammarView)}is invoked
      * on all currently registered listeners. This method should not be called
-     * directly: use {@link #setGrammar(StoredGrammarView)}instead.
+     * directly: use {@link #updateGrammar()}instead.
      * @see SimulationListener#setGrammarUpdate(StoredGrammarView)
      */
     private synchronized void fireSetGrammar(StoredGrammarView grammar) {
@@ -2525,9 +2193,9 @@ public class Simulator {
     /**
      * If a simulation is active, asks through a dialog whether it may be
      * abandoned.
-     * @param setGrammar flag indicating that
-     *        {@link #setGrammar(StoredGrammarView)} is to be called with the
-     *        current grammar, in case the simulation is abandoned
+     * @param setGrammar flag indicating that {@link #updateGrammar()} is to be
+     *        called with the current grammar, in case the simulation is
+     *        abandoned
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
     boolean confirmAbandon(boolean setGrammar) {
@@ -2535,7 +2203,7 @@ public class Simulator {
         if (getGTS() != null) {
             result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
             if (result && setGrammar) {
-                setGrammar(getGrammarView());
+                updateGrammar();
             }
         } else {
             result = true;
@@ -2891,9 +2559,6 @@ public class Simulator {
     /** History of recently opened grammars. */
     private History history;
 
-    /** panel for the rule directory. */
-    private JScrollPane ruleJTreePanel;
-
     /** Menu for externally provided actions. */
     private JMenu externalMenu;
 
@@ -2907,146 +2572,6 @@ public class Simulator {
      * Menu item in the file menu for one of the graph or rule edit actions.
      */
     private JMenuItem editGraphItem;
-    /**
-     * The transition application action permanently associated with this
-     * simulator.
-     */
-    private ApplyTransitionAction applyTransitionAction;
-    /**
-     * The custom scenario choose action permanently associated with this
-     * simulator.
-     */
-    // private ChooseCustomScenarioAction chooseScenarioAction;
-
-    /**
-     * The graph copying action permanently associated with this simulator.
-     */
-    private CopyGraphAction copyGraphAction;
-    /**
-     * The rule copying action permanently associated with this simulator.
-     */
-    private CopyRuleAction copyRuleAction;
-
-    /**
-     * The rule deletion action permanently associated with this simulator.
-     */
-    private DeleteRuleAction deleteRuleAction;
-    /**
-     * The graph deletion action permanently associated with this simulator.
-     */
-    private DeleteGraphAction deleteGraphAction;
-    /**
-     * The graph edit action permanently associated with this simulator.
-     */
-    private EditGraphAction editGraphAction;
-    /**
-     * The state edit action permanently associated with this simulator.
-     */
-    private EditStateAction editStateAction;
-
-    /**
-     * The rule edit action permanently associated with this simulator.
-     */
-    private EditRuleAction editRuleAction;
-
-    /**
-     * The rule properties edit action permanently associated with this
-     * simulator.
-     */
-    private EditRulePropertiesAction editRulePropertiesAction;
-    /**
-     * The action to show the system properties of the currently selected
-     * grammar.
-     */
-    private EditSystemPropertiesAction editSystemPropertiesAction;
-    /**
-     * The rule enabling action permanently associated with this simulator.
-     */
-    private EnableRuleAction enableRuleAction;
-
-    /**
-     * The exploration dialog action permanently associated with this simulator.
-     */
-    private ExplorationDialogAction explorationDialogAction;
-
-    /** The LTS export action permanently associated with this simulator. */
-    private ExportAction exportAction;
-
-    /**
-     * The go-to start state action permanently associated with this simulator.
-     */
-    private GotoStartStateAction gotoStartStateAction;
-
-    /**
-     * The rule load action permanently associated with this simulator.
-     */
-    private LoadRuleAction loadRuleAction;
-
-    /** The start state load action permanently associated with this simulator. */
-    private LoadStartGraphAction loadStartGraphAction;
-
-    /** The grammar load action permanently associated with this simulator. */
-    private LoadGrammarAction loadGrammarAction;
-
-    /**
-     * The graph creation action permanently associated with this simulator.
-     */
-    private NewGraphAction newGraphAction;
-    /**
-     * The rule system creation action permanently associated with this
-     * simulator.
-     */
-    private NewGrammarAction newGrammarAction;
-    /**
-     * The rule creation action permanently associated with this simulator.
-     */
-    private NewRuleAction newRuleAction;
-    /**
-     * The quit action permanently associated with this simulator.
-     */
-    private QuitAction quitAction;
-
-    /**
-     * The redo action permanently associated with this simulator.
-     */
-    private Action redoAction;
-
-    /** The grammar refresh action permanently associated with this simulator. */
-    private RefreshGrammarAction refreshGrammarAction;
-
-    /**
-     * The graph renaming action permanently associated with this simulator.
-     */
-    private RenameGraphAction renameGraphAction;
-    /**
-     * The rule renaming action permanently associated with this simulator.
-     */
-    private RenameRuleAction renameRuleAction;
-    /**
-     * The label renaming action permanently associated with this simulator.
-     */
-    private ReplaceLabelAction renameLabelAction;
-    /**
-     * The state save action permanently associated with this simulator.
-     */
-    private SaveGraphAction saveGraphAction;
-    /**
-     * The grammar save action permanently associated with this simulator.
-     */
-    private SaveGrammarAction saveGrammarAction;
-
-    /** The action to start a new simulation. */
-    private StartSimulationAction startSimulationAction;
-    /** The action to start a new abstract simulation. */
-    private StartAbstrSimulationAction startAbstrSimulationAction;
-    /** The undo action permanently associated with this simulator. */
-    private Action undoAction;
-
-    /**
-     * The CTL formula providing action permanently associated with this
-     * simulator.
-     */
-    private VerifyCTLAction verifyAction;
 
     /**
      * Class that spawns a thread to perform a long-lasting action, while
@@ -3185,6 +2710,23 @@ public class Simulator {
     }
 
     /**
+     * Returns the transition application action permanently associated with
+     * this simulator.
+     */
+    public ApplyTransitionAction getApplyTransitionAction() {
+        if (this.applyTransitionAction == null) {
+            this.applyTransitionAction = new ApplyTransitionAction();
+        }
+        return this.applyTransitionAction;
+    }
+
+    /*
+     * private ChooseCustomScenarioAction getChooseCustomScenarioAction() { if
+     * (this.chooseScenarioAction == null) { this.chooseScenarioAction = new
+     * ChooseCustomScenarioAction(); } return this.chooseScenarioAction; }
+     */
+
+    /**
      * Action for applying the current derivation to the current state.
      * @see Simulator#applyMatch()
      */
@@ -3209,40 +2751,58 @@ public class Simulator {
         }
     }
 
-    // BEGIN_IOVKA
-    /** Allows to select a custom scenario and run it. */
-    /*
-     * @Deprecated private class ChooseCustomScenarioAction extends
-     * AbstractAction implements Refreshable { ChooseCustomScenarioAction() {
-     * super("Run a custom scenario (work in progress)"); addRefreshable(this);
-     * }
-     * 
-     * public void actionPerformed(ActionEvent e) { ScenarioSelectionDialog sd =
-     * new ScenarioSelectionDialog(getFrame(), getGTS().getGrammar()); Scenario
-     * customScenario = sd.showDialog(); if (customScenario != null) {
-     * LaunchScenarioAction action = getLaunchScenarioAction(customScenario);
-     * action.actionPerformed(e); } }
-     * 
-     * public void refresh() { // Temporarily disable the dialog. //
-     * setEnabled(getCurrentGrammar() != null && //
-     * getCurrentGrammar().getStartGraph() != null); setEnabled(false); } }
+    /**
+     * The transition application action permanently associated with this
+     * simulator.
      */
+    private ApplyTransitionAction applyTransitionAction;
+
+    /*
+     * private ChooseCustomScenarioAction getChooseCustomScenarioAction() { if
+     * (this.chooseScenarioAction == null) { this.chooseScenarioAction = new
+     * ChooseCustomScenarioAction(); } return this.chooseScenarioAction; }
+     */
+
+    /**
+     * Returns the graph copying action permanently associated with this
+     * simulator.
+     */
+    public CopyGraphAction getCopyGraphAction() {
+        // lazily create the action
+        if (this.copyGraphAction == null) {
+            this.copyGraphAction = new CopyGraphAction();
+        }
+        return this.copyGraphAction;
+    }
+
+    /**
+     * The custom scenario choose action permanently associated with this
+     * simulator.
+     */
+    // private ChooseCustomScenarioAction chooseScenarioAction;
+
+    /**
+     * The graph copying action permanently associated with this simulator.
+     */
+    private CopyGraphAction copyGraphAction;
 
     private class CopyGraphAction extends AbstractAction implements Refreshable {
         CopyGraphAction() {
-            super(Options.COPY_GRAPH_ACTION_NAME);
+            super(Options.COPY_GRAPH_ACTION_NAME, Groove.COPY_ICON);
             addRefreshable(this);
         }
 
         public void refresh() {
-            setEnabled(getGrammarStore().isModifiable());
+            setEnabled(getGrammarStore() != null
+                && getGrammarStore().isModifiable()
+                && getStateList().isGraphSelected());
         }
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = new ArrayList<String>();
-            for (Object name : Simulator.this.stateJList.getSelectedValues()) {
+            for (Object name : getStateList().getSelectedValues()) {
                 selectedGraphs.add((String) name);
             }
             for (String oldGraphName : selectedGraphs) {
@@ -3263,9 +2823,26 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the rule copying action permanently associated with this
+     * simulator.
+     */
+    public CopyRuleAction getCopyRuleAction() {
+        // lazily create the action
+        if (this.copyRuleAction == null) {
+            this.copyRuleAction = new CopyRuleAction();
+        }
+        return this.copyRuleAction;
+    }
+
+    /**
+     * The rule copying action permanently associated with this simulator.
+     */
+    private CopyRuleAction copyRuleAction;
+
     private class CopyRuleAction extends AbstractAction implements Refreshable {
         CopyRuleAction() {
-            super(Options.COPY_RULE_ACTION_NAME);
+            super(Options.COPY_RULE_ACTION_NAME, Groove.COPY_ICON);
             addRefreshable(this);
         }
 
@@ -3300,24 +2877,43 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the graph deletion action permanently associated with this
+     * simulator.
+     */
+    public DeleteGraphAction getDeleteGraphAction() {
+        // lazily create the action
+        if (this.deleteGraphAction == null) {
+            this.deleteGraphAction = new DeleteGraphAction();
+        }
+        return this.deleteGraphAction;
+    }
+
+    /**
+     * The graph deletion action permanently associated with this simulator.
+     */
+    private DeleteGraphAction deleteGraphAction;
+
     private class DeleteGraphAction extends AbstractAction implements
             Refreshable {
         DeleteGraphAction() {
-            super(Options.DELETE_GRAPH_ACTION_NAME);
+            super(Options.DELETE_GRAPH_ACTION_NAME, Groove.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
             addRefreshable(this);
         }
 
         public void refresh() {
-            setEnabled(getGrammarStore().isModifiable());
+            setEnabled(getGrammarStore() != null
+                && getGrammarStore().isModifiable()
+                && getStateList().isGraphSelected());
         }
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = new ArrayList<String>();
-            for (Object name : Simulator.this.stateJList.getSelectedValues()) {
+            for (Object name : getStateList().getSelectedValues()) {
                 selectedGraphs.add((String) name);
             }
             String question = "Delete graph(s) '%s'";
@@ -3345,10 +2941,27 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the rule deletion action permanently associated with this
+     * simulator.
+     */
+    public DeleteRuleAction getDeleteRuleAction() {
+        // lazily create the action
+        if (this.deleteRuleAction == null) {
+            this.deleteRuleAction = new DeleteRuleAction();
+        }
+        return this.deleteRuleAction;
+    }
+
+    /**
+     * The rule deletion action permanently associated with this simulator.
+     */
+    private DeleteRuleAction deleteRuleAction;
+
     private class DeleteRuleAction extends AbstractAction implements
             Refreshable {
         DeleteRuleAction() {
-            super(Options.DELETE_RULE_ACTION_NAME);
+            super(Options.DELETE_RULE_ACTION_NAME, Groove.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
             addRefreshable(this);
@@ -3383,17 +2996,36 @@ public class Simulator {
     }
 
     /**
+     * Lazily creates and returns the graph edit action permanently associated
+     * with this simulator.
+     */
+    public EditGraphAction getEditGraphAction() {
+        // lazily create the action
+        if (this.editGraphAction == null) {
+            this.editGraphAction = new EditGraphAction();
+        }
+        return this.editGraphAction;
+    }
+
+    /**
+     * The graph edit action permanently associated with this simulator.
+     */
+    private EditGraphAction editGraphAction;
+
+    /**
      * Action for editing the currently selected graph in the graph list.
      */
     private class EditGraphAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
         EditGraphAction() {
-            super(Options.EDIT_GRAPH_ACTION_NAME);
+            super(Options.EDIT_GRAPH_ACTION_NAME, Groove.EDIT_ICON);
             addRefreshable(this);
         }
 
         public void refresh() {
-            getGrammarStore().isModifiable();
+            setEnabled(getGrammarStore() != null
+                && getGrammarStore().isModifiable()
+                && getStateList().isGraphSelected());
         }
 
         /**
@@ -3402,8 +3034,7 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            String oldGraphName =
-                (String) Simulator.this.stateJList.getSelectedValue();
+            String oldGraphName = (String) getStateList().getSelectedValue();
             if (oldGraphName != null) {
                 AspectualGraphView oldGraphView =
                     getGrammarView().getGraphView(oldGraphName);
@@ -3412,6 +3043,24 @@ public class Simulator {
             }
         }
     }
+
+    /**
+     * Returns the properties edit action permanently associated with this
+     * simulator.
+     */
+    public EditRulePropertiesAction getEditRulePropertiesAction() {
+        // lazily create the action
+        if (this.editRulePropertiesAction == null) {
+            this.editRulePropertiesAction = new EditRulePropertiesAction();
+        }
+        return this.editRulePropertiesAction;
+    }
+
+    /**
+     * The rule properties edit action permanently associated with this
+     * simulator.
+     */
+    private EditRulePropertiesAction editRulePropertiesAction;
 
     private class EditRulePropertiesAction extends AbstractAction implements
             Refreshable {
@@ -3512,12 +3161,29 @@ public class Simulator {
     }
 
     /**
+     * Lazily creates and returns the rule edit action permanently associated
+     * with this simulator.
+     */
+    public EditRuleAction getEditRuleAction() {
+        // lazily create the action
+        if (this.editRuleAction == null) {
+            this.editRuleAction = new EditRuleAction();
+        }
+        return this.editRuleAction;
+    }
+
+    /**
+     * The rule edit action permanently associated with this simulator.
+     */
+    private EditRuleAction editRuleAction;
+
+    /**
      * Action for editing the current state or rule.
      */
     private class EditRuleAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
         EditRuleAction() {
-            super(Options.EDIT_RULE_ACTION_NAME);
+            super(Options.EDIT_RULE_ACTION_NAME, Groove.EDIT_ICON);
             addRefreshable(this);
         }
 
@@ -3566,12 +3232,29 @@ public class Simulator {
     }
 
     /**
+     * Lazily creates and returns the state edit action permanently associated
+     * with this simulator.
+     */
+    public EditStateAction getEditStateAction() {
+        // lazily create the action
+        if (this.editStateAction == null) {
+            this.editStateAction = new EditStateAction();
+        }
+        return this.editStateAction;
+    }
+
+    /**
+     * The state edit action permanently associated with this simulator.
+     */
+    private EditStateAction editStateAction;
+
+    /**
      * Action for editing the current state.
      */
     private class EditStateAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
         EditStateAction() {
-            super(Options.EDIT_STATE_ACTION_NAME);
+            super(Options.EDIT_STATE_ACTION_NAME, Groove.EDIT_ICON);
             addRefreshable(this);
         }
 
@@ -3603,6 +3286,21 @@ public class Simulator {
             handleEditGraph(stateModel.toPlainGraph(), false);
         }
     }
+
+    /** Returns the action to show the system properties of the current grammar. */
+    public Action getEditSystemPropertiesAction() {
+        // lazily create the action
+        if (this.editSystemPropertiesAction == null) {
+            this.editSystemPropertiesAction = new EditSystemPropertiesAction();
+        }
+        return this.editSystemPropertiesAction;
+    }
+
+    /**
+     * The action to show the system properties of the currently selected
+     * grammar.
+     */
+    private EditSystemPropertiesAction editSystemPropertiesAction;
 
     /** Action to show the system properties. */
     private class EditSystemPropertiesAction extends AbstractAction implements
@@ -3641,6 +3339,23 @@ public class Simulator {
     }
 
     /**
+     * Returns the rule enabling action permanently associated with this
+     * simulator.
+     */
+    public EnableRuleAction getEnableRuleAction() {
+        // lazily create the action
+        if (this.enableRuleAction == null) {
+            this.enableRuleAction = new EnableRuleAction();
+        }
+        return this.enableRuleAction;
+    }
+
+    /**
+     * The rule enabling action permanently associated with this simulator.
+     */
+    private EnableRuleAction enableRuleAction;
+
+    /**
      * Action that changes the enabledness status of the currently selected
      * rule.
      * @see #doEnableRule()
@@ -3669,6 +3384,23 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the exploration dialog action permanently associated with this
+     * simulator.
+     */
+    public ExplorationDialogAction getExplorationDialogAction() {
+        // lazily create the action
+        if (this.explorationDialogAction == null) {
+            this.explorationDialogAction = new ExplorationDialogAction();
+        }
+        return this.explorationDialogAction;
+    }
+
+    /**
+     * The exploration dialog action permanently associated with this simulator.
+     */
+    private ExplorationDialogAction explorationDialogAction;
+
     /** Action to open the Exploration Dialog. */
     private class ExplorationDialogAction extends AbstractAction implements
             Refreshable {
@@ -3687,6 +3419,20 @@ public class Simulator {
                 && getGrammarView().getStartGraphView() != null);
         }
     }
+
+    /**
+     * Returns the LTS export action permanently associated with this simulator.
+     */
+    public ExportAction getExportAction() {
+        // lazily create the action
+        if (this.exportAction == null) {
+            this.exportAction = new ExportAction();
+        }
+        return this.exportAction;
+    }
+
+    /** The LTS export action permanently associated with this simulator. */
+    private ExportAction exportAction;
 
     private class ExportAction extends AbstractAction implements Refreshable {
 
@@ -3743,6 +3489,23 @@ public class Simulator {
     }
 
     /**
+     * Returns the go-to start state action permanently associated with this
+     * simulator.
+     */
+    public GotoStartStateAction getGotoStartStateAction() {
+        // lazily create the action
+        if (this.gotoStartStateAction == null) {
+            this.gotoStartStateAction = new GotoStartStateAction();
+        }
+        return this.gotoStartStateAction;
+    }
+
+    /**
+     * The go-to start state action permanently associated with this simulator.
+     */
+    private GotoStartStateAction gotoStartStateAction;
+
+    /**
      * Action for setting the initial state of the LTS as current state.
      * @see GTS#startState()
      * @see Simulator#setState(GraphState)
@@ -3763,6 +3526,68 @@ public class Simulator {
         public void refresh() {
             setEnabled(getGTS() != null);
         }
+    }
+
+    /**
+     * Returns the rule load action permanently associated with this simulator.
+     */
+    public ImportRuleAction getImportRuleAction() {
+        // lazily create the action
+        if (this.importRuleAction == null) {
+            this.importRuleAction = new ImportRuleAction();
+        }
+        return this.importRuleAction;
+    }
+
+    /**
+     * The rule load action permanently associated with this simulator.
+     */
+    private ImportRuleAction importRuleAction;
+
+    /**
+     * Action for loading and setting a different control program.
+     */
+    private class ImportRuleAction extends AbstractAction implements
+            Refreshable {
+        /** Constructs an instance of the action. */
+        ImportRuleAction() {
+            super(Options.IMPORT_RULE_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            int result = getRuleFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+                try {
+                    File ruleFile = getRuleFileChooser().getSelectedFile();
+                    AspectGraph ruleGraph = unmarshalGraph(ruleFile);
+                    RuleName ruleName =
+                        new RuleName(GraphInfo.getName(ruleGraph));
+                    if (getGrammarView().getRuleView(ruleName) == null
+                        || confirmOverwriteRule(ruleName)) {
+                        doAddRule(ruleName, ruleGraph);
+                        setRule(ruleName);
+                    }
+                } catch (IOException e) {
+                    showErrorDialog("Error loading rule", e);
+                }
+            }
+        }
+
+        /**
+         * Sets the enabling status of this action, depending on whether a
+         * grammar is currently loaded.
+         */
+        public void refresh() {
+            setEnabled(getGrammarView() != null);
+        }
+    }
+
+    /** Creates an action associated to a scenario handler. */
+    public LaunchScenarioAction getLaunchScenarioAction(Scenario scenario) {
+        // no reuse: the action depends on the scenario
+        return new LaunchScenarioAction(scenario);
     }
 
     /** An action used for launching a scenario. */
@@ -3895,6 +3720,32 @@ public class Simulator {
     }
 
     /**
+     * Returns the CTL formula providing action permanently associated with this
+     * simulator.
+     */
+    public Action getProvideTemporalFormulaAction() {
+        if (this.verifyAction == null) {
+            this.verifyAction = new VerifyCTLAction();
+        }
+        return this.verifyAction;
+    }
+
+    /**
+     * Returns the start graph load action permanently associated with this
+     * simulator.
+     */
+    public LoadStartGraphAction getLoadStartGraphAction() {
+        // lazily create the action
+        if (this.loadStartGraphAction == null) {
+            this.loadStartGraphAction = new LoadStartGraphAction();
+        }
+        return this.loadStartGraphAction;
+    }
+
+    /** The start state load action permanently associated with this simulator. */
+    private LoadStartGraphAction loadStartGraphAction;
+
+    /**
      * Action for loading and setting a new initial state.
      * @see Simulator#doLoadStartGraph(File)
      */
@@ -3925,43 +3776,19 @@ public class Simulator {
     }
 
     /**
-     * Action for loading and setting a different control program.
+     * Returns the grammar load action permanently associated with this
+     * simulator.
      */
-    private class LoadRuleAction extends AbstractAction implements Refreshable {
-        /** Constructs an instance of the action. */
-        LoadRuleAction() {
-            super(Options.LOAD_RULE_ACTION_NAME);
-            addRefreshable(this);
+    public Action getLoadGrammarAction() {
+        // lazily create the action
+        if (this.loadGrammarAction == null) {
+            this.loadGrammarAction = new LoadGrammarAction();
         }
-
-        public void actionPerformed(ActionEvent evt) {
-            int result = getRuleFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                try {
-                    File ruleFile = getRuleFileChooser().getSelectedFile();
-                    AspectGraph ruleGraph = unmarshalGraph(ruleFile);
-                    RuleName ruleName =
-                        new RuleName(GraphInfo.getName(ruleGraph));
-                    if (getGrammarView().getRuleView(ruleName) == null
-                        || confirmOverwriteRule(ruleName)) {
-                        doAddRule(ruleName, ruleGraph);
-                        setRule(ruleName);
-                    }
-                } catch (IOException e) {
-                    showErrorDialog("Error loading rule", e);
-                }
-            }
-        }
-
-        /**
-         * Sets the enabling status of this action, depending on whether a
-         * grammar is currently loaded.
-         */
-        public void refresh() {
-            setEnabled(getGrammarView() != null);
-        }
+        return this.loadGrammarAction;
     }
+
+    /** The grammar load action permanently associated with this simulator. */
+    private LoadGrammarAction loadGrammarAction;
 
     /**
      * Action for loading a new rule system.
@@ -4010,6 +3837,24 @@ public class Simulator {
             }
         }
     }
+
+    /**
+     * Returns the rule system creation action permanently associated with this
+     * simulator.
+     */
+    public NewGrammarAction getNewGrammarAction() {
+        // lazily create the action
+        if (this.newGrammarAction == null) {
+            this.newGrammarAction = new NewGrammarAction();
+        }
+        return this.newGrammarAction;
+    }
+
+    /**
+     * The rule system creation action permanently associated with this
+     * simulator.
+     */
+    private NewGrammarAction newGrammarAction;
 
     /** Action to create and load a new, initially empty graph grammar. */
     private class NewGrammarAction extends AbstractAction {
@@ -4064,9 +3909,26 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the graph creation action permanently associated with this
+     * simulator.
+     */
+    public NewGraphAction getNewGraphAction() {
+        // lazily create the action
+        if (this.newGraphAction == null) {
+            this.newGraphAction = new NewGraphAction();
+        }
+        return this.newGraphAction;
+    }
+
+    /**
+     * The graph creation action permanently associated with this simulator.
+     */
+    private NewGraphAction newGraphAction;
+
     private class NewGraphAction extends AbstractAction implements Refreshable {
         NewGraphAction() {
-            super(Options.NEW_GRAPH_ACTION_NAME);
+            super(Options.NEW_GRAPH_ACTION_NAME, Groove.NEW_ICON);
             addRefreshable(this);
         }
 
@@ -4083,9 +3945,26 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the rule creation action permanently associated with this
+     * simulator.
+     */
+    public NewRuleAction getNewRuleAction() {
+        // lazily create the action
+        if (this.newRuleAction == null) {
+            this.newRuleAction = new NewRuleAction();
+        }
+        return this.newRuleAction;
+    }
+
+    /**
+     * The rule creation action permanently associated with this simulator.
+     */
+    private NewRuleAction newRuleAction;
+
     private class NewRuleAction extends AbstractAction implements Refreshable {
         NewRuleAction() {
-            super(Options.NEW_RULE_ACTION_NAME);
+            super(Options.NEW_RULE_ACTION_NAME, Groove.NEW_ICON);
             addRefreshable(this);
         }
 
@@ -4118,6 +3997,20 @@ public class Simulator {
         }
     }
 
+    /** Returns the quit action permanently associated with this simulator. */
+    public Action getQuitAction() {
+        // lazily create the action
+        if (this.quitAction == null) {
+            this.quitAction = new QuitAction();
+        }
+        return this.quitAction;
+    }
+
+    /**
+     * The quit action permanently associated with this simulator.
+     */
+    private QuitAction quitAction;
+
     /**
      * Action for quitting the simulator.
      * @see Simulator#doQuit()
@@ -4133,6 +4026,35 @@ public class Simulator {
             doQuit();
         }
     }
+
+    /** Returns the REDO action permanently associated with this simulator. */
+    public Action getRedoAction() {
+        if (this.redoAction == null) {
+            this.redoAction = getUndoHistory().getRedoAction();
+            addAccelerator(this.redoAction);
+        }
+        return this.redoAction;
+    }
+
+    /**
+     * The redo action permanently associated with this simulator.
+     */
+    private Action redoAction;
+
+    /**
+     * Returns the grammar refresh action permanently associated with this
+     * simulator.
+     */
+    public RefreshGrammarAction getRefreshGrammarAction() {
+        // lazily create the action
+        if (this.refreshGrammarAction == null) {
+            this.refreshGrammarAction = new RefreshGrammarAction();
+        }
+        return this.refreshGrammarAction;
+    }
+
+    /** The grammar refresh action permanently associated with this simulator. */
+    private RefreshGrammarAction refreshGrammarAction;
 
     /**
      * Action for refreshing the rule system. Reloads the current rule system
@@ -4160,10 +4082,27 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the rule renaming action permanently associated with this
+     * simulator.
+     */
+    public RenameGraphAction getRenameGraphAction() {
+        // lazily create the action
+        if (this.renameGraphAction == null) {
+            this.renameGraphAction = new RenameGraphAction();
+        }
+        return this.renameGraphAction;
+    }
+
+    /**
+     * The graph renaming action permanently associated with this simulator.
+     */
+    private RenameGraphAction renameGraphAction;
+
     private class RenameGraphAction extends AbstractAction implements
             Refreshable {
         RenameGraphAction() {
-            super(Options.RENAME_GRAPH_ACTION_NAME);
+            super(Options.RENAME_GRAPH_ACTION_NAME, Groove.RENAME_ICON);
             addRefreshable(this);
             /*
              * The F2-accelerator is not working, but I do not know why
@@ -4173,14 +4112,16 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarStore().isModifiable());
+            setEnabled(getGrammarView() != null
+                && getGrammarStore().isModifiable()
+                && getStateList().isGraphSelected());
         }
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = new ArrayList<String>();
-            for (Object name : Simulator.this.stateJList.getSelectedValues()) {
+            for (Object name : getStateList().getSelectedValues()) {
                 selectedGraphs.add((String) name);
             }
             for (String oldGraphName : selectedGraphs) {
@@ -4202,10 +4143,27 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the rule renaming action permanently associated with this
+     * simulator.
+     */
+    public RenameRuleAction getRenameRuleAction() {
+        // lazily create the action
+        if (this.renameRuleAction == null) {
+            this.renameRuleAction = new RenameRuleAction();
+        }
+        return this.renameRuleAction;
+    }
+
+    /**
+     * The rule renaming action permanently associated with this simulator.
+     */
+    private RenameRuleAction renameRuleAction;
+
     private class RenameRuleAction extends AbstractAction implements
             Refreshable {
         RenameRuleAction() {
-            super(Options.RENAME_RULE_ACTION_NAME);
+            super(Options.RENAME_RULE_ACTION_NAME, Groove.RENAME_ICON);
             addRefreshable(this);
             /*
              * The F2-accelerator is not working, but I do not know why
@@ -4253,6 +4211,23 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the rule renaming action permanently associated with this
+     * simulator.
+     */
+    public ReplaceLabelAction getReplaceLabelAction() {
+        // lazily create the action
+        if (this.replaceLabelAction == null) {
+            this.replaceLabelAction = new ReplaceLabelAction();
+        }
+        return this.replaceLabelAction;
+    }
+
+    /**
+     * The label renaming action permanently associated with this simulator.
+     */
+    private ReplaceLabelAction replaceLabelAction;
+
     /** Action that renames all instances of a given label into another. */
     private class ReplaceLabelAction extends AbstractAction implements
             Refreshable {
@@ -4274,6 +4249,22 @@ public class Simulator {
             }
         }
     }
+
+    /**
+     * Returns the graph save action permanently associated with this simulator.
+     */
+    public SaveGrammarAction getSaveGrammarAction() {
+        // lazily create the action
+        if (this.saveGrammarAction == null) {
+            this.saveGrammarAction = new SaveGrammarAction();
+        }
+        return this.saveGrammarAction;
+    }
+
+    /**
+     * The grammar save action permanently associated with this simulator.
+     */
+    private SaveGrammarAction saveGrammarAction;
 
     /**
      * Action for saving a rule system. Currently not enabled.
@@ -4304,6 +4295,22 @@ public class Simulator {
     }
 
     /**
+     * Returns the graph save action permanently associated with this simulator.
+     */
+    public SaveGraphAction getSaveGraphAction() {
+        // lazily create the action
+        if (this.saveGraphAction == null) {
+            this.saveGraphAction = new SaveGraphAction();
+        }
+        return this.saveGraphAction;
+    }
+
+    /**
+     * The state save action permanently associated with this simulator.
+     */
+    private SaveGraphAction saveGraphAction;
+
+    /**
      * Action to save the state or LTS as a graph.
      * @see Simulator#doAddGraph(AspectGraph)
      * @see Simulator#doSaveGraph(AspectGraph, File)
@@ -4311,7 +4318,7 @@ public class Simulator {
     private class SaveGraphAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
         SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME);
+            super(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON);
             putValue(ACCELERATOR_KEY, Options.SAVE_GRAPH_KEY);
             addRefreshable(this);
         }
@@ -4359,6 +4366,21 @@ public class Simulator {
         }
     }
 
+    /**
+     * Lazily creates and returns an instance of
+     * {@link Simulator.StartSimulationAction}.
+     */
+    public Action getStartSimulationAction() {
+        // lazily create the action
+        if (this.startSimulationAction == null) {
+            this.startSimulationAction = new StartSimulationAction();
+        }
+        return this.startSimulationAction;
+    }
+
+    /** The action to start a new simulation. */
+    private StartSimulationAction startSimulationAction;
+
     private class StartSimulationAction extends AbstractAction implements
             Refreshable {
         /** Constructs an instance of the action. */
@@ -4381,6 +4403,20 @@ public class Simulator {
             setEnabled(enabled);
         }
     }
+
+    /**
+     * A variant of {@link #getStartSimulationAction()} for abstract simulation.
+     */
+    public Action getStartAbstrSimulationAction() {
+        // lazily create the action
+        if (this.startAbstrSimulationAction == null) {
+            this.startAbstrSimulationAction = new StartAbstrSimulationAction();
+        }
+        return this.startAbstrSimulationAction;
+    }
+
+    /** The action to start a new abstract simulation. */
+    private StartAbstrSimulationAction startAbstrSimulationAction;
 
     /**
      * A variant of {@link Simulator.StartSimulationAction} for abstract
@@ -4407,6 +4443,18 @@ public class Simulator {
             setEnabled(enabled);
         }
     }
+
+    /** Returns the undo action permanently associated with this simulator. */
+    public Action getUndoAction() {
+        if (this.undoAction == null) {
+            this.undoAction = getUndoHistory().getUndoAction();
+            addAccelerator(this.undoAction);
+        }
+        return this.undoAction;
+    }
+
+    /** The undo action permanently associated with this simulator. */
+    private Action undoAction;
 
     /**
      * Action for verifying a CTL formula.
@@ -4444,6 +4492,12 @@ public class Simulator {
             setEnabled(getGrammarView() != null);
         }
     }
+
+    /**
+     * The CTL formula providing action permanently associated with this
+     * simulator.
+     */
+    private VerifyCTLAction verifyAction;
 
     /** Class wrapping a menu of recently opened files. */
     private class History {

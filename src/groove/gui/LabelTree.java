@@ -157,9 +157,11 @@ public class LabelTree extends JTree implements GraphModelListener,
         setEnabled(false);
     }
 
-    JToolBar getToolBar() {
-        if (this.toolbar == null && isSupportsSubtypes()) {
-            JToolBar result = new JToolBar();
+    /** Creates a tool bar for the label tree. */
+    JToolBar createToolBar() {
+        JToolBar result = null;
+        if (isSupportsSubtypes()) {
+            result = new JToolBar();
             result.setFloatable(false);
             result.add(getShowSubtypesButton());
             result.add(getShowSupertypesButton());
@@ -169,9 +171,8 @@ public class LabelTree extends JTree implements GraphModelListener,
             ButtonGroup modeButtonGroup = new ButtonGroup();
             modeButtonGroup.add(getShowSubtypesButton());
             modeButtonGroup.add(getShowSupertypesButton());
-            return this.toolbar = result;
         }
-        return this.toolbar;
+        return result;
     }
 
     /**
@@ -727,8 +728,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     /** Mode of the label tree: showing all labels or just those in the graph. */
     private boolean showsAllLabels = false;
 
-    /** Toolbar for this label tree. */
-    private JToolBar toolbar;
     /** Button for setting the show subtypes mode. */
     private JToggleButton showSubtypesButton;
     /** Button for setting the show supertypes mode. */

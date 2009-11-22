@@ -59,6 +59,8 @@ import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
@@ -72,7 +74,7 @@ import org.jgraph.graph.GraphConstants;
  * @version $Revision$
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements
-        SimulationListener {
+        SimulationListener, ListSelectionListener {
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
 
@@ -85,6 +87,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         super(new StateJGraph(simulator), true, true, simulator.getOptions());
         this.simulator = simulator;
         simulator.addSimulationListener(this);
+        simulator.getStateList().addListSelectionListener(this);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_ANCHORS_OPTION);
@@ -92,7 +95,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
         getJGraph().setToolTipEnabled(true);
-        // make sure that emphasis due to selections in the label list
+        // make sure that emphasis due to selections in the label tree
         // cause any selected transition to be deselected first
         getJGraph().getLabelTree().addTreeSelectionListener(
             new TreeSelectionListener() {
@@ -102,6 +105,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                     }
                 }
             });
+        // ensure that changes in the inheritance strocture of the label tree
+        // get stored in the properties
         getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -128,6 +133,14 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /**
+     * Sets the graph model in the jgraph. Convenience method for
+     * <code>this.jGraph.setModel(newModel)</code>.
+     */
+    private void setJModel(GraphJModel newModel) {
+        this.jGraph.setModel(newModel);
+    }
+
+    /**
      * Sets the underlying model of this state frame to the initial graph of the
      * new grammar.
      */
@@ -142,7 +155,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         } else {
             AspectualGraphView startGraph = grammar.getStartGraphView();
             this.jGraph.setModel(this.startGraphJModel =
-                createGraphJModel(startGraph), grammar.getLabelStore());
+                getGraphJModel(startGraph), grammar.getLabelStore());
             setEnabled(true);
         }
         refreshStatus();
@@ -151,10 +164,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public synchronized void startSimulationUpdate(GTS gts) {
         this.stateJModelMap.clear();
         // take either the GTS start state or the grammar start graph as model
-        GraphJModel jModel = getStateJModel(gts.startState(), true);
+        GraphJModel jModel = getCurrentStateJModel();
         assert jModel != null;
         if (getJModel() != jModel) {
-            this.jGraph.setModel(jModel);
+            setJModel(jModel);
         }
         refreshStatus();
     }
@@ -167,7 +180,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public synchronized void setStateUpdate(GraphState state) {
         clearSelectedMatch();
         // set the graph model to the new state
-        this.jGraph.setModel(getStateJModel(state, true));
+        setJModel(getCurrentStateJModel());
         refreshStatus();
     }
 
@@ -185,11 +198,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * direct derivation. Emphasis is by fat lines.
      */
     public synchronized void setTransitionUpdate(GraphTransition trans) {
-        GraphJModel newJModel = getStateJModel(trans.source(), true);
+        GraphJModel newJModel = getCurrentStateJModel();
         if (getJModel() != newJModel) {
             clearSelectedMatch();
             // get a model for the new graph and set it
-            this.jGraph.setModel(newJModel);
+            setJModel(newJModel);
         }
         // now emphasise at will
         RuleMatch match = trans.getMatch();
@@ -202,6 +215,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     public void setMatchUpdate(RuleMatch match) {
         assert match != null : "Match update should not be called with empty match";
+        setJModel(getCurrentStateJModel());
         Set<Element> emphElems = new HashSet<Element>();
         for (Node matchedNode : match.getNodeValues()) {
             emphElems.add(matchedNode);
@@ -224,15 +238,31 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         clearSelectedMatch();
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState, false);
-        if (!this.simulator.isAbstractSimulation()) {
+        if (!getSimulator().isAbstractSimulation()) {
             GraphState oldState = transition.source();
             Morphism morphism = transition.getMorphism();
             copyLayout(getStateJModel(oldState, true), newModel, morphism);
         }
-
         // set the graph model to the new state
-        this.jGraph.setModel(newModel);
+        setJModel(newModel);
         refreshStatus();
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        assert e.getSource() == getStateList();
+        if (getStateList().getSelectedIndices().length == 1) {
+            String graphName = (String) getStateList().getSelectedValue();
+            AspectualGraphView graphView =
+                getSimulator().getGrammarView().getGraphView(graphName);
+            GraphJModel newModel =
+                graphView == null ? getCurrentStateJModel()
+                        : getGraphJModel(graphView);
+            if (newModel != null) {
+                setJModel(newModel);
+                refreshStatus();
+            }
+        }
     }
 
     /**
@@ -261,8 +291,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     @Override
     protected String getStatusText() {
         String text = null;
-        if (this.simulator.getCurrentTransition() != null) {
-            GraphTransition trans = this.simulator.getCurrentTransition();
+        if (getSimulator().getCurrentTransition() != null) {
+            GraphTransition trans = getSimulator().getCurrentTransition();
             if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
                 text =
                     String.format("%s (with match %s)", trans.source(),
@@ -282,6 +312,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         }
     }
 
+    /** Returns the graph model for the current graph state. */
+    private GraphJModel getCurrentStateJModel() {
+        GraphState currentState = getSimulator().getCurrentState();
+        return currentState == null ? null : getStateJModel(currentState, true);
+    }
+
     /**
      * Returns a graph model for a given state graph. The graph model is
      * retrieved from stateJModelMap; if there is no image for the requested
@@ -291,8 +327,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         GraphJModel result = this.stateJModelMap.get(state);
         // IOVKA : added additional condition here, and additional condition for
         // abstract simulation
-        if (state == this.simulator.getGTS().startState()
-            && !this.simulator.isAbstractSimulation()) {
+        if (getSimulator().getGTS() != null
+            && state == getSimulator().getGTS().startState()
+            && !getSimulator().isAbstractSimulation()) {
             result = this.startGraphJModel;
         } else {
             result = this.stateJModelMap.get(state);
@@ -310,23 +347,47 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     private GraphJModel computeStateJModel(GraphState state, boolean copyLayout) {
         // create a fresh model
-        GraphJModel result = createGraphJModel(state.getGraph());
+        GraphJModel result = createStateJModel(state);
         result.setName(state.toString());
         // try to find layout information for the model
-        if (!this.simulator.isAbstractSimulation() && copyLayout
-            && state instanceof GraphNextState) {
-            GraphState oldState = ((GraphNextState) state).source();
-            Morphism morphism = ((GraphNextState) state).getMorphism();
-            // walk back along the derivation chain to find one for
-            // which we have a state model (and hence layout information)
-            while (!this.stateJModelMap.containsKey(oldState)
-                && oldState instanceof GraphNextState) {
-                morphism =
-                    ((GraphNextState) oldState).getMorphism().then(morphism);
-                oldState = ((GraphNextState) oldState).source();
+        if (!getSimulator().isAbstractSimulation() && copyLayout) {
+            if (state instanceof GraphNextState) {
+                GraphState oldState = ((GraphNextState) state).source();
+                Morphism morphism = ((GraphNextState) state).getMorphism();
+                // walk back along the derivation chain to find one for
+                // which we have a state model (and hence layout information)
+                while (!this.stateJModelMap.containsKey(oldState)
+                    && oldState instanceof GraphNextState) {
+                    morphism =
+                        ((GraphNextState) oldState).getMorphism().then(morphism);
+                    oldState = ((GraphNextState) oldState).source();
+                }
+                GraphJModel oldJModel = getStateJModel(oldState, true);
+                copyLayout(oldJModel, result, morphism);
             }
-            GraphJModel oldJModel = getStateJModel(oldState, true);
-            copyLayout(oldJModel, result, morphism);
+        }
+        return result;
+    }
+
+    /** Creates a j-model for a given graph. */
+    private GraphJModel createStateJModel(GraphState state) {
+        Graph graph = state.getGraph();
+        return getSimulator().isAbstractSimulation()
+                ? AbstrGraphJModel.newInstance((AbstrGraph) graph, getOptions())
+                : GraphJModel.newInstance(graph, getOptions());
+    }
+
+    /**
+     * Returns a graph model for a given graph view. The graph model is
+     * retrieved from {@link #graphJModelMap}; if there is no image for the
+     * requested state then one is created using
+     * {@link #createGraphJModel(AspectualGraphView)}.
+     */
+    private AspectJModel getGraphJModel(AspectualGraphView graph) {
+        AspectJModel result = this.graphJModelMap.get(graph);
+        if (result == null) {
+            result = createGraphJModel(graph);
+            this.graphJModelMap.put(graph, result);
         }
         return result;
     }
@@ -334,13 +395,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /** Creates a j-model for a given graph view. */
     private AspectJModel createGraphJModel(AspectualGraphView graph) {
         return AspectJModel.newInstance(graph, getOptions());
-    }
-
-    /** Creates a j-model for a given graph. */
-    private GraphJModel createGraphJModel(Graph graph) {
-        return this.simulator.isAbstractSimulation()
-                ? AbstrGraphJModel.newInstance((AbstrGraph) graph, getOptions())
-                : GraphJModel.newInstance(graph, getOptions());
     }
 
     /**
@@ -409,15 +463,24 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /**
+     * Returns the state list associated with the simulator. Convenience method
+     * for <code>getSimulator().getStateList()</code>.
+     */
+    private StateJList getStateList() {
+        return getSimulator().getStateList();
+    }
+
+    /**
      * Mapping from states to the corresponding graph models.
      */
     private final Map<State,GraphJModel> stateJModelMap =
         new HashMap<State,GraphJModel>();
-    // /**
-    // * Mapping from graphs to the corresponding graph models.
-    // */
-    // private final Map<AspectualGraphView,GraphJModel> graphJModelMap = new
-    // HashMap<AspectualGraphView,GraphJModel>();
+    /**
+     * Mapping from graphs to the corresponding graph models.
+     */
+    private final Map<AspectualGraphView,AspectJModel> graphJModelMap =
+        new HashMap<AspectualGraphView,AspectJModel>();
+
     /**
      * Model for the start graph, if any. We make this an {@link AspectJModel}
      * so that remarks can be displayed.
@@ -425,6 +488,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     private AspectJModel startGraphJModel;
     /** The currently emphasised match (nullable). */
     private RuleMatch selectedMatch;
+
+    /** Returns the simulator associated with this panel. */
+    private final Simulator getSimulator() {
+        return this.simulator;
+    }
+
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;
 }

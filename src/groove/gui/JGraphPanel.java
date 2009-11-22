@@ -149,7 +149,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
             new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
         labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
         labelPaneTop.add(labelPaneTitle);
-        JToolBar labelTreeToolbar = this.labelTree.getToolBar();
+        JToolBar labelTreeToolbar = this.labelTree.createToolBar();
         if (labelTreeToolbar != null) {
             labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
             labelPaneTop.add(labelTreeToolbar);
