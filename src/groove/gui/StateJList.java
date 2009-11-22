@@ -21,7 +21,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.StoredGrammarView;
 
@@ -29,14 +28,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -102,47 +101,11 @@ public class StateJList extends JList implements SimulationListener {
             result.add(this.simulator.getDeleteGraphAction());
             result.add(this.simulator.getRenameGraphAction());
             result.addSeparator();
-            result.add(getSetStartGraphAction());
-            result.add(getPreviewGraphAction());
+            result.add(this.simulator.getSetStartGraphAction());
+            // result.add(getPreviewGraphAction());
             result.add(this.simulator.getEditGraphAction());
-            boolean isEnabledState =
-                (StateJList.this.getSelectedIndices().length == 1);
-            result.getComponent(6).setEnabled(isEnabledState);
-            result.getComponent(7).setEnabled(isEnabledState);
-            result.getComponent(8).setEnabled(isEnabledState);
         }
         return result;
-    }
-
-    /** Lazily creates and returns the set start graph action. */
-    private Action getSetStartGraphAction() {
-        if (this.setStartGraphAction == null) {
-            this.setStartGraphAction =
-                new AbstractAction(Options.START_GRAPH_ACTION_NAME) {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                        String selection =
-                            (String) StateJList.this.getSelectedValue();
-                        StateJList.this.simulator.doLoadStartGraph(selection);
-                    }
-                };
-        }
-        return this.setStartGraphAction;
-    }
-
-    /** Lazily creates and returns the graph preview action. */
-    private Action getPreviewGraphAction() {
-        if (this.previewGraphAction == null) {
-            this.previewGraphAction =
-                new AbstractAction(Options.PREVIEW_ACTION_NAME,
-                    Groove.GRAPH_MODE_ICON) {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                        StateJList.this.doPreviewGraph();
-                    }
-                };
-        }
-        return this.previewGraphAction;
     }
 
     private void doPreviewGraph() {
@@ -212,11 +175,17 @@ public class StateJList extends JList implements SimulationListener {
         setList(getGrammarView().getGraphNames(), keepSelection);
     }
 
-    /**
-     * Indicates if there is currently a single true graph selected in the list.
-     */
-    public boolean isGraphSelected() {
-        return getSelectedIndices().length == 1 && getSelectedIndex() > 0;
+    /** Returns the list of selected graph names. */
+    public List<String> getSelectedGraphs() {
+        List<String> result = new ArrayList<String>();
+        int[] selection = getSelectedIndices();
+        for (int i = 0; i < selection.length; i++) {
+            int index = selection[i];
+            if (index > 0) {
+                result.add((String) this.listModel.elementAt(index));
+            }
+        }
+        return result;
     }
 
     /**
@@ -346,10 +315,6 @@ public class StateJList extends JList implements SimulationListener {
      * @see #restoreListeners()
      */
     private ListSelectionListener[] listeners;
-    /** Action to set the start graph in the simulator. */
-    private Action setStartGraphAction;
-    /** Action to preview a graph. */
-    private Action previewGraphAction;
     /**
      * The background colour of this component when it is enabled.
      */
@@ -366,8 +331,9 @@ public class StateJList extends JList implements SimulationListener {
         @Override
         public void mouseClicked(MouseEvent evt) {
             int index = locationToIndex(evt.getPoint());
+            Rectangle cellBounds = getCellBounds(index, index);
             boolean cellSelected =
-                getCellBounds(index, index).contains(evt.getPoint());
+                cellBounds != null && cellBounds.contains(evt.getPoint());
             if (evt.getClickCount() == 1) {
                 if (evt.getButton() == MouseEvent.BUTTON3) { // Right click
                     // Determine if index was really selected
@@ -375,9 +341,7 @@ public class StateJList extends JList implements SimulationListener {
                         // Multiple selection - mzimakova
                         if (getSelectedIndices().length < 2) {
                             // Adjust list selection accordingly.
-                            suspendListeners();
                             setSelectedIndex(index);
-                            restoreListeners();
                         }
                     }
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
@@ -394,10 +358,7 @@ public class StateJList extends JList implements SimulationListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            // we do something if, after this event, a single item is selected
-            if (getSelectedIndices().length == 1) {
-                getSimulator().refreshActions();
-            }
+            getSimulator().refreshActions();
         }
     }
 

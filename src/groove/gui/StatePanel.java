@@ -44,6 +44,7 @@ import groove.lts.State;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
+import groove.util.Converter;
 import groove.view.AspectualGraphView;
 import groove.view.StoredGrammarView;
 
@@ -149,13 +150,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         this.stateJModelMap.clear();
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
-            this.jGraph.setModel(this.startGraphJModel =
-                AspectJModel.EMPTY_ASPECT_JMODEL, null);
+            setJModel(AspectJModel.EMPTY_ASPECT_JMODEL);
             setEnabled(false);
         } else {
             AspectualGraphView startGraph = grammar.getStartGraphView();
-            this.jGraph.setModel(this.startGraphJModel =
-                getGraphJModel(startGraph), grammar.getLabelStore());
+            this.jGraph.setModel(getGraphJModel(startGraph),
+                grammar.getLabelStore());
             setEnabled(true);
         }
         refreshStatus();
@@ -290,26 +290,30 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     @Override
     protected String getStatusText() {
-        String text = null;
-        if (getSimulator().getCurrentTransition() != null) {
-            GraphTransition trans = getSimulator().getCurrentTransition();
-            if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
-                text =
-                    String.format("%s (with match %s)", trans.source(),
-                        trans.getEvent());
-            } else {
-                text =
-                    String.format("%s (with match of %s)", trans.source(),
-                        trans.getEvent().getRule().getName());
+        StringBuilder result = new StringBuilder();
+        String graphName = (String) getStateList().getSelectedValue();
+        if (graphName == null) {
+            result.append(FRAME_NAME);
+        } else if (this.simulator.getGrammarView().getGraphView(graphName) == null) {
+            // we're dealing with a state
+            result.append(FRAME_NAME);
+            result.append(": ");
+            result.append(Converter.STRONG_TAG.on(getJModel().getName()));
+            if (getSimulator().getCurrentTransition() != null) {
+                GraphTransition trans = getSimulator().getCurrentTransition();
+                if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
+                    result.append(String.format(" (with match %s)",
+                        trans.source(), trans.getEvent()));
+                } else {
+                    result.append(String.format(" (with match of %s)",
+                        trans.source(), trans.getEvent().getRule().getName()));
+                }
             }
-        } else if (getJModel() != null) {
-            text = getJModel().getName();
-        }
-        if (text == null) {
-            return FRAME_NAME;
         } else {
-            return FRAME_NAME + ": " + text;
+            result.append("Graph: ");
+            result.append(Converter.STRONG_TAG.on(getJModel().getName()));
         }
+        return Converter.HTML_TAG.on(result).toString();
     }
 
     /** Returns the graph model for the current graph state. */
@@ -327,18 +331,18 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         GraphJModel result = this.stateJModelMap.get(state);
         // IOVKA : added additional condition here, and additional condition for
         // abstract simulation
-        if (getSimulator().getGTS() != null
-            && state == getSimulator().getGTS().startState()
-            && !getSimulator().isAbstractSimulation()) {
-            result = this.startGraphJModel;
-        } else {
-            result = this.stateJModelMap.get(state);
-            if (result == null) {
-                result = computeStateJModel(state, copyLayout);
-                assert result != null;
-                this.stateJModelMap.put(state, result);
-            }
+        // if (getSimulator().getGTS() != null
+        // && state == getSimulator().getGTS().startState()
+        // && !getSimulator().isAbstractSimulation()) {
+        // result = this.startGraphJModel;
+        // } else {
+        // result = this.stateJModelMap.get(state);
+        if (result == null) {
+            result = computeStateJModel(state, copyLayout);
+            assert result != null;
+            this.stateJModelMap.put(state, result);
         }
+        // }
         return result;
     }
 
@@ -481,11 +485,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     private final Map<AspectualGraphView,AspectJModel> graphJModelMap =
         new HashMap<AspectualGraphView,AspectJModel>();
 
-    /**
-     * Model for the start graph, if any. We make this an {@link AspectJModel}
-     * so that remarks can be displayed.
-     */
-    private AspectJModel startGraphJModel;
     /** The currently emphasised match (nullable). */
     private RuleMatch selectedMatch;
 

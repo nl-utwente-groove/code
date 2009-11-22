@@ -59,7 +59,9 @@ import org.jgraph.event.GraphModelListener;
  * model.
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated replaced by {@link LabelTree}
  */
+@Deprecated
 public class LabelList extends JList implements GraphModelListener,
         ListSelectionListener {
     /**
