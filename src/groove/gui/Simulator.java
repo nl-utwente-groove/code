@@ -129,6 +129,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -2707,6 +2708,19 @@ public class Simulator {
     }
 
     /**
+     * Creates an action that sets the name also as tool tip text, and registers
+     * itself as a refreshable.
+     */
+    private abstract class RefreshableAction extends AbstractAction implements
+            Refreshable {
+        protected RefreshableAction(String name, Icon icon) {
+            super(name, icon);
+            putValue(SHORT_DESCRIPTION, name);
+            addRefreshable(this);
+        }
+    }
+
+    /**
      * Action for displaying an about box.
      */
     private class AboutAction extends AbstractAction {
@@ -2741,13 +2755,11 @@ public class Simulator {
      * Action for applying the current derivation to the current state.
      * @see Simulator#applyMatch()
      */
-    private class ApplyTransitionAction extends AbstractAction implements
-            Refreshable {
+    private class ApplyTransitionAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         ApplyTransitionAction() {
-            super(Options.APPLY_TRANSITION_ACTION_NAME);
+            super(Options.APPLY_TRANSITION_ACTION_NAME, null);
             putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
-            addRefreshable(this);
             addAccelerator(this);
         }
 
@@ -2768,12 +2780,6 @@ public class Simulator {
      */
     private ApplyTransitionAction applyTransitionAction;
 
-    /*
-     * private ChooseCustomScenarioAction getChooseCustomScenarioAction() { if
-     * (this.chooseScenarioAction == null) { this.chooseScenarioAction = new
-     * ChooseCustomScenarioAction(); } return this.chooseScenarioAction; }
-     */
-
     /**
      * Returns the graph copying action permanently associated with this
      * simulator.
@@ -2787,20 +2793,13 @@ public class Simulator {
     }
 
     /**
-     * The custom scenario choose action permanently associated with this
-     * simulator.
-     */
-    // private ChooseCustomScenarioAction chooseScenarioAction;
-
-    /**
      * The graph copying action permanently associated with this simulator.
      */
     private CopyGraphAction copyGraphAction;
 
-    private class CopyGraphAction extends AbstractAction implements Refreshable {
+    private class CopyGraphAction extends RefreshableAction {
         CopyGraphAction() {
             super(Options.COPY_GRAPH_ACTION_NAME, Groove.COPY_ICON);
-            addRefreshable(this);
         }
 
         public void refresh() {
@@ -2851,10 +2850,9 @@ public class Simulator {
      */
     private CopyRuleAction copyRuleAction;
 
-    private class CopyRuleAction extends AbstractAction implements Refreshable {
+    private class CopyRuleAction extends RefreshableAction {
         CopyRuleAction() {
             super(Options.COPY_RULE_ACTION_NAME, Groove.COPY_ICON);
-            addRefreshable(this);
         }
 
         public void refresh() {
@@ -2905,13 +2903,11 @@ public class Simulator {
      */
     private DeleteGraphAction deleteGraphAction;
 
-    private class DeleteGraphAction extends AbstractAction implements
-            Refreshable {
+    private class DeleteGraphAction extends RefreshableAction {
         DeleteGraphAction() {
             super(Options.DELETE_GRAPH_ACTION_NAME, Groove.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
-            addRefreshable(this);
         }
 
         public void refresh() {
@@ -2966,13 +2962,11 @@ public class Simulator {
      */
     private DeleteRuleAction deleteRuleAction;
 
-    private class DeleteRuleAction extends AbstractAction implements
-            Refreshable {
+    private class DeleteRuleAction extends RefreshableAction {
         DeleteRuleAction() {
             super(Options.DELETE_RULE_ACTION_NAME, Groove.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
-            addRefreshable(this);
         }
 
         public void refresh() {
@@ -3023,11 +3017,10 @@ public class Simulator {
     /**
      * Action for editing the currently selected graph in the graph list.
      */
-    private class EditGraphAction extends AbstractAction implements Refreshable {
+    private class EditGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditGraphAction() {
             super(Options.EDIT_GRAPH_ACTION_NAME, Groove.EDIT_ICON);
-            addRefreshable(this);
         }
 
         public void refresh() {
@@ -3070,11 +3063,9 @@ public class Simulator {
      */
     private EditRulePropertiesAction editRulePropertiesAction;
 
-    private class EditRulePropertiesAction extends AbstractAction implements
-            Refreshable {
+    private class EditRulePropertiesAction extends RefreshableAction {
         EditRulePropertiesAction() {
-            super(Options.RULE_PROPERTIES_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.RULE_PROPERTIES_ACTION_NAME, null);
         }
 
         public void refresh() {
@@ -3189,11 +3180,10 @@ public class Simulator {
     /**
      * Action for editing the current state or rule.
      */
-    private class EditRuleAction extends AbstractAction implements Refreshable {
+    private class EditRuleAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditRuleAction() {
             super(Options.EDIT_RULE_ACTION_NAME, Groove.EDIT_ICON);
-            addRefreshable(this);
         }
 
         /**
@@ -3202,7 +3192,8 @@ public class Simulator {
          */
         public void refresh() {
             boolean enabled =
-                getCurrentRule() != null && getGrammarStore().isModifiable();
+                getCurrentRule() != null && getGrammarStore().isModifiable()
+                    && getCurrentRuleSet().size() == 1;
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
             }
@@ -3260,11 +3251,10 @@ public class Simulator {
     /**
      * Action for editing the current state.
      */
-    private class EditStateAction extends AbstractAction implements Refreshable {
+    private class EditStateAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditStateAction() {
             super(Options.EDIT_STATE_ACTION_NAME, Groove.EDIT_ICON);
-            addRefreshable(this);
         }
 
         /**
@@ -3312,12 +3302,10 @@ public class Simulator {
     private EditSystemPropertiesAction editSystemPropertiesAction;
 
     /** Action to show the system properties. */
-    private class EditSystemPropertiesAction extends AbstractAction implements
-            Refreshable {
+    private class EditSystemPropertiesAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditSystemPropertiesAction() {
-            super(Options.SYSTEM_PROPERTIES_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.SYSTEM_PROPERTIES_ACTION_NAME, null);
         }
 
         /**
@@ -3369,11 +3357,9 @@ public class Simulator {
      * rule.
      * @see #doEnableRule()
      */
-    private class EnableRuleAction extends AbstractAction implements
-            Refreshable {
+    private class EnableRuleAction extends RefreshableAction {
         EnableRuleAction() {
-            super(Options.DISABLE_RULE_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.DISABLE_RULE_ACTION_NAME, null);
         }
 
         public void refresh() {
@@ -3411,12 +3397,10 @@ public class Simulator {
     private ExplorationDialogAction explorationDialogAction;
 
     /** Action to open the Exploration Dialog. */
-    private class ExplorationDialogAction extends AbstractAction implements
-            Refreshable {
+    private class ExplorationDialogAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         ExplorationDialogAction() {
-            super(Options.EXPLORATION_DIALOG_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.EXPLORATION_DIALOG_ACTION_NAME, null);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -3443,11 +3427,9 @@ public class Simulator {
     /** The LTS export action permanently associated with this simulator. */
     private ExportAction exportAction;
 
-    private class ExportAction extends AbstractAction implements Refreshable {
-
+    private class ExportAction extends RefreshableAction {
         ExportAction() {
-            super("Export Simulation ...");
-            addRefreshable(this);
+            super("Export Simulation ...", null);
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -3519,13 +3501,11 @@ public class Simulator {
      * @see GTS#startState()
      * @see Simulator#setState(GraphState)
      */
-    private class GotoStartStateAction extends AbstractAction implements
-            Refreshable {
+    private class GotoStartStateAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         GotoStartStateAction() {
-            super(Options.GOTO_START_STATE_ACTION_NAME);
+            super(Options.GOTO_START_STATE_ACTION_NAME, null);
             putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -3556,12 +3536,10 @@ public class Simulator {
     /**
      * Action for loading and setting a different control program.
      */
-    private class ImportRuleAction extends AbstractAction implements
-            Refreshable {
+    private class ImportRuleAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         ImportRuleAction() {
-            super(Options.IMPORT_RULE_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.IMPORT_RULE_ACTION_NAME, null);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -3729,17 +3707,6 @@ public class Simulator {
     }
 
     /**
-     * Returns the CTL formula providing action permanently associated with this
-     * simulator.
-     */
-    public Action getProvideTemporalFormulaAction() {
-        if (this.verifyAction == null) {
-            this.verifyAction = new VerifyCTLAction();
-        }
-        return this.verifyAction;
-    }
-
-    /**
      * Returns the start graph load action permanently associated with this
      * simulator.
      */
@@ -3758,12 +3725,10 @@ public class Simulator {
      * Action for loading and setting a new initial state.
      * @see Simulator#doLoadStartGraph(File)
      */
-    private class LoadStartGraphAction extends AbstractAction implements
-            Refreshable {
+    private class LoadStartGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         LoadStartGraphAction() {
-            super(Options.LOAD_START_STATE_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.LOAD_START_STATE_ACTION_NAME, null);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -3935,10 +3900,9 @@ public class Simulator {
      */
     private NewGraphAction newGraphAction;
 
-    private class NewGraphAction extends AbstractAction implements Refreshable {
+    private class NewGraphAction extends RefreshableAction {
         NewGraphAction() {
             super(Options.NEW_GRAPH_ACTION_NAME, Groove.NEW_ICON);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -3971,10 +3935,9 @@ public class Simulator {
      */
     private NewRuleAction newRuleAction;
 
-    private class NewRuleAction extends AbstractAction implements Refreshable {
+    private class NewRuleAction extends RefreshableAction {
         NewRuleAction() {
             super(Options.NEW_RULE_ACTION_NAME, Groove.NEW_ICON);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4070,14 +4033,12 @@ public class Simulator {
      * and start graph.
      * @see Simulator#doRefreshGrammar()
      */
-    private class RefreshGrammarAction extends AbstractAction implements
-            Refreshable {
+    private class RefreshGrammarAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         RefreshGrammarAction() {
-            super(Options.REFRESH_GRAMMAR_ACTION_NAME);
+            super(Options.REFRESH_GRAMMAR_ACTION_NAME, null);
             putValue(ACCELERATOR_KEY, Options.REFRESH_KEY);
             addAccelerator(this);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -4108,11 +4069,9 @@ public class Simulator {
      */
     private RenameGraphAction renameGraphAction;
 
-    private class RenameGraphAction extends AbstractAction implements
-            Refreshable {
+    private class RenameGraphAction extends RefreshableAction {
         RenameGraphAction() {
             super(Options.RENAME_GRAPH_ACTION_NAME, Groove.RENAME_ICON);
-            addRefreshable(this);
             /*
              * The F2-accelerator is not working, but I do not know why
              * putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
@@ -4166,11 +4125,9 @@ public class Simulator {
      */
     private RenameRuleAction renameRuleAction;
 
-    private class RenameRuleAction extends AbstractAction implements
-            Refreshable {
+    private class RenameRuleAction extends RefreshableAction {
         RenameRuleAction() {
             super(Options.RENAME_RULE_ACTION_NAME, Groove.RENAME_ICON);
-            addRefreshable(this);
             /*
              * The F2-accelerator is not working, but I do not know why
              * putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
@@ -4235,11 +4192,9 @@ public class Simulator {
     private ReplaceLabelAction replaceLabelAction;
 
     /** Action that renames all instances of a given label into another. */
-    private class ReplaceLabelAction extends AbstractAction implements
-            Refreshable {
+    private class ReplaceLabelAction extends RefreshableAction {
         ReplaceLabelAction() {
-            super(Options.REPLACE_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.REPLACE_ACTION_NAME, null);
         }
 
         public void refresh() {
@@ -4275,13 +4230,11 @@ public class Simulator {
     /**
      * Action for saving a rule system. Currently not enabled.
      */
-    private class SaveGrammarAction extends AbstractAction implements
-            Refreshable {
+    private class SaveGrammarAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         SaveGrammarAction() {
-            super(Options.SAVE_GRAMMAR_ACTION_NAME);
+            super(Options.SAVE_GRAMMAR_ACTION_NAME, null);
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -4321,12 +4274,11 @@ public class Simulator {
      * @see Simulator#doAddGraph(AspectGraph)
      * @see Simulator#doSaveGraph(AspectGraph, File)
      */
-    private class SaveGraphAction extends AbstractAction implements Refreshable {
+    private class SaveGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON);
             putValue(ACCELERATOR_KEY, Options.SAVE_GRAPH_KEY);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4387,12 +4339,10 @@ public class Simulator {
     private SetStartGraphAction setStartGraphAction;
 
     /** Action to set a new start graph. */
-    private class SetStartGraphAction extends AbstractAction implements
-            Refreshable {
+    private class SetStartGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         SetStartGraphAction() {
             super(Options.START_GRAPH_ACTION_NAME, Groove.START_ICON);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4420,13 +4370,11 @@ public class Simulator {
     /** The action to start a new simulation. */
     private StartSimulationAction startSimulationAction;
 
-    private class StartSimulationAction extends AbstractAction implements
-            Refreshable {
+    private class StartSimulationAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         StartSimulationAction() {
-            super(Options.START_SIMULATION_ACTION_NAME);
+            super(Options.START_SIMULATION_ACTION_NAME, null);
             putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4461,12 +4409,10 @@ public class Simulator {
      * A variant of {@link Simulator.StartSimulationAction} for abstract
      * simulation.
      */
-    private class StartAbstrSimulationAction extends AbstractAction implements
-            Refreshable {
+    private class StartAbstrSimulationAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         StartAbstrSimulationAction() {
-            super(Options.START_ABSTR_SIMULATION_ACTION_NAME);
-            addRefreshable(this);
+            super(Options.START_ABSTR_SIMULATION_ACTION_NAME, null);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4496,14 +4442,30 @@ public class Simulator {
     private Action undoAction;
 
     /**
+     * Returns the CTL formula providing action permanently associated with this
+     * simulator.
+     */
+    public Action getVerifyAction() {
+        if (this.verifyAction == null) {
+            this.verifyAction = new VerifyCTLAction();
+        }
+        return this.verifyAction;
+    }
+
+    /**
+     * The CTL formula providing action permanently associated with this
+     * simulator.
+     */
+    private VerifyCTLAction verifyAction;
+
+    /**
      * Action for verifying a CTL formula.
      */
-    private class VerifyCTLAction extends AbstractAction implements Refreshable {
+    private class VerifyCTLAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         VerifyCTLAction() {
-            super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
+            super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME, null);
             setEnabled(true);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -4531,12 +4493,6 @@ public class Simulator {
             setEnabled(getGrammarView() != null);
         }
     }
-
-    /**
-     * The CTL formula providing action permanently associated with this
-     * simulator.
-     */
-    private VerifyCTLAction verifyAction;
 
     /** Class wrapping a menu of recently opened files. */
     private class History {
