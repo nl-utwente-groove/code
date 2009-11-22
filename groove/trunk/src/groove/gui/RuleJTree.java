@@ -281,7 +281,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     protected void setShowAnchorsOptionListener() {
         if (!this.anchorImageOptionListenerSet) {
             JMenuItem showAnchorsOptionItem =
-                this.simulator.getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
+                getSimulator().getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
             if (showAnchorsOptionItem != null) {
                 // listen to the option controlling the rule anchor display
                 showAnchorsOptionItem.addItemListener(new ItemListener() {
@@ -457,7 +457,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 
     /** Convenience method to retrieve the current GTS from the simulator. */
     private GTS getCurrentGTS() {
-        return this.simulator.getGTS();
+        return getSimulator().getGTS();
     }
 
     /**
@@ -465,7 +465,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * simulator.
      */
     private GraphTransition getCurrentTransition() {
-        return this.simulator.getCurrentTransition();
+        return getSimulator().getCurrentTransition();
     }
 
     /**
@@ -473,7 +473,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * state panel
      */
     private RuleEvent getCurrentEvent() {
-        return this.simulator.getCurrentEvent();
+        return getSimulator().getCurrentEvent();
     }
 
     /**
@@ -481,7 +481,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * simulator.
      */
     private GraphState getCurrentState() {
-        return this.simulator.getCurrentState();
+        return getSimulator().getCurrentState();
     }
 
     /**
@@ -489,7 +489,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * simulator.
      */
     private RuleView getCurrentRule() {
-        return this.simulator.getCurrentRule();
+        return getSimulator().getCurrentRule();
     }
 
     /**
@@ -520,22 +520,20 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     protected JPopupMenu createPopupMenu(TreeNode node) {
         JPopupMenu res = new JPopupMenu();
-        res.add(this.simulator.getNewRuleAction());
+        res.add(getSimulator().getNewRuleAction());
         if (node instanceof RuleTreeNode) {
             res.addSeparator();
-            res.add(this.simulator.getEnableRuleAction());
+            res.add(getSimulator().getEnableRuleAction());
             res.addSeparator();
-            res.add(this.simulator.getCopyRuleAction());
-            res.add(this.simulator.getDeleteRuleAction());
-            res.add(this.simulator.getRenameRuleAction());
+            res.add(getSimulator().getCopyRuleAction());
+            res.add(getSimulator().getDeleteRuleAction());
+            res.add(getSimulator().getRenameRuleAction());
             res.addSeparator();
-            res.add(this.simulator.getEditRulePropertiesAction());
-            res.add(this.simulator.getEditRuleAction());
-            boolean isEnabledRule = (getSelectionPaths().length == 1);
-            res.getComponent(9).setEnabled(isEnabledRule);
+            res.add(getSimulator().getEditRulePropertiesAction());
+            res.add(getSimulator().getEditRuleAction());
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();
-            res.add(this.simulator.getApplyTransitionAction());
+            res.add(getSimulator().getApplyTransitionAction());
         }
         return res;
     }
@@ -560,11 +558,17 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @invariant <tt>topDirectoryNode == ruleDirectory.getRoot()</tt>
      */
     protected final DefaultMutableTreeNode topDirectoryNode;
+
+    /** Returns the associated simulator. */
+    private final Simulator getSimulator() {
+        return this.simulator;
+    }
+
     /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
      */
-    protected final Simulator simulator;
+    private final Simulator simulator;
     /**
      * Mapping from rule names in the current grammar to rule nodes in the
      * current rule directory.
@@ -573,15 +577,6 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     protected final Map<RuleName,RuleTreeNode> ruleNodeMap =
         new HashMap<RuleName,RuleTreeNode>();
-    // /**
-    // * Mapping from rule names in the current grammar to rule nodes in the
-    // * current rule directory.
-    // * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
-    // * \cup RuleTreeNode</tt>
-    // */
-    // protected final Map<Integer,Map<NameLabel,DirectoryTreeNode>> dirNodeMap
-    // =
-    // new HashMap<Integer,Map<NameLabel,DirectoryTreeNode>>();
 
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
@@ -658,8 +653,10 @@ public class RuleJTree extends JTree implements SimulationListener {
                         // selected tree node is a production rule (level 1
                         // node)
                         if (paths.length == 1) {
-                            RuleJTree.this.simulator.setRule(((RuleTreeNode) selectedNode).getRule().getRuleName());
-                            RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
+                            getSimulator().setRule(
+                                ((RuleTreeNode) selectedNode).getRule().getRuleName());
+                            getSimulator().setGraphPanel(
+                                getSimulator().getRulePanel());
                         }
                     } else if (selectedNode instanceof MatchTreeNode) {
                         // selected tree node is a match (level 2 node)
@@ -690,12 +687,13 @@ public class RuleJTree extends JTree implements SimulationListener {
                             }
                         }
                         if (trans != null) {
-                            RuleJTree.this.simulator.setTransition(trans);
+                            getSimulator().setTransition(trans);
                         } else {
-                            RuleJTree.this.simulator.setEvent(event);
+                            getSimulator().setEvent(event);
                         }
-                        if (RuleJTree.this.simulator.getGraphPanel() == RuleJTree.this.simulator.getRulePanel()) {
-                            RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getStatePanel());
+                        if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
+                            getSimulator().setGraphPanel(
+                                getSimulator().getStatePanel());
                         }
                     }
                 }
@@ -752,33 +750,9 @@ public class RuleJTree extends JTree implements SimulationListener {
                 return;
             }
             Object selectedNode = path.getLastPathComponent();
-            // if (selectedNode instanceof RuleTreeNode) {
-            // RuleJTree.this.simulator.setGraphPanel(RuleJTree.this.simulator.getRulePanel());
-            // return;
-            // }
             if (selectedNode instanceof MatchTreeNode) {
-                // RuleEvent event = ((MatchTreeNode) selectedNode).event();
-                // GraphTransition trans =
-                // RuleJTree.this.matchTransitionMap.get(event);
-                // if (trans == null) {
-                // Iterator<GraphTransition> outTransitions =
-                // getCurrentState().getTransitionIter();
-                // while (outTransitions.hasNext()) {
-                // GraphTransition t = outTransitions.next();
-                // if (t.getEvent().equals(event)) {
-                // trans = t;
-                // RuleJTree.this.matchTransitionMap.put(event, trans);
-                // break;
-                // }
-                // }
-                // RuleJTree.this.simulator.setEvent(event);
-                // } else {
-                // // if trans is not null, it has been added to the
-                // // matchTransitionMap
-                // RuleJTree.this.simulator.setTransition(trans);
-                // }
                 if (evt.getClickCount() == 2) {
-                    RuleJTree.this.simulator.applyMatch();
+                    getSimulator().applyMatch();
                 }
             }
         }
@@ -954,7 +928,7 @@ public class RuleJTree extends JTree implements SimulationListener {
          */
         @Override
         public String toString() {
-            return RuleJTree.this.simulator.getOptions().isSelected(
+            return getSimulator().getOptions().isSelected(
                 Options.SHOW_ANCHORS_OPTION) ? event().getAnchorImageString()
                     : "Match " + this.nr;
         }

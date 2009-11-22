@@ -131,7 +131,7 @@ public class StateJList extends JList implements SimulationListener {
     // -----------------------------------------
 
     public void applyTransitionUpdate(GraphTransition transition) {
-        refreshCurrentState(true);
+        refreshCurrentState(false);
     }
 
     public void setGrammarUpdate(StoredGrammarView grammar) {
@@ -152,7 +152,7 @@ public class StateJList extends JList implements SimulationListener {
     }
 
     public void setStateUpdate(GraphState state) {
-        refreshCurrentState(true);
+        refreshCurrentState(false);
     }
 
     public void setTransitionUpdate(GraphTransition transition) {
@@ -160,7 +160,7 @@ public class StateJList extends JList implements SimulationListener {
     }
 
     public void startSimulationUpdate(GTS gts) {
-        refreshCurrentState(true);
+        refreshCurrentState(false);
     }
 
     /**
@@ -242,7 +242,7 @@ public class StateJList extends JList implements SimulationListener {
             int[] selectedIndices = new int[currentSelection.length];
             for (int i = 0; i < currentSelection.length; i++) {
                 selectedIndices[i] =
-                    Arrays.asList(sortedNames).indexOf(currentSelection[i]);
+                    Arrays.asList(sortedNames).indexOf(currentSelection[i]) + 1;
             }
             setSelectedIndices(selectedIndices);
         } else if (getStartGraphName() != null) {
@@ -349,7 +349,7 @@ public class StateJList extends JList implements SimulationListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 if (StateJList.this.isEnabled() && index > 0 && cellSelected) {
-                    StateJList.this.doPreviewGraph();
+                    getSimulator().doLoadStartGraph((String) getSelectedValue());
                 }
             }
         }
@@ -358,6 +358,7 @@ public class StateJList extends JList implements SimulationListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
+            getSimulator().setGraphPanel(getSimulator().getStatePanel());
             getSimulator().refreshActions();
         }
     }
@@ -394,7 +395,7 @@ public class StateJList extends JList implements SimulationListener {
                 setFont(getFont().deriveFont(Font.BOLD));
                 setToolTipText("Current start graph");
             } else {
-                setToolTipText("Potential start graph (right-click to get options)");
+                setToolTipText("Doubleclick to use as start graph");
             }
             return result;
         }
