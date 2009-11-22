@@ -99,6 +99,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         this.topDirectoryNode = new DefaultMutableTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
         setModel(this.ruleDirectory);
+        // set key bindings
         ActionMap am = getActionMap();
         am.put(Options.UNDO_ACTION_NAME, simulator.getUndoAction());
         am.put(Options.REDO_ACTION_NAME, simulator.getRedoAction());

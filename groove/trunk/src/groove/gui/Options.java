@@ -130,14 +130,16 @@ public class Options {
     public static final String ALWAYS_BUTTON = "Always";
     /** Button text to always choose against. */
     public static final String NEVER_BUTTON = "Never";
-    /** Button text to ask the user for a decisiton. */
+    /** Button text to ask the user for a decision. */
     public static final String ASK_BUTTON = "Ask";
 
     // Titles
     /** Label pane title */
     public static final String LABEL_PANE_TITLE = "Labels";
     /** States pane title */
-    public static final String STATES_PANE_TITLE = "Start Graphs";
+    public static final String STATES_PANE_TITLE = "Graphs";
+    /** Rules pane title */
+    public static final String RULES_PANE_TITLE = "Rules";
 
     // Actions
     /**
@@ -224,7 +226,7 @@ public class Options {
     public static final String LOAD_CONTROL_FILE_ACTION_NAME =
         "Load Control ...";
     /** Load rule action name -mzimakova */
-    public static final String LOAD_RULE_ACTION_NAME = "Import Rule ...";
+    public static final String IMPORT_RULE_ACTION_NAME = "Import Rule ...";
     /** Load start state action name */
     public static final String LOAD_START_STATE_ACTION_NAME =
         "Load Start State ...";
