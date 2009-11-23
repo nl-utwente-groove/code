@@ -21,7 +21,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.view.AspectualGraphView;
 import groove.view.StoredGrammarView;
 
 import java.awt.Color;
@@ -108,23 +107,24 @@ public class StateJList extends JList implements SimulationListener {
         return result;
     }
 
-    private void doPreviewGraph() {
-        if (!isSelectionEmpty()) {
-            // Multiple selection - mzimakova
-            suspendListeners();
-            setSelectedIndex(getSelectedIndex());
-            restoreListeners();
-            String selection = (String) this.getSelectedValue();
-            AspectualGraphView graphView =
-                getGrammarView().getGraphView(selection);
-            boolean load =
-                Editor.previewGraph(graphView.getAspectGraph().toPlainGraph(),
-                    Options.START_GRAPH_ACTION_NAME);
-            if (load) {
-                this.simulator.doLoadStartGraph(selection);
-            }
-        }
-    }
+    //
+    // private void doPreviewGraph() {
+    // if (!isSelectionEmpty()) {
+    // // Multiple selection - mzimakova
+    // suspendListeners();
+    // setSelectedIndex(getSelectedIndex());
+    // restoreListeners();
+    // String selection = (String) this.getSelectedValue();
+    // AspectualGraphView graphView =
+    // getGrammarView().getGraphView(selection);
+    // boolean load =
+    // Editor.previewGraph(graphView.getAspectGraph().toPlainGraph(),
+    // Options.START_GRAPH_ACTION_NAME);
+    // if (load) {
+    // this.simulator.doLoadStartGraph(selection);
+    // }
+    // }
+    // }
 
     // -----------------------------------------
     // Methods from SimulationListener Interface
