@@ -74,8 +74,8 @@ class AspectParseData {
 
     /**
      * Adds values to the aspect map that are inferred from source and target
-     * nodes. This method should not be called after {@link #getAspectMap()} or
-     * {@link #getLabel()} have been invoked.
+     * nodes. This method should not be called after {@link #getAspectMap()} has
+     * been invoked.
      * @param sourceMap map of aspect values for the source node
      * @param targetMap map of aspect values for the target node
      * @throws FormatException if an explicitly declared aspect value is
@@ -105,8 +105,7 @@ class AspectParseData {
                 // value
                 LabelParser parser = result.getLabelParser();
                 if (parser != null) {
-                    this.label =
-                        parser.parse(DefaultLabel.createLabel(getText()));
+                    parser.parse(DefaultLabel.createLabel(getText()));
                 }
             }
         }
@@ -181,9 +180,4 @@ class AspectParseData {
     private final String text;
     /** Fixed status of the parse data. */
     private final DefaultFixable status = new DefaultFixable();
-    /**
-     * The label, either set at construction time or to be computed by
-     * {@link #getLabel()}.
-     */
-    private Label label;
 }
