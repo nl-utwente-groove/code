@@ -16,12 +16,12 @@
  */
 package groove.view.aspect;
 
+import groove.graph.DefaultNode;
+import groove.view.FormatException;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import groove.graph.DefaultNode;
-import groove.view.FormatException;
 
 /**
  * Graph node implementation that supports aspects.
@@ -34,6 +34,25 @@ public class AspectNode extends DefaultNode implements AspectElement {
         super(nr);
         this.aspectMap = new AspectMap();
         this.declaredAspectValues = new HashSet<AspectValue>();
+    }
+
+    /**
+     * This class does not guarantee unique representatives for the same number,
+     * so we need to override {@link #hashCode()} and {@link #equals(Object)}.
+     */
+    @Override
+    protected int computeHashCode() {
+        return getNumber() ^ getClass().hashCode();
+    }
+
+    /**
+     * This class does not guarantee unique representatives for the same number,
+     * so we need to override {@link #hashCode()} and {@link #equals(Object)}.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj.getClass().equals(getClass())
+            && ((AspectNode) obj).getNumber() == getNumber();
     }
 
     /**
