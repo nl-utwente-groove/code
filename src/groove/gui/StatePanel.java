@@ -311,7 +311,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             }
         } else {
             result.append("Graph: ");
-            result.append(Converter.STRONG_TAG.on(getJModel().getName()));
+            result.append(Converter.STRONG_TAG.on(graphName));
         }
         return Converter.HTML_TAG.on(result).toString();
     }
