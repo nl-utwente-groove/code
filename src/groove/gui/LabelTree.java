@@ -1239,10 +1239,10 @@ public class LabelTree extends JTree implements GraphModelListener,
         @Override
         protected Transferable createTransferable(JComponent c) {
             Transferable result = null;
-            if (isSupportsSubtypes()) {
+            if (isSupportsSubtypes() && !isSelectionEmpty()) {
                 StringBuffer content = new StringBuffer();
                 List<TreePath> keepSelection = new ArrayList<TreePath>();
-                for (TreePath path : LabelTree.this.getSelectionPaths()) {
+                for (TreePath path : getSelectionPaths()) {
                     Label label =
                         ((LabelTreeNode) path.getLastPathComponent()).getLabel();
                     if (label.isNodeType()) {
