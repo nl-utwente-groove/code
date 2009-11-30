@@ -298,7 +298,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             // we're dealing with a state
             result.append(FRAME_NAME);
             result.append(": ");
-            result.append(Converter.STRONG_TAG.on(getJModel().getName()));
+            result.append(Converter.STRONG_TAG.on(graphName));
             if (getSimulator().getCurrentTransition() != null) {
                 GraphTransition trans = getSimulator().getCurrentTransition();
                 if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
