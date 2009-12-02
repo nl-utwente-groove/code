@@ -66,7 +66,7 @@ public class ControlTest {
             DefaultFileSystemStore dfss =
                 new DefaultFileSystemStore(grammarFile, false);
             dfss.reload();
-            StoredGrammarView sgv = new StoredGrammarView(dfss);
+            StoredGrammarView sgv = dfss.toGrammarView();
 
             AutomatonBuilder builder = new AutomatonBuilder();
             builder.setRuleNames(sgv.getRuleNames());

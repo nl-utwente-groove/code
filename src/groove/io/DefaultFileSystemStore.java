@@ -239,6 +239,8 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         loadRules();
         loadGraphs();
         loadControls();
+        notify(SystemStore.PROPERTIES_CHANGE | SystemStore.RULE_CHANGE
+            | SystemStore.GRAPH_CHANGE | SystemStore.CONTROL_CHANGE);
         this.initialised = true;
     }
 
@@ -496,7 +498,7 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
     }
 
     /** Notifies the observers with a given string value. */
-    private void notify(String property) {
+    private void notify(int property) {
         setChanged();
         notifyObservers(property);
     }
