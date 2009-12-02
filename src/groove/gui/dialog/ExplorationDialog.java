@@ -16,10 +16,12 @@
  */
 package groove.gui.dialog;
 
-import groove.explore.DocumentedStrategy;
+import groove.explore.AcceptorEnumerator;
+import groove.explore.Documented;
+import groove.explore.Enumerator;
 import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
-import groove.explore.StrategyEnumeration;
+import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
@@ -39,6 +41,7 @@ import groove.trans.RuleName;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,11 +52,19 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * @author Maarten de Mol
@@ -62,13 +73,8 @@ import javax.swing.SpringLayout;
  *          Acceptor.
  */
 public class ExplorationDialog extends JDialog implements ActionListener {
-    private static final String DEFAULT_STRATEGY = "Branching";                 // initially selected strategy (keyword)
-    
     private static final String EXPLORE_COMMAND = "Explore State Space";        // button text/command
     private static final String CANCEL_COMMAND = "Cancel";                      // button text/command
-    
-    private StrategyEnumeration strategyEnumeration = new StrategyEnumeration();
-    private DocumentedStrategy selectedDocumentedStrategy = this.strategyEnumeration.lookupDocumentedStrategyByKeyword(DEFAULT_STRATEGY);
 
     private FormattedSelection strategyPanel;
     private JPanel acceptorPanel;
@@ -95,17 +101,19 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         // Add an empty space of 10 pixels between the dialog and the content
         // panel.
         JPanel dialogContent = new JPanel(new SpringLayout());
-        dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
 
         // Create the panels.
         createButtonPanel();
-        createStrategyPanel();
         
         // Add the panels, and layout, to the dialog.
         // dialogContent.add(new JLabel(" "));
-        dialogContent.add(this.strategyPanel);
+        dialogContent.add(new DocumentedSelection<Strategy>("exploration strategy", new StrategyEnumerator()));
+        dialogContent.add(new JLabel(" "));
+        dialogContent.add(new DocumentedSelection<Acceptor>("acceptor", new AcceptorEnumerator()));
+        dialogContent.add(new JLabel(" "));
         dialogContent.add(this.buttonPanel);
-        SpringUtilities.makeCompactGrid(dialogContent, 2, 1, 0, 0, 0, 0);
+        SpringUtilities.makeCompactGrid(dialogContent, 5, 1, 0, 0, 0, 0);
 
         // Add the dialogContent to the dialog and finish the dialog.
         add(dialogContent);
@@ -202,19 +210,6 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         cancelButton.addActionListener(this);
         this.buttonPanel.add(cancelButton);
     }
-
-    private void createStrategyPanel() {
-        this.strategyPanel = new FormattedSelection(this);
-        
-        for (;this.strategyEnumeration.hasMoreElements();) {
-            DocumentedStrategy currentOption = this.strategyEnumeration.nextElement();
-            Boolean selected = currentOption.getKeyword().equals(DEFAULT_STRATEGY);
-            this.strategyPanel.addOption(currentOption.getName(), currentOption.getExplanation(), currentOption.needsAdditionalArguments(), selected);
-        }
-        
-        this.strategyPanel.setBorder(BorderFactory.createTitledBorder("Choose an exploration strategy"));
-        this.strategyPanel.finalizeLayout();
-    }
        
     // The action listener of the dialog. Uses the String content of the message
     // to update the internal state of the dialog.
@@ -229,63 +224,6 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             this.dispose();
             return;
         }
-        
-        DocumentedStrategy newDocumentedStrategy = this.strategyEnumeration.lookupDocumentedStrategyByName(event.getActionCommand());
-        if (newDocumentedStrategy != null) {
-            this.selectedDocumentedStrategy = newDocumentedStrategy;
-            return;
-        }
-            
-    /*
-        // Respond to changes of the strategy type.
-        if (event.getActionCommand() == ExplorationDialog.FULL_EXPLORATION
-            || event.getActionCommand() == ExplorationDialog.PATH_EXPLORATION) {
-            this.isFullExploration =
-                (event.getActionCommand() == ExplorationDialog.FULL_EXPLORATION);
-            CardLayout cards =
-                (CardLayout) (this.eitherStrategySelection.getLayout());
-            cards.show(this.eitherStrategySelection, event.getActionCommand());
-            return;
-        }
-
-        // Respond to changes of the full exploration strategy.
-        if (event.getActionCommand() == ExplorationDialog.BRANCHING
-            || event.getActionCommand() == ExplorationDialog.DEPTH_FIRST
-            || event.getActionCommand() == ExplorationDialog.BREADTH_FIRST
-            || event.getActionCommand() == ExplorationDialog.LINEAR_CONFLUENCE) {
-            this.selectedFullStrategy = event.getActionCommand();
-            return;
-        }
-
-        // Respond to changes of the path exploration strategy.
-        if (event.getActionCommand() == ExplorationDialog.LINEAR
-            || event.getActionCommand() == ExplorationDialog.RANDOM_LINEAR) {
-            this.selectedFullStrategy = event.getActionCommand();
-            return;
-        }
-
-        // Respond to changes of the acceptor (no rule).
-        if (event.getActionCommand() == ExplorationDialog.NONE_ACCEPTOR
-            || event.getActionCommand() == ExplorationDialog.FINAL_STATE) {
-            this.isConditionalAcceptor = false;
-            CardLayout cards =
-                (CardLayout) (this.optionalRulePanel.getLayout());
-            cards.show(this.optionalRulePanel, "EMPTY");
-            this.selectedAcceptor = event.getActionCommand();
-            return;
-        }
-
-        // Respond to changes of the acceptor (conditional).
-        if (event.getActionCommand() == ExplorationDialog.RULE_MATCH
-            || event.getActionCommand() == ExplorationDialog.RULE_MISMATCH) {
-            this.isConditionalAcceptor = true;
-            CardLayout cards =
-                (CardLayout) (this.optionalRulePanel.getLayout());
-            cards.show(this.optionalRulePanel, "RULE");
-            this.selectedAcceptor = event.getActionCommand();
-            return;
-        }
-    */
     }
 
     /*
@@ -401,6 +339,86 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         
         public void finalizeLayout() {
             SpringUtilities.makeCompactGrid(this, this.nrComponents, 1, 0, 0, 0, 0);
+        }
+    }
+    
+    private class DocumentedSelection<A> extends JPanel implements ListSelectionListener {
+        private Enumerator<A> enumerator;
+        private String objectType;
+        private Documented<A> currentlySelected;
+        private JLabel currentInfo;
+        
+        DocumentedSelection(String objectType, Enumerator<A> enumerator) {
+            super(new SpringLayout());
+            
+            this.enumerator = enumerator;
+            this.currentlySelected = enumerator.getElement(0);
+            this.objectType = objectType;
+            
+            this.add(leftColumn());
+            this.add(rightColumn());
+            SpringUtilities.makeCompactGrid(this, 1, 2, 0, 0, 10, 0);
+            updateInfo();
+        }
+        
+        private JPanel leftColumn() {
+            JList list = new JList(this.enumerator.getAllNames());
+            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            list.setSelectedIndex(0);
+            list.addListSelectionListener(this);
+            JScrollPane listScroller = new JScrollPane(list);
+            listScroller.setPreferredSize(new Dimension(250, 150));
+
+            JPanel column = new JPanel(new SpringLayout());
+            String leadingText = new String("<HTML><FONT color=green><B>Select ");
+            leadingText = leadingText.concat(this.objectType);
+            leadingText = leadingText.concat(":</B></FONT></HTML>");
+            column.add(new JLabel(leadingText));
+            column.add(listScroller);          
+            SpringUtilities.makeCompactGrid(column, 2, 1, 0, 0, 0, 3);
+
+            return column;
+        }
+        
+        private JPanel rightColumn() {
+            this.currentInfo = new JLabel();
+            this.currentInfo.setPreferredSize(new Dimension(250, 150));
+            this.currentInfo.setVerticalAlignment(SwingConstants.TOP);
+            this.currentInfo.setBorder(BorderFactory.createLineBorder(new Color(175, 175, 175)));
+            
+            JPanel column = new JPanel(new SpringLayout());
+            column.add(new JLabel("<HTML><FONT color=green><B>Additional information:</B></FONT></HTML>"));
+            column.add(this.currentInfo);
+            SpringUtilities.makeCompactGrid(column, 2, 1, 0, 0, 0, 3);
+            return column;
+        }
+        
+        private void updateInfo() {
+            String infoText = new String();
+            
+            infoText = infoText.concat("<HTML><U>" 
+                                       + this.currentlySelected.getName()
+                                       + ":</U><BR>"
+                                       + "<FONT color=blue>"
+                                       + this.currentlySelected.getExplanation() 
+                                       + "</FONT>");
+            if (this.currentlySelected.needsArguments()) {
+                infoText = infoText.concat("<BR>"
+                                           + "<FONT color=red>"
+                                           + "This strategy needs (an) additional argument(s)."
+                                           + "</FONT>");
+            }
+            infoText = infoText.concat("</HTML>");
+            
+            this.currentInfo.setText(infoText);
+        }
+ 
+        public void valueChanged(ListSelectionEvent e) {
+            Documented<A> newSelected = this.enumerator.findByName((String) ((JList) e.getSource()).getSelectedValue());
+            if (newSelected != null) {
+                this.currentlySelected = newSelected;
+                updateInfo();
+            }
         }
     }
 }
