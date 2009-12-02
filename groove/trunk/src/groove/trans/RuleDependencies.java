@@ -438,9 +438,17 @@ public class RuleDependencies {
                     // tested for
                     for (Edge labelAutEdge : labelAut.edgeSet()) {
                         Label innerLabel = labelAutEdge.label();
-                        assert !(innerLabel instanceof RegExprLabel) : String.format(
-                            "Wildcard label %s should have been caught above",
-                            innerLabel);
+                        if (innerLabel instanceof RegExprLabel) {
+                            // this must be an inverted label
+                            RegExpr expr =
+                                ((RegExprLabel) innerLabel).getRegExpr();
+                            assert expr instanceof RegExpr.Inv : String.format(
+                                "Regular expression label %s should not occur",
+                                innerLabel);
+                            // take the inverted label instead
+                            innerLabel =
+                                DefaultLabel.createLabel(((RegExpr.Inv) expr).getOperand().getAtomText());
+                        }
                         posOrNeg.add(innerLabel);
                     }
                 }
