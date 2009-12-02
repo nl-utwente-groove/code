@@ -25,6 +25,7 @@ import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.Result;
+import groove.explore.result.RuleApplicationAcceptor;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
@@ -181,6 +182,14 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 new InvariantViolatedAcceptor<Rule>(new Result(1)),
                 "Explores all the new states reachable from the current state until the invariant is violated.",
                 "Check invariant", true);
+        addScenarioHandler(scenario);
+        
+        scenario =
+            ScenarioFactory.getConditionalScenario(
+                new BFSStrategy(),
+                new RuleApplicationAcceptor<Rule>(new Result(1)),
+                "Explores all the new states reachable from the current state until the invariant is violated.",
+                "Find rule application", false);
         addScenarioHandler(scenario);
         
         // MdM - add Exploration Dialog
