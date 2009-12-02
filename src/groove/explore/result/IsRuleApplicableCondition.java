@@ -17,6 +17,7 @@
 package groove.explore.result;
 
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.trans.Rule;
 
 /**
@@ -32,4 +33,14 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
         return this.negated ? !result : result;
     }
 
+    /**
+     * Checks whether a transition was created from the application of a
+     * given rule.
+     * @param transition the LTS transition.
+     * @return true if the transition was from the given rule. 
+     */
+    public boolean isSatisfied(GraphTransition transition) {
+        return transition.getEvent().getRule().equals(this.condition);
+    }
+    
 }
