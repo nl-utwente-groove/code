@@ -145,6 +145,9 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public AspectualGraphView getStartGraphView() {
+        if (this.startGraph == null && this.startGraphName != null) {
+            this.startGraph = getGraphView(this.startGraphName);
+        }
         return this.startGraph;
     }
 
@@ -161,12 +164,10 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     @Override
-    public boolean setStartGraph(String name) {
+    public void setStartGraph(String name) {
         assert name != null;
-        this.startGraph = getGraphView(name);
         this.startGraphName = name;
         invalidate();
-        return this.startGraph != null;
     }
 
     @Override
@@ -366,32 +367,10 @@ public class StoredGrammarView implements GrammarView, Observer {
     void invalidate() {
         this.grammar = null;
         this.errors = null;
+        if (this.startGraphName != null) {
+            this.startGraph = null;
+        }
     }
-
-    //
-    // /**
-    // * Reloads the rule map from the backing {@link SystemStore}.
-    // */
-    // private void loadRuleMap() {
-    // this.ruleMap.clear();
-    // for (Map.Entry<RuleName,AspectGraph> storedRuleEntry :
-    // this.store.getRules().entrySet()) {
-    // this.ruleMap.put(storedRuleEntry.getKey(),
-    // storedRuleEntry.getValue().toRuleView(getProperties()));
-    // }
-    // }
-    //
-    // /**
-    // * Reloads the graph map from the backing {@link SystemStore}.
-    // */
-    // private void loadGraphMap() {
-    // this.graphMap.clear();
-    // for (Map.Entry<String,AspectGraph> storedGraphEntry :
-    // this.store.getGraphs().entrySet()) {
-    // this.graphMap.put(storedGraphEntry.getKey(),
-    // storedGraphEntry.getValue().toGraphView(getProperties()));
-    // }
-    // }
 
     /**
      * Reloads the control map from the backing {@link SystemStore}.
@@ -407,8 +386,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     @Override
     public void update(Observable arg0, Object arg1) {
         assert arg0 == this.store;
-        String change = (String) arg1;
-        if (change.equals(SystemStore.CONTROL_CHANGE)) {
+        int change = (Integer) arg1;
+        if ((change & SystemStore.CONTROL_CHANGE) > 0) {
             loadControlMap();
         }
         invalidate();

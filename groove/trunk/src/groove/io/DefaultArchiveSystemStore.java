@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -52,7 +53,8 @@ import java.util.zip.ZipFile;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultArchiveSystemStore implements SystemStore {
+public class DefaultArchiveSystemStore extends Observable implements
+        SystemStore {
     /**
      * Constructs a store from a given file. The file should be a JAR or ZIP
      * file containing a single subdirectory with extension
@@ -314,12 +316,15 @@ public class DefaultArchiveSystemStore implements SystemStore {
         loadGraphs(zipFile, graphs);
         loadControls(zipFile, controls);
         zipFile.close();
+        notify(SystemStore.PROPERTIES_CHANGE | SystemStore.RULE_CHANGE
+            | SystemStore.GRAPH_CHANGE | SystemStore.CONTROL_CHANGE);
         this.initialised = true;
     }
 
     public StoredGrammarView toGrammarView() {
         if (this.view == null) {
             this.view = new StoredGrammarView(this);
+            addObserver(this.view);
         }
         return this.view;
     }
@@ -509,6 +514,12 @@ public class DefaultArchiveSystemStore implements SystemStore {
             result.insert(0, nameAsFile.getName());
         }
         return new RuleName(result.toString());
+    }
+
+    /** Notifies the observers with a given string value. */
+    private void notify(int property) {
+        setChanged();
+        notifyObservers(property);
     }
 
     private void testInit() throws IllegalStateException {

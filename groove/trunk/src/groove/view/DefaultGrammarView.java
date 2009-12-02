@@ -144,16 +144,13 @@ public class DefaultGrammarView implements GrammarView {
     }
 
     @Override
-    public boolean setStartGraph(String name) {
+    public void setStartGraph(String name) {
         assert name != null;
         AspectualGraphView graphView = this.graphMap.get(name);
-        if (graphView == null) {
-            return false;
-        } else {
+        if (graphView != null) {
             this.startGraph = graphView;
             this.startGraphName = name;
             invalidateGrammar();
-            return true;
         }
     }
 

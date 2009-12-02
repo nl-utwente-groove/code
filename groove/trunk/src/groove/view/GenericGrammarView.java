@@ -109,10 +109,8 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,C
      * the graphs stored with the rule system.
      * @param name either a graph name within the current grammar; or
      *        <code>null</code> if the start graph should be unset
-     * @return <code>true</code> if the start graph as set; <code>false</code>
-     *         if <code>name</code> is not a known graph name.
      */
-    public boolean setStartGraph(String name);
+    public void setStartGraph(String name);
 
     /** Unsets the start graph. */
     public void removeStartGraph();
