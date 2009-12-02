@@ -313,7 +313,8 @@ public class Options {
     /**
      * Scroll to action name
      */
-    static public final String SCROLL_TO_ACTION_NAME = "Scroll To Current";
+    static public final String SCROLL_TO_ACTION_NAME = "Scroll to current";
+      
     /**
      * Graph mode action name
      */

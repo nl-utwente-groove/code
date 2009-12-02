@@ -28,7 +28,11 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.LTSJGraph;
 import groove.io.GrooveFileChooser;
+import groove.lts.GraphNextState;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
@@ -118,6 +122,8 @@ public class ShowHideMenu extends JMenu {
     static public final String FILE_ACTION_NAME = "All From File...";
     /** Name of the action to process elements by label. */
     static public final String LABEL_MENU_NAME = "Label";
+    /** Highlight trace to start state name */
+    public static final String TRACE_ACTION_NAME = "trace to start state";
 
     /**
      * Returns the name for a show mode.
@@ -155,7 +161,11 @@ public class ShowHideMenu extends JMenu {
         if (this.jgraph.getModel() instanceof GraphJModel) {
             menu.add(createShowRegExprAction(ONLY_MODE));
         }
+        if (this.jgraph instanceof LTSJGraph) {
+            menu.add(createTraceAction(ONLY_MODE));
+        }
         menu.add(createFromFileAction(ONLY_MODE));
+        // add actions
         menu.addSeparator();
         menu.add(createEmphasizedAction(ADD_MODE));
         if (this.jgraph.getModel() instanceof GraphJModel) {
@@ -231,6 +241,13 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
+     * Factory method for {@link ShowHideMenu.TraceAction}s.
+     */
+    protected ShowHideAction createTraceAction(int showMode) {
+        return new TraceAction(this.jgraph, showMode);
+    }
+    
+    /**
      * Factory method for <tt>LabelAction</tt>s.
      */
     protected ShowHideAction createLabelAction(int showMode, Label label) {
@@ -270,6 +287,8 @@ public class ShowHideMenu extends JMenu {
     private static int REG_EXPR_MNEMONIC = KeyEvent.VK_P;
     /** Mnemonic key for the {@link FromFileAction} */
     private static int FILE_MNEMONIC = KeyEvent.VK_F;
+    /** Mnemonic key for the {@link TraceAction} */
+    private static int TRACE_MNEMONIC = KeyEvent.VK_T;
     /** Mnemonic key for the menu. */
     private static int MENU_MNEMONIC = KeyEvent.VK_S;
 
@@ -823,6 +842,54 @@ public class ShowHideMenu extends JMenu {
         private ArrayList<String> labels;
     }
 
+    /**
+     * Show/hide action based on a trace from current state to start state.
+     * @author Eduardo Zambon
+     */
+    static protected class TraceAction extends ShowHideAction {
+        /**
+         * Constructs an instance of the action for a given j-graph.
+         * @param jgraph the underlying j-graph
+         * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
+         *        {@link #ONLY_MODE}
+         */
+        public TraceAction(JGraph jgraph, int showMode) {
+            super(jgraph, showMode, TRACE_ACTION_NAME);
+            putValue(MNEMONIC_KEY, TRACE_MNEMONIC);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            LTSJGraph jGraph = (LTSJGraph) this.jgraph;
+            GraphState state = (GraphState) jGraph.getModel().getActiveState();
+            this.trace = new ArrayList<JCell>();
+            while (state != null) {
+                // Add the state to the trace
+                this.trace.add(jGraph.getModel().getJCell(state));
+                if (state instanceof GraphNextState) {
+                    GraphNextState target = (GraphNextState) state;
+                    GraphState source = target.source();
+                    for (GraphTransition trans : source.getTransitionSet()) {
+                        if (trans.target().equals(target)) {
+                            this.trace.add(jGraph.getModel().getJCell(trans));
+                        }
+                    }
+                    state = source;
+                } else { // We reached the start state
+                    state = null;
+                }
+            }
+            super.actionPerformed(evt);
+        }
+        
+        @Override
+        protected boolean isInvolved(JCell jCell) {
+            return this.trace.contains(jCell);
+        }
+        
+        private ArrayList<JCell> trace;
+    }
+    
     /**
      * A menu that creates, when it is selected, sub-items for all the labels
      * currently in the graph. The sub-items are <tt>LabelAction</tt> instances.
