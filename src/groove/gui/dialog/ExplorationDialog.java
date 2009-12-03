@@ -42,24 +42,32 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.text.DecimalFormat;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
@@ -112,8 +120,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         dialogContent.add(new JLabel(" "));
         dialogContent.add(new DocumentedSelection<Acceptor>("acceptor", new AcceptorEnumerator()));
         dialogContent.add(new JLabel(" "));
+        dialogContent.add(new ResultSelection());
+        dialogContent.add(new JLabel(" "));
         dialogContent.add(this.buttonPanel);
-        SpringUtilities.makeCompactGrid(dialogContent, 5, 1, 0, 0, 0, 0);
+        SpringUtilities.makeCompactGrid(dialogContent, 7, 1, 0, 0, 0, 0);
 
         // Add the dialogContent to the dialog and finish the dialog.
         add(dialogContent);
@@ -214,6 +224,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     // The action listener of the dialog. Uses the String content of the message
     // to update the internal state of the dialog.
     public void actionPerformed(ActionEvent event) {
+        
         if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
             // this.dispose();
             // this.simulator.doGenerate(getScenario());
@@ -224,6 +235,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             this.dispose();
             return;
         }
+        
     }
 
     /*
@@ -342,6 +354,50 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         }
     }
     
+    private class ResultSelection extends JPanel implements ActionListener {
+        JCheckBox[] checkboxes = new JCheckBox[3];
+        JTextField customNumber;
+//        textField.setActionCommand(textFieldString);
+//        textField.addActionListener(this);
+        
+        // private Result result = new Result(1);
+        ResultSelection() {
+            super(new SpringLayout());
+
+            this.checkboxes[0] = new JCheckBox("Infinite (don't interrupt)");
+            this.checkboxes[1] = new JCheckBox("1 (interrupt as soon as acceptor succeeds)");
+            this.checkboxes[2] = new JCheckBox("Custom: ");
+            this.checkboxes[0].setSelected(true);
+            for (int i = 0; i < 3; i++)
+                this.checkboxes[i].addActionListener(this);
+            
+            this.customNumber = new JTextField("2", 3);
+            this.customNumber.setEnabled(false);
+            /* numPeriodsField.addPropertyChangeListener("value", this); */
+            
+            this.add(new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>"));
+            ButtonGroup options = new ButtonGroup();
+            JPanel optionsLine = new JPanel(new SpringLayout());
+            for (int i = 0; i < 3; i++) {
+                optionsLine.add(this.checkboxes[i]);
+                if (i < 2)
+                    optionsLine.add(Box.createRigidArea(new Dimension(25,0)));
+                options.add(this.checkboxes[i]);
+            }
+            optionsLine.add(this.customNumber);
+            optionsLine.add(Box.createRigidArea(new Dimension(50,0)));
+            SpringUtilities.makeCompactGrid(optionsLine, 1, 7, 0, 0, 0, 0);
+            this.add(optionsLine);
+
+            SpringUtilities.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // TODO Auto-generated method stub
+        }
+    }
+    
     private class DocumentedSelection<A> extends JPanel implements ListSelectionListener {
         private Enumerator<A> enumerator;
         private String objectType;
@@ -367,7 +423,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             list.setSelectedIndex(0);
             list.addListSelectionListener(this);
             JScrollPane listScroller = new JScrollPane(list);
-            listScroller.setPreferredSize(new Dimension(250, 150));
+            listScroller.setPreferredSize(new Dimension(300, 150));
 
             JPanel column = new JPanel(new SpringLayout());
             String leadingText = new String("<HTML><FONT color=green><B>Select ");
@@ -382,7 +438,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         
         private JPanel rightColumn() {
             this.currentInfo = new JLabel();
-            this.currentInfo.setPreferredSize(new Dimension(250, 150));
+            this.currentInfo.setPreferredSize(new Dimension(300, 150));
             this.currentInfo.setVerticalAlignment(SwingConstants.TOP);
             this.currentInfo.setBorder(BorderFactory.createLineBorder(new Color(175, 175, 175)));
             
@@ -401,7 +457,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
                                        + ":</U><BR>"
                                        + "<FONT color=blue>"
                                        + this.currentlySelected.getExplanation() 
-                                       + "</FONT>");
+                                       + "</FONT><BR>"
+                                       + "<FONT color=#555555>Commandline keyword: "
+                                       + this.currentlySelected.getKeyword()
+                                       + ".</FONT></U>");
             if (this.currentlySelected.needsArguments()) {
                 infoText = infoText.concat("<BR>"
                                            + "<FONT color=red>"
