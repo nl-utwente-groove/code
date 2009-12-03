@@ -39,4 +39,12 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
             "Final States",
             "TBA"));
     }
+    
+    /*
+    private class AcceptorRequiringRule extends Documented<Acceptor> {
+        AcceptorRequiringRule(String keyword, String name, String explanation) {
+            super(null, keyword, name, explanation);
+        }
+    }
+    */
 }
