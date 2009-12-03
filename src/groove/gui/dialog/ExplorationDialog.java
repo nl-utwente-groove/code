@@ -52,6 +52,7 @@ import java.text.DecimalFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -73,6 +74,7 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.JTextComponent;
 
 /**
  * @author Maarten de Mol
@@ -355,15 +357,14 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     }
     
     private class ResultSelection extends JPanel implements ActionListener {
-        JCheckBox[] checkboxes = new JCheckBox[3];
+        JCheckBox[] checkboxes;
         JTextField customNumber;
-//        textField.setActionCommand(textFieldString);
-//        textField.addActionListener(this);
         
         // private Result result = new Result(1);
         ResultSelection() {
             super(new SpringLayout());
 
+            this.checkboxes = new JCheckBox[3];
             this.checkboxes[0] = new JCheckBox("Infinite (don't interrupt)");
             this.checkboxes[1] = new JCheckBox("1 (interrupt as soon as acceptor succeeds)");
             this.checkboxes[2] = new JCheckBox("Custom: ");
@@ -373,7 +374,18 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             
             this.customNumber = new JTextField("2", 3);
             this.customNumber.setEnabled(false);
-            /* numPeriodsField.addPropertyChangeListener("value", this); */
+            
+            /* Does not work.
+            InputVerifier verifier = new InputVerifier() {
+                @Override
+                public boolean verify(JComponent input) {
+                    //final JTextComponent source = (JTextComponent) input;
+                    //String text = source.getText();
+                    return false;
+                }
+            };
+            this.customNumber.setInputVerifier(verifier);
+            */
             
             this.add(new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>"));
             ButtonGroup options = new ButtonGroup();
@@ -394,7 +406,17 @@ public class ExplorationDialog extends JDialog implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // TODO Auto-generated method stub
+            if (e.getSource() == this.checkboxes[0]) {
+                this.customNumber.setEnabled(false);
+            }
+
+            if (e.getSource() == this.checkboxes[1]) {
+                this.customNumber.setEnabled(false);
+            }
+
+            if (e.getSource() == this.checkboxes[2]) {
+                this.customNumber.setEnabled(true);
+            }
         }
     }
     
