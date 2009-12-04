@@ -48,7 +48,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -125,6 +127,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         dialogContent.add(new ResultSelection());
         dialogContent.add(new JLabel(" "));
         dialogContent.add(this.buttonPanel);
+        
         SpringUtilities.makeCompactGrid(dialogContent, 7, 1, 0, 0, 0, 0);
 
         // Add the dialogContent to the dialog and finish the dialog.
@@ -218,6 +221,11 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         JButton exploreButton = new JButton(EXPLORE_COMMAND);
         exploreButton.addActionListener(this);
         this.buttonPanel.add(exploreButton);
+        
+        if (this.simulator.getGrammarView() == null ||
+            this.simulator.getGrammarView().getStartGraphView() == null)
+            exploreButton.setEnabled(false);
+        
         JButton cancelButton = new JButton(CANCEL_COMMAND);
         cancelButton.addActionListener(this);
         this.buttonPanel.add(cancelButton);
@@ -372,8 +380,11 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             for (int i = 0; i < 3; i++)
                 this.checkboxes[i].addActionListener(this);
             
+            /* Does not work either.
             this.customNumber = new JTextField("2", 3);
+            this.customNumber.getActionMap().put(KeyEvent.VK_0, null);
             this.customNumber.setEnabled(false);
+            */
             
             /* Does not work.
             InputVerifier verifier = new InputVerifier() {
