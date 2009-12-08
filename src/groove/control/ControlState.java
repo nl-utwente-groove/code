@@ -79,9 +79,7 @@ public class ControlState implements Node {
 
     @Override
     public String toString() {
-        String variables = this.initializedVariables.isEmpty() ? "" :
-                                    " " + this.initializedVariables.toString();
-        return (isSuccess() ? "S" : "q") + this.stateNumber + variables;
+        return (isSuccess() ? "S" : "q") + this.stateNumber;
     }
 
     /**
