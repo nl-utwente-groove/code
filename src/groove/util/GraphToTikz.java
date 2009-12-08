@@ -893,17 +893,19 @@ public final class GraphToTikz {
                               result.append(AMP);
                           }
                           break;
-                case '$':  result.append(DOLLAR);      break;
-                case '#':  result.append(NUMBER);      break;
-                case '|':  result.append(VERT_BAR);    break;
-                case '%':  result.append(PERCENT);     break;
-                case '_':  result.append(UNDERSCORE);  break;
-                case '{':  result.append(LEFT_CURLY);  break;
-                case '}':  result.append(RIGHT_CURLY); break;
-                case '^':  result.append(CIRCUNFLEX);  break;
-                case '~':  result.append(TILDE);       break;
-                case '\\': result.append(BACKSLASH);   break;
-                case Groove.LC_PI: result.append(PI);  break;
+                case '$':  result.append(DOLLAR);       break;
+                case '#':  result.append(NUMBER);       break;
+                case '|':  result.append(VERT_BAR);     break;
+                case '%':  result.append(PERCENT);      break;
+                case '_':  result.append(UNDERSCORE);   break;
+                case '{':  result.append(LEFT_CURLY);   break;
+                case '}':  result.append(RIGHT_CURLY);  break;
+                case '[':  result.append(LEFT_SQUARE);  break;
+                case ']':  result.append(RIGHT_SQUARE); break;
+                case '^':  result.append(CIRCUNFLEX);   break;
+                case '~':  result.append(TILDE);        break;
+                case '\\': result.append(BACKSLASH);    break;
+                case Groove.LC_PI: result.append(PI);   break;
                 default:   result.append(c);
             }
         }
@@ -1240,6 +1242,8 @@ public final class GraphToTikz {
     private static final String UNDERSCORE = "\\_";
     private static final String LEFT_CURLY = "\\{";
     private static final String RIGHT_CURLY = "\\}";
+    private static final String LEFT_SQUARE = "$[$";
+    private static final String RIGHT_SQUARE = "$]$";
     private static final String CIRCUNFLEX = "\\^{}";
     private static final String TILDE = "\\~{}";
     private static final String VERT_BAR = "$|$";
