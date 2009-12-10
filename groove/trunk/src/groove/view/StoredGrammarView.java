@@ -423,7 +423,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> newInstance(
+    static public StoredGrammarView newInstance(
             URL url) throws IllegalArgumentException, IOException {
         return newInstance(url, url.getQuery());
     }
@@ -438,12 +438,12 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> newInstance(
+    static public StoredGrammarView newInstance(
             URL url, String startGraphName) throws IllegalArgumentException,
         IOException {
         SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
-        GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> result =
+        StoredGrammarView result =
             store.toGrammarView();
         if (startGraphName != null) {
             result.setStartGraph(startGraphName);
@@ -495,7 +495,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public GenericGrammarView<AspectualGraphView,AspectualRuleView,ControlView> newInstance(
+    static public StoredGrammarView newInstance(
             String location) throws IllegalArgumentException, IOException {
         try {
             return newInstance(new URL(location));
