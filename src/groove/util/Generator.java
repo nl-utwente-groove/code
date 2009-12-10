@@ -46,8 +46,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PaigeTarjanMcKay;
 import groove.io.ExtensionFilter;
 import groove.io.RuleList;
-import groove.io.SystemStore;
-import groove.io.SystemStoreFactory;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
@@ -65,6 +63,7 @@ import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -267,15 +266,15 @@ public class Generator extends CommandLineTool {
             printError("Can't load grammar: " + e.getMessage());
             return;
         }
-        // now we are guarenteed to have a URL
+        // now we are guaranteed to have a URL
 
         try {
-            SystemStore store = SystemStoreFactory.newStore(url);
-            if (store instanceof Observable) {
-                ((Observable) store).addObserver(loadObserver);
+            StoredGrammarView grammarView = StoredGrammarView.newInstance(url);
+
+            if (grammarView.getStore() instanceof Observable) {
+                ((Observable) grammarView.getStore()).addObserver(loadObserver);
             }
-            store.reload();
-            this.grammar = store.toGrammarView().toGrammar();
+            this.grammar = grammarView.toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
             printError("Can't load grammar: " + exc.getMessage());
