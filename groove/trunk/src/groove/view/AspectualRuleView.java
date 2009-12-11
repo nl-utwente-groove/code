@@ -625,9 +625,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             rule.setPriority(getPriority());
             rule.setConfluent(isConfluent());
             rule.setParameters(new ArrayList<Node>(lhsParameterMap.values()),
-                parameters);
-            rule.setCreatorParameters(new ArrayList<Node>(
-                creatorParameterMap.values()));
+                new ArrayList<Node>(creatorParameterMap.values()), parameters);
             rule.setFixed();
 
             if (TO_RULE_DEBUG) {

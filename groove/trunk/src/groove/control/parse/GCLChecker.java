@@ -1313,8 +1313,8 @@ public class GCLChecker extends TreeParser {
 
                     
                     		debug("currentRule: "+currentRule);
-                    		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getNumParameters()) {
-                    			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getNumParameters()+") on line "+(r!=null?r.getLine():0));
+                    		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {
+                    			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getVisibleParCount()+") on line "+(r!=null?r.getLine():0));
                     		}
                     		numParameters = 0;
                     		currentOutputParameters.clear();

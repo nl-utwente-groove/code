@@ -177,7 +177,7 @@ final public class SPOEvent extends
     public String getParameterString() {
         StringBuilder result = new StringBuilder();
         result.append('(');
-        List<Node> map = getRule().getLHSParameters();
+        List<Node> map = getRule().getInPars();
         if (map != null) {
             for (int i = 0; i < map.size(); i++) {
                 Node node = getAnchorMap().getNode(map.get(i));
