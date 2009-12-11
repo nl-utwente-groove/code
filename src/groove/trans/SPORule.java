@@ -207,27 +207,21 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /**
-     * Sets the parameters of this rule. The rule can have numbered and
-     * anonymous parameters. Numbered parameters are visible on the transition
-     * label. Numbered parameters can only be in the LHS.
-     * @param lhsParameters an ordered list of numbered parameter nodes
-     * @param allParameters the set of all parameter nodes (including the lhs
-     *        ones)
+     * Sets the parameters of this rule. The rule can have numbered and hidden
+     * parameters. Numbered parameters are divided into input (LHS) and output
+     * (RHS-only) parameters, and are visible on the transition label.
+     * @param inPars an ordered list of input parameter nodes
+     * @param outPars an ordered list of output parameter nodes
+     * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setParameters(List<Node> lhsParameters, Set<Node> allParameters) {
+    public void setParameters(List<Node> inPars, List<Node> outPars,
+            Set<Node> hiddenPars) {
         testFixed(false);
-        this.lhsParameters = lhsParameters;
-        debug("set " + this.lhsParameters.size() + " lhs params");
-        this.allParameters = allParameters;
-    }
-
-    /**
-     * Sets the creator parameters (i.e. nodes which are only in the RHS)
-     * @param creatorParameters an ordered list of numbered RHS-only parameters
-     */
-    public void setCreatorParameters(List<Node> creatorParameters) {
-        this.creatorParameters = creatorParameters;
-        debug("set " + this.creatorParameters.size() + " creator params");
+        this.inPars = inPars;
+        debug("set " + this.inPars.size() + " lhs params");
+        this.outPars = outPars;
+        debug("set " + this.outPars.size() + " creator params");
+        this.hiddenPars = hiddenPars;
     }
 
     /**
@@ -237,7 +231,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private int getParameterType(int param) {
         // check if this parameter even exists
-        if (param > getNumParameters()) {
+        if (param > getVisibleParCount()) {
             debug("nonexistant parameter: " + param);
             return PARAMETER_DOES_NOT_EXIST;
         }
@@ -247,12 +241,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             int result = PARAMETER_DOES_NOT_EXIST;
 
             // if it's in creatorParameters, it may only be an output node
-            if (param > this.lhsParameters.size()) {
+            if (param > this.inPars.size()) {
                 result = PARAMETER_OUTPUT;
             } else {
 
                 // if it's in lhsParameters, it could be both
-                Node n = this.lhsParameters.get(param - 1);
+                Node n = this.inPars.get(param - 1);
                 if (Arrays.binarySearch(getEraserNodes(), n) >= 0) {
                     result = PARAMETER_INPUT;
                 } else {
@@ -300,20 +294,23 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /**
-     * @return the number of parameters of the rule.
+     * Returns the number of visible (i.e., numbered) parameters of the rule.
      */
-    public int getNumParameters() {
-        return this.lhsParameters.size() + this.creatorParameters.size();
+    public int getVisibleParCount() {
+        return this.inPars.size() + this.outPars.size();
     }
 
-    /** Returns the ordered list of visible (i.e., numbered) parameters. */
-    public List<Node> getLHSParameters() {
-        return this.lhsParameters;
+    /** Returns the ordered list of input parameters. */
+    public List<Node> getInPars() {
+        return this.inPars;
     }
 
-    /** Returns the set of all parameter nodes of this rule. */
-    public Set<Node> getAllParameters() {
-        return this.allParameters;
+    /**
+     * Returns the set of hidden (i.e., unnumbered) parameter nodes of this
+     * rule.
+     */
+    public Set<Node> getHiddenPars() {
+        return this.hiddenPars;
     }
 
     /** Creates the search plan using the rule's search plan factory. */
@@ -1331,15 +1328,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * List of numbered parameters.
      */
-    private List<Node> lhsParameters;
+    private List<Node> inPars;
     /**
      * List of numbered creator-parameters
      */
-    private List<Node> creatorParameters;
+    private List<Node> outPars;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
-    private Set<Node> allParameters;
+    private Set<Node> hiddenPars;
     /** The matcher for events of this rule. */
     private MatchStrategy<VarNodeEdgeMap> eventMatcher;
 
