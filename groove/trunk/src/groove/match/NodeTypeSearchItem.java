@@ -32,13 +32,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A search item that searches an image for an edge.
+ * A search item that searches an image for a node type edge.
  * @author Arend Rensink
  * @version $Revision $
  */
 class NodeTypeSearchItem extends AbstractSearchItem {
     /**
-     * Creates a search item for a given binary edge.
+     * Creates a search item for a given node type edge.
      * @param edge the edge to be matched
      */
     public NodeTypeSearchItem(BinaryEdge edge) {
@@ -154,7 +154,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * The edge for which this search item is to find an image.
+     * The (node type) edge for which this search item is to find an image.
      */
     final BinaryEdge edge;
     /**
@@ -226,7 +226,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         /** Tests if the (uniquely determined) edge image can be used. */
-        boolean isImageCorrect(Edge image) {
+        private boolean isImageCorrect(Edge image) {
             return this.host.containsElement(image);
         }
 
@@ -279,7 +279,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         /** Callback method to determine the label of the edge image. */
-        Label getLabel() {
+        private Label getLabel() {
             return NodeTypeSearchItem.this.label;
         }
 
@@ -384,7 +384,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          * flags indicating whether potential images still have to be checked
          * for correctness of the source or label parts.
          */
-        void initImages() {
+        private void initImages() {
             if (this.sourceFind != null) {
                 // only check the source node edges
                 this.imageIter = this.host.edgeSet(this.sourceFind).iterator();
@@ -467,6 +467,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          */
         private boolean setEdge;
         /** Image found by the latest call to {@link #find()}, if any. */
-        Edge selected;
+        private Edge selected;
     }
 }
