@@ -116,6 +116,7 @@ public class AspectJModel extends GraphJModel {
      */
     @Override
     public JCell getJCell(Edge edge) {
+        assert edge instanceof AspectEdge;
         if (edge instanceof AspectEdge) {
             return super.getJCell(edge);
         } else {
@@ -130,6 +131,7 @@ public class AspectJModel extends GraphJModel {
      */
     @Override
     public GraphJVertex getJVertex(Node node) {
+        assert node instanceof AspectNode;
         if (node instanceof AspectNode) {
             return super.getJVertex(node);
         } else {
