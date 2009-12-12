@@ -31,8 +31,8 @@ import groove.io.PriorityFileName;
 import groove.io.Xml;
 import groove.util.Groove;
 import groove.util.Version;
-import groove.view.AspectualGraphView;
-import groove.view.AspectualView;
+import groove.view.GraphView;
+import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -219,7 +219,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * The view is a graph view or a rule view, depending in
      * {@link #hasGraphRole()}.
      */
-    public AspectualView<?> toView() {
+    public View<?> toView() {
         return toAspectGraph().toView();
     }
 
@@ -367,7 +367,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     public static boolean previewGraph(final Graph graph, final String option) {
         Editor e = new Editor();
         AspectGraph result = AspectGraph.newInstance(graph);
-        AspectualGraphView view = result.toGraphView(null);
+        GraphView view = result.toGraphView(null);
         return e.showPreview(view, option);
     }
 
@@ -387,7 +387,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         } catch (IOException exception) {
             return false;
         }
-        AspectualGraphView view = graph.toGraphView(null);
+        GraphView view = graph.toGraphView(null);
         return e.showPreview(view, option);
     }
 
@@ -1415,12 +1415,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * Creates a preview of an aspect model, with properties. Returns a j-model
      * if the edited model should be replaced, <code>null</code> otherwise.
      */
-    private AspectJModel showPreviewDialog(AspectualView<?> view,
-            String okOption) {
+    private AspectJModel showPreviewDialog(View<?> view, String okOption) {
         if (this.previewSize == null) {
             this.previewSize = DEFAULT_PREVIEW_SIZE;
         }
-        boolean partial = view.getAspectGraph().hasErrors();
+        boolean partial = view.getView().hasErrors();
         AspectJModel previewModel =
             AspectJModel.newInstance(view, getOptions());
         JGraph jGraph = new JGraph(previewModel, false, null);
@@ -1537,7 +1536,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      * @return <code>true</code> if the action button was pressed,
      *         <code>false</code> otherwise
      */
-    private boolean showPreview(AspectualView<?> view, String okOption) {
+    private boolean showPreview(View<?> view, String okOption) {
         if (this.previewSize == null) {
             this.previewSize = DEFAULT_PREVIEW_SIZE;
         }

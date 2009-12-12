@@ -42,7 +42,7 @@ import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.AspectualView;
+import groove.view.View;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
@@ -66,8 +66,8 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
- * This is used to visualise rules and attributed graphs.
+ * Implements jgraph's GraphModel interface on top of a {@link View}. This is
+ * used to visualise rules and attributed graphs.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -78,8 +78,8 @@ public class AspectJModel extends GraphJModel {
     /**
      * Creates a new aspect model instance on top of a given aspectual view.
      */
-    AspectJModel(AspectualView<?> view, Options options) {
-        super(view.getAspectGraph(), options);
+    AspectJModel(View<?> view, Options options) {
+        super(view.getView(), options);
         this.view = view;
     }
 
@@ -105,7 +105,7 @@ public class AspectJModel extends GraphJModel {
     }
 
     /** Returns the view on which this model is based. */
-    public AspectualView<?> getView() {
+    public View<?> getView() {
         return this.view;
     }
 
@@ -269,7 +269,7 @@ public class AspectJModel extends GraphJModel {
     /**
      * The underlying view of this graph model.
      */
-    private final AspectualView<?> view;
+    private final View<?> view;
     /** Mapping from the elements of the model to those of the view. */
     private NodeEdgeMap modelToViewMap;
 
@@ -277,8 +277,7 @@ public class AspectJModel extends GraphJModel {
      * Creates a new aspect model instance on top of a given aspectual view.
      * Returns {@link #EMPTY_ASPECT_JMODEL} if the view is <code>null</code>.
      */
-    static public AspectJModel newInstance(AspectualView<?> view,
-            Options options) {
+    static public AspectJModel newInstance(View<?> view, Options options) {
         if (view == null) {
             return EMPTY_ASPECT_JMODEL;
         } else {

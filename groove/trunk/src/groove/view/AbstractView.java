@@ -19,7 +19,6 @@ package groove.view;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
-import groove.graph.NodeEdgeMap;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectValue;
@@ -33,17 +32,12 @@ import groove.view.aspect.AspectValue;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class AspectualView<Model> implements View<Model> {
-    /**
-     * Returns the aspect graph representation of this view.
-     */
-    abstract public AspectGraph getAspectGraph();
-
-    /**
-     * Returns a mapping from the nodes in the aspect graph view to the
-     * corresponding nodes in the model that is being viewed.
-     */
-    abstract public NodeEdgeMap getMap();
+abstract public class AbstractView<Model> implements View<Model> {
+    @Override
+    @Deprecated
+    public AspectGraph getAspectGraph() {
+        return getView();
+    }
 
     /**
      * Returns a parsed label for the aspect edge. The aspect edge has a
@@ -84,7 +78,7 @@ abstract public class AspectualView<Model> implements View<Model> {
      * Returns a default label that is the unparsed version of a given label,
      * according to this view's default parser.
      */
-    public DefaultLabel unparse(Label label) {
+    protected DefaultLabel unparse(Label label) {
         return getDefaultLabelParser().unparse(label);
     }
 
@@ -94,25 +88,9 @@ abstract public class AspectualView<Model> implements View<Model> {
      * <code>unparseLabel(edge.label())</code>.
      */
     protected DefaultLabel unparse(Edge edge) {
-        return unparse(edge.label());
+        return getDefaultLabelParser().unparse(edge.label());
     }
 
     /** Returns the default label parser for this particular view. */
     abstract protected LabelParser getDefaultLabelParser();
-    //
-    // /**
-    // * Creates a view from a given aspect graph. Depending on the role of the
-    // * graph, the result is an {@link AspectualRuleView} or an
-    // * {@link AspectualGraphView}.
-    // * @param aspectGraph the graph to create the view from
-    // * @return a graph or rule view based on <code>aspectGraph</code>
-    // * @see GraphInfo#getRole(GraphShape)
-    // */
-    // static public AspectualView<?> createView(AspectGraph aspectGraph) {
-    // if (GraphInfo.hasRuleRole(aspectGraph)) {
-    // return new AspectualRuleView(aspectGraph);
-    // } else {
-    // return new AspectualGraphView(aspectGraph, null);
-    // }
-    // }
 }

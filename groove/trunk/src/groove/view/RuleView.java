@@ -16,11 +16,9 @@
  */
 package groove.view;
 
-import groove.graph.Label;
 import groove.trans.Rule;
 import groove.trans.RuleName;
-
-import java.util.Set;
+import groove.trans.SystemProperties;
 
 /**
  * Interface for a graphical view upon a transformation rule. Currently the only
@@ -31,15 +29,18 @@ import java.util.Set;
  */
 public interface RuleView extends View<Rule>, Comparable<RuleView> {
     /**
+     * Sets new properties for the rule view. This will typically require the
+     * rule to be rebuilt.
+     */
+    public void setProperties(SystemProperties properties);
+
+    /**
      * Returns the rule of which this is a view. The rule is possibly
      * constructed in the course of this method. This is just a convenience
      * method for {@link View#toModel()}.
      * @throws FormatException if there are syntax errors in the view
      */
     public Rule toRule() throws FormatException;
-
-    /** Returns the set of labels occurring in this rule view. */
-    public Set<Label> getLabels();
 
     /**
      * Returns the name of the rule of which this is a view. Yields the same
@@ -65,11 +66,4 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * locally confluent rules.
      */
     public boolean isConfluent();
-
-    /**
-     * Factory method for a rule view of a given rule.
-     * @throws FormatException if <code>rule</code> cannot be visualised in the
-     *         current rule view format
-     */
-    public RuleView newInstance(Rule rule) throws FormatException;
 }

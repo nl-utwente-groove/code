@@ -31,8 +31,10 @@ import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
-import groove.view.AspectualView;
 import groove.view.FormatException;
+import groove.view.GraphView;
+import groove.view.RuleView;
+import groove.view.View;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -435,17 +437,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 
     /**
      * Creates a graph view from this aspect graph. Further information for the
-     * conversion is given through a properties object. The effect is
-     * essentially the same as calling
-     * {@link AspectualGraphView#AspectualGraphView(AspectGraph, SystemProperties)}
-     * , except that the view object is reused when possible.
+     * conversion is given through a properties object. The view object is
+     * reused when possible.
      * @param properties the properties object with respect to which the graph
      *        is to be constructed
      * @return the resulting state graph view (non-null)
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link Groove#GRAPH_ROLE}
      */
-    public AspectualGraphView toGraphView(SystemProperties properties)
+    public GraphView toGraphView(SystemProperties properties)
         throws IllegalStateException {
         if (!Groove.GRAPH_ROLE.equals(GraphInfo.getRole(this))) {
             throw new IllegalStateException(
@@ -469,17 +469,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 
     /**
      * Creates a rule view from this aspect graph. Further information for the
-     * conversion is given through a properties object. The effect is
-     * essentially the same as calling
-     * {@link AspectualRuleView#AspectualRuleView(AspectGraph, SystemProperties)}
-     * , except that the view object is reused when possible.
+     * conversion is given through a properties object. The view object is
+     * reused when possible.
      * @param properties the properties object with respect to which the rule is
      *        to be constructed
      * @return the resulting rule view (non-null)
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link Groove#RULE_ROLE}
      */
-    public AspectualRuleView toRuleView(SystemProperties properties)
+    public RuleView toRuleView(SystemProperties properties)
         throws IllegalStateException {
         if (!Groove.RULE_ROLE.equals(GraphInfo.getRole(this))) {
             throw new IllegalStateException(
@@ -506,7 +504,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @see #toGraphView(SystemProperties)
      * @see #toRuleView(SystemProperties)
      */
-    public AspectualView<?> toView() {
+    public View<?> toView() {
         if (Groove.RULE_ROLE.equals(GraphInfo.getRole(this))) {
             return toRuleView(null);
         } else {
@@ -518,7 +516,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     private AspectualGraphView graphView;
 
     /** Auxiliary object for converting this aspect graph to a rule. */
-    private AspectualRuleView ruleView;
+    private RuleView ruleView;
 
     /**
      * Copies this aspect graph to one with the same nodes, edges and graph

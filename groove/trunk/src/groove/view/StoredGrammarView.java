@@ -99,8 +99,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      * @see #getRuleView(RuleName)
      */
     @Deprecated
-    public AspectualRuleView addRule(AspectualRuleView ruleView)
-        throws IllegalStateException {
+    public RuleView addRule(RuleView ruleView) throws IllegalStateException {
         throw new UnsupportedOperationException();
     }
 
@@ -108,13 +107,13 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.controlMap.get(name);
     }
 
-    public AspectualGraphView getGraphView(String name) {
+    public GraphView getGraphView(String name) {
         AspectGraph stateGraph = getStore().getGraphs().get(name);
         return stateGraph == null ? null
                 : stateGraph.toGraphView(getProperties());
     }
 
-    public AspectualRuleView getRuleView(RuleName name) {
+    public RuleView getRuleView(RuleName name) {
         AspectGraph ruleGraph = getStore().getRules().get(name);
         return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
     }
@@ -144,7 +143,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.startGraphName;
     }
 
-    public AspectualGraphView getStartGraphView() {
+    public GraphView getStartGraphView() {
         if (this.startGraph == null && this.startGraphName != null) {
             this.startGraph = getGraphView(this.startGraphName);
         }
@@ -289,7 +288,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         LabelStore labelStore = new LabelStore();
         // set rules
         for (AspectGraph ruleGraph : getStore().getRules().values()) {
-            AspectualRuleView ruleView = ruleGraph.toRuleView(getProperties());
+            RuleView ruleView = ruleGraph.toRuleView(getProperties());
             try {
                 labelStore.addLabels(ruleView.getLabels());
                 // only add the enabled rules
@@ -400,7 +399,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     /** The store backing this view. */
     private final SystemStore store;
     /** The start graph of the grammar. */
-    private AspectualGraphView startGraph;
+    private GraphView startGraph;
     /**
      * Name of the current control program, if it is explicitly set;
      * <code>null</code> otherwise.
@@ -423,8 +422,8 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(
-            URL url) throws IllegalArgumentException, IOException {
+    static public StoredGrammarView newInstance(URL url)
+        throws IllegalArgumentException, IOException {
         return newInstance(url, url.getQuery());
     }
 
@@ -438,13 +437,11 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(
-            URL url, String startGraphName) throws IllegalArgumentException,
-        IOException {
+    static public StoredGrammarView newInstance(URL url, String startGraphName)
+        throws IllegalArgumentException, IOException {
         SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
-        StoredGrammarView result =
-            store.toGrammarView();
+        StoredGrammarView result = store.toGrammarView();
         if (startGraphName != null) {
             result.setStartGraph(startGraphName);
         }
@@ -495,8 +492,8 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(
-            String location) throws IllegalArgumentException, IOException {
+    static public StoredGrammarView newInstance(String location)
+        throws IllegalArgumentException, IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {

@@ -31,8 +31,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,CV>
-        extends View<GraphGrammar> {
+public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,CV> {
     /** Returns the name of the rule system. */
     public String getName();
 

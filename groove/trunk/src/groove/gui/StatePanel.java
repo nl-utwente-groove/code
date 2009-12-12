@@ -45,7 +45,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Converter;
-import groove.view.AspectualGraphView;
+import groove.view.GraphView;
 import groove.view.StoredGrammarView;
 
 import java.awt.geom.Point2D;
@@ -153,7 +153,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             setJModel(AspectJModel.EMPTY_ASPECT_JMODEL);
             setEnabled(false);
         } else {
-            AspectualGraphView startGraph = grammar.getStartGraphView();
+            GraphView startGraph = grammar.getStartGraphView();
             this.jGraph.setModel(getGraphJModel(startGraph),
                 grammar.getLabelStore());
             setEnabled(true);
@@ -253,7 +253,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         assert e.getSource() == getStateList();
         if (getStateList().getSelectedIndices().length == 1) {
             String graphName = (String) getStateList().getSelectedValue();
-            AspectualGraphView graphView =
+            GraphView graphView =
                 getSimulator().getGrammarView().getGraphView(graphName);
             GraphJModel newModel =
                 graphView == null ? getCurrentStateJModel()
@@ -385,9 +385,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Returns a graph model for a given graph view. The graph model is
      * retrieved from {@link #graphJModelMap}; if there is no image for the
      * requested state then one is created using
-     * {@link #createGraphJModel(AspectualGraphView)}.
+     * {@link #createGraphJModel(GraphView)}.
      */
-    private AspectJModel getGraphJModel(AspectualGraphView graph) {
+    private AspectJModel getGraphJModel(GraphView graph) {
         AspectJModel result = this.graphJModelMap.get(graph);
         if (result == null) {
             result = createGraphJModel(graph);
@@ -397,7 +397,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /** Creates a j-model for a given graph view. */
-    private AspectJModel createGraphJModel(AspectualGraphView graph) {
+    private AspectJModel createGraphJModel(GraphView graph) {
         return AspectJModel.newInstance(graph, getOptions());
     }
 
@@ -482,8 +482,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /**
      * Mapping from graphs to the corresponding graph models.
      */
-    private final Map<AspectualGraphView,AspectJModel> graphJModelMap =
-        new HashMap<AspectualGraphView,AspectJModel>();
+    private final Map<GraphView,AspectJModel> graphJModelMap =
+        new HashMap<GraphView,AspectJModel>();
 
     /** The currently emphasised match (nullable). */
     private RuleMatch selectedMatch;

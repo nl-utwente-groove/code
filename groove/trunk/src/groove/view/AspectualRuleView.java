@@ -92,7 +92,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
+public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
 
     /**
      * Constructs a new rule graph on the basis of a given production rule.
@@ -219,7 +219,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     }
 
     /** Invokes {@link #AspectualRuleView(Rule)} to construct a rule graph. */
-    public RuleView newInstance(Rule rule) throws FormatException {
+    public RuleView newInstance(Rule rule) {
         return new AspectualRuleView(rule);
     }
 
@@ -271,7 +271,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     }
 
     @Override
-    public AspectGraph getAspectGraph() {
+    public AspectGraph getView() {
         return this.graph;
     }
 
@@ -1222,7 +1222,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 
     /**
      * Callback method to create a graph that can serve as LHS or RHS of a rule.
-     * @see #getAspectGraph()
+     * @see #getView()
      */
     protected Graph createGraph() {
         return graphFactory.newGraph();
@@ -1556,7 +1556,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     private static void testTranslation(String name, AspectGraph graph)
         throws FormatException, FormatException {
         // construct rule graph
-        AspectualRuleView ruleGraph = graph.toRuleView(null);
+        RuleView ruleGraph = graph.toRuleView(null);
         // convert rule graph into rule
         System.out.print("    Constructing rule from rule graph: ");
         Rule rule = ruleGraph.toRule();
@@ -1566,8 +1566,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         AspectualRuleView newRuleGraph = new AspectualRuleView(rule);
         System.out.println("OK");
         System.out.print("    Testing for isomorphism of original and reconstructed rule graph: ");
-        if (isoChecker.areIsomorphic(newRuleGraph.getAspectGraph(),
-            ruleGraph.getAspectGraph())) {
+        if (isoChecker.areIsomorphic(newRuleGraph.getView(),
+            ruleGraph.getView())) {
             System.out.println("OK");
         } else {
             System.out.println("ERROR");
@@ -1576,10 +1576,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             System.out.println(rule);
             System.out.println("Original rule graph");
             System.out.println("-----------------");
-            System.out.println(ruleGraph.getAspectGraph());
+            System.out.println(ruleGraph.getView());
             System.out.println("Reconstructed rule graph");
             System.out.println("------------------------");
-            System.out.println(newRuleGraph.getAspectGraph());
+            System.out.println(newRuleGraph.getView());
         }
     }
 

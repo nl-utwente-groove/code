@@ -55,7 +55,8 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectualGraphView extends AspectualView<Graph> {
+public class AspectualGraphView extends AbstractView<Graph> implements
+        GraphView {
     /**
      * Constructs an instance from a given aspect graph view.
      * @see GraphInfo#getName(groove.graph.GraphShape)
@@ -91,7 +92,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
     }
 
     @Override
-    public AspectGraph getAspectGraph() {
+    public AspectGraph getView() {
         return this.view;
     }
 
