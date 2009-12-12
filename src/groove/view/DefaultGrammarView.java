@@ -47,7 +47,7 @@ public class DefaultGrammarView implements GrammarView {
     // * Constructs a (non-fixed) copy of an existing rule view grammar.
     // */
     // public DefaultGrammarView(
-    // GrammarView<AspectualGraphView,AspectualRuleView> oldGrammar) {
+    // GrammarView<GraphView,AspectualRuleView> oldGrammar) {
     // this(oldGrammar.getName());
     // getProperties().putAll(oldGrammar.getProperties());
     // for (AspectualRuleView ruleView : oldGrammar.getRuleMap().values()) {
@@ -88,7 +88,7 @@ public class DefaultGrammarView implements GrammarView {
     public final void setProperties(Properties properties) {
         this.properties = new SystemProperties();
         this.properties.putAll(properties);
-        for (AspectualRuleView rule : this.ruleMap.values()) {
+        for (RuleView rule : this.ruleMap.values()) {
             rule.setProperties(this.properties);
         }
         this.properties.setFixed();
@@ -107,10 +107,8 @@ public class DefaultGrammarView implements GrammarView {
      * Adds a rule based on a given rule view.
      * @see #getRuleView(RuleName)
      */
-    public AspectualRuleView addRule(AspectualRuleView ruleView)
-        throws IllegalStateException {
-        AspectualRuleView result =
-            this.ruleMap.put(ruleView.getRuleName(), ruleView);
+    public RuleView addRule(RuleView ruleView) throws IllegalStateException {
+        RuleView result = this.ruleMap.put(ruleView.getRuleName(), ruleView);
         invalidateGrammar();
         return result;
     }
@@ -121,21 +119,21 @@ public class DefaultGrammarView implements GrammarView {
      * @return the view previously stored with name <code>name</code>, or
      *         <code>null</code>
      */
-    public AspectualRuleView removeRule(RuleName name) {
-        AspectualRuleView result = this.ruleMap.remove(name);
+    public RuleView removeRule(RuleName name) {
+        RuleView result = this.ruleMap.remove(name);
         invalidateGrammar();
         return result;
     }
 
-    public AspectualGraphView getGraphView(String name) {
+    public GraphView getGraphView(String name) {
         return this.graphMap.get(name);
     }
 
-    public AspectualRuleView getRuleView(RuleName name) {
+    public RuleView getRuleView(RuleName name) {
         return this.ruleMap.get(name);
     }
 
-    public AspectualGraphView getStartGraphView() {
+    public GraphView getStartGraphView() {
         return this.startGraph;
     }
 
@@ -146,7 +144,7 @@ public class DefaultGrammarView implements GrammarView {
     @Override
     public void setStartGraph(String name) {
         assert name != null;
-        AspectualGraphView graphView = this.graphMap.get(name);
+        GraphView graphView = this.graphMap.get(name);
         if (graphView != null) {
             this.startGraph = graphView;
             this.startGraphName = name;
@@ -226,12 +224,12 @@ public class DefaultGrammarView implements GrammarView {
      * @return the file at which the graph with this name was stored;
      *         <code>null</code> if there was no graph with this name.
      */
-    public AspectualGraphView removeGraph(String name) {
+    public GraphView removeGraph(String name) {
         return this.graphMap.remove(name);
     }
 
     /** Returns the graphs found during loading of the grammar */
-    public Map<String,AspectualGraphView> getGraphs() {
+    public Map<String,GraphView> getGraphs() {
         return this.graphMap;
     }
 
@@ -366,15 +364,15 @@ public class DefaultGrammarView implements GrammarView {
     }
 
     /** Mapping from rule names to views on the corresponding rules. */
-    private final Map<RuleName,AspectualRuleView> ruleMap =
-        new TreeMap<RuleName,AspectualRuleView>();
+    private final Map<RuleName,RuleView> ruleMap =
+        new TreeMap<RuleName,RuleView>();
     /** Mapping from priorities to sets of rule names. */
     /** The name of this grammar view. */
     private String name;
     /** The control automaton */
     private ControlView controlView;
     /** The start graph of the grammar. */
-    private AspectualGraphView startGraph;
+    private GraphView startGraph;
     /**
      * Name of the start graph, if the start graph is one of the graphs stored
      * in the rule system.
@@ -387,8 +385,8 @@ public class DefaultGrammarView implements GrammarView {
     /** The graph grammar derived from the rule views. */
     private GraphGrammar grammar;
     /** Contains the list of states found in the grammar location * */
-    private final Map<String,AspectualGraphView> graphMap =
-        new HashMap<String,AspectualGraphView>();
+    private final Map<String,GraphView> graphMap =
+        new HashMap<String,GraphView>();
 
     @SuppressWarnings("unused")
     private final AspectGxl graphMarshaller = new AspectGxl(new LayedOutXml());

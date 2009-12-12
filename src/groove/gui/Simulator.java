@@ -87,9 +87,9 @@ import groove.util.Pair;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
-import groove.view.AspectualGraphView;
-import groove.view.AspectualRuleView;
 import groove.view.FormatException;
+import groove.view.GraphView;
+import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -363,7 +363,7 @@ public class Simulator {
      * Returns the currently selected rule, or <tt>null</tt> if none is
      * selected. The selected rule is the one displayed in the rule panel.
      */
-    public AspectualRuleView getCurrentRule() {
+    public RuleView getCurrentRule() {
         return getGrammarView() == null ? null : getGrammarView().getRuleView(
             this.currentRuleName);
     }
@@ -372,9 +372,8 @@ public class Simulator {
      * Returns the currently selected rule set, or <tt>null</tt> if none is
      * selected.
      */
-    public List<AspectualRuleView> getCurrentRuleSet() {
-        return this.ruleJTree == null
-                ? Collections.<AspectualRuleView>emptyList()
+    public List<RuleView> getCurrentRuleSet() {
+        return this.ruleJTree == null ? Collections.<RuleView>emptyList()
                 : this.ruleJTree.getSelectedRules();
     }
 
@@ -383,7 +382,7 @@ public class Simulator {
      * <code>null</code>).
      * @return <code>true</code> if the new rule is different from the previous
      */
-    private boolean setCurrentRule(AspectualRuleView rule) {
+    private boolean setCurrentRule(RuleView rule) {
         boolean result = this.getCurrentRule() != rule;
         this.currentRuleName = rule.getRuleName();
         // this.currentRuleSet.clear();
@@ -562,10 +561,9 @@ public class Simulator {
     void doEnableRule() {
         // Multiple selection
         // Copy the selected rules to avoid concurrent modifications
-        List<AspectualRuleView> rules =
-            new ArrayList<AspectualRuleView>(getCurrentRuleSet());
-        for (AspectualRuleView rule : rules) {
-            AspectGraph ruleGraph = rule.getAspectGraph();
+        List<RuleView> rules = new ArrayList<RuleView>(getCurrentRuleSet());
+        for (RuleView rule : rules) {
+            AspectGraph ruleGraph = rule.getView();
             GraphProperties properties =
                 GraphInfo.getProperties(ruleGraph, true);
             properties.setEnabled(!properties.isEnabled());
@@ -894,12 +892,11 @@ public class Simulator {
             SystemStore newStore = getGrammarStore().save(grammarFile);
             StoredGrammarView newView = newStore.toGrammarView();
             String startGraphName = getGrammarView().getStartGraphName();
-            AspectualGraphView startGraphView =
-                getGrammarView().getStartGraphView();
+            GraphView startGraphView = getGrammarView().getStartGraphView();
             if (startGraphName != null) {
                 newView.setStartGraph(startGraphName);
             } else if (startGraphView != null) {
-                newView.setStartGraph(startGraphView.getAspectGraph());
+                newView.setStartGraph(startGraphView.getView());
             }
             setGrammarView(newView);
             // now we know saving succeeded, we can set the current names &
@@ -2154,8 +2151,7 @@ public class Simulator {
         StringBuffer title = new StringBuffer();
         if (getGrammarView() != null && getGrammarView().getName() != null) {
             title.append(getGrammarView().getName());
-            AspectualGraphView startGraph =
-                getGrammarView().getStartGraphView();
+            GraphView startGraph = getGrammarView().getStartGraphView();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
@@ -2817,14 +2813,14 @@ public class Simulator {
             }
             for (String oldGraphName : selectedGraphs) {
                 if (oldGraphName != null) {
-                    AspectualGraphView oldGraphView =
+                    GraphView oldGraphView =
                         getGrammarView().getGraphView(oldGraphName);
                     String newGraphName =
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
                     if (newGraphName != null) {
                         AspectGraph newGraph =
-                            oldGraphView.getAspectGraph().clone();
+                            oldGraphView.getView().clone();
                         GraphInfo.setName(newGraph, newGraphName);
                         doAddGraph(newGraph);
                     }
@@ -2865,12 +2861,12 @@ public class Simulator {
             if (confirmAbandon(false)) {
                 RuleName newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
-                List<AspectualRuleView> rules =
-                    new ArrayList<AspectualRuleView>(getCurrentRuleSet());
-                for (AspectualRuleView rule : rules) {
+                List<RuleView> rules =
+                    new ArrayList<RuleView>(getCurrentRuleSet());
+                for (RuleView rule : rules) {
                     // AspectGraph oldRuleGraph =
                     // getCurrentRule().getAspectGraph();
-                    AspectGraph oldRuleGraph = rule.getAspectGraph();
+                    AspectGraph oldRuleGraph = rule.getView();
                     newRuleName =
                         askNewRuleName("Select new rule name", rule.getName(),
                             true);
@@ -2978,8 +2974,7 @@ public class Simulator {
             // Multiple selection
             String question = "Delete rule(s) '%s'";
             // copy the selected rules to avoid concurrent modifications
-            List<AspectualRuleView> rules =
-                new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+            List<RuleView> rules = new ArrayList<RuleView>(getCurrentRuleSet());
             for (int i = 0; i < rules.size(); i++) {
                 RuleName ruleName = rules.get(i).getRuleName();
                 question = String.format(question, ruleName);
@@ -2990,7 +2985,7 @@ public class Simulator {
                 }
             }
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
-                for (AspectualRuleView rule : rules) {
+                for (RuleView rule : rules) {
                     doDeleteRule(rule.getRuleName());
                 }
             }
@@ -3037,9 +3032,9 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             String oldGraphName = (String) getStateList().getSelectedValue();
             if (oldGraphName != null) {
-                AspectualGraphView oldGraphView =
+                GraphView oldGraphView =
                     getGrammarView().getGraphView(oldGraphName);
-                handleEditGraph(oldGraphView.getAspectGraph().toPlainGraph(),
+                handleEditGraph(oldGraphView.getView().toPlainGraph(),
                     false);
             }
         }
@@ -3076,8 +3071,8 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
-            AspectualRuleView rule = getCurrentRule();
-            AspectGraph ruleGraph = rule.getAspectGraph();
+            RuleView rule = getCurrentRule();
+            AspectGraph ruleGraph = rule.getView();
             GraphProperties ruleProperties =
                 GraphInfo.getProperties(ruleGraph, true);
             String currentPriority = null;
@@ -3114,11 +3109,11 @@ public class Simulator {
                 String editedRemark =
                     editedProperties.get(GraphProperties.REMARK_KEY);
                 // copy the selected rules to avoid concurrent modifications
-                List<AspectualRuleView> rules =
-                    new ArrayList<AspectualRuleView>(getCurrentRuleSet());
+                List<RuleView> rules =
+                    new ArrayList<RuleView>(getCurrentRuleSet());
                 for (int i = 0; i < rules.size(); i++) {
                     rule = rules.get(i);
-                    ruleGraph = rule.getAspectGraph();
+                    ruleGraph = rule.getView();
                     ruleProperties = GraphInfo.getProperties(ruleGraph, true);
 
                     if (rules.size() > 1) {
@@ -4091,7 +4086,7 @@ public class Simulator {
             List<String> selectedGraphs = getStateList().getSelectedGraphs();
             for (String oldGraphName : selectedGraphs) {
                 if (oldGraphName != null) {
-                    AspectualGraphView graph =
+                    GraphView graph =
                         getGrammarView().getGraphView(oldGraphName);
                     assert graph != null : String.format(
                         "Graph '%s' in graph list but not in grammar",
@@ -4101,7 +4096,7 @@ public class Simulator {
                             false);
                     if (newGraphName != null
                         && !oldGraphName.equals(newGraphName)) {
-                        doRenameGraph(graph.getAspectGraph(), newGraphName);
+                        doRenameGraph(graph.getView(), newGraphName);
                     }
                 }
             }
@@ -4154,11 +4149,11 @@ public class Simulator {
                 // Multiple selection
                 RuleName newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
-                List<AspectualRuleView> rules =
-                    new ArrayList<AspectualRuleView>(getCurrentRuleSet());
-                for (AspectualRuleView rule : rules) {
+                List<RuleView> rules =
+                    new ArrayList<RuleView>(getCurrentRuleSet());
+                for (RuleView rule : rules) {
                     RuleName oldRuleName = rule.getRuleName();
-                    AspectGraph ruleGraph = rule.getAspectGraph();
+                    AspectGraph ruleGraph = rule.getView();
                     newRuleName =
                         askNewRuleName("Select new rule name",
                             oldRuleName.text(), true);

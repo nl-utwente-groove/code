@@ -23,9 +23,9 @@ import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
-import groove.gui.jgraph.RuleJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.RuleJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -36,8 +36,8 @@ import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.AspectualRuleView;
 import groove.view.FormatException;
+import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 
 import java.util.ArrayList;
@@ -187,7 +187,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder text = new StringBuilder();
-        AspectualRuleView view = this.simulator.getCurrentRule();
+        RuleView view = this.simulator.getCurrentRule();
         if (view != null) {
             text.append("Rule ");
             text.append(Converter.STRONG_TAG.on(view.getName()));
@@ -201,7 +201,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
             } catch (FormatException exc) {
                 // don't add the anchor
             }
-            String remark = GraphProperties.getRemark(view.getAspectGraph());
+            String remark = GraphProperties.getRemark(view.getView());
             if (remark != null) {
                 text.append(": ");
                 text.append(Converter.toHtml(remark));

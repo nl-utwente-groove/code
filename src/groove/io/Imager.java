@@ -26,7 +26,7 @@ import groove.gui.jgraph.JModel;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
-import groove.view.AspectualRuleView;
+import groove.view.RuleView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
@@ -164,7 +164,7 @@ public class Imager extends CommandLineTool {
 
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
-                        AspectualRuleView rule =
+                        RuleView rule =
                             AspectGraph.newInstance(graph).toRuleView(null);
                         model = AspectJModel.newInstance(rule, new Options());
                     } else {
@@ -173,12 +173,16 @@ public class Imager extends CommandLineTool {
 
                     JGraph jGraph = new JGraph(model, false, null);
                     jGraph.setModel(model);
-                    // Ugly hack to prevent clipping of the image. We set the jGraph size
-                    // to twice its normal size. This does not affect the final size of
-                    // the exported figure, hence it can be considered harmless... ;P
+                    // Ugly hack to prevent clipping of the image. We set the
+                    // jGraph size
+                    // to twice its normal size. This does not affect the final
+                    // size of
+                    // the exported figure, hence it can be considered
+                    // harmless... ;P
                     Dimension oldPrefSize = jGraph.getPreferredSize();
-                    Dimension newPrefSize = new Dimension(oldPrefSize.width * 2,
-                                                          oldPrefSize.height * 2);
+                    Dimension newPrefSize =
+                        new Dimension(oldPrefSize.width * 2,
+                            oldPrefSize.height * 2);
                     jGraph.setSize(newPrefSize);
                     printlnMedium("Imaging " + inFile + " as " + outFile);
 

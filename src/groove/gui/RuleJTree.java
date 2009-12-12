@@ -29,7 +29,6 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.AspectualRuleView;
 import groove.view.GrammarView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
@@ -143,9 +142,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         this.matchTransitionMap.clear();
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
-        Map<Integer,Set<AspectualRuleView>> priorityMap =
-            getPriorityMap(grammar);
-        for (Map.Entry<Integer,Set<AspectualRuleView>> priorityEntry : priorityMap.entrySet()) {
+        Map<Integer,Set<RuleView>> priorityMap = getPriorityMap(grammar);
+        for (Map.Entry<Integer,Set<RuleView>> priorityEntry : priorityMap.entrySet()) {
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -153,7 +151,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
-            for (AspectualRuleView ruleView : priorityEntry.getValue()) {
+            for (RuleView ruleView : priorityEntry.getValue()) {
                 RuleName ruleName = ruleView.getRuleName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
@@ -174,18 +172,15 @@ public class RuleJTree extends JTree implements SimulationListener {
      * priority from the rule in a given grammar view.
      * @param grammar the source of the rule map
      */
-    private Map<Integer,Set<AspectualRuleView>> getPriorityMap(
-            GrammarView grammar) {
-        Map<Integer,Set<AspectualRuleView>> result =
-            new TreeMap<Integer,Set<AspectualRuleView>>(
-                Rule.PRIORITY_COMPARATOR);
+    private Map<Integer,Set<RuleView>> getPriorityMap(GrammarView grammar) {
+        Map<Integer,Set<RuleView>> result =
+            new TreeMap<Integer,Set<RuleView>>(Rule.PRIORITY_COMPARATOR);
         for (RuleName ruleName : grammar.getRuleNames()) {
-            AspectualRuleView ruleView = grammar.getRuleView(ruleName);
+            RuleView ruleView = grammar.getRuleView(ruleName);
             int priority = ruleView.getPriority();
-            Set<AspectualRuleView> priorityRules = result.get(priority);
+            Set<RuleView> priorityRules = result.get(priority);
             if (priorityRules == null) {
-                result.put(priority, priorityRules =
-                    new TreeSet<AspectualRuleView>());
+                result.put(priority, priorityRules = new TreeSet<RuleView>());
             }
             priorityRules.add(ruleView);
         }
@@ -257,8 +252,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Returns the list of currently selected rule names. */
-    public List<AspectualRuleView> getSelectedRules() {
-        List<AspectualRuleView> result = new ArrayList<AspectualRuleView>();
+    public List<RuleView> getSelectedRules() {
+        List<RuleView> result = new ArrayList<RuleView>();
         int[] selectedRows = getSelectionRows();
         if (selectedRows != null) {
             for (int selectedRow : selectedRows) {
@@ -791,15 +786,15 @@ public class RuleJTree extends JTree implements SimulationListener {
          * Creates a new rule node based on a given rule name. The node can have
          * children.
          */
-        public RuleTreeNode(AspectualRuleView rule) {
+        public RuleTreeNode(RuleView rule) {
             super(rule, true);
         }
 
         /**
          * Convenience method to retrieve the user object as a rule name.
          */
-        public AspectualRuleView getRule() {
-            return (AspectualRuleView) getUserObject();
+        public RuleView getRule() {
+            return (RuleView) getUserObject();
         }
 
         /**
@@ -822,7 +817,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             result.append("Rule ");
             result.append(Converter.STRONG_TAG.on(getRule().getName()));
             GraphProperties properties =
-                GraphInfo.getProperties(getRule().getAspectGraph(), false);
+                GraphInfo.getProperties(getRule().getView(), false);
             if (properties != null && !properties.isEmpty()) {
                 boolean hasProperties;
                 String remark = properties.getRemark();

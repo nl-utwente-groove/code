@@ -16,21 +16,48 @@
  */
 package groove.view;
 
+import groove.graph.Label;
+import groove.graph.NodeEdgeMap;
+import groove.view.aspect.AspectGraph;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * General interface for classes that provide a view upon some other object (the
- * model). This is not a view in the MVC sense; here, the view is more a kind a
- * syntax for the model. This syntax may still contain errors which prevent it
- * from being translated to a model.
+ * model) in terms of an {@link AspectGraph}. This is not a view in the MVC
+ * sense; here, the view is more a kind a syntactical description for the model.
+ * This syntactical description may still contain errors which prevent it from
+ * being translated to a model.
  * @author Arend Rensink
  * @version $Revision $
  */
 public interface View<Model> {
     /**
+     * Returns the view graph.
+     * @deprecated replace by {@link #getView()}
+     */
+    @Deprecated
+    AspectGraph getAspectGraph();
+
+    /**
+     * Returns the actual view graph.
+     */
+    AspectGraph getView();
+
+    /**
+     * Returns a mapping from the nodes in the view to the corresponding nodes
+     * in the model that is being viewed.
+     */
+    NodeEdgeMap getMap();
+
+    /**
      * Returns the (non-<code>null</code>) name of the underlying model.
      */
     String getName();
+
+    /** Returns the set of labels occurring in this view. */
+    public Set<Label> getLabels();
 
     /**
      * Returns the underlying model. This can only be successful if there are no
