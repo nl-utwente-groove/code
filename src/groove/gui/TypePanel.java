@@ -168,7 +168,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 && TypePanel.this.grammar.getStartGraphView() != null) {
                 try {
                     Graph typeGraph =
-                        TypeReconstructor.reconstruct(TypePanel.this.grammar.toModel());
+                        TypeReconstructor.reconstruct(TypePanel.this.grammar.toGrammar());
                     Groove.saveGraph(typeGraph,
                         TypePanel.this.simulator.getLastGrammarFile()
                             + Groove.FILE_SEPARATOR + Groove.TGR_NAME
