@@ -104,6 +104,16 @@ public class NestingAspect extends AbstractAspect {
         if (outEdgeSet.size() > 1) {
             throw new FormatException("Meta-node %s has ambiguous parentage",
                 node);
+        } else if (outEdgeSet.isEmpty() && isExists(node)) {
+            throw new FormatException(
+                "Top level meta-node '%s' should be universal", node);
+        } else {
+            AspectNode parent = outEdgeSet.iterator().next().target();
+            if (isExists(node) == isExists(parent)) {
+                throw new FormatException(
+                    "Child and parent meta-nodes '%s' and '%s' should have distinct quantifiers",
+                    node, parent);
+            }
         }
         // test for cyclic parentage
         Set<AspectNode> parents = new HashSet<AspectNode>();
