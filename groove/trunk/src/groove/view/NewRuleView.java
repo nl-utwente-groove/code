@@ -57,11 +57,12 @@ import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -94,10 +95,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         this.name = name == null ? null : new RuleName(name);
         this.properties = properties;
         this.graph = graph;
-        this.attributeFactory = new AttributeElementFactory(graph, properties);
-        if (!graph.getErrors().isEmpty()) {
-            this.errors = graph.getErrors();
-        }
+        this.viewErrors =
+            graph.getErrors().isEmpty() ? null : graph.getErrors();
     }
 
     /**
@@ -144,39 +143,22 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
      * Creates and returns the production rule corresponding to this rule graph.
      */
     public Rule toRule() throws FormatException {
-        if (this.errors != null) {
-            throw new FormatException(this.errors);
-        }
+        initialise();
         if (this.rule == null) {
-            Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule();
-            this.rule = ruleMapPair.first();
-            this.viewToRuleMap = ruleMapPair.second();
+            throw new FormatException(this.ruleErrors);
+        } else {
+            return this.rule;
         }
-        return this.rule;
     }
 
     public List<String> getErrors() {
-        if (this.errors == null) {
-            try {
-                toRule();
-                this.errors = Collections.emptyList();
-            } catch (FormatException exc) {
-                this.errors = exc.getErrors();
-            }
-        }
-        return this.errors;
+        initialise();
+        return this.ruleErrors;
     }
 
     /** Returns the set of labels occurring in this rule. */
     public Set<Label> getLabels() {
-        // first check if the rule has already been built
-        if (this.rule == null) {
-            try {
-                toRule();
-            } catch (FormatException exc) {
-                // ignore the exception
-            }
-        }
+        initialise();
         return this.levelMap.getLabelSet();
     }
 
@@ -187,16 +169,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
     @Override
     public NodeEdgeMap getMap() {
-        if (this.viewToRuleMap == null) {
-            try {
-                Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule();
-                this.rule = ruleMapPair.first();
-                this.viewToRuleMap = ruleMapPair.second();
-            } catch (FormatException exc) {
-                // do nothing; the map will be empty
-            }
-        }
-        return this.viewToRuleMap;
+        initialise();
+        return this.levelMap.getViewToRuleMap();
     }
 
     /**
@@ -205,7 +179,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
      */
     public final void setProperties(SystemProperties properties) {
         this.properties = properties;
-        invalidateRule();
+        invalidate();
     }
 
     /**
@@ -231,17 +205,46 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     }
 
     /**
-     * Invalidates any previous construction of the underlying rule.
+     * Invalidates any previous construction of the underlying rule. This means
+     * the rule will be reconstructed when there is a call for it, using
+     * {@link #initialise()}.
      */
-    private void invalidateRule() {
+    private void invalidate() {
+        this.attributeFactory = null;
         this.rule = null;
-        this.errors = null;
+        this.ruleErrors = null;
+        this.levelTree = null;
+        this.levelMap = null;
+    }
+
+    /** Initialises the derived data structures. */
+    private void initialise() {
+        // only do something if there is something to be done
+        if (this.attributeFactory == null) {
+            this.attributeFactory =
+                new AttributeElementFactory(this.graph, this.properties);
+            if (this.viewErrors == null) {
+                // the view graph contains errors, so we can't compute the rule
+                this.levelTree = new LevelTree();
+                this.levelMap = new LevelMap();
+                try {
+                    this.rule = computeRule();
+                } catch (FormatException exc) {
+                    this.ruleErrors = exc.getErrors();
+                }
+            } else {
+                this.ruleErrors = this.viewErrors;
+            }
+        }
     }
 
     /**
-     * Callback method to compute a rule from an aspect graph.
+     * Callback method to compute a rule from the view graph. All auxiliary data
+     * structures are assumed to be initialised but empty. After method return,
+     * the structures are filled.
+     * @throws FormatException if the view cannot be converted to a valid rule
      */
-    private Pair<Rule,NodeEdgeMap> computeRule() throws FormatException {
+    private Rule computeRule() throws FormatException {
         SPORule rule;
         Set<String> errors = new TreeSet<String>(this.graph.getErrors());
         if (TO_RULE_DEBUG) {
@@ -293,8 +296,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             errors.addAll(e.getErrors());
         }
         if (errors.isEmpty()) {
-            return new Pair<Rule,NodeEdgeMap>(rule,
-                this.levelMap.getViewToRuleMap());
+            return rule;
         } else {
             throw new FormatException(new ArrayList<String>(errors));
         }
@@ -620,23 +622,23 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
      * The name of the rule represented by this rule graph.
      */
     private final RuleName name;
-    /** The aspect graph representation of the rule. */
+    /** The view graph representation of the rule. */
     private final AspectGraph graph;
+    /**
+     * The list of errors in the view graph; if <code>null</code>, there are no
+     * view errors.
+     */
+    private final List<String> viewErrors;
     /** The attribute element factory for this view. */
-    private final AttributeElementFactory attributeFactory;
+    private AttributeElementFactory attributeFactory;
     /** The level tree for this rule view. */
-    private final LevelTree levelTree = new LevelTree();
+    private LevelTree levelTree = new LevelTree();
     /** The level map for this rule view. */
-    private final LevelMap levelMap = new LevelMap();
+    private LevelMap levelMap = new LevelMap();
     /** Errors found while converting the view to a rule. */
-    private List<String> errors;
+    private List<String> ruleErrors;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
-    /**
-     * Mapping from the elements of the aspect graph representation to the
-     * corresponding elements of the rule.
-     */
-    private NodeEdgeMap viewToRuleMap;
     /** Rule properties set for this rule. */
     private SystemProperties properties;
 
@@ -645,13 +647,19 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
+    static private final boolean TO_RULE_DEBUG = true;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
      * every level of the tree.
      */
     private class Level extends DefaultFixable implements Comparable<Level> {
+        /** Constructs the top level. */
+        public Level() {
+            this(null);
+            this.indexFix.setFixed();
+        }
+
         /**
          * Constructs a new level, without setting parent or children.
          * @param levelNode the view level node representing this level; may be
@@ -672,6 +680,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             this.index.add(parent.children.size());
             this.parent = parent;
             this.parent.children.add(this);
+            this.indexFix.setFixed();
         }
 
         /** Returns the parent level of this tree index. */
@@ -715,26 +724,19 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 sublevel.setParent(this);
                 sublevel.setFixed();
             }
+            this.indexFix.setFixed();
             super.setFixed();
         }
 
         /** Lexicographically compares the tree indices. */
         public int compareTo(Level o) {
-            testFixed(true);
-            o.testFixed(true);
-            int result = 0;
-            int upper = Math.min(this.index.size(), o.index.size());
-            for (int i = 0; result == 0 && i < upper; i++) {
-                result = this.index.get(i) - o.index.get(i);
+            if (this.levelNode == null) {
+                return -1;
+            } else if (o.levelNode == null) {
+                return 1;
+            } else {
+                return this.levelNode.compareTo(o.levelNode);
             }
-            if (result == 0) {
-                if (upper < this.index.size()) {
-                    result = +1;
-                } else if (upper < o.index.size()) {
-                    result = -1;
-                }
-            }
-            return result;
         }
 
         /**
@@ -744,8 +746,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          * coincide.
          */
         public boolean smallerThan(Level other) {
-            testFixed(true);
-            other.testFixed(true);
+            testIndexFixed();
+            other.testIndexFixed();
             boolean result = this.index.size() <= other.index.size();
             for (int i = 0; result && i < this.index.size(); i++) {
                 result = this.index.get(i).equals(other.index.get(i));
@@ -774,7 +776,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
         /** Converts this level to an array of ints. */
         public int[] getIntArray() {
-            testFixed(true);
+            testIndexFixed();
             int[] result = new int[this.index.size()];
             for (int i = 0; i < this.index.size(); i++) {
                 result[i] = this.index.get(i);
@@ -785,13 +787,13 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
         /** Indicates whether this is the top level. */
         public boolean isTopLevel() {
-            testFixed(true);
+            testIndexFixed();
             return this.parent == null;
         }
 
         /** Indicates whether this level is universal. */
         public boolean isUniversal() {
-            testFixed(true);
+            testIndexFixed();
             if (isImplicit()) {
                 // it's an implicit level
                 return !isTopLevel() && this.parent.isExistential();
@@ -802,7 +804,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
         /** Indicates whether this level is existential. */
         public boolean isExistential() {
-            testFixed(true);
+            testIndexFixed();
             if (isImplicit()) {
                 // it's an implicit level
                 return isTopLevel() || this.parent.isUniversal();
@@ -812,11 +814,24 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         }
 
         /**
+         * Tests if the information needed to calculate the level index has been
+         * set.
+         */
+        private void testIndexFixed() {
+            this.indexFix.testFixed(true);
+        }
+
+        /**
          * Indicates, for a universal level, if the level is positive.
          * @see NestingAspect#isPositive(groove.view.aspect.AspectElement)
          */
         public boolean isPositive() {
             return NestingAspect.isPositive(this.levelNode);
+        }
+
+        @Override
+        public String toString() {
+            return this.index.toString();
         }
 
         /**
@@ -838,6 +853,11 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         private final List<Level> children = new ArrayList<Level>();
         /** Parent of this tree index; may be <code>null</code> */
         private Level parent;
+        /**
+         * Object to test if the parent has been set, meaning that the index is
+         * fixed.
+         */
+        private final DefaultFixable indexFix = new DefaultFixable();
     }
 
     /** Tree of quantification levels occurring in this rule view. */
@@ -873,6 +893,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                             levelName);
                     }
                 }
+                getNodeLevelMap().put(node, result);
             }
             return result;
         }
@@ -900,11 +921,11 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          *        {@link RuleAspect#inRule(groove.view.aspect.AspectElement)}
          */
         public Level getLevel(AspectEdge edge) throws FormatException {
-            Level sourceLevel = getNodeLevelMap().get(edge.source());
+            Level sourceLevel = getLevel(edge.source());
             assert sourceLevel != null : String.format(
                 "Node level map %s does not contain source image for %s",
                 this.nodeLevelMap, edge);
-            Level targetLevel = getNodeLevelMap().get(edge.opposite());
+            Level targetLevel = getLevel(edge.opposite());
             assert targetLevel != null : String.format(
                 "Node level map %s does not contain target image for %s",
                 getNodeLevelMap(), edge);
@@ -939,7 +960,10 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         /**
          * @return Returns the set of all quantification levels.
          */
-        public final Set<Level> getLevels() {
+        public final List<Level> getLevels() {
+            if (this.levels == null) {
+                initialise();
+            }
             return this.levels;
         }
 
@@ -981,7 +1005,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          */
         private Level getTopLevel() {
             if (this.topLevel == null) {
-                this.topLevel = createLevel(null);
+                this.topLevel = new Level();
             }
             return this.topLevel;
         }
@@ -993,7 +1017,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          */
         private Level getImplicitUniversalLevel() {
             if (this.implicitUniversalLevel == null) {
-                this.implicitUniversalLevel = createLevel(null);
+                this.implicitUniversalLevel = new Level(null);
                 this.implicitUniversalLevel.setParent(getTopLevel());
             }
             return this.implicitUniversalLevel;
@@ -1003,9 +1027,14 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             // initialise the data structures
             this.metaLevelMap = new HashMap<AspectNode,Level>();
             this.nameLevelMap = new HashMap<String,Level>();
-            this.levels = new HashSet<Level>();
+            // First build an explicit tree of levels
+            // Mapping from parent to their set of children
+            Map<Level,Set<Level>> metaNodeTree =
+                new HashMap<Level,Set<Level>>();
             for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
                 if (NestingAspect.isMetaElement(node)) {
+                    Level nodeLevel = getLevelForNode(node);
+                    metaNodeTree.put(nodeLevel, new TreeSet<Level>());
                     // look for the parent level
                     Level parentLevel;
                     // by the correctness of the aspect graph we know that
@@ -1027,11 +1056,20 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                             outEdges.iterator().next().opposite();
                         parentLevel = getLevelForNode(parentNode);
                     }
-                    getLevelForNode(node).setParent(parentLevel);
+                    Level level = getLevelForNode(node);
+                    level.setParent(parentLevel);
                 }
             }
-            for (Level level : this.levels) {
-                level.setFixed();
+            this.levels = new LinkedList<Level>();
+            Queue<Level> levelQueue = new LinkedList<Level>();
+            levelQueue.add(getTopLevel());
+            // do a pre-order traversal of the levels
+            this.levels.add(getTopLevel());
+            while (!levelQueue.isEmpty()) {
+                Level next = levelQueue.poll();
+                next.setFixed();
+                this.levels.add(next);
+                levelQueue.addAll(next.getChildren());
             }
         }
 
@@ -1044,25 +1082,12 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         private Level getLevelForNode(AspectNode levelNode) {
             Level result = this.metaLevelMap.get(levelNode);
             if (result == null) {
-                this.metaLevelMap.put(levelNode, result =
-                    createLevel(levelNode));
+                this.metaLevelMap.put(levelNode, result = new Level(levelNode));
                 String name = NestingAspect.getLevelName(levelNode);
                 if (name != null && name.length() > 0) {
-                    getNameLevelMap().put(name, result);
+                    this.nameLevelMap.put(name, result);
                 }
             }
-            return result;
-        }
-
-        /**
-         * Creates and returns a level for a given level node. Also stores the
-         * newly created node in {@link #levels}.
-         * @param levelNode the representative node for the level; may be
-         *        <code>null</code>, if the level is implicit.
-         */
-        private Level createLevel(AspectNode levelNode) {
-            Level result = new Level(levelNode);
-            this.levels.add(result);
             return result;
         }
 
@@ -1071,7 +1096,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         /** The implicit universal sublevel of the top level, if any. */
         private Level implicitUniversalLevel;
         /** The set of all levels in this tree. */
-        private Set<Level> levels = new HashSet<Level>();
+        private LinkedList<Level> levels;
         /** mapping from nesting meta-nodes nodes to nesting levels. */
         private Map<AspectNode,Level> metaLevelMap;
         /** mapping from nesting level names to nesting levels. */
@@ -1095,13 +1120,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             throws FormatException {
             testFixed(false);
             Node result = getNodeImage(node);
-            Set<AspectNode> nodes = this.nodeMap.get(index);
-            if (nodes == null) {
-                assert index.isTopLevel()
-                    || this.nodeMap.containsKey(index.getParent()) : String.format(
-                    "Level %s is filled before its parent", index);
-                this.nodeMap.put(index, nodes = new HashSet<AspectNode>());
-            }
+            Set<AspectNode> nodes = getNodesAt(index);
             // put the node on this level, if it is supposed to be there
             if (isForThisLevel(index, node)) {
                 boolean fresh = nodes.add(node);
@@ -1112,6 +1131,21 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             if (isForNextLevel(index, node)) {
                 for (Level sublevel : index.getChildren()) {
                     addNode(sublevel, node);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Lazily creates and returns the current set of nodes at a given level.
+         */
+        private Set<AspectNode> getNodesAt(Level index) {
+            Set<AspectNode> result = this.nodeMap.get(index);
+            if (result == null) {
+                this.nodeMap.put(index, result = new HashSet<AspectNode>());
+                while (!index.isTopLevel()) {
+                    index = index.getParent();
+                    getNodesAt(index);
                 }
             }
             return result;
@@ -1132,26 +1166,23 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             if (result == null) {
                 return null;
             }
-            Set<AspectEdge> edges = this.edgeMap.get(index);
-            if (edges == null) {
-                assert index.isTopLevel()
-                    || this.edgeMap.containsKey(index.getParent()) : String.format(
-                    "Level %s is filled before its parent", index);
-                this.edgeMap.put(index, edges = new HashSet<AspectEdge>());
-            }
-            // add end nodes to this and all parent levels, if
-            // they are not yet there
-            for (Node end : edge.ends()) {
-                Level ascendingLevel = index;
-                while (this.nodeMap.get(ascendingLevel).add((AspectNode) end)) {
-                    ascendingLevel = ascendingLevel.getParent();
-                }
-            }
+            Set<AspectEdge> edges = getEdgesAt(index);
             // put the edge on this level, if it is supposed to be there
             if (isForThisLevel(index, edge)) {
                 boolean fresh = edges.add(edge);
                 assert fresh : String.format("Node %s already in node set %s",
                     edge, edges);
+                // add end nodes to this and all parent levels, if
+                // they are not yet there
+                for (Node end : edge.ends()) {
+                    Level ascendingLevel = index;
+                    while (getNodesAt(ascendingLevel).add((AspectNode) end)) {
+                        assert !ascendingLevel.isTopLevel() : String.format(
+                            "End node '%s' of '%s' not found at any level in '%s'",
+                            end, edge, this.nodeMap);
+                        ascendingLevel = ascendingLevel.getParent();
+                    }
+                }
             }
             // put the edge on the sublevels, if it is supposed to be there
             if (isForNextLevel(index, edge)) {
@@ -1160,6 +1191,21 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 }
             }
             // create an image for the edge
+            return result;
+        }
+
+        /**
+         * Lazily creates and returns the current set of edges at a given level.
+         */
+        private Set<AspectEdge> getEdgesAt(Level index) {
+            Set<AspectEdge> result = this.edgeMap.get(index);
+            if (result == null) {
+                this.edgeMap.put(index, result = new HashSet<AspectEdge>());
+                while (!index.isTopLevel()) {
+                    index = index.getParent();
+                    getEdgesAt(index);
+                }
+            }
             return result;
         }
 
@@ -1241,7 +1287,11 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             testFixed(true);
             NodeEdgeMap result = this.levelLhsMap.get(index);
             if (result == null) {
-                result = computeLhsMap(index);
+                this.levelLhsMap.put(index, result = computeLhsMap(index));
+                while (!index.isTopLevel()) {
+                    index = index.getParent();
+                    getLhsMap(index);
+                }
             }
             return result;
         }
@@ -1252,6 +1302,9 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          */
         private NodeEdgeMap computeLhsMap(Level index) {
             NodeEdgeMap result = new NodeEdgeHashMap();
+            assert this.nodeMap.containsKey(index) : String.format(
+                "Node map '%s' does not contain image for index '%s'",
+                this.nodeMap, index);
             for (AspectNode viewNode : getNodes(index)) {
                 if (RuleAspect.inLHS(viewNode) || RuleAspect.inNAC(viewNode)) {
                     Node ruleNode = this.viewToRuleMap.getNode(viewNode);
@@ -1274,7 +1327,11 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         public NodeEdgeMap getRhsMap(Level index) throws FormatException {
             NodeEdgeMap result = this.levelRhsMap.get(index);
             if (result == null) {
-                result = computeRhsMap(index);
+                this.levelRhsMap.put(index, result = computeRhsMap(index));
+                while (!index.isTopLevel()) {
+                    index = index.getParent();
+                    getRhsMap(index);
+                }
             }
             return result;
         }
@@ -1329,6 +1386,9 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 result = new NodeEdgeHashMap();
                 NodeEdgeMap parentMap = levelMap.get(index.getParent());
                 NodeEdgeMap myMap = levelMap.get(index);
+                assert parentMap != null : String.format(
+                    "Level map '%s' does not contain image for index '%s'",
+                    levelMap, index.getParent());
                 for (Map.Entry<Node,Node> parentEntry : parentMap.nodeMap().entrySet()) {
                     Node image = myMap.getNode(parentEntry.getKey());
                     if (image != null) {
@@ -1391,7 +1451,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             }
             // create singleton cells for the nodes appearing fresh on this
             // level
-            for (AspectNode newNode : this.nodeMap.get(index)) {
+            for (AspectNode newNode : getNodes(index)) {
                 // test if the node is new
                 if (!result.containsKey(newNode)) {
                     SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
@@ -1400,7 +1460,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 }
             }
             // now merge nodes whenever there is a merger
-            for (AspectEdge newEdge : this.edgeMap.get(index)) {
+            for (AspectEdge newEdge : getEdges(index)) {
                 if (RuleAspect.isMerger(newEdge)) {
                     SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
                     for (Node mergedNode : newEdge.ends()) {
