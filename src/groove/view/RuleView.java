@@ -21,9 +21,7 @@ import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 
 /**
- * Interface for a graphical view upon a transformation rule. Currently the only
- * implemented view is the {@link AspectualRuleView}, which provides a
- * monolithic view in which all the elements of the rule are part of one graph.
+ * Interface for a graphical view upon a transformation rule.
  * @author Arend Rensink
  * @version $Revision$
  */

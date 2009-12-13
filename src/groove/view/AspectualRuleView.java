@@ -434,8 +434,14 @@ public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
                                 "Rule parameter %d only allowed on top existential level",
                                 nr);
                         }
-                        parameters.add(nodeImage);
-                        if (!nr.equals(0) && RuleAspect.inLHS(node)) {
+                        if (nr.equals(0)) {
+                            if (!RuleAspect.inLHS(node)) {
+                                throw new FormatException(
+                                    "Hidden parameter '%s' must occur in LHS",
+                                    node);
+                            }
+                            parameters.add(nodeImage);
+                        } else if (RuleAspect.inLHS(node)) {
                             // store the node w.r.t the ID
                             Node oldValue = lhsParameterMap.put(nr, nodeImage);
                             if (oldValue != null) {
@@ -443,7 +449,7 @@ public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
                                     "Parameter number %d occurs more than once",
                                     nr);
                             }
-                        } else if (!nr.equals(0) && !RuleAspect.inLHS(node)) {
+                        } else if (RuleAspect.inRHS(node)) {
                             Node oldValue =
                                 creatorParameterMap.put(nr, nodeImage);
                             if (oldValue != null) {
@@ -451,6 +457,9 @@ public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
                                     "Parameter number %d occurs more than once",
                                     nr);
                             }
+                        } else {
+                            throw new FormatException(
+                                "Parameter '%s' may not occur in NAC", nr);
                         }
                     }
                     viewToRuleMap.putNode(node, nodeImage);

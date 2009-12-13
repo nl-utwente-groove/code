@@ -86,7 +86,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.coRootMap = coRootMap;
         this.morphism = morph;
         this.priority = DEFAULT_PRIORITY;
-        assert rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format(
+        assert coRootMap == null
+            || rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format(
             "RHS nodes %s do not contain all co-root values %s",
             rhs().nodeSet(), coRootMap.nodeMap().values());
     }
