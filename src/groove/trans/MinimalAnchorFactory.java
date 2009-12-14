@@ -19,10 +19,12 @@ package groove.trans;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -45,13 +47,14 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
      * This implementation assumes that the rule is an <tt>SPORule</tt>, and
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
-     * @require <tt>rule instanceof SPORule</tt>
      */
     public Element[] newAnchors(SPORule rule) {
         Set<Element> anchors =
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
-        anchors.addAll(rule.getHiddenPars());
-        anchors.addAll(rule.getInPars());
+        if (rule.isTop()) {
+            anchors.addAll(rule.getHiddenPars());
+            anchors.addAll(rule.getInPars());
+        }
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
         for (Edge lhsVarEdge : rule.getSimpleVarEdges()) {
@@ -69,9 +72,14 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
                 removableEnds.addAll(eraserEdgeEnds);
             }
         }
-        // addRootImageEdges(rule, anchors, removableEnds);
         anchors.addAll(rule.getModifierEnds());
-        // anchors.addAll(rule.getMergeMap().keySet());
+        // remove all constant data nodes
+        Iterator<Element> anchorIter = anchors.iterator();
+        while (anchorIter.hasNext()) {
+            if (anchorIter.next() instanceof ValueNode) {
+                anchorIter.remove();
+            }
+        }
         anchors.removeAll(removableEnds);
         return anchors.toArray(new Element[0]);
     }

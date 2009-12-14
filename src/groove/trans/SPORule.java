@@ -117,8 +117,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             Arrays.toString(level));
         assert parent.rhs().nodeSet().containsAll(
             this.coRootMap.nodeMap().keySet()) : String.format(
-            "Parent nodes %s do not contain all co-roots %s",
-            parent.rhs().nodeSet(), this.coRootMap.nodeMap().keySet());
+            "Rule '%s': Parent nodes %s do not contain all co-roots %s",
+            getName(), parent.rhs().nodeSet(),
+            this.coRootMap.nodeMap().keySet());
         this.parent = parent;
         this.level = level;
     }
