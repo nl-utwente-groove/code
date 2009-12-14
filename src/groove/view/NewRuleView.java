@@ -713,17 +713,10 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         }
 
         /**
-         * Sets the level to fixed; in addition, adds an implicit existential
-         * sublevel if this is a universal level without sublevels.
+         * Sets the index and the level to fixed.
          */
         @Override
         public void setFixed() {
-            if (!isImplicit() && NestingAspect.isForall(this.levelNode)
-                && this.children.isEmpty()) {
-                Level sublevel = new Level(null);
-                sublevel.setParent(this);
-                sublevel.setFixed();
-            }
             this.indexFix.setFixed();
             super.setFixed();
         }
@@ -774,7 +767,10 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             return result;
         }
 
-        /** Converts this level to an array of ints. */
+        /**
+         * Converts this level to an array of {@code int}s. May only be called
+         * after {@link #setParent(Level)}.
+         */
         public int[] getIntArray() {
             testIndexFixed();
             int[] result = new int[this.index.size()];
@@ -785,13 +781,19 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
         }
 
-        /** Indicates whether this is the top level. */
+        /**
+         * Indicates whether this is the top level. May only be called after
+         * {@link #setParent(Level)}.
+         */
         public boolean isTopLevel() {
             testIndexFixed();
             return this.parent == null;
         }
 
-        /** Indicates whether this level is universal. */
+        /**
+         * Indicates whether this level is universal. May only be called after
+         * {@link #setParent(Level)}.
+         */
         public boolean isUniversal() {
             testIndexFixed();
             if (isImplicit()) {
@@ -843,6 +845,11 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          */
         private boolean isImplicit() {
             return this.levelNode == null;
+        }
+
+        /** Returns the meta-node associated with this level. */
+        public final AspectNode getLevelNode() {
+            return this.levelNode;
         }
 
         /** The view node representing this quantification level. */
@@ -1010,31 +1017,21 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             return this.topLevel;
         }
 
-        /**
-         * Lazily creates and returns the implicit universal level of the tree.
-         * The implicit universal is a child of the top level that is only there
-         * if there is a top-level existential node in the rule view.
-         */
-        private Level getImplicitUniversalLevel() {
-            if (this.implicitUniversalLevel == null) {
-                this.implicitUniversalLevel = new Level(null);
-                this.implicitUniversalLevel.setParent(getTopLevel());
-            }
-            return this.implicitUniversalLevel;
-        }
-
         private void initialise() {
             // initialise the data structures
             this.metaLevelMap = new HashMap<AspectNode,Level>();
             this.nameLevelMap = new HashMap<String,Level>();
             // First build an explicit tree of levels
+            // Mapping from children to parent
+            Map<Level,Level> parentMap = new HashMap<Level,Level>();
             // Mapping from parent to their set of children
             Map<Level,Set<Level>> metaNodeTree =
                 new HashMap<Level,Set<Level>>();
+            metaNodeTree.put(getTopLevel(), createChildren());
             for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
                 if (NestingAspect.isMetaElement(node)) {
                     Level nodeLevel = getLevelForNode(node);
-                    metaNodeTree.put(nodeLevel, new TreeSet<Level>());
+                    metaNodeTree.put(nodeLevel, createChildren());
                     // look for the parent level
                     Level parentLevel;
                     // by the correctness of the aspect graph we know that
@@ -1044,33 +1041,57 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                         NewRuleView.this.graph.outEdgeSet(node);
                     if (outEdges.isEmpty()) {
                         // this is a top node in the level node tree
-                        // if it's existential, take the
-                        // universal sublevel of the top level
-                        if (NestingAspect.isExists(node)) {
-                            parentLevel = getImplicitUniversalLevel();
-                        } else {
-                            parentLevel = getTopLevel();
-                        }
+                        assert NestingAspect.isForall(node) : String.format(
+                            "Top level '%s' should not be existential", node);
+                        parentLevel = getTopLevel();
                     } else {
                         AspectNode parentNode =
                             outEdges.iterator().next().opposite();
                         parentLevel = getLevelForNode(parentNode);
                     }
-                    Level level = getLevelForNode(node);
-                    level.setParent(parentLevel);
+                    parentMap.put(nodeLevel, parentLevel);
                 }
             }
+            // Now fill the tree from the parent map
+            for (Map.Entry<Level,Level> parentEntry : parentMap.entrySet()) {
+                metaNodeTree.get(parentEntry.getValue()).add(
+                    parentEntry.getKey());
+            }
             this.levels = new LinkedList<Level>();
+            // Set the parentage in tree preorder
             Queue<Level> levelQueue = new LinkedList<Level>();
             levelQueue.add(getTopLevel());
-            // do a pre-order traversal of the levels
-            this.levels.add(getTopLevel());
             while (!levelQueue.isEmpty()) {
                 Level next = levelQueue.poll();
-                next.setFixed();
+                // set parent, except for top level
+                if (parentMap.containsKey(next)) {
+                    next.setParent(parentMap.get(next));
+                }
+                Set<Level> children = metaNodeTree.get(next);
+                // add an implicit existential sub-level to childless universal
+                // levels
+                if (children.isEmpty() && next.isUniversal()) {
+                    Level implicitChild = new Level(null);
+                    metaNodeTree.put(implicitChild, createChildren());
+                    parentMap.put(implicitChild, next);
+                    children.add(implicitChild);
+                }
+                levelQueue.addAll(children);
                 this.levels.add(next);
-                levelQueue.addAll(next.getChildren());
             }
+            // now fix all levels
+            for (Level level : this.levels) {
+                level.setFixed();
+            }
+        }
+
+        /**
+         * Creates an ordered set to store the children of a meta-node. The
+         * ordering is based on the level node corresponding to the level.
+         * @see Level#getLevelNode()
+         */
+        private Set<Level> createChildren() {
+            return new TreeSet<Level>();
         }
 
         /**
@@ -1093,8 +1114,6 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
         /** The top level of the rule tree. */
         private Level topLevel;
-        /** The implicit universal sublevel of the top level, if any. */
-        private Level implicitUniversalLevel;
         /** The set of all levels in this tree. */
         private LinkedList<Level> levels;
         /** mapping from nesting meta-nodes nodes to nesting levels. */

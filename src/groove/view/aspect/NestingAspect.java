@@ -107,7 +107,7 @@ public class NestingAspect extends AbstractAspect {
         } else if (outEdgeSet.isEmpty() && isExists(node)) {
             throw new FormatException(
                 "Top level meta-node '%s' should be universal", node);
-        } else {
+        } else if (!outEdgeSet.isEmpty()) {
             AspectNode parent = outEdgeSet.iterator().next().target();
             if (isExists(node) == isExists(parent)) {
                 throw new FormatException(
