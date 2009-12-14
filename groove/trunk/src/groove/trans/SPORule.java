@@ -525,7 +525,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             rhs(), getMorphism().elementMap()));
         if (!getRootMap().isEmpty()) {
             res.append(String.format("%nRoot map: %s", getRootMap()));
-        } else if (!getCoRootMap().isEmpty()) {
+        }
+        if (!getCoRootMap().isEmpty()) {
             res.append(String.format("%nCo-root map: %s", getCoRootMap()));
         }
         if (!getSubConditions().isEmpty()) {
