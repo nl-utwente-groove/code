@@ -48,6 +48,8 @@ public interface View<Model> {
     /**
      * Returns a mapping from the nodes in the view to the corresponding nodes
      * in the model that is being viewed.
+     * @return the mapping from view to model elements; empty if the view
+     *         contains errors.
      */
     NodeEdgeMap getMap();
 
@@ -56,8 +58,12 @@ public interface View<Model> {
      */
     String getName();
 
-    /** Returns the set of labels occurring in this view. */
-    public Set<Label> getLabels();
+    /**
+     * Returns the set of labels occurring in this view.
+     * @return the set of labels occurring in the view; empty if the view
+     *         contains errors.
+     */
+    public Set<Label> getLabels() throws FormatException;
 
     /**
      * Returns the underlying model. This can only be successful if there are no

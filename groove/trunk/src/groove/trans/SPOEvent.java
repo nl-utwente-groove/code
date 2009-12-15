@@ -113,8 +113,9 @@ final public class SPOEvent extends
             if (anchor instanceof Node) {
                 Node anchorNode = anchorMap.getNode((Node) anchor);
                 // this can happen if we're looking for a creator node
-                if (anchorNode != null)
+                if (anchorNode != null) {
                     result += anchorMap.getNode((Node) anchor).hashCode() << i;
+                }
             } else {
                 result += anchorMap.getEdge((Edge) anchor).hashCode() << i;
             }
@@ -122,30 +123,6 @@ final public class SPOEvent extends
         reporter.stop();
         return result;
     }
-
-    //    
-    // /**
-    // * Two rule applications are equal if they have the same rule and anchor
-    // images.
-    // * Note that the source is not tested; do not collect rule applications
-    // for different sources!
-    // */
-    // @Override
-    // public boolean equals(Object obj) {
-    // boolean result;
-    // if (obj == this) {
-    // result = true;
-    // } else if (obj instanceof SPOEvent) {
-    // reporter.start(EQUALS);
-    // result = !reuse && equalsEvent((SPOEvent) obj);
-    // reporter.stop();
-    // } else if (obj instanceof VirtualEvent) {
-    // result = equals(((VirtualEvent<?>) obj).getInnerEvent());
-    // } else {
-    // result = false;
-    // }
-    // return result;
-    // }
 
     /**
      * Tests if the content of this event coincides with that of the other. The
@@ -245,8 +222,9 @@ final public class SPOEvent extends
         // find the first index in which the anchor images differ
         int upper = Math.min(anchorImage.length, otherAnchorImage.length);
         for (int i = 0; result == 0 && i < upper; i++) {
-            if (anchorImage[i] != null)
+            if (anchorImage[i] != null) {
                 result = anchorImage[i].compareTo(otherAnchorImage[i]);
+            }
         }
         if (result == 0) {
             return anchorImage.length - otherAnchorImage.length;
