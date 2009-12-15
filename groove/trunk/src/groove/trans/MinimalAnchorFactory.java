@@ -84,56 +84,6 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
         return anchors.toArray(new Element[0]);
     }
 
-    //
-    // /** Adds the node images of the root map to the anchors. */
-    // private void addRootImageNodes(SPORule rule, Set<Element> anchors) {
-    // // why do we need the root images, if this rule doesn't do anything with
-    // // them?
-    // if (false) {
-    // for (Node rootImage : rule.getRootMap().nodeMap().values()) {
-    // if (isAnchorable(rootImage)) {
-    // anchors.add(rootImage);
-    // }
-    // }
-    // }
-    // }
-    //
-    // /** Adds the edge images of the root map to the anchors. */
-    // private void addRootImageEdges(SPORule rule, Set<Element> anchors,
-    // Set<Node> removableEnds) {
-    // // why do we need the root images, if this rule doesn't do anything with
-    // // them?
-    // if (false) {
-    // for (Edge rootEdge : rule.getRootMap().edgeMap().values()) {
-    // if (isAnchorable(rootEdge)) {
-    // Collection<Node> rootEdgeEnds =
-    // Arrays.asList(rootEdge.ends());
-    // if (!anchors.containsAll(rootEdgeEnds)) {
-    // anchors.add(rootEdge);
-    // // if we have the edge in the anchors, its end nodes
-    // // need not be there
-    // removableEnds.addAll(rootEdgeEnds);
-    // }
-    // }
-    // }
-    // }
-    // }
-    //
-    // /**
-    // * Tests if a given node can be an anchor. This fails to hold for
-    // * {@link ProductNode}s that are not {@link ValueNode}s.
-    // */
-    // private boolean isAnchorable(Node node) {
-    // return !(node instanceof ProductNode) || node instanceof ValueNode;
-    // }
-    //
-    // /**
-    // * Tests if a given edge can be an anchor. This fails to hold for
-    // * {@link OperatorEdge}s that are not {@link ArgumentEdge}s.
-    // */
-    // private boolean isAnchorable(Edge edge) {
-    // return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
-    // }
     /**
      * Returns the singleton instance of this class.
      */
