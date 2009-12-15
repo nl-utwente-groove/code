@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph id="mergeCreator" role="rule" edgeids="false" edgemode="directed">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
+        <attr name="remark">
+            <string>Merges on a sub-level a node created on the top level</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -23,9 +29,19 @@
                 <string>rem:</string>
             </attr>
         </edge>
+        <edge from="n138086" to="n138086">
+            <attr name="label">
+                <string>Node created at the top level and merged with the A-node on the sublevel</string>
+            </attr>
+        </edge>
         <edge from="n138087" to="n138087">
             <attr name="label">
                 <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n138085" to="n138087">
+            <attr name="label">
+                <string>forall=sub:new:=</string>
             </attr>
         </edge>
         <edge from="n138086" to="n138087">
@@ -33,19 +49,9 @@
                 <string>created</string>
             </attr>
         </edge>
-        <edge from="n138086" to="n138086">
-            <attr name="label">
-                <string>Node created at the top level and merged with the A-node on the sublevel</string>
-            </attr>
-        </edge>
         <edge from="n138085" to="n138085">
             <attr name="label">
                 <string>A</string>
-            </attr>
-        </edge>
-        <edge from="n138085" to="n138087">
-            <attr name="label">
-                <string>forall=sub:new:=</string>
             </attr>
         </edge>
     </graph>
