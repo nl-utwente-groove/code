@@ -855,6 +855,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             Set<Node> childResult = new HashSet<Node>();
             for (AbstractCondition<?> subCondition : condition.getSubConditions()) {
                 if (subCondition instanceof SPORule) {
+                    // translate anchor nodes from grandchild to child
                     Set<Node> grandchildResult =
                         ((SPORule) subCondition).getModifierEnds();
                     Map<Node,Node> grandchildRootMap =
@@ -862,6 +863,25 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                     for (Map.Entry<Node,Node> rootEntry : grandchildRootMap.entrySet()) {
                         if (grandchildResult.contains(rootEntry.getValue())) {
                             childResult.add(rootEntry.getKey());
+                        }
+                    }
+                    // check coroot map for mergers
+                    Set<Node> mergers = new HashSet<Node>();
+                    Map<Node,Node> inverseCoroots = new HashMap<Node,Node>();
+                    for (Map.Entry<Node,Node> coRootEntry : ((SPORule) subCondition).getCoRootMap().nodeMap().entrySet()) {
+                        Node coRootSource = coRootEntry.getKey();
+                        Node coRootTarget = coRootEntry.getValue();
+                        if (inverseCoroots.containsKey(coRootTarget)) {
+                            mergers.add(coRootSource);
+                            mergers.add(inverseCoroots.get(coRootTarget));
+                        } else {
+                            inverseCoroots.put(coRootTarget, coRootSource);
+                        }
+                    }
+                    // translate mergers to LHS
+                    for (Map.Entry<Node,Node> lhsToRhsEntry : getMorphism().nodeMap().entrySet()) {
+                        if (mergers.contains(lhsToRhsEntry.getValue())) {
+                            result.add(lhsToRhsEntry.getKey());
                         }
                     }
                 }

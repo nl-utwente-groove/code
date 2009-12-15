@@ -525,8 +525,14 @@ final public class SPOEvent extends
             }
         }
         for (Map.Entry<Node,Node> coRootEntry : getRule().getCoRootMap().nodeMap().entrySet()) {
-            coanchorMap.putNode(coRootEntry.getValue(),
-                coRootImages.get(coRootEntry.getKey()));
+            Node coanchor = coRootEntry.getValue();
+            if (!coanchorMap.containsKey(coanchor)) {
+                Node coanchorImage = coRootImages.get(coRootEntry.getKey());
+                assert coanchorImage != null : String.format(
+                    "Coroot image map %s does not contain image for coanchor root '%s'",
+                    coRootImages, coRootEntry.getKey());
+                coanchorMap.putNode(coanchor, coanchorImage);
+            }
         }
         // now compute and add the complex creator edge images
         for (Edge edge : getRule().getComplexCreatorEdges()) {
