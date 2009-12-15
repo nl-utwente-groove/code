@@ -235,11 +235,19 @@ public class NestingAspect extends AbstractAspect {
 
     /**
      * Returns the name of a nesting level identified by a given aspect element.
+     * @return the name of the nesting level identified by {@code element}, or
+     *         {@code null} if {@code element} does not contain a named level.
      */
     public static String getLevelName(AspectElement element) {
+        String result = null;
         AspectValue value = getNestingValue(element);
-        return value instanceof NamedAspectValue
-                ? ((NamedAspectValue) value).getContent() : null;
+        if (value instanceof NamedAspectValue) {
+            String content = ((NamedAspectValue) value).getContent();
+            if (!content.isEmpty()) {
+                result = content;
+            }
+        }
+        return result;
     }
 
     /** The name of the nesting aspect */

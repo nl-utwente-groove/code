@@ -504,7 +504,11 @@ final public class SPOEvent extends
         }
         for (Map.Entry<Node,Node> coRootEntry : getRule().getCoRootMap().nodeMap().entrySet()) {
             Node coanchor = coRootEntry.getValue();
-            if (!coanchorMap.containsKey(coanchor)) {
+            // do something if the coanchor is a creator edge end for which we
+            // do
+            // not have an image
+            if (getRule().getCreatorGraph().nodeSet().contains(coanchor)
+                && !coanchorMap.containsKey(coanchor)) {
                 Node coanchorImage = coRootImages.get(coRootEntry.getKey());
                 assert coanchorImage != null : String.format(
                     "Coroot image map %s does not contain image for coanchor root '%s'",
@@ -811,7 +815,8 @@ final public class SPOEvent extends
             NodeEdgeMap mergeMap =
                 getRule().hasMergers() ? getMergeMap() : null;
             Set<Node> erasedNodes = getErasedNodes();
-            // add reader node images
+            // add coanchor mappings for creator end edges that are themselves
+            // not creators
             for (Map.Entry<Node,Node> creatorEntry : getRule().getCreatorMap().nodeMap().entrySet()) {
                 Node creatorKey = creatorEntry.getKey();
                 Node creatorValue = anchorMap.getNode(creatorEntry.getValue());
@@ -820,16 +825,13 @@ final public class SPOEvent extends
                 } else if (erasedNodes.contains(creatorValue)) {
                     creatorValue = null;
                 }
+                // if the value is null, the image was deleted due to a delete
+                // conflict
+                // or it is yet to be created by a parent rule
                 if (creatorValue != null) {
                     result.putNode(creatorKey, creatorValue);
                 }
             }
-            // int coRootIx = 0;
-            // for (Map.Entry<Node,Node> coRootEntry:
-            // getRule().getCoRootMap().nodeMap().entrySet()) {
-            // result.putNode(coRootEntry.getValue(), coRootImage[coRootIx]);
-            // coRootIx++;
-            // }
             // add variable images
             for (String var : getRule().getCreatorVars()) {
                 result.putVar(var, anchorMap.getVar(var));
