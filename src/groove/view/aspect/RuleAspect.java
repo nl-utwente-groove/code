@@ -18,6 +18,7 @@ package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.trans.RuleName;
@@ -56,6 +57,26 @@ public class RuleAspect extends AbstractAspect {
             return REMARK;
         } else {
             return super.getMaxValue(value1, value2);
+        }
+    }
+
+    @Override
+    public void checkEdge(AspectEdge edge, AspectGraph graph)
+        throws FormatException {
+        // test for merge edges between creator nodes
+        if (isMerger(edge)) {
+            AspectNode creatorEnd = null;
+            for (Node end : edge.ends()) {
+                if (isCreator((AspectNode) end)) {
+                    creatorEnd = (AspectNode) end;
+                    break;
+                }
+            }
+            if (creatorEnd != null) {
+                throw new FormatException(
+                    "Merge edge '%s' with creator end node '%s' not allowed",
+                    edge, creatorEnd);
+            }
         }
     }
 

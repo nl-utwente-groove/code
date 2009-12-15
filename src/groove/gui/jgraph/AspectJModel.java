@@ -104,11 +104,6 @@ public class AspectJModel extends GraphJModel {
         return getGraph().toPlainGraph();
     }
 
-    /** Returns the view on which this model is based. */
-    public View<?> getView() {
-        return this.view;
-    }
-
     /**
      * If <code>edge</code> is an AspectEdge, returns the super value;
      * otherwise, assumes that it is a model edge, and returns the image of the

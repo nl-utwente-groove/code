@@ -165,11 +165,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      *        is started.
      */
     public void setPlainGraph(Graph graph) {
+        setErrors(null);
         if (graph == null) {
-            setErrors(null);
             setModel(new EditorJModel(getOptions()));
         } else {
-            setErrors(GraphInfo.getErrors(graph));
+            // don't set the errors, now as they will be computed again anyway
+            // setErrors(GraphInfo.getErrors(graph));
             setModel(new EditorJModel(GraphJModel.newInstance(graph,
                 getOptions())));
             setRole(GraphInfo.getRole(graph));

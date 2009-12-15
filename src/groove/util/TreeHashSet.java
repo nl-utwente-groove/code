@@ -374,12 +374,12 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 
     /**
      * Tries to insert a new object in the set. If an equal object is already in
-     * the set, returns that object. If the new key is really inserted, the
-     * method returns <code>null</code> The difference with
-     * {@link #add(Object)} is thus only in the return value.
+     * the set, returns that object (and doesn't change the set). If the new key
+     * is really inserted, the method returns <code>null</code> The difference
+     * with {@link #add(Object)} is thus only in the return value.
      * @param key the object to be inserted
-     * @return <code>null</code> if <code>key</code> is inserted, otherwise
-     *         an object that was already present, such that
+     * @return <code>null</code> if <code>key</code> is inserted, otherwise an
+     *         object that was already present, such that
      *         <code>areEqual(key, result)</code>.
      */
     public T put(T key) {
@@ -554,8 +554,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     /**
      * Determines whether two objects, that are already determined to have the
      * same key codes, are to be considered equal for the purpose of this set.
-     * The default implementation calls <code>areEqual(key, otherKey)</code>
-     * on the equator. If a the {@link #HASHCODE_EQUATOR} is set during
+     * The default implementation calls <code>areEqual(key, otherKey)</code> on
+     * the equator. If a the {@link #HASHCODE_EQUATOR} is set during
      * construction time, this method is <i>not</i> called.
      */
     protected boolean areEqual(T newKey, T oldKey) {
@@ -585,8 +585,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * Returns the tree index of a tree node pointing to (the first instance of)
      * a given code.
      * @param code the code we are looking for
-     * @return either <code>-1</code> if <code>code</code> does not occur in
-     *         the set, or an index in {@link #tree} such that
+     * @return either <code>-1</code> if <code>code</code> does not occur in the
+     *         set, or an index in {@link #tree} such that
      *         <code>codes[-tree[result]]==code</code>
      */
     private int indexOf(int code) {
@@ -831,8 +831,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @param keyIndex the index in {@link #keys} where the first existing key
      *        with code <code>code</code> is stored
      * @return <code>true</code> if no existing key was equal to
-     *         <code>key</code>, according to
-     *         {@link #areEqual(Object, Object)}.
+     *         <code>key</code>, according to {@link #areEqual(Object, Object)}.
      */
     @SuppressWarnings("unchecked")
     private T putEqualKey(int code, T newKey, int keyIndex) {
@@ -1152,8 +1151,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 
     /**
      * Equator that calls {@link Object#hashCode()} in
-     * <code>Equator.getCode(Object)</code> and always returns
-     * <code>true</code> in <code>Equator.areEqual(Object, Object)</code>.
+     * <code>Equator.getCode(Object)</code> and always returns <code>true</code>
+     * in <code>Equator.areEqual(Object, Object)</code>.
      */
     @SuppressWarnings("unchecked")
     static public final Equator HASHCODE_EQUATOR = new Equator() {

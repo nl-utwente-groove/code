@@ -161,7 +161,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     /** Returns the set of labels occurring in this rule. */
     public Set<Label> getLabels() {
         initialise();
-        return this.levelMap.getLabelSet();
+        return this.levelMap == null ? Collections.<Label>emptySet()
+                : this.levelMap.getLabelSet();
     }
 
     @Override
@@ -172,7 +173,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     @Override
     public NodeEdgeMap getMap() {
         initialise();
-        return this.levelMap.getViewToRuleMap();
+        return this.levelMap == null ? new NodeEdgeHashMap()
+                : this.levelMap.getViewToRuleMap();
     }
 
     /**
@@ -626,9 +628,9 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     /** The attribute element factory for this view. */
     private AttributeElementFactory attributeFactory;
     /** The level tree for this rule view. */
-    private LevelTree levelTree = new LevelTree();
+    private LevelTree levelTree;
     /** The level map for this rule view. */
-    private LevelMap levelMap = new LevelMap();
+    private LevelMap levelMap;
     /** Errors found while converting the view to a rule. */
     private List<String> ruleErrors;
     /** The rule derived from this graph, once it is computed. */
@@ -1126,25 +1128,28 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     private class LevelMap extends DefaultFixable {
         /** Initialises all data structures and fixes the map. */
         public void initialise() throws FormatException {
-            for (Level index : NewRuleView.this.levelTree.getLevels()) {
-                this.nodeMap.put(index, new HashSet<AspectNode>());
-                this.edgeMap.put(index, new HashSet<AspectEdge>());
-            }
-            // add nodes to nesting data structures
-            for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
-                if (RuleAspect.inRule(node)) {
-                    Level level = NewRuleView.this.levelTree.getLevel(node);
-                    addNode(level, node);
+            try {
+                for (Level index : NewRuleView.this.levelTree.getLevels()) {
+                    this.nodeMap.put(index, new HashSet<AspectNode>());
+                    this.edgeMap.put(index, new HashSet<AspectEdge>());
                 }
-            }
-            // add edges to nesting data structures
-            for (AspectEdge edge : NewRuleView.this.graph.edgeSet()) {
-                if (RuleAspect.inRule(edge)) {
-                    Level level = NewRuleView.this.levelTree.getLevel(edge);
-                    addEdge(level, edge);
+                // add nodes to nesting data structures
+                for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
+                    if (RuleAspect.inRule(node)) {
+                        Level level = NewRuleView.this.levelTree.getLevel(node);
+                        addNode(level, node);
+                    }
                 }
+                // add edges to nesting data structures
+                for (AspectEdge edge : NewRuleView.this.graph.edgeSet()) {
+                    if (RuleAspect.inRule(edge)) {
+                        Level level = NewRuleView.this.levelTree.getLevel(edge);
+                        addEdge(level, edge);
+                    }
+                }
+            } finally {
+                setFixed();
             }
-            setFixed();
         }
 
         /**
