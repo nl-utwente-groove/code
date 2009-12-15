@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph id="mergeEraserCreator" role="rule" edgeids="false" edgemode="directed">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -35,6 +38,31 @@
                 <string>del:</string>
             </attr>
         </edge>
+        <edge from="n137983" to="n137983">
+            <attr name="label">
+                <string>Node created at the top level and merged with the A-node on the sublevel</string>
+            </attr>
+        </edge>
+        <edge from="n137980" to="n137979">
+            <attr name="label">
+                <string>universal A</string>
+            </attr>
+        </edge>
+        <edge from="n137983" to="n137978">
+            <attr name="label">
+                <string>created</string>
+            </attr>
+        </edge>
+        <edge from="n137979" to="n137981">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n137982" to="n137982">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
         <edge from="n137978" to="n137978">
             <attr name="label">
                 <string>B</string>
@@ -45,29 +73,9 @@
                 <string>A</string>
             </attr>
         </edge>
-        <edge from="n137980" to="n137979">
+        <edge from="n137980" to="n137980">
             <attr name="label">
-                <string>universal A</string>
-            </attr>
-        </edge>
-        <edge from="n137982" to="n137978">
-            <attr name="label">
-                <string>forall=sub:new:=</string>
-            </attr>
-        </edge>
-        <edge from="n137982" to="n137982">
-            <attr name="label">
-                <string>A</string>
-            </attr>
-        </edge>
-        <edge from="n137979" to="n137981">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge from="n137983" to="n137983">
-            <attr name="label">
-                <string>Node created at the top level and merged with the A-node on the sublevel</string>
+                <string>Since the universal a will certainly also match the top level A, the top level will be deleted</string>
             </attr>
         </edge>
         <edge from="n137980" to="n137982">
@@ -75,14 +83,9 @@
                 <string>top level A</string>
             </attr>
         </edge>
-        <edge from="n137983" to="n137978">
+        <edge from="n137982" to="n137978">
             <attr name="label">
-                <string>created</string>
-            </attr>
-        </edge>
-        <edge from="n137980" to="n137980">
-            <attr name="label">
-                <string>Since the universal a will certainly also match the top level A, the top level will be deleted</string>
+                <string>forall=sub:new:=</string>
             </attr>
         </edge>
     </graph>
