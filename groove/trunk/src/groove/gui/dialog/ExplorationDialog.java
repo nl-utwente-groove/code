@@ -20,12 +20,9 @@ import groove.explore.AcceptorEnumerator;
 import groove.explore.Documented;
 import groove.explore.Enumerator;
 import groove.explore.Exploration;
-import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
 import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
 import groove.explore.result.Result;
-import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.Strategy;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
@@ -48,7 +45,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
@@ -57,32 +53,35 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
+ * Dialog that allows the user to compose an exploration out of a strategy,
+ * an acceptor and a result.
+ * The strategy is selected from one of the options in a StrategyEnumeration.
+ * The acceptor is selected from one of the options in a StrategyEnumeration.
+ * 
+ * This class does not implement any public or private methods.
+ * 
  * @author Maarten de Mol
- * @version $Revision $ Creates a dialog in which an exploration method can be
- *          composed out of an arbitrary combination of a Strategy and an
- *          Acceptor.
+ * @version $Revision $
  */
 public class ExplorationDialog extends JDialog implements ActionListener {
-    private static final String EXPLORE_COMMAND = "Explore State Space";        // button text/command
-    private static final String CANCEL_COMMAND = "Cancel";                      // button text/command
+    private static final String EXPLORE_COMMAND = "Explore State Space";  // button text
+    private static final String CANCEL_COMMAND = "Cancel";                // button text
 
-    //private FormattedSelection strategyPanel;
-    //private JPanel acceptorPanel;
-    //private JPanel resultPanel;
-    private DocumentedSelection<Strategy> strategySelector;
-    private DocumentedSelection<Acceptor> acceptorSelector;
-    private ResultSelection resultSelector;
-    private JPanel buttonPanel;
+    private DocumentedSelection<Strategy> strategySelector;               // panel that holds the strategy selection
+    private DocumentedSelection<Acceptor> acceptorSelector;               // panel that holds the acceptor selection
+    private ResultSelection resultSelector;                               // panel that holds the result selection
+    private JPanel buttonPanel;                                           // panel that holds the buttons
     
-    private Simulator simulator;
+    private Simulator simulator;                                          // reference to the simulator
     
     /**
-     * @param owner The JFrame of the parent of this dialog.
+     * Create the dialog.
+     * @param simulator - reference to the simulator
+     * @param owner - reference to the parent GUI component
      */
     public ExplorationDialog(Simulator simulator, JFrame owner) {
 
-        // Open a modal dialog, which cannot be resized and can be closed by
-        // the user.
+        // Open a modal dialog, which cannot be resized and can be closed by the user.
         super(owner, "ExplorationDialog", true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -96,11 +95,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         JPanel dialogContent = new JPanel(new SpringLayout());
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
 
-        // Create the panels.
-        createButtonPanel();
-        
-        // Add the panels, and layout, to the dialog.
-        // dialogContent.add(new JLabel(" "));
+        // Add the panels, and layout, to the dialogContent.
         this.strategySelector = new DocumentedSelection<Strategy>("exploration strategy", new StrategyEnumerator());
         dialogContent.add(this.strategySelector);
         dialogContent.add(new JLabel(" "));
@@ -110,102 +105,28 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         this.resultSelector = new ResultSelection(); 
         dialogContent.add(this.resultSelector);
         dialogContent.add(new JLabel(" "));
+        createButtonPanel();
         dialogContent.add(this.buttonPanel);
         
+        // Put the panels in a CompactGrid layout.
         SpringUtilities.makeCompactGrid(dialogContent, 7, 1, 0, 0, 0, 0);
 
-        // Add the dialogContent to the dialog and finish the dialog.
+        // Add the dialogContent to the dialog.
         add(dialogContent);
         pack();
         setLocationRelativeTo(owner);
         setVisible(true);
-        
-        /*
-        // Query for the exploration method (full or path).
-        FormattedSelection methodSelection =
-            new FormattedSelection(
-                "Choose a method to explore the state space:", this);
-        methodSelection.addOption(ExplorationDialog.FULL_EXPLORATION,
-            "explore all rule matches in each reached state");
-        methodSelection.addOption(ExplorationDialog.PATH_EXPLORATION,
-            "explore exactly one rule match in each reached state");
-        dialogContent.add(methodSelection);
-
-        // Query for the full exploration strategy (Strategy).
-        FormattedSelection fullStrategySelection =
-            new FormattedSelection(
-                "Choose a strategy for the full exploration:", this);
-        fullStrategySelection.addOption(ExplorationDialog.BRANCHING, "?");
-        fullStrategySelection.addOption(ExplorationDialog.BREADTH_FIRST, "?");
-        fullStrategySelection.addOption(ExplorationDialog.DEPTH_FIRST, "?");
-        fullStrategySelection.addOption(ExplorationDialog.LINEAR_CONFLUENCE,
-            "?");
-
-        // Query for the path exploration strategy (Strategy).
-        FormattedSelection pathStrategySelection =
-            new FormattedSelection(
-                "Choose a strategy for the path exploration:", this);
-        pathStrategySelection.addOption(ExplorationDialog.LINEAR, "?");
-        pathStrategySelection.addOption(ExplorationDialog.RANDOM_LINEAR, "?");
-        pathStrategySelection.add(new JLabel(" "));
-        pathStrategySelection.add(new JLabel(" "));
-
-        // Put fullStrategySelection and pathStrategySelection in a CardLayout.
-        this.eitherStrategySelection = new JPanel(new CardLayout());
-        this.eitherStrategySelection.add(fullStrategySelection,
-            ExplorationDialog.FULL_EXPLORATION);
-        this.eitherStrategySelection.add(pathStrategySelection,
-            ExplorationDialog.PATH_EXPLORATION);
-        dialogContent.add(new JLabel(" "));
-        dialogContent.add(this.eitherStrategySelection);
-
-        // Query for the termination condition (Acceptor).
-        FormattedSelection acceptorSelection =
-            new FormattedSelection(
-                "Choose an additional termination condition:", this);
-        acceptorSelection.addOption(ExplorationDialog.NONE_ACCEPTOR,
-            "continue until no further matches are available");
-        acceptorSelection.addOption(ExplorationDialog.FINAL_STATE,
-            "stop as soon as a final state is encountered");
-        acceptorSelection.addOption(ExplorationDialog.RULE_MATCH,
-            "stop as soon as the selected rule matches");
-        acceptorSelection.addOption(ExplorationDialog.RULE_MISMATCH,
-            "stop as soon as the selected rule does not match");
-        dialogContent.add(new JLabel(" "));
-        dialogContent.add(acceptorSelection);
-
-        // Query for the transformation rule (in case of RULE_MATCH or
-        // RULE_MISMATCH)
-        JPanel emptyPanel = new JPanel();
-        JPanel rulePanel = new JPanel(new BorderLayout());
-        JPanel innerRulePanel = new JPanel();
-        innerRulePanel.add(new JLabel(" "));
-        innerRulePanel.add(new JLabel(
-            "<HTML><FONT color=996666>Select the transformation for Rule (Mis)Match:</FONT></HTML> "));
-        JComboBox ruleSelector = new JComboBox();
-        boolean first_element = true;
-        for (RuleName ruleName : this.simulator.getGrammarView().getRuleNames()) {
-            ruleSelector.addItem(ruleName);
-            if (first_element) {
-                first_element = false;
-            }
-        }
-        ruleSelector.addActionListener(this);
-        innerRulePanel.add(ruleSelector);
-        rulePanel.add(innerRulePanel, BorderLayout.LINE_START);
-        this.optionalRulePanel = new JPanel(new CardLayout());
-        this.optionalRulePanel.add(emptyPanel, "EMPTY");
-        this.optionalRulePanel.add(rulePanel, "RULE");
-        dialogContent.add(this.optionalRulePanel);
-        */
     }
-     
+    
+    /**
+     * Create the button panel.
+     */
     private void createButtonPanel() {
         this.buttonPanel = new JPanel();
+        
         JButton exploreButton = new JButton(EXPLORE_COMMAND);
         exploreButton.addActionListener(this);
         this.buttonPanel.add(exploreButton);
-        
         if (this.simulator.getGrammarView() == null ||
             this.simulator.getGrammarView().getStartGraphView() == null)
             exploreButton.setEnabled(false);
@@ -215,10 +136,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         this.buttonPanel.add(cancelButton);
     }
        
-    // The action listener of the dialog. Uses the String content of the message
-    // to update the internal state of the dialog.
+    /**
+     *  The action listener of the dialog. Responds to button presses only.
+     */
     public void actionPerformed(ActionEvent event) {
-        
         if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
             Strategy strategy = this.strategySelector.getSelectedValue().getObjectForUI(this.simulator, this);
             if (strategy == null)
@@ -230,20 +151,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             if (result == null)
                 return;
             
-            Exploration exploration = new Exploration(strategy, acceptor, result);
-            
+            Exploration exploration = new Exploration(strategy, acceptor, result);           
             this.dispose();
             this.simulator.doRunExploration(exploration);
-            
-            //acceptor.setResult(result);
-            //Scenario scenario;
-            //scenario =
-            //    ScenarioFactory.getScenario(strategy,
-            //        acceptor, "Explores the full state space.",
-            //        "Full exploration (branching, aliasing)");
-            //this.dispose();
-            //this.simulator.doGenerate(scenario);
-            
             return;
         }
 
@@ -251,203 +161,12 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             this.dispose();
             return;
         }
-        
     }
 
-    /*
-    // Return the acceptor associated with the current selection state of the
-    // dialog.
-    // Should only be called when 'isConditionalAcceptor' is false.
-    private Acceptor getAcceptor() {
-        if (this.selectedAcceptor == ExplorationDialog.NONE_ACCEPTOR) {
-            return (new Acceptor());
-        }
-        if (this.selectedAcceptor == ExplorationDialog.FINAL_STATE) {
-            return (new FinalStateAcceptor(new Result(1)));
-        }
-
-        // Default case. Should never be reached.
-        return (new Acceptor());
-    }
-
-    // Return the scenario associated with the current selection state of the
-    // dialog.
-    private Scenario getScenario() {
-        if (!this.isConditionalAcceptor) {
-            return ScenarioFactory.getScenario(getStrategy(), getAcceptor(),
-                "", "");
-        }
-        return ScenarioFactory.getConditionalScenario(getStrategy(),
-            new InvariantViolatedAcceptor<Rule>(new Result(1)), "", "",
-            this.selectedAcceptor == ExplorationDialog.RULE_MISMATCH);
-    }
-
-    // Return the strategy associated with the current selection state of the
-    // dialog.
-    private Strategy getStrategy() {
-        if (this.isFullExploration) {
-            if (this.selectedFullStrategy == ExplorationDialog.BRANCHING) {
-                return (new BranchingStrategy());
-            }
-            if (this.selectedFullStrategy == ExplorationDialog.DEPTH_FIRST) {
-                return (new ExploreRuleDFStrategy());
-            }
-            if (this.selectedFullStrategy == ExplorationDialog.BREADTH_FIRST) {
-                return (new BFSStrategy());
-            }
-            if (this.selectedFullStrategy == ExplorationDialog.LINEAR_CONFLUENCE) {
-                return (new LinearConfluentRules());
-            }
-        } else {
-            if (this.selectedPathStrategy == ExplorationDialog.LINEAR) {
-                return (new LinearStrategy());
-            }
-            if (this.selectedPathStrategy == ExplorationDialog.RANDOM_LINEAR) {
-                return (new RandomLinearStrategy());
-            }
-        }
-
-        // Default case. Should never be reached.
-        return (new BranchingStrategy());
-    }
-    */
-
-    // Auxiliary extension of JPanel which creates the formatted selection lists
-    // in a uniform layout.
-    private class FormattedSelection extends JPanel {
-        // Separate button group for all the check boxes in this JPanel.
-        private ButtonGroup buttonGroup;
-
-        // Local copy of the ActionListener (the surrounding Dialog).
-        private final ActionListener listener;
-        
-        // Number of added elements. Needed for final layouting.
-        private int nrComponents = 0;
-        
-        // Creates an initially empty JPanel with a leading label line only.
-        // Add options by means of addOption.
-        FormattedSelection(ActionListener listener) {
-            super(new SpringLayout());
-            this.buttonGroup = new ButtonGroup();
-            this.listener = listener;
-        }
-
-        // Creates and formats a single option line.
-        public void addOption(String shortName, String toolTipText, Boolean needsArguments, Boolean selected) {
-            JPanel optionLine = new JPanel(new SpringLayout());
-
-            // Create the check box.
-            JCheckBox checkBox = new JCheckBox(shortName);
-            checkBox.addActionListener(this.listener);
-            if (toolTipText != null) checkBox.setToolTipText(toolTipText);
-            optionLine.add(checkBox);
-            this.buttonGroup.add(checkBox);
-            checkBox.setSelected(selected);
-
-            // Add an empty space between the shortName and the additionalInfo.
-            optionLine.add(new JLabel(" "));
-
-            // Add the additional info.
-            if (needsArguments)
-                optionLine.add(new JLabel("<HTML><FONT color=669966>(needs additional arguments)</FONT></HTML>"));
-            else
-                optionLine.add(new JLabel(""));
-
-            // Layout the panel as a whole.
-            SpringUtilities.makeCompactGrid(optionLine, 1, 3, 0, 0, 0, 0);
-            this.add(optionLine);
-            this.nrComponents++;
-            // this.add(new JSeparator(JSeparator.HORIZONTAL));
-        }
-        
-        public void addSeparator() {
-            this.add(new JSeparator(JSeparator.HORIZONTAL));
-            this.nrComponents++;
-        }
-        
-        public void finalizeLayout() {
-            SpringUtilities.makeCompactGrid(this, this.nrComponents, 1, 0, 0, 0, 0);
-        }
-    }
-    
-    private class OnlyListenToNumbers extends KeyAdapter {
-        @Override
-        public void keyTyped(KeyEvent evt) {
-            char ch = evt.getKeyChar();
-            
-            if (!Character.isDigit(ch))
-                evt.consume();
-        }
-    }
-    
-    private class ResultSelection extends JPanel implements ActionListener {
-        JCheckBox[] checkboxes;
-        JTextField customNumber;
-        
-        // private Result result = new Result(1);
-        ResultSelection() {
-            super(new SpringLayout());
-
-            this.checkboxes = new JCheckBox[3];
-            this.checkboxes[0] = new JCheckBox("Infinite (don't interrupt)");
-            this.checkboxes[1] = new JCheckBox("1 (interrupt as soon as acceptor succeeds)");
-            this.checkboxes[2] = new JCheckBox("Custom: ");
-            this.checkboxes[0].setSelected(true);
-            for (int i = 0; i < 3; i++)
-                this.checkboxes[i].addActionListener(this);
-            
-            this.customNumber = new JTextField("2", 3);
-            this.customNumber.addKeyListener(new OnlyListenToNumbers());
-            this.customNumber.setEnabled(false);
-            
-            this.add(new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>"));
-            ButtonGroup options = new ButtonGroup();
-            JPanel optionsLine = new JPanel(new SpringLayout());
-            for (int i = 0; i < 3; i++) {
-                optionsLine.add(this.checkboxes[i]);
-                if (i < 2)
-                    optionsLine.add(Box.createRigidArea(new Dimension(25,0)));
-                options.add(this.checkboxes[i]);
-            }
-            optionsLine.add(this.customNumber);
-            optionsLine.add(Box.createRigidArea(new Dimension(50,0)));
-            SpringUtilities.makeCompactGrid(optionsLine, 1, 7, 0, 0, 0, 0);
-            this.add(optionsLine);
-
-            SpringUtilities.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
-        }
-        
-        public Result getSelectedValue() {
-            if (this.checkboxes[0].isEnabled())
-                return (new Result());
-            if (this.checkboxes[1].isEnabled())
-                return (new Result(1));
-            if (this.checkboxes[2].isEnabled())
-            {
-                Integer nrResults = Integer.parseInt(this.customNumber.getText());
-                if (nrResults == null)
-                    return null;
-                return (new Result(nrResults));
-            }
-            return null;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == this.checkboxes[0]) {
-                this.customNumber.setEnabled(false);
-            }
-
-            if (e.getSource() == this.checkboxes[1]) {
-                this.customNumber.setEnabled(false);
-            }
-
-            if (e.getSource() == this.checkboxes[2]) {
-                this.customNumber.setEnabled(true);
-            }
-        }
-    }
-    
+    /**
+     * A generic wrapper class that allows elements from an arbitrary DocumentedSelection
+     * to be selected by the user.
+     */ 
     private class DocumentedSelection<A> extends JPanel implements ListSelectionListener {
         private Enumerator<A> enumerator;
         private String objectType;
@@ -531,6 +250,86 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             if (newSelected != null) {
                 this.currentlySelected = newSelected;
                 updateInfo();
+            }
+        }
+    }
+        
+    /**
+     * The panel where the results can be selected.
+     */
+    private class ResultSelection extends JPanel implements ActionListener {
+        JCheckBox[] checkboxes;
+        JTextField customNumber;
+        
+        ResultSelection() {
+            super(new SpringLayout());
+
+            this.checkboxes = new JCheckBox[3];
+            this.checkboxes[0] = new JCheckBox("Infinite (don't interrupt)");
+            this.checkboxes[1] = new JCheckBox("1 (interrupt as soon as acceptor succeeds)");
+            this.checkboxes[2] = new JCheckBox("Custom: ");
+            this.checkboxes[0].setSelected(true);
+            for (int i = 0; i < 3; i++)
+                this.checkboxes[i].addActionListener(this);
+            
+            this.customNumber = new JTextField("2", 3);
+            this.customNumber.addKeyListener(new OnlyListenToNumbers());
+            this.customNumber.setEnabled(false);
+            
+            this.add(new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>"));
+            ButtonGroup options = new ButtonGroup();
+            JPanel optionsLine = new JPanel(new SpringLayout());
+            for (int i = 0; i < 3; i++) {
+                optionsLine.add(this.checkboxes[i]);
+                if (i < 2)
+                    optionsLine.add(Box.createRigidArea(new Dimension(25,0)));
+                options.add(this.checkboxes[i]);
+            }
+            optionsLine.add(this.customNumber);
+            optionsLine.add(Box.createRigidArea(new Dimension(50,0)));
+            SpringUtilities.makeCompactGrid(optionsLine, 1, 7, 0, 0, 0, 0);
+            this.add(optionsLine);
+
+            SpringUtilities.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
+        }
+        
+        public Result getSelectedValue() {
+            if (this.checkboxes[0].isEnabled())
+                return (new Result());
+            if (this.checkboxes[1].isEnabled())
+                return (new Result(1));
+            if (this.checkboxes[2].isEnabled())
+            {
+                Integer nrResults = Integer.parseInt(this.customNumber.getText());
+                if (nrResults == null)
+                    return null;
+                return (new Result(nrResults));
+            }
+            return null;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == this.checkboxes[0]) {
+                this.customNumber.setEnabled(false);
+            }
+
+            if (e.getSource() == this.checkboxes[1]) {
+                this.customNumber.setEnabled(false);
+            }
+
+            if (e.getSource() == this.checkboxes[2]) {
+                this.customNumber.setEnabled(true);
+            }
+        }
+
+        private class OnlyListenToNumbers extends KeyAdapter {
+            @Override
+            public void keyTyped(KeyEvent evt) {
+                char ch = evt.getKeyChar();
+                
+                if (!Character.isDigit(ch))
+                    evt.consume();
             }
         }
     }
