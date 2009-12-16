@@ -21,6 +21,7 @@ import groove.explore.Documented;
 import groove.explore.Enumerator;
 import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
+import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
@@ -61,9 +62,12 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     private static final String EXPLORE_COMMAND = "Explore State Space";        // button text/command
     private static final String CANCEL_COMMAND = "Cancel";                      // button text/command
 
-    private FormattedSelection strategyPanel;
-    private JPanel acceptorPanel;
-    private JPanel resultPanel;
+    //private FormattedSelection strategyPanel;
+    //private JPanel acceptorPanel;
+    //private JPanel resultPanel;
+    private DocumentedSelection<Strategy> strategySelector;
+    private DocumentedSelection<Acceptor> acceptorSelector;
+    private ResultSelection resultSelector;
     private JPanel buttonPanel;
     
     private Simulator simulator;
@@ -93,11 +97,14 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         
         // Add the panels, and layout, to the dialog.
         // dialogContent.add(new JLabel(" "));
-        dialogContent.add(new DocumentedSelection<Strategy>("exploration strategy", new StrategyEnumerator()));
+        this.strategySelector = new DocumentedSelection<Strategy>("exploration strategy", new StrategyEnumerator());
+        dialogContent.add(this.strategySelector);
         dialogContent.add(new JLabel(" "));
-        dialogContent.add(new DocumentedSelection<Acceptor>("acceptor", new AcceptorEnumerator()));
+        this.acceptorSelector = new DocumentedSelection<Acceptor>("acceptor", new AcceptorEnumerator());
+        dialogContent.add(this.acceptorSelector);
         dialogContent.add(new JLabel(" "));
-        dialogContent.add(new ResultSelection());
+        this.resultSelector = new ResultSelection(); 
+        dialogContent.add(this.resultSelector);
         dialogContent.add(new JLabel(" "));
         dialogContent.add(this.buttonPanel);
         
@@ -209,6 +216,15 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         
         if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
+            Strategy strategy = this.strategySelector.getSelectedValue().getObjectForUI();
+            if (strategy == null)
+                return;
+            Acceptor acceptor = this.acceptorSelector.getSelectedValue().getObjectForUI();
+            if (acceptor == null)
+                return;
+            Result result = this.resultSelector.getSelectedValue();
+            if (result == null)
+                return;
             // this.dispose();
             // this.simulator.doGenerate(getScenario());
             // return;
@@ -383,6 +399,21 @@ public class ExplorationDialog extends JDialog implements ActionListener {
 
             SpringUtilities.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
         }
+        
+        public Result getSelectedValue() {
+            if (this.checkboxes[0].isEnabled())
+                return (new Result());
+            if (this.checkboxes[1].isEnabled())
+                return (new Result(1));
+            if (this.checkboxes[2].isEnabled())
+            {
+                Integer nrResults = Integer.parseInt(this.customNumber.getText());
+                if (nrResults == null)
+                    return null;
+                return (new Result(nrResults));
+            }
+            return null;
+        }
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -472,6 +503,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             infoText = infoText.concat("</HTML>");
             
             this.currentInfo.setText(infoText);
+        }
+        
+        public Documented<A> getSelectedValue() {
+            return this.currentlySelected;
         }
  
         public void valueChanged(ListSelectionEvent e) {
