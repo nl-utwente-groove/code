@@ -44,6 +44,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -258,16 +259,16 @@ public class ExplorationDialog extends JDialog implements ActionListener {
      * The panel where the results can be selected.
      */
     private class ResultSelection extends JPanel implements ActionListener {
-        JCheckBox[] checkboxes;
+        JRadioButton[] checkboxes;
         JTextField customNumber;
         
         ResultSelection() {
             super(new SpringLayout());
 
-            this.checkboxes = new JCheckBox[3];
-            this.checkboxes[0] = new JCheckBox("Infinite (don't interrupt)");
-            this.checkboxes[1] = new JCheckBox("1 (interrupt as soon as acceptor succeeds)");
-            this.checkboxes[2] = new JCheckBox("Custom: ");
+            this.checkboxes = new JRadioButton[3];
+            this.checkboxes[0] = new JRadioButton("Infinite (don't interrupt)");
+            this.checkboxes[1] = new JRadioButton("1 (interrupt as soon as acceptor succeeds)");
+            this.checkboxes[2] = new JRadioButton("Custom: ");
             this.checkboxes[0].setSelected(true);
             for (int i = 0; i < 3; i++)
                 this.checkboxes[i].addActionListener(this);
