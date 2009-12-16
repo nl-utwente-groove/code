@@ -390,6 +390,9 @@ public class Options {
      */
     public static final KeyStroke EXPORT_KEY =
         KeyStroke.getKeyStroke("control alt S");
+    /** Exploration Dialog keystroke */
+    public static final KeyStroke EXPLORE_KEY =
+        KeyStroke.getKeyStroke("control shift E");
     /** Goto start state keystroke */
     public static final KeyStroke GOTO_START_STATE_KEY =
         KeyStroke.getKeyStroke("control G");

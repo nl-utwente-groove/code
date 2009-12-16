@@ -3396,6 +3396,7 @@ public class Simulator {
         /** Constructs an instance of the action. */
         ExplorationDialogAction() {
             super(Options.EXPLORATION_DIALOG_ACTION_NAME, null);
+            putValue(ACCELERATOR_KEY, Options.EXPLORE_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
