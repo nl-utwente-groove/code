@@ -19,49 +19,25 @@ package groove.gui.dialog;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Documented;
 import groove.explore.Enumerator;
-import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
 import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
-import groove.explore.result.FinalStateAcceptor;
-import groove.explore.result.InvariantViolatedAcceptor;
-import groove.explore.result.Result;
-import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.BranchingStrategy;
-import groove.explore.strategy.ExploreRuleDFStrategy;
-import groove.explore.strategy.LinearConfluentRules;
-import groove.explore.strategy.LinearStrategy;
-import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.Strategy;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.Rule;
-import groove.trans.RuleName;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -69,14 +45,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.JTextComponent;
 
 /**
  * @author Maarten de Mol
@@ -364,6 +337,16 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         }
     }
     
+    private class OnlyListenToNumbers extends KeyAdapter {
+        @Override
+        public void keyTyped(KeyEvent evt) {
+            char ch = evt.getKeyChar();
+            
+            if (!Character.isDigit(ch))
+                evt.consume();
+        }
+    }
+    
     private class ResultSelection extends JPanel implements ActionListener {
         JCheckBox[] checkboxes;
         JTextField customNumber;
@@ -380,23 +363,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             for (int i = 0; i < 3; i++)
                 this.checkboxes[i].addActionListener(this);
             
-            /* Does not work either.
             this.customNumber = new JTextField("2", 3);
-            this.customNumber.getActionMap().put(KeyEvent.VK_0, null);
+            this.customNumber.addKeyListener(new OnlyListenToNumbers());
             this.customNumber.setEnabled(false);
-            */
-            
-            /* Does not work.
-            InputVerifier verifier = new InputVerifier() {
-                @Override
-                public boolean verify(JComponent input) {
-                    //final JTextComponent source = (JTextComponent) input;
-                    //String text = source.getText();
-                    return false;
-                }
-            };
-            this.customNumber.setInputVerifier(verifier);
-            */
             
             this.add(new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>"));
             ButtonGroup options = new ButtonGroup();
