@@ -643,7 +643,7 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = true;
+    static private final boolean TO_RULE_DEBUG = false;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -1136,14 +1136,16 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
                 // add nodes to nesting data structures
                 for (AspectNode node : DefaultRuleView.this.graph.nodeSet()) {
                     if (RuleAspect.inRule(node)) {
-                        Level level = DefaultRuleView.this.levelTree.getLevel(node);
+                        Level level =
+                            DefaultRuleView.this.levelTree.getLevel(node);
                         addNode(level, node);
                     }
                 }
                 // add edges to nesting data structures
                 for (AspectEdge edge : DefaultRuleView.this.graph.edgeSet()) {
                     if (RuleAspect.inRule(edge)) {
-                        Level level = DefaultRuleView.this.levelTree.getLevel(edge);
+                        Level level =
+                            DefaultRuleView.this.levelTree.getLevel(edge);
                         addEdge(level, edge);
                     }
                 }
@@ -1650,7 +1652,7 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
     }
 
     /**
-     * Class implementing a mapping from quantification levels to view elements.
+     * Class containing all elements on a given rule level.
      */
     private class LevelData extends DefaultFixable {
         public LevelData(Level index, LevelData parent) {
@@ -1692,19 +1694,20 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
          * @throws FormatException if there is an error in the context of the
          *         node
          */
-        private void addNode(AspectNode node) throws FormatException {
+        private void addNode(AspectNode viewNode, Node ruleNode)
+            throws FormatException {
             testFixed(false);
             Set<AspectNode> nodes = this.nodes;
             // put the node on this level, if it is supposed to be there
-            if (isForThisLevel(node)) {
-                boolean fresh = nodes.add(node);
+            if (isForThisLevel(viewNode)) {
+                boolean fresh = nodes.add(viewNode);
                 assert fresh : String.format("Node %s already in node set %s",
-                    node, nodes);
+                    viewNode, nodes);
             }
             // put the node on the sublevels, if it is supposed to be there
-            if (isForNextLevel(node)) {
+            if (isForNextLevel(viewNode)) {
                 for (LevelData sublevel : this.children) {
-                    sublevel.addNode(node);
+                    sublevel.addNode(viewNode, ruleNode);
                 }
             }
         }
