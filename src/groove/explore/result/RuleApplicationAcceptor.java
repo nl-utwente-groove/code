@@ -19,15 +19,30 @@ package groove.explore.result;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.lts.GraphTransition;
+import groove.trans.Rule;
 
 /**
  * Accepts states that violate an invariant condition on states.
  * The invariant is defined by the application of a given rule.
  * @author Eduardo Zambon
- * @param <C> The type of the condition.
- * 
  */
-public class RuleApplicationAcceptor<C> extends ConditionalAcceptor<C> {
+public class RuleApplicationAcceptor extends ConditionalAcceptor<Rule> {
+    /**
+     * Creates an instance with a default {@link Result}.
+     */
+    public RuleApplicationAcceptor() {
+        this(null, new Result());
+    }
+    
+    /**
+     * Constructs a new instance with a given condition and a default
+     * {@link Result}.
+     * @param condition the condition to be used; may be <code>null</code>.
+     */
+    public RuleApplicationAcceptor(ExploreCondition<Rule> condition) {
+        this(condition, new Result());
+    }
+    
     /**
      * Constructs a new instance with a given Result.
      */
@@ -39,7 +54,7 @@ public class RuleApplicationAcceptor<C> extends ConditionalAcceptor<C> {
      * Constructs a new instance with a given condition and Result.
      * @param condition the condition to be used; may be <code>null</code>.
      */
-    public RuleApplicationAcceptor(ExploreCondition<C> condition,
+    public RuleApplicationAcceptor(ExploreCondition<Rule> condition,
             Result result) {
         super(condition, result);
     }
@@ -61,7 +76,7 @@ public class RuleApplicationAcceptor<C> extends ConditionalAcceptor<C> {
     /** This implementation returns an {@link RuleApplicationAcceptor}. */
     @Override
     public Acceptor newInstance() {
-        return new RuleApplicationAcceptor<C>(getCondition(),
+        return new RuleApplicationAcceptor(getCondition(),
             getResult().newInstance());
     }
 }

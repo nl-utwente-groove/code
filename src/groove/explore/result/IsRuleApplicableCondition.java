@@ -27,6 +27,23 @@ import groove.trans.Rule;
  */
 public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
 
+    /**
+     * Basic constructor. The fields must be set by additional method calls.
+     */
+    public IsRuleApplicableCondition() {
+        // empty
+    }
+    
+    /**
+     * Complete constructor with all parameters of the condition.
+     * @param condition the rule to be checked
+     * @param negated flag to indicate whether this condition is negated or not.
+     */
+    public IsRuleApplicableCondition(Rule condition, boolean negated) {
+        this.condition = condition;
+        this.negated = negated;
+    }
+    
     @Override
     public boolean isSatisfied(GraphState state) {
         boolean result = this.condition.hasMatch(state.getGraph());
