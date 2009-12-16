@@ -16,6 +16,10 @@
  */
 package groove.explore;
 
+import groove.gui.Simulator;
+
+import java.awt.Component;
+
 /**
  * Wrapper class that stores a combination of:
  * - an object
@@ -65,9 +69,9 @@ public class Documented<A> {
     /**
      * @return the internal object - always fully evaluated (use queryUser if null)
      */
-    public A getObjectForUI() {
+    public A getObjectForUI(Simulator simulator, Component owner) {
         if (this.object == null)
-           this.object = queryUser();
+           this.object = queryUser(simulator, owner);
             
         return this.object;
     }
@@ -127,7 +131,7 @@ public class Documented<A> {
      * 
      * @return a strategy when the user supplies the argument, null otherwise 
      */
-    public A queryUser() {
+    public A queryUser(Simulator simulator, Component owner) {
         return null;
     }
 }
