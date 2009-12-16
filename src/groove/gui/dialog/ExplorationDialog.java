@@ -19,9 +19,13 @@ package groove.gui.dialog;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Documented;
 import groove.explore.Enumerator;
+import groove.explore.Exploration;
+import groove.explore.Scenario;
+import groove.explore.ScenarioFactory;
 import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
 import groove.explore.result.Result;
+import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.Strategy;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
@@ -216,18 +220,31 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         
         if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
-            Strategy strategy = this.strategySelector.getSelectedValue().getObjectForUI();
+            Strategy strategy = this.strategySelector.getSelectedValue().getObjectForUI(this.simulator, this);
             if (strategy == null)
                 return;
-            Acceptor acceptor = this.acceptorSelector.getSelectedValue().getObjectForUI();
+            Acceptor acceptor = this.acceptorSelector.getSelectedValue().getObjectForUI(this.simulator, this);
             if (acceptor == null)
                 return;
             Result result = this.resultSelector.getSelectedValue();
             if (result == null)
                 return;
-            // this.dispose();
-            // this.simulator.doGenerate(getScenario());
-            // return;
+            
+            Exploration exploration = new Exploration(strategy, acceptor, result);
+            
+            this.dispose();
+            this.simulator.doRunExploration(exploration);
+            
+            //acceptor.setResult(result);
+            //Scenario scenario;
+            //scenario =
+            //    ScenarioFactory.getScenario(strategy,
+            //        acceptor, "Explores the full state space.",
+            //        "Full exploration (branching, aliasing)");
+            //this.dispose();
+            //this.simulator.doGenerate(scenario);
+            
+            return;
         }
 
         if (event.getActionCommand().equals(CANCEL_COMMAND)) {
