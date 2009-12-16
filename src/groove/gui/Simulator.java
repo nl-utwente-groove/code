@@ -40,8 +40,10 @@ import groove.control.ControlView;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
+import groove.explore.ScenarioFactory;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
+import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -573,8 +575,7 @@ public class Simulator {
     }
 
     /**
-     * Can be called from the ExplorationDialog, or from the popup-menu in the
-     * LTSPanel.
+     * Is only called from the Generator. Will be replaced by doRunExploration.
      * @param scenario
      */
     public void doGenerate(Scenario scenario) {
@@ -865,8 +866,8 @@ public class Simulator {
     }
 
     /**
-     * Run an exploration. Can be called from the ExplorationDialog.
-     * This method is a new version of the doGenerate method.
+     * Run a given exploration.
+     * Can be called from outside the Simulator.
      * @param exploration - the exploration strategy to be used
      */
     public void doRunExploration(Exploration exploration) {
@@ -3627,7 +3628,7 @@ public class Simulator {
 
     /**
      * Thread class to wrap the exploration of the simulator's current GTS.
-     * Either operates on a scenario (deprecated) or an exploration. 
+     * Either operates on a scenario (only used from the Generator, will be removed!) or an exploration. 
      */
     private class LaunchThread extends CancellableThread {
         /**
@@ -3657,7 +3658,7 @@ public class Simulator {
             GTS gts = getGTS();
             displayProgress(gts);
             gts.addGraphListener(this.progressListener);
-            
+
             if (this.exploration == null)
                 this.scenario.play();
             else

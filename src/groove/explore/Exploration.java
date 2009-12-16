@@ -87,7 +87,7 @@ public class Exploration {
         this.interrupted = false;
 
         // start working until done or nothing to do
-        while (!this.interrupted && this.acceptor.getResult().done() && this.strategy.next()) {
+        while (!this.interrupted && !this.acceptor.getResult().done() && this.strategy.next()) {
             this.interrupted = Thread.currentThread().isInterrupted();
         }
 
