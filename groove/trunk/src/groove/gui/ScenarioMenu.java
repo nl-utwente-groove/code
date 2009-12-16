@@ -187,7 +187,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         scenario =
             ScenarioFactory.getConditionalScenario(
                 new BFSStrategy(),
-                new RuleApplicationAcceptor<Rule>(new Result(1)),
+                new RuleApplicationAcceptor(new Result(1)),
                 "Explores all the new states reachable from the current state until the invariant is violated.",
                 "Find rule application", false);
         addScenarioHandler(scenario);
