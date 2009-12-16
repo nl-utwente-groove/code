@@ -30,9 +30,9 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
-import groove.view.AspectualRuleView;
 import groove.view.FormatException;
 import groove.view.GraphView;
+import groove.view.DefaultRuleView;
 import groove.view.RuleView;
 import groove.view.View;
 
@@ -491,7 +491,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.ruleView = new AspectualRuleView(this, properties);
+            this.ruleView = new DefaultRuleView(this, properties);
         } else {
             this.ruleView.setProperties(properties);
         }
