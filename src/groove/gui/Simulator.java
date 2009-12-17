@@ -40,10 +40,8 @@ import groove.control.ControlView;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
-import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -362,6 +360,29 @@ public class Simulator {
         return result;
     }
 
+    /**
+     * Clears the internally stored last performed exploration.
+     */
+    public void clearLastExploration() {
+        setLastExploration(null);
+    }
+    
+    /**
+     * Returns the internally stored last performed exploration.
+     */
+    public Exploration getLastExploration() {
+        return this.lastExploration;
+    }
+
+    /**
+     * Stores the last performed exploration.
+     */
+    public void setLastExploration(Exploration exploration) {
+        this.lastExploration = exploration;
+        getExploreRepeatAction().setEnabled(exploration != null);
+    }
+
+    
     /**
      * Returns the currently selected rule, or <tt>null</tt> if none is
      * selected. The selected rule is the one displayed in the rule panel.
@@ -894,6 +915,7 @@ public class Simulator {
         if (ltsJGraph.getLayouter() != null) {
             ltsJGraph.getLayouter().start(false);
         }
+        setLastExploration(exploration);
     }
     
     /**
@@ -2464,6 +2486,14 @@ public class Simulator {
     private RuleEvent currentEvent;
 
     /**
+     * The last exploration that has been performed by the user.
+     * The results of the exploration are stored within its acceptor.
+     * If no last exploration is available (as is the case initially),
+     * the value should be set to null.
+     */
+    private Exploration lastExploration = null;
+    
+    /**
      * The file or directory containing the last loaded or saved grammar, or
      * <tt>null</tt> if no grammar was loaded from file.
      */
@@ -3401,6 +3431,39 @@ public class Simulator {
         }
     }
 
+    /**
+     * Returns the exploration dialog action permanently associated with this
+     * simulator.
+     */
+    public ExploreRepeatAction getExploreRepeatAction() {
+        // lazily create the action
+        if (this.exploreRepeatAction == null) {
+            this.exploreRepeatAction = new ExploreRepeatAction();
+        }
+        return this.exploreRepeatAction;
+    }
+
+    /**
+     * The exploration dialog action permanently associated with this simulator.
+     */
+    private ExploreRepeatAction exploreRepeatAction;
+
+    /** Action to open the Exploration Dialog. */
+    private class ExploreRepeatAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        ExploreRepeatAction() {
+            super("Repeat last exploration", null);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            // new ExplorationDialog(Simulator.this, getFrame());
+        }
+
+        public void refresh() {
+            setEnabled(getLastExploration() != null);
+        }
+    }
+    
     /**
      * Returns the exploration dialog action permanently associated with this
      * simulator.

@@ -23,8 +23,10 @@ import groove.lts.DefaultGraphNextState;
 
 /**
  * Acceptor that accepts any new state that is added to the LTS.
+ * 
  * Implements the following methods:
- * - closeUpdate - accepts the closed state
+ * - addUpdate (overridden) - add a state to the result set whenever a new node
+ *                            is created in the LTS
  * 
  * @author Maarten de Mol
  * @version $Revision $
