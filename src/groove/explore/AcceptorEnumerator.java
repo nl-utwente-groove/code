@@ -17,6 +17,7 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
+import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.RuleApplicationAcceptor;
@@ -40,6 +41,11 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
      */
     public AcceptorEnumerator() {
         super();
+        
+        addObject(new Documented<Acceptor>(new AnyStateAcceptor(),
+            "Any",
+            "Any State",
+            "TBA"));
         
         addObject(new Documented<Acceptor>(new FinalStateAcceptor(),
             "Final",
