@@ -80,7 +80,8 @@ public class Exploration {
      * Expects that a LaunchThread (see Simulator.java) is currently active.
      * @return the set of results that have been stored within the acceptor during exploration
      */
-    public Result play() {       
+    public Result play() {
+        
         // initialize profiling and prepare graph listener
         reporter.start(RUNNING);
         this.strategy.addGTSListener(this.acceptor);

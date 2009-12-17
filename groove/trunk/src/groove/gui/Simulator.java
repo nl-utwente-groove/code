@@ -1841,12 +1841,6 @@ public class Simulator {
         result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
-        // MdM - moved exploration dialog to the scenario menu
-        // result.addSeparator();
-        // result.add(new JMenuItem(getExplorationDialogAction()));
-        // BEGIN_IOVKA
-        // result.add(new JMenuItem(getChooseCustomScenarioAction()));
-        // END_IOVKA
         result.addSeparator();
         // copy the exploration menu
         for (Component menuComponent : exploreMenu.getMenuComponents()) {
@@ -3658,7 +3652,7 @@ public class Simulator {
             GTS gts = getGTS();
             displayProgress(gts);
             gts.addGraphListener(this.progressListener);
-
+            
             if (this.exploration == null)
                 this.scenario.play();
             else
