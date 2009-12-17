@@ -194,6 +194,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         
         // MdM - add Exploration Dialog
         add(this.simulator.getExplorationDialogAction());
+        add(this.simulator.getExploreRepeatAction());
 
         // IOVKA items related to model-checking are in the MCMMenu class
 
