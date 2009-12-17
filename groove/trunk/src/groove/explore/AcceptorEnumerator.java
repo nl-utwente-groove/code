@@ -74,17 +74,16 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
     private class AcceptorRequiringRule extends Documented<Acceptor> {
 
         private boolean mayBeNegated;
-        ConditionalAcceptor<Rule> acceptorFactory;
+        ConditionalAcceptor<Rule> acceptor;
         
         public AcceptorRequiringRule(Acceptor object, String keyword,
                 String name, String explanation, boolean mayBeNegated,
-                ConditionalAcceptor<Rule> acceptorFactory) {
+                ConditionalAcceptor<Rule> acceptor) {
             super(object, keyword, name, explanation);
             this.mayBeNegated = mayBeNegated;
-            this.acceptorFactory = acceptorFactory;
+            this.acceptor = acceptor;
         }
         
-        @SuppressWarnings("unchecked")
         @Override
         public Acceptor queryUser(Simulator simulator, Component owner) {
             RuleSelectionDialog dialog =
@@ -97,11 +96,8 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
                 dialog.dispose();
                 IsRuleApplicableCondition condition =
                                 new IsRuleApplicableCondition(rule, isNegated);
-                ConditionalAcceptor<Rule> acceptor = 
-                        (ConditionalAcceptor<Rule>)
-                                            this.acceptorFactory.newInstance();
-                acceptor.setCondition(condition);
-                return acceptor;
+                this.acceptor.setCondition(condition);
+                return this.acceptor;
             }
         }
         
