@@ -28,6 +28,14 @@ import groove.lts.GraphState;
  * 
  */
 public class InvariantViolatedAcceptor<C> extends ConditionalAcceptor<C> {
+    
+    /**
+     * Creates an instance with a default {@link Result}.
+     */
+    public InvariantViolatedAcceptor() {
+        this(null, new Result());
+    }
+    
     /**
      * Constructs a new instance with a given Result.
      */

@@ -19,12 +19,13 @@ package groove.gui.dialog;
 import groove.gui.Simulator;
 import groove.trans.Rule;
 import groove.trans.RuleName;
-import groove.view.FormatException;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -59,7 +60,7 @@ public class RuleSelectionDialog extends JDialog implements ActionListener{
         // Open a modal dialog, which can be closed by the user.
         super(getParentFrame(owner), "Rule Selection", true);
         this.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-        //setResizable(false);
+        setResizable(false);
         
         // Remember simulator.
         this.simulator = simulator;
@@ -73,9 +74,15 @@ public class RuleSelectionDialog extends JDialog implements ActionListener{
         dialogContent.setBorder(
                             BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
+        // Top label
+        JPanel labelPanel = new JPanel();
+        labelPanel.add(new JLabel("Select the rule to be used as condition:"));
+        dialogContent.add(labelPanel);
+        
         // List of rule names.
-        this.list = new JList(
-                    this.simulator.getGrammarView().getRuleNames().toArray());
+        Set<RuleName> ruleSet = this.simulator.getGrammarView().getRuleNames();
+        TreeSet<RuleName> treeSet = new TreeSet<RuleName>(ruleSet);
+        this.list = new JList(treeSet.toArray());
         this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.list.setLayoutOrientation(JList.VERTICAL);
         this.list.setSelectedIndex(0);
@@ -153,13 +160,7 @@ public class RuleSelectionDialog extends JDialog implements ActionListener{
     }
 
     private Rule getRuleFromName(RuleName name) {
-        Rule rule = null;
-        try {
-            rule = this.simulator.getGrammarView().getRuleView(name).toRule();
-        } catch (FormatException e) {
-            // This should never happen...
-        }
-        return rule;
+        return this.simulator.getGTS().getGrammar().getRule(name);
     }
     
     /**

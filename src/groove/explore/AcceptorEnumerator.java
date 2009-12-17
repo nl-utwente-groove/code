@@ -18,7 +18,9 @@ package groove.explore;
 
 import groove.explore.result.Acceptor;
 import groove.explore.result.AnyStateAcceptor;
+import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.FinalStateAcceptor;
+import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.RuleApplicationAcceptor;
 import groove.gui.Simulator;
@@ -57,26 +59,32 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
             "Check Invariant",
             "This acceptor takes as a result a (negated) " +
             "match of a selected rule.",
-            true));
+            true,
+            new InvariantViolatedAcceptor<Rule>()));
         
         addObject(new AcceptorRequiringRule(null,
             "Rule-App",
             "Rule Application",
             "This acceptor takes as a result an " + 
             "application of a selected rule.",
-            false));
+            false,
+            new RuleApplicationAcceptor()));
     }
     
     private class AcceptorRequiringRule extends Documented<Acceptor> {
 
         private boolean mayBeNegated;
+        ConditionalAcceptor<Rule> acceptorFactory;
         
         public AcceptorRequiringRule(Acceptor object, String keyword,
-                String name, String explanation, boolean mayBeNegated) {
+                String name, String explanation, boolean mayBeNegated,
+                ConditionalAcceptor<Rule> acceptorFactory) {
             super(object, keyword, name, explanation);
             this.mayBeNegated = mayBeNegated;
+            this.acceptorFactory = acceptorFactory;
         }
         
+        @SuppressWarnings("unchecked")
         @Override
         public Acceptor queryUser(Simulator simulator, Component owner) {
             RuleSelectionDialog dialog =
@@ -89,9 +97,14 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
                 dialog.dispose();
                 IsRuleApplicableCondition condition =
                                 new IsRuleApplicableCondition(rule, isNegated);
-                return new RuleApplicationAcceptor(condition);
+                ConditionalAcceptor<Rule> acceptor = 
+                        (ConditionalAcceptor<Rule>)
+                                            this.acceptorFactory.newInstance();
+                acceptor.setCondition(condition);
+                return acceptor;
             }
         }
+        
     }
 
 }
