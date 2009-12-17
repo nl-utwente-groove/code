@@ -14,23 +14,39 @@
  *
  * $Id$
  */
+
 package groove.explore.result;
 
 import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
 
+/**
+ * Acceptor that accepts any new state that is added to the LTS.
+ * Implements the following methods:
+ * - closeUpdate - accepts the closed state
+ * 
+ * @author Maarten de Mol
+ * @version $Revision $
+ */
 public class AnyStateAcceptor extends Acceptor {
+    /**
+     * Constructor. Only calls super method.
+     */
     public AnyStateAcceptor() {
         super();
     }
 
+    /**
+     * Constructor. Only calls super method.
+     * @param result - the result set in which the accepted states will be stored
+     */
     public AnyStateAcceptor(Result result) {
         super(result);
     }
     
     @Override
-    public void closeUpdate(LTS gts, State state) {
+    public void closeUpdate(LTS graph, State state) {
         getResult().add((GraphState) state);
     }
 }

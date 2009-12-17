@@ -154,6 +154,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             Exploration exploration = new Exploration(strategy, acceptor, result);           
             this.dispose();
             this.simulator.doRunExploration(exploration);
+            
             return;
         }
 
@@ -294,11 +295,11 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         }
         
         public Result getSelectedValue() {
-            if (this.checkboxes[0].isEnabled())
+            if (this.checkboxes[0].isSelected())
                 return (new Result());
-            if (this.checkboxes[1].isEnabled())
+            if (this.checkboxes[1].isSelected())
                 return (new Result(1));
-            if (this.checkboxes[2].isEnabled())
+            if (this.checkboxes[2].isSelected())
             {
                 Integer nrResults = Integer.parseInt(this.customNumber.getText());
                 if (nrResults == null)
