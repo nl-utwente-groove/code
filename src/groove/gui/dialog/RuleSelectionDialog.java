@@ -24,6 +24,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -31,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,6 +40,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 
 /**
@@ -74,6 +77,12 @@ public class RuleSelectionDialog extends JDialog implements ActionListener{
         dialogContent.setBorder(
                             BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
+        // Make sure that the dialog listens to Escape and Enter.
+        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        dialogContent.registerKeyboardAction(this.escapeListener, escape, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        dialogContent.registerKeyboardAction(this.enterListener, enter, JComponent.WHEN_IN_FOCUSED_WINDOW);
+
         // Top label
         JPanel labelPanel = new JPanel();
         labelPanel.add(new JLabel("Select the rule to be used as condition:"));
@@ -147,14 +156,40 @@ public class RuleSelectionDialog extends JDialog implements ActionListener{
     public boolean wasCanceled() {
         return this.canceled;
     }
+    
+    /**
+     * Close action. Also sets canceled flag.
+     */
+    private void closeDialog(boolean canceled)
+    {
+        this.canceled = canceled;
+        this.setVisible(false);
+    }
+    
+    /**
+     * Action that responds to the Escape key.
+     */
+    ActionListener escapeListener = new ActionListener() {
+        public void actionPerformed(ActionEvent actionEvent) {
+            closeDialog(true);
+        }
+    };   
+
+    /**
+     * Action that responds to the Enter key.
+     */
+    ActionListener enterListener = new ActionListener() {
+        public void actionPerformed(ActionEvent actionEvent) {
+           closeDialog(false);
+        }
+    };
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        this.setVisible(false);
         if (event.getActionCommand().equals(OK_COMMAND)) {
-            this.canceled = false;
+            closeDialog(false);
         } else if (event.getActionCommand().equals(CANCEL_COMMAND)) {
-            this.canceled = true;
+            closeDialog(true);
         }
         return;
     }
