@@ -511,8 +511,8 @@ final public class SPOEvent extends
                 && !coanchorMap.containsKey(coanchor)) {
                 Node coanchorImage = coRootImages.get(coRootEntry.getKey());
                 assert coanchorImage != null : String.format(
-                    "Coroot image map %s does not contain image for coanchor root '%s'",
-                    coRootImages, coRootEntry.getKey());
+                    "Event '%s': Coroot image map %s does not contain image for coanchor root '%s'",
+                    this, coRootImages, coRootEntry.getKey());
                 coanchorMap.putNode(coanchor, coanchorImage);
             }
         }
@@ -815,11 +815,17 @@ final public class SPOEvent extends
             NodeEdgeMap mergeMap =
                 getRule().hasMergers() ? getMergeMap() : null;
             Set<Node> erasedNodes = getErasedNodes();
-            // add coanchor mappings for creator end edges that are themselves
+            // add coanchor mappings for creator edge ends that are themselves
             // not creators
             for (Map.Entry<Node,Node> creatorEntry : getRule().getCreatorMap().nodeMap().entrySet()) {
                 Node creatorKey = creatorEntry.getKey();
-                Node creatorValue = anchorMap.getNode(creatorEntry.getValue());
+                Node creatorValue = creatorEntry.getValue();
+                if (!(creatorValue instanceof ValueNode)) {
+                    creatorValue = anchorMap.getNode(creatorEntry.getValue());
+                    assert creatorValue != null : String.format(
+                        "Event '%s': No coanchor image for '%s' in %s",
+                        SPOEvent.this, creatorKey, anchorMap);
+                }
                 if (mergeMap != null) {
                     creatorValue = mergeMap.getNode(creatorValue);
                 } else if (erasedNodes.contains(creatorValue)) {
