@@ -43,34 +43,44 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
      */
     public AcceptorEnumerator() {
         super();
-        
-        addObject(new Documented<Acceptor>(new AnyStateAcceptor(),
-            "Any",
-            "Any State",
-            "TBA"));
-        
+                
         addObject(new Documented<Acceptor>(new FinalStateAcceptor(),
             "Final",
             "Final States",
-            "TBA"));
+            "This acceptor succeeds when a state is added to the LTS that is <I>final</I>. " +
+            "A state is final when no rule is applicable on it (or rule application results " +
+            "in the same state)."));
         
         addObject(new AcceptorRequiringRule(null,
             "Check-Inv",
             "Check Invariant",
-            "This acceptor takes as a result a (negated) " +
-            "match of a selected rule.",
+            "This acceptor succeeds when a state is reached in which the indicated rule is applicable. " +
+            "Note that this is detected <I>before</I> the rule has been applied.<BR> " +
+            "This acceptor can also be negated (succeeds when the rule is <I>not</I> applicable).<BR> " +
+            "This acceptor ignores rule priorities.", 
             true,
             new InvariantViolatedAcceptor<Rule>()));
         
         addObject(new AcceptorRequiringRule(null,
             "Rule-App",
             "Rule Application",
-            "This acceptor takes as a result an " + 
-            "application of a selected rule.",
+            "This acceptor succeeds when a transition of the indicated rule is added to the LTS. " + 
+            "Note that this is detected <I>after</I> the rule has been applied.",
             false,
             new RuleApplicationAcceptor()));
+
+        addObject(new Documented<Acceptor>(new AnyStateAcceptor(),
+            "Any",
+            "Any State",
+            "This acceptor succeeds whenever a state is added to the LTS."));
     }
-    
+
+    /**
+     * Class that inherits from Documented<Acceptor>, but by default requires
+     * a rule to be selected. The additional selection either takes place by
+     * opening a RuleSelectionDialog, or by parsing a command line argument.
+     * (the latter is not implemented yet). 
+     */
     private class AcceptorRequiringRule extends Documented<Acceptor> {
 
         private boolean mayBeNegated;
@@ -100,7 +110,5 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
                 return this.acceptor;
             }
         }
-        
     }
-
 }

@@ -18,20 +18,8 @@ package groove.gui;
 
 import groove.explore.ConditionalScenario;
 import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
-import groove.explore.result.Acceptor;
 import groove.explore.result.ExploreCondition;
-import groove.explore.result.FinalStateAcceptor;
-import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
-import groove.explore.result.Result;
-import groove.explore.result.RuleApplicationAcceptor;
-import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.BranchingStrategy;
-import groove.explore.strategy.ExploreRuleDFStrategy;
-import groove.explore.strategy.LinearConfluentRules;
-import groove.explore.strategy.LinearStrategy;
-import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
@@ -104,6 +92,8 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
      */
     protected void createAddMenuItems() {
 
+        // MdM - scenarios have been replaced by the ExplorationDialog.
+        /*        
         Scenario scenario;
 
         scenario =
@@ -191,10 +181,11 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 "Explores all the new states reachable from the current state until the invariant is violated.",
                 "Find rule application", false);
         addScenarioHandler(scenario);
+        */
         
         // MdM - add Exploration Dialog
         add(this.simulator.getExplorationDialogAction());
-        add(this.simulator.getExploreRepeatAction());
+        // add(this.simulator.getExploreRepeatAction());
 
         // IOVKA items related to model-checking are in the MCMMenu class
 

@@ -202,7 +202,7 @@ public class Options {
     public static final String ENABLE_RULE_ACTION_NAME = "Enable Rule";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
-        "Exploration Dialog (work in progress)";
+        "Explore State Space";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export control action name */
