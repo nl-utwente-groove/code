@@ -93,7 +93,8 @@ public class LTSJGraph extends JGraph {
         addSeparatorUnlessFirst(result);
         // State exploration sub-menu
         result.add(this.simulator.getApplyTransitionAction());
-        result.add(getExploreMenu());
+        result.add(this.simulator.getExplorationDialogAction());
+        // result.add(getExploreMenu());
         result.add(getMCMenu());
         // Goto sub-menu
         result.addSeparator();

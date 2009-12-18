@@ -33,11 +33,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -46,9 +49,11 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -64,27 +69,58 @@ import javax.swing.event.ListSelectionListener;
  * @version $Revision $
  */
 public class ExplorationDialog extends JDialog implements ActionListener {
-    private static final String EXPLORE_COMMAND = "Explore State Space";  // button text
-    private static final String CANCEL_COMMAND = "Cancel";                // button text
-
-    private DocumentedSelection<Strategy> strategySelector;               // panel that holds the strategy selection
-    private DocumentedSelection<Acceptor> acceptorSelector;               // panel that holds the acceptor selection
-    private ResultSelection resultSelector;                               // panel that holds the result selection
-    private JPanel buttonPanel;                                           // panel that holds the buttons
+    private final String EXPLORE_COMMAND = "Explore State Space";  // button text
+    private final String CANCEL_COMMAND = "Cancel";                // button text
     
-    private Simulator simulator;                                          // reference to the simulator
+    private final String STRATEGY_TOOLTIP = "<HTML>"               // tool tip to explain exploration strategy
+                                          + "The exploration strategy determines at each state:<BR>"
+                                          + "<B>1.</B> Which of the applicable transitions will be taken; and<BR>"
+                                          + "<B>2.</B> In which order the reached states will be explored."
+                                          + "</HTML>";
+    private final String ACCEPTOR_TOOLTIP = "<HTML>"               // tool tip to explain acceptor
+                                          + "An acceptor is a predicate that is applied each time the LTS is updated<I>*</I>.<BR>"
+                                          + "Information about each acceptor success is added to the result set of the exploration.<BR>"
+                                          + "This result set can be used to interrupt exploration.<BR>"
+                                          + "<I>(*)<I>The LTS is updated when a transition is applied, or when a new state is reached."
+                                          + "</HTML>";
+    private final String RESULT_TOOLTIP   = "<HTML>"               // tool tip to explain result
+                                          + "Exploration can be interrupted between atomic steps of the strategy.<BR> "
+                                          + "The size of the atomic steps depends on the chosen strategy.<BR> "
+                                          + "The interruption condition is determined by the indicated number of times that the acceptor succeeds."
+                                          + "</HTML>";
+
+    private DocumentedSelection<Strategy> strategySelector;        // panel that holds the strategy selection
+    private DocumentedSelection<Acceptor> acceptorSelector;        // panel that holds the acceptor selection
+    private ResultSelection resultSelector;                        // panel that holds the result selection
+    private JPanel buttonPanel;                                    // panel that holds the buttons
+    
+    private Simulator simulator;                                   // reference to the simulator
+    
+    private int oldDismissDelay;                                   // stores the old DismissDelay of the ToolTipManager
     
     /**
      * Create the dialog.
      * @param simulator - reference to the simulator
      * @param owner - reference to the parent GUI component
      */
-    public ExplorationDialog(Simulator simulator, JFrame owner) {
-
+    public ExplorationDialog(Simulator simulator, JFrame owner) {       
         // Open a modal dialog, which cannot be resized and can be closed by the user.
         super(owner, "ExplorationDialog", true);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setResizable(false);
+        
+        // Override DismissDelay of the ToolTipManager.
+        // Old value will be reset when the dialog is closed.
+        this.oldDismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
+        ToolTipManager.sharedInstance().setDismissDelay(1000000000);
+
+        // Make sure that closeDialog is called whenever the dialog is closed. 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent we) {
+              closeDialog();
+            }
+          });
 
         // Remember simulator.
         this.simulator = simulator;
@@ -94,15 +130,25 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         // panel.
         JPanel dialogContent = new JPanel(new SpringLayout());
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
-
-        // Add the panels, and layout, to the dialogContent.
-        this.strategySelector = new DocumentedSelection<Strategy>("exploration strategy", new StrategyEnumerator());
+        
+        // Make sure that the dialog listens to Escape and Enter.
+        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        dialogContent.registerKeyboardAction(this.escapeListener, escape, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        dialogContent.registerKeyboardAction(this.enterListener, enter, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        
+        // Add the panels to the dialogContent.
+        this.strategySelector = new DocumentedSelection<Strategy>("exploration strategy", 
+                                                                  this.STRATEGY_TOOLTIP,
+                                                                  new StrategyEnumerator());
         dialogContent.add(this.strategySelector);
         dialogContent.add(new JLabel(" "));
-        this.acceptorSelector = new DocumentedSelection<Acceptor>("acceptor", new AcceptorEnumerator());
+        this.acceptorSelector = new DocumentedSelection<Acceptor>("acceptor", 
+                                                                  this.ACCEPTOR_TOOLTIP,
+                                                                  new AcceptorEnumerator());
         dialogContent.add(this.acceptorSelector);
         dialogContent.add(new JLabel(" "));
-        this.resultSelector = new ResultSelection(); 
+        this.resultSelector = new ResultSelection(this.RESULT_TOOLTIP); 
         dialogContent.add(this.resultSelector);
         dialogContent.add(new JLabel(" "));
         createButtonPanel();
@@ -117,52 +163,92 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         setLocationRelativeTo(owner);
         setVisible(true);
     }
-    
+
     /**
      * Create the button panel.
      */
     private void createButtonPanel() {
         this.buttonPanel = new JPanel();
         
-        JButton exploreButton = new JButton(EXPLORE_COMMAND);
+        JButton exploreButton = new JButton(this.EXPLORE_COMMAND);
         exploreButton.addActionListener(this);
         this.buttonPanel.add(exploreButton);
         if (this.simulator.getGrammarView() == null ||
             this.simulator.getGrammarView().getStartGraphView() == null)
             exploreButton.setEnabled(false);
         
-        JButton cancelButton = new JButton(CANCEL_COMMAND);
+        JButton cancelButton = new JButton(this.CANCEL_COMMAND);
         cancelButton.addActionListener(this);
         this.buttonPanel.add(cancelButton);
     }
-       
+    
+    /**
+     * Customized close action.
+     * Disposes dialog and resets DismissDelay of the ToolTipManager.
+     */
+    private void closeDialog() {
+        this.dispose();
+        ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
+    }
+
+    /**
+     * The exploration action.
+     * Gets the current selection (strategy, acceptor and result), constructs
+     * an exploration out of it and then runs it.
+     * 
+     */
+    private void doExploration() {
+        Strategy strategy = this.strategySelector.getSelectedValue().getObjectForUI(this.simulator, this);
+        if (strategy == null)
+            return;
+        Acceptor acceptor = this.acceptorSelector.getSelectedValue().getObjectForUI(this.simulator, this);
+        if (acceptor == null)
+            return;
+        Result result = this.resultSelector.getSelectedValue();
+        if (result == null)
+            return;
+        
+        Exploration exploration = new Exploration(strategy, acceptor, result);           
+        closeDialog();
+        ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
+        this.simulator.doRunExploration(exploration);
+    }
+    
     /**
      *  The action listener of the dialog. Responds to button presses only.
      */
     public void actionPerformed(ActionEvent event) {
-        if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
-            Strategy strategy = this.strategySelector.getSelectedValue().getObjectForUI(this.simulator, this);
-            if (strategy == null)
-                return;
-            Acceptor acceptor = this.acceptorSelector.getSelectedValue().getObjectForUI(this.simulator, this);
-            if (acceptor == null)
-                return;
-            Result result = this.resultSelector.getSelectedValue();
-            if (result == null)
-                return;
-            
-            Exploration exploration = new Exploration(strategy, acceptor, result);           
-            this.dispose();
-            this.simulator.doRunExploration(exploration);
-            
+        if (event.getActionCommand().equals(this.EXPLORE_COMMAND)) {
+            doExploration();
             return;
         }
 
-        if (event.getActionCommand().equals(CANCEL_COMMAND)) {
-            this.dispose();
+        if (event.getActionCommand().equals(this.CANCEL_COMMAND)) {
+            closeDialog();
             return;
         }
     }
+
+    /**
+     * Action that responds to the Escape key.
+     * Ensures that the dialog is closed.
+     */
+    ActionListener escapeListener = new ActionListener() {
+        public void actionPerformed(ActionEvent actionEvent) {
+            assert 1 == 2;
+           closeDialog();
+        }
+    };   
+
+    /**
+     * Action that responds to the Enter key.
+     * Ensures that the currently selected exploration is executed.
+     */
+    ActionListener enterListener = new ActionListener() {
+        public void actionPerformed(ActionEvent actionEvent) {
+           doExploration();
+        }
+    };       
 
     /**
      * A generic wrapper class that allows elements from an arbitrary DocumentedSelection
@@ -171,15 +257,17 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     private class DocumentedSelection<A> extends JPanel implements ListSelectionListener {
         private Enumerator<A> enumerator;
         private String objectType;
+        private String tooltip;
         private Documented<A> currentlySelected;
         private JLabel currentInfo;
         
-        DocumentedSelection(String objectType, Enumerator<A> enumerator) {
+        DocumentedSelection(String objectType, String tooltip, Enumerator<A> enumerator) {
             super(new SpringLayout());
             
             this.enumerator = enumerator;
             this.currentlySelected = enumerator.getElement(0);
             this.objectType = objectType;
+            this.tooltip = tooltip;
             
             this.add(leftColumn());
             this.add(rightColumn());
@@ -199,7 +287,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             String leadingText = new String("<HTML><FONT color=green><B>Select ");
             leadingText = leadingText.concat(this.objectType);
             leadingText = leadingText.concat(":</B></FONT></HTML>");
-            column.add(new JLabel(leadingText));
+            JLabel leadingLabel = new JLabel(leadingText);
+            leadingLabel.setToolTipText(this.tooltip);
+            column.add(leadingLabel);
             column.add(listScroller);          
             SpringUtilities.makeCompactGrid(column, 2, 1, 0, 0, 0, 3);
 
@@ -234,7 +324,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             if (this.currentlySelected.needsArguments()) {
                 infoText = infoText.concat("<BR>"
                                            + "<FONT color=red>"
-                                           + "This strategy needs (an) additional argument(s)."
+                                           + "This "
+                                           + this.objectType
+                                           + " needs (an) additional argument(s)."
                                            + "</FONT>");
             }
             infoText = infoText.concat("</HTML>");
@@ -262,7 +354,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         JRadioButton[] checkboxes;
         JTextField customNumber;
         
-        ResultSelection() {
+        ResultSelection(String tooltip) {
             super(new SpringLayout());
 
             this.checkboxes = new JRadioButton[3];
@@ -277,7 +369,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             this.customNumber.addKeyListener(new OnlyListenToNumbers());
             this.customNumber.setEnabled(false);
             
-            this.add(new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>"));
+            JLabel leadingLabel = new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>");
+            leadingLabel.setToolTipText(tooltip);
+            this.add(leadingLabel);
             ButtonGroup options = new ButtonGroup();
             JPanel optionsLine = new JPanel(new SpringLayout());
             for (int i = 0; i < 3; i++) {
