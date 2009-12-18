@@ -235,8 +235,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
      */
     ActionListener escapeListener = new ActionListener() {
         public void actionPerformed(ActionEvent actionEvent) {
-            assert 1 == 2;
-           closeDialog();
+            closeDialog();
         }
     };   
 
@@ -246,9 +245,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
      */
     ActionListener enterListener = new ActionListener() {
         public void actionPerformed(ActionEvent actionEvent) {
-           doExploration();
+            doExploration();
         }
-    };       
+    };
 
     /**
      * A generic wrapper class that allows elements from an arbitrary DocumentedSelection
