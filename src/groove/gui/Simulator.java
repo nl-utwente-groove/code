@@ -4633,8 +4633,7 @@ public class Simulator {
                     // omit it from the history
                 }
             }
-
-            this.menu = new JMenu(Options.OPEN_RECENT_MENU_NAME);
+            this.menu.setName(Options.OPEN_RECENT_MENU_NAME);
             this.menu.setMnemonic(Options.OPEN_RECENT_MENU_MNEMONIC);
 
             synchMenu();
@@ -4701,7 +4700,7 @@ public class Simulator {
         }
 
         /** Menu of history items. */
-        private final JMenu menu;
+        private final JMenu menu = new JMenu(Options.OPEN_RECENT_MENU_NAME);
         /** List of load actions for the history items. */
         private final ArrayList<LoadAction> history =
             new ArrayList<LoadAction>();
