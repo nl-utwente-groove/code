@@ -840,6 +840,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         };
     }
 
+    /** Sets the exporter used in the {@link ExportAction}. */
+    public void setExporter(Exporter exporter) {
+        this.exporter = exporter;
+    }
+
     /**
      * Callback method to lazily creates and return the exporter used in the
      * {@link ExportAction}.

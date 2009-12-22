@@ -23,6 +23,7 @@ import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -120,6 +121,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             this.frame.setTitle(EDITOR_NAME);
         }
         this.jgraph = new EditorJGraph(this);
+        this.jgraph.setExporter(getExporter());
         initListeners();
         initGUI();
     }
@@ -1423,7 +1425,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         boolean partial = view.getView().hasErrors();
         AspectJModel previewModel =
             AspectJModel.newInstance(view, getOptions());
-        JGraph jGraph = new JGraph(previewModel, false, null);
+        JGraph jGraph = createJGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -1543,7 +1545,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
         AspectJModel previewModel =
             AspectJModel.newInstance(view, getOptions());
-        JGraph jGraph = new JGraph(previewModel, false, null);
+        JGraph jGraph = createJGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -1589,7 +1591,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
 
     JGraph getAspectJGraph() {
         AspectJModel model = AspectJModel.newInstance(toView(), getOptions());
-        JGraph jGraph = new JGraph(model, false, null);
+        JGraph jGraph = createJGraph(model);
         jGraph.setModel(model);
         // Ugly hack to prevent clipping of the image. We set the jGraph size
         // to twice its normal size. This does not affect the final size of
@@ -1599,6 +1601,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
         jGraph.setSize(newPrefSize);
         return jGraph;
+    }
+
+    /**
+     * Factory method to create a {@link JGraph} displaying a given
+     * {@link JModel}.
+     */
+    private JGraph createJGraph(AspectJModel jmodel) {
+        JGraph result = new JGraph(jmodel, false, null);
+        result.setExporter(getExporter());
+        return result;
     }
 
     /**
@@ -1625,20 +1637,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
 
     /** The jgraph instance used in this editor. */
     private final EditorJGraph jgraph;
-    //
-    // /**
-    // * Rule factory used for previewing the graph as a rule.
-    // */
-    // private RuleFactory ruleFactory;
-    //
-    // /**
-    // * Fixed graph type for the editor, or <code>null</code> if the type is
-    // not fixed.
-    // */
-    // private final String fixedType;
-    //    
-    // /** The tool bar of this editor. */
-    // private JToolBar editorToolBar;
 
     /** The jgraph panel used in this editor. */
     private JGraphPanel<EditorJGraph> jGraphPanel;
@@ -1742,6 +1740,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     private ButtonGroup modeButtonGroup;
     /** Collection of graph editing type buttons. */
     private ButtonGroup typeButtonGroup;
+
+    /** Returns the exporter of this editor. */
+    public final Exporter getExporter() {
+        return this.exporter;
+    }
+
+    /** Exporter used for all {@link JGraph}s in the editor. */
+    private final Exporter exporter = new Exporter();
 
     /**
      * @param args empty or a singleton containing a filename of the graph to be
