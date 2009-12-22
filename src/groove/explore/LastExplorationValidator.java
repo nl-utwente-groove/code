@@ -16,6 +16,8 @@
  */
 package groove.explore;
 
+import groove.explore.result.Acceptor;
+import groove.explore.result.ConditionalRuleAcceptor;
 import groove.gui.SimulationAdapter;
 import groove.gui.Simulator;
 import groove.view.StoredGrammarView;
@@ -51,8 +53,11 @@ public class LastExplorationValidator extends SimulationAdapter {
     @Override
     public void setGrammarUpdate(StoredGrammarView grammar) {
         if (this.simulator.getLastExploration() != null) {
-            if (!this.simulator.getLastExploration().respondToGrammarChange(grammar)) {
-                this.simulator.clearLastExploration();
+            Acceptor acceptor = this.simulator.getLastExploration().getAcceptor();
+            if (acceptor instanceof ConditionalRuleAcceptor) {
+                Boolean success = ((ConditionalRuleAcceptor) acceptor).renewCondition(grammar);
+                if (!success)
+                    this.simulator.clearLastExploration();
             }
         }
     }
