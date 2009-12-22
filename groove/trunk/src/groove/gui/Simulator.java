@@ -368,7 +368,7 @@ public class Simulator {
     public void clearLastExploration() {
         setLastExploration(null);
     }
-    
+
     /**
      * Returns the internally stored last performed exploration.
      */
@@ -379,17 +379,19 @@ public class Simulator {
     /**
      * Stores the last performed exploration.
      */
-    public void setLastExploration(Exploration exploration) {       
+    public void setLastExploration(Exploration exploration) {
         if (exploration == null) {
-            getExploreRepeatAction().putValue(Action.NAME, "Repeat Last Exploration");
+            getExploreRepeatAction().putValue(Action.NAME,
+                "Repeat Last Exploration");
             getExploreRepeatAction().setEnabled(false);
         } else {
-            getExploreRepeatAction().putValue(Action.NAME, "Repeat Exploration (" + exploration.getShortName() + ")");
+            getExploreRepeatAction().putValue(Action.NAME,
+                "Repeat Exploration (" + exploration.getShortName() + ")");
             getExploreRepeatAction().setEnabled(true);
         }
         this.lastExploration = exploration;
     }
-    
+
     /**
      * Returns the currently selected rule, or <tt>null</tt> if none is
      * selected. The selected rule is the one displayed in the rule panel.
@@ -894,8 +896,7 @@ public class Simulator {
     }
 
     /**
-     * Run a given exploration.
-     * Can be called from outside the Simulator.
+     * Run a given exploration. Can be called from outside the Simulator.
      * @param exploration - the exploration strategy to be used
      */
     public void doRunExploration(Exploration exploration) {
@@ -924,7 +925,7 @@ public class Simulator {
         }
         setLastExploration(exploration);
     }
-    
+
     /**
      * Attempts to save a control program to a file. Failure to do so will be
      * reported in an error dialog. The return value indicates if the attempt
@@ -1872,9 +1873,9 @@ public class Simulator {
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
         // copy the exploration menu
-        //for (Component menuComponent : exploreMenu.getMenuComponents()) {
-        //    result.add(menuComponent);
-        //}
+        // for (Component menuComponent : exploreMenu.getMenuComponents()) {
+        // result.add(menuComponent);
+        // }
         result.add(getExplorationDialogAction());
         result.add(getExploreRepeatAction());
 
@@ -2496,13 +2497,12 @@ public class Simulator {
     private RuleEvent currentEvent;
 
     /**
-     * The last exploration that has been performed by the user.
-     * The results of the exploration are stored within its acceptor.
-     * If no last exploration is available (as is the case initially),
-     * the value should be set to null.
+     * The last exploration that has been performed by the user. The results of
+     * the exploration are stored within its acceptor. If no last exploration is
+     * available (as is the case initially), the value should be set to null.
      */
     private Exploration lastExploration = null;
-    
+
     /**
      * The file or directory containing the last loaded or saved grammar, or
      * <tt>null</tt> if no grammar was loaded from file.
@@ -2886,8 +2886,7 @@ public class Simulator {
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
                     if (newGraphName != null) {
-                        AspectGraph newGraph =
-                            oldGraphView.getView().clone();
+                        AspectGraph newGraph = oldGraphView.getView().clone();
                         GraphInfo.setName(newGraph, newGraphName);
                         doAddGraph(newGraph);
                     }
@@ -3101,8 +3100,7 @@ public class Simulator {
             if (oldGraphName != null) {
                 GraphView oldGraphView =
                     getGrammarView().getGraphView(oldGraphName);
-                handleEditGraph(oldGraphView.getView().toPlainGraph(),
-                    false);
+                handleEditGraph(oldGraphView.getView().toPlainGraph(), false);
             }
         }
     }
@@ -3477,7 +3475,7 @@ public class Simulator {
             setEnabled(getLastExploration() != null);
         }
     }
-    
+
     /**
      * Returns the exploration dialog action permanently associated with this
      * simulator.
@@ -3699,7 +3697,8 @@ public class Simulator {
 
     /**
      * Thread class to wrap the exploration of the simulator's current GTS.
-     * Either operates on a scenario (only used from the Generator, will be removed!) or an exploration. 
+     * Either operates on a scenario (only used from the Generator, will be
+     * removed!) or an exploration.
      */
     private class LaunchThread extends CancellableThread {
         /**
@@ -3723,17 +3722,18 @@ public class Simulator {
             this.exploration = exploration;
             this.progressListener = createProgressListener();
         }
-        
+
         @Override
         public void doAction() {
             GTS gts = getGTS();
             displayProgress(gts);
             gts.addGraphListener(this.progressListener);
-            
-            if (this.exploration == null)
+
+            if (this.exploration == null) {
                 this.scenario.play();
-            else
+            } else {
                 this.exploration.play();
+            }
             gts.removeGraphListener(this.progressListener);
         }
 
@@ -3803,8 +3803,8 @@ public class Simulator {
         }
 
         private void showResult() {
-            Collection <? extends Object> result;
-            
+            Collection<? extends Object> result;
+
             if (this.exploration == null) {
                 result = this.scenario.getResult().getValue();
             } else {
@@ -4621,10 +4621,6 @@ public class Simulator {
     /** Class wrapping a menu of recently opened files. */
     private class History {
 
-        private final JMenu menu;
-        private final ArrayList<LoadAction> history =
-            new ArrayList<LoadAction>();
-
         /** Constructs a fresh history instance. */
         public History() {
             String[] savedLocations =
@@ -4704,6 +4700,12 @@ public class Simulator {
             }
             return result.toString();
         }
+
+        /** Menu of history items. */
+        private final JMenu menu;
+        /** List of load actions corresponding to the history items. */
+        private final ArrayList<LoadAction> history =
+            new ArrayList<LoadAction>();
 
         private class LoadAction extends AbstractAction {
             /**
