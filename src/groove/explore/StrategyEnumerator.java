@@ -17,7 +17,6 @@
 package groove.explore;
 
 import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreRuleDFStrategy;
 import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
@@ -39,29 +38,32 @@ public class StrategyEnumerator extends Enumerator<Strategy> {
     public StrategyEnumerator() {
         super();
         
+        // MdM - disable for now, seems to do the same as Breadth-First, 
+        // but with worse performance
+        /*
         addObject(new Documented<Strategy>(new BranchingStrategy(),
             "Branching",
             "Full Exploration (branching, aliasing)",
             "This strategy first generates all possible transitions from each open state, " +
             "and then continues in a breadth-first fashion.<BR>" +
             "<I>This strategy does not use local cache and is optimized for memory consumption.</I>"));
+        */
 
         addObject(new Documented<Strategy>(new BFSStrategy(),
             "Breadth-First",
-            "Full Exploration (breadth-first, aliasing)",
+            "Breadth-First Exploration",
             "This strategy first generates all possible transitions from each open state, " +
-            "and then continues in a breadth-first fashion.<BR>" +
-            "<I>This strategy uses a local cache of transitions.</U>"));
+            "and then continues in a breadth-first fashion."));
        
         addObject(new Documented<Strategy>(new ExploreRuleDFStrategy(),
             "Depth-First",
-            "Full Exploration (depth-first, no aliasing)",
+            "Depth-First Exploration",
             "This strategy first generates all possible transitions from each open state, " +
             "and then continues in a depth-first fashion."));
 
         addObject(new Documented<Strategy>(new LinearConfluentRules(),
             "LinearConfluent",
-            "Full Exploration (linear confluent rules)",
+            "Linear Confluent Exploration",
             "This strategy generates all possible transitions from each open state, " +
             "but only takes one transition of each pair of transitions that have been marked as confluent."));
 

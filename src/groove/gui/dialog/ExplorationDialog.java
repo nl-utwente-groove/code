@@ -204,11 +204,23 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         Acceptor acceptor = this.acceptorSelector.getSelectedValue().getObjectForUI(this.simulator, this);
         if (acceptor == null)
             return;
-        Result result = this.resultSelector.getSelectedValue();
-        if (result == null)
+        Integer nrResults = this.resultSelector.getSelectedValue();
+        if (nrResults == null)
             return;
         
-        Exploration exploration = new Exploration(strategy, acceptor, result);           
+        String shortName;
+        String resultName;
+        if (nrResults == 0)
+            resultName = "Infinite";
+        else
+            resultName = Integer.toString(nrResults);        
+        shortName = this.strategySelector.getSelectedValue().getKeyword()
+                  + "/"
+                  + this.acceptorSelector.getSelectedValue().getKeyword()
+                  + "/"
+                  + resultName;
+        
+        Exploration exploration = new Exploration(strategy, acceptor, new Result(nrResults), shortName);           
         closeDialog();
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
         this.simulator.doRunExploration(exploration);
@@ -387,18 +399,13 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             SpringUtilities.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
         }
         
-        public Result getSelectedValue() {
+        public Integer getSelectedValue() {
             if (this.checkboxes[0].isSelected())
-                return (new Result());
+                return 0;
             if (this.checkboxes[1].isSelected())
-                return (new Result(1));
+                return 1;
             if (this.checkboxes[2].isSelected())
-            {
-                Integer nrResults = Integer.parseInt(this.customNumber.getText());
-                if (nrResults == null)
-                    return null;
-                return (new Result(nrResults));
-            }
+                return Integer.parseInt(this.customNumber.getText());
             return null;
         }
 

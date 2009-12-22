@@ -38,6 +38,7 @@ import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
 import groove.explore.Exploration;
+import groove.explore.LastExplorationValidator;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
 import groove.explore.strategy.Boundary;
@@ -169,6 +170,7 @@ public class Simulator {
         loadModules();
         initGrammarLoaders();
         getFrame();
+        addSimulationListener(new LastExplorationValidator(this));
     }
 
     /**
@@ -377,11 +379,16 @@ public class Simulator {
     /**
      * Stores the last performed exploration.
      */
-    public void setLastExploration(Exploration exploration) {
+    public void setLastExploration(Exploration exploration) {       
+        if (exploration == null) {
+            getExploreRepeatAction().putValue(Action.NAME, "Repeat Last Exploration");
+            getExploreRepeatAction().setEnabled(false);
+        } else {
+            getExploreRepeatAction().putValue(Action.NAME, "Repeat Exploration (" + exploration.getShortName() + ")");
+            getExploreRepeatAction().setEnabled(true);
+        }
         this.lastExploration = exploration;
-        getExploreRepeatAction().setEnabled(exploration != null);
     }
-
     
     /**
      * Returns the currently selected rule, or <tt>null</tt> if none is
@@ -1865,9 +1872,12 @@ public class Simulator {
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
         // copy the exploration menu
-        for (Component menuComponent : exploreMenu.getMenuComponents()) {
-            result.add(menuComponent);
-        }
+        //for (Component menuComponent : exploreMenu.getMenuComponents()) {
+        //    result.add(menuComponent);
+        //}
+        result.add(getExplorationDialogAction());
+        result.add(getExploreRepeatAction());
+
         // TODO uncomment the two lines to enable LTL model checking
         // result.addSeparator();
         // result.add(new JMenuItem(showResultAction()));
@@ -3448,15 +3458,19 @@ public class Simulator {
      */
     private ExploreRepeatAction exploreRepeatAction;
 
-    /** Action to open the Exploration Dialog. */
+    /** Action to run the last exploration again. */
     private class ExploreRepeatAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         ExploreRepeatAction() {
             super("Repeat last exploration", null);
+            putValue(ACCELERATOR_KEY, Options.REPEAT_EXPLORE_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
-            // new ExplorationDialog(Simulator.this, getFrame());
+            if (getLastExploration() != null) {
+                getLastExploration().clearResult();
+                doRunExploration(getLastExploration());
+            }
         }
 
         public void refresh() {

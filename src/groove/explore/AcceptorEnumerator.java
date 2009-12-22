@@ -59,7 +59,7 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
             "This acceptor can also be negated (succeeds when the rule is <I>not</I> applicable).<BR> " +
             "This acceptor ignores rule priorities.", 
             true,
-            new InvariantViolatedAcceptor<Rule>()));
+            new InvariantViolatedAcceptor()));
         
         addObject(new AcceptorRequiringRule(null,
             "Rule-App",

@@ -22,17 +22,21 @@ import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
+import groove.view.StoredGrammarView;
 
 /**
  * Wrapper class that handles the execution of an exploration.
  * An exploration is given by a combination of a strategy, an acceptor and a result.
  * 
  * Implements the following public methods:
- * - prepare           - prepare stored strategy for exploration
- * - play              - run the exploration
- * - isInterrupted     - checks whether the LaunchThread has been interrupted during play()
- * - getRunningTime    - returns the total running time of the exploration
- * - getResult         - returns the result of the exploration (which is stored on the acceptor)  
+ * - prepare                - prepare stored strategy for exploration
+ * - play                   - run the exploration
+ * - clearResult            - clears the Result set that is stored on the acceptor
+ * - isInterrupted          - checks whether the LaunchThread has been interrupted during play()
+ * - getRunningTime         - returns the total running time of the exploration
+ * - getResult              - returns the result of the exploration (which is stored on the acceptor)
+ * - getShortName           - returns the short name of the exploration
+ * - respondToGrammarChange - updates the exploration when the grammar changes
  *
  * @author Maarten de Mol
  * @version $Revision $
@@ -40,6 +44,7 @@ import groove.util.Reporter;
 public class Exploration {
     private Strategy strategy;
     private Acceptor acceptor;
+    private String shortName;
     private boolean interrupted;
 
     static private final Reporter reporter = Reporter.register(DefaultScenario.class);
@@ -48,14 +53,16 @@ public class Exploration {
     /**
      * Initialize an exploration by storing a strategy and an acceptor in the local
      * variables. The result is stored (set) within the acceptor. 
-     * @param strategy - strategy component of the exploration
-     * @param acceptor - acceptor component of the exploration 
-     * @param result   - result   component of the exploration
+     * @param strategy  - strategy component of the exploration
+     * @param acceptor  - acceptor component of the exploration 
+     * @param result    - result   component of the exploration
+     * @param shortName - short name of the exploration for the user menu
      */
-    public Exploration(Strategy strategy, Acceptor acceptor, Result result) {
+    public Exploration(Strategy strategy, Acceptor acceptor, Result result, String shortName) {
         this.strategy = strategy;
         this.acceptor = acceptor;
         this.acceptor.setResult(result);
+        this.shortName = shortName;
     }
     
     /**
@@ -99,6 +106,14 @@ public class Exploration {
         // return result
         return this.acceptor.getResult();
     }
+    
+    /**
+     * Clears the Result set that is stored on the acceptor, which enables an earlier
+     * performed exploration to be run again.
+     */
+    public void clearResult() {
+        this.acceptor.setResult(this.acceptor.getResult().newInstance());
+    }
 
     /**
      * Checks whether the LaunchThread has been interrupted during play().
@@ -123,5 +138,24 @@ public class Exploration {
      */
     public Result getResult() {
         return this.acceptor.getResult();
+    }
+    
+    /**
+     * Returns the short name of the exploration. 
+     * @return the result (short name)
+     */
+    public String getShortName() {
+        return this.shortName;
+    }
+    
+    /**
+     * Updates the exploration when the grammar changes.
+     * Passes the change on to the acceptor. 
+     * @param grammar - the new grammar
+     * @return true - the exploration is still valid after the grammar update
+     *         false - the exploration is no longer valid after the update
+     */
+    public boolean respondToGrammarChange(StoredGrammarView grammar) {
+        return this.acceptor.respondToGrammarUpdate(grammar);
     }
 }
