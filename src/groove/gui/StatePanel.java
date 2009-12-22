@@ -163,12 +163,18 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
 
     public synchronized void startSimulationUpdate(GTS gts) {
         this.stateJModelMap.clear();
-        // take either the GTS start state or the grammar start graph as model
-        GraphJModel jModel = getCurrentStateJModel();
-        assert jModel != null;
-        if (getJModel() != jModel) {
-            setJModel(jModel);
+        StoredGrammarView grammar = getSimulator().getGrammarView();
+        GraphView startGraph = grammar.getStartGraphView();
+        if (startGraph != null) {
+            setJModel(getGraphJModel(startGraph));
         }
+        // // take either the GTS start state or the grammar start graph as
+        // model
+        // GraphJModel jModel = getCurrentStateJModel();
+        // assert jModel != null;
+        // if (getJModel() != jModel) {
+        // setJModel(jModel);
+        // }
         refreshStatus();
     }
 
@@ -291,7 +297,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder result = new StringBuilder();
-        String graphName = (String) getStateList().getSelectedValue();
+        String graphName = null;
+        if (getJModel() instanceof AspectJModel) {
+            graphName = getJModel().getName();
+        } else if (getJModel() != null) {
+            graphName = getSimulator().getCurrentState().toString();
+        }
         if (graphName == null) {
             result.append(FRAME_NAME);
         } else if (this.simulator.getGrammarView().getGraphView(graphName) == null) {
