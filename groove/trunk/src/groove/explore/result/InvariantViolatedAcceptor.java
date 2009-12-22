@@ -26,7 +26,7 @@ import groove.trans.Rule;
  * states. The invariant is defined by the applicability of a given rule.
  * @author Iovka Boneva
  */
-public class InvariantViolatedAcceptor extends ConditionalAcceptor<Rule> {
+public class InvariantViolatedAcceptor extends ConditionalRuleAcceptor {
     
     /**
      * Creates an instance with a default {@link Result}.

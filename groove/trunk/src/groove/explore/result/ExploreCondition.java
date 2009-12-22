@@ -48,6 +48,13 @@ public abstract class ExploreCondition<C> extends Property<GraphState> {
     public void setCondition(C condition) {
         this.condition = condition;
     }
+   
+    /**
+     * Gets the condition.
+     */
+    public C getCondition() {
+        return this.condition;
+    }
 
     /**
      * The type of the actual condition.
@@ -55,7 +62,7 @@ public abstract class ExploreCondition<C> extends Property<GraphState> {
     public Class<?> getConditionType() {
         return this.condition.getClass();
     }
-
+    
     /** Indicates whether the condition is negated. */
     protected boolean negated;
     /** The condition. */

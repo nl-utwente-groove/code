@@ -22,7 +22,6 @@ import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
-import groove.view.StoredGrammarView;
 
 /**
  * Wrapper class that handles the execution of an exploration.
@@ -33,6 +32,7 @@ import groove.view.StoredGrammarView;
  * - play                   - run the exploration
  * - clearResult            - clears the Result set that is stored on the acceptor
  * - isInterrupted          - checks whether the LaunchThread has been interrupted during play()
+ * - getAcceptor            - returns the acceptor of the exploration
  * - getRunningTime         - returns the total running time of the exploration
  * - getResult              - returns the result of the exploration (which is stored on the acceptor)
  * - getShortName           - returns the short name of the exploration
@@ -123,6 +123,14 @@ public class Exploration {
         return this.interrupted;
     }
     
+    /**
+     * Getter for the acceptor.
+     * @return the acceptor of the exploration
+     */
+    public Acceptor getAcceptor() {
+        return this.acceptor;
+    }
+    
     /** 
      * Returns the total running time of the exploration.
      * This information can be used for profiling.
@@ -147,15 +155,4 @@ public class Exploration {
     public String getShortName() {
         return this.shortName;
     }
-    
-    /**
-     * Updates the exploration when the grammar changes.
-     * Passes the change on to the acceptor. 
-     * @param grammar - the new grammar
-     * @return true - the exploration is still valid after the grammar update
-     *         false - the exploration is no longer valid after the update
-     */
-    public boolean respondToGrammarChange(StoredGrammarView grammar) {
-        return this.acceptor.respondToGrammarUpdate(grammar);
-    }
-}
+ }
