@@ -287,7 +287,7 @@ public class Exporter {
                 String id =
                     isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
                 currentLabel = new StringBuffer();
-                for (AspectValue value : edge.getAspectMap().values()) {
+                for (AspectValue value : edge.getAspectMap()) {
                     currentAspect = value.getAspect();
                     // only rule aspects can be outputted for now.
                     // this will very soon change to something like (defun
@@ -313,7 +313,7 @@ public class Exporter {
 
             // add node roles
             for (AspectNode node : graph.nodeSet()) {
-                for (AspectValue value : node.getAspectMap().values()) {
+                for (AspectValue value : node.getAspectMap()) {
                     currentAspect = value.getAspect();
 
                     if (currentAspect instanceof RuleAspect) {

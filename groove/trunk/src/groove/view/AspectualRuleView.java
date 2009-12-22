@@ -91,7 +91,9 @@ import java.util.TreeSet;
  * </ul>
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated Use {@link DefaultRuleView} instead
  */
+@Deprecated
 public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
 
     /**
@@ -1389,7 +1391,7 @@ public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
         AspectNode result = graph.createNode();
         if (role != null) {
             try {
-                result.setDeclaredValue(role);
+                result.addDeclaredValue(role);
             } catch (FormatException exc) {
                 assert false : String.format(
                     "Fresh node %s cannot have two rule aspect values", result);
@@ -1399,7 +1401,7 @@ public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
             AttributeAspect.getAttributeValueFor(original);
         if (attributeValue != null) {
             try {
-                result.setDeclaredValue(attributeValue);
+                result.addDeclaredValue(attributeValue);
             } catch (FormatException exc) {
                 assert false : String.format(
                     "Fresh node %s cannot have two attribute aspect values",

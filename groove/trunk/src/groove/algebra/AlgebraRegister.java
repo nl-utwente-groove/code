@@ -557,6 +557,11 @@ public class AlgebraRegister {
             return this.method.getName();
         }
 
+        @Override
+        public String toString() {
+            return getSymbol();
+        }
+
         private final Algebra<?> algebra;
         private final Algebra<?> returnType;
         private final Method method;

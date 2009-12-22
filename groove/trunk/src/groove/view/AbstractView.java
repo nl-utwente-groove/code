@@ -55,7 +55,7 @@ abstract public class AbstractView<Model> implements View<Model> {
      */
     protected Label parse(AspectEdge aspectEdge) throws FormatException {
         LabelParser parser = null;
-        for (AspectValue value : aspectEdge.getAspectMap().values()) {
+        for (AspectValue value : aspectEdge.getAspectMap()) {
             // find the parser for this aspect value
             LabelParser valueParser = value.getLabelParser();
             // set it as the label parser, or compose it with the previously

@@ -48,33 +48,33 @@ public class NestingAspect extends AbstractAspect {
             // source nodes should be non-meta with only this level edge
             if (isMetaElement(edge.source())) {
                 throw new FormatException(
-                    "Level edge %s should not have meta-node as source", edge);
+                    "Level edge '%s' should not have meta-node as source", edge);
             }
             for (AspectEdge outEdge : graph.outEdgeSet(edge.source())) {
                 if (isMetaElement(outEdge) && !outEdge.equals(edge)) {
-                    throw new FormatException("Ambiguous level edges at %s",
+                    throw new FormatException("Ambiguous level edges at '%s'",
                         edge.source());
                 }
             }
             // target nodes should be meta
             if (!isMetaElement(edge.opposite())) {
                 throw new FormatException(
-                    "Level edge %s should have a meta-node as target", edge);
+                    "Level edge '%s' should have a meta-node as target", edge);
             }
         } else if (isParentEdge(edge)) {
             // source and target nodes should be inversely universal and
             // existential
             if (!isMetaElement(edge.source())) {
                 throw new FormatException(
-                    "Parent edge %s should have a meta-node as source", edge);
+                    "Parent edge '%s' should have a meta-node as source", edge);
             }
             if (!isMetaElement(edge.opposite())) {
                 throw new FormatException(
-                    "Parent edge %s should have a meta-node as target", edge);
+                    "Parent edge '%s' should have a meta-node as target", edge);
             }
             if (isExists(edge.source()) == isExists(edge.target())) {
                 throw new FormatException(
-                    "Parent edge %s should be between distinct quantifiers",
+                    "Parent edge '%s' should be between distinct quantifiers",
                     edge);
             }
         } else if (isExists(edge) || isForall(edge)) {
@@ -82,17 +82,17 @@ public class NestingAspect extends AbstractAspect {
             // existential
             if (isMetaElement(edge.source())) {
                 throw new FormatException(
-                    "Quantified edge %s has a meta-node as source", edge);
+                    "Quantified edge '%s' has a meta-node as source", edge);
             }
             if (isMetaElement(edge.opposite())) {
                 throw new FormatException(
-                    "Quantified edge %s has a meta-node as target", edge);
+                    "Quantified edge '%s' has a meta-node as target", edge);
             }
             AspectValue value = getNestingValue(edge);
             if (!(value instanceof NamedAspectValue)
                 || ((NamedAspectValue) value).getContent().length() == 0) {
                 throw new FormatException(
-                    "Quantified edge %s has empty level name", edge);
+                    "Quantified edge '%s' has empty level name", edge);
             }
         }
     }
@@ -102,7 +102,7 @@ public class NestingAspect extends AbstractAspect {
         throws FormatException {
         Set<AspectEdge> outEdgeSet = graph.outEdgeSet(node);
         if (outEdgeSet.size() > 1) {
-            throw new FormatException("Meta-node %s has ambiguous parentage",
+            throw new FormatException("Meta-node '%s' has ambiguous parentage",
                 node);
         } else if (outEdgeSet.isEmpty() && isExists(node)) {
             throw new FormatException(
@@ -339,7 +339,7 @@ public class NestingAspect extends AbstractAspect {
         @Override
         protected String getExceptionText(String text) {
             return String.format(
-                "Label %s on nesting edge should be one of %s", text,
+                "Label '%s' on nesting edge should be one of %s", text,
                 ALLOWED_LABELS);
         }
     }

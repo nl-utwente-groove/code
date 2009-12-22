@@ -23,9 +23,6 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
@@ -38,30 +35,9 @@ public class AspectParser {
      * certain errors in the labels are disregarded.
      * @param convertToCurly flag indicating that label text should be converted
      *        to curly-bracketed format
-     * @see #isLenient()
      */
-    private AspectParser(boolean convertToCurly, boolean lenient) {
-        for (Aspect aspect : Aspect.allAspects) {
-            registerAspect(aspect);
-        }
-        this.lenient = lenient;
+    private AspectParser(boolean convertToCurly) {
         this.convertToCurly = convertToCurly;
-    }
-
-    /**
-     * Registers a new aspect with this parser. This means the aspect will be
-     * recognised from now on.
-     * @param aspect the aspect to be added
-     */
-    public void registerAspect(Aspect aspect) {
-        this.aspects.add(aspect);
-    }
-
-    /**
-     * Returns an unmodifiable view on the set of all registered aspects.
-     */
-    public Set<Aspect> getAspects() {
-        return Collections.unmodifiableSet(this.aspects);
     }
 
     /**
@@ -74,21 +50,12 @@ public class AspectParser {
      *         aspect value that is not recognised by
      *         {@link AspectValue#getValue(String)}.
      */
-    public AspectParseData getParseData(String plainText)
-        throws FormatException {
-        AspectMap parsedValues = new AspectMap();
-        /*
-         * if( plainText == null && false ) { // JHK: the calling method
-         * (AspectGraph.getNodeValue) can handle empty aspects, but this method
-         * cannot // JHK: this if creates the data AspectGraph expects when
-         * there is no aspect-material return createParseData(parsedValues,
-         * false, null); }
-         */
-        boolean stopParsing = false;
+    public AspectMap parse(String plainText) throws FormatException {
+        AspectMap result = new AspectMap();
         boolean explicitEnd = false;
         int prevIndex = 0;
         int nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
-        while (!stopParsing && nextIndex >= prevIndex) {
+        while (nextIndex >= prevIndex) {
             // look for the next aspect value between prevIndex and nextIndex
             String valueText = plainText.substring(prevIndex, nextIndex);
             explicitEnd = valueText.length() == 0;
@@ -107,8 +74,8 @@ public class AspectParser {
                                 + CONTENT_ASSIGN.length());
                         valueText = valueText.substring(0, assignIndex);
                     }
-                    stopParsing =
-                        addParsedValue(parsedValues, valueText, contentText);
+                    result.addDeclaredValue(parseValue(valueText,
+                        contentText));
                 } catch (FormatException exc) {
                     throw new FormatException("%s in '%s'", exc.getMessage(),
                         plainText);
@@ -133,7 +100,8 @@ public class AspectParser {
                 text.indexOf(VALUE_SEPARATOR) >= 0
                     && ExprParser.isIdentifierStartChar(text.charAt(0));
         }
-        return createParseData(parsedValues, explicitEnd, text);
+        result.setText(text, explicitEnd);
+        return result;
     }
 
     /**
@@ -162,35 +130,19 @@ public class AspectParser {
     }
 
     /**
-     * Indicates if parsing is lenient. If the parser is lenient, certain errors
-     * are disregarded; in particular, labels that cannot be parsed as regular
-     * expressions are interpreted as default labels, and duplicate aspect
-     * values are interpreted as the end of the aspect value prefix.
-     */
-    public boolean isLenient() {
-        return this.lenient;
-    }
-
-    /**
-     * Adds a parsed aspect value to an already existing aspect map, while
-     * testing for duplicates. If {@link #isLenient()} is set, a duplicate
-     * results in a return value <code>true</code>, otherwise it results in a
-     * {@link FormatException}.
-     * @param parsedValues the already existing map
+     * Returns the aspect value obtained by parsing a given value and content
+     * text.
      * @param valueText string description of a new {@link AspectValue}
      * @param contentText string description for the new value's content;
      *        <code>null</code> if the aspect value is not a
      *        {@link ContentAspectValue}.
-     * @return <code>true</code> if <code>valueText</code> is a duplicate
-     *         value for an existing aspect, and {@link #isLenient()} is set.
+     * @return the resulting aspect value
      * @throws FormatException if <code>valueText</code> is not a valid
-     *         {@link AspectValue}, or duplicates another and the parser is not
-     *         lenient, or the presence of content is not as it should be.
+     *         {@link AspectValue}, or the presence of content is not as it
+     *         should be.
      */
-    private boolean addParsedValue(AspectMap parsedValues, String valueText,
-            String contentText) throws FormatException {
-        boolean stopParsing = false;
-
+    private AspectValue parseValue(String valueText, String contentText)
+        throws FormatException {
         AspectValue value = AspectValue.getValue(valueText);
         if (value == null) {
             throw new FormatException(
@@ -206,59 +158,21 @@ public class AspectParser {
             throw new FormatException(String.format(
                 "Aspect value '%s' cannot have content", valueText));
         }
-        AspectValue oldValue = parsedValues.put(value.getAspect(), value);
-        if (oldValue != null) {
-            if (isLenient()) {
-                stopParsing = true;
-            } else if (oldValue == value) {
-                throw new FormatException("Duplicate aspect value '%s'", value);
-            } else {
-                throw new FormatException(
-                    "Conflicting aspect values '%s' and '%s'", oldValue, value);
-            }
-        }
-        return stopParsing;
+        return value;
     }
 
-    /** Callback factory method for {@link AspectParseData}s. */
-    private AspectParseData createParseData(AspectMap values, boolean hasEnd,
-            String text) {
-        return new AspectParseData(values, hasEnd, text);
-    }
-
-    /**
-     * The set of registered aspects.
-     */
-    private final Set<Aspect> aspects = new HashSet<Aspect>();
-    /**
-     * Indicates that parsing should be lenient, i.e., some errors are glossed
-     * over.
-     */
-    private final boolean lenient;
     /**
      * Indicates that label text should be converted to curly-bracketed format.
      */
     private final boolean convertToCurly;
 
     /**
-     * Returns a strict or lenient parser instance.
+     * Returns a parser instance.
      * @param convertToCurly flag indicating that label text should be converted
      *        to curly-bracketed format
-     * @see #isLenient()
-     */
-    public static AspectParser getInstance(boolean convertToCurly,
-            boolean lenient) {
-        return instances[convertToCurly ? 1 : 0][lenient ? 1 : 0];
-    }
-
-    /**
-     * Returns a strict parser instance.
-     * @param convertToCurly flag indicating that label text should be converted
-     *        to curly-bracketed format
-     * @see #getInstance(boolean, boolean)
      */
     public static AspectParser getInstance(boolean convertToCurly) {
-        return getInstance(convertToCurly, false);
+        return instances[convertToCurly ? 1 : 0];
     }
 
     /**
@@ -268,15 +182,15 @@ public class AspectParser {
      * @return the parsed <code>plainText</code>, turned back into a string
      * @throws FormatException if <code>plainText</code> is not formatted
      *         correctly according to the rules of the parser.
-     * @see #getParseData(String)
+     * @see #parse(String)
      */
     public static String normalize(String plainText) throws FormatException {
-        return getInstance(false).getParseData(plainText).toString();
+        return getInstance(false).parse(plainText).toString();
     }
 
     /**
      * Turns an aspect value into a string that can be read by
-     * {@link #getParseData(String)}.
+     * {@link #parse(String)}.
      */
     static public String toString(AspectValue value) {
         return value.toString() + VALUE_SEPARATOR;
@@ -301,10 +215,6 @@ public class AspectParser {
     }
 
     /** Default parser instances. */
-    private static final AspectParser[][] instances =
-        new AspectParser[][] {
-            new AspectParser[] {new AspectParser(false, false),
-                new AspectParser(false, true)},
-            new AspectParser[] {new AspectParser(true, false),
-                new AspectParser(true, true)}};
+    private static final AspectParser[] instances =
+        new AspectParser[] {new AspectParser(false), new AspectParser(true)};
 }

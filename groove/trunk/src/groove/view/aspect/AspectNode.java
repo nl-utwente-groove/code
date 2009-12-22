@@ -20,8 +20,6 @@ import groove.graph.DefaultNode;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Graph node implementation that supports aspects.
@@ -33,7 +31,6 @@ public class AspectNode extends DefaultNode implements AspectElement {
     AspectNode(int nr) {
         super(nr);
         this.aspectMap = new AspectMap();
-        this.declaredAspectValues = new HashSet<AspectValue>();
     }
 
     /**
@@ -61,11 +58,8 @@ public class AspectNode extends DefaultNode implements AspectElement {
      * @throws FormatException if the node already has a value for
      *         <code>value.getAspect()</code>
      */
-    public void setInferredValue(AspectValue value) throws FormatException {
-        Aspect aspect = value.getAspect();
-        AspectValue oldValue = getAspectMap().get(value.getAspect());
-        AspectValue newValue = aspect.getMax(value, oldValue);
-        getAspectMap().add(newValue);
+    public void addInferredValue(AspectValue value) throws FormatException {
+        getAspectMap().addInferredValue(value);
     }
 
     /**
@@ -74,9 +68,8 @@ public class AspectNode extends DefaultNode implements AspectElement {
      * @throws FormatException if the node already has a value for
      *         <code>value.getAspect()</code>
      */
-    public void setDeclaredValue(AspectValue value) throws FormatException {
-        setInferredValue(value);
-        getDeclaredValues().add(value);
+    public void addDeclaredValue(AspectValue value) throws FormatException {
+        getAspectMap().addDeclaredValue(value);
     }
 
     public AspectValue getValue(Aspect aspect) {
@@ -87,9 +80,8 @@ public class AspectNode extends DefaultNode implements AspectElement {
         return result;
     }
 
-    /** For nodes, the declared and inferred aspects coincide. */
     public Collection<AspectValue> getDeclaredValues() {
-        return this.declaredAspectValues;
+        return getAspectMap().getDeclaredValues();
     }
 
     /**
@@ -135,8 +127,4 @@ public class AspectNode extends DefaultNode implements AspectElement {
      * The internal map from aspects to corresponding values.
      */
     private final AspectMap aspectMap;
-    /**
-     * The set of explicitly declared aspect values.
-     */
-    private final Set<AspectValue> declaredAspectValues;
 }
