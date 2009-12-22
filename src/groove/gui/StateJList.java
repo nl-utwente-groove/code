@@ -229,6 +229,7 @@ public class StateJList extends JList implements SimulationListener {
         Object[] currentSelection = getSelectedValues();
         Object[] sortedNames = names.toArray();
         Arrays.sort(sortedNames);
+        suspendListeners();
         this.listModel.clear();
         // add the empty string, later to be replaced by the
         // current state indicator
@@ -237,7 +238,6 @@ public class StateJList extends JList implements SimulationListener {
             this.listModel.addElement(name);
         }
         refreshCurrentState(false);
-        suspendListeners();
         if (keepSelection) {
             int[] selectedIndices = new int[currentSelection.length];
             for (int i = 0; i < currentSelection.length; i++) {
