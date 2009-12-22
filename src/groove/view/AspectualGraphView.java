@@ -160,7 +160,7 @@ public class AspectualGraphView extends AbstractView<Graph> implements
         for (AspectNode viewNode : view.nodeSet()) {
             try {
                 boolean nodeInModel = true;
-                for (AspectValue value : viewNode.getAspectMap().values()) {
+                for (AspectValue value : viewNode.getAspectMap()) {
                     if (isVirtualValue(value)) {
                         nodeInModel = false;
                     } else if (!isAllowedValue(value)) {
@@ -199,7 +199,7 @@ public class AspectualGraphView extends AbstractView<Graph> implements
             if (AttributeAspect.isConstant(viewEdge)) {
                 continue edgeLoop;
             }
-            for (AspectValue value : viewEdge.getAspectMap().values()) {
+            for (AspectValue value : viewEdge.getAspectMap()) {
                 if (isVirtualValue(value)) {
                     continue edgeLoop;
                 }

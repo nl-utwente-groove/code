@@ -137,9 +137,9 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * Sets a certain aspect value as default.
      * @param value the aspect value to be set as default
-     * @throws IllegalArgumentException if <code>name</code> is not the name
-     *         of an aspect value of this aspect, or if it cannot be used both
-     *         for nodes and edges.
+     * @throws IllegalArgumentException if <code>name</code> is not the name of
+     *         an aspect value of this aspect, or if it cannot be used both for
+     *         nodes and edges.
      * @see #getDefaultValue()
      */
     protected void setDefaultValue(AspectValue value) {
@@ -204,11 +204,11 @@ public abstract class AbstractAspect implements Aspect {
      * the value that overrules the others. Throws a {@link FormatException} if
      * there is no preference. <code>null</code> values are disregarded.
      * @param values the values to be compared
-     * @return a value from <code>values</code> such that for all others,
-     *         either they are <code>null</code> or
+     * @return a value from <code>values</code> such that for all others, either
+     *         they are <code>null</code> or
      *         <code>result = getMax(result, other)</code>
-     * @throws FormatException if <code>getMax(value1, value2)</code> throws
-     *         an exception for two non-<code>null</code> elements of
+     * @throws FormatException if <code>getMax(value1, value2)</code> throws an
+     *         exception for two non-<code>null</code> elements of
      *         <code>values</code>
      */
     final public AspectValue getMax(AspectValue... values)
@@ -240,15 +240,14 @@ public abstract class AbstractAspect implements Aspect {
      */
     protected AspectValue getMaxValue(AspectValue value1, AspectValue value2)
         throws FormatException {
-        if (value1 == null) {
-            throw new FormatException("Illegal null aspect value", value1);
-        } else if (value2 == null) {
-            throw new FormatException("Illegal null aspect value", value2);
+        if (value1 == null || value2 == null) {
+            throw new FormatException("Illegal null aspect value");
         } else if (value1.equals(value2)) {
             return value1;
         } else {
             throw new FormatException(
-                "Incompatible aspect values '%s' and '%s'", value1, value2);
+                "Incompatible values '%s' and '%s' for aspect '%s'", value1,
+                value2, value1.getAspect());
         }
     }
 

@@ -49,8 +49,7 @@ public class AspectValue {
     }
 
     /**
-     * Creates a new aspect value, for a given aspect and with a given name and
-     * set of incompatible values. This is a local constructor, not to be
+     * Copies a given aspect value. This is a local constructor, not to be
      * invoked directly.
      * @param original the aspect value that we copy.
      */
@@ -217,6 +216,23 @@ public class AspectValue {
         return this.incompatibles;
     }
 
+    /**
+     * Indicates if this aspect value is singular. Being singular means that the
+     * value automatically removes all others.
+     * @return {@code true} if the aspect value is singular
+     */
+    final boolean isSingular() {
+        return this.singular;
+    }
+
+    /**
+     * Sets the aspect value to singular.
+     * @see #isSingular()
+     */
+    final void setSingular() {
+        this.singular = true;
+    }
+
     /** Indicates if this aspect value may occur on nodes. */
     public boolean isNodeValue() {
         return this.aspect.getNodeValues().contains(this);
@@ -292,6 +308,10 @@ public class AspectValue {
     private final Set<AspectValue> incompatibles;
     /** Optional label parser of this aspect value. */
     private LabelParser labelParser;
+    /**
+     * Flag indicating if this aspect value is singular, meaning that
+     */
+    private boolean singular;
 
     /**
      * Registers a new aspect value. For this to be successful, the value name

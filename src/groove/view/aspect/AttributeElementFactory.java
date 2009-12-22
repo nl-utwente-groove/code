@@ -278,7 +278,7 @@ public class AttributeElementFactory {
                 argNumber);
         } else if (!(source instanceof ProductNode)) {
             throw new FormatException(
-                "Target of '%d'-edge should be product node", argNumber);
+                "Source of '%d'-edge should be product node", argNumber);
         }
         Node target = ends[Edge.TARGET_INDEX];
         if (target == null) {

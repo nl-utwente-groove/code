@@ -44,7 +44,8 @@ public class RuleAspect extends AbstractAspect {
 
     /**
      * This implementation considers {@link #EMBARGO} to be more demanding than
-     * {@link #ERASER}.
+     * {@link #ERASER}, and {@link #REMARK} to be more demanding than any other
+     * rule aspect value.
      */
     @Override
     protected AspectValue getMaxValue(AspectValue value1, AspectValue value2)
@@ -388,6 +389,8 @@ public class RuleAspect extends AbstractAspect {
             EMBARGO.setTargetToEdge(EMBARGO);
             REMARK.setSourceToEdge(REMARK);
             REMARK.setTargetToEdge(REMARK);
+            // remark is a singular value
+            REMARK.setSingular();
             // incompatibilities
             // instance.setIncompatible(NestingAspect.getInstance());
             VALUE_COUNT = instance.getValues().size();

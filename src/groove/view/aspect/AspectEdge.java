@@ -41,6 +41,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      * @param values the aspect values for the new edge
      * @throws FormatException
      */
+    @Deprecated
     public AspectEdge(List<AspectNode> ends, DefaultLabel label,
             AspectValue... values) throws FormatException {
         super(ends.get(SOURCE_INDEX), label, ends.get(TARGET_INDEX));
@@ -57,7 +58,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      * @throws FormatException if the aspect values of <code>parseData</code>
      *         are inconsistent with those of the source or target nodes
      */
-    AspectEdge(AspectNode source, AspectNode target, AspectParseData parseData)
+    AspectEdge(AspectNode source, AspectNode target, AspectMap parseData)
         throws FormatException {
         super(source, DefaultLabel.createLabel(parseData.getText()), target);
         for (AspectValue value : parseData.getDeclaredValues()) {
@@ -66,8 +67,35 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
                     "Aspect value '%s' cannot be used on edges", value);
             }
         }
+        addInferences(parseData, source.getAspectMap(), target.getAspectMap());
         this.parseData = parseData;
         testLabel();
+    }
+
+    /**
+     * Adds values to the aspect map of an edge that are inferred from source
+     * and target nodes.
+     * @param sourceData map of aspect values for the source node
+     * @param targetData map of aspect values for the target node
+     * @throws FormatException if an explicitly declared aspect value is
+     *         overruled
+     */
+    private void addInferences(AspectMap edgeData, AspectMap sourceData,
+            AspectMap targetData) throws FormatException {
+        for (Aspect aspect : Aspect.allAspects) {
+            AspectValue edgeValue = edgeData.get(aspect);
+            AspectValue sourceValue = sourceData.get(aspect);
+            AspectValue sourceInference =
+                sourceValue == null ? null : sourceValue.sourceToEdge();
+            AspectValue targetValue = targetData.get(aspect);
+            AspectValue targetInference =
+                targetValue == null ? null : targetValue.targetToEdge();
+            AspectValue result =
+                aspect.getMax(edgeValue, sourceInference, targetInference);
+            if (result != null && !result.equals(edgeValue)) {
+                edgeData.addInferredValue(result);
+            }
+        }
     }
 
     public AspectValue getValue(Aspect aspect) {
@@ -87,7 +115,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      * creating it first.
      */
     public AspectMap getAspectMap() {
-        return this.parseData.getAspectMap();
+        return this.parseData;
     }
 
     /**
@@ -192,11 +220,10 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     }
 
     /** Callback factory method. */
-    AspectParseData createParseData(Label label, AspectValue[] values)
+    @Deprecated
+    AspectMap createParseData(Label label, AspectValue[] values)
         throws FormatException {
-        AspectParseData result =
-            new AspectParseData(computeDeclaredAspectMap(values), label);
-        result.addInferences(source().getAspectMap(), target().getAspectMap());
+        AspectMap result = new AspectMap(computeDeclaredAspectMap(values));
         return result;
     }
 
@@ -210,11 +237,12 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      *         for an aspect, or the values are inconsistent with the inferred
      *         values
      */
+    @Deprecated
     final protected AspectMap computeDeclaredAspectMap(AspectValue[] values)
         throws FormatException {
         AspectMap result = new AspectMap();
         for (AspectValue value : values) {
-            result.add(value);
+            result.addDeclaredValue(value);
         }
         return result;
     }
@@ -222,5 +250,5 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     /**
      * The aspect information of the label, set at construction time.
      */
-    private final AspectParseData parseData;
+    private final AspectMap parseData;
 }

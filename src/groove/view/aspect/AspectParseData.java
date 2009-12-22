@@ -17,11 +17,9 @@
 package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.DefaultFixable;
 import groove.view.FormatException;
-import groove.view.LabelParser;
 
 import java.util.Collection;
 
@@ -30,30 +28,26 @@ import java.util.Collection;
  * a plain aspect label.
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated all functionality is taken over by {@link AspectMap}
  */
+@Deprecated
 class AspectParseData {
     /**
      * Construct a label from given aspect value list and label.
      * @param values the list of aspect values to be used
      * @param label the existing label
      */
+    @Deprecated
     AspectParseData(AspectMap values, Label label) {
-        this(values, label.text().indexOf(VALUE_SEPARATOR) >= 0, label.text());
+        this(values);
     }
 
     /**
      * Construct a label from given aspect value list, end flag, and label text.
      * @param values the list of aspect values to be used
-     * @param hasEnd flag indicating the presence of an explicit end marking for
-     *        the aspect values
-     * @param text actual label text
      */
-    AspectParseData(AspectMap values, boolean hasEnd, String text) {
-        this.declaredAspectMap = values;
-        this.allAspectMap = new AspectMap();
-        this.allAspectMap.putAll(values);
-        this.hasEnd = hasEnd;
-        this.text = text;
+    AspectParseData(AspectMap values) {
+        this.allAspectMap = new AspectMap(values);
     }
 
     /**
@@ -61,7 +55,7 @@ class AspectParseData {
      * prefix.
      */
     public Collection<AspectValue> getDeclaredValues() {
-        return this.declaredAspectMap.values();
+        return getAspectMap().getDeclaredValues();
     }
 
     /**
@@ -81,6 +75,7 @@ class AspectParseData {
      * @throws FormatException if an explicitly declared aspect value is
      *         overruled
      */
+    @Deprecated
     void addInferences(AspectMap sourceMap, AspectMap targetMap)
         throws FormatException {
         this.status.testFixed(false);
@@ -94,19 +89,8 @@ class AspectParseData {
                 targetValue == null ? null : targetValue.targetToEdge();
             AspectValue result =
                 aspect.getMax(edgeValue, sourceInference, targetInference);
-            if (edgeValue != null && !edgeValue.equals(result)) {
-                throw new FormatException(
-                    "Inferred %s value '%s' differs from declared value '%s'",
-                    aspect, result, edgeValue);
-            }
-            if (result != null) {
-                this.allAspectMap.add(result);
-                // check if the edge label complies with the inferred aspect
-                // value
-                LabelParser parser = result.getLabelParser();
-                if (parser != null) {
-                    parser.parse(DefaultLabel.createLabel(getText()));
-                }
+            if (result != null && !result.equals(edgeValue)) {
+                this.allAspectMap.addInferredValue(result);
             }
         }
     }
@@ -116,7 +100,7 @@ class AspectParseData {
      * modelling the end of the aspect value list.
      */
     public boolean isHasEnd() {
-        return this.hasEnd;
+        return this.allAspectMap.hasEnd();
     }
 
     /**
@@ -124,28 +108,15 @@ class AspectParseData {
      * plain label was a node decorator).
      */
     public String getText() {
-        return this.text;
+        return this.allAspectMap.getText();
     }
-
-    //
-    // /**
-    // * Creates a label from the parse data, based on the text and the aspect
-    // * values.
-    // */
-    // public Label getLabel() {
-    // this.status.setFixed();
-    // if (this.label == null && hasText()) {
-    // this.label = DefaultLabel.createLabel(getText());
-    // }
-    // return this.label;
-    // }
 
     /**
      * Indicates if there was an actual label text.
      * @return <code>true</code> if and only if <code>getText() != null</code>
      */
     public boolean hasText() {
-        return this.text != null;
+        return getText() != null;
     }
 
     /**
@@ -155,7 +126,7 @@ class AspectParseData {
     @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
-        for (AspectValue value : this.declaredAspectMap.values()) {
+        for (AspectValue value : getDeclaredValues()) {
             result.append(AspectParser.toString(value));
         }
         // append the end marking, if any
@@ -170,14 +141,8 @@ class AspectParseData {
         return result.toString();
     }
 
-    /** The list of declared aspect values. */
-    private final AspectMap declaredAspectMap;
     /** The list of all (declared and inferred) aspect values. */
     private final AspectMap allAspectMap;
-    /** Indication that there was an explicit empty value ending the list. */
-    private final boolean hasEnd;
-    /** The actual label. */
-    private final String text;
     /** Fixed status of the parse data. */
     private final DefaultFixable status = new DefaultFixable();
 }
