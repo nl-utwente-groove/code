@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,8 +53,14 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
         Set<Element> anchors =
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
         if (rule.isTop()) {
-            anchors.addAll(rule.getHiddenPars());
-            anchors.addAll(rule.getInPars());
+            Set<Node> hiddenPars = rule.getHiddenPars();
+            if (hiddenPars != null) {
+                anchors.addAll(hiddenPars);
+            }
+            List<Node> inPars = rule.getInPars();
+            if (inPars != null) {
+                anchors.addAll(rule.getInPars());
+            }
         }
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
