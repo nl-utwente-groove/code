@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="addEdgesToMergedNodes" role="rule" edgeids="false" edgemode="directed">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
+        <attr name="remark">
+            <string>Adds edges to nodes that have been merged on a lower quantification level</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n137652"/>
+        <node id="n137650"/>
+        <node id="n137647"/>
+        <node id="n137649"/>
+        <node id="n137651"/>
+        <node id="n137648"/>
+        <node id="n137646"/>
+        <node id="n137645"/>
+        <edge from="n137652" to="n137652">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n137650" to="n137650">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge from="n137651" to="n137651">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge from="n137646" to="n137646">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge from="n137645" to="n137645">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge from="n137647" to="n137647">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n137651" to="n137651">
+            <attr name="label">
+                <string>edges added on a sublevel</string>
+            </attr>
+        </edge>
+        <edge from="n137650" to="n137649">
+            <attr name="label">
+                <string>new:b</string>
+            </attr>
+        </edge>
+        <edge from="n137650" to="n137652">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n137645" to="n137647">
+            <attr name="label">
+                <string>first</string>
+            </attr>
+        </edge>
+        <edge from="n137646" to="n137646">
+            <attr name="label">
+                <string>triggers the universal level</string>
+            </attr>
+        </edge>
+        <edge from="n137650" to="n137650">
+            <attr name="label">
+                <string>C</string>
+            </attr>
+        </edge>
+        <edge from="n137646" to="n137648">
+            <attr name="label">
+                <string>trigger</string>
+            </attr>
+        </edge>
+        <edge from="n137648" to="n137648">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n137651" to="n137650">
+            <attr name="label">
+                <string>new</string>
+            </attr>
+        </edge>
+        <edge from="n137648" to="n137652">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n137645" to="n137645">
+            <attr name="label">
+                <string>nodes merged on the top level</string>
+            </attr>
+        </edge>
+        <edge from="n137647" to="n137649">
+            <attr name="label">
+                <string>!=</string>
+            </attr>
+        </edge>
+        <edge from="n137649" to="n137649">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n137645" to="n137649">
+            <attr name="label">
+                <string>second</string>
+            </attr>
+        </edge>
+        <edge from="n137647" to="n137649">
+            <attr name="label">
+                <string>new:=</string>
+            </attr>
+        </edge>
+        <edge from="n137650" to="n137647">
+            <attr name="label">
+                <string>a</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

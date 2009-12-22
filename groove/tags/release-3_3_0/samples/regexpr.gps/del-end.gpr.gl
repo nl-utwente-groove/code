@@ -1,0 +1,9 @@
+# Layout information for regexpr.gps\del-end.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n158 216 87 18 18 
+n n160 405 82 18 18 
+n n159 116 88 18 18 
+n n162 313 85 18 18 
+n n161 303 181 18 18 

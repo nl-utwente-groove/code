@@ -1,0 +1,31 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package groove.gui.chscenar;
+
+import groove.trans.Rule;
+
+import java.awt.Component;
+
+import javax.swing.JList;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
+
+/** A cell renderer for rules.
+ *
+ * @author Iovka Boneva
+ */
+@Deprecated
+@SuppressWarnings("all")
+class RuleCellRenderer extends BasicComboBoxRenderer {
+
+	@Override
+	public Component getListCellRendererComponent(JList list, Object value,
+			int index, boolean isSelected, boolean cellHasFocus) {
+		RuleCellRenderer result = 
+			(RuleCellRenderer) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		result.setText(((Rule) value).getName().toString());
+		return result;
+	}
+}
