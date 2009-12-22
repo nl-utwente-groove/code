@@ -65,6 +65,7 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
     /**
      * Updates the condition when the grammar changes, by replacing the
      * stored rule with one from the new grammar with the same name.
+     * Note that only enabled rules (see toGrammar) are checked. 
      * @param grammar - the new grammar
      * @return true - the acceptor is still valid after the grammar update
      *         false - the acceptor is no longer valid after the update

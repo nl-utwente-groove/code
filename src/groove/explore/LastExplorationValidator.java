@@ -47,7 +47,7 @@ public class LastExplorationValidator extends SimulationAdapter {
 
     /**
      * Checks whether the last exploration is still valid when the grammar
-     * changes. If it is no longer valid, the last exploration field is cleaer
+     * changes. If it is no longer valid, the last exploration field is cleared
      * from the simulator.
      */
     @Override
