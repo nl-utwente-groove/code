@@ -90,7 +90,11 @@ public class RuleSelectionDialog extends JDialog implements ActionListener{
         
         // List of rule names.
         Set<RuleName> ruleSet = this.simulator.getGrammarView().getRuleNames();
-        TreeSet<RuleName> treeSet = new TreeSet<RuleName>(ruleSet);
+        TreeSet<RuleName> treeSet = new TreeSet<RuleName>();
+        for (RuleName name : ruleSet) {
+            if (this.simulator.getGrammarView().getRuleView(name).isEnabled())
+                treeSet.add(name);
+        }
         this.list = new JList(treeSet.toArray());
         this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.list.setLayoutOrientation(JList.VERTICAL);
