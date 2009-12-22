@@ -26,6 +26,7 @@ import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.gui.layout.LayoutMap;
 import groove.lts.AbstractGraphState;
 import groove.lts.State;
@@ -169,10 +170,14 @@ public class Converter {
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public void graphToTikz(JGraph graph, PrintWriter writer) {
-        GraphJModel model = (GraphJModel) graph.getModel();
+        JModel model = graph.getModel();
+        GraphJModel graphModel =
+            model instanceof GraphJModel ? (GraphJModel) graph.getModel()
+                    : GraphJModel.newInstance(model.toPlainGraph(),
+                        model.getOptions());
         LayoutMap<Node,Edge> layoutMap =
-            GraphInfo.getLayoutMap(model.getGraph());
-        writer.print(GraphToTikz.convertGraphToTikzStr(model, layoutMap));
+            GraphInfo.getLayoutMap(graphModel.getGraph());
+        writer.print(GraphToTikz.convertGraphToTikzStr(graphModel, layoutMap));
     }
 
     // html defs
