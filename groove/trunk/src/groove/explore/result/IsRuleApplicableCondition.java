@@ -19,6 +19,8 @@ package groove.explore.result;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.Rule;
+import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
 /**
  * Condition satisfied when a rule is applicable.
@@ -60,4 +62,24 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
         return transition.getEvent().getRule().equals(this.condition);
     }
     
+    /**
+     * Updates the condition when the grammar changes, by replacing the
+     * stored rule with one from the new grammar with the same name.
+     * @param grammar - the new grammar
+     * @return true - the acceptor is still valid after the grammar update
+     *         false - the acceptor is no longer valid after the update
+     */ 
+    public boolean respondToGrammarUpdate(StoredGrammarView grammar) {
+        try {
+            Rule rule = grammar.toGrammar().getRule(this.condition.getName());
+            if (rule == null)
+                return false;
+            else {
+                this.condition = rule;
+                return true;
+            }
+        } catch (FormatException e) {
+            return false;
+        }
+    }
 }

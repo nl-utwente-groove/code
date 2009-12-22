@@ -17,6 +17,7 @@
 package groove.explore.result;
 
 import groove.lts.LTSAdapter;
+import groove.view.StoredGrammarView;
 
 /**
  * Listens to a GTS and adds accepted elements to a result.
@@ -46,6 +47,18 @@ public class Acceptor extends LTSAdapter {
      */
     public Result getResult() {
         return this.result;
+    }
+    
+    /**
+     * Update the acceptor when the grammar changes.
+     * Default implementation does nothing and always returns true.
+     * Must be overridden for acceptors that make use of grammar specific arguments.
+     * @param grammar - the new grammar
+     * @return true - the acceptor is still valid after the grammar update
+     *         false - the acceptor is no longer valid after the update
+     */
+    public boolean respondToGrammarUpdate(StoredGrammarView grammar) {
+        return true;
     }
 
     /**

@@ -977,7 +977,7 @@ public class Generator extends CommandLineTool {
             addStrategy(GeneratorScenarioFactory.getConditionalScenario(
                 new BFSStrategy(),
                 Rule.class,
-                new InvariantViolatedAcceptor<Rule>(new Result(1)),
+                new InvariantViolatedAcceptor(new Result(1)),
                 "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.",
                 "invariant"));
             addStrategy(GeneratorScenarioFactory.getBoundedModelCheckingScenario(

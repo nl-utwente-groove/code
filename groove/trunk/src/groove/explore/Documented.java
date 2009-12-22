@@ -134,4 +134,4 @@ public class Documented<A> {
     public A queryUser(Simulator simulator, Component owner) {
         return null;
     }
-}
+ }

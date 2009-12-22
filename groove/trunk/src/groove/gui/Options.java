@@ -436,6 +436,9 @@ public class Options {
     /** Remove point keystroke. */
     public static final KeyStroke REMOVE_POINT_KEY =
         KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
+    /** Exploration Dialog keystroke */
+    public static final KeyStroke REPEAT_EXPLORE_KEY =
+        KeyStroke.getKeyStroke("control shift R");
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY =
         KeyStroke.getKeyStroke("control S");

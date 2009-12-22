@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.lts.GraphTransition;
 import groove.trans.Rule;
+import groove.view.StoredGrammarView;
 
 /**
  * Accepts states that violate an invariant condition on states.
@@ -71,6 +72,18 @@ public class RuleApplicationAcceptor extends ConditionalAcceptor<Rule> {
         if (condition.isSatisfied(transition)) {
             this.getResult().add(transition.target());
         }
+    }
+    
+    /**
+     * Updates the acceptor when the grammar changes.
+     * Passes the change on to the IsRuleApplicableCondition. 
+     * @param grammar - the new grammar
+     * @return true - the acceptor is still valid after the grammar update
+     *         false - the acceptor is no longer valid after the update
+     */
+    @Override
+    public boolean respondToGrammarUpdate(StoredGrammarView grammar) {
+        return ((IsRuleApplicableCondition) this.getCondition()).respondToGrammarUpdate(grammar);
     }
     
     /** This implementation returns an {@link RuleApplicationAcceptor}. */
