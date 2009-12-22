@@ -106,8 +106,11 @@ public class IOTest extends TestCase {
         int edgecount = 15;
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
-            testControl(StoredGrammarView.newInstance(dir, ALT_START),
-                ALT_START, ALT_CONTROL, nodecount, edgecount);
+            StoredGrammarView grammarView =
+                StoredGrammarView.newInstance(dir, ALT_START);
+            grammarView.setControl(ALT_CONTROL);
+            testControl(grammarView, ALT_START, ALT_CONTROL, nodecount,
+                edgecount);
         } catch (IOException e) {
             e.printStackTrace();
         }

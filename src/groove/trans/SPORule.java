@@ -66,6 +66,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.morphism = morph;
         this.priority = priority;
         this.confluent = confluent;
+        this.coRootMap = new NodeEdgeHashMap();
     }
 
     /**
@@ -83,7 +84,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     public SPORule(Morphism morph, NodeEdgeMap rootMap, NodeEdgeMap coRootMap,
             RuleName name, SystemProperties properties) {
         super(morph.dom(), rootMap, name, properties);
-        this.coRootMap = coRootMap;
+        this.coRootMap = coRootMap == null ? new NodeEdgeHashMap() : coRootMap;
         this.morphism = morph;
         this.priority = DEFAULT_PRIORITY;
         assert coRootMap == null
@@ -900,10 +901,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     NodeEdgeMap getCoRootMap() {
-        if (this.coRootMap == null) {
-            testFixed(true);
-            this.coRootMap = new NodeEdgeHashMap();
-        }
         return this.coRootMap;
     }
 
@@ -1259,7 +1256,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private Graph rhs;
     /** Mapping from the context of this rule to the RHS. */
-    private NodeEdgeMap coRootMap;
+    private final NodeEdgeMap coRootMap;
     /**
      * Smallest subgraph of the left hand side that is necessary to apply the
      * rule.
