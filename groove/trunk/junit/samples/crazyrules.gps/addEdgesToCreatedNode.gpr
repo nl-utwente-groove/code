@@ -7,37 +7,69 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n138842"/>
-        <node id="n138841"/>
-        <node id="n138843"/>
-        <edge from="n138842" to="n138842">
-            <attr name="label">
-                <string>forall:</string>
-            </attr>
-        </edge>
-        <edge from="n138843" to="n138843">
+        <node id="n139041"/>
+        <node id="n139040"/>
+        <node id="n139043"/>
+        <node id="n139042"/>
+        <node id="n139044"/>
+        <edge from="n139041" to="n139041">
             <attr name="label">
                 <string>new:</string>
             </attr>
         </edge>
-        <edge from="n138843" to="n138841">
+        <edge from="n139043" to="n139043">
             <attr name="label">
-                <string>a</string>
+                <string>rem:</string>
             </attr>
         </edge>
-        <edge from="n138843" to="n138843">
+        <edge from="n139042" to="n139042">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n139044" to="n139044">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge from="n139044" to="n139041">
+            <attr name="label">
+                <string>node</string>
+            </attr>
+        </edge>
+        <edge from="n139043" to="n139040">
+            <attr name="label">
+                <string>target node</string>
+            </attr>
+        </edge>
+        <edge from="n139041" to="n139041">
             <attr name="label">
                 <string>B</string>
             </attr>
         </edge>
-        <edge from="n138841" to="n138842">
+        <edge from="n139040" to="n139040">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n139044" to="n139044">
+            <attr name="label">
+                <string>Node created at top level</string>
+            </attr>
+        </edge>
+        <edge from="n139040" to="n139042">
             <attr name="label">
                 <string>at</string>
             </attr>
         </edge>
-        <edge from="n138841" to="n138841">
+        <edge from="n139041" to="n139040">
             <attr name="label">
-                <string>A</string>
+                <string>a</string>
+            </attr>
+        </edge>
+        <edge from="n139043" to="n139043">
+            <attr name="label">
+                <string>Edges to this node should be created at sub-level</string>
             </attr>
         </edge>
     </graph>
