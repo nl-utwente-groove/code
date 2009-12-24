@@ -1129,7 +1129,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          * they cannot be handled there.
          * @param elem the element about which the question is asked
          */
-        private boolean isForNextLevel(AspectElement elem) {
+        private boolean isForNextLevel(AspectElement elem)
+            throws FormatException {
             boolean result;
             if (elem instanceof AspectNode) {
                 // we need to push nodes down in injective mode
@@ -1139,8 +1140,9 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
-                result =
-                    RegExprLabel.getWildcardId(((AspectEdge) elem).label()) != null;
+                Label varLabel =
+                    getDefaultLabelParser().parse(((AspectEdge) elem).label());
+                result = RegExprLabel.getWildcardId(varLabel) != null;
             }
             if (!result) {
                 result =

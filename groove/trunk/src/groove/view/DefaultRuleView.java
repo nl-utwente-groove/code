@@ -1217,8 +1217,8 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
             // put the edge on this level, if it is supposed to be there
             if (isForThisLevel(index, edge)) {
                 boolean fresh = edges.add(edge);
-                assert fresh : String.format("Node %s already in node set %s",
-                    edge, edges);
+                assert fresh : String.format(
+                    "Edge %s was already in edge set %s", edge, edges);
                 // add end nodes to this and all parent levels, if
                 // they are not yet there
                 for (Node end : edge.ends()) {
@@ -1280,7 +1280,8 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
          * @param index the level on which the element is defined
          * @param elem the element about which the question is asked
          */
-        private boolean isForNextLevel(Level index, AspectElement elem) {
+        private boolean isForNextLevel(Level index, AspectElement elem)
+            throws FormatException {
             boolean result;
             if (elem instanceof AspectNode) {
                 // we need to push nodes down in injective mode
@@ -1290,8 +1291,9 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
-                result =
-                    RegExprLabel.getWildcardId(((AspectEdge) elem).label()) != null;
+                Label varLabel =
+                    getDefaultLabelParser().parse(((AspectEdge) elem).label());
+                result = RegExprLabel.getWildcardId(varLabel) != null;
             }
             if (!result) {
                 result =
