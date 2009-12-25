@@ -184,8 +184,11 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
      * constructed model (if any) becomes invalid.
      */
     public final void setProperties(SystemProperties properties) {
-        this.properties = properties;
-        invalidate();
+        if (properties == null ? this.properties != null
+                : !properties.equals(this.properties)) {
+            this.properties = properties;
+            invalidate();
+        }
     }
 
     @Override
