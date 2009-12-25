@@ -138,7 +138,7 @@ public class StateJList extends JList implements SimulationListener {
         this.removeAll();
         this.setEnabled(false);
         if (grammar != null) {
-            refreshList(false);
+            refreshList(true);
             this.setEnabled(true);
         }
     }
@@ -247,6 +247,10 @@ public class StateJList extends JList implements SimulationListener {
             setSelectedIndices(selectedIndices);
         } else if (getStartGraphName() != null) {
             setSelectedValue(getStartGraphName(), true);
+        }
+        if (getSelectedIndices().length == 1) {
+            getSimulator().getStatePanel().setGraphModel(
+                (String) getSelectedValue());
         }
         restoreListeners();
     }

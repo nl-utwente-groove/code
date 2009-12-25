@@ -325,6 +325,10 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         // add subtyping relation from properties to label store
         labelStore.addDirectSubtypes(getProperties().getSubtypes());
+        // add types from all known graphs to label store
+        for (String graphName : getGraphNames()) {
+            labelStore.addLabels(getGraphView(graphName).getLabels());
+        }
         // set properties
         result.setProperties(getProperties());
         // set start graph

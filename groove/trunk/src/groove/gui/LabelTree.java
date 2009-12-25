@@ -35,11 +35,13 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1230,7 +1232,9 @@ public class LabelTree extends JTree implements GraphModelListener,
                     LabelTree.this.labelStoreChange.notifyObservers(newStore);
                     result = true;
                 }
-            } catch (Exception exc) {
+            } catch (IOException exc) {
+                // do nothing
+            } catch (UnsupportedFlavorException exc) {
                 // do nothing
             }
             return result;

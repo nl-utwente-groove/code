@@ -258,16 +258,23 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public void valueChanged(ListSelectionEvent e) {
         assert e.getSource() == getStateList();
         if (getStateList().getSelectedIndices().length == 1) {
-            String graphName = (String) getStateList().getSelectedValue();
-            GraphView graphView =
-                getSimulator().getGrammarView().getGraphView(graphName);
-            GraphJModel newModel =
-                graphView == null ? getCurrentStateJModel()
-                        : getGraphJModel(graphView);
-            if (newModel != null) {
-                setJModel(newModel);
-                refreshStatus();
-            }
+            setGraphModel((String) getStateList().getSelectedValue());
+        }
+    }
+
+    /**
+     * Changes the display to the graph with a given name, if there is such a
+     * graph in the current grammar.
+     */
+    public void setGraphModel(String graphName) {
+        GraphView graphView =
+            getSimulator().getGrammarView().getGraphView(graphName);
+        GraphJModel newModel =
+            graphView == null ? getCurrentStateJModel()
+                    : getGraphJModel(graphView);
+        if (newModel != null) {
+            setJModel(newModel);
+            refreshStatus();
         }
     }
 

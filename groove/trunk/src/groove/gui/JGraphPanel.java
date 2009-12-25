@@ -39,7 +39,7 @@ import javax.swing.JToolBar;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
- * {@link groove.gui.LabelList}.
+ * {@link groove.gui.LabelTree}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
