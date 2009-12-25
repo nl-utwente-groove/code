@@ -138,6 +138,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * <code>this.jGraph.setModel(newModel)</code>.
      */
     private void setJModel(GraphJModel newModel) {
+        clearSelectedMatch();
         this.jGraph.setModel(newModel);
     }
 
@@ -146,7 +147,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * new grammar.
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-        clearSelectedMatch();
         this.stateJModelMap.clear();
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
@@ -154,8 +154,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             setEnabled(false);
         } else {
             GraphView startGraph = grammar.getStartGraphView();
-            this.jGraph.setModel(getGraphJModel(startGraph),
-                grammar.getLabelStore());
+            this.jGraph.setLabelStore(grammar.getLabelStore());
+            setJModel(getGraphJModel(startGraph));
             setEnabled(true);
         }
         refreshStatus();
@@ -163,18 +163,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
 
     public synchronized void startSimulationUpdate(GTS gts) {
         this.stateJModelMap.clear();
-        StoredGrammarView grammar = getSimulator().getGrammarView();
-        GraphView startGraph = grammar.getStartGraphView();
-        if (startGraph != null) {
-            setJModel(getGraphJModel(startGraph));
+        // only change the displayed model if we are currently displaying a
+        // state
+        if (!(getJModel() instanceof AspectJModel)) {
+            setJModel(getStateJModel(gts.startState(), false));
         }
-        // // take either the GTS start state or the grammar start graph as
-        // model
-        // GraphJModel jModel = getCurrentStateJModel();
-        // assert jModel != null;
-        // if (getJModel() != jModel) {
-        // setJModel(jModel);
-        // }
         refreshStatus();
     }
 
@@ -184,7 +177,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * @param state the new underlying state graph
      */
     public synchronized void setStateUpdate(GraphState state) {
-        clearSelectedMatch();
         // set the graph model to the new state
         setJModel(getCurrentStateJModel());
         refreshStatus();
@@ -206,7 +198,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public synchronized void setTransitionUpdate(GraphTransition trans) {
         GraphJModel newJModel = getCurrentStateJModel();
         if (getJModel() != newJModel) {
-            clearSelectedMatch();
             // get a model for the new graph and set it
             setJModel(newJModel);
         }
@@ -241,7 +232,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * created nodes.
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
-        clearSelectedMatch();
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState, false);
         if (!getSimulator().isAbstractSimulation()) {

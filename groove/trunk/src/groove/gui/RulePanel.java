@@ -101,19 +101,17 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
             }
             newLabelStore = grammar.getLabelStore();
         }
+        this.jGraph.setLabelStore(newLabelStore);
         // reset the display
         if (this.displayedRule != null) {
             if (this.ruleJModelMap.containsKey(this.displayedRule)) {
-                this.jGraph.setModel(
-                    this.ruleJModelMap.get(this.displayedRule), newLabelStore);
+                this.jGraph.setModel(this.ruleJModelMap.get(this.displayedRule));
             } else {
-                this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL,
-                    newLabelStore);
+                this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
                 this.displayedRule = null;
             }
         } else {
-            this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL,
-                newLabelStore);
+            this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
         }
         refresh();
         // displayedGrammar = grammar;
