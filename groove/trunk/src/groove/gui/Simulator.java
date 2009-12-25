@@ -4635,7 +4635,7 @@ public class Simulator {
                 }
             }
 
-            this.menu.setName(Options.OPEN_RECENT_MENU_NAME);
+            this.menu.setText(Options.OPEN_RECENT_MENU_NAME);
             this.menu.setMnemonic(Options.OPEN_RECENT_MENU_MNEMONIC);
 
             synchMenu();
