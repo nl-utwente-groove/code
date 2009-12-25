@@ -115,7 +115,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
-        setModel(model, labelStore);
+        setLabelStore(labelStore);
+        setModel(model);
         // Make Ports invisible by Default
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
@@ -131,6 +132,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public final ObservableSet<Label> getFilteredLabels() {
         return this.filteredLabels;
+    }
+
+    /**
+     * Changes the label store of this {@link JGraph}.
+     */
+    public final void setLabelStore(LabelStore store) {
+        this.labelStore = store;
     }
 
     /**
@@ -372,19 +380,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Sets a new model and label store. The model is set using
-     * {@link #setModel(GraphModel)}
-     * @param model the new graph model
-     * @param labelStore the new set of labels and subtypes; may be
-     *        <code>null</code>
-     * @see #setModel(GraphModel)
-     */
-    public void setModel(GraphModel model, LabelStore labelStore) {
-        this.labelStore = labelStore;
-        setModel(model);
     }
 
     /**

@@ -107,25 +107,6 @@ public class StateJList extends JList implements SimulationListener {
         return result;
     }
 
-    //
-    // private void doPreviewGraph() {
-    // if (!isSelectionEmpty()) {
-    // // Multiple selection - mzimakova
-    // suspendListeners();
-    // setSelectedIndex(getSelectedIndex());
-    // restoreListeners();
-    // String selection = (String) this.getSelectedValue();
-    // AspectualGraphView graphView =
-    // getGrammarView().getGraphView(selection);
-    // boolean load =
-    // Editor.previewGraph(graphView.getAspectGraph().toPlainGraph(),
-    // Options.START_GRAPH_ACTION_NAME);
-    // if (load) {
-    // this.simulator.doLoadStartGraph(selection);
-    // }
-    // }
-    // }
-
     // -----------------------------------------
     // Methods from SimulationListener Interface
     // -----------------------------------------
