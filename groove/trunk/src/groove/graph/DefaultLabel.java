@@ -17,6 +17,7 @@
 package groove.graph;
 
 import groove.util.Converter;
+import groove.view.aspect.NodeTypeAspect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,6 +156,22 @@ public final class DefaultLabel extends AbstractLabel {
     public static DefaultLabel createLabel(String text, boolean nodeType) {
         assert text != null : "Label text of default label should not be null";
         return getLabel(newLabelIndex(text, nodeType));
+    }
+
+    /**
+     * Returns a default or node type label, depending on the prefix in the
+     * input string.
+     * @param prefixedText text of the label, possibly prefixed with
+     *        {@link NodeTypeAspect#NODE_TYPE_NAME}.
+     * @return a label without the prefix, which is a node type if the prefix is
+     *         there.
+     */
+    public static DefaultLabel createTypedLabel(String prefixedText) {
+        String typePrefix = NodeTypeAspect.NODE_TYPE.getPrefix();
+        boolean isType = prefixedText.startsWith(typePrefix);
+        String actualText =
+            isType ? prefixedText.substring(typePrefix.length()) : prefixedText;
+        return createLabel(actualText, isType);
     }
 
     /**

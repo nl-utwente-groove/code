@@ -22,6 +22,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
+import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.view.aspect.NodeTypeAspect;
 
@@ -267,7 +268,12 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
     public boolean addEdge(BinaryEdge edge) {
-        getUserObject().add(edge);
+        boolean thisIsRegExpr = getEdge().label() instanceof RegExprLabel;
+        boolean edgeIsRegExpr = edge.label() instanceof RegExprLabel;
+        boolean result = (thisIsRegExpr == edgeIsRegExpr);
+        if (result) {
+            getUserObject().add(edge);
+        }
         return true;
     }
 

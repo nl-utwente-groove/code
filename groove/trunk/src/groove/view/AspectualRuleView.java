@@ -1595,7 +1595,7 @@ public class AspectualRuleView extends AbstractView<Rule> implements RuleView {
     }
 
     /** Label for merges (merger edges and merge embargoes) */
-    static public final RegExprLabel MERGE_LABEL = RegExpr.empty().toLabel();
+    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker =
         DefaultIsoChecker.getInstance(true);

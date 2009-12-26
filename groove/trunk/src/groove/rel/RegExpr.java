@@ -22,11 +22,14 @@ import static groove.util.ExprParser.LPAR_CHAR;
 import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RPAR_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
+import groove.graph.DefaultLabel;
+import groove.graph.Label;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Property;
 import groove.view.FormatException;
+import groove.view.aspect.NodeTypeAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,8 +97,8 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /**
-     * If this is a {@link RegExpr.Wildcard}, returns the guard of the
-     * wildcard, if any; otherwise returns <code>null</code>.
+     * If this is a {@link RegExpr.Wildcard}, returns the guard of the wildcard,
+     * if any; otherwise returns <code>null</code>.
      */
     public Property<String> getWildcardGuard() {
         if (this instanceof Wildcard) {
@@ -387,7 +390,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /** Returns a label based on this expression. */
-    public RegExprLabel toLabel() {
+    public Label toLabel() {
         if (this.label == null) {
             this.label = new RegExprLabel(this);
         }
@@ -429,8 +432,8 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @return a valid regular expression, or <tt>null</tt> if <tt>expr</tt>
      *         does not appear to be a regular expression of the kind
      *         implemented by this class
-     * @throws FormatException if <tt>expr</tt> appears to be an expression
-     *         (of the kind implemented by the class) but is malformed
+     * @throws FormatException if <tt>expr</tt> appears to be an expression (of
+     *         the kind implemented by the class) but is malformed
      */
     abstract protected RegExpr parseOperator(String expr)
         throws FormatException;
@@ -471,6 +474,10 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
             default:
                 // default atoms
+                String prefix = NodeTypeAspect.NODE_TYPE.getPrefix();
+                if (text.startsWith(prefix)) {
+                    text = text.substring(prefix.length());
+                }
                 boolean correct = true;
                 int i;
                 for (i = 0; correct && i < text.length(); i++) {
@@ -489,11 +496,10 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Tests whether a given text may be regarded as an atom, according to the
      * rules of regular expressions. If not, then it should be single-quoted. If
      * <tt>true</tt>, the text will be parsed by {@link #parse(String)}as an
-     * {@link Atom}. This implementation returns <tt>true</tt> if the text
-     * does not contain any special characters
+     * {@link Atom}. This implementation returns <tt>true</tt> if the text does
+     * not contain any special characters
      * @param text the text to be tested
-     * @return <tt>true</tt> if the text does not contain any special
-     *         characters
+     * @return <tt>true</tt> if the text does not contain any special characters
      * @see #assertAtom(String)
      */
     static public boolean isAtom(String text) {
@@ -739,7 +745,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * and digits.
      * @see ExprParser#isIdentifier(String)
      */
-    static public final String ATOM_CHARS = "_$:";
+    static public final String ATOM_CHARS = "_$";
 
     /**
      * An array of prototype regular expressions, in order of increasing
@@ -1473,6 +1479,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             return this.text;
         }
 
+        @Override
+        public Label toLabel() {
+            return DefaultLabel.createTypedLabel(text());
+        }
+
         /**
          * Returns the bare text of the atom.
          */
@@ -1481,9 +1492,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * This implementation never returns <tt>null</tt>, since it is
-         * assumed to be at the end of the chain of prototypes tried out during
-         * parsing.
+         * This implementation never returns <tt>null</tt>, since it is assumed
+         * to be at the end of the chain of prototypes tried out during parsing.
          * @throws FormatException if <tt>tokenList</tt> is not a singleton or
          *         its element is not recognised as a nested expression or atom
          */

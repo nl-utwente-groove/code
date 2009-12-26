@@ -49,12 +49,9 @@ public class RegExprLabelParser implements LabelParser {
         Label result;
         try {
             RegExpr expr = parseAsRegExpr(label.text());
-            if (expr.isAtom()) {
-                result =
-                    DefaultLabel.createLabel(expr.getAtomText(),
-                        label.isNodeType());
-            } else {
-                result = expr.toLabel();
+            result = expr.toLabel();
+            if (label.isNodeType() && !result.isNodeType()) {
+                throw new FormatException("Can't parse node type");
             }
         } catch (FormatException exc) {
             throw new FormatException(exc.getMessage() + " in label %s",
@@ -66,10 +63,9 @@ public class RegExprLabelParser implements LabelParser {
     /**
      * Parses a given text as a regular expression, if it is surrounded by curly
      * brackets, starts with the negation symbol, or equals the merge
-     * expression. If not, behaves as a QuotedLabelParser. Callback method from
-     * {@link #parse(Label)} in case the parser is curly.
+     * expression.
      */
-    private RegExpr parseAsRegExpr(String text) throws FormatException {
+    public RegExpr parseAsRegExpr(String text) throws FormatException {
         RegExpr result = null;
         text = text.trim();
         if (text.length() == 0) {

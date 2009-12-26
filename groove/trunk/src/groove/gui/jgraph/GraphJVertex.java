@@ -27,6 +27,7 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
+import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.view.LabelParser;
 import groove.view.RegExprLabelParser;
@@ -209,7 +210,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public StringBuilder getLine(Edge edge) {
         StringBuilder result = new StringBuilder();
         Label edgeLabel = getLabel(edge);
-        if (edgeLabel.isNodeType()) {
+        if (edgeLabel instanceof RegExprLabel) {
+            result.append(Converter.ITALIC_TAG.on(edgeLabel));
+        } else if (edgeLabel.isNodeType()) {
             result.append(DefaultLabel.toHtmlString(edgeLabel));
         } else {
             result.append(edgeLabel);

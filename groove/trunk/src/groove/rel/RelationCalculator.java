@@ -47,7 +47,7 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
      * stores it in the underlying mapping.
      */
     public NodeRelation computeAtom(RegExpr.Atom expr) {
-        return this.factory.newInstance(expr.text());
+        return this.factory.newInstance(expr.toLabel());
     }
 
     /**
@@ -99,8 +99,7 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
 
     /**
      * Computes the sequential composition of the relations associated with the
-     * operands of <code>expr</code>, and stores it in the underlying
-     * mapping.
+     * operands of <code>expr</code>, and stores it in the underlying mapping.
      */
     public NodeRelation computeSeq(RegExpr.Seq expr, List<NodeRelation> argList) {
         Iterator<NodeRelation> argsIter = argList.iterator();

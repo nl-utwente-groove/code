@@ -246,7 +246,7 @@ public class ShowHideMenu extends JMenu {
     protected ShowHideAction createTraceAction(int showMode) {
         return new TraceAction(this.jgraph, showMode);
     }
-    
+
     /**
      * Factory method for <tt>LabelAction</tt>s.
      */
@@ -628,17 +628,17 @@ public class ShowHideMenu extends JMenu {
              * interpreted.
              */
             @Override
-            protected Collection<? extends Edge> getRelatedSet(String label) {
+            protected Collection<? extends Edge> getRelatedSet(Label label) {
                 if (this.textEdgeMap == null) {
                     // since the labels may not be default labels
                     // (as in the case of LTS graphs)
                     // we have to convert the label map so that it maps label
                     // text instead
-                    this.textEdgeMap = new KeyPartition<String,Edge>() {
+                    this.textEdgeMap = new KeyPartition<Label,Edge>() {
                         @Override
-                        protected String getKey(Object value) {
+                        protected Label getKey(Object value) {
                             if (value instanceof Edge) {
-                                return ((Edge) value).label().text();
+                                return ((Edge) value).label();
                             } else {
                                 return null;
                             }
@@ -658,12 +658,12 @@ public class ShowHideMenu extends JMenu {
             }
 
             /** Returns a map from the text to the corresponding edges. */
-            KeyPartition<String,Edge> getTextEdgeMap() {
+            KeyPartition<Label,Edge> getTextEdgeMap() {
                 return this.textEdgeMap;
             }
 
             /** Mapping from label text to edges. */
-            private KeyPartition<String,Edge> textEdgeMap;
+            private KeyPartition<Label,Edge> textEdgeMap;
             /** Graph listener to keep the {@link #textEdgeMap} up-to-date. */
             private final GraphListener listener = new GraphAdapter() {
                 @Override
@@ -857,7 +857,7 @@ public class ShowHideMenu extends JMenu {
             super(jgraph, showMode, TRACE_ACTION_NAME);
             putValue(MNEMONIC_KEY, TRACE_MNEMONIC);
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent evt) {
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
@@ -881,15 +881,15 @@ public class ShowHideMenu extends JMenu {
             }
             super.actionPerformed(evt);
         }
-        
+
         @Override
         protected boolean isInvolved(JCell jCell) {
             return this.trace.contains(jCell);
         }
-        
+
         private ArrayList<JCell> trace;
     }
-    
+
     /**
      * A menu that creates, when it is selected, sub-items for all the labels
      * currently in the graph. The sub-items are <tt>LabelAction</tt> instances.

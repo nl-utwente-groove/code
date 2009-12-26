@@ -39,9 +39,11 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
-import groove.rel.RegExprLabel;
+import groove.rel.RegExpr;
 import groove.util.Converter;
 import groove.util.Groove;
+import groove.view.FormatException;
+import groove.view.RegExprLabelParser;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
@@ -54,6 +56,7 @@ import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
 
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -210,9 +213,18 @@ public class AspectJModel extends GraphJModel {
         } else {
             AspectValue role = role(aspectEdge);
             result.applyMap(RULE_EDGE_ATTR.get(role));
-            if (RegExprLabel.isEmpty(aspectEdge.label())) {
-                // remove edge arrow
-                GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
+            try {
+                RegExpr labelExpr =
+                    RegExprLabelParser.getInstance().parseAsRegExpr(
+                        aspectEdge.label().text());
+                if (labelExpr.isEmpty()) {
+                    // remove edge arrow
+                    GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
+                } else if (!labelExpr.isAtom()) {
+                    setFontAttr(result, Font.ITALIC);
+                }
+            } catch (FormatException exc) {
+                // do nothing
             }
         }
     }
