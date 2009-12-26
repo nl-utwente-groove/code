@@ -474,7 +474,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     private SystemProperties properties;
 
     /** Label for merges (merger edges and merge embargoes) */
-    static public final RegExprLabel MERGE_LABEL = RegExpr.empty().toLabel();
+    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */

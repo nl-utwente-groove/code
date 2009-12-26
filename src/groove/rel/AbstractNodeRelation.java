@@ -19,6 +19,7 @@ package groove.rel;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
+import groove.graph.Label;
 import groove.graph.Node;
 
 import java.util.Collection;
@@ -52,7 +53,7 @@ public abstract class AbstractNodeRelation implements NodeRelation {
      * Creates a new instance using {@link #newInstance()} and fills it using
      * {@link #addRelated(Collection)} from the label-to-pair sets map.
      */
-    public NodeRelation newInstance(String label) {
+    public NodeRelation newInstance(Label label) {
         NodeRelation result = newInstance();
         Collection<? extends Edge> relatedSet = getRelatedSet(label);
         if (relatedSet != null) {
@@ -78,8 +79,8 @@ public abstract class AbstractNodeRelation implements NodeRelation {
     }
 
     /**
-     * This implementation makes a copy of <tt>this</tt> (using
-     * {@link #copy()}) and invokes <tt>doThen(other)</tt> upon the copy.
+     * This implementation makes a copy of <tt>this</tt> (using {@link #copy()})
+     * and invokes <tt>doThen(other)</tt> upon the copy.
      * @see #doThen(NodeRelation)
      */
     public NodeRelation getThen(NodeRelation other) {
@@ -96,8 +97,8 @@ public abstract class AbstractNodeRelation implements NodeRelation {
     }
 
     /**
-     * This implementation makes a copy of <tt>this</tt> (using
-     * {@link #copy()}) and invokes <tt>doOr(other)</tt> upon the copy.
+     * This implementation makes a copy of <tt>this</tt> (using {@link #copy()})
+     * and invokes <tt>doOr(other)</tt> upon the copy.
      * @see #doOr(NodeRelation)
      */
     public NodeRelation getOr(NodeRelation other) {
@@ -118,9 +119,9 @@ public abstract class AbstractNodeRelation implements NodeRelation {
     }
 
     /**
-     * This implementation repeatedly takes the union of <tt>this</tt> with
-     * the concatenation of <tt>this</tt> and it's reflexive closure, until
-     * that no longer changes the relation.
+     * This implementation repeatedly takes the union of <tt>this</tt> with the
+     * concatenation of <tt>this</tt> and it's reflexive closure, until that no
+     * longer changes the relation.
      */
     public boolean doTransitiveClosure() {
         boolean result = false;
@@ -146,8 +147,7 @@ public abstract class AbstractNodeRelation implements NodeRelation {
     /**
      * This implementation takes the union (using
      * <tt>doOr(EdgeBasedRelation)</tt> of <tt>this</tt> and the identity
-     * relation over <tt>universe()</tt> (obtained by
-     * <tt>getIdentity(Set)</tt>.
+     * relation over <tt>universe()</tt> (obtained by <tt>getIdentity(Set)</tt>.
      */
     public boolean doReflexiveClosure() {
         return doOr(createIdentityRelation());
@@ -185,8 +185,8 @@ public abstract class AbstractNodeRelation implements NodeRelation {
      * label. May return <code>null</code>. This implementation converts the
      * string to a {@link DefaultLabel} and then queries the graph.
      */
-    protected Collection<? extends Edge> getRelatedSet(String label) {
-        return this.graph.labelEdgeSet(2, DefaultLabel.createLabel(label));
+    protected Collection<? extends Edge> getRelatedSet(Label label) {
+        return this.graph.labelEdgeSet(2, label);
     }
 
     /**

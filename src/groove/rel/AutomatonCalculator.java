@@ -16,7 +16,6 @@
  */
 package groove.rel;
 
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -64,8 +63,8 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     }
 
     /**
-     * Identical to {@link #computePlus(Plus, Automaton)}, except that the
-     * empty word is also always allowed.
+     * Identical to {@link #computePlus(Plus, Automaton)}, except that the empty
+     * word is also always allowed.
      */
     public Automaton computeStar(Star expr, Automaton arg) {
         Automaton result = computePlus(null, arg);
@@ -189,8 +188,8 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      */
     public Automaton computeAtom(Atom expr) {
         Automaton result = createAutomaton();
-        result.addEdge(result.getStartNode(),
-            DefaultLabel.createLabel(expr.text()), result.getEndNode());
+        result.addEdge(result.getStartNode(), expr.toLabel(),
+            result.getEndNode());
         return result;
     }
 
@@ -239,11 +238,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
                         : RegExpr.atom(label.text());
             return innerExpr.inv().toLabel();
         } else {
-            if (invOperand.isWildcard()) {
-                return invOperand.toLabel();
-            } else {
-                return DefaultLabel.createLabel(invOperand.getAtomText());
-            }
+            return invOperand.toLabel();
         }
     }
 

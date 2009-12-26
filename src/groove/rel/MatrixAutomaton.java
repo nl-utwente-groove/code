@@ -769,8 +769,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to sets of edges where the label occurs in the context of a
-     * {@link RegExpr.Inv}. The node key is either the source node or the
-     * target node of the edge, depending on the direction. Initialized using
+     * {@link RegExpr.Inv}. The node key is either the source node or the target
+     * node of the edge, depending on the direction. Initialized using
      * {@link #initNodeLabelEdgeMaps()}.
      */
     private Map<Label,int[]>[][] nodeInvLabelEdgeIndicesMap;
@@ -847,7 +847,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     static private final int BACKWARD = 1;
     /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
-    static final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
+    static final Label WILDCARD_LABEL = RegExpr.wildcard().toLabel();
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
@@ -859,8 +859,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             new MatchingComputation(0, null, null);
 
         /**
-         * Wraps a single computation of the enclosing {@link MatchingAlgorithm}.
-         * An object of this class is a one-shot affair, computing the end
+         * Wraps a single computation of the enclosing {@link MatchingAlgorithm}
+         * . An object of this class is a one-shot affair, computing the end
          * images given a key-image pair. The computation is started using
          * {@link #start()}. The result of the computation is a set of end
          * images. Computations can <i>depend</i> on one another, meaning that
@@ -1018,7 +1018,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                                 // we have a wildcard id; let's look it up
                                 Label oldLabel = valuation.get(id);
                                 if (oldLabel == null) {
-                                    valuation = new HashMap<String,Label>(valuation);
+                                    valuation =
+                                        new HashMap<String,Label>(valuation);
                                     valuation.put(id, label);
                                 } else {
                                     // it's a know id; check its value
@@ -1140,8 +1141,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              *        result
              * @param image the graph node for the required result
              * @return the result previously computed for <code>keyIndex</code>
-             *         and <code>image</code>, or <code>null</code> if no
-             *         result is stored
+             *         and <code>image</code>, or <code>null</code> if no result
+             *         is stored
              * @see #putMatch(MatchingComputation)
              */
             protected MatchingComputation getMatch(int keyIndex, Node image) {
@@ -1267,8 +1268,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * Computes the matches according to this algorithm, for a given graph
          * and a given set of images for the start node (set at construction
          * time). A second parameter gives the option of passing in a set of
-         * potential end images; if not <code>null</code>, the computation
-         * will terminate when it has found all the end images.
+         * potential end images; if not <code>null</code>, the computation will
+         * terminate when it has found all the end images.
          * @param graph the graph in which we are trying to find matches
          * @param startImages the allowed images of the start node of the
          *        algorithm; may not be <code>null</code>
@@ -1288,8 +1289,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             }
             this.endImages = endImages;
             this.storeIntermediates = !hasVars();// && endImages == null;//
-                                                    // && startImages.size() >
-                                                    // 1;
+            // && startImages.size() >
+            // 1;
             this.result = createRelation(graph);
             for (Node startImage : startImages) {
                 if (isAcceptsEmptyWord() && isAllowedResult(startImage)) {

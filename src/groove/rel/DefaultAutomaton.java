@@ -397,8 +397,8 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to sets of edges where the label occurs in the context of a
-     * {@link RegExpr.Inv}. The node key is either the source node or the
-     * target node of the edge, depending on the direction. Initialized using
+     * {@link RegExpr.Inv}. The node key is either the source node or the target
+     * node of the edge, depending on the direction. Initialized using
      * {@link #initNodeLabelEdgeMaps()}.
      */
     private Map<Node,Map<Label,Set<Edge>>>[] nodeInvLabelEdgeMap;
@@ -434,7 +434,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
      */
     static private final int BACKWARD = 1;
     /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
-    static final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
+    static final Label WILDCARD_LABEL = RegExpr.wildcard().toLabel();
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
@@ -468,8 +468,8 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
          * Computes the matches according to this algorithm, for a given graph
          * and a given set of images for the start node (set at construction
          * time). A second parameter gives the option of passing in a set of
-         * potential end images; if not <code>null</code>, the computation
-         * will terminate when it has found all the end images.
+         * potential end images; if not <code>null</code>, the computation will
+         * terminate when it has found all the end images.
          * @param graph the graph in which we are trying to find matches
          * @param startImages the allowed images of the start node of the
          *        algorithm; may not be <code>null</code>
@@ -504,8 +504,8 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         /**
          * Adds matches for a given image of the start node (set at construction
          * time). A second parameter gives the option of passing in a set of
-         * potential end images; if not <code>null</code>, the computation
-         * will terminate when it has found all the end images.
+         * potential end images; if not <code>null</code>, the computation will
+         * terminate when it has found all the end images.
          */
         public void addMatches(Node startImage) {
             // this.matchMap = new HashMap();

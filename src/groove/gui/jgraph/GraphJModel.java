@@ -36,6 +36,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.rel.RegExprLabel;
 import groove.util.Groove;
 
 import java.awt.Font;
@@ -584,13 +585,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     @Override
     final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
-        AttributeMap result = (AttributeMap) this.defaultEdgeAttr.clone();
-        // if (jEdge.isVisible()) {
-        if (result == null) {
-            result = super.createJEdgeAttr(jEdge);
-        } else {
-            modifyJEdgeAttr(result, ((GraphJEdge) jEdge).getEdges());
-        }
+        AttributeMap result = super.createJEdgeAttr(jEdge);
+        modifyJEdgeAttr(result, ((GraphJEdge) jEdge).getEdges());
         return result;
     }
 
@@ -605,11 +601,17 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         if (!edgeSet.isEmpty()) {
             Edge edge = edgeSet.iterator().next();
             if (edge.label().isNodeType()) {
-                Font currentFont = GraphConstants.getFont(result);
-                GraphConstants.setFont(result,
-                    currentFont.deriveFont(Font.BOLD));
+                setFontAttr(result, Font.BOLD);
+            } else if (edge.label() instanceof RegExprLabel) {
+                setFontAttr(result, Font.ITALIC);
             }
         }
+    }
+
+    /** Modifies the font attribute in the given attribute map. */
+    protected void setFontAttr(AttributeMap result, int fontAttr) {
+        Font currentFont = GraphConstants.getFont(result);
+        GraphConstants.setFont(result, currentFont.deriveFont(fontAttr));
     }
 
     /**

@@ -17,6 +17,7 @@
 package groove.rel;
 
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 
 import java.util.Collection;
@@ -104,7 +105,7 @@ public interface NodeRelation {
     /**
      * Returns a fresh relation based on a given label.
      */
-    NodeRelation newInstance(String label);
+    NodeRelation newInstance(Label label);
 
     /**
      * Creates an identity relation over the universe of this node relation.
