@@ -478,7 +478,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = true;
+    static private final boolean TO_RULE_DEBUG = false;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
