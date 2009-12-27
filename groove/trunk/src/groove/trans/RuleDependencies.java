@@ -422,35 +422,47 @@ public class RuleDependencies {
                     label = negOperand.toLabel();
                     posOrNeg = negative;
                 }
-                Automaton labelAut = ((RegExprLabel) label).getAutomaton();
-                // if a regular expression accepts the empty word, merging is
-                // allowed
-                if (labelAut.isAcceptsEmptyWord()) {
-                    posOrNeg.add(MERGE_LABEL);
-                }
-                if (RegExprLabel.isWildcard(label)
-                    || RegExprLabel.getRegExpr(label).containsOperator(
-                        RegExpr.wildcard())) {
-                    // testing for a wildcard means all labels are tested for
-                    posOrNeg.add(ALL_LABEL);
-                } else {
-                    // all the labels in the regular expression's automaton are
-                    // tested for
-                    for (Edge labelAutEdge : labelAut.edgeSet()) {
-                        Label innerLabel = labelAutEdge.label();
-                        if (innerLabel instanceof RegExprLabel) {
-                            // this must be an inverted label
-                            RegExpr expr =
-                                ((RegExprLabel) innerLabel).getRegExpr();
-                            assert expr instanceof RegExpr.Inv : String.format(
-                                "Regular expression label %s should not occur",
-                                innerLabel);
-                            // take the inverted label instead
-                            innerLabel =
-                                DefaultLabel.createLabel(((RegExpr.Inv) expr).getOperand().getAtomText());
-                        }
-                        posOrNeg.add(innerLabel);
+                // the conversion to negOperant.toLabel() may have turned
+                // the label into a DefautLabel
+                if (label instanceof RegExprLabel) {
+                    Automaton labelAut = ((RegExprLabel) label).getAutomaton();
+                    // if a regular expression accepts the empty word, merging
+                    // is
+                    // allowed
+                    if (labelAut.isAcceptsEmptyWord()) {
+                        posOrNeg.add(MERGE_LABEL);
                     }
+                    if (RegExprLabel.isWildcard(label)
+                        || RegExprLabel.getRegExpr(label).containsOperator(
+                            RegExpr.wildcard())) {
+                        // testing for a wildcard means all labels are tested
+                        // for
+                        posOrNeg.add(ALL_LABEL);
+                    } else {
+                        // all the labels in the regular expression's automaton
+                        // are
+                        // tested for
+                        for (Edge labelAutEdge : labelAut.edgeSet()) {
+                            Label innerLabel = labelAutEdge.label();
+                            if (innerLabel instanceof RegExprLabel) {
+                                // this must be an inverted label
+                                RegExpr expr =
+                                    ((RegExprLabel) innerLabel).getRegExpr();
+                                assert expr instanceof RegExpr.Inv : String.format(
+                                    "Regular expression label %s should not occur",
+                                    innerLabel);
+                                // take the inverted label instead
+                                innerLabel =
+                                    ((RegExpr.Inv) expr).getOperand().toLabel();
+                                assert innerLabel instanceof DefaultLabel : String.format(
+                                    "Automaton edge '%s' should not occur",
+                                    labelAutEdge);
+                            }
+                            posOrNeg.add(innerLabel);
+                        }
+                    }
+                } else {
+                    posOrNeg.add(label);
                 }
             } else {
                 positive.add(label);

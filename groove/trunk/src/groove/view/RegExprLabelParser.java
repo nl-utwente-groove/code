@@ -47,15 +47,16 @@ public class RegExprLabelParser implements LabelParser {
      */
     public Label parse(Label label) throws FormatException {
         Label result;
-        try {
-            RegExpr expr = parseAsRegExpr(label.text());
-            result = expr.toLabel();
-            if (label.isNodeType() && !result.isNodeType()) {
-                throw new FormatException("Can't parse node type");
+        if (label.isNodeType()) {
+            result = label;
+        } else {
+            try {
+                RegExpr expr = parseAsRegExpr(label.text());
+                result = expr.toLabel();
+            } catch (FormatException exc) {
+                throw new FormatException(exc.getMessage() + " in label %s",
+                    label.text());
             }
-        } catch (FormatException exc) {
-            throw new FormatException(exc.getMessage() + " in label %s",
-                label.text());
         }
         return result;
     }
