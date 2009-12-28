@@ -60,9 +60,6 @@ public class LabelStore implements Cloneable {
             subtypes.add(label);
             this.subtypeMap.put(label, subtypes);
             Set<Label> directSubtypes = new TreeSet<Label>();
-            // if (label.isNodeType()) {
-            // directSubtypes.add(label);
-            // }
             this.directSubtypeMap.put(label, directSubtypes);
         }
     }
@@ -76,6 +73,10 @@ public class LabelStore implements Cloneable {
 
     /** Adds a direct subtype pair to the subtyping relation. */
     public void addSubtype(Label type, Label subtype) {
+        assert type.isNodeType() : String.format(
+            "Non-node type label '%s' cannot get subtype '%s'", type, subtype);
+        assert subtype.isNodeType() : String.format(
+            "Non-node type label '%s' cannot be subtype of '%s'", subtype, type);
         addLabel(type);
         addLabel(subtype);
         if (getSubtypes(subtype).contains(type)) {
@@ -107,7 +108,8 @@ public class LabelStore implements Cloneable {
     private void calculateSubtypes() {
         // first order all types consistently with the subtype relation.
         Set<Label> allTypes = new LinkedHashSet<Label>();
-        Set<Label> remaining = new HashSet<Label>(getLabels());
+        Set<Label> remaining =
+            new HashSet<Label>(this.directSubtypeMap.keySet());
         while (!remaining.isEmpty()) {
             Iterator<Label> remainingIter = remaining.iterator();
             boolean bottomTypeFound = false;
@@ -222,6 +224,40 @@ public class LabelStore implements Cloneable {
     /** Returns an unmodifiable view on the set of all known type labels. */
     public Set<Label> getLabels() {
         return Collections.unmodifiableSet(this.subtypeMap.keySet());
+    }
+
+    /**
+     * Returns a clone of this label store where all occurrences of a given
+     * label are replaced by a new label.
+     * @param oldLabel the label to be replaced
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this label store, or the store itself if {@code
+     *         oldLabel} did not occur
+     */
+    public LabelStore relabel(Label oldLabel, Label newLabel) {
+        if (getLabels().contains(newLabel)) {
+            throw new IllegalArgumentException(String.format(
+                "New label '%s' is already in label set", getLabels()));
+        }
+        LabelStore result = this;
+        if (this.subtypeMap.containsKey(oldLabel)) {
+            result = clone();
+            result.addLabel(newLabel);
+            if (newLabel.isNodeType()) {
+                result.directSubtypeMap.get(newLabel).addAll(
+                    getDirectSubtypes(oldLabel));
+            }
+            result.directSubtypeMap.remove(oldLabel);
+            result.subtypeMap.remove(oldLabel);
+            for (Map.Entry<Label,Set<Label>> subtypeEntry : result.directSubtypeMap.entrySet()) {
+                Set<Label> subtypes = subtypeEntry.getValue();
+                if (subtypes.remove(oldLabel) && newLabel.isNodeType()) {
+                    subtypes.add(newLabel);
+                }
+            }
+            result.calculateSubtypes();
+        }
+        return result;
     }
 
     /**

@@ -74,8 +74,7 @@ public class AspectParser {
                                 + CONTENT_ASSIGN.length());
                         valueText = valueText.substring(0, assignIndex);
                     }
-                    result.addDeclaredValue(parseValue(valueText,
-                        contentText));
+                    result.addDeclaredValue(parseValue(valueText, contentText));
                 } catch (FormatException exc) {
                     throw new FormatException("%s in '%s'", exc.getMessage(),
                         plainText);
@@ -100,7 +99,8 @@ public class AspectParser {
                 text.indexOf(VALUE_SEPARATOR) >= 0
                     && ExprParser.isIdentifierStartChar(text.charAt(0));
         }
-        result.setText(text, explicitEnd);
+        result.setText(text);
+        result.setHasEnd(explicitEnd);
         return result;
     }
 

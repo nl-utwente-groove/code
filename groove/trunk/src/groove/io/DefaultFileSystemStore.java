@@ -19,6 +19,7 @@ package groove.io;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -231,6 +232,31 @@ public class DefaultFileSystemStore extends Observable implements SystemStore {
         }
         notify(SystemStore.RULE_CHANGE);
         return rule;
+    }
+
+    @Override
+    public void relabel(Label oldLabel, Label newLabel) throws IOException {
+        int changes = 0;
+        for (AspectGraph graph : getGraphs().values()) {
+            AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
+            if (newGraph != graph) {
+                putGraph(newGraph);
+                changes |= SystemStore.GRAPH_CHANGE;
+            }
+        }
+        for (AspectGraph rule : getRules().values()) {
+            AspectGraph newRule = rule.relabel(oldLabel, newLabel);
+            if (newRule != rule) {
+                putRule(newRule);
+                changes |= SystemStore.RULE_CHANGE;
+            }
+        }
+        SystemProperties newProperties =
+            this.properties.relabel(oldLabel, newLabel);
+        if (newProperties != this.properties) {
+            putProperties(newProperties);
+            changes |= SystemStore.PROPERTIES_CHANGE;
+        }
     }
 
     @Override

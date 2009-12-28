@@ -273,6 +273,16 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /**
+     * Returns a clone of this expression where all occurrences of a given label
+     * are replaced by a new label.
+     * @param oldLabel the label to be replaced
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this expression, or this expression itself if {@code
+     *         oldLabel} did not occur
+     */
+    abstract public RegExpr relabel(Label oldLabel, Label newLabel);
+
+    /**
      * Tests if this expression contains a given operator (given by its string
      * representation) in one of its sub-expressions.
      * @param operator the string description of the operator sought
@@ -864,6 +874,18 @@ abstract public class RegExpr { // implements VarSetSupport {
             return applyInfix(calculator, argsList);
         }
 
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            List<RegExpr> newOperands = new ArrayList<RegExpr>();
+            boolean hasChanged = false;
+            for (RegExpr operand : getOperands()) {
+                RegExpr newOperand = operand.relabel(oldLabel, newLabel);
+                newOperands.add(newOperand);
+                hasChanged |= newOperand != operand;
+            }
+            return hasChanged ? newInstance(newOperands) : this;
+        }
+
         /**
          * Factory method for an infix expression. The number of operands is
          * guaranteed to be at least 2.
@@ -898,6 +920,12 @@ abstract public class RegExpr { // implements VarSetSupport {
             super(operator, symbol);
             this.operand = operand;
             this.operandList = Collections.singletonList(operand);
+        }
+
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            RegExpr newOperand = getOperand().relabel(oldLabel, newLabel);
+            return newOperand != getOperand() ? newInstance(newOperand) : this;
         }
 
         /** Returns the single operand of this postfix expression. */
@@ -988,6 +1016,12 @@ abstract public class RegExpr { // implements VarSetSupport {
             super(operator, symbol);
             this.operand = operand;
             this.operandList = Collections.singletonList(operand);
+        }
+
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            RegExpr newOperand = getOperand().relabel(oldLabel, newLabel);
+            return newOperand != getOperand() ? newInstance(newOperand) : this;
         }
 
         /** Returns the single operand of this prefix expression. */
@@ -1199,6 +1233,17 @@ abstract public class RegExpr { // implements VarSetSupport {
             this.guard = constraint;
         }
 
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            LabelConstraint newConstraint = null;
+            if (this.guard instanceof LabelConstraint) {
+                newConstraint =
+                    ((LabelConstraint) this.guard).relabel(oldLabel, newLabel);
+            }
+            return newConstraint == null ? this : newInstance(this.identifier,
+                newConstraint);
+        }
+
         /**
          * Calls {@link RegExprCalculator#computeWildcard(RegExpr.Wildcard)} on
          * the visitor.
@@ -1383,6 +1428,28 @@ abstract public class RegExpr { // implements VarSetSupport {
                 this.negated = negated;
             }
 
+            /**
+             * Returns a copy of this label constraint with given label replaced
+             * by another. Returns this constraint if the old label does not
+             * occur.
+             * @param oldLabel the label to be replaced
+             * @param newLabel the new value for {@code oldLabel}
+             * @return a copy of this constraint with the old label replaced by
+             *         the new, or this constraint itself if the old label did
+             *         not occur.
+             */
+            public LabelConstraint relabel(Label oldLabel, Label newLabel) {
+                LabelConstraint result = this;
+                if (this.constrainedLabelSet.contains(oldLabel.text())) {
+                    Set<String> newConstraint =
+                        new HashSet<String>(this.constrainedLabelSet);
+                    newConstraint.remove(oldLabel.text());
+                    newConstraint.add(newLabel.text());
+                    result = new LabelConstraint(newConstraint, this.negated);
+                }
+                return result;
+            }
+
             @Override
             public boolean isSatisfied(String value) {
                 return this.negated != this.constrainedLabelSet.contains(value);
@@ -1421,6 +1488,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             super("" + EMPTY_OPERATOR, EMPTY_SYMBOLIC_NAME);
         }
 
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            return this;
+        }
+
         /** This implementation returns a {@link Empty}. */
         @Override
         protected Constant newInstance() {
@@ -1457,6 +1529,12 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         Atom() {
             this("");
+        }
+
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            return oldLabel.text().equals(text())
+                    ? newInstance(newLabel.text()) : this;
         }
 
         /**

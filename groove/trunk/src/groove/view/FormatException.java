@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * General exception class signalling a format error found during a conversion
@@ -73,6 +74,14 @@ public class FormatException extends Exception {
 
     /** Constructs a format exception based on a given list of errors. */
     public FormatException(List<String> errors) {
+        this.errors = new ArrayList<String>(errors);
+    }
+
+    /**
+     * Constructs a format exception based on a given set of errors. The order
+     * of the errors is determined by the set iterator.
+     */
+    public FormatException(Set<String> errors) {
         this.errors = new ArrayList<String>(errors);
     }
 

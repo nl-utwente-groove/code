@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.graph.Label;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.StoredGrammarView;
@@ -148,6 +149,14 @@ public interface GenericSystemStore<R,G> {
      * @throws IOException if an error occurred while storing the properties
      */
     public void putProperties(SystemProperties properties)
+        throws UnsupportedOperationException, IOException;
+
+    /**
+     * Changes a label into another in all relevant elements of the store.
+     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while storing the properties
+     */
+    public void relabel(Label oldLabel, Label newLabel)
         throws UnsupportedOperationException, IOException;
 
     /**

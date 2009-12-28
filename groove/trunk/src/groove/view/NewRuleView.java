@@ -86,7 +86,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision: 1923 $
  */
-public class NewRuleView extends AbstractView<Rule> implements RuleView {
+public class NewRuleView implements RuleView {
     /**
      * Constructs a rule view from an aspect graph. The rule properties are
      * explicitly given.
@@ -148,10 +148,10 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
      */
     public Rule toRule() throws FormatException {
         initialise();
-        if (this.rule == null) {
-            throw new FormatException(this.ruleErrors);
-        } else {
+        if (this.ruleErrors.isEmpty()) {
             return this.rule;
+        } else {
+            throw new FormatException(this.ruleErrors);
         }
     }
 
@@ -213,11 +213,6 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         return getProperties() != null && getProperties().isInjective();
     }
 
-    @Override
-    protected LabelParser getDefaultLabelParser() {
-        return RegExprLabelParser.getInstance();
-    }
-
     /**
      * Invalidates any previous construction of the underlying rule. This means
      * the rule will be reconstructed when there is a call for it, using
@@ -236,18 +231,16 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         if (this.attributeFactory == null) {
             this.attributeFactory =
                 new AttributeElementFactory(this.graph, this.properties);
-            if (this.viewErrors == null) {
-                this.levelTree = new LevelMap();
-                try {
-                    this.levelTree.initialise();
-                    this.rule = computeRule();
-                    this.ruleErrors = Collections.<String>emptyList();
-                } catch (FormatException exc) {
-                    this.ruleErrors = exc.getErrors();
-                }
-            } else {
-                // the view graph contains errors, so we can't compute the rule
-                this.ruleErrors = this.viewErrors;
+            this.ruleErrors = new ArrayList<String>();
+            if (this.viewErrors != null) {
+                this.ruleErrors.addAll(this.viewErrors);
+            }
+            this.levelTree = new LevelMap();
+            try {
+                this.levelTree.initialise();
+                this.rule = computeRule();
+            } catch (FormatException exc) {
+                this.ruleErrors.addAll(exc.getErrors());
             }
         }
     }
@@ -260,13 +253,13 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
      */
     private Rule computeRule() throws FormatException {
         SPORule rule;
-        Set<String> errors = new TreeSet<String>(this.graph.getErrors());
+        Set<String> errors = new TreeSet<String>();
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
-        try {
-            Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
-            for (Level level : this.levelTree.getLevels()) {
+        Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
+        for (Level level : this.levelTree.getLevels()) {
+            try {
                 AbstractCondition<?> condition = level.computeFlatRule();
                 ruleTree.put(level, condition);
                 LevelIndex index = level.getIndex();
@@ -279,11 +272,15 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                             index.getIntArray());
                     }
                 }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
             }
-            rule = (SPORule) ruleTree.get(this.levelTree.getTopLevel());
-            rule.setPriority(getPriority());
-            rule.setConfluent(isConfluent());
-            Parameters parameters = new Parameters();
+        }
+        rule = (SPORule) ruleTree.get(this.levelTree.getTopLevel());
+        rule.setPriority(getPriority());
+        rule.setConfluent(isConfluent());
+        Parameters parameters = new Parameters();
+        try {
             rule.setParameters(parameters.getInPars(), parameters.getOutPars(),
                 parameters.getHiddenPars());
             rule.setFixed();
@@ -298,97 +295,9 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         if (errors.isEmpty()) {
             return rule;
         } else {
-            throw new FormatException(new ArrayList<String>(errors));
+            throw new FormatException(errors);
         }
     }
-
-    //
-    // /**
-    // * Callback method to compute a rule (on a given nesting level) from sets
-    // of
-    // * aspect nodes and edges that appear on this level.
-    // * @param level the level of the (sub)rule to be computed
-    // */
-    // private AbstractCondition<?> computeFlatRule(LevelData level)
-    // throws FormatException {
-    // AbstractCondition<?> result;
-    // Set<String> errors = new TreeSet<String>();
-    // // first add nodes to lhs, rhs, morphism and left graph
-    // NodeEdgeMap lhsMap = level.getLhsMap();
-    // NodeEdgeMap rhsMap = level.getRhsMap();
-    // // create the new lhs
-    // Graph lhs = level.getLhs();
-    // // create the new rhs
-    // Graph rhs = level.getRhs();
-    // // rule morphism for the resulting production rule
-    // Morphism ruleMorph = level.getRuleMorph();
-    // try {
-    // // check if label variables are bound
-    // Set<String> boundVars = getVars(lhs.edgeSet(), true);
-    // Set<String> lhsVars = getVars(lhs.edgeSet(), false);
-    // if (!boundVars.containsAll(lhsVars)) {
-    // lhsVars.removeAll(boundVars);
-    // throw new FormatException(
-    // "Left hand side variables %s not bound on left hand side",
-    // lhsVars);
-    // }
-    // Set<String> rhsVars = getVars(rhs.edgeSet(), false);
-    // if (!boundVars.containsAll(rhsVars)) {
-    // rhsVars.removeAll(boundVars);
-    // throw new FormatException(
-    // "Right hand side variables %s not bound on left hand side",
-    // rhsVars);
-    // }
-    // Set<String> nacVars = getVars(nacEdgeSet, false);
-    // if (!boundVars.containsAll(nacVars)) {
-    // nacVars.removeAll(boundVars);
-    // throw new FormatException(
-    // "NAC variables %s not bound on left hand side", nacVars);
-    // }
-    //
-    // // check if node type additions and deletions are balanced
-    // for (Node deletedType : deletedTypes) {
-    // addedTypes.remove(deletedType);
-    // }
-    // if (!addedTypes.isEmpty()) {
-    // StringBuilder error = new StringBuilder();
-    // for (Label type : addedTypes.values()) {
-    // if (error.length() > 0) {
-    // error.append(String.format("%n"));
-    // }
-    // error.append(String.format(
-    // "New node type '%s' not allowed without removing old type",
-    // type));
-    // }
-    // throw new FormatException(error.toString());
-    // }
-    // // the resulting rule
-    // Level index = level.getIndex();
-    // if (index.isExistential()) {
-    // result =
-    // createRule(ruleMorph, level.getRootMap(),
-    // level.getCoRootMap(), index.getName());
-    // } else {
-    // result =
-    // createForall(lhs, level.getRootMap(),
-    // index.getName(), index.isPositive());
-    // }
-    // // add the nacs to the rule
-    // for (Pair<Set<Node>,Set<Edge>> nacPair : AbstractGraph.getConnectedSets(
-    // nacNodeSet, nacEdgeSet)) {
-    // result.addSubCondition(computeNac(lhs, nacPair.first(),
-    // nacPair.second()));
-    // }
-    // } catch (FormatException e) {
-    // result = null;
-    // errors.addAll(e.getErrors());
-    // }
-    // if (errors.isEmpty()) {
-    // return result;
-    // } else {
-    // throw new FormatException(new ArrayList<String>(errors));
-    // }
-    // }
 
     /**
      * Creates an image for a given aspect node. Node numbers are copied.
@@ -429,7 +338,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         }
         // compute the label; either a DefaultLabel or a RegExprLabel
         if (getAttributeValue(edge) == null) {
-            return createEdge(ends, parse(edge));// createRuleLabel(edge.label()));
+            return createEdge(ends, edge.getModelLabel(true));
         } else {
             return NewRuleView.this.attributeFactory.createAttributeEdge(edge,
                 ends);
@@ -787,22 +696,34 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         }
 
         private void initData() throws FormatException {
+            Set<String> errors = new TreeSet<String>();
             // add nodes to nesting data structures
             for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
                 if (RuleAspect.inRule(node)) {
-                    Level level = getLevel(node);
-                    level.addNode(node, getNodeImage(node));
+                    try {
+                        Level level = getLevel(node);
+                        level.addNode(node, getNodeImage(node));
+                    } catch (FormatException exc) {
+                        errors.addAll(exc.getErrors());
+                    }
                 }
             }
             // add edges to nesting data structures
             for (AspectEdge edge : NewRuleView.this.graph.edgeSet()) {
                 if (RuleAspect.inRule(edge)) {
-                    Level level = getLevel(edge);
-                    Edge edgeImage = getEdgeImage(edge);
-                    if (edgeImage != null) {
-                        level.addEdge(edge, getEdgeImage(edge));
+                    try {
+                        Level level = getLevel(edge);
+                        Edge edgeImage = getEdgeImage(edge);
+                        if (edgeImage != null) {
+                            level.addEdge(edge, edgeImage);
+                        }
+                    } catch (FormatException exc) {
+                        errors.addAll(exc.getErrors());
                     }
                 }
+            }
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
             }
             // fix the level data
             for (Level level : this.indexLevelMap.values()) {
@@ -962,15 +883,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                     computeEdgeImage(viewEdge, this.viewToRuleMap.nodeMap());
                 if (result != null) {
                     this.viewToRuleMap.putEdge(viewEdge, result);
-                    Label edgeLabel = result.label();
-                    if (edgeLabel.isNodeType()) {
-                        if (!result.source().equals(result.opposite())) {
-                            throw new FormatException(
-                                "Node type label '%s' only allowed on self-edges",
-                                edgeLabel);
-                        }
-                    }
-                    this.labelSet.add(edgeLabel);
+                    this.labelSet.add(result.label());
                 }
             }
             return result;
@@ -1057,11 +970,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          * is only really added if it satisfies
          * {@link #isForThisLevel(AspectElement)}; moreover, it is added to the
          * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
-         * @throws FormatException if there is an error in the context of the
-         *         node
          */
-        public void addNode(AspectNode viewNode, Node ruleNode)
-            throws FormatException {
+        public void addNode(AspectNode viewNode, Node ruleNode) {
             testMode(LevelMode.TREE_SET);
             // put the node on this level, if it is supposed to be there
             if (isForThisLevel(viewNode)) {
@@ -1080,11 +990,8 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          * is only really added if it satisfies
          * {@link #isForThisLevel(AspectElement)}; moreover, it is added to the
          * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
-         * @throws FormatException if there is an error in the context of the
-         *         edge
          */
-        public void addEdge(AspectEdge viewEdge, Edge ruleEdge)
-            throws FormatException {
+        public void addEdge(AspectEdge viewEdge, Edge ruleEdge) {
             testMode(LevelMode.TREE_SET);
             // put the edge on this level, if it is supposed to be there
             if (isForThisLevel(viewEdge)) {
@@ -1132,8 +1039,9 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
          * they cannot be handled there.
          * @param elem the element about which the question is asked
          */
-        private boolean isForNextLevel(AspectElement elem)
-            throws FormatException {
+        private boolean isForNextLevel(AspectElement elem) { // throws
+            // FormatException
+            // {
             boolean result;
             if (elem instanceof AspectNode) {
                 // we need to push nodes down in injective mode
@@ -1143,9 +1051,12 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
-                Label varLabel =
-                    getDefaultLabelParser().parse(((AspectEdge) elem).label());
-                result = RegExprLabel.getWildcardId(varLabel) != null;
+                try {
+                    Label varLabel = ((AspectEdge) elem).getModelLabel(true);
+                    result = RegExprLabel.getWildcardId(varLabel) != null;
+                } catch (FormatException exc) {
+                    result = false;
+                }
             }
             if (!result) {
                 result =
@@ -1166,11 +1077,29 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
             this.nacEdgeSet = new HashSet<Edge>();
             this.addedTypes = new HashMap<Node,Label>();
             this.deletedTypes = new HashSet<Node>();
+            Set<String> errors = new TreeSet<String>();
             for (Map.Entry<AspectNode,Node> viewNodeEntry : this.viewNodes.entrySet()) {
-                processNode(viewNodeEntry.getKey(), viewNodeEntry.getValue());
+                try {
+                    processNode(viewNodeEntry.getKey(),
+                        viewNodeEntry.getValue());
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
+                }
+            }
+            // if there are errors in the node map, don't try mapping the edges
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
             }
             for (Map.Entry<AspectEdge,Edge> viewEdgeEntry : this.viewEdges.entrySet()) {
-                processEdge(viewEdgeEntry.getKey(), viewEdgeEntry.getValue());
+                try {
+                    processEdge(viewEdgeEntry.getKey(),
+                        viewEdgeEntry.getValue());
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
+                }
+            }
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
             }
         }
 
@@ -1368,70 +1297,65 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
         public AbstractCondition<?> computeFlatRule() throws FormatException {
             AbstractCondition<?> result;
             Set<String> errors = new TreeSet<String>();
-            try {
-                // check if label variables are bound
-                Set<String> boundVars = getVars(this.lhs.edgeSet(), true);
-                Set<String> lhsVars = getVars(this.lhs.edgeSet(), false);
-                if (!boundVars.containsAll(lhsVars)) {
-                    lhsVars.removeAll(boundVars);
-                    throw new FormatException(
-                        "Left hand side variables %s not bound on left hand side",
-                        lhsVars);
-                }
-                Set<String> rhsVars = getVars(this.rhs.edgeSet(), false);
-                if (!boundVars.containsAll(rhsVars)) {
-                    rhsVars.removeAll(boundVars);
-                    throw new FormatException(
-                        "Right hand side variables %s not bound on left hand side",
-                        rhsVars);
-                }
-                Set<String> nacVars = getVars(this.nacEdgeSet, false);
-                if (!boundVars.containsAll(nacVars)) {
-                    nacVars.removeAll(boundVars);
-                    throw new FormatException(
-                        "NAC variables %s not bound on left hand side", nacVars);
-                }
+            // check if label variables are bound
+            Set<String> boundVars = getVars(this.lhs.edgeSet(), true);
+            Set<String> lhsVars = getVars(this.lhs.edgeSet(), false);
+            if (!boundVars.containsAll(lhsVars)) {
+                lhsVars.removeAll(boundVars);
+                errors.add(String.format(
+                    "Left hand side variables %s not bound on left hand side",
+                    lhsVars));
+            }
+            Set<String> rhsVars = getVars(this.rhs.edgeSet(), false);
+            if (!boundVars.containsAll(rhsVars)) {
+                rhsVars.removeAll(boundVars);
+                errors.add(String.format(
+                    "Right hand side variables %s not bound on left hand side",
+                    rhsVars));
+            }
+            Set<String> nacVars = getVars(this.nacEdgeSet, false);
+            if (!boundVars.containsAll(nacVars)) {
+                nacVars.removeAll(boundVars);
+                errors.add(String.format(
+                    "NAC variables %s not bound on left hand side", nacVars));
+            }
 
-                // check if node type additions and deletions are balanced
-                for (Node deletedType : this.deletedTypes) {
-                    this.addedTypes.remove(deletedType);
-                }
-                if (!this.addedTypes.isEmpty()) {
-                    StringBuilder error = new StringBuilder();
-                    for (Label type : this.addedTypes.values()) {
-                        if (error.length() > 0) {
-                            error.append(String.format("%n"));
-                        }
-                        error.append(String.format(
-                            "New node type '%s' not allowed without removing old type",
-                            type));
+            // check if node type additions and deletions are balanced
+            for (Node deletedType : this.deletedTypes) {
+                this.addedTypes.remove(deletedType);
+            }
+            if (!this.addedTypes.isEmpty()) {
+                StringBuilder error = new StringBuilder();
+                for (Label type : this.addedTypes.values()) {
+                    if (error.length() > 0) {
+                        error.append(String.format("%n"));
                     }
-                    throw new FormatException(error.toString());
+                    error.append(String.format(
+                        "New node type '%s' not allowed without removing old type",
+                        type));
                 }
-                // the resulting rule
-                if (this.index.isExistential()) {
-                    result =
-                        createRule(this.ruleMorph, getRootMap(),
-                            getCoRootMap(), this.index.getName());
-                } else {
-                    result =
-                        createForall(this.lhs, getRootMap(),
-                            this.index.getName(), this.index.isPositive());
-                }
-                // add the nacs to the rule
-                for (Pair<Set<Node>,Set<Edge>> nacPair : AbstractGraph.getConnectedSets(
-                    this.nacNodeSet, this.nacEdgeSet)) {
-                    result.addSubCondition(computeNac(this.lhs,
-                        nacPair.first(), nacPair.second()));
-                }
-            } catch (FormatException e) {
-                result = null;
-                errors.addAll(e.getErrors());
+                errors.add(error.toString());
+            }
+            // the resulting rule
+            if (this.index.isExistential()) {
+                result =
+                    createRule(this.ruleMorph, getRootMap(), getCoRootMap(),
+                        this.index.getName());
+            } else {
+                result =
+                    createForall(this.lhs, getRootMap(), this.index.getName(),
+                        this.index.isPositive());
+            }
+            // add the nacs to the rule
+            for (Pair<Set<Node>,Set<Edge>> nacPair : AbstractGraph.getConnectedSets(
+                this.nacNodeSet, this.nacEdgeSet)) {
+                result.addSubCondition(computeNac(this.lhs, nacPair.first(),
+                    nacPair.second()));
             }
             if (errors.isEmpty()) {
                 return result;
             } else {
-                throw new FormatException(new ArrayList<String>(errors));
+                throw new FormatException(errors);
             }
         }
 
@@ -1734,6 +1658,7 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
 
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
+            Set<String> errors = new TreeSet<String>();
             SortedMap<Integer,Node> inParMap = new TreeMap<Integer,Node>();
             SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
             this.hiddenPars = new HashSet<Node>();
@@ -1744,41 +1669,53 @@ public class NewRuleView extends AbstractView<Rule> implements RuleView {
                 // check if the node is a parameter
                 Integer nr = ParameterAspect.getParNumber(node);
                 if (nr != null) {
-                    if (!parNumbers.add(nr)) {
-                        throw new FormatException(
-                            "Parameter number '%d' occurs more than once", nr);
-                    }
-                    Level level = NewRuleView.this.levelTree.getLevel(node);
-                    if (!level.getIndex().isTopLevel()) {
-                        throw new FormatException(
-                            "Rule parameter '%d' only allowed on top existential level",
-                            nr);
-                    }
-                    if (RuleAspect.inLHS(node)) {
-                        Node nodeImage = level.getLhsMap().getNode(node);
-                        if (nr.equals(0)) {
-                            this.hiddenPars.add(nodeImage);
-                        } else {
-                            inParMap.put(nr, nodeImage);
-                        }
-                    } else if (RuleAspect.inRHS(node)) {
-                        if (nr.equals(0)) {
+                    try {
+                        if (!parNumbers.add(nr)) {
                             throw new FormatException(
-                                "Anonymous parameters should only occur on the left hand side");
+                                "Parameter number '%d' occurs more than once",
+                                nr);
                         }
-                        Node nodeImage = level.getLhsMap().getNode(node);
-                        outParMap.put(nr, nodeImage);
-                    } else {
-                        throw new FormatException(
-                            "Parameter '%d' may not occur in NAC", nr);
+                        Level level = NewRuleView.this.levelTree.getLevel(node);
+                        if (!level.getIndex().isTopLevel()) {
+                            throw new FormatException(
+                                "Rule parameter '%d' only allowed on top existential level",
+                                nr);
+                        }
+                        if (RuleAspect.inLHS(node)) {
+                            Node nodeImage = level.getLhsMap().getNode(node);
+                            if (nr.equals(0)) {
+                                this.hiddenPars.add(nodeImage);
+                            } else {
+                                inParMap.put(nr, nodeImage);
+                            }
+                        } else if (RuleAspect.inRHS(node)) {
+                            if (nr.equals(0)) {
+                                throw new FormatException(
+                                    "Anonymous parameters should only occur on the left hand side");
+                            }
+                            Node nodeImage = level.getLhsMap().getNode(node);
+                            outParMap.put(nr, nodeImage);
+                        } else {
+                            throw new FormatException(
+                                "Parameter '%d' may not occur in NAC", nr);
+                        }
+                    } catch (FormatException exc) {
+                        errors.addAll(exc.getErrors());
                     }
                 }
             }
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
+            }
             // test if parameters form a consecutive sequence
+            Set<Integer> missingPars = new TreeSet<Integer>();
             for (int nr = 1; nr <= inParMap.size() + outParMap.size(); nr++) {
                 if (!parNumbers.contains(nr)) {
-                    throw new FormatException("Parameter number %d missing", nr);
+                    missingPars.add(nr);
                 }
+            }
+            if (!missingPars.isEmpty()) {
+                throw new FormatException("Parameters %s missing", missingPars);
             }
             // test if LHS parameters come before RHS parameters
             if (!outParMap.isEmpty() && outParMap.firstKey() <= inParMap.size()) {

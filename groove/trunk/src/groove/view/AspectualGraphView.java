@@ -55,8 +55,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectualGraphView extends AbstractView<Graph> implements
-        GraphView {
+public class AspectualGraphView implements GraphView {
     /**
      * Constructs an instance from a given aspect graph view.
      * @see GraphInfo#getName(groove.graph.GraphShape)
@@ -128,11 +127,6 @@ public class AspectualGraphView extends AbstractView<Graph> implements
     /** Returns the set of labels used in this graph. */
     public Set<Label> getLabels() {
         return this.labelSet;
-    }
-
-    @Override
-    protected LabelParser getDefaultLabelParser() {
-        return FreeLabelParser.getInstance();
     }
 
     /** Factory method. */
@@ -222,14 +216,11 @@ public class AspectualGraphView extends AbstractView<Graph> implements
                     this.attributeFactory.createAttributeEdge(viewEdge,
                         endImages);
                 if (edgeImage == null) {
-                    edgeImage = model.addEdge(endImages, parse(viewEdge));
+                    edgeImage =
+                        model.addEdge(endImages, viewEdge.getModelLabel(false));
+                    this.labelSet.add(edgeImage.label());
                     Label edgeLabel = edgeImage.label();
                     if (edgeLabel.isNodeType()) {
-                        if (!edgeImage.source().equals(edgeImage.opposite())) {
-                            throw new FormatException(
-                                "Node type label '%s' only allowed on self-edges",
-                                edgeLabel);
-                        }
                         Label oldType =
                             nodeTypes.put(edgeImage.source(), edgeLabel);
                         if (oldType != null) {
@@ -244,7 +235,6 @@ public class AspectualGraphView extends AbstractView<Graph> implements
                         getAttributeValue(viewEdge));
                 }
                 elementMap.putEdge(viewEdge, edgeImage);
-                this.labelSet.add(edgeImage.label());
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }

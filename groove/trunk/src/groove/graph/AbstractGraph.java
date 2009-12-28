@@ -201,7 +201,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         return removed;
     }
 
-    public boolean removeEdgeSet(Collection<Edge> edgeSet) {
+    public boolean removeEdgeSet(Collection<? extends Edge> edgeSet) {
         boolean removed = false;
         for (Edge edge : edgeSet) {
             removed |= removeEdge(edge);

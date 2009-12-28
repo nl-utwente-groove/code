@@ -34,16 +34,16 @@ import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
-import groove.rel.RegExpr;
+import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.RegExprLabelParser;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
@@ -214,13 +214,12 @@ public class AspectJModel extends GraphJModel {
             AspectValue role = role(aspectEdge);
             result.applyMap(RULE_EDGE_ATTR.get(role));
             try {
-                RegExpr labelExpr =
-                    RegExprLabelParser.getInstance().parseAsRegExpr(
-                        aspectEdge.label().text());
-                if (labelExpr.isEmpty()) {
+                Label modelLabel =
+                    aspectEdge.getModelLabel(GraphInfo.hasRuleRole(getGraph()));
+                if (RegExprLabel.isEmpty(modelLabel)) {
                     // remove edge arrow
                     GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
-                } else if (!labelExpr.isAtom()) {
+                } else if (modelLabel instanceof RegExprLabel) {
                     setFontAttr(result, Font.ITALIC);
                 }
             } catch (FormatException exc) {

@@ -84,7 +84,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision: 1923 $
  */
-public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
+public class DefaultRuleView implements RuleView {
     /**
      * Constructs a rule view from an aspect graph. The rule properties are
      * explicitly given.
@@ -211,11 +211,6 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
         return getProperties() != null && getProperties().isInjective();
     }
 
-    @Override
-    protected LabelParser getDefaultLabelParser() {
-        return RegExprLabelParser.getInstance();
-    }
-
     /**
      * Invalidates any previous construction of the underlying rule. This means
      * the rule will be reconstructed when there is a call for it, using
@@ -338,105 +333,100 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
                 nacNodeSet.add(lhsNodeImage);
             }
         }
-        try {
-            // now add edges to lhs, rhs and morphism
-            // remember from which nodes a type edge are added and deleted
-            Set<Node> deletedTypes = new HashSet<Node>();
-            Map<Node,Label> addedTypes = new HashMap<Node,Label>();
-            for (AspectEdge edge : this.levelMap.getEdges(level)) {
-                Edge lhsEdgeImage = lhsMap.getEdge(edge);
+        // now add edges to lhs, rhs and morphism
+        // remember from which nodes a type edge are added and deleted
+        Set<Node> deletedTypes = new HashSet<Node>();
+        Map<Node,Label> addedTypes = new HashMap<Node,Label>();
+        for (AspectEdge edge : this.levelMap.getEdges(level)) {
+            Edge lhsEdgeImage = lhsMap.getEdge(edge);
+            if (RuleAspect.inLHS(edge)) {
+                assert lhsEdgeImage != null : String.format(
+                    "View edge '%s' has no LHS image", edge);
+                lhs.addEdge(lhsEdgeImage);
+                if (!RuleAspect.inRHS(edge)
+                    && lhsEdgeImage.label().isNodeType()) {
+                    deletedTypes.add(lhsEdgeImage.source());
+                }
+            }
+            if (RuleAspect.inRHS(edge) && !RuleAspect.isMerger(edge)) {
+                Edge rhsEdgeImage = rhsMap.getEdge(edge);
+                assert rhsEdgeImage != null : String.format(
+                    "View edge '%s' has no RHS image", edge);
+                rhs.addEdge(rhsEdgeImage);
+                assert level.isExistential() || RuleAspect.inLHS(edge);
                 if (RuleAspect.inLHS(edge)) {
-                    assert lhsEdgeImage != null : String.format(
-                        "View edge '%s' has no LHS image", edge);
-                    lhs.addEdge(lhsEdgeImage);
-                    if (!RuleAspect.inRHS(edge)
-                        && lhsEdgeImage.label().isNodeType()) {
-                        deletedTypes.add(lhsEdgeImage.source());
+                    ruleMorph.putEdge(lhsEdgeImage, rhsEdgeImage);
+                } else {
+                    Label edgeLabel = rhsEdgeImage.label();
+                    if (RuleAspect.inLHS(edge.source())
+                        && edgeLabel.isNodeType()) {
+                        addedTypes.put(rhsEdgeImage.source(), edgeLabel);
                     }
                 }
-                if (RuleAspect.inRHS(edge) && !RuleAspect.isMerger(edge)) {
-                    Edge rhsEdgeImage = rhsMap.getEdge(edge);
-                    assert rhsEdgeImage != null : String.format(
-                        "View edge '%s' has no RHS image", edge);
-                    rhs.addEdge(rhsEdgeImage);
-                    assert level.isExistential() || RuleAspect.inLHS(edge);
-                    if (RuleAspect.inLHS(edge)) {
-                        ruleMorph.putEdge(lhsEdgeImage, rhsEdgeImage);
-                    } else {
-                        Label edgeLabel = rhsEdgeImage.label();
-                        if (RuleAspect.inLHS(edge.source())
-                            && edgeLabel.isNodeType()) {
-                            addedTypes.put(rhsEdgeImage.source(), edgeLabel);
-                        }
-                    }
-                }
-                if (RuleAspect.inNAC(edge) && lhsEdgeImage != null) {
-                    nacEdgeSet.add(lhsEdgeImage);
-                }
             }
-            // check if label variables are bound
-            Set<String> boundVars = getVars(lhs.edgeSet(), true);
-            Set<String> lhsVars = getVars(lhs.edgeSet(), false);
-            if (!boundVars.containsAll(lhsVars)) {
-                lhsVars.removeAll(boundVars);
-                throw new FormatException(
-                    "Left hand side variables %s not bound on left hand side",
-                    lhsVars);
+            if (RuleAspect.inNAC(edge) && lhsEdgeImage != null) {
+                nacEdgeSet.add(lhsEdgeImage);
             }
-            Set<String> rhsVars = getVars(rhs.edgeSet(), false);
-            if (!boundVars.containsAll(rhsVars)) {
-                rhsVars.removeAll(boundVars);
-                throw new FormatException(
-                    "Right hand side variables %s not bound on left hand side",
-                    rhsVars);
-            }
-            Set<String> nacVars = getVars(nacEdgeSet, false);
-            if (!boundVars.containsAll(nacVars)) {
-                nacVars.removeAll(boundVars);
-                throw new FormatException(
-                    "NAC variables %s not bound on left hand side", nacVars);
-            }
+        }
+        // check if label variables are bound
+        Set<String> boundVars = getVars(lhs.edgeSet(), true);
+        Set<String> lhsVars = getVars(lhs.edgeSet(), false);
+        if (!boundVars.containsAll(lhsVars)) {
+            lhsVars.removeAll(boundVars);
+            errors.add(String.format(
+                "Left hand side variables %s not bound on left hand side",
+                lhsVars));
+        }
+        Set<String> rhsVars = getVars(rhs.edgeSet(), false);
+        if (!boundVars.containsAll(rhsVars)) {
+            rhsVars.removeAll(boundVars);
+            errors.add(String.format(
+                "Right hand side variables %s not bound on left hand side",
+                rhsVars));
+        }
+        Set<String> nacVars = getVars(nacEdgeSet, false);
+        if (!boundVars.containsAll(nacVars)) {
+            nacVars.removeAll(boundVars);
+            errors.add(String.format(
+                "NAC variables %s not bound on left hand side", nacVars));
+        }
 
-            // check if node type additions and deletions are balanced
-            for (Node deletedType : deletedTypes) {
-                addedTypes.remove(deletedType);
-            }
-            if (!addedTypes.isEmpty()) {
-                StringBuilder error = new StringBuilder();
-                for (Label type : addedTypes.values()) {
-                    if (error.length() > 0) {
-                        error.append(String.format("%n"));
-                    }
-                    error.append(String.format(
-                        "New node type '%s' not allowed without removing old type",
-                        type));
+        // check if node type additions and deletions are balanced
+        for (Node deletedType : deletedTypes) {
+            addedTypes.remove(deletedType);
+        }
+        if (!addedTypes.isEmpty()) {
+            StringBuilder error = new StringBuilder();
+            for (Label type : addedTypes.values()) {
+                if (error.length() > 0) {
+                    error.append(String.format("%n"));
                 }
-                throw new FormatException(error.toString());
+                error.append(String.format(
+                    "New node type '%s' not allowed without removing old type",
+                    type));
             }
-            // the resulting rule
-            if (level.isExistential()) {
-                result =
-                    createRule(ruleMorph, this.levelMap.getRootMap(level),
-                        this.levelMap.getCoRootMap(level), level.getName());
-            } else {
-                result =
-                    createForall(lhs, this.levelMap.getRootMap(level),
-                        level.getName(), level.isPositive());
-            }
-            // add the nacs to the rule
-            for (Pair<Set<Node>,Set<Edge>> nacPair : AbstractGraph.getConnectedSets(
-                nacNodeSet, nacEdgeSet)) {
-                result.addSubCondition(computeNac(lhs, nacPair.first(),
-                    nacPair.second()));
-            }
-        } catch (FormatException e) {
-            result = null;
-            errors.addAll(e.getErrors());
+            errors.add(error.toString());
+        }
+        // the resulting rule
+        if (level.isExistential()) {
+            result =
+                createRule(ruleMorph, this.levelMap.getRootMap(level),
+                    this.levelMap.getCoRootMap(level), level.getName());
+        } else {
+            result =
+                createForall(lhs, this.levelMap.getRootMap(level),
+                    level.getName(), level.isPositive());
+        }
+        // add the nacs to the rule
+        for (Pair<Set<Node>,Set<Edge>> nacPair : AbstractGraph.getConnectedSets(
+            nacNodeSet, nacEdgeSet)) {
+            result.addSubCondition(computeNac(lhs, nacPair.first(),
+                nacPair.second()));
         }
         if (errors.isEmpty()) {
             return result;
         } else {
-            throw new FormatException(new ArrayList<String>(errors));
+            throw new FormatException(errors);
         }
     }
 
@@ -847,11 +837,6 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
             return this.levelNode == null;
         }
 
-        /** Returns the meta-node associated with this level. */
-        public final AspectNode getLevelNode() {
-            return this.levelNode;
-        }
-
         /** The view node representing this quantification level. */
         private final AspectNode levelNode;
         /** The index uniquely identifying this level. */
@@ -1089,7 +1074,6 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
         /**
          * Creates an ordered set to store the children of a meta-node. The
          * ordering is based on the level node corresponding to the level.
-         * @see Level#getLevelNode()
          */
         private Set<Level> createChildren() {
             return new TreeSet<Level>();
@@ -1294,8 +1278,7 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
-                Label varLabel =
-                    getDefaultLabelParser().parse(((AspectEdge) elem).label());
+                Label varLabel = ((AspectEdge) elem).getModelLabel(true);
                 result = RegExprLabel.getWildcardId(varLabel) != null;
             }
             if (!result) {
@@ -1396,22 +1379,38 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
          * given level.
          */
         private NodeEdgeMap computeRhsMap(Level index) throws FormatException {
+            Set<String> errors = new TreeSet<String>();
             NodeEdgeMap result = new NodeEdgeHashMap();
             for (AspectNode viewNode : getNodes(index)) {
                 if (RuleAspect.inRHS(viewNode)) {
-                    AspectNode representative =
-                        getRepresentative(index, viewNode);
-                    Node ruleNode = this.viewToRuleMap.getNode(representative);
-                    result.putNode(viewNode, ruleNode);
+                    try {
+                        AspectNode representative =
+                            getRepresentative(index, viewNode);
+                        Node ruleNode =
+                            this.viewToRuleMap.getNode(representative);
+                        result.putNode(viewNode, ruleNode);
+                    } catch (FormatException exc) {
+                        errors.add(exc.getMessage());
+                    }
                 }
             }
-            for (AspectEdge viewEdge : getEdges(index)) {
-                if (RuleAspect.inRHS(viewEdge)) {
-                    result.putEdge(viewEdge, computeEdgeImage(viewEdge,
-                        result.nodeMap()));
+            if (errors.isEmpty()) {
+                for (AspectEdge viewEdge : getEdges(index)) {
+                    if (RuleAspect.inRHS(viewEdge)) {
+                        try {
+                            result.putEdge(viewEdge, computeEdgeImage(viewEdge,
+                                result.nodeMap()));
+                        } catch (FormatException exc) {
+                            errors.add(exc.getMessage());
+                        }
+                    }
                 }
             }
-            return result;
+            if (errors.isEmpty()) {
+                return result;
+            } else {
+                throw new FormatException(errors);
+            }
         }
 
         /**
@@ -1610,7 +1609,7 @@ public class DefaultRuleView extends AbstractView<Rule> implements RuleView {
             }
             // compute the label; either a DefaultLabel or a RegExprLabel
             if (getAttributeValue(edge) == null) {
-                return createEdge(ends, parse(edge));// createRuleLabel(edge.label()));
+                return createEdge(ends, edge.getModelLabel(true));
             } else {
                 return DefaultRuleView.this.attributeFactory.createAttributeEdge(
                     edge, ends);

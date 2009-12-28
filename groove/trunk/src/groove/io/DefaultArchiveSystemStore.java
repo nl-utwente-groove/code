@@ -19,6 +19,7 @@ package groove.io;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleName;
@@ -250,6 +251,13 @@ public class DefaultArchiveSystemStore extends Observable implements
 
     @Override
     public AspectGraph renameRule(String oldName, String newName)
+        throws UnsupportedOperationException {
+        throw new UnsupportedOperationException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
+    public void relabel(Label oldLabel, Label newLabel)
         throws UnsupportedOperationException {
         throw new UnsupportedOperationException(String.format(
             "Archived grammar '%s' is immutable", getName()));

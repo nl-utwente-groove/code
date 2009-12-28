@@ -27,12 +27,13 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.rel.RegExprLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
-import groove.view.DefaultRuleView;
 import groove.view.FormatException;
 import groove.view.GraphView;
+import groove.view.NewRuleView;
 import groove.view.RuleView;
 import groove.view.View;
 
@@ -135,13 +136,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 
     /** Sets the list of errors to a copy of a given list. */
     private void setErrors(List<String> errors) {
-        if (errors == null || errors.isEmpty()) {
-            return;
+        if (errors == null) {
+            errors = Collections.emptyList();
         } else {
             errors = new ArrayList<String>(errors);
-            Collections.sort(errors);
-            GraphInfo.getInfo(this, true).setErrors(errors);
         }
+        Collections.sort(errors);
+        GraphInfo.getInfo(this, true).setErrors(errors);
     }
 
     /**
@@ -228,7 +229,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         for (Map.Entry<Edge,AspectMap> entry : edgeDataMap.entrySet()) {
             Edge edge = entry.getKey();
             try {
-
                 Edge edgeImage =
                     createAspectEdge(nodeMap.get(edge.source()),
                         nodeMap.get(edge.opposite()), entry.getValue());
@@ -238,30 +238,40 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 errors.addAll(e.getErrors());
             }
         }
-        // now test all nodes and edges for context correctness w.r.t. all their
-        // aspect values
-        for (AspectNode node : result.nodeSet()) {
-            try {
-                for (AspectValue value : node.getAspectMap()) {
-                    value.getAspect().checkNode(node, result);
-                }
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-        }
-        for (AspectEdge edge : result.edgeSet()) {
-            try {
-                for (AspectValue value : edge.getAspectMap()) {
-                    value.getAspect().checkEdge(edge, result);
-                }
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-        }
+        result.checkAspects(errors);
         GraphInfo.transfer(graph, result, elementMap);
         result.setErrors(errors);
         result.setFixed();
         return result;
+    }
+
+    /**
+     * Checks this aspect graph for aspect errors.
+     * @see Aspect#checkNode(AspectNode, AspectGraph)
+     * @see Aspect#checkEdge(AspectEdge, AspectGraph)
+     */
+    private List<String> checkAspects(List<String> errors) {
+        // now test all nodes and edges for context correctness w.r.t. all their
+        // aspect values
+        for (AspectNode node : nodeSet()) {
+            try {
+                for (AspectValue value : node.getAspectMap()) {
+                    value.getAspect().checkNode(node, this);
+                }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
+        for (AspectEdge edge : edgeSet()) {
+            try {
+                for (AspectValue value : edge.getAspectMap()) {
+                    value.getAspect().checkEdge(edge, this);
+                }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
+        return errors;
     }
 
     /**
@@ -411,6 +421,58 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     }
 
     /**
+     * Returns an aspect graph obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this aspect graph with changed labels, or this graph
+     *         if {@code oldLabel} did not occur
+     */
+    public AspectGraph relabel(Label oldLabel, Label newLabel) {
+        AspectGraph result = clone();
+        Map<AspectEdge,AspectEdge> oldToNew =
+            new HashMap<AspectEdge,AspectEdge>();
+        for (AspectEdge edge : result.edgeSet()) {
+            try {
+                Label label = edge.getModelLabel(GraphInfo.hasRuleRole(this));
+                Label replacement = null;
+                if (label instanceof DefaultLabel) {
+                    if (label.equals(oldLabel)) {
+                        replacement = newLabel;
+                    }
+                } else {
+                    assert label instanceof RegExprLabel;
+                    replacement =
+                        ((RegExprLabel) label).getRegExpr().relabel(oldLabel,
+                            newLabel).toLabel();
+                }
+                if (replacement != null) {
+                    AspectMap newData = edge.getAspectMap().clone();
+                    newData.remove(NodeTypeAspect.getInstance());
+                    if (replacement.isNodeType()) {
+                        newData.addDeclaredValue(NodeTypeAspect.NODE_TYPE);
+                    }
+                    newData.setText(replacement.text());
+                    oldToNew.put(edge, createAspectEdge(edge.source(),
+                        edge.target(), newData));
+                }
+            } catch (FormatException exc) {
+                // do nothing with this label
+            }
+        }
+        if (oldToNew.isEmpty()) {
+            return this;
+        } else {
+            result.removeEdgeSet(oldToNew.keySet());
+            result.addEdgeSet(oldToNew.values());
+            // get errors by converting to a plain graph and back
+            result.setErrors(Collections.<String>emptyList());
+            result.setErrors(fromPlainGraph(result.toPlainGraph()).getErrors());
+            return result;
+        }
+    }
+
+    /**
      * Creates a graph view from this aspect graph. Further information for the
      * conversion is given through a properties object. The view object is
      * reused when possible.
@@ -422,7 +484,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     public GraphView toGraphView(SystemProperties properties)
         throws IllegalStateException {
-        if (!Groove.GRAPH_ROLE.equals(GraphInfo.getRole(this))) {
+        if (!GraphInfo.hasGraphRole(this)) {
             throw new IllegalStateException(
                 "Aspect graph does not represent a state graph");
         }
@@ -454,9 +516,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     public RuleView toRuleView(SystemProperties properties)
         throws IllegalStateException {
-        if (!Groove.RULE_ROLE.equals(GraphInfo.getRole(this))) {
+        if (!GraphInfo.hasRuleRole(this)) {
             throw new IllegalStateException(
-                "Aspect graph does not represent a state graph");
+                "Aspect graph does not represent a rule graph");
         }
         boolean refreshView = this.ruleView == null;
         if (!refreshView) {
@@ -466,7 +528,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.ruleView = new DefaultRuleView(this, properties);
+            this.ruleView = new NewRuleView(this, properties);
         } else {
             this.ruleView.setProperties(properties);
         }
@@ -480,7 +542,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @see #toRuleView(SystemProperties)
      */
     public View<?> toView() {
-        if (Groove.RULE_ROLE.equals(GraphInfo.getRole(this))) {
+        if (GraphInfo.hasRuleRole(this)) {
             return toRuleView(null);
         } else {
             return toGraphView(null);

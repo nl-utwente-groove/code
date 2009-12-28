@@ -29,8 +29,6 @@ import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
-import groove.view.LabelParser;
-import groove.view.RegExprLabelParser;
 import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.NodeTypeAspect;
 
@@ -281,11 +279,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result = NodeTypeAspect.NODE_TYPE.getPrefix() + result;
         }
         return result;
-    }
-
-    /** Callback factory method to create a label parser for this jnode. */
-    LabelParser createLabelParser() {
-        return RegExprLabelParser.getInstance();
     }
 
     /**

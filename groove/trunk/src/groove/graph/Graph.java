@@ -253,7 +253,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @see #removeEdge(Edge)
      * @see #removeNodeSet(Collection)
      */
-    boolean removeEdgeSet(Collection<Edge> edgeSet);
+    boolean removeEdgeSet(Collection<? extends Edge> edgeSet);
 
     /**
      * Merges two nodes in this graph, by adding all edges to and from the first
