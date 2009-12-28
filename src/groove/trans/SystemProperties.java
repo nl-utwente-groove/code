@@ -1,6 +1,7 @@
 package groove.trans;
 
 import groove.algebra.AlgebraRegister;
+import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.util.Fixable;
 import groove.util.Groove;
@@ -9,6 +10,7 @@ import groove.view.FormatException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.InvalidPropertiesFormatException;
@@ -310,6 +312,55 @@ public class SystemProperties extends java.util.Properties implements Fixable,
         SystemProperties result = (SystemProperties) super.clone();
         result.fixed = false;
         return result;
+    }
+
+    /**
+     * Returns a clone of this properties object where all occurrences of a
+     * given label are replaced by a new label.
+     * @param oldLabel the label to be replaced
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of these properties, or the properties themselves if
+     *         {@code oldLabel} did not occur
+     */
+    public SystemProperties relabel(Label oldLabel, Label newLabel) {
+        SystemProperties result = clone();
+        boolean hasChanged = false;
+        String oldText = oldLabel.text();
+        // change the control labels
+        List<String> controlLabels = getControlLabels();
+        List<String> newControlLabels = new ArrayList<String>(controlLabels);
+        if (controlLabels != null && controlLabels.contains(oldText)) {
+            int index = controlLabels.indexOf(oldText);
+            newControlLabels.set(index, newLabel.text());
+            result.setControlLabels(newControlLabels);
+            hasChanged = true;
+        }
+        // change the common labels
+        List<String> commonLabels = getControlLabels();
+        List<String> newCommonLabels = new ArrayList<String>(commonLabels);
+        if (commonLabels != null && commonLabels.contains(oldText)) {
+            int index = commonLabels.indexOf(oldText);
+            newCommonLabels.set(index, newLabel.text());
+            result.setCommonLabels(newCommonLabels);
+            hasChanged = true;
+        }
+        // change the subtype relation
+        try {
+            LabelStore subtypeStore =
+                LabelStore.createLabelStore(getSubtypes());
+            LabelStore newSubtypeStore =
+                subtypeStore.relabel(oldLabel, newLabel);
+            if (subtypeStore != newSubtypeStore) {
+                result.setSubtypes(newSubtypeStore.toDirectSubtypeString());
+                hasChanged = true;
+            }
+        } catch (FormatException exc) {
+            assert false : String.format(
+                "Subtype string '%s' gives rise to format error: ",
+                getSubtypes(), exc.getMessage());
+        }
+
+        return hasChanged ? result : this;
     }
 
     /**

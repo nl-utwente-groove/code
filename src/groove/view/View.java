@@ -34,13 +34,6 @@ import java.util.Set;
  */
 public interface View<Model> {
     /**
-     * Returns the view graph.
-     * @deprecated replace by {@link #getView()}
-     */
-    @Deprecated
-    AspectGraph getAspectGraph();
-
-    /**
      * Returns the actual view graph.
      */
     AspectGraph getView();

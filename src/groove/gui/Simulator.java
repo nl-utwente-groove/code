@@ -52,6 +52,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
@@ -60,7 +61,7 @@ import groove.gui.dialog.FormulaDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
-import groove.gui.dialog.ReplaceLabelDialog;
+import groove.gui.dialog.RelabelDialog;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
@@ -870,6 +871,18 @@ public class Simulator {
                 showErrorDialog("Error while refreshing grammar from "
                     + getGrammarStore().getLocation(), exc);
             }
+        }
+    }
+
+    /** Replaces all occurrences of a given label into another label. */
+    void doRelabel(Label oldLabel, Label newLabel) {
+        try {
+            getGrammarStore().relabel(oldLabel, newLabel);
+            updateGrammar();
+        } catch (IOException exc) {
+            showErrorDialog(String.format(
+                "Error while renaming '%s' into '%s':", oldLabel, newLabel),
+                exc);
         }
     }
 
@@ -1764,7 +1777,7 @@ public class Simulator {
         result.add(getDeleteRuleAction());
         result.add(getRenameRuleAction());
         result.addSeparator();
-        result.add(getReplaceLabelAction());
+        result.add(getRelabelAction());
         result.addSeparator();
         result.add(getEditRuleAction());
         result.add(getEditStateAction());
@@ -2425,12 +2438,13 @@ public class Simulator {
      *         replacement, neither of which can be <code>null</code>; or
      *         <code>null</code> if the dialog was cancelled.
      */
-    Pair<String,String> askReplacement() {
-        ReplaceLabelDialog dialog =
-            new ReplaceLabelDialog(Collections.<String>emptySet(), null);
+    private Pair<Label,Label> askRelabelling(Label oldLabel) {
+        Set<Label> existingLabels =
+            getGrammarView().getLabelStore().getLabels();
+        RelabelDialog dialog = new RelabelDialog(existingLabels, oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
-            return new Pair<String,String>(dialog.getOriginal(),
-                dialog.getReplacement());
+            return new Pair<Label,Label>(dialog.getOldLabel(),
+                dialog.getNewLabel());
         } else {
             return null;
         }
@@ -4180,6 +4194,42 @@ public class Simulator {
      * Returns the rule renaming action permanently associated with this
      * simulator.
      */
+    public RelabelAction getRelabelAction() {
+        // lazily create the action
+        if (this.relabelAction == null) {
+            this.relabelAction = new RelabelAction();
+        }
+        return this.relabelAction;
+    }
+
+    /**
+     * The graph renaming action permanently associated with this simulator.
+     */
+    private RelabelAction relabelAction;
+
+    private class RelabelAction extends RefreshableAction {
+        RelabelAction() {
+            super(Options.RELABEL_ACTION_NAME, Groove.RENAME_ICON);
+        }
+
+        public void refresh() {
+            setEnabled(getGrammarView() != null
+                && getGrammarStore().isModifiable()
+                && !getGrammarView().getLabelStore().getLabels().isEmpty());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Pair<Label,Label> relabelling = askRelabelling(null);
+            if (relabelling != null) {
+                doRelabel(relabelling.first(), relabelling.second());
+            }
+        }
+    }
+
+    /**
+     * Returns the rule renaming action permanently associated with this
+     * simulator.
+     */
     public RenameGraphAction getRenameGraphAction() {
         // lazily create the action
         if (this.renameGraphAction == null) {
@@ -4293,43 +4343,6 @@ public class Simulator {
                 }
                 if (newRuleName != null) {
                     setRule(newRuleName);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public ReplaceLabelAction getReplaceLabelAction() {
-        // lazily create the action
-        if (this.replaceLabelAction == null) {
-            this.replaceLabelAction = new ReplaceLabelAction();
-        }
-        return this.replaceLabelAction;
-    }
-
-    /**
-     * The label renaming action permanently associated with this simulator.
-     */
-    private ReplaceLabelAction replaceLabelAction;
-
-    /** Action that renames all instances of a given label into another. */
-    private class ReplaceLabelAction extends RefreshableAction {
-        ReplaceLabelAction() {
-            super(Options.REPLACE_ACTION_NAME, null);
-        }
-
-        public void refresh() {
-            setEnabled(getGrammarView() != null);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(true)) {
-                Pair<String,String> renaming = askReplacement();
-                if (renaming != null) {
-                    doRenameLabel(renaming.first(), renaming.second());
                 }
             }
         }

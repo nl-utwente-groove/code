@@ -33,6 +33,15 @@ public class NodeTypeAspect extends AbstractAspect {
         super(NODE_TYPE_ASPECT_NAME);
     }
 
+    @Override
+    public void checkEdge(AspectEdge edge, AspectGraph graph)
+        throws FormatException {
+        if (isNodeType(edge) && !edge.source().equals(edge.opposite())) {
+            throw new FormatException(
+                "Node type label '%s' only allowed on self-edges", edge.label());
+        }
+    }
+
     /** Indicates if a given aspect edge stands for a node type. */
     public static boolean isNodeType(AspectEdge edge) {
         AspectValue value = edge.getValue(getInstance());

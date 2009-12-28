@@ -273,8 +273,8 @@ public class Options {
     public static final String RESTART_ACTION_NAME = "Restart simulation";
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
-    /** Label replace action name */
-    public static final String REPLACE_ACTION_NAME = "Replace Label";
+    /** Graph rename action name */
+    public static final String RELABEL_ACTION_NAME = "Replace label";
     /** Control program rename action name */
     public static final String RENAME_CONTROL_ACTION_NAME = "Rename Control";
     /** Graph rename action name */
@@ -314,7 +314,7 @@ public class Options {
      * Scroll to action name
      */
     static public final String SCROLL_TO_ACTION_NAME = "Scroll to current";
-      
+
     /**
      * Graph mode action name
      */

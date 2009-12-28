@@ -18,8 +18,12 @@ package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.graph.DefaultLabel;
+import groove.graph.Label;
+import groove.view.ComposedLabelParser;
 import groove.view.FormatException;
+import groove.view.FreeLabelParser;
 import groove.view.LabelParser;
+import groove.view.RegExprLabelParser;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -174,6 +178,62 @@ public class AspectMap implements Iterable<AspectValue> {
     }
 
     /**
+     * Removes an aspect from the map. Returns the value stored for this aspect,
+     * if any.
+     * @param aspect the aspect to be removed.
+     */
+    public AspectValue remove(Aspect aspect) {
+        AspectValue result = this.aspectMap.remove(aspect);
+        if (result != null) {
+            this.declaredValues.remove(result);
+            if (result.equals(getSingularValue())) {
+                resetSingularValue();
+            }
+        }
+        return result;
+    }
+
+    /** Returns a clone of this map. */
+    @Override
+    public AspectMap clone() {
+        return new AspectMap(this);
+    }
+
+    /**
+     * Returns the label obtained by parsing the text according to the aspect
+     * values in the map.
+     * @param regExpr if <code>true</code>, recognise regular expressions
+     * @return the parsed label, or {@code null} if there is no label text
+     * @throws FormatException if the label contains a format error
+     */
+    public Label toModelLabel(boolean regExpr) throws FormatException {
+        Label result = null;
+        if (getText() != null) {
+            LabelParser parser = null;
+            for (AspectValue value : this) {
+                // find the parser for this aspect value
+                LabelParser valueParser = value.getLabelParser();
+                // set it as the label parser, or compose it with the previously
+                // found parser
+                if (parser == null) {
+                    parser = valueParser;
+                } else if (valueParser != null && !valueParser.equals(parser)) {
+                    parser = new ComposedLabelParser(parser, valueParser);
+                }
+            }
+            // use the default parser if none is found
+            if (parser == null) {
+                parser =
+                    regExpr ? RegExprLabelParser.getInstance()
+                            : FreeLabelParser.getInstance();
+            }
+            // parse the label
+            result = parser.parse(DefaultLabel.createLabel(getText()));
+        }
+        return result;
+    }
+
+    /**
      * Tests if the aspect map contains a value that is incompatible with a
      * given new value.
      * @throws FormatException if there is an incompatible value in the aspect
@@ -217,6 +277,11 @@ public class AspectMap implements Iterable<AspectValue> {
         return this.singularValue;
     }
 
+    /** Removes the singular value. */
+    private void resetSingularValue() {
+        this.singularValue = null;
+    }
+
     /**
      * Sets a given aspect value as singular value. Removes all other aspect
      * values.
@@ -251,9 +316,13 @@ public class AspectMap implements Iterable<AspectValue> {
     /** The (sub)set of declared aspect values. */
     private final Set<AspectValue> declaredValues = new HashSet<AspectValue>();
 
-    /** Sets the label text and the explicit end flag. */
-    void setText(String text, boolean hasEnd) {
+    /** Sets the label text. */
+    void setText(String text) {
         this.text = text;
+    }
+
+    /** Sets the explicit end flag. */
+    void setHasEnd(boolean hasEnd) {
         this.hasEnd = hasEnd;
     }
 

@@ -265,13 +265,18 @@ public class RuleAspect extends AbstractAspect {
      * @param edge the edge to be tested
      * @return <code>true</code> if <code>edge</code> is a merger
      */
-    public static boolean isMerger(AspectEdge edge) throws FormatException {
+    public static boolean isMerger(AspectEdge edge) {
+        boolean result = false;
         if (isCreator(edge)) {
-            return RegExprLabel.isEmpty(CREATOR.getLabelParser().parse(
-                edge.label()));
-        } else {
-            return false;
+            try {
+                result =
+                    RegExprLabel.isEmpty(CREATOR.getLabelParser().parse(
+                        edge.label()));
+            } catch (FormatException exc) {
+                // do nothing
+            }
         }
+        return result;
     }
 
     /**

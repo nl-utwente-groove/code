@@ -126,6 +126,16 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     }
 
     /**
+     * Returns the label that this edge gets, when compiled to a model edge.
+     * Convenience method for {@code getAspectMap().toModelLabel(regExpr)}
+     * @param regExpr if <code>true</code>, recognise regular expressions
+     * @throws FormatException if the label contains a format error
+     */
+    public Label getModelLabel(boolean regExpr) throws FormatException {
+        return getAspectMap().toModelLabel(regExpr);
+    }
+
+    /**
      * Includes the hash code of the associated aspect values.
      */
     @Override
