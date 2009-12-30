@@ -45,6 +45,11 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
         return (DefaultPort) getFirstChild();
     }
 
+    /** Returns the number with which this vertex was initialised. */
+    public int getNumber() {
+        return getUserObject().getNumber();
+    }
+
     /**
      * Returns HTML-formatted text, without a surrounding HTML tag.
      */

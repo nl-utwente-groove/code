@@ -269,7 +269,12 @@ abstract public class JModel extends DefaultGraphModel {
      * a JVertex. Subclasses may use this to determine the node number.
      */
     protected Node addFreshNode(groove.graph.Graph result, JVertex root) {
-        return result.addNode();
+        Node node = DefaultNode.createNode(root.getNumber());
+        boolean fresh = result.addNode(node);
+        // assert fresh : String.format("Node '%s' already occurred in %s",
+        // node,
+        // result);
+        return node;
     }
 
     /**

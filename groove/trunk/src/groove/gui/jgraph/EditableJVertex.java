@@ -32,15 +32,18 @@ import java.util.List;
  * @version $Revision $
  */
 public class EditableJVertex extends JVertex implements EditableJCell {
-    /** Constructs a new, empty empty j-vertex. */
-    public EditableJVertex() {
-        // empty constructor.
+    /**
+     * Constructs a new, empty empty j-vertex with a given number.
+     * @param nr the number of the new vertex
+     */
+    public EditableJVertex(int nr) {
+        getUserObject().setNumber(nr);
     }
 
     /** Constructs a jvertex by cloning another one. */
     public EditableJVertex(JVertex other) {
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getUserObject().getLabelSet());
+        setUserObject(other.getUserObject());
     }
 
     /** This implementation just returns the user object. */
@@ -79,9 +82,11 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     @SuppressWarnings("unchecked")
     public void setUserObject(Object value) {
         EditableContent newObject = createUserObject();
+        newObject.setNumber(getNumber());
         super.setUserObject(newObject);
-        if (value instanceof Collection) {
-            newObject.load((Collection<String>) value);
+        if (value instanceof JCellContent) {
+            newObject.load(((JCellContent) value).getLabelSet());
+            newObject.setNumber(((JCellContent) value).getNumber());
         } else if (value != null) {
             newObject.load(value.toString());
         }

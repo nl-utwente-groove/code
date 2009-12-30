@@ -340,6 +340,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             "JModel node '%s' does not have underlying graph node", root);
         Node result = DefaultNode.createNode(modelNode.getNumber());
         boolean fresh = graph.addNode(result);
+        assert fresh;
         if (!fresh) {
             // a node with this number already existed in the graph
             // this may happen because value nodes use the same numbers

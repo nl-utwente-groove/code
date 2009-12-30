@@ -328,7 +328,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 
     @Override
     EdgeContent createUserObject() {
-        return new EdgeContent();
+        EdgeContent result = new EdgeContent();
+        result.setNumber(getNode().getNumber());
+        return result;
     }
 
     /**
