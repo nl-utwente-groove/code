@@ -151,6 +151,8 @@ public class Options {
     /** Apply transition action name */
     public static final String APPLY_TRANSITION_ACTION_NAME =
         "Apply active match";
+    /** Back action name */
+    public static final String BACK_ACTION_NAME = "Back";
     /** Action name for cancelling an edit. */
     public static final String CANCEL_EDIT_ACTION_NAME = "Cancel Edit";
     /** Close action name */
@@ -216,6 +218,8 @@ public class Options {
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
     /** Export state action name */
     public static final String FILTER_ACTION_NAME = "Filter labels";
+    /** Back action name */
+    public static final String FORWARD_ACTION_NAME = "Forward";
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME =
         "Go to Start State";
@@ -362,6 +366,9 @@ public class Options {
      */
     static public final KeyStroke APPLY_KEY =
         KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
+    /** Back keystroke */
+    public static final KeyStroke BACK_KEY =
+        KeyStroke.getKeyStroke("control LEFT");
     /**
      * Copy keystroke
      */
@@ -393,6 +400,9 @@ public class Options {
     /** Exploration Dialog keystroke */
     public static final KeyStroke EXPLORE_KEY =
         KeyStroke.getKeyStroke("control shift E");
+    /** Back keystroke */
+    public static final KeyStroke FORWARD_KEY =
+        KeyStroke.getKeyStroke("control RIGHT");
     /** Goto start state keystroke */
     public static final KeyStroke GOTO_START_STATE_KEY =
         KeyStroke.getKeyStroke("control G");
@@ -432,7 +442,7 @@ public class Options {
     /**
      * Edit label keystroke
      */
-    public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("F2");
+    public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
     public static final KeyStroke REMOVE_POINT_KEY =
         KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);

@@ -157,6 +157,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.undo.UndoManager;
 
 /**
  * Program that applies a production system to an initial graph.
@@ -272,7 +273,18 @@ public class Simulator {
      * Sets the {@link #grammarView} and {@link #currentRuleName} fields.
      */
     private void setGrammarView(StoredGrammarView grammar) {
-        this.grammarView = grammar;
+        if (this.grammarView != grammar) {
+            getUndoManager().discardAllEdits();
+            if (this.grammarView != null) {
+                this.grammarView.getStore().removeUndoableEditListener(
+                    getUndoManager());
+            }
+            this.grammarView = grammar;
+            if (this.grammarView != null) {
+                this.grammarView.getStore().addUndoableEditListener(
+                    getUndoManager());
+            }
+        }
     }
 
     /**
@@ -425,7 +437,7 @@ public class Simulator {
     }
 
     /** Returns (after lazily creating) the undo history for this simulator. */
-    private UndoHistory getUndoHistory() {
+    private UndoHistory getSimulationHistory() {
         if (this.undoHistory == null) {
             this.undoHistory = new UndoHistory(this);
         }
@@ -521,7 +533,7 @@ public class Simulator {
                     graph.getErrors()));
             } else {
                 getGrammarStore().putGraph(graph);
-                getStateList().refreshList(true);
+                refresh();
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving graph '%s'",
@@ -576,7 +588,7 @@ public class Simulator {
             getGrammarView().removeStartGraph();
             updateGrammar();
         } else {
-            getStateList().refreshList(true);
+            refresh();
         }
     }
 
@@ -866,6 +878,7 @@ public class Simulator {
         if (getGrammarStore() != null) {
             try {
                 getGrammarStore().reload();
+                getUndoManager().discardAllEdits();
                 updateGrammar();
             } catch (IOException exc) {
                 showErrorDialog("Error while refreshing grammar from "
@@ -896,15 +909,32 @@ public class Simulator {
         // grammar
         boolean isStartGraph =
             oldName.equals(getGrammarView().getStartGraphName());
-        getGrammarStore().deleteGraph(oldName);
-        GraphInfo.setName(graph, newName);
-        doAddGraph(graph);
-        if (isStartGraph) {
-            // reset the start graph to the renamed graph
-            getGrammarView().setStartGraph(newName);
+        try {
+            getGrammarStore().renameGraph(oldName, newName);
+            if (isStartGraph) {
+                // reset the start graph to the renamed graph
+                getGrammarView().setStartGraph(newName);
+                updateGrammar();
+            } else {
+                refresh();
+            }
+        } catch (IOException exc) {
+            showErrorDialog(String.format("Error while saving graph '%s'",
+                GraphInfo.getName(graph)), exc);
+        }
+    }
+
+    /**
+     * Renames one of the rule in the grammar.
+     */
+    void doRenameRule(AspectGraph graph, String newName) {
+        String oldName = GraphInfo.getName(graph);
+        try {
+            getGrammarStore().renameRule(oldName, newName);
             updateGrammar();
-        } else {
-            getStateList().refreshList(true);
+        } catch (IOException exc) {
+            showErrorDialog(String.format("Error while saving graph '%s'",
+                GraphInfo.getName(graph)), exc);
         }
     }
 
@@ -1769,6 +1799,9 @@ public class Simulator {
     private JMenu createEditMenu() {
         JMenu result = new JMenu(Options.EDIT_MENU_NAME);
         result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
+        result.add(getUndoAction());
+        result.add(getRedoAction());
+        result.addSeparator();
         result.add(getNewRuleAction());
         result.addSeparator();
         result.add(getEnableRuleAction());
@@ -1876,8 +1909,8 @@ public class Simulator {
         result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
         JMenu exploreMenu = new ScenarioMenu(this, false);
         result.setText(exploreMenu.getText());
-        result.add(new JMenuItem(getUndoAction()));
-        result.add(new JMenuItem(getRedoAction()));
+        result.add(new JMenuItem(getBackAction()));
+        result.add(new JMenuItem(getForwardAction()));
         result.addSeparator();
         result.add(new JMenuItem(getStartSimulationAction()));
         // IOVKA change to activate abstract simulation
@@ -2214,6 +2247,7 @@ public class Simulator {
      */
     public void refresh() {
         setTitle();
+        getStateList().refreshList(true);
         refreshActions();
     }
 
@@ -2662,6 +2696,14 @@ public class Simulator {
      */
     private JMenuItem editGraphItem;
 
+    /** Returns the undo manager of this simulator. */
+    private final UndoManager getUndoManager() {
+        return this.undoManager;
+    }
+
+    /** The undo manager of this simulator. */
+    private final UndoManager undoManager = new UndoManager();
+
     /**
      * Class that spawns a thread to perform a long-lasting action, while
      * displaying a dialog that can interrupt the thread.
@@ -2856,6 +2898,21 @@ public class Simulator {
      * simulator.
      */
     private ApplyTransitionAction applyTransitionAction;
+
+    /**
+     * Returns the back simulation action permanently associated with this
+     * simulator.
+     */
+    public Action getBackAction() {
+        if (this.backAction == null) {
+            this.backAction = getSimulationHistory().getBackAction();
+            addAccelerator(this.backAction);
+        }
+        return this.backAction;
+    }
+
+    /** The back simulation action permanently associated with this simulator. */
+    private Action backAction;
 
     /**
      * Returns the graph copying action permanently associated with this
@@ -3592,6 +3649,23 @@ public class Simulator {
     }
 
     /**
+     * Returns the forward (= repeat) simulation action permanently associated
+     * with this simulator.
+     */
+    public Action getForwardAction() {
+        if (this.forwardAction == null) {
+            this.forwardAction = getSimulationHistory().getForwardAction();
+            addAccelerator(this.forwardAction);
+        }
+        return this.forwardAction;
+    }
+
+    /**
+     * The forward simulation action permanently associated with this simulator.
+     */
+    private Action forwardAction;
+
+    /**
      * Returns the go-to start state action permanently associated with this
      * simulator.
      */
@@ -4137,19 +4211,48 @@ public class Simulator {
         }
     }
 
-    /** Returns the REDO action permanently associated with this simulator. */
+    /**
+     * Returns the redo action permanently associated with this simulator.
+     */
     public Action getRedoAction() {
         if (this.redoAction == null) {
-            this.redoAction = getUndoHistory().getRedoAction();
-            addAccelerator(this.redoAction);
+            this.redoAction = new RedoAction();
         }
         return this.redoAction;
     }
 
     /**
-     * The redo action permanently associated with this simulator.
+     * The redo permanently associated with this simulator.
      */
-    private Action redoAction;
+    private RedoAction redoAction;
+
+    /**
+     * Action for redoing the last edit to the grammar.
+     */
+    private class RedoAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        RedoAction() {
+            super(Options.REDO_ACTION_NAME, Groove.REDO_ICON);
+            putValue(ACCELERATOR_KEY, Options.REDO_KEY);
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            getUndoManager().redo();
+            updateGrammar();
+        }
+
+        public void refresh() {
+            if (getUndoManager().canRedo()) {
+                setEnabled(true);
+                putValue(Action.NAME,
+                    getUndoManager().getRedoPresentationName());
+            } else {
+                setEnabled(false);
+                putValue(Action.NAME, Options.REDO_ACTION_NAME);
+            }
+        }
+    }
 
     /**
      * Returns the grammar refresh action permanently associated with this
@@ -4337,8 +4440,7 @@ public class Simulator {
                         askNewRuleName("Select new rule name",
                             oldRuleName.text(), true);
                     if (newRuleName != null) {
-                        doDeleteRule(oldRuleName);
-                        doAddRule(newRuleName, ruleGraph);
+                        doRenameRule(ruleGraph, newRuleName.text());
                     }
                 }
                 if (newRuleName != null) {
@@ -4566,17 +4668,48 @@ public class Simulator {
         }
     }
 
-    /** Returns the undo action permanently associated with this simulator. */
+    /**
+     * Returns the undo action permanently associated with this simulator.
+     */
     public Action getUndoAction() {
         if (this.undoAction == null) {
-            this.undoAction = getUndoHistory().getUndoAction();
-            addAccelerator(this.undoAction);
+            this.undoAction = new UndoAction();
         }
         return this.undoAction;
     }
 
-    /** The undo action permanently associated with this simulator. */
-    private Action undoAction;
+    /**
+     * The undo action permanently associated with this simulator.
+     */
+    private UndoAction undoAction;
+
+    /**
+     * Action for undoing an edit to the grammar.
+     */
+    private class UndoAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        UndoAction() {
+            super(Options.UNDO_ACTION_NAME, Groove.UNDO_ICON);
+            putValue(ACCELERATOR_KEY, Options.UNDO_KEY);
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            getUndoManager().undo();
+            updateGrammar();
+        }
+
+        public void refresh() {
+            if (getUndoManager().canUndo()) {
+                setEnabled(true);
+                putValue(Action.NAME,
+                    getUndoManager().getUndoPresentationName());
+            } else {
+                setEnabled(false);
+                putValue(Action.NAME, Options.UNDO_ACTION_NAME);
+            }
+        }
+    }
 
     /**
      * Returns the CTL formula providing action permanently associated with this

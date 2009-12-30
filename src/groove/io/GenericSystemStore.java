@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.swing.event.UndoableEditListener;
+
 /**
  * Interface for any source of rule system data. The data consist of a list of
  * graphs, a list of rules, a list of control programs, and a rule system
@@ -184,4 +186,10 @@ public interface GenericSystemStore<R,G> {
      * @return <code>true</code> if the store is modifiable
      */
     public boolean isModifiable();
+
+    /** Adds a listener to this store. */
+    public void addUndoableEditListener(UndoableEditListener listener);
+
+    /** Removes a listener from this store. */
+    public void removeUndoableEditListener(UndoableEditListener listener);
 }

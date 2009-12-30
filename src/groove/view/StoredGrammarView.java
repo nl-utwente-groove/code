@@ -388,9 +388,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     @Override
-    public void update(Observable arg0, Object arg1) {
-        assert arg0 == this.store;
-        int change = (Integer) arg1;
+    public void update(Observable source, Object edit) {
+        int change = ((SystemStore.Edit) edit).getChange();
         if ((change & SystemStore.CONTROL_CHANGE) > 0) {
             loadControlMap();
         }
