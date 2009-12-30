@@ -20,8 +20,10 @@ import groove.gui.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
@@ -217,7 +219,18 @@ public class EditorJModel extends JModel {
      * {@link JModel#createJVertexAttr(JVertex)}.
      */
     protected EditableJVertex computeJVertex() {
-        EditableJVertex result = new EditableJVertex();
+        // search for an unused node number
+        Set<Integer> usedNrs = new HashSet<Integer>();
+        for (Object root : getRoots()) {
+            if (root instanceof JVertex) {
+                usedNrs.add(((JVertex) root).getNumber());
+            }
+        }
+        int nr = 0;
+        while (usedNrs.contains(nr)) {
+            nr++;
+        }
+        EditableJVertex result = new EditableJVertex(nr);
         result.getAttributes().applyMap(createJVertexAttr(result));
         return result;
     }

@@ -16,11 +16,11 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import groove.graph.Edge;
 
 /**
  * Content for a JCell consisting of a set of edges.
@@ -37,4 +37,21 @@ public class EdgeContent extends JCellContent<Edge> {
         }
         return result;
     }
+
+    /**
+     * Returns the stored number.
+     * @see #setNumber(int)
+     */
+    @Override
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** Sets the number of this user object. */
+    public void setNumber(int nr) {
+        this.nr = nr;
+    }
+
+    /** The number stored in this user object. */
+    private int nr;
 }

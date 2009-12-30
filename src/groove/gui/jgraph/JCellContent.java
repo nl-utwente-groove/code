@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 /**
- * User object underlying a {@link JVertex}or {@link JEdge}. The object
- * behaves as a set that can be loaded from a {@link String}.
+ * User object underlying a {@link JVertex}or {@link JEdge}. The object behaves
+ * as a set that can be loaded from a {@link String}.
  * 
  * @author Arend Rensink
  * @version $Revision$
@@ -34,4 +34,10 @@ abstract public class JCellContent<T> extends TreeSet<T> {
      *         collection
      */
     abstract public Collection<String> getLabelSet();
+
+    /**
+     * Returns the number associated with this user object. This stores the
+     * underlying node number in case the cell is a node.
+     */
+    abstract public int getNumber();
 }

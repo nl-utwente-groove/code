@@ -37,17 +37,28 @@ public class EditableContent extends JCellContent<String> {
      * string can also be set.
      * @param allowEmptyLabelSet set to <code>true</code> if the label set
      *        should not be empty.
-     * @see #getEditSeparator()
-     * @ensure <tt>getPrintSeparator().equals(printSeparator) && getEditSeparator().equals(editSeparator)</tt>
      */
     public EditableContent(boolean allowEmptyLabelSet) {
-        super();
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 
     @Override
     public Collection<String> getLabelSet() {
         return Collections.unmodifiableCollection(this);
+    }
+
+    /**
+     * Returns the stored number.
+     * @see #setNumber(int)
+     */
+    @Override
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** Sets the number of this user object. */
+    public void setNumber(int nr) {
+        this.nr = nr;
     }
 
     /**
@@ -74,11 +85,11 @@ public class EditableContent extends JCellContent<String> {
      * Loads the user object collection from a given string value. This
      * implementation splits the value using {@link String#split(String)} with
      * as the split expression
-     * <tt>WHITESPACE+trim(getEditSeparator())+WHITESPACE</tt>. This means
-     * that edit separators behave as the lowest-priority operators, lower even
-     * than bracketing or quoting. If {@link #isAllowEmptyLabelSet()} is
-     * <tt>false</tt>, then an empty <tt>value</tt> will result in the
-     * empty string.
+     * <tt>WHITESPACE+trim(getEditSeparator())+WHITESPACE</tt>. This means that
+     * edit separators behave as the lowest-priority operators, lower even than
+     * bracketing or quoting. If {@link #isAllowEmptyLabelSet()} is
+     * <tt>false</tt>, then an empty <tt>value</tt> will result in the empty
+     * string.
      * @param value the value from which to load the user object; may not be
      *        <tt>null</tt>
      * @see #getEditSeparator()
@@ -120,10 +131,10 @@ public class EditableContent extends JCellContent<String> {
     }
 
     /**
-     * Sets the <tt>allowEmptyLabelSet</tt> property to a given value. This
-     * does not affect the current set, even if the new value is <tt>false</tt>
-     * and the label set is currently empty; only the loading behaviour (see
-     * (@link #load(String)}) is affected.
+     * Sets the <tt>allowEmptyLabelSet</tt> property to a given value. This does
+     * not affect the current set, even if the new value is <tt>false</tt> and
+     * the label set is currently empty; only the loading behaviour (see (@link
+     * #load(String)}) is affected.
      * @param allowEmptyLabelSet the value for {@link #allowEmptyLabelSet}
      * @see #isAllowEmptyLabelSet()
      */
@@ -131,6 +142,8 @@ public class EditableContent extends JCellContent<String> {
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 
+    /** The number stored in this user object. */
+    private int nr;
     /**
      * Indicates if an empty label set is allows. If so, the empty string will
      * be interpreted as an empty set.
