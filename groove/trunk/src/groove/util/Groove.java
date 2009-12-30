@@ -162,9 +162,18 @@ public class Groove {
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON =
         new ImageIcon(Groove.getResource("enable.gif"));
+    /** Icon for a New action. */
+    public static final ImageIcon NEW_ICON =
+        new ImageIcon(getResource("new.gif"));
     /** Rename action icon. */
     public static final ImageIcon RENAME_ICON =
         new ImageIcon(Groove.getResource("rename.gif"));
+    /** Redo action icon. */
+    public static final ImageIcon REDO_ICON =
+        new ImageIcon(Groove.getResource("redo.gif"));
+    /** Undo action icon. */
+    public static final ImageIcon UNDO_ICON =
+        new ImageIcon(Groove.getResource("undo.gif"));
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON =
         new ImageIcon(getResource("gps.gif"));
@@ -207,9 +216,6 @@ public class Groove {
     /** Icon for Type Panel. */
     public static final ImageIcon TYPE_FRAME_ICON =
         new ImageIcon(getResource("type-frame.gif"));
-    /** Icon for a New action. */
-    public static final ImageIcon NEW_ICON =
-        new ImageIcon(getResource("new.gif"));
     /** GROOVE project icon in 16x16 format. */
     public static final ImageIcon GROOVE_ICON_16x16 =
         new ImageIcon(getResource("groove-g-16x16.gif"));

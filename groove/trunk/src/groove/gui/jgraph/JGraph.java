@@ -1182,7 +1182,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         /** Constructs an instance of the action. */
         EditLabelAction() {
             super(Options.EDIT_LABEL_ACTION);
-            putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
+            putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {

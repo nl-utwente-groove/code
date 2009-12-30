@@ -100,8 +100,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         setModel(this.ruleDirectory);
         // set key bindings
         ActionMap am = getActionMap();
-        am.put(Options.UNDO_ACTION_NAME, simulator.getUndoAction());
-        am.put(Options.REDO_ACTION_NAME, simulator.getRedoAction());
+        am.put(Options.UNDO_ACTION_NAME, simulator.getBackAction());
+        am.put(Options.REDO_ACTION_NAME, simulator.getForwardAction());
         InputMap im = getInputMap();
         im.put(Options.UNDO_KEY, Options.UNDO_ACTION_NAME);
         im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);

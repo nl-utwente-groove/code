@@ -48,21 +48,21 @@ class UndoHistory implements SimulationListener {
         this.history = new History<HistoryAction>();
         this.simulator = simulator;
         simulator.addSimulationListener(this);
-        this.undoAction = new UndoAction();
-        this.redoAction = new RedoAction();
+        this.undoAction = new BackAction();
+        this.redoAction = new ForwardAction();
     }
 
     /**
      * Returns the (unique) redo action associated with this undo history.
      */
-    public Action getRedoAction() {
+    public Action getForwardAction() {
         return this.redoAction;
     }
 
     /**
      * Returns the (unique) undo action associated with this undo history.
      */
-    public Action getUndoAction() {
+    public Action getBackAction() {
         return this.undoAction;
     }
 
@@ -146,11 +146,11 @@ class UndoHistory implements SimulationListener {
      * Action to set the current state forward to the next one in the history.
      * (May in due time be replaced by an UndoableEditManager.)
      */
-    private class RedoAction extends AbstractAction {
+    private class ForwardAction extends AbstractAction {
         /** Creates an instance of the redo action. */
-        RedoAction() {
-            super(Options.REDO_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.REDO_KEY);
+        ForwardAction() {
+            super(Options.FORWARD_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.FORWARD_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -170,11 +170,11 @@ class UndoHistory implements SimulationListener {
      * Action to set the current state back to the previous one in the history.
      * (May in due time be replaced by an UndoableEditManager.)
      */
-    private class UndoAction extends AbstractAction {
+    private class BackAction extends AbstractAction {
         /** Creates an instance of the undo action. */
-        UndoAction() {
-            super(Options.UNDO_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.UNDO_KEY);
+        BackAction() {
+            super(Options.BACK_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.BACK_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -207,8 +207,8 @@ class UndoHistory implements SimulationListener {
     /**
      * Enables this undo history's undo and redo action, based on the state of
      * the history log.
-     * @see #getRedoAction()
-     * @see #getUndoAction()
+     * @see #getForwardAction()
+     * @see #getBackAction()
      */
     protected void setActionEnablings() {
         this.undoAction.setEnabled(this.history.hasPrevious());
@@ -223,11 +223,11 @@ class UndoHistory implements SimulationListener {
     /**
      * The (unique) undo action associated with this undo history.
      */
-    protected final UndoAction undoAction;
+    protected final BackAction undoAction;
     /**
      * The (unique) redo action associated with this undo history.
      */
-    protected final RedoAction redoAction;
+    protected final ForwardAction redoAction;
     /**
      * The history log. The log consists of at least one sub-sequence of the
      * form <tt>(State Transition)^* State</tt> where the transitions are

@@ -47,6 +47,9 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.UndoableEditSupport;
+
 /**
  * Implementation based on {@link AspectGraph} representations of the rules and
  * graphs, and using a (default) <code>.gps</code> directory as persistent
@@ -54,7 +57,7 @@ import java.util.zip.ZipFile;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultArchiveSystemStore extends Observable implements
+public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         SystemStore {
     /**
      * Constructs a store from a given file. The file should be a JAR or ZIP
@@ -332,7 +335,7 @@ public class DefaultArchiveSystemStore extends Observable implements
     public StoredGrammarView toGrammarView() {
         if (this.view == null) {
             this.view = new StoredGrammarView(this);
-            addObserver(this.view);
+            this.observable.addObserver(this.view);
         }
         return this.view;
     }
@@ -526,8 +529,8 @@ public class DefaultArchiveSystemStore extends Observable implements
 
     /** Notifies the observers with a given string value. */
     private void notify(int property) {
-        setChanged();
-        notifyObservers(property);
+        this.observable.hasChanged();
+        this.observable.notifyObservers(new MyEdit(property));
     }
 
     private void testInit() throws IllegalStateException {
@@ -570,6 +573,8 @@ public class DefaultArchiveSystemStore extends Observable implements
     private boolean initialised;
     /** The grammar view associated with this store. */
     private StoredGrammarView view;
+    /** The observable object associated with this system store. */
+    private final Observable observable = new Observable();
 
     /** Name of the JAR protocol and file extension. */
     static private final String JAR_PROTOCOL = "jar";
@@ -604,4 +609,17 @@ public class DefaultArchiveSystemStore extends Observable implements
     /** File filter for layout files. */
     static private final ExtensionFilter LAYOUT_FILTER =
         new ExtensionFilter(Groove.LAYOUT_EXTENSION);
+
+    private class MyEdit extends AbstractUndoableEdit implements Edit {
+        public MyEdit(int change) {
+            this.change = change;
+        }
+
+        @Override
+        public int getChange() {
+            return this.change;
+        }
+
+        private final int change;
+    }
 }

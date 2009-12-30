@@ -18,6 +18,8 @@ package groove.io;
 
 import groove.view.aspect.AspectGraph;
 
+import javax.swing.undo.UndoableEdit;
+
 /**
  * Instance of the generic system store where both the graph and the rule
  * representations are {@link AspectGraph}s.
@@ -34,4 +36,14 @@ public interface SystemStore extends
     static public final int RULE_CHANGE = 0x4;
     /** Value used in notifying changes to the graph map. */
     static public final int GRAPH_CHANGE = 0x8;
+
+    /** Edit object for system stores. */
+    public interface Edit extends UndoableEdit {
+        /**
+         * Returns a value that is an OR of {@link #RULE_CHANGE},
+         * {@link #GRAPH_CHANGE}, {@link #CONTROL_CHANGE} and
+         * {@link #PROPERTIES_CHANGE}.
+         */
+        int getChange();
+    }
 }

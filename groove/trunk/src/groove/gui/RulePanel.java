@@ -103,6 +103,9 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         }
         this.jGraph.setLabelStore(newLabelStore);
         // reset the display
+        RuleView currentRule = this.simulator.getCurrentRule();
+        this.displayedRule =
+            currentRule == null ? null : currentRule.getRuleName();
         if (this.displayedRule != null) {
             if (this.ruleJModelMap.containsKey(this.displayedRule)) {
                 this.jGraph.setModel(this.ruleJModelMap.get(this.displayedRule));
