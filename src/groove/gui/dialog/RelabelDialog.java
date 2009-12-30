@@ -25,6 +25,7 @@ import groove.view.aspect.NodeTypeAspect;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
@@ -76,7 +77,7 @@ public class RelabelDialog {
         // set the suggested name in the name field
         if (this.suggestedLabel != null) {
             getOldField().setSelectedItem(this.suggestedLabel);
-            getNewTypeCheckbox().setSelected(this.suggestedLabel.isNodeType());
+            propagateSelection();
         }
         setOkEnabled();
         JDialog dialog =
@@ -86,6 +87,19 @@ public class RelabelDialog {
         Object response = getOptionPane().getValue();
         boolean result = response == getOkButton() || response == getOldField();
         return result;
+    }
+
+    /**
+     * Propagates the selection in the old field to all other GUI elements.
+     */
+    private void propagateSelection() {
+        Label selection = (Label) getOldField().getSelectedItem();
+        getOldTypeCheckbox().setSelected(selection.isNodeType());
+        getNewTypeCheckbox().setSelected(selection.isNodeType());
+        getNewField().setText(selection.text());
+        getNewField().setSelectionStart(0);
+        getNewField().setSelectionEnd(selection.text().length());
+        getNewField().requestFocus();
     }
 
     /** Returns the label to be renamed. */
@@ -210,8 +224,8 @@ public class RelabelDialog {
     private JComboBox getOldField() {
         if (this.oldField == null) {
             final JComboBox result = this.oldField = new JComboBox();
+            result.setFocusable(false);
             result.setRenderer(new DefaultListCellRenderer() {
-
                 @Override
                 public Component getListCellRendererComponent(JList list,
                         Object value, int index, boolean isSelected,
@@ -223,16 +237,11 @@ public class RelabelDialog {
                     return super.getListCellRendererComponent(list, value,
                         index, isSelected, cellHasFocus);
                 }
-
             });
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    Label label = (Label) result.getSelectedItem();
-                    if (label != null) {
-                        getOldTypeCheckbox().setSelected(label.isNodeType());
-                        getNewTypeCheckbox().setSelected(label.isNodeType());
-                    }
+                    propagateSelection();
                 }
             });
             for (Label label : this.existingLabels) {
@@ -296,13 +305,18 @@ public class RelabelDialog {
 
     private JCheckBox getNewTypeCheckbox() {
         if (this.newTypeCheckbox == null) {
-            JCheckBox result =
+            final JCheckBox result =
                 this.newTypeCheckbox = new JCheckBox(NODE_TYPE_TEXT);
             result.setHorizontalTextPosition(SwingConstants.LEADING);
             result.setFocusable(false);
             result.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
+                    Font font = getNewField().getFont();
+                    font =
+                        font.deriveFont(result.isSelected() ? Font.BOLD
+                                : Font.PLAIN);
+                    getNewField().setFont(font);
                     setOkEnabled();
                 }
             });
