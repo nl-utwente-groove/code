@@ -59,11 +59,11 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 
     boolean isLabelConstraintSatisfied(Label label) {
         return this.labelConstraint == null
-            || this.labelConstraint.isSatisfied(label.text());
+            || this.labelConstraint.isSatisfied(label);
     }
 
     /** The constraint on the wildcard valuation, if any. */
-    private final groove.util.Property<String> labelConstraint;
+    private final groove.util.Property<Label> labelConstraint;
 
     /** Record for this type of search item. */
     class WildcardEdgeRecord extends Edge2MultipleRecord {
@@ -94,7 +94,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
         @Override
         boolean setImage(Edge image) {
             if (WildcardEdgeSearchItem.this.labelConstraint == null
-                || WildcardEdgeSearchItem.this.labelConstraint.isSatisfied(image.label().text())) {
+                || WildcardEdgeSearchItem.this.labelConstraint.isSatisfied(image.label())) {
                 return super.setImage(image);
             } else {
                 return false;

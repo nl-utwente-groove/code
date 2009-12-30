@@ -229,6 +229,16 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
+     * Returns the text of the label string, prefixed by the node type aspect if
+     * the label is a node type.
+     */
+    static public String toTypedString(Label label) {
+        String prefix =
+            label.isNodeType() ? NodeTypeAspect.NODE_TYPE.getPrefix() : "";
+        return prefix + label.text();
+    }
+
+    /**
      * Returns the index of a certain label text, if it is in the list. Returns
      * a special value if the text is not in the list.
      * @param text the label text being looked up

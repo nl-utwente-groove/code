@@ -100,7 +100,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * If this is a {@link RegExpr.Wildcard}, returns the guard of the wildcard,
      * if any; otherwise returns <code>null</code>.
      */
-    public Property<String> getWildcardGuard() {
+    public Property<Label> getWildcardGuard() {
         if (this instanceof Wildcard) {
             return ((Wildcard) this).getGuard();
         } else {
@@ -616,7 +616,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Creates and returns a named wildcard regular expression with a constraint
      * on the label.
      */
-    public static Wildcard wildcard(String text, Property<String> constraint) {
+    public static Wildcard wildcard(String text, Property<Label> constraint) {
         return new Wildcard(text, constraint);
     }
 
@@ -1227,7 +1227,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * not supported.
          * @param identifier the wildcard identifier
          */
-        public Wildcard(String identifier, Property<String> constraint) {
+        public Wildcard(String identifier, Property<Label> constraint) {
             this();
             this.identifier = identifier;
             this.guard = constraint;
@@ -1281,7 +1281,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         /**
          * Returns the optional guard of this wildcard expression.
          */
-        public Property<String> getGuard() {
+        public Property<Label> getGuard() {
             return this.guard;
         }
 
@@ -1312,7 +1312,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                         ExprParser.parseExpr(operands[0]);
                     int subStringCount = operand.second().size();
                     String identifier = operand.first();
-                    Property<String> constraint = null;
+                    Property<Label> constraint = null;
                     if (subStringCount > 1) {
                         throw new FormatException(
                             "Invalid wildcard parameter '%s'", operands[0]);
@@ -1348,7 +1348,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * @throws FormatException if <code>parameter</code> is not correctly
          *         formed as a constraint.
          */
-        private Property<String> getConstraint(String parameter)
+        private Property<Label> getConstraint(String parameter)
             throws FormatException {
             String constraintList =
                 ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN,
@@ -1368,8 +1368,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 throw new FormatException("Invalid constraint parameter '%s'",
                     parameter);
             }
-            final Collection<String> constrainedLabels =
-                new ArrayList<String>();
+            final Collection<Label> constrainedLabels = new ArrayList<Label>();
             for (String part : constraintParts) {
                 RegExpr atom;
                 try {
@@ -1380,7 +1379,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                         part, parameter);
                 }
                 if (atom instanceof Atom) {
-                    constrainedLabels.add(((Atom) atom).getAtomText());
+                    constrainedLabels.add(atom.toLabel());
                 } else {
                     throw new FormatException(
                         "Option '%s' in constraint '%s' should be an atom",
@@ -1392,7 +1391,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         /** Returns a {@link Wildcard} with a given identifier. */
         protected Wildcard newInstance(String identifier,
-                Property<String> constraint) {
+                Property<Label> constraint) {
             return new Wildcard(identifier, constraint);
         }
 
@@ -1403,7 +1402,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /** The (optional) constraint for this wildcard. */
-        private Property<String> guard;
+        private Property<Label> guard;
 
         /** The (optional) identifier for this wildcard. */
         private String identifier;
@@ -1418,13 +1417,22 @@ abstract public class RegExpr { // implements VarSetSupport {
         static private final char CONSTRAINT_SEPARATOR = ',';
 
         /** Constraint testing if a string is or is not in a set of strings. */
-        private static class LabelConstraint extends Property<String> {
-            LabelConstraint(Collection<String> constrainedLabels,
-                    boolean negated) {
+        private static class LabelConstraint extends Property<Label> {
+            LabelConstraint(Collection<Label> constrainedLabels, boolean negated) {
                 this.constrainedLabelSet =
-                    new HashSet<String>(constrainedLabels);
-                this.constrainedLabels =
-                    constrainedLabels.toArray(new String[0]);
+                    new HashSet<Label>(constrainedLabels);
+                List<String> constrained = new ArrayList<String>();
+                boolean anyNodeType = false;
+                for (Label constrainedLabel : constrainedLabels) {
+                    if (constrainedLabel.isNodeType()
+                        && constrainedLabel.text().length() == 0) {
+                        this.constrainedLabelSet.remove(constrainedLabel);
+                        anyNodeType = true;
+                    }
+                    constrained.add(DefaultLabel.toTypedString(constrainedLabel));
+                }
+                this.anyNodeType = anyNodeType;
+                this.constrainedLabels = constrained.toArray(new String[0]);
                 this.negated = negated;
             }
 
@@ -1441,18 +1449,18 @@ abstract public class RegExpr { // implements VarSetSupport {
             public LabelConstraint relabel(Label oldLabel, Label newLabel) {
                 LabelConstraint result = this;
                 if (this.constrainedLabelSet.contains(oldLabel.text())) {
-                    Set<String> newConstraint =
-                        new HashSet<String>(this.constrainedLabelSet);
-                    newConstraint.remove(oldLabel.text());
-                    newConstraint.add(newLabel.text());
+                    Set<Label> newConstraint =
+                        new HashSet<Label>(this.constrainedLabelSet);
+                    newConstraint.remove(oldLabel);
+                    newConstraint.add(newLabel);
                     result = new LabelConstraint(newConstraint, this.negated);
                 }
                 return result;
             }
 
             @Override
-            public boolean isSatisfied(String value) {
-                return this.negated != this.constrainedLabelSet.contains(value);
+            public boolean isSatisfied(Label value) {
+                return this.negated != (this.anyNodeType && value.isNodeType() || this.constrainedLabelSet.contains(value));
             }
 
             @Override
@@ -1468,7 +1476,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
 
             /** The set of strings to be tested for inclusion. */
-            private final Set<String> constrainedLabelSet;
+            private final Set<Label> constrainedLabelSet;
             /**
              * The set of strings to be tested for inclusion, as an array for
              * {@link #toString()}.
@@ -1476,6 +1484,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             private final String[] constrainedLabels;
             /** Flag indicating if we are testing for absence or presence. */
             private final boolean negated;
+            /** Flag indicating if any node type label satisfies the constraint. */
+            private final boolean anyNodeType;
         }
     }
 

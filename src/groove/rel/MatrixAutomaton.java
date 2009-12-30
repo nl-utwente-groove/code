@@ -1008,10 +1008,10 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                         Label edgeLabel = getLabel(keyEdgeIndex);
                         boolean labelOk = true;
                         if (RegExprLabel.isWildcard(edgeLabel)) {
-                            Property<String> constraint =
+                            Property<Label> constraint =
                                 RegExprLabel.getWildcardGuard(edgeLabel);
                             if (constraint != null) {
-                                labelOk = constraint.isSatisfied(label.text());
+                                labelOk = constraint.isSatisfied(label);
                             }
                             String id = RegExprLabel.getWildcardId(edgeLabel);
                             if (labelOk && id != null) {

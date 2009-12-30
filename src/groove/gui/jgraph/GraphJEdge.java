@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.BinaryEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -24,7 +25,6 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
-import groove.view.aspect.NodeTypeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -228,11 +228,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * This implementation returns <code>edge.label().text()</code>.
      */
     public String getPlainLabel(Edge edge) {
-        String result = edge.label().text();
-        if (edge.label().isNodeType()) {
-            result = NodeTypeAspect.NODE_TYPE.getPrefix() + result;
-        }
-        return result;
+        return DefaultLabel.toTypedString(edge.label());
     }
 
     /** Specialises the return type of the method. */
