@@ -354,8 +354,9 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      */
     private NodeCertificate getNodeCert(final Node node) {
         NodeCertificate result;
-        if (node.getClass() == DefaultNode.class) {
-            result = this.defaultNodeCerts[((DefaultNode) node).getNumber()];
+        int nodeNr = node.getNumber();
+        if (node.getClass() == DefaultNode.class && nodeNr >= 0) {
+            result = this.defaultNodeCerts[nodeNr];
         } else {
             result = this.otherNodeCertMap.get(node);
         }
@@ -370,8 +371,8 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      */
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
-        if (node.getClass() == DefaultNode.class) {
-            int nodeNr = ((DefaultNode) node).getNumber();
+        int nodeNr = node.getNumber();
+        if (node.getClass() == DefaultNode.class && nodeNr > 0) {
             assert nodeNr < this.defaultNodeCerts.length : String.format(
                 "Node nr %d higher than maximum %d", nodeNr,
                 this.defaultNodeCerts.length);
@@ -397,7 +398,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         if (RECORD) {
             Queue<Block> clone = new LinkedList<Block>();
             clone.add(splitter.clone());
-            for (Block block: splitterList) {
+            for (Block block : splitterList) {
                 clone.add(block.clone());
             }
             this.partitionRecord.add(clone);
@@ -410,9 +411,10 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 if (splitBlock.startSplit()) {
                     // add the new split block to the set
                     Block oldSplitBlock = splitBlocks.put(splitBlock);
-                    // if another (different) block with the same value was already in the set
+                    // if another (different) block with the same value was
+                    // already in the set
                     // (which would not happen given an ideal hash function)
-                    //then merge the two blocks
+                    // then merge the two blocks
                     if (oldSplitBlock != null && oldSplitBlock != splitBlock) {
                         oldSplitBlock.merge(splitBlock);
                     }
@@ -424,7 +426,8 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 if (splitBlock.startSplit()) {
                     // add the new split block to the set
                     Block oldSplitBlock = splitBlocks.put(splitBlock);
-                    // if another (different) block with the same value was already in the set
+                    // if another (different) block with the same value was
+                    // already in the set
                     // (which would not happen given an ideal hash function)
                     // then merge the two blocks
                     if (oldSplitBlock != null && oldSplitBlock != splitBlock) {
@@ -450,7 +453,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
             Block[] newBlocks = block.split();
             if (RECORD) {
                 Queue<Block> clone = new LinkedList<Block>();
-                for (Block newBlock: newBlocks) {
+                for (Block newBlock : newBlocks) {
                     clone.add(newBlock.clone());
                 }
                 this.partitionRecord.add(clone);
@@ -514,12 +517,16 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     /** Total number of iterations in iterateCertificates(). */
     private int iterateCount;
 
-    /** 
-     * List of splitter lists generated during the algorithm.
-     * Only used when {@link #RECORD} is set to <code>true</code>.
+    /**
+     * List of splitter lists generated during the algorithm. Only used when
+     * {@link #RECORD} is set to <code>true</code>.
      */
     private List<Queue<Block>> partitionRecord;
     /** Array of default node certificates. */
+
+    /** Array for storing default node certificates. */
+    private final NodeCertificate[] defaultNodeCerts =
+        new NodeCertificate[DefaultNode.getHighestNodeNr() + 1];
 
     /**
      * Returns an array that, at every index, contains the number of times that
@@ -589,9 +596,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * Array to record the number of iterations done in computing certificates.
      */
     static private int[] iterateCountArray = new int[0];
-    /** Array for storing default node certificates. */
-    private NodeCertificate[] defaultNodeCerts =
-        new NodeCertificate[DefaultNode.getHighestNodeNr()+1];
     /** Total number of times the symmetry was broken. */
     static private int totalSymmetryBreakCount;
     /** Total number of times the symmetry was broken. */
@@ -639,6 +643,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     static private final boolean TRACE = false;
     /** Flag to turn on partition recording. */
     static private final boolean RECORD = false;
+
     /**
      * Class of nodes that carry (and are identified with) an integer
      * certificate value.
@@ -875,19 +880,22 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
             getTarget().addNextValue(-5 * computeValue());
         }
 
-        /** Computes a new hash value, based on the source and target certificates and the label. */
+        /**
+         * Computes a new hash value, based on the source and target
+         * certificates and the label.
+         */
         private int computeValue() {
             int shift = (this.labelIndex & 0xf) + 1;
             int targetValue = this.targetCert.getValue();
             int sourceValue = getSource().getValue();
-            int result = 
+            int result =
                 ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
                     + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift)))
                     + this.labelIndex;
             SimplePaigeTarjanMcKay.this.graphCertificate += result;
             return result;
         }
-        
+
         /** The node certificate of the edge target. */
         private final NodeCertificate targetCert;
         /**
@@ -941,7 +949,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 this.splitting = false;
                 return EMPTY_BLOCK_ARRAY;
             } else {
-            Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
+                Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
                 Block block = null;
                 for (NodeCertificate node : this.nodes) {
                     node.setNewValue();
@@ -970,14 +978,16 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
 
         /** Merges this block with another with the same hash code. */
         void merge(Block other) {
-            assert this.value == other.value : String.format("Merging blocks %s and %s with distinct hash codes", this, other);
-            for (NodeCertificate otherNode: other.getNodes()) {
+            assert this.value == other.value : String.format(
+                "Merging blocks %s and %s with distinct hash codes", this,
+                other);
+            for (NodeCertificate otherNode : other.getNodes()) {
                 otherNode.setBlock(this);
                 this.nodes.add(otherNode);
             }
             SimplePaigeTarjanMcKay.mergedBlockCount++;
         }
-        
+
         /**
          * Appends a given node certificate to this block, and sets the
          * certificate's block to this.
@@ -1022,10 +1032,11 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         @Override
         public String toString() {
             List<Node> content = new ArrayList<Node>();
-            for (NodeCertificate nodeCert: this.nodes) {
+            for (NodeCertificate nodeCert : this.nodes) {
                 content.add(nodeCert.getElement());
             }
-            return String.format("B%dx%d%s", this.nodes.size(), this.value, content);
+            return String.format("B%dx%d%s", this.nodes.size(), this.value,
+                content);
         }
 
         @Override
@@ -1038,7 +1049,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 return null;
             }
         }
-        
+
         /** The distinguishing value of this block. */
         private int value;
         /** List of marked nodes, in case the block is currently being split. */

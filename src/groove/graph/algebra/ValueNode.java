@@ -33,12 +33,14 @@ public class ValueNode extends VariableNode {
     /**
      * Constructs a (numbered) node for a given algebra and value of that
      * algebra.
-     * @param nr the number for the new node.
+     * @param nr the number for the new node. The actual number will be the
+     *        negative absolute value of {@code nr}, to ensure distinctness with
+     *        default node numbers.
      * @param algebra the algebra that the value belongs to; non-null
      * @param value the value to create a graph node for; non-null
      */
     private ValueNode(int nr, Algebra<?> algebra, Object value) {
-        super(nr);
+        super(-Math.abs(nr));
         this.algebra = algebra;
         this.value = value;
         assert value == null || algebra != null;

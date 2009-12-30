@@ -79,7 +79,9 @@ public class DefaultNode implements Node {
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result = (obj == this);
+        boolean result =
+            (obj == this)
+                || (this.nodeNr < 0 && obj instanceof Node && this.nodeNr == ((Node) obj).getNumber());
         assert result || !(obj instanceof DefaultNode)
             || testDiffers((DefaultNode) obj) : String.format(
             "Distinct nodes with number %d: " + this + " & " + obj + ", "
@@ -176,21 +178,26 @@ public class DefaultNode implements Node {
     /**
      * Factory method to create a default node with a certain number. The idea
      * is to create canonical representatives, so node equality is object
-     * equality.
+     * equality. For negative numbers, the node is not stored.
      */
     static public DefaultNode createNode(int nr) {
-        if (nr >= nodes.length) {
-            int newSize =
-                Math.max((int) (nodes.length * GROWTH_FACTOR), nr + 1);
-            DefaultNode[] newNodes = new DefaultNode[newSize];
-            System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
-            nodes = newNodes;
-        }
-        DefaultNode result = nodes[nr];
-        if (result == null) {
-            result = nodes[nr] = new DefaultNode(nr);
-            nextNodeNr = Math.max(nextNodeNr, nr);
-            nodeCount++;
+        DefaultNode result;
+        if (nr >= 0) {
+            if (nr >= nodes.length) {
+                int newSize =
+                    Math.max((int) (nodes.length * GROWTH_FACTOR), nr + 1);
+                DefaultNode[] newNodes = new DefaultNode[newSize];
+                System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
+                nodes = newNodes;
+            }
+            result = nodes[nr];
+            if (result == null) {
+                result = nodes[nr] = new DefaultNode(nr);
+                nextNodeNr = Math.max(nextNodeNr, nr);
+                nodeCount++;
+            }
+        } else {
+            result = new DefaultNode(nr);
         }
         return result;
     }

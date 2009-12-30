@@ -304,14 +304,19 @@ public class DefaultGxlIO {
      */
     private Node createNode(String nodeId) {
         // attempt to construct node number from gxl node
+        // by looking at trailing number shape of node id
         boolean digitFound = false;
         int nodeNr = 0;
         int unit = 1;
-        for (int charIx = nodeId.length() - 1; charIx >= 0
+        int charIx;
+        for (charIx = nodeId.length() - 1; charIx >= 0
             && Character.isDigit(nodeId.charAt(charIx)); charIx--) {
             nodeNr += unit * (nodeId.charAt(charIx) - '0');
             unit *= 10;
             digitFound = true;
+        }
+        if (charIx >= 0 && nodeId.charAt(charIx) == '-') {
+            nodeNr = -nodeNr;
         }
         return digitFound ? DefaultNode.createNode(nodeNr) : null;
     }
