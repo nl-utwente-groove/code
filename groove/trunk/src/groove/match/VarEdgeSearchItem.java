@@ -85,7 +85,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
     boolean isLabelConstraintSatisfied(Label label) {
         return this.labelConstraint == null
-            || this.labelConstraint.isSatisfied(label.text());
+            || this.labelConstraint.isSatisfied(label);
     }
 
     /** The variable bound in the wildcard (not <code>null</code>). */
@@ -94,11 +94,13 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     private final Collection<String> boundVars;
     /** The index of {@link #var} in the result. */
     int varIx;
-    /** Flag indicating that {@link #var} is matched before this item is invoked. */
+    /**
+     * Flag indicating that {@link #var} is matched before this item is invoked.
+     */
     boolean varFound;
 
     /** The constraint on the variable valuation, if any. */
-    private final groove.util.Property<String> labelConstraint;
+    private final groove.util.Property<Label> labelConstraint;
 
     class VarEdgeSingularRecord extends Edge2SingularRecord {
         /**

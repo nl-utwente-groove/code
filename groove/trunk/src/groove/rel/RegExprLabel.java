@@ -134,8 +134,8 @@ public class RegExprLabel extends AbstractLabel {
 
     /**
      * If a given label is a {@link RegExprLabel} wrapping a
-     * {@link RegExpr.Wildcard}, returns the identifier of the wildcard, if
-     * any. Returns <code>null</code> in all other cases.
+     * {@link RegExpr.Wildcard}, returns the identifier of the wildcard, if any.
+     * Returns <code>null</code> in all other cases.
      */
     public static String getWildcardId(Label label) {
         if (label instanceof RegExprLabel) {
@@ -149,10 +149,10 @@ public class RegExprLabel extends AbstractLabel {
 
     /**
      * If a given label is a {@link RegExprLabel} wrapping a
-     * {@link RegExpr.Wildcard}, returns the constraint of the wildcard, if
-     * any. Returns <code>null</code> in all other cases.
+     * {@link RegExpr.Wildcard}, returns the constraint of the wildcard, if any.
+     * Returns <code>null</code> in all other cases.
      */
-    public static Property<String> getWildcardGuard(Label label) {
+    public static Property<Label> getWildcardGuard(Label label) {
         if (label instanceof RegExprLabel) {
             return ((RegExprLabel) label).getRegExpr().getWildcardGuard();
         }
@@ -191,8 +191,8 @@ public class RegExprLabel extends AbstractLabel {
     }
 
     /**
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Seq},
-     * returns the list of operands of the regular expression. Returns
+     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Seq}
+     * , returns the list of operands of the regular expression. Returns
      * <code>null</code> in all other cases.
      */
     public static List<RegExpr> getSeqOperands(Label label) {
@@ -260,9 +260,9 @@ public class RegExprLabel extends AbstractLabel {
     }
 
     /**
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Inv},
-     * returns the operand of the regular expression. Returns <code>null</code>
-     * in all other cases.
+     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Inv}
+     * , returns the operand of the regular expression. Returns
+     * <code>null</code> in all other cases.
      */
     public static RegExpr getInvOperand(Label label) {
         if (label instanceof RegExprLabel) {
@@ -283,9 +283,9 @@ public class RegExprLabel extends AbstractLabel {
     }
 
     /**
-     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Neg},
-     * returns the operand of the regular expression. Returns <code>null</code>
-     * in all other cases.
+     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Neg}
+     * , returns the operand of the regular expression. Returns
+     * <code>null</code> in all other cases.
      */
     public static RegExpr getNegOperand(Label label) {
         if (label instanceof RegExprLabel) {
