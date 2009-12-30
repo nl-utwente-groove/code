@@ -47,6 +47,7 @@ import java.util.Properties;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
@@ -281,9 +282,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private PutPropertiesEdit doPutProperties(SystemProperties properties)
         throws IOException {
         testInit();
-        saveProperties();
         SystemProperties oldProperties = this.properties;
         this.properties = properties;
+        saveProperties();
         return new PutPropertiesEdit(oldProperties, properties);
     }
 
@@ -384,36 +385,41 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
     @Override
     public void relabel(Label oldLabel, Label newLabel) throws IOException {
-        doRelabel(oldLabel, newLabel);
+        Edit edit = doRelabel(oldLabel, newLabel);
+        if (edit != null) {
+            postEdit(edit);
+        }
     }
 
     /**
-     * @param oldLabel
-     * @param newLabel
-     * @throws IOException
+     * Implements the functionality of {@link #relabel(Label, Label)}. Returns
+     * an undoable edit wrapping this functionality.
      */
-    private void doRelabel(Label oldLabel, Label newLabel) throws IOException {
-        int changes = 0;
+    private RelabelEdit doRelabel(Label oldLabel, Label newLabel)
+        throws IOException {
+        RelabelEdit result = new RelabelEdit();
         for (AspectGraph graph : getGraphs().values()) {
             AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
             if (newGraph != graph) {
-                putGraph(newGraph);
-                changes |= SystemStore.GRAPH_CHANGE;
+                Edit edit = doPutGraph(newGraph);
+                result.addEdit(edit);
             }
         }
         for (AspectGraph rule : getRules().values()) {
             AspectGraph newRule = rule.relabel(oldLabel, newLabel);
             if (newRule != rule) {
-                putRule(newRule);
-                changes |= SystemStore.RULE_CHANGE;
+                Edit edit = doPutRule(newRule);
+                result.addEdit(edit);
             }
         }
         SystemProperties newProperties =
             this.properties.relabel(oldLabel, newLabel);
         if (newProperties != this.properties) {
-            putProperties(newProperties);
-            changes |= SystemStore.PROPERTIES_CHANGE;
+            Edit edit = doPutProperties(newProperties);
+            result.addEdit(edit);
         }
+        result.end();
+        return result.getChange() == 0 ? null : result;
     }
 
     @Override
@@ -982,6 +988,45 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
         /** The deleted graph. */
         private final AspectGraph rule;
+    }
+
+    /** Edit wrapping a relabelling. */
+    private class RelabelEdit extends CompoundEdit implements Edit {
+        @Override
+        public String getPresentationName() {
+            return Options.RELABEL_ACTION_NAME;
+        }
+
+        @Override
+        public String getRedoPresentationName() {
+            return Options.REDO_ACTION_NAME + " " + getPresentationName();
+        }
+
+        @Override
+        public String getUndoPresentationName() {
+            return Options.UNDO_ACTION_NAME + " " + getPresentationName();
+        }
+
+        @Override
+        public boolean addEdit(UndoableEdit anEdit) {
+            boolean result = super.addEdit(anEdit);
+            if (result) {
+                assert anEdit instanceof Edit;
+                this.change |= ((Edit) anEdit).getChange();
+            }
+            return result;
+        }
+
+        @Override
+        public int getChange() {
+            return this.change;
+        }
+
+        /**
+         * The change information in this edit.
+         * @see #getChange()
+         */
+        private int change;
     }
 
     /** Edit consisting of the renaming of a graph. */
