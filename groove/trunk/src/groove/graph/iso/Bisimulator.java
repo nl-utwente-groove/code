@@ -135,7 +135,9 @@ public class Bisimulator implements CertificateStrategy {
         reporter.start(GET_PARTITION_MAP);
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
-        int bound = USE_EDGE1_CERTIFICATES ? this.edgeCerts.length : this.edge2CertCount;
+        int bound =
+            USE_EDGE1_CERTIFICATES ? this.edgeCerts.length
+                    : this.edge2CertCount;
         for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
@@ -182,7 +184,7 @@ public class Bisimulator implements CertificateStrategy {
         getGraphCertificate();
         return this.edgeCerts;
     }
-    
+
     /** Right now only a strong strategy is implemented. */
     public boolean getStrength() {
         return true;
@@ -300,8 +302,9 @@ public class Bisimulator implements CertificateStrategy {
      */
     private NodeCertificate getNodeCert(final Node node) {
         NodeCertificate result;
-        if (node.getClass() == DefaultNode.class) {
-            result = this.defaultNodeCerts[((DefaultNode) node).getNumber()];
+        int nodeNr = node.getNumber();
+        if (node.getClass() == DefaultNode.class && nodeNr >= 0) {
+            result = this.defaultNodeCerts[nodeNr];
         } else {
             result = this.otherNodeCertMap.get(node);
         }
@@ -316,8 +319,8 @@ public class Bisimulator implements CertificateStrategy {
      */
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
-        if (node.getClass() == DefaultNode.class) {
-            int nodeNr = ((DefaultNode) node).getNumber();
+        int nodeNr = node.getNumber();
+        if (node.getClass() == DefaultNode.class && nodeNr > 0) {
             assert nodeNr < this.defaultNodeCerts.length : String.format(
                 "Node nr %d higher than maximum %d", nodeNr,
                 this.defaultNodeCerts.length);
@@ -358,8 +361,10 @@ public class Bisimulator implements CertificateStrategy {
                 int newCert = nodeCert.setNewValue();
                 if (iterateCount > 0 && partitionCount < nodeCertCount) {
                     if (!certStore.add(newCert)) {
-                        // this certificate is a duplicate; maybe it is the smallest
-                        if (BREAK_SYMMETRIES && newCert < minCertValue || minCert == null) {
+                        // this certificate is a duplicate; maybe it is the
+                        // smallest
+                        if (BREAK_SYMMETRIES && newCert < minCertValue
+                            || minCert == null) {
                             minCertValue = newCert;
                             minCert = nodeCert;
                         }
@@ -370,10 +375,12 @@ public class Bisimulator implements CertificateStrategy {
             int newPartitionCount = certStore.size();
             // break symmetry if we have converged on a partition count
             // lower than the node count
-            if (BREAK_SYMMETRIES && iterateCount > 0 && newPartitionCount == partitionCount && newPartitionCount < nodeCertCount) {
+            if (BREAK_SYMMETRIES && iterateCount > 0
+                && newPartitionCount == partitionCount
+                && newPartitionCount < nodeCertCount) {
                 minCert.breakSymmetry();
-                breakSymmetryCount ++;
-                totalSymmetryBreakCount ++;
+                breakSymmetryCount++;
+                totalSymmetryBreakCount++;
             }
             // we stop the iteration when the number of partitions has not grown
             // moreover, when the number of partitions equals the number of
@@ -384,7 +391,9 @@ public class Bisimulator implements CertificateStrategy {
             if (iterateCount == 0) {
                 goOn = true;
             } else if (BREAK_SYMMETRIES) {
-                goOn = newPartitionCount < nodeCertCount && breakSymmetryCount < MAX_BREAK_SYMMETRY;
+                goOn =
+                    newPartitionCount < nodeCertCount
+                        && breakSymmetryCount < MAX_BREAK_SYMMETRY;
             } else {
                 goOn = newPartitionCount > partitionCount;
             }
@@ -442,6 +451,10 @@ public class Bisimulator implements CertificateStrategy {
 
     /** Array of default node certificates. */
 
+    /** Array for storing default node certificates. */
+    private final NodeCertificate[] defaultNodeCerts =
+        new NodeCertificate[DefaultNode.getHighestNodeNr() + 1];
+
     /**
      * Returns an array that, at every index, contains the number of times that
      * the computation of certificates has taken a number of iterations equal to
@@ -456,8 +469,8 @@ public class Bisimulator implements CertificateStrategy {
     }
 
     /**
-     * Returns the total number of times symmetry was broken
-     * during the calculation of the certificates.
+     * Returns the total number of times symmetry was broken during the
+     * calculation of the certificates.
      */
     static public int getSymmetryBreakCount() {
         return totalSymmetryBreakCount;
@@ -500,9 +513,6 @@ public class Bisimulator implements CertificateStrategy {
      * Array to record the number of iterations done in computing certificates.
      */
     static private int[] iterateCount = new int[0];
-    /** Array for storing default node certificates. */
-    private NodeCertificate[] defaultNodeCerts =
-        new NodeCertificate[DefaultNode.getHighestNodeNr()+1];
     /** Total number of times the symmetry was broken. */
     static private int totalSymmetryBreakCount;
 
@@ -645,14 +655,13 @@ public class Bisimulator implements CertificateStrategy {
                 && (this.value == ((Certificate<?>) obj).value);
         }
 
-        /** 
-         * Change the certificate value predictably
-         * to break symmetry.
+        /**
+         * Change the certificate value predictably to break symmetry.
          */
         public void breakSymmetry() {
             this.value += this.value << 1;
         }
-        
+
         /**
          * The new value for this certificate node is the sum of the values of
          * the incident certificate edges.

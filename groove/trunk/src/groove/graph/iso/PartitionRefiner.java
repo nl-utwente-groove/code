@@ -259,7 +259,7 @@ public class PartitionRefiner implements CertificateStrategy {
                         this.iterateCount);
                 }
             } while (true);// this.nodePartitionCount < this.nodeCertCount &&
-                            // this.nodePartitionCount > oldPartitionCount);
+            // this.nodePartitionCount > oldPartitionCount);
         }
         // so far we have done nothing with the self-edges, so
         // give them a chance to get their value right
@@ -368,8 +368,9 @@ public class PartitionRefiner implements CertificateStrategy {
      */
     private NodeCertificate getNodeCert(final Node node) {
         NodeCertificate result;
-        if (node.getClass() == DefaultNode.class) {
-            result = this.defaultNodeCerts[((DefaultNode) node).getNumber()];
+        int nodeNr = node.getNumber();
+        if (node.getClass() == DefaultNode.class && nodeNr >= 0) {
+            result = this.defaultNodeCerts[nodeNr];
         } else {
             result = this.otherNodeCertMap.get(node);
         }
@@ -384,8 +385,8 @@ public class PartitionRefiner implements CertificateStrategy {
      */
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
-        if (node.getClass() == DefaultNode.class) {
-            int nodeNr = ((DefaultNode) node).getNumber();
+        int nodeNr = node.getNumber();
+        if (node.getClass() == DefaultNode.class && nodeNr > 0) {
             assert nodeNr < this.defaultNodeCerts.length : String.format(
                 "Node nr %d higher than maximum %d", nodeNr,
                 this.defaultNodeCerts.length);
@@ -574,6 +575,10 @@ public class PartitionRefiner implements CertificateStrategy {
 
     /** Array of default node certificates. */
 
+    /** Array for storing default node certificates. */
+    private final NodeCertificate[] defaultNodeCerts =
+        new NodeCertificate[DefaultNode.getHighestNodeNr() + 1];
+
     /**
      * Returns an array that, at every index, contains the number of times that
      * the computation of certificates has taken a number of iterations equal to
@@ -642,9 +647,6 @@ public class PartitionRefiner implements CertificateStrategy {
      * Array to record the number of iterations done in computing certificates.
      */
     static private int[] iterateCountArray = new int[0];
-    /** Array for storing default node certificates. */
-    private NodeCertificate[] defaultNodeCerts =
-        new NodeCertificate[DefaultNode.getHighestNodeNr()+1];
     /** Total number of times the symmetry was broken. */
     static private int totalSymmetryBreakCount;
 
