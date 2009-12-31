@@ -35,7 +35,7 @@ import javax.swing.event.UndoableEditListener;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GenericSystemStore<R,G> {
+public interface GenericSystemStore<R,G,T,C> {
     /**
      * Returns the name of this store.
      * @return the name of this store; cannot be <code>null</code> or empty.
@@ -56,7 +56,10 @@ public interface GenericSystemStore<R,G> {
     public Map<String,G> getGraphs();
 
     /** Immutable view on the name-to-control-program map in the store. */
-    public Map<String,String> getControls();
+    public Map<String,C> getControls();
+
+    /** Immutable view on the name-to-type map in the store. */
+    public Map<String,T> getTypes();
 
     /** The system properties object in the store (non-null). */
     public SystemProperties getProperties();
@@ -123,6 +126,36 @@ public interface GenericSystemStore<R,G> {
     public G renameGraph(String oldName, String newName) throws IOException;
 
     /**
+     * Deletes a type graph from the store.
+     * @param name name of the type graph to be deleted
+     * @return the type graph with name <code>name</code>, or <code>null</code>
+     *         if there was no such type
+     * @throws UnsupportedOperationException if the store is immutable
+     */
+    public T deleteType(String name) throws UnsupportedOperationException;
+
+    /**
+     * Adds or replaces a type graph in the store.
+     * @param type the type graph to be added
+     * @return the old type graph with the name of <code>graph</code>, if any;
+     *         <code>null</code> otherwise
+     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while storing the type graph
+     */
+    public T putType(T type) throws UnsupportedOperationException, IOException;
+
+    /**
+     * Renames a type graph in the store.
+     * @param oldName the name of the type graph to be renamed (non-null)
+     * @param newName the intended new name of the type graph (non-null)
+     * @return the renamed type graph, or <code>null</code> if no graph named
+     *         <code>oldName</code> existed
+     * @throws IOException if an error occurred while storing the renamed graph
+     * @throws UnsupportedOperationException if the store is immutable
+     */
+    public T renameType(String oldName, String newName) throws IOException;
+
+    /**
      * Deletes a control program from the store.
      * @param name name of the control program to be deleted
      * @return the program with name <code>name</code>, or <code>null</code> if
@@ -141,7 +174,7 @@ public interface GenericSystemStore<R,G> {
      * @throws IOException if an error occurred while storing the control
      *         program
      */
-    public String putControl(String name, String control)
+    public String putControl(String name, C control)
         throws UnsupportedOperationException, IOException;
 
     /**

@@ -31,21 +31,12 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,CV> {
+public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,TV extends View<Graph>,CV> {
     /** Returns the name of the rule system. */
     public String getName();
 
     /** Returns the (fixed) properties of the rule system. */
     public SystemProperties getProperties();
-
-    /**
-     * Adds a rule view, and returns the possible view previously stored under
-     * that name.
-     * @param rule the rule view to be added; non-<code>null</code>
-     * @return a rule view previously stored under the name of <code>rule</code>
-     */
-    @Deprecated
-    public RV addRule(RV rule) throws FormatException;
 
     /** Returns a list of all available control program names. */
     public Set<String> getControlNames();
@@ -55,6 +46,12 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,C
 
     /** Returns an unmodifiable view on the set of rule names in this grammar. */
     public Set<RuleName> getRuleNames();
+
+    /**
+     * Returns an unmodifiable view on the set of type graph names in this
+     * grammar.
+     */
+    public Set<String> getTypeNames();
 
     /**
      * Returns the rule view for a given rule name.
@@ -69,6 +66,23 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,C
      *         if there is no such graph.
      */
     public GV getGraphView(String name);
+
+    /**
+     * Returns the type graph view for a given graph name.
+     * @return the type graph view for type <code>name</code>, or
+     *         <code>null</code> if there is no such graph.
+     */
+    public TV getTypeView(String name);
+
+    /** Sets the type graph to a given name. */
+    public void setType(String name);
+
+    /**
+     * Returns the type graph view set for the grammar.
+     * @return the type graph view for the grammar, or <code>null</code> if
+     *         there is no type graph set.
+     */
+    public TV getTypeView();
 
     /**
      * Returns the control view associated with a given (named) control program.

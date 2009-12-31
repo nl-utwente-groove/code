@@ -145,10 +145,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     @Override
     public AspectGraph deleteGraph(String name) {
         AspectGraph result = null;
-        DeleteGraphEdit edit = doDeleteGraph(name);
+        DeleteTypeEdit edit = doDeleteType(name);
         if (edit != null) {
             postEdit(edit);
-            result = edit.getGraph();
+            result = edit.getType();
         }
         return result;
     }
@@ -197,6 +197,32 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public AspectGraph deleteType(String name) {
+        AspectGraph result = null;
+        DeleteGraphEdit edit = doDeleteGraph(name);
+        if (edit != null) {
+            postEdit(edit);
+            result = edit.getGraph();
+        }
+        return result;
+    }
+
+    /**
+     * Implements the functionality of the {@link #deleteType(String)} method.
+     * Returns a corresponding undoable edit.
+     */
+    private DeleteTypeEdit doDeleteType(String name) {
+        DeleteTypeEdit result = null;
+        testInit();
+        AspectGraph type = this.typeMap.remove(name);
+        if (type != null) {
+            this.marshaller.deleteGraph(createTypeFile(name));
+            result = new DeleteTypeEdit(type);
+        }
+        return result;
+    }
+
+    @Override
     public Map<String,String> getControls() {
         testInit();
         return Collections.unmodifiableMap(this.controlMap);
@@ -218,6 +244,12 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     public Map<RuleName,AspectGraph> getRules() {
         testInit();
         return Collections.unmodifiableMap(this.ruleMap);
+    }
+
+    @Override
+    public Map<String,AspectGraph> getTypes() {
+        testInit();
+        return Collections.unmodifiableMap(this.typeMap);
     }
 
     @Override
@@ -312,6 +344,29 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public AspectGraph putType(AspectGraph type) throws IOException {
+        AspectGraph result = null;
+        PutTypeEdit edit = doPutType(type);
+        if (edit != null) {
+            postEdit(edit);
+            result = edit.getOldType();
+        }
+        return result;
+    }
+
+    /**
+     * Implements the functionality of {@link #putType(AspectGraph)}. Returns an
+     * undoable edit wrapping this functionality.
+     */
+    private PutTypeEdit doPutType(AspectGraph type) throws IOException {
+        testInit();
+        String name = GraphInfo.getName(type);
+        this.marshaller.marshalGraph(type.toPlainGraph(), createTypeFile(name));
+        AspectGraph oldType = this.typeMap.put(name, type);
+        return new PutTypeEdit(oldType, type);
+    }
+
+    @Override
     public AspectGraph renameGraph(String oldName, String newName)
         throws IOException {
         AspectGraph result = null;
@@ -384,6 +439,41 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public AspectGraph renameType(String oldName, String newName)
+        throws IOException {
+        AspectGraph result = null;
+        RenameTypeEdit edit = doRenameType(oldName, newName);
+        if (edit != null) {
+            postEdit(edit);
+            result = edit.getOldType();
+        }
+        return result;
+    }
+
+    /**
+     * Implements the functionality of {@link #renameType(String, String)}.
+     * Returns an undoable edit wrapping this functionality.
+     */
+    private RenameTypeEdit doRenameType(String oldName, String newName)
+        throws IOException {
+        RenameTypeEdit result = null;
+        testInit();
+        AspectGraph type = this.typeMap.remove(oldName);
+        if (type != null) {
+            this.marshaller.deleteGraph(createTypeFile(oldName));
+            GraphInfo.setName(type, newName);
+            AspectGraph oldType = this.typeMap.put(newName, type);
+            this.marshaller.marshalGraph(type.toPlainGraph(),
+                createTypeFile(newName));
+            result = new RenameTypeEdit(oldName, newName, oldType);
+        } else if (this.typeMap.containsKey(newName)) {
+            AspectGraph oldType = this.typeMap.remove(newName);
+            result = new RenameTypeEdit(oldName, newName, oldType);
+        }
+        return result;
+    }
+
+    @Override
     public void relabel(Label oldLabel, Label newLabel) throws IOException {
         Edit edit = doRelabel(oldLabel, newLabel);
         if (edit != null) {
@@ -427,10 +517,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         loadProperties();
         loadRules();
         loadGraphs();
+        loadTypes();
         loadControls();
         notifyObservers(new MyEdit(SystemStore.PROPERTIES_CHANGE
             | SystemStore.RULE_CHANGE | SystemStore.GRAPH_CHANGE
-            | SystemStore.CONTROL_CHANGE));
+            | SystemStore.TYPE_CHANGE | SystemStore.CONTROL_CHANGE));
         this.initialised = true;
     }
 
@@ -510,25 +601,43 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * corresponding AspectGraphs
      */
     private void loadGraphs() throws IOException {
-        this.graphMap.clear();
-        File[] files = this.file.listFiles(STATE_FILTER);
+        collectObjects(this.graphMap, STATE_FILTER, Groove.GRAPH_ROLE);
+    }
+
+    /**
+     * Loads the named graphs from specified location and returns the
+     * corresponding AspectGraphs
+     */
+    private void loadTypes() throws IOException {
+        collectObjects(this.typeMap, TYPE_FILTER, Groove.TYPE_ROLE);
+    }
+
+    /**
+     * Collects all aspect graphs from the {@link #file} directory with a given
+     * extension, and a given role.
+     * @see GraphInfo#getRole()
+     */
+    private void collectObjects(Map<String,AspectGraph> result,
+            ExtensionFilter filter, String role) throws IOException {
+        result.clear();
+        File[] files = this.file.listFiles(filter);
         // read in production rules
         for (File file : files) {
             // check for overlapping rule and directory names
             if (!file.isDirectory()) {
                 Graph plainGraph = this.marshaller.unmarshalGraph(file);
-                String graphName = STATE_FILTER.stripExtension(file.getName());
+                String graphName = filter.stripExtension(file.getName());
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph
                  */
-                GraphInfo.setRole(plainGraph, Groove.GRAPH_ROLE);
+                GraphInfo.setRole(plainGraph, role);
                 GraphInfo.setName(plainGraph, graphName);
                 AspectGraph graph = AspectGraph.newInstance(plainGraph);
                 /* Store the graph */
-                Object oldEntry = this.graphMap.put(graphName, graph);
+                Object oldEntry = result.put(graphName, graph);
                 assert oldEntry == null : String.format(
-                    "Duplicate graph name '%s'", graphName);
+                    "Duplicate %s name '%s'", role, graphName);
             }
         }
     }
@@ -679,6 +788,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
+     * Creates a file name from a given graph name. The file name consists of
+     * the store location, the name, and the state extension.
+     */
+    private File createTypeFile(String graphName) {
+        return new File(this.file, TYPE_FILTER.addExtension(graphName));
+    }
+
+    /**
      * Creates a file name from a given rule name. The file name consists of a
      * given parent file, the name, and the state extension.
      */
@@ -704,6 +821,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         new HashMap<RuleName,AspectGraph>();
     /** The name-to-graph map of the source. */
     private final Map<String,AspectGraph> graphMap =
+        new HashMap<String,AspectGraph>();
+    /** The name-to-types map of the source. */
+    private final Map<String,AspectGraph> typeMap =
         new HashMap<String,AspectGraph>();
     /** The name-to-control-program map of the source. */
     private final Map<String,String> controlMap = new HashMap<String,String>();
@@ -841,6 +961,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /** File filter for state files. */
     static private final ExtensionFilter STATE_FILTER =
         Groove.createStateFilter();
+
+    /** File filter for type files. */
+    static private final ExtensionFilter TYPE_FILTER =
+        Groove.createTypeFilter();
 
     /** File filter for property files. */
     static private final ExtensionFilter PROPERTIES_FILTER =
@@ -990,6 +1114,45 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final AspectGraph rule;
     }
 
+    /** Edit consisting of the deletion of a graph type. */
+    private class DeleteTypeEdit extends MyEdit {
+        public DeleteTypeEdit(AspectGraph type) {
+            super(TYPE_CHANGE);
+            this.type = type;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return Options.DELETE_TYPE_ACTION_NAME;
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            doDeleteType(GraphInfo.getName(this.type));
+            notifyObservers(this);
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            try {
+                doPutType(this.type);
+            } catch (IOException exc) {
+                throw new CannotUndoException();
+            }
+            notifyObservers(this);
+        }
+
+        /** Returns the deleted graph. */
+        public final AspectGraph getType() {
+            return this.type;
+        }
+
+        /** The deleted graph. */
+        private final AspectGraph type;
+    }
+
     /** Edit wrapping a relabelling. */
     private class RelabelEdit extends CompoundEdit implements Edit {
         @Override
@@ -1133,6 +1296,59 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final String newName;
         /** The rule previously stored under {@link #newName}, if any. */
         private final AspectGraph oldRule;
+    }
+
+    /** Edit consisting of the renaming of a type graph. */
+    private class RenameTypeEdit extends MyEdit {
+        public RenameTypeEdit(String oldName, String newName,
+                AspectGraph oldType) {
+            super(TYPE_CHANGE);
+            this.oldName = oldName;
+            this.newName = newName;
+            this.oldType = oldType;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return Options.RENAME_TYPE_ACTION_NAME;
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            try {
+                doRenameType(this.oldName, this.newName);
+            } catch (IOException exc) {
+                throw new CannotRedoException();
+            }
+            notifyObservers(this);
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            try {
+                doRenameType(this.newName, this.oldName);
+                if (this.oldType != null) {
+                    doPutType(this.oldType);
+                }
+            } catch (IOException exc) {
+                throw new CannotUndoException();
+            }
+            notifyObservers(this);
+        }
+
+        /** Returns the graph previously stored under {@link #newName}, if any. */
+        public final AspectGraph getOldType() {
+            return this.oldType;
+        }
+
+        /** The old name of the renamed graph. */
+        private final String oldName;
+        /** The new name of the renamed graph. */
+        private final String newName;
+        /** The graph previously stored under {@link #newName}, if any. */
+        private final AspectGraph oldType;
     }
 
     /** Edit consisting of the addition of a control program. */
@@ -1280,6 +1496,57 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final AspectGraph oldGraph;
         /** The added graph. */
         private final AspectGraph newGraph;
+    }
+
+    /** Edit consisting of the addition (or replacement) of a type graph. */
+    private class PutTypeEdit extends MyEdit {
+        public PutTypeEdit(AspectGraph oldType, AspectGraph newType) {
+            super(TYPE_CHANGE);
+            this.oldType = oldType;
+            this.newType = newType;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return this.oldType == null ? Options.NEW_TYPE_ACTION_NAME
+                    : Options.EDIT_TYPE_ACTION_NAME;
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            try {
+                doPutType(this.newType);
+            } catch (IOException exc) {
+                throw new CannotRedoException();
+            }
+            notifyObservers(this);
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            if (this.oldType == null) {
+                doDeleteType(GraphInfo.getName(this.newType));
+            } else {
+                try {
+                    doPutType(this.oldType);
+                } catch (IOException exc) {
+                    throw new CannotUndoException();
+                }
+            }
+            notifyObservers(this);
+        }
+
+        /** Returns the deleted graph. */
+        public final AspectGraph getOldType() {
+            return this.oldType;
+        }
+
+        /** The deleted graph, if any. */
+        private final AspectGraph oldType;
+        /** The added graph. */
+        private final AspectGraph newType;
     }
 
     /** Edit consisting of the addition (or replacement) of a rule. */

@@ -94,13 +94,8 @@ public class StoredGrammarView implements GrammarView, Observer {
         return Collections.unmodifiableSet(getStore().getRules().keySet());
     }
 
-    /**
-     * Adds a rule based on a given rule view.
-     * @see #getRuleView(RuleName)
-     */
-    @Deprecated
-    public RuleView addRule(RuleView ruleView) throws IllegalStateException {
-        throw new UnsupportedOperationException();
+    public Set<String> getTypeNames() {
+        return Collections.unmodifiableSet(getStore().getTypes().keySet());
     }
 
     public ControlView getControlView(String name) {
@@ -116,6 +111,20 @@ public class StoredGrammarView implements GrammarView, Observer {
     public RuleView getRuleView(RuleName name) {
         AspectGraph ruleGraph = getStore().getRules().get(name);
         return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
+    }
+
+    public GraphView getTypeView(String name) {
+        AspectGraph typeGraph = getStore().getTypes().get(name);
+        return typeGraph == null ? null : typeGraph.toTypeView(getProperties());
+    }
+
+    public GraphView getTypeView() {
+        return this.typeName == null ? null : getTypeView(this.typeName);
+    }
+
+    public void setType(String name) {
+        this.typeName = name;
+        invalidate();
     }
 
     public void setControl(String name) {
@@ -408,12 +417,16 @@ public class StoredGrammarView implements GrammarView, Observer {
      * Name of the current control program, if it is explicitly set;
      * <code>null</code> otherwise.
      */
-    String controlName;
+    private String controlName;
     /**
      * Name of the current start graph, if it is one of the graphs in this rule
      * system; <code>null</code> otherwise.
      */
     private String startGraphName;
+    /**
+     * Name of the current type graph, if any.
+     */
+    private String typeName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<String> errors;
     /** The graph grammar derived from the rule views. */

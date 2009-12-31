@@ -194,6 +194,13 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public AspectGraph deleteType(String name)
+        throws UnsupportedOperationException {
+        throw new UnsupportedOperationException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
     public Map<String,String> getControls() {
         testInit();
         return Collections.unmodifiableMap(this.controlMap);
@@ -215,6 +222,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     public Map<RuleName,AspectGraph> getRules() {
         testInit();
         return Collections.unmodifiableMap(this.ruleMap);
+    }
+
+    @Override
+    public Map<String,AspectGraph> getTypes() {
+        testInit();
+        return Collections.unmodifiableMap(this.typeMap);
     }
 
     @Override
@@ -246,6 +259,13 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public AspectGraph putType(AspectGraph type)
+        throws UnsupportedOperationException {
+        throw new UnsupportedOperationException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
     public AspectGraph renameGraph(String oldName, String newName)
         throws UnsupportedOperationException {
         throw new UnsupportedOperationException(String.format(
@@ -254,6 +274,13 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
 
     @Override
     public AspectGraph renameRule(String oldName, String newName)
+        throws UnsupportedOperationException {
+        throw new UnsupportedOperationException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
+    public AspectGraph renameType(String oldName, String newName)
         throws UnsupportedOperationException {
         throw new UnsupportedOperationException(String.format(
             "Archived grammar '%s' is immutable", getName()));
@@ -325,10 +352,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         loadProperties(zipFile, properties);
         loadRules(zipFile, rules);
         loadGraphs(zipFile, graphs);
+        loadTypes(zipFile, graphs);
         loadControls(zipFile, controls);
         zipFile.close();
         notify(SystemStore.PROPERTIES_CHANGE | SystemStore.RULE_CHANGE
-            | SystemStore.GRAPH_CHANGE | SystemStore.CONTROL_CHANGE);
+            | SystemStore.TYPE_CHANGE | SystemStore.GRAPH_CHANGE
+            | SystemStore.CONTROL_CHANGE);
         this.initialised = true;
     }
 
@@ -391,33 +420,6 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Loads the named graphs from a zip file, using the prepared map from graph
-     * names to zip entries.
-     */
-    private void loadGraphs(ZipFile file, Map<String,ZipEntry> graphs)
-        throws IOException {
-        this.graphMap.clear();
-        for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
-            String graphName = STATE_FILTER.stripExtension(graphEntry.getKey());
-            InputStream in = file.getInputStream(graphEntry.getValue());
-            Pair<Graph,Map<String,Node>> plainGraphAndMap =
-                DefaultGxlIO.getInstance().loadGraphWithMap(in);
-            Graph plainGraph = plainGraphAndMap.first();
-            /*
-             * For backward compatibility, we set the role and name of the graph
-             * graph
-             */
-            GraphInfo.setRole(plainGraph, Groove.GRAPH_ROLE);
-            GraphInfo.setName(plainGraph, graphName);
-            addLayout(file, graphEntry.getKey(), plainGraph,
-                plainGraphAndMap.second());
-            AspectGraph graph = AspectGraph.newInstance(plainGraph);
-            /* Store the graph */
-            this.graphMap.put(graphName, graph);
-        }
-    }
-
-    /**
      * Loads the named control programs from a zip file, using the prepared map
      * from program names to zip entries.
      */
@@ -445,6 +447,29 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /**
+     * Loads the named graphs from a zip file, using the prepared map from graph
+     * names to zip entries.
+     */
+    private void loadGraphs(ZipFile file, Map<String,ZipEntry> graphs)
+        throws IOException {
+        this.graphMap.clear();
+        this.graphMap.putAll(loadObjects(file, graphs, STATE_FILTER,
+            Groove.GRAPH_ROLE));
+    }
+
+    /**
+     * Loads all the rules from the file into {@link #ruleMap}.
+     */
+    private void loadRules(ZipFile file, Map<String,ZipEntry> rules)
+        throws IOException {
+        this.ruleMap.clear();
+        for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
+            RULE_FILTER, Groove.RULE_ROLE).entrySet()) {
+            this.ruleMap.put(createRuleName(entry.getKey()), entry.getValue());
+        }
+    }
+
+    /**
      * Loads the properties file from file (if any), and assigns the properties
      * to {@link #properties}.
      */
@@ -461,15 +486,32 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Loads all the rules from the file into {@link #ruleMap}.
+     * Loads the named graphs from a zip file, using the prepared map from graph
+     * names to zip entries.
      */
-    private void loadRules(ZipFile file, Map<String,ZipEntry> rules)
+    private void loadTypes(ZipFile file, Map<String,ZipEntry> graphs)
         throws IOException {
-        this.ruleMap.clear();
-        for (Map.Entry<String,ZipEntry> ruleEntry : rules.entrySet()) {
-            RuleName ruleName =
-                createRuleName(RULE_FILTER.stripExtension(ruleEntry.getKey()));
-            InputStream in = file.getInputStream(ruleEntry.getValue());
+        this.typeMap.clear();
+        this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
+            Groove.TYPE_ROLE));
+    }
+
+    /**
+     * Loads the named objects from a zip file, using the prepared map from
+     * names to zip entries. Returns a map from names to {@link AspectGraph}s.
+     * @param file the file to read from
+     * @param graphs the mapping from object names to zip entries
+     * @param filter extension filter to strip off the extensions of the object
+     *        names
+     * @param role the role to set for the loaded objects
+     */
+    private Map<String,AspectGraph> loadObjects(ZipFile file,
+            Map<String,ZipEntry> graphs, ExtensionFilter filter, String role)
+        throws IOException {
+        Map<String,AspectGraph> result = new HashMap<String,AspectGraph>();
+        for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
+            String graphName = filter.stripExtension(graphEntry.getKey());
+            InputStream in = file.getInputStream(graphEntry.getValue());
             Pair<Graph,Map<String,Node>> plainGraphAndMap =
                 DefaultGxlIO.getInstance().loadGraphWithMap(in);
             Graph plainGraph = plainGraphAndMap.first();
@@ -477,26 +519,24 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
              * For backward compatibility, we set the role and name of the graph
              * graph
              */
-            GraphInfo.setRole(plainGraph, Groove.RULE_ROLE);
-            GraphInfo.setName(plainGraph, ruleName.toString());
-            addLayout(file, ruleEntry.getKey(), plainGraph,
+            GraphInfo.setRole(plainGraph, role);
+            GraphInfo.setName(plainGraph, graphName);
+            addLayout(file, graphEntry.getKey(), plainGraph,
                 plainGraphAndMap.second());
             AspectGraph graph = AspectGraph.newInstance(plainGraph);
             /* Store the graph */
-            this.ruleMap.put(ruleName, graph);
+            result.put(graphName, graph);
         }
+        return result;
     }
 
     /**
-     * @param file
-     * @param ruleEntryName
-     * @param plainGraph
-     * @param nodeMap
-     * @throws IOException
+     * Adds layout information to a graph, based on the layout info found in a
+     * given zip file.
      */
-    private void addLayout(ZipFile file, String ruleEntryName,
-            Graph plainGraph, Map<String,Node> nodeMap) throws IOException {
-        ZipEntry layoutEntry = this.layoutEntryMap.get(ruleEntryName);
+    private void addLayout(ZipFile file, String entryName, Graph plainGraph,
+            Map<String,Node> nodeMap) throws IOException {
+        ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
             try {
                 LayoutMap<Node,Edge> layout =
@@ -543,6 +583,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     /** The name-to-rule map of the source. */
     private final Map<RuleName,AspectGraph> ruleMap =
         new HashMap<RuleName,AspectGraph>();
+    /** The name-to-type map of the source. */
+    private final Map<String,AspectGraph> typeMap =
+        new HashMap<String,AspectGraph>();
     /** The name-to-graph map of the source. */
     private final Map<String,AspectGraph> graphMap =
         new HashMap<String,AspectGraph>();
@@ -597,6 +640,10 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     /** File filter for state files. */
     static private final ExtensionFilter STATE_FILTER =
         Groove.createStateFilter();
+
+    /** File filter for type files. */
+    static private final ExtensionFilter TYPE_FILTER =
+        Groove.createTypeFilter();
 
     /** File filter for property files. */
     static private final ExtensionFilter PROPERTIES_FILTER =
