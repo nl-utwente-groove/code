@@ -411,7 +411,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
         int nodeNr = node.getNumber();
-        if (node.getClass() == DefaultNode.class && nodeNr > 0) {
+        if (node.getClass() == DefaultNode.class && nodeNr >= 0) {
             assert nodeNr < this.defaultNodeCerts.length : String.format(
                 "Node nr %d higher than maximum %d", nodeNr,
                 this.defaultNodeCerts.length);
