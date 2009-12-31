@@ -129,6 +129,8 @@ public class LabelTree extends JTree implements GraphModelListener,
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new MyTransferHandler());
         // make sure the checkbox never selects the label
+        // note that the BasicTreeUI may not be what is used in the current LAF,
+        // but I don't know any other way to modify the selection behaviour
         setUI(new BasicTreeUI() {
             @Override
             protected void selectPathForEvent(TreePath path, MouseEvent event) {
@@ -901,6 +903,8 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.checkbox.setBackground(this.jLabel.getBackgroundNonSelectionColor());
             setLayout(new BorderLayout());
             add(this.jLabel, BorderLayout.CENTER);
+            add(this.checkbox, CHECKBOX_ORIENTATION);
+            this.setBorder(new EmptyBorder(0, 2, 0, 0));
             setComponentOrientation(LabelTree.this.getComponentOrientation());
             setOpaque(true);
         }
@@ -916,8 +920,9 @@ public class LabelTree extends JTree implements GraphModelListener,
                         ? (LabelTree.LabelTreeNode) value : null;
             if (this.labelNode != null && this.labelNode.hasFilterControl()) {
                 this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
+                // re-add the label (it gets detached if used as a stand-alone
+                // renderer)
                 add(this.jLabel, BorderLayout.CENTER);
-                add(this.checkbox, CHECKBOX_ORIENTATION);
                 result = this;
             } else {
                 this.jLabel.setIcon(getModeIcon(isShowsSubtypes()));
@@ -967,25 +972,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         public JCheckBox getCheckbox() {
             return this.checkbox;
         }
-
-        //
-        // /**
-        // * Overrides <code>JComponent.getPreferredSize</code> to return
-        // slightly
-        // * wider preferred size value.
-        // */
-        // @Override
-        // public Dimension getPreferredSize() {
-        // Dimension retDimension = super.getPreferredSize();
-        //
-        // if (retDimension != null) {
-        // retDimension =
-        // new Dimension(Math.min(200, getMaxLabelWidth()
-        // + this.checkbox.getPreferredSize().width),
-        // retDimension.height);
-        // }
-        // return retDimension;
-        // }
 
         /**
          * Overridden for performance reasons. See the <a
