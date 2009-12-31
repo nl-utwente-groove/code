@@ -177,6 +177,8 @@ public class Options {
     public static final String DELETE_GRAPH_ACTION_NAME = "Delete Graph";
     /** Delete rule action name */
     public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
+    /** Delete type graph action name */
+    public static final String DELETE_TYPE_ACTION_NAME = "Delete Type";
     /** Name of the "Disable Control" action. */
     public static final String DISABLE_CONTROL_ACTION_NAME =
         "Disable Control Program";
@@ -197,6 +199,8 @@ public class Options {
     public static final String EDIT_RULE_ACTION_NAME = "Edit Rule ...";
     /** Edit state action name */
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
+    /** Edit type action name */
+    public static final String EDIT_TYPE_ACTION_NAME = "Edit Type ...";
     /** Name of the "Enable Control Program" action */
     public static final String ENABLE_CONTROL_ACTION_NAME =
         "Enable Control Program";
@@ -244,13 +248,15 @@ public class Options {
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
     /** New action name */
     public static final String NEW_ACTION_NAME = "New";
-    /** New action name */
+    /** New graph action name */
     public static final String NEW_GRAPH_ACTION_NAME = "New Graph";
-    /** New action name */
+    /** New grammar action name */
     public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar";
-    /** New action name */
+    /** New rule action name */
     public static final String NEW_RULE_ACTION_NAME = "New Rule";
-    /** New action name */
+    /** New type action name */
+    public static final String NEW_TYPE_ACTION_NAME = "New Type";
+    /** New control action name */
     public static final String NEW_CONTROL_ACTION_NAME = "New Control";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node Mode";
@@ -285,6 +291,8 @@ public class Options {
     public static final String RENAME_GRAPH_ACTION_NAME = "Rename Graph";
     /** Rule rename action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
+    /** Type rename action name */
+    public static final String RENAME_TYPE_ACTION_NAME = "Rename Type";
     /** Edit properties action name */
     public static final String RULE_PROPERTIES_ACTION_NAME =
         "Rule Properties ...";

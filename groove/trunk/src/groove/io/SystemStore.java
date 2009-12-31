@@ -27,7 +27,7 @@ import javax.swing.undo.UndoableEdit;
  * @version $Revision $
  */
 public interface SystemStore extends
-        GenericSystemStore<AspectGraph,AspectGraph> {
+        GenericSystemStore<AspectGraph,AspectGraph,AspectGraph,String> {
     /** Value used in notifying changes to the properties. */
     static public final int PROPERTIES_CHANGE = 0x1;
     /** Value used in notifying changes to the control map. */
@@ -36,13 +36,15 @@ public interface SystemStore extends
     static public final int RULE_CHANGE = 0x4;
     /** Value used in notifying changes to the graph map. */
     static public final int GRAPH_CHANGE = 0x8;
+    /** Value used in notifying changes to the type map. */
+    static public final int TYPE_CHANGE = 0x10;
 
     /** Edit object for system stores. */
     public interface Edit extends UndoableEdit {
         /**
          * Returns a value that is an OR of {@link #RULE_CHANGE},
-         * {@link #GRAPH_CHANGE}, {@link #CONTROL_CHANGE} and
-         * {@link #PROPERTIES_CHANGE}.
+         * {@link #GRAPH_CHANGE}, {@link #TYPE_CHANGE}, {@link #CONTROL_CHANGE}
+         * and {@link #PROPERTIES_CHANGE}.
          */
         int getChange();
     }

@@ -495,6 +495,15 @@ public class GraphInfo {
     }
 
     /**
+     * Convenience method to test whether the role of a graph is <i> type</i>.
+     * @see #getRole()
+     * @see Groove#TYPE_ROLE
+     */
+    public static boolean hasTypeRole(GraphShape graph) {
+        return Groove.TYPE_ROLE.equals(getRole(graph));
+    }
+
+    /**
      * Convenience method to set the role of a graph to <i>rule</i>.
      * @see #setRole(String)
      * @see Groove#RULE_ROLE
@@ -510,6 +519,15 @@ public class GraphInfo {
      */
     public static void setGraphRole(GraphShape graph) {
         setRole(graph, Groove.GRAPH_ROLE);
+    }
+
+    /**
+     * Convenience method to set the role of a graph to <i>type</i>.
+     * @see #setRole(String)
+     * @see Groove#TYPE_ROLE
+     */
+    public static void setTypeRole(GraphShape graph) {
+        setRole(graph, Groove.TYPE_ROLE);
     }
 
     /**

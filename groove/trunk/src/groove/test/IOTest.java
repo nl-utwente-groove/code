@@ -16,7 +16,6 @@
  */
 package groove.test;
 
-import groove.control.ControlView;
 import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
 import groove.explore.result.Acceptor;
@@ -26,9 +25,7 @@ import groove.trans.GraphGrammar;
 import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GenericGrammarView;
-import groove.view.GraphView;
-import groove.view.RuleView;
+import groove.view.GrammarView;
 import groove.view.StoredGrammarView;
 
 import java.io.File;
@@ -117,9 +114,8 @@ public class IOTest extends TestCase {
 
     }
 
-    protected void testControl(
-            GenericGrammarView<GraphView,RuleView,ControlView> view,
-            String startName, String controlName, int nodecount, int edgecount) {
+    protected void testControl(GrammarView view, String startName,
+            String controlName, int nodecount, int edgecount) {
         testExploration(view, "control", startName, controlName, 3, nodecount,
             edgecount);
     }
@@ -131,10 +127,9 @@ public class IOTest extends TestCase {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(
-            GenericGrammarView<GraphView,RuleView,ControlView> view,
-            String grammarName, String startName, String controlName,
-            int rulecount, int nodeCount, int edgeCount) {
+    protected GTS testExploration(GrammarView view, String grammarName,
+            String startName, String controlName, int rulecount, int nodeCount,
+            int edgeCount) {
         try {
 
             GraphGrammar gg = view.toGrammar();

@@ -484,9 +484,40 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     public GraphView toGraphView(SystemProperties properties)
         throws IllegalStateException {
-        if (!GraphInfo.hasGraphRole(this)) {
-            throw new IllegalStateException(
-                "Aspect graph does not represent a state graph");
+        return toGraphView(properties, Groove.GRAPH_ROLE);
+    }
+
+    /**
+     * Creates a type view from this aspect graph. Further information for the
+     * conversion is given through a properties object. The view object is
+     * reused when possible.
+     * @param properties the properties object with respect to which the type
+     *        graph is to be constructed
+     * @return the resulting type graph view (non-null)
+     * @throws IllegalStateException if the aspect graph role is not
+     *         {@link Groove#TYPE_ROLE}
+     */
+    public GraphView toTypeView(SystemProperties properties)
+        throws IllegalStateException {
+        return toGraphView(properties, Groove.TYPE_ROLE);
+    }
+
+    /**
+     * Creates a view from this aspect graph. Further information for the
+     * conversion is given through a properties object. The view object is
+     * reused when possible.
+     * @param properties the properties object with respect to which the view is
+     *        to be constructed
+     * @param role role of the returned view
+     * @return the resulting view (non-null)
+     * @throws IllegalStateException if the aspect graph role is not {@code
+     *         role}
+     */
+    private GraphView toGraphView(SystemProperties properties, String role)
+        throws IllegalStateException {
+        if (!role.equals(GraphInfo.getRole(this))) {
+            throw new IllegalStateException(String.format(
+                "Aspect graph does not represent a %s", role));
         }
         boolean refreshView = this.graphView == null;
         if (!refreshView) {
@@ -544,6 +575,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     public View<?> toView() {
         if (GraphInfo.hasRuleRole(this)) {
             return toRuleView(null);
+        } else if (GraphInfo.hasTypeRole(this)) {
+            return toTypeView(null);
         } else {
             return toGraphView(null);
         }

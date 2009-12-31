@@ -91,6 +91,11 @@ public class Groove {
      * @see GraphInfo#getRole()
      */
     static public final String RULE_ROLE = "rule";
+    /**
+     * Role value indicating that a graph represents a type.
+     * @see GraphInfo#getRole()
+     */
+    static public final String TYPE_ROLE = "type";
 
     /** Extension for GXL (Graph eXchange Language) files. */
     public static final String GXL_EXTENSION = ".gxl";
@@ -98,6 +103,8 @@ public class Groove {
     public static final String RULE_EXTENSION = ".gpr";
     /** Extension for GST (Graph STate) files. */
     public static final String STATE_EXTENSION = ".gst";
+    /** Extension for GTP (Graph TYpe) files. */
+    public static final String TYPE_EXTENSION = ".gty";
     /** Extension for GPS (Graph Production System) files. */
     public static final String RULE_SYSTEM_EXTENSION = ".gps";
     /** Extension for FSM (Finite State Machine) files. */
@@ -340,6 +347,26 @@ public class Groove {
     }
 
     /**
+     * Returns a fresh an extension filter for <tt>STATE_EXTENSION</tt>. A
+     * switch controls whether the filter accepts directories.
+     * @param acceptDirectories if true, the filter accepts directories.
+     * @see #STATE_EXTENSION
+     */
+    public static ExtensionFilter createStateFilter(boolean acceptDirectories) {
+        return getFilter("Groove state graphs", STATE_EXTENSION,
+            acceptDirectories);
+    }
+
+    /**
+     * Returns a fresh extension filter for {@link #TYPE_EXTENSION}. By default,
+     * the filter accepts directories.
+     * @see #TYPE_EXTENSION
+     */
+    public static ExtensionFilter createTypeFilter() {
+        return getFilter("Groove type graphs", TYPE_EXTENSION, true);
+    }
+
+    /**
      * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. By
      * default, the filter accepts directories.
      */
@@ -362,17 +389,6 @@ public class Groove {
      */
     public static ExtensionFilter createPropertyFilter() {
         return new ExtensionFilter("Groove property files", PROPERTY_EXTENSION);
-    }
-
-    /**
-     * Returns a fresh an extension filter for <tt>STATE_EXTENSION</tt>. A
-     * switch controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directories.
-     * @see #STATE_EXTENSION
-     */
-    public static ExtensionFilter createStateFilter(boolean acceptDirectories) {
-        return getFilter("Groove state graphs", STATE_EXTENSION,
-            acceptDirectories);
     }
 
     /**
