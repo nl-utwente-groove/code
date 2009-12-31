@@ -271,9 +271,8 @@ abstract public class JModel extends DefaultGraphModel {
     protected Node addFreshNode(groove.graph.Graph result, JVertex root) {
         Node node = DefaultNode.createNode(root.getNumber());
         boolean fresh = result.addNode(node);
-        // assert fresh : String.format("Node '%s' already occurred in %s",
-        // node,
-        // result);
+        assert fresh : String.format("Node '%s' already occurred in %s", node,
+            result);
         return node;
     }
 

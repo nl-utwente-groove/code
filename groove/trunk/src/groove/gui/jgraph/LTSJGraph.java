@@ -163,7 +163,7 @@ public class LTSJGraph extends JGraph {
         return this.mcMenu;
     }
 
-    /** Returns the simulator of this LTS jgraph. */
+    @Override
     public Simulator getSimulator() {
         return this.simulator;
     }
