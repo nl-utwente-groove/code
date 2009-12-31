@@ -90,6 +90,11 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         return this.jGraph;
     }
 
+    /** Returns the label tree displayed on this panel. */
+    public LabelTree getLabelTree() {
+        return this.labelTree;
+    }
+
     /**
      * Returns the underlying {@link JModel}, or <code>null</code> if the jgraph
      * is currently disabled.

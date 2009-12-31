@@ -446,9 +446,19 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
         TreePath[] selectedValues = getSelectionPaths();
+        boolean itemAdded = false;
+        Simulator simulator = getJGraph().getSimulator();
+        if (selectedValues != null && selectedValues.length == 1
+            && simulator != null) {
+            result.add(simulator.getRelabelAction());
+            itemAdded = true;
+        }
         if (isFiltering() && selectedValues != null) {
             result.add(new FilterAction(selectedValues, true));
             result.add(new FilterAction(selectedValues, false));
+            itemAdded = true;
+        }
+        if (itemAdded) {
             result.addSeparator();
         }
         // add the show/hide menu
@@ -763,7 +773,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         new JCheckBox().getPreferredSize().width;
 
     /** Tree node wrapping a label. */
-    private class LabelTreeNode extends DefaultMutableTreeNode {
+    public class LabelTreeNode extends DefaultMutableTreeNode {
         /**
          * Constructs a new node, for a given label.
          * @param label The label wrapped in this node
