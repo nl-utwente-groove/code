@@ -23,6 +23,7 @@ import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
+import groove.gui.Simulator;
 import groove.gui.ZoomMenu;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.JModel.RefreshEdit;
@@ -147,6 +148,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public final LabelStore getLabelStore() {
         return this.labelStore;
+    }
+
+    /** Returns the simulator associated with this {@link JGraph}, if any. */
+    public Simulator getSimulator() {
+        return null;
     }
 
     /**
@@ -607,8 +613,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public void fillOutDisplayMenu(JPopupMenu menu) {
         addSeparatorUnlessFirst(menu);
         Object[] cells = getSelectionCells();
-        if (this.filteredLabels != null && cells.length > 0) {
+        boolean itemAdded = false;
+        if (cells != null && cells.length > 0 && getSimulator() != null) {
+            menu.add(getSimulator().getRelabelAction());
+            itemAdded = true;
+        }
+        if (this.filteredLabels != null && cells != null && cells.length > 0) {
             menu.add(new FilterAction(cells));
+            itemAdded = true;
+        }
+        if (itemAdded) {
             menu.addSeparator();
         }
         menu.add(createShowHideMenu());

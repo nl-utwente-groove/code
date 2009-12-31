@@ -71,9 +71,7 @@ public class RuleJGraph extends JGraph {
         return Options.EXPORT_RULE_ACTION_NAME;
     }
 
-    /**
-     * @return Returns the simulator.
-     */
+    @Override
     public Simulator getSimulator() {
         return this.simulator;
     }

@@ -440,6 +440,11 @@ public class Options {
     /** Refresh keystroke */
     public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5");
     /**
+     * Replace label keystroke
+     */
+    public static final KeyStroke RELABEL_KEY =
+        KeyStroke.getKeyStroke("control R");
+    /**
      * Edit label keystroke
      */
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");

@@ -63,6 +63,7 @@ import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.io.AspectGxl;
@@ -156,8 +157,14 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.TreePath;
 import javax.swing.undo.UndoManager;
+
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
 
 /**
  * Program that applies a production system to an initial graph.
@@ -4310,9 +4317,15 @@ public class Simulator {
      */
     private RelabelAction relabelAction;
 
-    private class RelabelAction extends RefreshableAction {
+    private class RelabelAction extends RefreshableAction implements
+            GraphSelectionListener, TreeSelectionListener {
         RelabelAction() {
             super(Options.RELABEL_ACTION_NAME, Groove.RENAME_ICON);
+            putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
+            getStatePanel().getJGraph().addGraphSelectionListener(this);
+            getStatePanel().getLabelTree().addTreeSelectionListener(this);
+            getRulePanel().getJGraph().addGraphSelectionListener(this);
+            getRulePanel().getLabelTree().addTreeSelectionListener(this);
         }
 
         public void refresh() {
@@ -4322,11 +4335,39 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Pair<Label,Label> relabelling = askRelabelling(null);
+            Pair<Label,Label> relabelling = askRelabelling(this.oldLabel);
             if (relabelling != null) {
                 doRelabel(relabelling.first(), relabelling.second());
             }
         }
+
+        /** Sets {@link #oldLabel} based on the {@link JGraph} selection. */
+        @Override
+        public void valueChanged(GraphSelectionEvent e) {
+            this.oldLabel = null;
+            Object[] selection = ((JGraph) e.getSource()).getSelectionCells();
+            if (selection != null && selection.length > 0) {
+                Collection<Label> selectedLabels =
+                    ((JCell) selection[0]).getListLabels();
+                if (selectedLabels.size() > 0) {
+                    this.oldLabel = selectedLabels.iterator().next();
+                }
+            }
+        }
+
+        @Override
+        public void valueChanged(TreeSelectionEvent e) {
+            this.oldLabel = null;
+            TreePath[] selection =
+                ((LabelTree) e.getSource()).getSelectionPaths();
+            if (selection != null && selection.length > 0) {
+                this.oldLabel =
+                    ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getLabel();
+            }
+        }
+
+        /** The label to be replaced; may be {@code null}. */
+        private Label oldLabel;
     }
 
     /**

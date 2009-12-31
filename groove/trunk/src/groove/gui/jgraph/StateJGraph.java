@@ -94,10 +94,15 @@ public class StateJGraph extends JGraph {
         return Options.EXPORT_STATE_ACTION_NAME;
     }
 
+    @Override
+    public Simulator getSimulator() {
+        return this.simulator;
+    }
+
     /**
      * The simulator to which this j-graph is associated.
      */
-    final Simulator simulator;
+    final private Simulator simulator;
 
     /**
      * Mouse listener that creates the pop-up menu and switches the view to the
