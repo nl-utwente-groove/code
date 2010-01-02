@@ -465,7 +465,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         this.ruleMap.clear();
         for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
             RULE_FILTER, Groove.RULE_ROLE).entrySet()) {
-            this.ruleMap.put(createRuleName(entry.getKey()), entry.getValue());
+            RuleName name = createRuleName(entry.getKey());
+            GraphInfo.setName(entry.getValue(), name.toString());
+            this.ruleMap.put(name, entry.getValue());
         }
     }
 
@@ -551,7 +553,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
 
     /**
      * Creates a rule name from the remainder of a JAR/ZIP entry name. The
-     * '/'-separators are interpreted as sule name hierarchy.
+     * '/'-separators are interpreted as rule name hierarchy.
      * @param restName The entry name to convert; non-null
      * @return The resulting rule name; non-null
      */

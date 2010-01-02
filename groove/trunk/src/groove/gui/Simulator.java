@@ -470,8 +470,8 @@ public class Simulator {
                     if (newGraphName != null) {
                         AspectGraph newGraph = toAspectGraph();
                         GraphInfo.setName(newGraph, newGraphName);
-                        doAddGraph(newGraph);
-                        if (confirmLoadStartState(newGraphName)) {
+                        if (doAddGraph(newGraph)
+                            && confirmLoadStartState(newGraphName)) {
                             doLoadStartGraph(newGraphName);
                         }
                     }
@@ -503,49 +503,59 @@ public class Simulator {
      *         some error
      */
     boolean handleSaveControl(String program) {
+        boolean result = false;
         String controlName = getGrammarView().getProperties().getControlName();
         if (controlName == null) {
             controlName = Groove.DEFAULT_CONTROL_NAME;
         }
         try {
             getGrammarStore().putControl(controlName, program);
-            return true;
+            result = true;
         } catch (UnsupportedOperationException exc) {
             assert false : "Grammar store cannot save control program";
-            return false;
         } catch (IOException exc) {
             showErrorDialog(String.format(
                 "Error while saving control program '%s'", controlName), exc);
-            return false;
         }
+        return result;
     }
 
-    /** Adds a control program to this grammar. */
-    void doAddControl(String name, String program) {
+    /**
+     * Adds a control program to this grammar.
+     * @return <code>true</code> if saving the control program has succeeded
+     */
+    boolean doAddControl(String name, String program) {
+        boolean result = false;
         try {
             getGrammarStore().putControl(name, program);
+            result = true;
             updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error storing control program " + name, exc);
         }
+        return result;
     }
 
     /**
      * Adds a given graph to the graphs in this grammar
+     * @return <code>true</code> if saving the graph has succeeded
      */
-    void doAddGraph(AspectGraph graph) {
+    boolean doAddGraph(AspectGraph graph) {
+        boolean result = false;
         try {
             if (graph.hasErrors()) {
                 showErrorDialog("Errors in graph", new FormatException(
                     graph.getErrors()));
             } else {
                 getGrammarStore().putGraph(graph);
+                result = true;
                 refresh();
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving graph '%s'",
                 GraphInfo.getName(graph)), exc);
         }
+        return result;
     }
 
     /**
@@ -553,17 +563,22 @@ public class Simulator {
      * into the current grammar view.
      * @param ruleName the name of the new rule
      * @param ruleAsGraph the new rule, given as an aspect graph
+     * @return <code>true</code> if saving the rule has succeeded
      */
-    void doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
+    boolean doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
+        boolean result = false;
         try {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             getGrammarStore().putRule(ruleAsGraph);
+            result = true;
             updateGrammar();
         } catch (IOException exc) {
-            showErrorDialog("Error while saving rule", exc);
+            showErrorDialog(String.format("Error while saving rule '%s'",
+                ruleName), exc);
         } catch (UnsupportedOperationException u) {
             showErrorDialog("Current grammar is read-only", u);
         }
+        return result;
     }
 
     /** Adds a control program to this grammar. */
@@ -3007,6 +3022,7 @@ public class Simulator {
                 // copy the selected rules to avoid concurrent modifications
                 List<RuleView> rules =
                     new ArrayList<RuleView>(getCurrentRuleSet());
+                RuleName savedRule = null;
                 for (RuleView rule : rules) {
                     // AspectGraph oldRuleGraph =
                     // getCurrentRule().getAspectGraph();
@@ -3014,13 +3030,14 @@ public class Simulator {
                     newRuleName =
                         askNewRuleName("Select new rule name", rule.getName(),
                             true);
-                    if (newRuleName != null) {
-                        doAddRule(newRuleName, oldRuleGraph.clone());
+                    if (newRuleName != null
+                        && doAddRule(newRuleName, oldRuleGraph.clone())) {
+                        savedRule = newRuleName;
                     }
                 }
                 // select last copied rule
-                if (newRuleName != null) {
-                    setRule(newRuleName);
+                if (savedRule != null) {
+                    setRule(savedRule);
                 }
             }
         }
@@ -3746,8 +3763,9 @@ public class Simulator {
                         new RuleName(GraphInfo.getName(ruleGraph));
                     if (getGrammarView().getRuleView(ruleName) == null
                         || confirmOverwriteRule(ruleName)) {
-                        doAddRule(ruleName, ruleGraph);
-                        setRule(ruleName);
+                        if (doAddRule(ruleName, ruleGraph)) {
+                            setRule(ruleName);
+                        }
                     }
                 } catch (IOException e) {
                     showErrorDialog("Error loading rule", e);
@@ -4172,8 +4190,9 @@ public class Simulator {
                             if (ruleName != null) {
                                 AspectGraph newRule = toAspectGraph();
                                 GraphInfo.setName(newRule, ruleName.text());
-                                doAddRule(ruleName, toAspectGraph());
-                                setRule(ruleName);
+                                if (doAddRule(ruleName, toAspectGraph())) {
+                                    setRule(ruleName);
+                                }
                             }
                         }
                     };
