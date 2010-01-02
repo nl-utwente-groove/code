@@ -51,6 +51,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
+import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
@@ -1044,9 +1045,9 @@ public class NewRuleView implements RuleView {
             // {
             boolean result;
             if (elem instanceof AspectNode) {
-                // we need to push nodes down in injective mode
+                // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
-                result = isInjective();
+                result = isInjective() && !AttributeAspect.isAttributeNode(elem);
             } else {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels

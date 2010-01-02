@@ -108,6 +108,9 @@ abstract public class PositiveCondition<M extends Match> extends
             }
         }
         unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
+        for (Node node : getRootMap().nodeMap().values()) {
+            unresolvedProductNodes.remove(node);
+        }
         // now resolve nodes until stable
         boolean stable = false;
         while (!stable) {
@@ -152,7 +155,7 @@ abstract public class PositiveCondition<M extends Match> extends
             if (arguments.cardinality() != product.arity()) {
                 arguments.flip(0, product.arity());
                 throw new FormatException(
-                    "Arguments edges %s of product node %s missing in sub-condition",
+                    "Argument edges %s of product node %s missing in sub-condition",
                     arguments, product);
             }
         }
