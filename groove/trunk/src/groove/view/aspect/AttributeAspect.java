@@ -164,6 +164,13 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
+     * Tests if a given aspect element corresponds to a product node.
+     */
+    static public boolean isAttributeNode(AspectElement elem) {
+        return elem instanceof AspectNode && getAttributeValue(elem) != null;
+    }
+
+    /**
      * Returns the aspect value corresponding to a given signature.
      */
     public static AspectValue getAttributeValueFor(Algebra<?> algebra) {
