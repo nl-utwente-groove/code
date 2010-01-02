@@ -145,10 +145,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     @Override
     public AspectGraph deleteGraph(String name) {
         AspectGraph result = null;
-        DeleteTypeEdit edit = doDeleteType(name);
+        DeleteGraphEdit edit = doDeleteGraph(name);
         if (edit != null) {
             postEdit(edit);
-            result = edit.getType();
+            result = edit.getGraph();
         }
         return result;
     }
@@ -199,10 +199,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     @Override
     public AspectGraph deleteType(String name) {
         AspectGraph result = null;
-        DeleteGraphEdit edit = doDeleteGraph(name);
+        DeleteTypeEdit edit = doDeleteType(name);
         if (edit != null) {
             postEdit(edit);
-            result = edit.getGraph();
+            result = edit.getType();
         }
         return result;
     }

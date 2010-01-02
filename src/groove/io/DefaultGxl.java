@@ -71,6 +71,11 @@ public class DefaultGxl extends AbstractXml {
      * This implementation works by delegating to {@link DefaultGxlIO}.
      */
     public void marshalGraph(Graph graph, File file) throws IOException {
+        // create parent dirs if necessary
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
         DefaultGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
     }
 
