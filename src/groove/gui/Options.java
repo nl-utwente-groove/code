@@ -166,6 +166,8 @@ public class Options {
     public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
     /** Copy rule action name */
     public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
+    /** Name of the "Copy Type Graph" action. */
+    public static final String COPY_TYPE_ACTION_NAME = "Copy Type Graph";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
@@ -178,12 +180,14 @@ public class Options {
     /** Delete rule action name */
     public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
     /** Delete type graph action name */
-    public static final String DELETE_TYPE_ACTION_NAME = "Delete Type";
+    public static final String DELETE_TYPE_ACTION_NAME = "Delete Type Graph";
     /** Name of the "Disable Control" action. */
     public static final String DISABLE_CONTROL_ACTION_NAME =
         "Disable Control Program";
     /** Name of the "Disable Rule" action. */
     public static final String DISABLE_RULE_ACTION_NAME = "Disable Rule";
+    /** Name of the "Disable Type Graph" action. */
+    public static final String DISABLE_TYPE_ACTION_NAME = "Disable Type Graph";
     /** Edge mode action name */
     public static final String EDGE_MODE_NAME = "Edge mode";
     /** Edit action name */
@@ -200,12 +204,14 @@ public class Options {
     /** Edit state action name */
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
     /** Edit type action name */
-    public static final String EDIT_TYPE_ACTION_NAME = "Edit Type ...";
+    public static final String EDIT_TYPE_ACTION_NAME = "Edit Type Graph ...";
     /** Name of the "Enable Control Program" action */
     public static final String ENABLE_CONTROL_ACTION_NAME =
         "Enable Control Program";
     /** Name of the "Enable Rule" action */
     public static final String ENABLE_RULE_ACTION_NAME = "Enable Rule";
+    /** Name of the "Enable Type Graph" action */
+    public static final String ENABLE_TYPE_ACTION_NAME = "Enable Type Graph";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
         "Explore State Space";
@@ -548,6 +554,8 @@ public class Options {
     static public final String DELETE_RULE_OPTION = "Delete rule?";
     /** Always delete graphs without confirmation. */
     static public final String DELETE_GRAPH_OPTION = "Delete graph?";
+    /** Option to delete type graphs. */
+    static public final String DELETE_TYPE_OPTION = "Delete type graph?";
     /** Show preview before close. */
     static public final String PREVIEW_ON_CLOSE_OPTION = "Show preview on OK";
     /** Show preview before save. */
@@ -590,6 +598,7 @@ public class Options {
         intOptionDefaults.put(DELETE_CONTROL_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(DELETE_TYPE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
@@ -713,6 +722,7 @@ public class Options {
         addBehaviour(DELETE_CONTROL_OPTION, 2);
         addBehaviour(DELETE_GRAPH_OPTION, 2);
         addBehaviour(DELETE_RULE_OPTION, 2);
+        addBehaviour(DELETE_TYPE_OPTION, 2);
         addBehaviour(REPLACE_RULE_OPTION, 3);
         addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
         addBehaviour(STOP_SIMULATION_OPTION, 2);

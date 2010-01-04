@@ -122,20 +122,18 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.typeName == null ? null : getTypeView(this.typeName);
     }
 
-    public void setType(String name) {
-        this.typeName = name;
-        invalidate();
-    }
-
-    public void setControl(String name) {
-        this.controlName = name;
-        invalidate();
+    /**
+     * Returns the name of the type graph to be used. This is taken from the
+     * system properties. The empty string means that no type graph is set.
+     * @see SystemProperties#getTypeName()
+     */
+    public String getTypeName() {
+        return getProperties().getTypeName();
     }
 
     /**
-     * Returns the name of the control program to be used. This is either
-     * explicitly set through {@link #setControl(String)}, or taken from the
-     * system properties; if no explicit control name is given, it is set to
+     * Returns the name of the control program to be used. This is taken from
+     * the system properties; if no explicit control name is given, it is set to
      * {@link Groove#DEFAULT_CONTROL_NAME}.
      * @see SystemProperties#getControlName()
      */
@@ -247,16 +245,15 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * Returns the name of the control program to be used. This is either
-     * explicitly set through {@link #setControl(String)}, or taken from the
-     * system properties. If no explicit control name is given,
+     * Returns the name of the control program to be used. This is taken from
+     * the system properties. If no explicit control name is given,
      * {@link Groove#DEFAULT_CONTROL_NAME} or {@link #getName()} is taken as
      * default name, if any control program by that name exists; otherwise
      * <code>null</code> is returned.
      * @param useDefault flag to determine if either of the defaults (
      *        {@link Groove#DEFAULT_CONTROL_NAME} or {@link #getName()}) should
-     *        be returned in case no explicit control name has been set using
-     *        {@link #setControl(String)} or in the system properties.
+     *        be returned in case no explicit control name has been set in the
+     *        system properties.
      * @see SystemProperties#getControlName()
      */
     private String getControlName(boolean useDefault) {

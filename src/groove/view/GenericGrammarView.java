@@ -74,9 +74,6 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,T
      */
     public TV getTypeView(String name);
 
-    /** Sets the type graph to a given name. */
-    public void setType(String name);
-
     /**
      * Returns the type graph view set for the grammar.
      * @return the type graph view for the grammar, or <code>null</code> if
@@ -91,9 +88,6 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,T
      *         no program by that name exists
      */
     public ControlView getControlView(String name);
-
-    /** Sets the control program to a given name. */
-    public void setControl(String name);
 
     /**
      * Returns the control view set for the grammar.

@@ -311,26 +311,6 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Simulator to which the control panel belongs. */
     private final Simulator simulator;
 
-    //
-    // /** Sets the name of the control program being edited.
-    // * The name may either be an existing control name, or a new one.
-    // */
-    // private void setEditedControlName(String editName) {
-    // editedControlName = editName;
-    // }
-    //
-    // /** Returns the name of the control program being edited, if any.
-    // * The name may either be an existing control name, or a new one.
-    // * @return the name of the control program being edited, or
-    // <code>null</code> if no edit action is going on.
-    // */
-    // private String getEditedControlName() {
-    // return editedControlName;
-    // }
-    //    
-    // /** Name of the control program being edited, if any. */
-    // private String editedControlName;
-    //    
     /**
      * Interface for objects that need to refresh their own status when actions
      * on the control panel occur.
@@ -532,7 +512,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private CancelAction cancelAction;
 
     /**
-     * Action to delete the currently displayed control program.
+     * Action to copy the currently displayed control program.
      */
     private class CopyAction extends RefreshableAction {
         public CopyAction() {
@@ -543,7 +523,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
             if (stopEditing(true)) {
                 String oldName = getSelectedControl();
                 String newName =
-                    getSimulator().askNewControlName(null, oldName, true);
+                    getSimulator().askNewControlName(
+                        "Select new control program name", oldName, true);
                 if (newName != null) {
                     getSaveAction().doSave(newName,
                         getControlTextArea().getText());
@@ -626,7 +607,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Singular instance of the {@link DeleteAction}. */
     private DeleteAction deleteAction;
 
-    /** Action to enable or disable the currently displayed control program. */
+    /** Action to disable the currently displayed control program. */
     private class DisableAction extends RefreshableAction {
         public DisableAction() {
             super(Options.DISABLE_CONTROL_ACTION_NAME, Groove.DISABLE_ICON);
@@ -662,7 +643,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Singular instance of the {@link EnableAction}. */
     private DisableAction disableAction;
 
-    /** Action to enable or disable the currently displayed control program. */
+    /** Action to enable the currently displayed control program. */
     private class EnableAction extends RefreshableAction {
         public EnableAction() {
             super(Options.ENABLE_CONTROL_ACTION_NAME, Groove.ENABLE_ICON);
@@ -745,7 +726,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void actionPerformed(ActionEvent e) {
             if (stopEditing(true)) {
                 String newName =
-                    getSimulator().askNewControlName(null,
+                    getSimulator().askNewControlName(
+                        "Select control program name",
                         Groove.DEFAULT_CONTROL_NAME, true);
                 if (newName != null) {
                     setSelectedControl(newName);
@@ -840,7 +822,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private PreviewAction previewAction;
 
     /**
-     * Action to delete the currently displayed control program.
+     * Action to rename the currently displayed control program.
      */
     private class RenameAction extends RefreshableAction {
         public RenameAction() {
@@ -851,7 +833,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
             if (stopEditing(true)) {
                 String oldName = getSelectedControl();
                 String newName =
-                    getSimulator().askNewControlName(null, oldName, false);
+                    getSimulator().askNewControlName(
+                        "Select control program name", oldName, false);
                 if (newName != null) {
                     String program = getControlTextArea().getText();
                     getDeleteAction().doDelete(oldName);

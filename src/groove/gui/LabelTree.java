@@ -67,6 +67,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
@@ -280,12 +281,13 @@ public class LabelTree extends JTree implements GraphModelListener,
     @Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
-            if (!enabled) {
-                this.enabledBackground = getBackground();
-                setBackground(null);
-            } else if (this.enabledBackground != null) {
-                setBackground(this.enabledBackground);
-            }
+            // if (!enabled) {
+            // this.enabledBackground = getBackground();
+            // setBackground(null);
+            // } else if (this.enabledBackground != null) {
+            // setBackground(this.enabledBackground);
+            // }
+            setBackground(getColor(enabled));
         }
         getShowAllLabelsButton().setEnabled(enabled);
         getShowSubtypesButton().setEnabled(enabled);
@@ -599,25 +601,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         return Converter.HTML_TAG.on(text).toString();
     }
 
-    //
-    // /** Recomputes the value returned by {@link #getMaxLabelWidth()}. */
-    // private void computeMaxLabelWidth() {
-    // int result = 0;
-    // JLabel dummy = new JLabel();
-    // dummy.setBorder(INSET_BORDER);
-    // for (Label label : this.labelCellMap.keySet()) {
-    // dummy.setText(getText(label));
-    // int width = dummy.getPreferredSize().width;
-    // result = Math.max(result, width);
-    // }
-    // this.maxLabelWidth = result;
-    // }
-    //
-    // /** Returns the display width of the longest label in this tree. */
-    // public int getMaxLabelWidth() {
-    // return this.maxLabelWidth;
-    // }
-
     /** Indicates if this label tree supports filtering of labels. */
     public boolean isFiltering() {
         return this.filtering;
@@ -730,11 +713,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
     };
 
-    /**
-     * The background colour of this component when it is enabled.
-     */
-    private Color enabledBackground;
-
     /** Flag indicating if this instance of the label tree supports subtypes. */
     private final boolean supportsSubtypes;
     /** Mode of the label tree: showing subtypes or supertypes. */
@@ -773,6 +751,22 @@ public class LabelTree extends JTree implements GraphModelListener,
     /** Preferred width of a checkbox. */
     private static final int CHECKBOX_WIDTH =
         new JCheckBox().getPreferredSize().width;
+
+    /** Returns the appropriate background colour for an enabledness condition. */
+    static private Color getColor(boolean enabled) {
+        return enabled ? ENABLED_COLOUR : DISABLED_COLOUR;
+    }
+
+    private static JTextField enabledField = new JTextField();
+    private static JTextField disabledField = new JTextField();
+    static {
+        enabledField.setEditable(true);
+        disabledField.setEditable(false);
+    }
+    /** The background colour of an enabled component. */
+    private static Color ENABLED_COLOUR = enabledField.getBackground();
+    /** The background colour of a disabled component. */
+    private static Color DISABLED_COLOUR = disabledField.getBackground();
 
     /** Tree node wrapping a label. */
     public class LabelTreeNode extends DefaultMutableTreeNode {
@@ -900,13 +894,13 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.jLabel.setClosedIcon(null);
             this.jLabel.setBorder(LabelTree.INSET_BORDER);
             this.checkbox = new JCheckBox();
-            this.checkbox.setBackground(this.jLabel.getBackgroundNonSelectionColor());
+            this.checkbox.setOpaque(false);
             setLayout(new BorderLayout());
             add(this.jLabel, BorderLayout.CENTER);
             add(this.checkbox, CHECKBOX_ORIENTATION);
-            this.setBorder(new EmptyBorder(0, 2, 0, 0));
+            setBorder(new EmptyBorder(0, 2, 0, 0));
             setComponentOrientation(LabelTree.this.getComponentOrientation());
-            setOpaque(true);
+            setOpaque(false);
         }
 
         public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -915,17 +909,21 @@ public class LabelTree extends JTree implements GraphModelListener,
             JComponent result;
             this.jLabel.getTreeCellRendererComponent(tree, value, sel,
                 expanded, leaf, row, hasFocus);
+            Color background = getColor(LabelTree.this.isEnabled());
+            boolean isDropCell = isDropCell(tree, row);
+            // this.jLabel.setBackgroundNonSelectionColor(background);
+            this.jLabel.setOpaque(!sel && !isDropCell);
             this.labelNode =
                 value instanceof LabelTree.LabelTreeNode
                         ? (LabelTree.LabelTreeNode) value : null;
             if (this.labelNode != null && this.labelNode.hasFilterControl()) {
                 this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
+                setBackground(background);
                 // re-add the label (it gets detached if used as a stand-alone
                 // renderer)
                 add(this.jLabel, BorderLayout.CENTER);
                 result = this;
             } else {
-                this.jLabel.setIcon(getModeIcon(isShowsSubtypes()));
                 result = this.jLabel;
             }
             // set a sub- or supertype icon if the node label is a subnode
@@ -959,8 +957,14 @@ public class LabelTree extends JTree implements GraphModelListener,
                     result.setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
                 }
             }
-            result.setOpaque(false);
             return result;
+        }
+
+        private boolean isDropCell(JTree tree, int row) {
+            JTree.DropLocation dropLocation = tree.getDropLocation();
+            return dropLocation != null && dropLocation.getChildIndex() == -1
+                && tree.getRowForPath(dropLocation.getPath()) == row;
+
         }
 
         /** Returns the label node last rendered. */
