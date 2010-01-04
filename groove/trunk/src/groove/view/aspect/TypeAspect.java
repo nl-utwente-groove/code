@@ -27,9 +27,9 @@ import groove.view.LabelParser;
  * @author Arend
  * @version $Revision $
  */
-public class NodeTypeAspect extends AbstractAspect {
+public class TypeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
-    private NodeTypeAspect() {
+    private TypeAspect() {
         super(NODE_TYPE_ASPECT_NAME);
     }
 
@@ -51,14 +51,14 @@ public class NodeTypeAspect extends AbstractAspect {
     /**
      * Returns the singleton instance of this aspect.
      */
-    public static NodeTypeAspect getInstance() {
+    public static TypeAspect getInstance() {
         return instance;
     }
 
     /**
      * The singleton instance of this class.
      */
-    static private final NodeTypeAspect instance = new NodeTypeAspect();
+    static private final TypeAspect instance = new TypeAspect();
     /** Name of this aspect. */
     static public final String NODE_TYPE_ASPECT_NAME = "node type";
     /** Name of the node type aspect value. */
@@ -77,6 +77,9 @@ public class NodeTypeAspect extends AbstractAspect {
                 + "' cannot be initialised due to name conflict", exc);
         }
     }
+
+    /** Label used for subtype edges in type graphs. */
+    public static final String SUB_LABEL = "sub";
 
     /**
      * Parser constructing node type labels.

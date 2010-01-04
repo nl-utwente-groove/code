@@ -20,7 +20,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.Converter;
 import groove.view.FormatException;
-import groove.view.aspect.NodeTypeAspect;
+import groove.view.aspect.TypeAspect;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -129,7 +129,7 @@ public class RelabelDialog {
             result =
                 DefaultLabel.createLabel(text,
                     getNewTypeCheckbox().isSelected());
-            NodeTypeAspect.NODE_TYPE.getLabelParser().parse(result);
+            TypeAspect.NODE_TYPE.getLabelParser().parse(result);
         } else {
             throw new FormatException("Empty replacement label not allowed");
         }

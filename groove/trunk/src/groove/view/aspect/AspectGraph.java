@@ -447,9 +447,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 }
                 if (replacement != null) {
                     AspectMap newData = edge.getAspectMap().clone();
-                    newData.remove(NodeTypeAspect.getInstance());
+                    newData.remove(TypeAspect.getInstance());
                     if (replacement.isNodeType()) {
-                        newData.addDeclaredValue(NodeTypeAspect.NODE_TYPE);
+                        newData.addDeclaredValue(TypeAspect.NODE_TYPE);
                     }
                     newData.setText(replacement.text());
                     oldToNew.put(edge, createAspectEdge(edge.source(),

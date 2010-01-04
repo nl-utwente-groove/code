@@ -17,7 +17,9 @@
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
+import static groove.util.Converter.STRONG_TAG;
 import groove.abs.AbstrGraph;
+import groove.algebra.AlgebraRegister;
 import groove.control.Location;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
@@ -30,7 +32,7 @@ import groove.lts.GraphState;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.view.aspect.AttributeAspect;
-import groove.view.aspect.NodeTypeAspect;
+import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,7 +184,13 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result.add(Converter.createSpanTag("color: rgb(50,50,255)").on(
                 ITALIC_TAG.on(new StringBuilder(mult))));
         }
-
+        // add signature label for typed variable nodes
+        if (getActualNode() instanceof VariableNode
+            && !(getActualNode() instanceof ValueNode)
+            && ((VariableNode) getActualNode()).getAlgebra() != null) {
+            result.add(STRONG_TAG.on(new StringBuilder(
+                AlgebraRegister.getSignatureName(((VariableNode) getActualNode()).getAlgebra()))));
+        }
         for (Edge edge : getSelfEdges()) {
             if (getLabel(edge).isNodeType()
                 || !this.jModel.isFiltering(getLabel(edge))) {
@@ -276,7 +284,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public String getPlainLabel(Edge edge) {
         String result = edge.label().text();
         if (edge.label().isNodeType()) {
-            result = NodeTypeAspect.NODE_TYPE.getPrefix() + result;
+            result = TypeAspect.NODE_TYPE.getPrefix() + result;
         }
         return result;
     }

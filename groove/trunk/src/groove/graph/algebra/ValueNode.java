@@ -40,19 +40,9 @@ public class ValueNode extends VariableNode {
      * @param value the value to create a graph node for; non-null
      */
     private ValueNode(int nr, Algebra<?> algebra, Object value) {
-        super(-Math.abs(nr));
-        this.algebra = algebra;
+        super(-Math.abs(nr), algebra);
         this.value = value;
         assert value == null || algebra != null;
-    }
-
-    /**
-     * Method returning the (non-null) algebra to which the attribute node
-     * belongs.
-     * @return the (non-null) algebra to which the attribute node belongs
-     */
-    public Algebra<?> getAlgebra() {
-        return this.algebra;
     }
 
     /**
@@ -81,10 +71,6 @@ public class ValueNode extends VariableNode {
         return algebraName + CONTENT_SEPARATOR + getSymbol();
     }
 
-    /**
-     * The algebra to which this value belongs (non-null).
-     */
-    private final Algebra<?> algebra;
     /**
      * The operation represented by this value node (non-null).
      */

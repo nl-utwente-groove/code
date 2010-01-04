@@ -16,11 +16,14 @@
  */
 package groove.graph.algebra;
 
+import groove.algebra.Algebra;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class of nullary product nodes, used to represent attribute variables in rules and conditions. 
+ * Class of nullary product nodes, used to represent attribute variables in
+ * rules and conditions.
  * @author Arend Rensink
  * @version $Revision: 1768 $ $Date: 2008-02-12 15:15:32 $
  */
@@ -28,8 +31,9 @@ public class VariableNode extends ProductNode {
     /**
      * Constructs a (numbered) variable node.
      */
-    VariableNode(int nr) {
+    VariableNode(int nr, Algebra<?> algebra) {
         super(nr, 0);
+        this.algebra = algebra;
     }
 
     /**
@@ -40,24 +44,58 @@ public class VariableNode extends ProductNode {
         return "x" + getNumber();
     }
 
-    /** Modifies the super result by testing whether this is actually a variable node. */
+    /**
+     * Modifies the super result by testing whether this is actually a variable
+     * node.
+     */
     @Override
     protected int computeHashCode() {
         return super.computeHashCode() * 3;
     }
-    
-    /** 
-     * Returns a new value node, with a given number but without predefined value.
-     * Reuses a previously created variable node with the same number, if any.
+
+    /**
+     * Method returning the (possibly null) algebra to which the variable node
+     * belongs.
+     */
+    public Algebra<?> getAlgebra() {
+        return this.algebra;
+    }
+
+    /** The signature name of this variable node, if any. */
+    private final Algebra<?> algebra;
+
+    /**
+     * Returns a new, untyped variable node, with a given number but without
+     * predefined value. Reuses a previously created variable node with the same
+     * number, if any.
      */
     static public VariableNode createVariableNode(int nr) {
-        VariableNode result = variableNodeStore.get(nr);
+        return createVariableNode(nr, null);
+    }
+
+    /**
+     * Returns a new, typed variable node, with a given number but without
+     * predefined value. Reuses a previously created variable node with the same
+     * number, if any.
+     */
+    static public VariableNode createVariableNode(int nr, Algebra<?> algebra) {
+        Map<Integer,VariableNode> store =
+            algebra == null ? generalNodeStore : algebraNodeStore.get(algebra);
+        if (store == null) {
+            algebraNodeStore.put(algebra, store =
+                new HashMap<Integer,VariableNode>());
+        }
+        VariableNode result = store.get(nr);
         if (result == null) {
-            variableNodeStore.put(nr, result = new VariableNode(nr));
+            store.put(nr, result = new VariableNode(nr, algebra));
         }
         return result;
     }
-    
-    /** Store of previously created variable nodes. */
-    static private final Map<Integer,VariableNode> variableNodeStore = new HashMap<Integer,VariableNode>();
+
+    /** Store of previously created variable nodes without associated algebra. */
+    static private final Map<Integer,VariableNode> generalNodeStore =
+        new HashMap<Integer,VariableNode>();
+    /** Store of previously created variable nodes per algebra. */
+    static private final Map<Algebra<?>,Map<Integer,VariableNode>> algebraNodeStore =
+        new HashMap<Algebra<?>,Map<Integer,VariableNode>>();
 }
