@@ -1599,6 +1599,7 @@ public class DefaultRuleView implements RuleView {
          */
         private Edge computeEdgeImage(AspectEdge edge,
                 Map<? extends Node,Node> elementMap) throws FormatException {
+            assert edge.getModelLabel(true) != null : String.format("Edge '%s' does not belong in model", edge);
             Node[] ends = new Node[edge.endCount()];
             for (int i = 0; i < ends.length; i++) {
                 Node endImage = elementMap.get(edge.end(i));

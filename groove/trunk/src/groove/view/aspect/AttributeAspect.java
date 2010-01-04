@@ -223,8 +223,7 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
-     * Extracts an algebra operation from an aspect edge. Returns
-     * <code>false</code> if the edge is not a (valid) operation edge.
+     * Tests if an edge encodes an algebra constant.
      */
     public static boolean isConstant(AspectEdge edge) {
         boolean result = false;
