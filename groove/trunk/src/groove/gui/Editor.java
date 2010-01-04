@@ -875,7 +875,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         if (role == null) {
             role = Groove.GRAPH_ROLE;
         }
-        if (!(Groove.GRAPH_ROLE.equals(role) || Groove.RULE_ROLE.equals(role))) {
+        if (!(Groove.GRAPH_ROLE.equals(role) || Groove.RULE_ROLE.equals(role) || Groove.TYPE_ROLE.equals(role))) {
             throw new IllegalArgumentException(String.format("Illegal role %s",
                 role));
         }

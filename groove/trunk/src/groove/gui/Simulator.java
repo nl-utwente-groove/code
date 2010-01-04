@@ -581,6 +581,30 @@ public class Simulator {
         return result;
     }
 
+    /**
+     * Saves an aspect graph as a type graph under a given name, and puts the
+     * type graph into the current grammar view.
+     * @param typeGraph the new rule, given as an aspect graph
+     * @return <code>true</code> if saving the type graph has succeeded
+     */
+    boolean doAddType(AspectGraph typeGraph) {
+        boolean result = false;
+        try {
+            if (typeGraph.hasErrors()) {
+                showErrorDialog("Errors in type graph", new FormatException(
+                    typeGraph.getErrors()));
+            } else {
+                getGrammarStore().putType(typeGraph);
+                result = true;
+                refresh();
+            }
+        } catch (IOException exc) {
+            showErrorDialog(String.format("Error while saving type graph '%s'",
+                GraphInfo.getName(typeGraph)), exc);
+        }
+        return result;
+    }
+
     /** Adds a control program to this grammar. */
     void doDeleteControl(String name) {
         boolean isCurrentControl =
@@ -622,6 +646,20 @@ public class Simulator {
         AspectGraph rule = getGrammarStore().deleteRule(name);
         if (rule != null) {
             updateGrammar();
+        }
+    }
+
+    /** Adds a control program to this grammar. */
+    void doDeleteType(String name) {
+        boolean isCurrentType = name.equals(getGrammarView().getTypeName());
+        getGrammarStore().deleteType(name);
+        // we only need to refresh the grammar if the deleted
+        // type graph was the currently active one
+        if (isCurrentType) {
+            updateGrammar();
+        } else {
+            // otherwise, we only need to update the list
+            getTypePanel().refreshAll();
         }
     }
 
@@ -941,7 +979,7 @@ public class Simulator {
                 refresh();
             }
         } catch (IOException exc) {
-            showErrorDialog(String.format("Error while saving graph '%s'",
+            showErrorDialog(String.format("Error while renaming graph '%s'",
                 GraphInfo.getName(graph)), exc);
         }
     }
@@ -955,7 +993,32 @@ public class Simulator {
             getGrammarStore().renameRule(oldName, newName);
             updateGrammar();
         } catch (IOException exc) {
-            showErrorDialog(String.format("Error while saving graph '%s'",
+            showErrorDialog(String.format("Error while renaming rule '%s'",
+                GraphInfo.getName(graph)), exc);
+        }
+    }
+
+    /**
+     * Renames one of the graphs in the graph list. If the graph was the start
+     * graph, uses the renamed graph again as start graph.
+     */
+    void doRenameType(AspectGraph graph, String newName) {
+        String oldName = GraphInfo.getName(graph);
+        // test now if this is the type graph, before it is deleted from the
+        // grammar
+        boolean isTypeGraph = oldName.equals(getGrammarView().getTypeName());
+        try {
+            getGrammarStore().renameType(oldName, newName);
+            if (isTypeGraph) {
+                // reset the type graph to the renamed graph
+                getGrammarView().getProperties().setTypeName(newName);
+                updateGrammar();
+            } else {
+                refresh();
+            }
+        } catch (IOException exc) {
+            showErrorDialog(String.format(
+                "Error while renaming type graph '%s'",
                 GraphInfo.getName(graph)), exc);
         }
     }
@@ -1049,14 +1112,8 @@ public class Simulator {
         }
     }
 
+    /** Saves a given system properties object. */
     void doSaveProperties(SystemProperties newProperties) {
-        // // check if we need to load a new control program
-        // String newControlName = newProperties.getControlName();
-        // StoredGrammarView grammar = this.getGrammarView();
-        // String oldControlName = grammar.getProperties().getControlName();
-        // boolean refresh =
-        // newControlName == null ? oldControlName != null
-        // : !newControlName.equals(oldControlName);
         try {
             getGrammarStore().putProperties(newProperties);
             updateGrammar();
@@ -1386,8 +1443,10 @@ public class Simulator {
                 getConditionalLTSPanel(), "Labelled transition system");
             this.graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON,
                 getControlPanel(), "Control specification");
-            // graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
-            // getTypePanel(), "Type graph");
+            if (USE_TYPES) {
+                this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
+                    getTypePanel(), "Type graph");
+            }
             // add this simulator as a listener so that the actions are updated
             // regularly
             this.graphViewsPanel.addChangeListener(new ChangeListener() {
@@ -2270,6 +2329,7 @@ public class Simulator {
     public void refresh() {
         setTitle();
         getStateList().refreshList(true);
+        getTypePanel().refreshAll();
         refreshActions();
     }
 
@@ -2476,6 +2536,29 @@ public class Simulator {
      */
     String askNewControlName(String title, String name, boolean mustBeFresh) {
         Set<String> existingNames = getGrammarView().getControlNames();
+        FreshNameDialog<String> nameDialog =
+            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
+                @Override
+                protected String createName(String name) {
+                    return name;
+                }
+            };
+        nameDialog.showDialog(getFrame(), title);
+        return nameDialog.getName();
+    }
+
+    /**
+     * Enters a dialog that results in a type graph that does not yet occur in
+     * the current grammar, or <code>null</code> if the dialog was cancelled.
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing names
+     * @return a type graph not occurring in the current grammar, or
+     *         <code>null</code>
+     */
+    String askNewTypeName(String title, String name, boolean mustBeFresh) {
+        Set<String> existingNames = getGrammarView().getTypeNames();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -5089,6 +5172,8 @@ public class Simulator {
     static private final Dimension GRAPH_VIEW_PREFERRED_SIZE =
         new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
 
+    /** Flag controlling if types should be used. */
+    private static final boolean USE_TYPES = false;
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
 }

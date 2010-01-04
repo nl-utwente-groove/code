@@ -17,28 +17,44 @@
 package groove.gui;
 
 import groove.graph.Graph;
+import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
+import groove.graph.LabelStore;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.StateJGraph;
+import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
+import groove.trans.SystemProperties;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
 import groove.view.StoredGrammarView;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
 /**
@@ -47,15 +63,6 @@ import javax.swing.JToolBar;
  */
 public class TypePanel extends JGraphPanel<StateJGraph> implements
         SimulationListener {
-    /** Display name of this panel. */
-    public static final String FRAME_NAME = "Type graph";
-
-    private final JButton createButton;
-    private final JGraphPanel<StateJGraph> typeGraphPanel;
-    private GrammarView grammar;
-
-    // --------------------- INSTANCE DEFINITIONS ----------------------
-
     /**
      * Constructor for this TypePanel Creates a new TypePanel instance and
      * instantiates all necessary variables.
@@ -64,24 +71,41 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
     public TypePanel(final Simulator simulator) {
         super(new StateJGraph(simulator), true, true, simulator.getOptions());
         this.simulator = simulator;
-
-        // create the layout for this JPanel
-        setLayout(new BorderLayout());
-        JToolBar toolBar = new JToolBar();
-
-        this.createButton = new JButton("Compute type graph");
-        this.createButton.setEnabled(false);
-        toolBar.add(this.createButton);
-        this.createButton.addActionListener(new CreateButtonListener());
-        this.add(toolBar, BorderLayout.NORTH);
-
-        this.typeGraphPanel =
-            new JGraphPanel<StateJGraph>(new StateJGraph(simulator), true,
-                true, simulator.getOptions());
-
-        this.add(this.typeGraphPanel, BorderLayout.CENTER);
-
+        add(createToolbar(), BorderLayout.NORTH);
         simulator.addSimulationListener(this);
+        setEnabled(false);
+    }
+
+    private JToolBar createToolbar() {
+        JToolBar result = new JToolBar();
+        result.add(createButton(getNewAction()));
+        result.add(createButton(getEditAction()));
+        result.add(createButton(getCopyAction()));
+        result.add(createButton(getDeleteAction()));
+        result.add(createButton(getRenameAction()));
+        result.addSeparator();
+        result.add(new JLabel("Name: "));
+        result.add(getNameField());
+        result.addSeparator();
+        result.add(createButton(getDisableAction()));
+        result.add(createButton(getEnableAction()));
+        result.addSeparator();
+        result.add(createButton(new CreateAction()));
+        return result;
+    }
+
+    /**
+     * Creates a button around an action that is resized in case the action
+     * doesn't have an icon.
+     */
+    private JButton createButton(Action action) {
+        JButton result = new JButton(action);
+        if (action.getValue(Action.SMALL_ICON) == null) {
+            result.setMargin(new Insets(4, 2, 4, 2));
+        } else {
+            result.setHideActionText(true);
+        }
+        return result;
     }
 
     /** Does nothing (according to contract, the grammar has already been set). */
@@ -119,69 +143,66 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * compute a new type graph.
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-
-        this.typeGraphPanel.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
-        this.typeGraphPanel.setEnabled(false);
-        this.grammar = grammar;
-
-        if (grammar == null || grammar.getStartGraphView() == null) {
-            this.createButton.setEnabled(false);
-        } else {
-            try {
-                // Tries to load a previously saved type graph. If found,
-                // this type graph will be displayed.
-                Graph typeGraph;
-                File file =
-                    new File(this.simulator.getLastGrammarFile()
-                        + Groove.FILE_SEPARATOR + Groove.TGR_NAME
-                        + Groove.GXL_EXTENSION);
-
-                if ((typeGraph = Groove.loadGraph(file)) != null) {
-                    GraphInfo.setName(typeGraph, "Type graph");
-
-                    this.typeGraphPanel.jGraph.setModel(GraphJModel.newInstance(
-                        typeGraph, this.typeGraphPanel.getOptions()));
-                    this.typeGraphPanel.setEnabled(true);
-                }
-            } catch (IOException e) {
-                System.err.println("Error reading the type graph.");
+        LabelStore labelStore = null;
+        AspectJModel model = AspectJModel.EMPTY_ASPECT_JMODEL;
+        String setTypeName = null;
+        this.typeJModelMap.clear();
+        if (grammar != null) {
+            // create a mapping from rule names to (fresh) rule models
+            for (String typeName : grammar.getTypeNames()) {
+                AspectJModel jModel =
+                    AspectJModel.newInstance(grammar.getTypeView(typeName),
+                        getOptions());
+                this.typeJModelMap.put(typeName, jModel);
             }
-            this.createButton.setEnabled(true);
-        }
-        this.typeGraphPanel.refreshStatus();
-    }
-
-    /**
-     * Action listener class for the "create type graph" button
-     * @author Frank van Es
-     * @version $Revision $
-     */
-    class CreateButtonListener implements ActionListener {
-        /**
-         * This method is executed when the "create type graph" button is
-         * clicked. Then a new type graph for the current grammar is being
-         * computed; the type graph will be displayed and saved inside the graph
-         * grammar directory.
-         */
-        public void actionPerformed(ActionEvent e) {
-            if (TypePanel.this.grammar != null
-                && TypePanel.this.grammar.getStartGraphView() != null) {
-                try {
-                    Graph typeGraph =
-                        TypeReconstructor.reconstruct(TypePanel.this.grammar.toGrammar());
-                    Groove.saveGraph(typeGraph,
-                        TypePanel.this.simulator.getLastGrammarFile()
-                            + Groove.FILE_SEPARATOR + Groove.TGR_NAME
-                            + Groove.GXL_EXTENSION);
-                    displayTypeGraph(typeGraph);
-
-                } catch (FormatException fe) {
-                    System.err.printf("Graph format error: %s", fe.getMessage());
-                } catch (IOException ioe) {
-                    System.err.println("Error storing the type graph.");
-                }
+            if (isTypeSelected()
+                && grammar.getTypeNames().contains(getSelectedType())) {
+                setTypeName = getSelectedType();
+            } else if (grammar.getTypeName().length() > 0) {
+                setTypeName = grammar.getTypeName();
+            } else if (!grammar.getTypeNames().isEmpty()) {
+                setTypeName = grammar.getTypeNames().iterator().next();
             }
+            if (setTypeName != null) {
+                model = this.typeJModelMap.get(setTypeName);
+            }
+            labelStore = grammar.getLabelStore();
         }
+        setSelectedType(setTypeName);
+        this.jGraph.setLabelStore(labelStore);
+        // reset the display
+        this.jGraph.setModel(model);
+        refreshAll();
+        //
+        // this.typeGraphPanel.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
+        // this.typeGraphPanel.setEnabled(false);
+        // this.grammar = grammar;
+        //
+        // if (grammar == null || grammar.getStartGraphView() == null) {
+        // this.createButton.setEnabled(false);
+        // } else {
+        // try {
+        // // Tries to load a previously saved type graph. If found,
+        // // this type graph will be displayed.
+        // Graph typeGraph;
+        // File file =
+        // new File(this.simulator.getLastGrammarFile()
+        // + Groove.FILE_SEPARATOR + Groove.TGR_NAME
+        // + Groove.GXL_EXTENSION);
+        //
+        // if ((typeGraph = Groove.loadGraph(file)) != null) {
+        // GraphInfo.setName(typeGraph, "Type graph");
+        //
+        // this.typeGraphPanel.jGraph.setModel(GraphJModel.newInstance(
+        // typeGraph, this.typeGraphPanel.getOptions()));
+        // this.typeGraphPanel.setEnabled(true);
+        // }
+        // } catch (IOException e) {
+        // System.err.println("Error reading the type graph.");
+        // }
+        // this.createButton.setEnabled(true);
+        // }
+        // this.typeGraphPanel.refreshStatus();
     }
 
     /**
@@ -192,12 +213,496 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
         GraphInfo.setName(typeGraph, "Type graph");
 
-        this.typeGraphPanel.jGraph.setModel(GraphJModel.newInstance(typeGraph,
-            this.typeGraphPanel.getOptions()));
+        this.jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
 
-        this.typeGraphPanel.setEnabled(true);
+        setEnabled(true);
+    }
+
+    /**
+     * Convenience method to test if the current grammar has a type graph by a
+     * given name. Equivalent to
+     * <code>getGrammarView().getTypeNames().contains(typeName)</code>
+     */
+    private boolean grammarHasType(String typeName) {
+        return getGrammarView().getTypeNames().contains(typeName);
+    }
+
+    /**
+     * Selects a type graph to be viewed.
+     * @param name the type graph to be viewed; either <code>null</code> if
+     *        there is no type graph in the current grammar, or an existing name
+     *        in the type graph names of the current grammar.
+     */
+    private void setSelectedType(String name) {
+        this.selectedType = name;
+    }
+
+    /**
+     * Indicates the currently selected type graph name
+     * @return either <code>null</code> or an existing type graph name
+     */
+    private final String getSelectedType() {
+        return this.selectedType;
+    }
+
+    /** Convenience method to indicate if a type graph name has been selected. */
+    private final boolean isTypeSelected() {
+        return getSelectedType() != null;
+    }
+
+    /**
+     * Contains graph models for the production system's rules.
+     * @invariant ruleJModels: RuleName --> RuleJModel
+     */
+    private final Map<String,AspectJModel> typeJModelMap =
+        new TreeMap<String,AspectJModel>();
+
+    /** Name of the currently visible type graph. */
+    private String selectedType;
+
+    /**
+     * Registers a refreshable.
+     * @see #refreshAll()
+     */
+    private void addRefreshable(Refreshable refreshable) {
+        this.refreshables.add(refreshable);
+    }
+
+    /** Refreshes all registered refreshables. */
+    public void refreshAll() {
+        for (Refreshable refreshable : this.refreshables) {
+            refreshable.refresh();
+        }
+        this.jGraph.setModel(isTypeSelected()
+                ? this.typeJModelMap.get(getSelectedType())
+                : AspectJModel.EMPTY_ASPECT_JMODEL);
+        setEnabled(isTypeSelected()
+            && getSelectedType().equals(getGrammarView().getTypeName()));
+        refresh();
+    }
+
+    /** List of registered refreshables. */
+    private final List<Refreshable> refreshables = new ArrayList<Refreshable>();
+
+    /** Indicates if the currently loaded grammar is modifiable. */
+    private boolean isModifiable() {
+        SystemStore store = getSimulator().getGrammarStore();
+        return store != null && store.isModifiable();
+    }
+
+    /**
+     * Returns the current grammar view. Convenience method for
+     * <code>getSimulator().getGrammarView()</code>.
+     */
+    private StoredGrammarView getGrammarView() {
+        return getSimulator().getGrammarView();
+    }
+
+    /** Returns the simulator object. */
+    private Simulator getSimulator() {
+        return this.simulator;
     }
 
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;
+
+    /** Display name of this panel. */
+    public static final String FRAME_NAME = "Type graph";
+
+    /**
+     * Interface for objects that need to refresh their own status when actions
+     * on the type panel occur.
+     */
+    private interface Refreshable {
+        /**
+         * Callback method to give the implementing object a chance to refresh
+         * its status.
+         */
+        public void refresh();
+    }
+
+    private class TypeNameField extends JComboBox implements Refreshable {
+        public TypeNameField() {
+            setBorder(BorderFactory.createLoweredBevelBorder());
+            setMaximumSize(new Dimension(150, 24));
+            setEnabled(false);
+            setEditable(false);
+            this.selectionListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (getSelectedItem() != null) {
+                        setSelectedType((String) getSelectedItem());
+                        refreshAll();
+                    }
+                }
+            };
+            addActionListener(this.selectionListener);
+            addRefreshable(this);
+        }
+
+        @Override
+        public void refresh() {
+            removeActionListener(this.selectionListener);
+            this.removeAllItems();
+            Set<String> names =
+                new TreeSet<String>(getGrammarView().getTypeNames());
+            if (isTypeSelected()) {
+                names.add(getSelectedType());
+            }
+            for (String typeName : names) {
+                addItem(typeName);
+            }
+            setSelectedItem(getSelectedType());
+            setEnabled(getItemCount() > 0);
+            addActionListener(this.selectionListener);
+        }
+
+        private final ActionListener selectionListener;
+    }
+
+    /** Lazily creates and returns the field displaying the type name. */
+    private JComboBox getNameField() {
+        if (this.nameField == null) {
+            this.nameField = new TypeNameField();
+            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
+            this.nameField.setMaximumSize(new Dimension(150, 24));
+        }
+        return this.nameField;
+    }
+
+    /** Name field of the type graph. */
+    private JComboBox nameField;
+
+    /** Abstract superclass for actions that can refresh their own status. */
+    private abstract class RefreshableAction extends AbstractAction implements
+            Refreshable {
+        public RefreshableAction(String name, Icon icon) {
+            super(name, icon);
+            putValue(SHORT_DESCRIPTION, name);
+            setEnabled(false);
+            addRefreshable(this);
+        }
+    }
+
+    /**
+     * Action to copy the currently displayed type graph.
+     */
+    private class CopyAction extends RefreshableAction {
+        public CopyAction() {
+            super(Options.COPY_TYPE_ACTION_NAME, Groove.COPY_ICON);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String oldName = getSelectedType();
+            String newName =
+                getSimulator().askNewTypeName("Select new type graph name",
+                    oldName, true);
+            if (newName != null) {
+                // TODO figure out later
+                setSelectedType(newName);
+                refreshAll();
+            }
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isTypeSelected() && grammarHasType(getSelectedType()));
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link CopyAction}.
+     */
+    private CopyAction getCopyAction() {
+        if (this.copyAction == null) {
+            this.copyAction = new CopyAction();
+        }
+        return this.copyAction;
+    }
+
+    /** Singular instance of the {@link CopyAction}. */
+    private CopyAction copyAction;
+
+    /**
+     * Action listener class for the "create type graph" button
+     * @author Frank van Es
+     * @version $Revision $
+     */
+    class CreateAction extends RefreshableAction {
+        public CreateAction() {
+            super("Compute type graph", null);
+            addRefreshable(this);
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(getGrammarView() != null
+                && getGrammarView().getStartGraphView() != null);
+        }
+
+        /**
+         * This method is executed when the "create type graph" button is
+         * clicked. Then a new type graph for the current grammar is being
+         * computed; the type graph will be displayed and saved inside the graph
+         * grammar directory.
+         */
+        public void actionPerformed(ActionEvent e) {
+            try {
+                Graph typeGraph =
+                    TypeReconstructor.reconstruct(getGrammarView().toGrammar());
+                displayTypeGraph(typeGraph);
+
+            } catch (FormatException fe) {
+                System.err.printf("Graph format error: %s", fe.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Action to delete the currently displayed type graph.
+     */
+    private class DeleteAction extends RefreshableAction {
+        public DeleteAction() {
+            super(Options.DELETE_TYPE_ACTION_NAME, Groove.DELETE_ICON);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String typeName = getSelectedType();
+            if (getSimulator().confirmBehaviour(Options.DELETE_TYPE_OPTION,
+                String.format("Delete type graph '%s'?", typeName))) {
+                int itemNr = getNameField().getSelectedIndex() + 1;
+                if (itemNr == getNameField().getItemCount()) {
+                    itemNr -= 2;
+                }
+                String newName =
+                    itemNr >= 0 ? (String) getNameField().getItemAt(itemNr)
+                            : null;
+                doDelete(typeName);
+                setSelectedType(newName);
+                refreshAll();
+            }
+        }
+
+        /** Deletes a given type graph from the grammar. */
+        public void doDelete(String typeName) {
+            getSimulator().doDeleteType(typeName);
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isTypeSelected() && grammarHasType(getSelectedType()));
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link DeleteAction}.
+     */
+    private DeleteAction getDeleteAction() {
+        if (this.deleteAction == null) {
+            this.deleteAction = new DeleteAction();
+        }
+        return this.deleteAction;
+    }
+
+    /** Singular instance of the {@link DeleteAction}. */
+    private DeleteAction deleteAction;
+
+    /** Action to disable the currently displayed type graph. */
+    private class DisableAction extends RefreshableAction {
+        public DisableAction() {
+            super(Options.DISABLE_TYPE_ACTION_NAME, Groove.DISABLE_ICON);
+        }
+
+        public void actionPerformed(ActionEvent arg0) {
+            SystemProperties oldProperties = getGrammarView().getProperties();
+            SystemProperties newProperties = oldProperties.clone();
+            newProperties.setTypeName("");
+            getSimulator().doSaveProperties(newProperties);
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(getGrammarView().getTypeName() != null
+                && !getGrammarView().getTypeName().isEmpty());
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewAction}.
+     */
+    private DisableAction getDisableAction() {
+        if (this.disableAction == null) {
+            this.disableAction = new DisableAction();
+        }
+        return this.disableAction;
+    }
+
+    /** Singular instance of the {@link EnableAction}. */
+    private DisableAction disableAction;
+
+    /** Action to enable the currently displayed type graph. */
+    private class EnableAction extends RefreshableAction {
+        public EnableAction() {
+            super(Options.ENABLE_TYPE_ACTION_NAME, Groove.ENABLE_ICON);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            doEnable(getSelectedType());
+        }
+
+        /** Enables a type graph with a given name. */
+        public void doEnable(String typeName) {
+            SystemProperties oldProperties = getGrammarView().getProperties();
+            SystemProperties newProperties = oldProperties.clone();
+            newProperties.setTypeName(typeName);
+            getSimulator().doSaveProperties(newProperties);
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isTypeSelected()
+                && !getSelectedType().equals(getGrammarView().getTypeName()));
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewAction}.
+     */
+    private EnableAction getEnableAction() {
+        if (this.enableAction == null) {
+            this.enableAction = new EnableAction();
+        }
+        return this.enableAction;
+    }
+
+    /** Singular instance of the {@link EnableAction}. */
+    private EnableAction enableAction;
+
+    /** Action to start editing the currently displayed type graph. */
+    private class EditAction extends RefreshableAction {
+        public EditAction() {
+            super(Options.EDIT_ACTION_NAME, Groove.EDIT_ICON);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // TODO figure out later
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isTypeSelected() && isModifiable());
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewAction}.
+     */
+    private EditAction getEditAction() {
+        if (this.editAction == null) {
+            this.editAction = new EditAction();
+        }
+        return this.editAction;
+    }
+
+    /** Singular instance of the {@link EditAction}. */
+    private EditAction editAction;
+
+    /** Action to create and start editing a new type graph. */
+    private class NewAction extends RefreshableAction {
+        public NewAction() {
+            super(Options.NEW_ACTION_NAME, Groove.NEW_ICON);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final Graph initType = GraphFactory.getInstance().newGraph();
+            GraphInfo.setTypeRole(initType);
+            EditorDialog dialog =
+                new EditorDialog(getSimulator().getFrame(), getOptions(),
+                    initType) {
+                    @Override
+                    public void finish() {
+                        String typeName =
+                            getSimulator().askNewTypeName(
+                                "Select type graph name",
+                                Groove.DEFAULT_TYPE_NAME, true);
+                        if (typeName != null) {
+                            AspectGraph newType = toAspectGraph();
+                            GraphInfo.setName(newType, typeName);
+                            getSimulator().doAddType(newType);
+                            setSelectedType(typeName);
+                        }
+                    }
+                };
+            dialog.start();
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(true);
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewAction}.
+     */
+    private NewAction getNewAction() {
+        if (this.newAction == null) {
+            this.newAction = new NewAction();
+        }
+        return this.newAction;
+    }
+
+    /** Singular instance of the {@link NewAction}. */
+    private NewAction newAction;
+
+    /**
+     * Action to rename the currently displayed type graph.
+     */
+    private class RenameAction extends RefreshableAction {
+        public RenameAction() {
+            super(Options.RENAME_TYPE_ACTION_NAME, Groove.RENAME_ICON);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String oldName = getSelectedType();
+            String newName =
+                getSimulator().askNewTypeName("Select new type graph name",
+                    oldName, false);
+            if (newName != null) {
+                // TODO figure out later
+                if (oldName.equals(getGrammarView().getTypeName())) {
+                    getEnableAction().doEnable(newName);
+                }
+                setSelectedType(newName);
+                refreshAll();
+            }
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isTypeSelected() && grammarHasType(getSelectedType()));
+        }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link RenameAction}.
+     */
+    private RenameAction getRenameAction() {
+        if (this.renameAction == null) {
+            this.renameAction = new RenameAction();
+        }
+        return this.renameAction;
+    }
+
+    /** Singular instance of the {@link RenameAction}. */
+    private RenameAction renameAction;
 }

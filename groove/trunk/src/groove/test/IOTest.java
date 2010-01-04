@@ -22,6 +22,7 @@ import groove.explore.result.Acceptor;
 import groove.explore.strategy.DFSStrategy;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
+import groove.trans.SystemProperties;
 import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -105,7 +106,9 @@ public class IOTest extends TestCase {
             URL dir = Groove.toURL(new File(DIRECTORY));
             StoredGrammarView grammarView =
                 StoredGrammarView.newInstance(dir, ALT_START);
-            grammarView.setControl(ALT_CONTROL);
+            SystemProperties properties = grammarView.getProperties().clone();
+            properties.setControlName(ALT_CONTROL);
+            grammarView.getStore().putProperties(properties);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount,
                 edgecount);
         } catch (IOException e) {

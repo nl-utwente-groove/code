@@ -187,6 +187,24 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     }
 
     /**
+     * Sets the type graph name to a certain value. The empty string resets the
+     * type graph name.
+     * @param program the new type graph name (non-null)
+     */
+    public void setTypeName(String program) {
+        setProperty(TYPE_NAME_KEY, program);
+    }
+
+    /**
+     * Returns the type graph name, if any. Returns the empty string if no type
+     * graph is set.
+     */
+    public String getTypeName() {
+        String result = getProperty(TYPE_NAME_KEY);
+        return result == null ? "" : result;
+    }
+
+    /**
      * Sets the algebra family to a given value.
      */
     public void setAlgebra(String family) {
@@ -449,6 +467,11 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     }
 
     /**
+     * Name of the file containing the used type graph.
+     */
+    static public final String TYPE_NAME_KEY = "typeGraph";
+
+    /**
      * Name of the file containing the used control program. Will only be loaded
      * when the file exists in the grammar directory.
      */
@@ -604,6 +627,10 @@ public class SystemProperties extends java.util.Properties implements Fixable,
         defaultKeys.put(CONTROL_NAME_KEY, new Property.True<String>(
             String.format("Name of the control program (default: '%s')",
                 Groove.DEFAULT_CONTROL_NAME)));
+        defaultKeys.put(TYPE_NAME_KEY,
+            new Property.True<String>(String.format(
+                "Name of the type graph (default: '%s')",
+                Groove.DEFAULT_TYPE_NAME)));
         defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean(
             "Flag controlling if transition labels should be bracketed"));
         defaultKeys.put(

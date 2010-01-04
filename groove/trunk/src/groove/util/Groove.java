@@ -130,6 +130,8 @@ public class Groove {
     /** Default name for control files. */
     public static final String DEFAULT_CONTROL_NAME = "control";
 
+    /** Default name for the type graph */
+    public static final String DEFAULT_TYPE_NAME = "typegraph";
     /** Extension for property files. */
     public static final String CONTROL_EXTENSION = ".gcp";
 
@@ -144,10 +146,6 @@ public class Groove {
     /** File name for XML properties. */
     public static final String XML_PROPERTIES_FILE =
         "groove.xml" + PROPERTY_EXTENSION;
-    /** Extension for TGR (Type GRaph) files. */
-    public static final String TGR_EXTENSION = ".tgr";
-    /** File name for Type Graph files */
-    public static final String TGR_NAME = "typegraph";
 
     // Icons
 
