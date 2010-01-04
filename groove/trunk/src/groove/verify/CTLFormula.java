@@ -82,7 +82,7 @@ public class CTLFormula extends CTLStarFormula {
         throws FormatException {
         if (operand instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operators should be proceeded by a path quantifier: "
+                "Temporal operators should be preceded by a path quantifier: "
                     + operand.getOperator());
         }
         CTLStarFormula factory = TemporalFormula.getFactory();
@@ -101,7 +101,7 @@ public class CTLFormula extends CTLStarFormula {
         for (TemporalFormula operand : operands) {
             if (operand instanceof TemporalOperator) {
                 throw new FormatException(
-                    "Temporal operators should be proceeded by a path quantifier: "
+                    "Temporal operators should be preceded by a path quantifier: "
                         + operand.getOperator());
             }
         }
@@ -120,7 +120,7 @@ public class CTLFormula extends CTLStarFormula {
         throws FormatException {
         if (operand instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operators should be proceeded by a path quantifier: "
+                "Temporal operators should be preceded by a path quantifier: "
                     + operand.getOperator());
         }
         // AX(phi) <==> !EX(!phi)
@@ -141,7 +141,7 @@ public class CTLFormula extends CTLStarFormula {
         throws FormatException {
         if (operand instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operators should be proceeded by a path quantifier: "
+                "Temporal operators should be preceded by a path quantifier: "
                     + operand.getOperator());
         }
         // AF(phi) <==> A(true U phi)
@@ -163,7 +163,7 @@ public class CTLFormula extends CTLStarFormula {
         throws FormatException {
         if (operand instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operators should be proceeded by a path quantifier: "
+                "Temporal operators should be preceded by a path quantifier: "
                     + operand.getOperator());
         }
 
@@ -186,7 +186,7 @@ public class CTLFormula extends CTLStarFormula {
         for (TemporalFormula operand : operands) {
             if (operand instanceof TemporalOperator) {
                 throw new FormatException(
-                    "Temporal operators should be proceeded by a path quantifier: "
+                    "Temporal operators should be preceded by a path quantifier: "
                         + operand.getOperator());
             }
         }
@@ -205,7 +205,7 @@ public class CTLFormula extends CTLStarFormula {
         throws FormatException {
         if (operand instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operators should be proceeded by a path quantifier: "
+                "Temporal operators should be preceded by a path quantifier: "
                     + operand.getOperator());
         }
         // EF(phi) <==> E(true U phi)
@@ -227,7 +227,7 @@ public class CTLFormula extends CTLStarFormula {
         throws FormatException {
         if (operand instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operators should be proceeded by a path quantifier: "
+                "Temporal operators should be preceded by a path quantifier: "
                     + operand.getOperator());
         }
         // EG(phi) <==> !(AF(!phi))
@@ -245,7 +245,7 @@ public class CTLFormula extends CTLStarFormula {
         TemporalFormula result = parser.parse(expr);
         if (result instanceof TemporalOperator) {
             throw new FormatException(
-                "Temporal operator should always be preceeded by a path quantifier: "
+                "Temporal operator should always be preceded by a path quantifier: "
                     + result.getOperator());
         } else {
             return result;

@@ -16,10 +16,10 @@
  */
 package groove.verify;
 
+import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleName;
 import groove.util.Reporter;
 
 import java.util.Iterator;
@@ -50,7 +50,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
             String name = ((CTLStarFormula.Atom) property).predicateName();
-            for (GraphState nextState: gts.nodeSet()) {
+            for (GraphState nextState : gts.nodeSet()) {
                 // this state satisfies the CTL-expression if it has an
                 // outgoing-transition labelled with the
                 // name of the property
@@ -60,7 +60,8 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                 Iterator<GraphTransition> transitionIter =
                     nextState.getTransitionIter();
                 while (!satisfies && transitionIter.hasNext()) {
-                    RuleName ruleName = transitionIter.next().getEvent().getRule().getName();
+                    Label ruleName =
+                        transitionIter.next().getEvent().getLabel();
                     if (ruleName.text().equals(name)) {
                         satisfies = true;
                         property.getCounterExamples().add(nextState);

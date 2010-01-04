@@ -1158,7 +1158,6 @@ public class Simulator {
             }
         } catch (FormatException efe) {
             showErrorDialog("Format error in temporal formula", efe);
-            efe.printStackTrace();
         }
     }
 
