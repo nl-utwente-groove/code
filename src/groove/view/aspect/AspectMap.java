@@ -199,6 +199,40 @@ public class AspectMap implements Iterable<AspectValue> {
         return new AspectMap(this);
     }
 
+    /** Tests if the aspects and text of this object equal those of another. */
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof AspectMap && equalsAspects((AspectMap) obj)
+            && equalsText((AspectMap) obj);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = this.aspectMap.hashCode();
+        if (this.text != null) {
+            result += this.text.hashCode();
+        }
+        result += this.hasEnd ? 1 : 0;
+        return result;
+    }
+
+    /** Indicates if the aspects in this map equal those in another map. */
+    public boolean equalsAspects(AspectMap other) {
+        return this.aspectMap.equals(other.aspectMap);
+    }
+
+    /**
+     * Indicates if the {@link #text} and {@link #hasEnd} parts of this map
+     * equal those of another.
+     */
+    private boolean equalsText(AspectMap other) {
+        boolean result =
+            this.text == null ? other.text == null
+                    : this.text.equals(other.text);
+        result |= this.hasEnd == other.hasEnd;
+        return result;
+    }
+
     /**
      * Returns the label obtained by parsing the text according to the aspect
      * values in the map.
