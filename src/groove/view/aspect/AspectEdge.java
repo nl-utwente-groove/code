@@ -204,7 +204,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
 
     /** Tests if this aspect edge stands for a node type. */
     private int isNodeType() {
-        return NodeTypeAspect.isNodeType(this) ? 0 : 1;
+        return TypeAspect.isNodeType(this) ? 0 : 1;
     }
 
     /**

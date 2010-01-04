@@ -18,7 +18,6 @@ package groove.algebra;
 
 import java.math.BigInteger;
 
-
 /**
  * Interface for integer algebras.
  * @author Arend Rensink
@@ -67,10 +66,10 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
 
     /** String representation. */
     public abstract String toString(Int arg);
-    
-    /** 
-     * Tests if the number can be parsed as a {@link BigInteger}.
-     * This means that a number of any length is accepted.
+
+    /**
+     * Tests if the number can be parsed as a {@link BigInteger}. This means
+     * that a number of any length is accepted.
      */
     final public boolean isValue(java.lang.String value) {
         try {

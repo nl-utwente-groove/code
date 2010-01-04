@@ -20,6 +20,7 @@ import static groove.view.aspect.AttributeAspect.ARGUMENT;
 import static groove.view.aspect.AttributeAspect.PRODUCT;
 import static groove.view.aspect.AttributeAspect.VALUE;
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
@@ -85,7 +86,8 @@ public class AttributeElementFactory {
         AspectValue attributeValue = getAttributeValue(node);
         if (attributeValue == null) {
             result = null;
-        } else if (attributeValue.equals(VALUE)) {
+        } else if (attributeValue.equals(VALUE)
+            || AttributeAspect.getAlgebra(attributeValue) != null) {
             result = createValueNode(node);
         } else {
             assert attributeValue.equals(PRODUCT) : String.format(
@@ -117,7 +119,18 @@ public class AttributeElementFactory {
             }
         }
         if (attributeEdges.isEmpty()) {
-            result = VariableNode.createVariableNode(node.getNumber());
+            AspectValue attributeValue =
+                AttributeAspect.getAttributeValue(node);
+            Algebra<?> nodeAlgebra =
+                attributeValue == null
+                    || AttributeAspect.VALUE.equals(attributeValue)
+                        ? null
+                        : this.register.getImplementation(attributeValue.getName());
+            assert attributeValue == null
+                || AttributeAspect.VALUE.equals(attributeValue)
+                || nodeAlgebra != null;
+            result =
+                VariableNode.createVariableNode(node.getNumber(), nodeAlgebra);
         } else if (attributeEdges.size() > 1) {
             throw new FormatException("Too many edges on constant node: %s",
                 attributeEdges);

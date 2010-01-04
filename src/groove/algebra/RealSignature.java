@@ -18,7 +18,6 @@ package groove.algebra;
 
 import java.math.BigDecimal;
 
-
 /**
  * Interface for real number algebras.
  * @author Arend Rensink
@@ -61,13 +60,13 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
 
     /** Inversion. */
     public abstract Real neg(Real arg);
-    
+
     /** String representation. */
     public abstract String toString(Real arg);
-    
-    /** 
-     * Tests if the number can be parsed as a {@link BigDecimal}.
-     * This means that a number of any length is accepted.
+
+    /**
+     * Tests if the number can be parsed as a {@link BigDecimal}. This means
+     * that a number of any length is accepted.
      */
     final public boolean isValue(java.lang.String value) {
         try {

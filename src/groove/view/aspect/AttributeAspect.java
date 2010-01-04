@@ -89,7 +89,7 @@ public class AttributeAspect extends AbstractAspect {
             }
             if (arguments.cardinality() != arity) {
                 throw new FormatException(
-                    "Argument edge indices %s do not constiture valid range",
+                    "Argument edge indices %s do not constitute valid range",
                     arguments);
             }
             for (AspectEdge edge : edges) {
@@ -102,7 +102,7 @@ public class AttributeAspect extends AbstractAspect {
             }
         } else {
             // the value is VALUE; try to establish the algebra
-            String type = null;
+            String type = VALUE.equals(value) ? null : value.getName();
             for (AspectEdge edge : edges) {
                 if (!NestingAspect.isMetaElement(edge)) {
                     // we don't check for outgoing non-attribute edges
@@ -136,6 +136,22 @@ public class AttributeAspect extends AbstractAspect {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * This implementation considers any of the signature values to be more
+     * demanding than {@link #VALUE}.
+     */
+    @Override
+    protected AspectValue getMaxValue(AspectValue value1, AspectValue value2)
+        throws FormatException {
+        if (VALUE.equals(value1) && algebraMap.containsKey(value2)) {
+            return value2;
+        } else if (VALUE.equals(value2) && algebraMap.containsKey(value1)) {
+            return value1;
+        } else {
+            return super.getMaxValue(value1, value2);
         }
     }
 
@@ -282,31 +298,6 @@ public class AttributeAspect extends AbstractAspect {
         Groove.getXMLProperty("label.product.prefix");
     /** The product aspect value. */
     public static final AspectValue PRODUCT;
-    /** Name of the integer aspect value. */
-    // public static final String INTEGER_NAME =
-    // Groove.getXMLProperty("label.integer.prefix");
-    // /** The integer aspect value. */
-    // public static final AspectValue INTEGER;
-    // /** Name of the real aspect value. */
-    // public static final String REAL_NAME =
-    // Groove.getXMLProperty("label.real.prefix");
-    // /** The real aspect value. */
-    // public static final AspectValue REAL;
-    // /** Name of the integer aspect value. */
-    // public static final String ABSTRACT_INTEGER_NAME =
-    // Groove.getXMLProperty("label.abstract.integer.prefix");
-    // /** The integer aspect value. */
-    // public static final AspectValue ABSTRACT_INTEGER;
-    // /** Name of the boolean aspect value. */
-    // public static final String BOOLEAN_NAME =
-    // Groove.getXMLProperty("label.boolean.prefix");
-    // /** The boolean aspect value. */
-    // public static final AspectValue BOOLEAN;
-    // /** Name of the string aspect value. */
-    // public static final String STRING_NAME =
-    // Groove.getXMLProperty("label.string.prefix");
-    // /** The string aspect value. */
-    // public static final AspectValue STRING;
 
     /**
      * Map from aspect values to those algebras that they represent.
@@ -326,29 +317,12 @@ public class AttributeAspect extends AbstractAspect {
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
             for (String signatureName : AlgebraRegister.getSignatureNames()) {
-                AspectValue value = instance.addEdgeValue(signatureName);
+                AspectValue value = instance.addValue(signatureName);
                 value.setEdgeToTarget(VALUE);
                 addSignature(signatureName, value);
             }
-            // INTEGER = instance.addEdgeValue(INTEGER_NAME);
-            // ABSTRACT_INTEGER = instance.addEdgeValue(ABSTRACT_INTEGER_NAME);
-            // REAL = instance.addEdgeValue(REAL_NAME);
-            // BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
-            // STRING = instance.addEdgeValue(STRING_NAME);
-            // // initialise the algebra map
-            // addSignature(DefaultIntegerAlgebra.getInstance(), INTEGER);
-            // addSignature(DefaultRealAlgebra.getInstance(), REAL);
-            // addSignature(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
-            // addSignature(DefaultStringAlgebra.getInstance(), STRING);
-            // addSignature(AbstractIntegerAlgebra.getInstance(),
-            // ABSTRACT_INTEGER);
             ARGUMENT.setEdgeToSource(PRODUCT);
             ARGUMENT.setEdgeToTarget(VALUE);
-            // INTEGER.setEdgeToTarget(VALUE);
-            // ABSTRACT_INTEGER.setEdgeToTarget(VALUE);
-            // REAL.setEdgeToTarget(VALUE);
-            // BOOLEAN.setEdgeToTarget(VALUE);
-            // STRING.setEdgeToTarget(VALUE);
             // incompatibilities
             instance.setIncompatible(RuleAspect.CREATOR);
             instance.setIncompatible(RuleAspect.CNEW);

@@ -16,6 +16,7 @@
  */
 package groove.match;
 
+import groove.algebra.Algebra;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
@@ -442,12 +443,22 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 "Assignment %s=%s replaces pre-matched image %s",
                 SearchPlanStrategy.this.nodeKeys[index], image,
                 this.nodeAnchors[index]);
-            // value nodes only matched by value nodes
-            boolean isValueNode = image instanceof ValueNode;
-            if (SearchPlanStrategy.this.nodeKeys[index] instanceof VariableNode != isValueNode) {
+            // value nodes only matched by value nodes without algebra or of the
+            // same algebra
+            boolean imageIsValueNode = image instanceof ValueNode;
+            boolean keyIsVariableNode =
+                SearchPlanStrategy.this.nodeKeys[index] instanceof VariableNode;
+            if (imageIsValueNode != keyIsVariableNode) {
                 return false;
+            } else if (keyIsVariableNode) {
+                Algebra<?> keyAlgebra =
+                    ((VariableNode) SearchPlanStrategy.this.nodeKeys[index]).getAlgebra();
+                if (keyAlgebra != null
+                    && !((ValueNode) image).getAlgebra().equals(keyAlgebra)) {
+                    return false;
+                }
             }
-            if (isInjective() && !isValueNode) {
+            if (isInjective() && !imageIsValueNode) {
                 Node oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
