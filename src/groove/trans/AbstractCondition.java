@@ -313,8 +313,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             }
             Node image = contextMap.getNode(entry.getKey());
             assert image != null : String.format(
-                "Context map %s does not contain image for root %s",
-                contextMap, entry.getKey());
+                "Context map %s in condition '%s' does not contain image for root %s",
+                contextMap, getName(), entry.getKey());
             Node key = entry.getValue();
             // result already contains an image for nodeKey
             // if it is not the same as the one we want to insert now,

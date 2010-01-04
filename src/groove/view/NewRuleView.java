@@ -388,7 +388,7 @@ public class NewRuleView implements RuleView {
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
+    static private final boolean TO_RULE_DEBUG = true;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -1047,7 +1047,9 @@ public class NewRuleView implements RuleView {
             if (elem instanceof AspectNode) {
                 // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
-                result = isInjective() && !AttributeAspect.isAttributeNode(elem);
+                result =
+                    isInjective() && RuleAspect.inLHS(elem)
+                        && !AttributeAspect.isAttributeNode(elem);
             } else {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
