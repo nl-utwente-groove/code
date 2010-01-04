@@ -190,7 +190,8 @@ public class AspectualGraphView implements GraphView {
         Map<Node,Label> nodeTypes = new HashMap<Node,Label>();
         // copy the edges from view to model
         edgeLoop: for (AspectEdge viewEdge : view.edgeSet()) {
-            if (AttributeAspect.isConstant(viewEdge)) {
+            if (AttributeAspect.isConstant(viewEdge)
+                || viewEdge.getModelLabel(false) == null) {
                 continue edgeLoop;
             }
             for (AspectValue value : viewEdge.getAspectMap()) {

@@ -237,12 +237,14 @@ public class AspectMap implements Iterable<AspectValue> {
      * Returns the label obtained by parsing the text according to the aspect
      * values in the map.
      * @param regExpr if <code>true</code>, recognise regular expressions
-     * @return the parsed label, or {@code null} if there is no label text
+     * @return the parsed label, or {@code null} if there is no label text or
+     *         the element does not occur in the model
      * @throws FormatException if the label contains a format error
      */
     public Label toModelLabel(boolean regExpr) throws FormatException {
         Label result = null;
-        if (getText() != null) {
+        if (getText() != null && get(NestingAspect.getInstance()) == null
+            && !RuleAspect.REMARK.equals(get(RuleAspect.getInstance()))) {
             LabelParser parser = null;
             for (AspectValue value : this) {
                 // find the parser for this aspect value

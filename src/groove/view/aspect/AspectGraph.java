@@ -440,8 +440,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                     if (label.equals(oldLabel)) {
                         replacement = newLabel;
                     }
-                } else {
-                    assert label instanceof RegExprLabel;
+                } else if (label instanceof RegExprLabel) {
                     replacement =
                         ((RegExprLabel) label).getRegExpr().relabel(oldLabel,
                             newLabel).toLabel();
@@ -491,8 +490,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * Creates a type view from this aspect graph. Further information for the
      * conversion is given through a properties object. The view object is
      * reused when possible.
-     * @param properties the properties object with respect to which the type graph
-     *        is to be constructed
+     * @param properties the properties object with respect to which the type
+     *        graph is to be constructed
      * @return the resulting type graph view (non-null)
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link Groove#TYPE_ROLE}
@@ -506,12 +505,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * Creates a view from this aspect graph. Further information for the
      * conversion is given through a properties object. The view object is
      * reused when possible.
-     * @param properties the properties object with respect to which the view
-     *        is to be constructed
-     *        @param role role of the returned view
+     * @param properties the properties object with respect to which the view is
+     *        to be constructed
+     * @param role role of the returned view
      * @return the resulting view (non-null)
-     * @throws IllegalStateException if the aspect graph role is not
-     *         {@code role}
+     * @throws IllegalStateException if the aspect graph role is not {@code
+     *         role}
      */
     private GraphView toGraphView(SystemProperties properties, String role)
         throws IllegalStateException {
@@ -575,9 +574,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     public View<?> toView() {
         if (GraphInfo.hasRuleRole(this)) {
             return toRuleView(null);
-        } else if (GraphInfo.hasTypeRole(this)) { 
+        } else if (GraphInfo.hasTypeRole(this)) {
             return toTypeView(null);
-    } else {
+        } else {
             return toGraphView(null);
         }
     }
