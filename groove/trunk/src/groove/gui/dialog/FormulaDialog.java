@@ -41,8 +41,8 @@ public class FormulaDialog {
 
     /**
      * Constructs an instance of the dialog for a given parent frame, a given
-     * (non-<code>null</code>) set of properties, and a flag indicating if
-     * the properties should be editable. A further parameter gives a list of
+     * (non-<code>null</code>) set of properties, and a flag indicating if the
+     * properties should be editable. A further parameter gives a list of
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
      */
@@ -71,17 +71,9 @@ public class FormulaDialog {
     }
 
     /**
-     * Return the property that is entered for verification.
-     * @return the property in String format
-     */
-    public String getProperty() {
-        return this.property;
-    }
-
-    /**
      * @return the contentpane
      */
-    JOptionPane getContentPane() {
+    private JOptionPane getContentPane() {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
         this.pane =
             new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
@@ -126,34 +118,10 @@ public class FormulaDialog {
     }
 
     /**
-     * Lazily creates and returns a button labelled OK.
-     * @return the ok button
-     */
-    JButton getOkButton() {
-        if (this.okButton == null) {
-            this.okButton = new JButton("OK");
-            this.okButton.addActionListener(new CloseListener());
-        }
-        return this.okButton;
-    }
-
-    /**
-     * Lazily creates and returns a button labelled CANCEL.
-     * @return the cancel button
-     */
-    JButton getCancelButton() {
-        if (this.cancelButton == null) {
-            this.cancelButton = new JButton("Cancel");
-            this.cancelButton.addActionListener(new CloseListener());
-        }
-        return this.cancelButton;
-    }
-
-    /**
      * Add an item to the history.
      * @param item the item to be added
      */
-    void addItem(String item) {
+    private void addItem(String item) {
         if (!this.history.contains(item)) {
             this.history.add(1, item);
         }
@@ -165,24 +133,59 @@ public class FormulaDialog {
     /** The formula label */
     private JLabel formulaLabel;
     /** The formula field */
-    JTextField formulaField;
+    private JTextField formulaField;
     /** The history box */
-    JComboBox historyBox;
+    private JComboBox historyBox;
+
+    /**
+     * Lazily creates and returns a button labelled OK.
+     * @return the ok button
+     */
+    private JButton getOkButton() {
+        if (this.okButton == null) {
+            this.okButton = new JButton("OK");
+            this.okButton.addActionListener(new CloseListener());
+        }
+        return this.okButton;
+    }
+
     /** The OK button on the option pane. */
     private JButton okButton;
+
+    /**
+     * Lazily creates and returns a button labelled CANCEL.
+     * @return the cancel button
+     */
+    private JButton getCancelButton() {
+        if (this.cancelButton == null) {
+            this.cancelButton = new JButton("Cancel");
+            this.cancelButton.addActionListener(new CloseListener());
+        }
+        return this.cancelButton;
+    }
+
     /** The CANCEL button on the option pane. */
     private JButton cancelButton;
-    /** Title of the dialog. */
-    public static final String DIALOG_TITLE = "Enter Temporal Formula";
 
     /** The history list */
     private final List<String> history;
 
+    /**
+     * Return the property that is entered for verification.
+     * @return the property in String format
+     */
+    public String getProperty() {
+        return this.property;
+    }
+
     /** The field in which to store the provided data */
-    String property;
+    private String property;
 
     /** The dialog to be shown */
-    JDialog dialog;
+    private JDialog dialog;
+
+    /** Title of the dialog. */
+    public static final String DIALOG_TITLE = "Enter Temporal Formula";
 
     /**
      * Action listener that closes the dialog and makes sure that the property
