@@ -7,10 +7,11 @@ import java.util.List;
  */
 public interface Operation {
     /**
-     * Applies this operation on the list of operands and returns the result value.
+     * Applies this operation on the list of operands and returns the result
+     * value.
      * @param args the operands on which this operation operates
-     * @return the resulting {@link groove.algebra.OldOperation} when applying this
-     *         operation on its <tt>operands</tt>
+     * @return the resulting value when applying this operation on its
+     *         <tt>args</tt>
      * @throws IllegalArgumentException if the operation cannot be performed,
      *         due to typing errors of the operands or zero division
      */
