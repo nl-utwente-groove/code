@@ -886,7 +886,12 @@ public class NewRuleView implements RuleView {
                     computeEdgeImage(viewEdge, this.viewToRuleMap.nodeMap());
                 if (result != null) {
                     this.viewToRuleMap.putEdge(viewEdge, result);
-                    this.labelSet.add(result.label());
+                    Label label = result.label();
+                    if (label instanceof RegExprLabel) {
+                        this.labelSet.addAll(((RegExprLabel) label).getRegExpr().getLabels());
+                    } else {
+                        this.labelSet.add(label);
+                    }
                 }
             }
             return result;

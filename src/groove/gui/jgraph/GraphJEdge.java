@@ -29,6 +29,7 @@ import groove.util.Converter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -198,16 +199,26 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     }
 
     /**
-     * This implementation calls {@link #getLabel(Edge)} on all edges in
+     * This implementation calls {@link #getListLabels(Edge)} on all edges in
      * {@link #getUserObject()}.
      */
     public Collection<Label> getListLabels() {
         List<Label> result = new ArrayList<Label>();
         for (Edge edge : getUserObject()) {
-            Label label = getLabel(edge);
-            if (label != null) {
-                result.add(label);
-            }
+            result.addAll(getListLabels(edge));
+        }
+        return result;
+    }
+
+    /** This implementation delegates to {@link Edge#label()}. */
+    public Set<Label> getListLabels(Edge edge) {
+        Set<Label> result;
+        Label label = getLabel(edge);
+        if (label instanceof RegExprLabel) {
+            result = ((RegExprLabel) label).getRegExpr().getLabels();
+        } else {
+            result = new HashSet<Label>();
+            result.add(label);
         }
         return result;
     }

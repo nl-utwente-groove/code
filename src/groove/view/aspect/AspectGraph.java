@@ -34,6 +34,7 @@ import groove.view.AspectualGraphView;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.NewRuleView;
+import groove.view.RegExprLabelParser;
 import groove.view.RuleView;
 import groove.view.View;
 
@@ -451,7 +452,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                     if (replacement.isNodeType()) {
                         newData.addDeclaredValue(TypeAspect.NODE_TYPE);
                     }
+                    if (GraphInfo.hasRuleRole(this)) {
+                        replacement =
+                            RegExprLabelParser.getInstance().unparse(
+                                replacement);
+                    }
                     newData.setText(replacement.text());
+                    // AspectParser.getInstance(false).unparse(replacement,
+                    // newData);
                     oldToNew.put(edge, createAspectEdge(edge.source(),
                         edge.target(), newData));
                 }
