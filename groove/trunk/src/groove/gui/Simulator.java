@@ -549,7 +549,12 @@ public class Simulator {
             } else {
                 getGrammarStore().putGraph(graph);
                 result = true;
-                refresh();
+                if (GraphInfo.getName(graph).equals(
+                    getGrammarView().getStartGraphName())) {
+                    updateGrammar();
+                } else {
+                    refresh();
+                }
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving graph '%s'",
@@ -967,8 +972,9 @@ public class Simulator {
         String oldName = GraphInfo.getName(graph);
         // test now if this is the start state, before it is deleted from the
         // grammar
+        String startGraphName = getGrammarView().getStartGraphName();
         boolean isStartGraph =
-            oldName.equals(getGrammarView().getStartGraphName());
+            oldName.equals(startGraphName) || newName.equals(startGraphName);
         try {
             getGrammarStore().renameGraph(oldName, newName);
             if (isStartGraph) {
