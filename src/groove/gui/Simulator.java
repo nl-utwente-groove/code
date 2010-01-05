@@ -3450,7 +3450,7 @@ public class Simulator {
             final String ruleName = getCurrentRule().getName();
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(),
-                    getRulePanel().getJModel().toPlainGraph()) {
+                    getCurrentRule().getView().toPlainGraph()) {
                     @Override
                     public void finish() {
                         if (confirmAbandon(false)) {

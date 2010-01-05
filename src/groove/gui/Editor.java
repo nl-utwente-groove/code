@@ -1037,6 +1037,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
         result.add(getOptions().getItem(Options.PREVIEW_ON_SAVE_OPTION));
         result.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
+        result.add(getOptions().getItem(Options.SHOW_NODE_IDS_OPTION));
         return result;
     }
 
