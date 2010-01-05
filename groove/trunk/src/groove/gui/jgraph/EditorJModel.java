@@ -193,6 +193,16 @@ public class EditorJModel extends JModel {
         return port != null;// && port != ((JEdge) edge).getTarget();
     }
 
+    @Override
+    protected Object cloneCell(Object cell) {
+        Object result = super.cloneCell(cell);
+        if (cell instanceof EditableJVertex) {
+            ((EditableJVertex) result).getUserObject().setNumber(
+                createNewNodeNr());
+        }
+        return result;
+    }
+
     /**
      * Callback factory method for a j-vertex instance for this j-model that is
      * a copy of an existing j-vertex.
@@ -219,6 +229,16 @@ public class EditorJModel extends JModel {
      * {@link JModel#createJVertexAttr(JVertex)}.
      */
     protected EditableJVertex computeJVertex() {
+        EditableJVertex result = new EditableJVertex(createNewNodeNr());
+        result.getAttributes().applyMap(createJVertexAttr(result));
+        return result;
+    }
+
+    /**
+     * Returns the first non-negative number that is not used as a node number
+     * in this model.
+     */
+    private int createNewNodeNr() {
         // search for an unused node number
         Set<Integer> usedNrs = new HashSet<Integer>();
         for (Object root : getRoots()) {
@@ -230,9 +250,7 @@ public class EditorJModel extends JModel {
         while (usedNrs.contains(nr)) {
             nr++;
         }
-        EditableJVertex result = new EditableJVertex(nr);
-        result.getAttributes().applyMap(createJVertexAttr(result));
-        return result;
+        return nr;
     }
 
     /**
