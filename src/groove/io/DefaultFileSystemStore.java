@@ -495,6 +495,13 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 result.addEdit(edit);
             }
         }
+        for (AspectGraph type : getTypes().values()) {
+            AspectGraph newType = type.relabel(oldLabel, newLabel);
+            if (newType != type) {
+                Edit edit = doPutType(newType);
+                result.addEdit(edit);
+            }
+        }
         for (AspectGraph rule : getRules().values()) {
             AspectGraph newRule = rule.relabel(oldLabel, newLabel);
             if (newRule != rule) {
