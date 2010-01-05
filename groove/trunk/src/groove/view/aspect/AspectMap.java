@@ -246,21 +246,25 @@ public class AspectMap implements Iterable<AspectValue> {
         if (getText() != null && get(NestingAspect.getInstance()) == null
             && !RuleAspect.REMARK.equals(get(RuleAspect.getInstance()))) {
             LabelParser parser = null;
-            for (AspectValue value : this) {
-                // find the parser for this aspect value
-                LabelParser valueParser = value.getLabelParser();
-                // set it as the label parser, or compose it with the previously
-                // found parser
-                if (parser == null) {
-                    parser = valueParser;
-                } else if (valueParser != null && !valueParser.equals(parser)) {
-                    parser = new ComposedLabelParser(parser, valueParser);
+            if (!hasEnd()) {
+                for (AspectValue value : this) {
+                    // find the parser for this aspect value
+                    LabelParser valueParser = value.getLabelParser();
+                    // set it as the label parser, or compose it with the
+                    // previously
+                    // found parser
+                    if (parser == null) {
+                        parser = valueParser;
+                    } else if (valueParser != null
+                        && !valueParser.equals(parser)) {
+                        parser = new ComposedLabelParser(parser, valueParser);
+                    }
                 }
             }
             // use the default parser if none is found
             if (parser == null) {
                 parser =
-                    regExpr ? RegExprLabelParser.getInstance()
+                    regExpr && !hasEnd() ? RegExprLabelParser.getInstance()
                             : FreeLabelParser.getInstance();
             }
             // parse the label

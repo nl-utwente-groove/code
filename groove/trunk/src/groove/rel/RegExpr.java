@@ -283,6 +283,13 @@ abstract public class RegExpr { // implements VarSetSupport {
     abstract public RegExpr relabel(Label oldLabel, Label newLabel);
 
     /**
+     * Returns the set of labels occurring in this regular expression. These are
+     * the labels that, when relabelled, result in a different expression.
+     * @see #relabel(Label, Label)
+     */
+    abstract public Set<Label> getLabels();
+
+    /**
      * Tests if this expression contains a given operator (given by its string
      * representation) in one of its sub-expressions.
      * @param operator the string description of the operator sought
@@ -886,6 +893,15 @@ abstract public class RegExpr { // implements VarSetSupport {
             return hasChanged ? newInstance(newOperands) : this;
         }
 
+        @Override
+        public Set<Label> getLabels() {
+            Set<Label> result = new HashSet<Label>();
+            for (RegExpr operand : getOperands()) {
+                result.addAll(operand.getLabels());
+            }
+            return result;
+        }
+
         /**
          * Factory method for an infix expression. The number of operands is
          * guaranteed to be at least 2.
@@ -926,6 +942,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         public RegExpr relabel(Label oldLabel, Label newLabel) {
             RegExpr newOperand = getOperand().relabel(oldLabel, newLabel);
             return newOperand != getOperand() ? newInstance(newOperand) : this;
+        }
+
+        @Override
+        public Set<Label> getLabels() {
+            return getOperand().getLabels();
         }
 
         /** Returns the single operand of this postfix expression. */
@@ -1022,6 +1043,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         public RegExpr relabel(Label oldLabel, Label newLabel) {
             RegExpr newOperand = getOperand().relabel(oldLabel, newLabel);
             return newOperand != getOperand() ? newInstance(newOperand) : this;
+        }
+
+        @Override
+        public Set<Label> getLabels() {
+            return getOperand().getLabels();
         }
 
         /** Returns the single operand of this prefix expression. */
@@ -1244,6 +1270,11 @@ abstract public class RegExpr { // implements VarSetSupport {
                 newConstraint);
         }
 
+        @Override
+        public Set<Label> getLabels() {
+            return ((LabelConstraint) this.guard).getLabels();
+        }
+
         /**
          * Calls {@link RegExprCalculator#computeWildcard(RegExpr.Wildcard)} on
          * the visitor.
@@ -1458,6 +1489,18 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return result;
             }
 
+            /**
+             * Returns the set of labels occurring in this label constraint.
+             * @see RegExpr#getLabels()
+             */
+            public Set<Label> getLabels() {
+                Set<Label> result = new HashSet<Label>();
+                for (String constrainedLabel : this.constrainedLabels) {
+                    result.add(DefaultLabel.createTypedLabel(constrainedLabel));
+                }
+                return result;
+            }
+
             @Override
             public boolean isSatisfied(Label value) {
                 return this.negated != (this.anyNodeType && value.isNodeType() || this.constrainedLabelSet.contains(value));
@@ -1503,6 +1546,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             return this;
         }
 
+        @Override
+        public Set<Label> getLabels() {
+            return Collections.emptySet();
+        }
+
         /** This implementation returns a {@link Empty}. */
         @Override
         protected Constant newInstance() {
@@ -1545,6 +1593,13 @@ abstract public class RegExpr { // implements VarSetSupport {
         public RegExpr relabel(Label oldLabel, Label newLabel) {
             return oldLabel.text().equals(text())
                     ? newInstance(newLabel.text()) : this;
+        }
+
+        @Override
+        public Set<Label> getLabels() {
+            Set<Label> result = new HashSet<Label>();
+            result.add(toLabel());
+            return result;
         }
 
         /**

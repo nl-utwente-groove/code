@@ -37,6 +37,7 @@ import groove.view.aspect.TypeAspect;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,14 +138,15 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             // filter if either there is a filtered node type,
             // or all self-edges are filtered
             for (Edge selfEdge : getSelfEdges()) {
-                Label label = getLabel(selfEdge);
-                if (this.jModel.isFiltering(label)) {
-                    if (label.isNodeType()) {
-                        result = true;
-                        break;
+                for (Label label : getListLabels(selfEdge)) {
+                    if (this.jModel.isFiltering(label)) {
+                        if (label.isNodeType()) {
+                            result = true;
+                            break;
+                        }
+                    } else {
+                        result = false;
                     }
-                } else {
-                    result = false;
                 }
             }
         }
@@ -233,6 +235,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         return result;
     }
 
+    /** This implementation delegates to {@link Edge#label()}. */
+    public Label getLabel(Edge edge) {
+        return edge.label();
+    }
+
     /**
      * This implementation returns a special constant label in case the node is
      * a constant, followed by the self-edge labels and data-edge labels; or
@@ -244,13 +251,26 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result.add(getValueLabel());
         }
         for (Edge edge : getSelfEdges()) {
-            result.add(getLabel(edge));
+            result.addAll(getListLabels(edge));
         }
         if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
         for (Edge edge : getDataEdges()) {
-            result.add(getLabel(edge));
+            result.addAll(getListLabels(edge));
+        }
+        return result;
+    }
+
+    /** This implementation delegates to {@link Edge#label()}. */
+    public Set<Label> getListLabels(Edge edge) {
+        Set<Label> result;
+        Label label = getLabel(edge);
+        if (label instanceof RegExprLabel) {
+            result = ((RegExprLabel) label).getRegExpr().getLabels();
+        } else {
+            result = new HashSet<Label>();
+            result.add(label);
         }
         return result;
     }
@@ -271,11 +291,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result.add(getPlainLabel(edge));
         }
         return result;
-    }
-
-    /** This implementation delegates to {@link Edge#label()}. */
-    public Label getLabel(Edge edge) {
-        return edge.label();
     }
 
     /**
