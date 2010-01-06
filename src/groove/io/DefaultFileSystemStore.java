@@ -117,12 +117,13 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public String deleteControl(String name) {
+    public String deleteControl(String name) throws IOException {
         String result = null;
-        DeleteControlEdit edit = doDeleteControl(name);
-        if (edit != null) {
-            postEdit(edit);
-            result = edit.getControl();
+
+        DeleteControlEdit deleteEdit = doDeleteControl(name);
+        if (deleteEdit != null) {
+            postEdit(deleteEdit);
+            result = deleteEdit.getControl();
         }
         return result;
     }
@@ -137,7 +138,16 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         String control = this.controlMap.remove(name);
         if (control != null) {
             createControlFile(name).delete();
-            result = new DeleteControlEdit(name, control);
+            // change the control-related system properties, if necessary
+            SystemProperties oldProps = null;
+            SystemProperties newProps = null;
+            if (name.equals(getProperties().getControlName())) {
+                oldProps = getProperties();
+                newProps = getProperties().clone();
+                newProps.setUseControl(false);
+                newProps.setControlName("");
+            }
+            result = new DeleteControlEdit(name, control, oldProps, newProps);
         }
         return result;
     }
@@ -217,7 +227,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph type = this.typeMap.remove(name);
         if (type != null) {
             this.marshaller.deleteGraph(createTypeFile(name));
-            result = new DeleteTypeEdit(type);
+            // change the type-related system properties, if necessary
+            SystemProperties oldProps = null;
+            SystemProperties newProps = null;
+            if (name.equals(getProperties().getTypeName())) {
+                oldProps = getProperties();
+                newProps = getProperties().clone();
+                newProps.setTypeName("");
+            }
+            result = new DeleteTypeEdit(type, oldProps, newProps);
         }
         return result;
     }
@@ -432,6 +450,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 createRuleFile(newRuleName));
             result = new RenameRuleEdit(oldName, newName, oldRule);
         } else if (this.ruleMap.containsKey(newRuleName)) {
+            this.marshaller.deleteGraph(createRuleFile(newRuleName));
             AspectGraph oldRule = this.ruleMap.remove(newName);
             result = new RenameRuleEdit(oldName, newName, oldRule);
         }
@@ -459,16 +478,31 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         RenameTypeEdit result = null;
         testInit();
         AspectGraph type = this.typeMap.remove(oldName);
+        boolean edited = false;
+        AspectGraph oldType = null;
         if (type != null) {
+            oldType = this.typeMap.put(newName, type);
             this.marshaller.deleteGraph(createTypeFile(oldName));
             GraphInfo.setName(type, newName);
-            AspectGraph oldType = this.typeMap.put(newName, type);
             this.marshaller.marshalGraph(type.toPlainGraph(),
                 createTypeFile(newName));
-            result = new RenameTypeEdit(oldName, newName, oldType);
+            edited = true;
         } else if (this.typeMap.containsKey(newName)) {
-            AspectGraph oldType = this.typeMap.remove(newName);
-            result = new RenameTypeEdit(oldName, newName, oldType);
+            oldType = this.typeMap.remove(newName);
+            this.marshaller.deleteGraph(createTypeFile(newName));
+            edited = true;
+        }
+        if (edited) {
+            SystemProperties oldProps = null;
+            SystemProperties newProps = null;
+            if (oldName.equals(getProperties().getTypeName())) {
+                oldProps = getProperties();
+                newProps = oldProps.clone();
+                newProps.setTypeName(newName);
+            }
+            result =
+                new RenameTypeEdit(oldName, newName, oldType, oldProps,
+                    newProps);
         }
         return result;
     }
@@ -1003,10 +1037,13 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
     /** Edit consisting of the deletion of a control program. */
     private class DeleteControlEdit extends MyEdit {
-        public DeleteControlEdit(String name, String control) {
+        public DeleteControlEdit(String name, String control,
+                SystemProperties oldProps, SystemProperties newProps) {
             super(CONTROL_CHANGE);
             this.name = name;
             this.control = control;
+            this.oldProps = oldProps;
+            this.newProps = newProps;
         }
 
         @Override
@@ -1017,7 +1054,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            doDeleteControl(this.name);
+            try {
+                if (this.newProps != null) {
+                    doPutProperties(this.newProps);
+                }
+                doDeleteControl(this.name);
+            } catch (IOException exc) {
+                throw new CannotUndoException();
+            }
             notifyObservers(this);
         }
 
@@ -1026,6 +1070,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             super.undo();
             try {
                 doPutControl(this.name, this.control);
+                if (this.oldProps != null) {
+                    doPutProperties(this.oldProps);
+                }
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
@@ -1041,6 +1088,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final String name;
         /** The deleted control program. */
         private final String control;
+        /** The old system properties; possibly {@code null}. */
+        private final SystemProperties oldProps;
+        /** The new system properties; possibly {@code null}. */
+        private final SystemProperties newProps;
     }
 
     /** Edit consisting of the deletion of a graph. */
@@ -1123,9 +1174,12 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
     /** Edit consisting of the deletion of a graph type. */
     private class DeleteTypeEdit extends MyEdit {
-        public DeleteTypeEdit(AspectGraph type) {
+        public DeleteTypeEdit(AspectGraph type, SystemProperties oldProps,
+                SystemProperties newProps) {
             super(TYPE_CHANGE);
             this.type = type;
+            this.oldProps = oldProps;
+            this.newProps = newProps;
         }
 
         @Override
@@ -1136,7 +1190,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            doDeleteType(GraphInfo.getName(this.type));
+            try {
+                if (this.newProps != null) {
+                    doPutProperties(this.newProps);
+                }
+                doDeleteType(GraphInfo.getName(this.type));
+            } catch (IOException exc) {
+                throw new CannotUndoException();
+            }
             notifyObservers(this);
         }
 
@@ -1145,6 +1206,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             super.undo();
             try {
                 doPutType(this.type);
+                if (this.oldProps != null) {
+                    doPutProperties(this.oldProps);
+                }
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
@@ -1158,6 +1222,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
         /** The deleted graph. */
         private final AspectGraph type;
+        /** The old system properties; possibly {@code null}. */
+        private final SystemProperties oldProps;
+        /** The new system properties; possibly {@code null}. */
+        private final SystemProperties newProps;
     }
 
     /** Edit wrapping a relabelling. */
@@ -1308,11 +1376,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /** Edit consisting of the renaming of a type graph. */
     private class RenameTypeEdit extends MyEdit {
         public RenameTypeEdit(String oldName, String newName,
-                AspectGraph oldType) {
+                AspectGraph oldType, SystemProperties oldProps,
+                SystemProperties newProps) {
             super(TYPE_CHANGE);
             this.oldName = oldName;
             this.newName = newName;
             this.oldType = oldType;
+            this.oldProps = oldProps;
+            this.newProps = newProps;
         }
 
         @Override
@@ -1324,6 +1395,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         public void redo() throws CannotRedoException {
             super.redo();
             try {
+                if (this.newProps != null) {
+                    doPutProperties(this.newProps);
+                }
                 doRenameType(this.oldName, this.newName);
             } catch (IOException exc) {
                 throw new CannotRedoException();
@@ -1335,6 +1409,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         public void undo() throws CannotUndoException {
             super.undo();
             try {
+                if (this.oldProps != null) {
+                    doPutProperties(this.oldProps);
+                }
                 doRenameType(this.newName, this.oldName);
                 if (this.oldType != null) {
                     doPutType(this.oldType);
@@ -1356,6 +1433,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final String newName;
         /** The graph previously stored under {@link #newName}, if any. */
         private final AspectGraph oldType;
+        /** The old system properties; possibly {@code null}. */
+        private final SystemProperties oldProps;
+        /** The new system properties; possibly {@code null}. */
+        private final SystemProperties newProps;
     }
 
     /** Edit consisting of the addition of a control program. */

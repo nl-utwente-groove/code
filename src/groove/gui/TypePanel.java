@@ -33,6 +33,7 @@ import groove.trans.SystemProperties;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
 import groove.view.FormatException;
+import groove.view.GraphView;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -42,10 +43,10 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
@@ -148,13 +149,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         String setTypeName = null;
         this.typeJModelMap.clear();
         if (grammar != null) {
-            // create a mapping from rule names to (fresh) rule models
-            for (String typeName : grammar.getTypeNames()) {
-                AspectJModel jModel =
-                    AspectJModel.newInstance(grammar.getTypeView(typeName),
-                        getOptions());
-                this.typeJModelMap.put(typeName, jModel);
-            }
             if (isTypeSelected()
                 && grammar.getTypeNames().contains(getSelectedType())) {
                 setTypeName = getSelectedType();
@@ -164,7 +158,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 setTypeName = grammar.getTypeNames().iterator().next();
             }
             if (setTypeName != null) {
-                model = this.typeJModelMap.get(setTypeName);
+                model = getTypeJModel(grammar.getTypeView(setTypeName));
             }
             labelStore = grammar.getLabelStore();
         }
@@ -173,36 +167,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         // reset the display
         this.jGraph.setModel(model);
         refreshAll();
-        //
-        // this.typeGraphPanel.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
-        // this.typeGraphPanel.setEnabled(false);
-        // this.grammar = grammar;
-        //
-        // if (grammar == null || grammar.getStartGraphView() == null) {
-        // this.createButton.setEnabled(false);
-        // } else {
-        // try {
-        // // Tries to load a previously saved type graph. If found,
-        // // this type graph will be displayed.
-        // Graph typeGraph;
-        // File file =
-        // new File(this.simulator.getLastGrammarFile()
-        // + Groove.FILE_SEPARATOR + Groove.TGR_NAME
-        // + Groove.GXL_EXTENSION);
-        //
-        // if ((typeGraph = Groove.loadGraph(file)) != null) {
-        // GraphInfo.setName(typeGraph, "Type graph");
-        //
-        // this.typeGraphPanel.jGraph.setModel(GraphJModel.newInstance(
-        // typeGraph, this.typeGraphPanel.getOptions()));
-        // this.typeGraphPanel.setEnabled(true);
-        // }
-        // } catch (IOException e) {
-        // System.err.println("Error reading the type graph.");
-        // }
-        // this.createButton.setEnabled(true);
-        // }
-        // this.typeGraphPanel.refreshStatus();
     }
 
     /**
@@ -216,6 +180,33 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         this.jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
 
         setEnabled(true);
+    }
+
+    /**
+     * Invokes the editor and saves the resulting type.
+     * @param type the graph to be edited
+     * @param fresh if <code>true</code>, the name for the edited type should be
+     *        fresh
+     */
+    private void handleEditType(final Graph type, final boolean fresh) {
+        EditorDialog dialog =
+            new EditorDialog(getSimulator().getFrame(), getOptions(), type) {
+                @Override
+                public void finish() {
+                    String typeName =
+                        getSimulator().askNewTypeName("Select type graph name",
+                            GraphInfo.getName(type), fresh);
+                    if (typeName != null) {
+                        AspectGraph newType = toAspectGraph();
+                        GraphInfo.setName(newType, typeName);
+                        if (getSimulator().doAddType(newType)) {
+                            setSelectedType(typeName);
+                            refreshAll();
+                        }
+                    }
+                }
+            };
+        dialog.start();
     }
 
     /**
@@ -251,11 +242,25 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /**
+     * Returns a graph model for a given type view. The graph model is retrieved
+     * from {@link #typeJModelMap}; if there is no image for the requested state
+     * then one is created.
+     */
+    private AspectJModel getTypeJModel(GraphView graph) {
+        AspectJModel result = this.typeJModelMap.get(graph);
+        if (result == null) {
+            result = AspectJModel.newInstance(graph, getOptions());
+            this.typeJModelMap.put(graph, result);
+        }
+        return result;
+    }
+
+    /**
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<String,AspectJModel> typeJModelMap =
-        new TreeMap<String,AspectJModel>();
+    private final Map<GraphView,AspectJModel> typeJModelMap =
+        new HashMap<GraphView,AspectJModel>();
 
     /** Name of the currently visible type graph. */
     private String selectedType;
@@ -274,7 +279,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
             refreshable.refresh();
         }
         this.jGraph.setModel(isTypeSelected()
-                ? this.typeJModelMap.get(getSelectedType())
+                ? getTypeJModel(getGrammarView().getTypeView(getSelectedType()))
                 : AspectJModel.EMPTY_ASPECT_JMODEL);
         setEnabled(isTypeSelected()
             && getSelectedType().equals(getGrammarView().getTypeName()));
@@ -344,16 +349,20 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         public void refresh() {
             removeActionListener(this.selectionListener);
             this.removeAllItems();
-            Set<String> names =
-                new TreeSet<String>(getGrammarView().getTypeNames());
-            if (isTypeSelected()) {
-                names.add(getSelectedType());
+            if (getGrammarView() == null) {
+                setEnabled(false);
+            } else {
+                Set<String> names =
+                    new TreeSet<String>(getGrammarView().getTypeNames());
+                if (isTypeSelected()) {
+                    names.add(getSelectedType());
+                }
+                for (String typeName : names) {
+                    addItem(typeName);
+                }
+                setSelectedItem(getSelectedType());
+                setEnabled(getItemCount() > 0);
             }
-            for (String typeName : names) {
-                addItem(typeName);
-            }
-            setSelectedItem(getSelectedType());
-            setEnabled(getItemCount() > 0);
             addActionListener(this.selectionListener);
         }
 
@@ -398,7 +407,10 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 getSimulator().askNewTypeName("Select new type graph name",
                     oldName, true);
             if (newName != null) {
-                // TODO figure out later
+                GraphView oldTypeView = getGrammarView().getTypeView(oldName);
+                AspectGraph newType = oldTypeView.getView().clone();
+                GraphInfo.setName(newType, newName);
+                getSimulator().doAddType(newType);
                 setSelectedType(newName);
                 refreshAll();
             }
@@ -407,6 +419,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         @Override
         public void refresh() {
             setEnabled(isTypeSelected() && grammarHasType(getSelectedType()));
+            if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
+                getSimulator().getCopyMenuItem().setAction(this);
+            }
         }
     }
 
@@ -465,6 +480,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
     private class DeleteAction extends RefreshableAction {
         public DeleteAction() {
             super(Options.DELETE_TYPE_ACTION_NAME, Groove.DELETE_ICON);
+            putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addRefreshable(this);
         }
 
@@ -493,6 +509,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         @Override
         public void refresh() {
             setEnabled(isTypeSelected() && grammarHasType(getSelectedType()));
+            if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
+                getSimulator().getDeleteMenuItem().setAction(this);
+            }
         }
     }
 
@@ -525,7 +544,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
         @Override
         public void refresh() {
-            setEnabled(getGrammarView().getTypeName() != null
+            setEnabled(getGrammarView() != null
+                && getGrammarView().getTypeName() != null
                 && !getGrammarView().getTypeName().isEmpty());
         }
     }
@@ -586,16 +606,22 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
     /** Action to start editing the currently displayed type graph. */
     private class EditAction extends RefreshableAction {
         public EditAction() {
-            super(Options.EDIT_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_TYPE_ACTION_NAME, Groove.EDIT_ICON);
+            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {
-            // TODO figure out later
+            final Graph initType =
+                getGrammarView().getTypeView(getSelectedType()).getView().toPlainGraph();
+            handleEditType(initType, false);
         }
 
         @Override
         public void refresh() {
             setEnabled(isTypeSelected() && isModifiable());
+            if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
+                getSimulator().getEditMenuItem().setAction(this);
+            }
         }
     }
 
@@ -616,36 +642,20 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
     /** Action to create and start editing a new type graph. */
     private class NewAction extends RefreshableAction {
         public NewAction() {
-            super(Options.NEW_ACTION_NAME, Groove.NEW_ICON);
+            super(Options.NEW_TYPE_ACTION_NAME, Groove.NEW_TYPE_ICON);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             final Graph initType = GraphFactory.getInstance().newGraph();
             GraphInfo.setTypeRole(initType);
-            EditorDialog dialog =
-                new EditorDialog(getSimulator().getFrame(), getOptions(),
-                    initType) {
-                    @Override
-                    public void finish() {
-                        String typeName =
-                            getSimulator().askNewTypeName(
-                                "Select type graph name",
-                                Groove.DEFAULT_TYPE_NAME, true);
-                        if (typeName != null) {
-                            AspectGraph newType = toAspectGraph();
-                            GraphInfo.setName(newType, typeName);
-                            getSimulator().doAddType(newType);
-                            setSelectedType(typeName);
-                        }
-                    }
-                };
-            dialog.start();
+            GraphInfo.setName(initType, Groove.DEFAULT_TYPE_NAME);
+            handleEditType(initType, true);
         }
 
         @Override
         public void refresh() {
-            setEnabled(true);
+            setEnabled(getGrammarView() != null);
         }
     }
 
@@ -669,6 +679,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
     private class RenameAction extends RefreshableAction {
         public RenameAction() {
             super(Options.RENAME_TYPE_ACTION_NAME, Groove.RENAME_ICON);
+            putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -676,8 +687,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
             String newName =
                 getSimulator().askNewTypeName("Select new type graph name",
                     oldName, false);
-            if (newName != null) {
-                // TODO figure out later
+            if (newName != null && !oldName.equals(newName)) {
+                GraphView type = getGrammarView().getTypeView(oldName);
+                getSimulator().doRenameType(type.getView(), newName);
                 if (oldName.equals(getGrammarView().getTypeName())) {
                     getEnableAction().doEnable(newName);
                 }
@@ -689,6 +701,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         @Override
         public void refresh() {
             setEnabled(isTypeSelected() && grammarHasType(getSelectedType()));
+            if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
+                getSimulator().getRenameMenuItem().setAction(this);
+            }
         }
     }
 

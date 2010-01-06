@@ -160,41 +160,37 @@ public class Options {
     /** Copy action name */
     public static final String COPY_ACTION_NAME = "Copy";
     /** Name of the "Copy Control Program" action. */
-    public static final String COPY_CONTROL_ACTION_NAME =
-        "Copy Control Program";
+    public static final String COPY_CONTROL_ACTION_NAME = "Copy Control";
     /** Name of the "Copy Graph" action. */
     public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
     /** Copy rule action name */
     public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
     /** Name of the "Copy Type Graph" action. */
-    public static final String COPY_TYPE_ACTION_NAME = "Copy Type Graph";
+    public static final String COPY_TYPE_ACTION_NAME = "Copy Type";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
     /** Delete control program action name */
-    public static final String DELETE_CONTROL_ACTION_NAME =
-        "Delete Control Program";
+    public static final String DELETE_CONTROL_ACTION_NAME = "Delete Control";
     /** Delete graph action name */
     public static final String DELETE_GRAPH_ACTION_NAME = "Delete Graph";
     /** Delete rule action name */
     public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
     /** Delete type graph action name */
-    public static final String DELETE_TYPE_ACTION_NAME = "Delete Type Graph";
+    public static final String DELETE_TYPE_ACTION_NAME = "Delete Type";
     /** Name of the "Disable Control" action. */
-    public static final String DISABLE_CONTROL_ACTION_NAME =
-        "Disable Control Program";
+    public static final String DISABLE_CONTROL_ACTION_NAME = "Disable Control";
     /** Name of the "Disable Rule" action. */
     public static final String DISABLE_RULE_ACTION_NAME = "Disable Rule";
     /** Name of the "Disable Type Graph" action. */
-    public static final String DISABLE_TYPE_ACTION_NAME = "Disable Type Graph";
+    public static final String DISABLE_TYPE_ACTION_NAME = "Disable Typing";
     /** Edge mode action name */
     public static final String EDGE_MODE_NAME = "Edge mode";
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
     /** Edit control action name */
-    public static final String EDIT_CONTROL_ACTION_NAME =
-        "Edit Control Program ...";
+    public static final String EDIT_CONTROL_ACTION_NAME = "Edit Control ...";
     /** Edit graph action name */
     public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
     /** Edit label action name */
@@ -204,14 +200,13 @@ public class Options {
     /** Edit state action name */
     public static final String EDIT_STATE_ACTION_NAME = "Edit Graph ...";
     /** Edit type action name */
-    public static final String EDIT_TYPE_ACTION_NAME = "Edit Type Graph ...";
+    public static final String EDIT_TYPE_ACTION_NAME = "Edit Type ...";
     /** Name of the "Enable Control Program" action */
-    public static final String ENABLE_CONTROL_ACTION_NAME =
-        "Enable Control Program";
+    public static final String ENABLE_CONTROL_ACTION_NAME = "Enable Control";
     /** Name of the "Enable Rule" action */
     public static final String ENABLE_RULE_ACTION_NAME = "Enable Rule";
     /** Name of the "Enable Type Graph" action */
-    public static final String ENABLE_TYPE_ACTION_NAME = "Enable Type Graph";
+    public static final String ENABLE_TYPE_ACTION_NAME = "Enable Typing";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
         "Explore State Space";
@@ -254,6 +249,8 @@ public class Options {
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
     /** New action name */
     public static final String NEW_ACTION_NAME = "New";
+    /** New control action name */
+    public static final String NEW_CONTROL_ACTION_NAME = "New Control";
     /** New graph action name */
     public static final String NEW_GRAPH_ACTION_NAME = "New Graph";
     /** New grammar action name */
@@ -262,8 +259,6 @@ public class Options {
     public static final String NEW_RULE_ACTION_NAME = "New Rule";
     /** New type action name */
     public static final String NEW_TYPE_ACTION_NAME = "New Type";
-    /** New control action name */
-    public static final String NEW_CONTROL_ACTION_NAME = "New Control";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node Mode";
     /** Open action name */
@@ -281,16 +276,10 @@ public class Options {
     public static final String REDO_ACTION_NAME = "Redo";
     /** Refresh grammar action name */
     public static final String REFRESH_GRAMMAR_ACTION_NAME = "Refresh Grammar";
-    /** Reset label position action name */
-    static public final String RESET_LABEL_POSITION_ACTION = "Reset Label";
-    /**
-     * Restart simulation action name
-     */
-    public static final String RESTART_ACTION_NAME = "Restart simulation";
+    /** Graph rename action name */
+    public static final String RELABEL_ACTION_NAME = "Replace Label";
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
-    /** Graph rename action name */
-    public static final String RELABEL_ACTION_NAME = "Replace label";
     /** Control program rename action name */
     public static final String RENAME_CONTROL_ACTION_NAME = "Rename Control";
     /** Graph rename action name */
@@ -299,6 +288,12 @@ public class Options {
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /** Type rename action name */
     public static final String RENAME_TYPE_ACTION_NAME = "Rename Type";
+    /** Reset label position action name */
+    static public final String RESET_LABEL_POSITION_ACTION = "Reset Label";
+    /**
+     * Restart simulation action name
+     */
+    public static final String RESTART_ACTION_NAME = "Restart simulation";
     /** Edit properties action name */
     public static final String RULE_PROPERTIES_ACTION_NAME =
         "Rule Properties ...";
@@ -316,6 +311,10 @@ public class Options {
      * Save-as action name
      */
     public static final String SAVE_AS_ACTION_NAME = "Save as...";
+    /**
+     * Save action name
+     */
+    public static final String SAVE_CONTROL_ACTION_NAME = "Save Control";
     /**
      * Save grammar action name
      */

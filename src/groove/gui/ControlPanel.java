@@ -346,16 +346,20 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void refresh() {
             removeActionListener(this.selectionListener);
             this.removeAllItems();
-            Set<String> names =
-                new TreeSet<String>(getGrammarView().getControlNames());
-            if (isControlSelected()) {
-                names.add(getSelectedControl());
+            if (getGrammarView() == null) {
+                setEnabled(false);
+            } else {
+                Set<String> names =
+                    new TreeSet<String>(getGrammarView().getControlNames());
+                if (isControlSelected()) {
+                    names.add(getSelectedControl());
+                }
+                for (String controlName : names) {
+                    addItem(controlName);
+                }
+                setSelectedItem(getSelectedControl());
+                setEnabled(getItemCount() > 0);
             }
-            for (String controlName : names) {
-                addItem(controlName);
-            }
-            setSelectedItem(getSelectedControl());
-            setEnabled(getItemCount() > 0);
             addActionListener(this.selectionListener);
         }
 
@@ -538,6 +542,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void refresh() {
             setEnabled(isControlSelected()
                 && grammarHasControl(getSelectedControl()));
+            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+                getSimulator().getCopyMenuItem().setAction(this);
+            }
         }
     }
 
@@ -590,6 +597,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void refresh() {
             setEnabled(isControlSelected()
                 && grammarHasControl(getSelectedControl()));
+            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+                getSimulator().getDeleteMenuItem().setAction(this);
+            }
         }
     }
 
@@ -625,7 +635,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            setEnabled(getGrammarView().isUseControl());
+            setEnabled(getGrammarView() != null
+                && getGrammarView().isUseControl());
         }
     }
 
@@ -689,7 +700,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Action to start editing the currently displayed control program. */
     private class EditAction extends RefreshableAction {
         public EditAction() {
-            super(Options.EDIT_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_CONTROL_ACTION_NAME, Groove.EDIT_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -699,6 +710,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
         @Override
         public void refresh() {
             setEnabled(isControlSelected() && isModifiable() && !isEditing());
+            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+                getSimulator().getEditMenuItem().setAction(this);
+            }
         }
     }
 
@@ -719,7 +733,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Action to create and start editing a new control program. */
     private class NewAction extends RefreshableAction {
         public NewAction() {
-            super(Options.NEW_ACTION_NAME, Groove.NEW_ICON);
+            super(Options.NEW_CONTROL_ACTION_NAME, Groove.NEW_ICON);
         }
 
         @Override
@@ -852,6 +866,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void refresh() {
             setEnabled(isControlSelected()
                 && grammarHasControl(getSelectedControl()));
+            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+                getSimulator().getRenameMenuItem().setAction(this);
+            }
         }
     }
 
@@ -871,7 +888,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     private class SaveAction extends RefreshableAction {
         public SaveAction() {
-            super(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON);
+            super(Options.SAVE_CONTROL_ACTION_NAME, Groove.SAVE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {

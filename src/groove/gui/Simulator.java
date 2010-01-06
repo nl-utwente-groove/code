@@ -495,32 +495,6 @@ public class Simulator {
     }
 
     /**
-     * Does the actual saving of a control program in the current grammar. The
-     * target file will be derived from the current grammar location and control
-     * name.
-     * @param program the (parsable) control program to be saved (non-null)
-     * @return the target file used; <code>null</code> if saving failed due to
-     *         some error
-     */
-    boolean handleSaveControl(String program) {
-        boolean result = false;
-        String controlName = getGrammarView().getProperties().getControlName();
-        if (controlName == null) {
-            controlName = Groove.DEFAULT_CONTROL_NAME;
-        }
-        try {
-            getGrammarStore().putControl(controlName, program);
-            result = true;
-        } catch (UnsupportedOperationException exc) {
-            assert false : "Grammar store cannot save control program";
-        } catch (IOException exc) {
-            showErrorDialog(String.format(
-                "Error while saving control program '%s'", controlName), exc);
-        }
-        return result;
-    }
-
-    /**
      * Adds a control program to this grammar.
      * @return <code>true</code> if saving the control program has succeeded
      */
@@ -610,19 +584,27 @@ public class Simulator {
         return result;
     }
 
-    /** Adds a control program to this grammar. */
-    void doDeleteControl(String name) {
+    /** Removes a control program from this grammar. */
+    boolean doDeleteControl(String name) {
+        boolean result = false;
         boolean isCurrentControl =
             name.equals(getGrammarView().getControlName());
-        getGrammarStore().deleteControl(name);
-        // we only need to refresh the grammar if the deleted
-        // control program was the currently active one
-        if (isCurrentControl) {
-            updateGrammar();
-        } else {
-            // otherwise, we only need to update the list
-            getControlPanel().refreshAll();
+        try {
+            getGrammarStore().deleteControl(name);
+            // we only need to refresh the grammar if the deleted
+            // control program was the currently active one
+            if (isCurrentControl) {
+                updateGrammar();
+            } else {
+                // otherwise, we only need to update the list
+                getControlPanel().refreshAll();
+            }
+            result = true;
+        } catch (IOException exc) {
+            showErrorDialog(String.format(
+                "Error while deleting control program '%s'", name), exc);
         }
+        return result;
     }
 
     /**
@@ -654,18 +636,25 @@ public class Simulator {
         }
     }
 
-    /** Adds a control program to this grammar. */
-    void doDeleteType(String name) {
+    /** Removes a type graph from this grammar. */
+    boolean doDeleteType(String name) {
+        boolean result = false;
         boolean isCurrentType = name.equals(getGrammarView().getTypeName());
-        getGrammarStore().deleteType(name);
-        // we only need to refresh the grammar if the deleted
-        // type graph was the currently active one
-        if (isCurrentType) {
-            updateGrammar();
-        } else {
-            // otherwise, we only need to update the list
-            getTypePanel().refreshAll();
+        try {
+            getGrammarStore().deleteType(name);
+            // we only need to refresh the grammar if the deleted
+            // type graph was the currently active one
+            if (isCurrentType) {
+                updateGrammar();
+            } else {
+                // otherwise, we only need to update the list
+                getTypePanel().refreshAll();
+            }
+        } catch (IOException exc) {
+            showErrorDialog(String.format(
+                "Error while deleting type graph '%s'", name), exc);
         }
+        return result;
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
@@ -1003,8 +992,7 @@ public class Simulator {
     }
 
     /**
-     * Renames one of the graphs in the graph list. If the graph was the start
-     * graph, uses the renamed graph again as start graph.
+     * Renames a given type graph.
      */
     void doRenameType(AspectGraph graph, String newName) {
         String oldName = GraphInfo.getName(graph);
@@ -1014,8 +1002,6 @@ public class Simulator {
         try {
             getGrammarStore().renameType(oldName, newName);
             if (isTypeGraph) {
-                // reset the type graph to the renamed graph
-                getGrammarView().getProperties().setTypeName(newName);
                 updateGrammar();
             } else {
                 refresh();
@@ -1450,13 +1436,7 @@ public class Simulator {
             // regularly
             this.graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
-                    JTabbedPane source = (JTabbedPane) evt.getSource();
-                    // only refresh actions if the selected panel is not a
-                    // control panel,
-                    // since that is not a graphpane!
-                    if (!(source.getSelectedComponent() instanceof ControlPanel)) {
-                        refreshActions();
-                    }
+                    refreshActions();
                 }
             });
             this.graphViewsPanel.setVisible(true);
@@ -1681,6 +1661,11 @@ public class Simulator {
         return this.exporter;
     }
 
+    /** Returns the currently selected simulator panel. */
+    Component getPanel() {
+        return getGraphViewsPanel().getSelectedComponent();
+    }
+
     /**
      * Returns the currently selected graph view component. This can be the
      * state, rule or LTS view. In case the LTS is active, the inner LTSPanel is
@@ -1782,6 +1767,8 @@ public class Simulator {
         for (Refreshable action : this.refreshables) {
             action.refresh();
         }
+        getControlPanel().refreshAll();
+        getTypePanel().refreshAll();
     }
 
     /**
@@ -1835,7 +1822,7 @@ public class Simulator {
      */
     private JMenu createFileMenu() {
         JMenu result = new JMenu(Options.FILE_MENU_NAME);
-        
+
         result.setMnemonic(Options.FILE_MENU_MNEMONIC);
         result.add(new JMenuItem(getNewGrammarAction()));
         result.add(new JMenuItem(getLoadGrammarAction()));
@@ -1843,12 +1830,12 @@ public class Simulator {
         result.add(createOpenRecentMenu());
 
         result.addSeparator();
-        
+
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getImportRuleAction()));
-        
+
         result.addSeparator();
-        
+
         result.add(new JMenuItem(getSaveGrammarAction()));
         result.add(new JMenuItem(getSaveGraphAction()));
         result.add(getExportGraphMenuItem());
@@ -1857,11 +1844,11 @@ public class Simulator {
         result.addSeparator();
 
         result.add(new JMenuItem(getRefreshGrammarAction()));
-        
+
         result.addSeparator();
-        
+
         result.add(new JMenuItem(getQuitAction()));
-        
+
         return result;
     }
 
@@ -1877,33 +1864,33 @@ public class Simulator {
      */
     private JMenu createEditMenu() {
         JMenu result = new JMenu(Options.EDIT_MENU_NAME);
-        
+
         result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
         result.add(getUndoAction());
         result.add(getRedoAction());
-        
+
         result.addSeparator();
-        
+
         result.add(getNewRuleAction());
         result.add(getNewGraphAction());
-        
+
         result.addSeparator();
-        
+
         result.add(getEditMenuItem());
         result.add(getCopyMenuItem());
         result.add(getDeleteMenuItem());
         result.add(getRenameMenuItem());
-        
+
         result.addSeparator();
 
         result.add(getRelabelAction());
-        
+
         result.addSeparator();
-        
+
         result.add(getEnableRuleAction());
         result.add(getEditRulePropertiesAction());
         result.add(getEditSystemPropertiesAction());
-     
+
         return result;
     }
 
@@ -1915,7 +1902,7 @@ public class Simulator {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
-            this.editGraphItem.setAction(getEditStateAction());
+            this.editGraphItem.setAction(getEditGraphAction());
             // give the rule edit action a chance to replace the graph edit
             // action
             getEditRuleAction();
@@ -1923,20 +1910,16 @@ public class Simulator {
         }
         return this.editGraphItem;
     }
-    
+
     /**
-     * Returns the menu item in the edit menu that specifies copy the
-     * currently displayed graph or rule.
+     * Returns the menu item in the edit menu that specifies copy the currently
+     * displayed graph or rule.
      */
     JMenuItem getCopyMenuItem() {
         if (this.copyGraphItem == null) {
             this.copyGraphItem = new JMenuItem();
             // load the graph copy action as default
             this.copyGraphItem.setAction(getCopyGraphAction());
-            // give the rule copy action a chance to replace the graph copy
-            // action
-            getCopyRuleAction();
-            this.copyGraphItem.setAccelerator(Options.COPY_KEY);
         }
         return this.copyGraphItem;
     }
@@ -1950,14 +1933,10 @@ public class Simulator {
             this.deleteGraphItem = new JMenuItem();
             // load the graph delete action as default
             this.deleteGraphItem.setAction(getDeleteGraphAction());
-            // give the rule delete action a chance to replace the graph delete
-            // action
-            getDeleteRuleAction();
-            this.deleteGraphItem.setAccelerator(Options.DELETE_KEY);
         }
         return this.deleteGraphItem;
     }
-    
+
     /**
      * Returns the menu item in the edit menu that specifies delete the
      * currently displayed graph or rule.
@@ -1974,7 +1953,7 @@ public class Simulator {
         }
         return this.renameGraphItem;
     }
-    
+
     /**
      * Returns the menu item that will contain the current export action.
      */
@@ -2050,18 +2029,18 @@ public class Simulator {
         result.setText(exploreMenu.getText());
         result.add(new JMenuItem(getBackAction()));
         result.add(new JMenuItem(getForwardAction()));
-        
+
         result.addSeparator();
-        
+
         result.add(new JMenuItem(getStartSimulationAction()));
         // IOVKA change to activate abstract simulation
         // ZAMBON Commented out...
         // result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
-        
+
         result.addSeparator();
-        
+
         result.add(getExplorationDialogAction());
         result.add(getExploreRepeatAction());
 
@@ -3073,16 +3052,16 @@ public class Simulator {
     private class CopyGraphAction extends RefreshableAction {
         CopyGraphAction() {
             super(Options.COPY_GRAPH_ACTION_NAME, Groove.COPY_ICON);
+            putValue(ACCELERATOR_KEY, Options.COPY_KEY);
         }
 
         public void refresh() {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
-            
+
             if (getGraphPanel() == getStatePanel()) {
                 getCopyMenuItem().setAction(this);
-                getCopyMenuItem().setAccelerator(Options.COPY_KEY);
             }
         }
 
@@ -3130,15 +3109,15 @@ public class Simulator {
     private class CopyRuleAction extends RefreshableAction {
         CopyRuleAction() {
             super(Options.COPY_RULE_ACTION_NAME, Groove.COPY_ICON);
+            putValue(ACCELERATOR_KEY, Options.COPY_KEY);
         }
 
         public void refresh() {
             setEnabled(getCurrentRule() != null
                 && getGrammarStore().isModifiable());
-            
+
             if (getGraphPanel() == getRulePanel()) {
                 getCopyMenuItem().setAction(this);
-                getCopyMenuItem().setAccelerator(Options.COPY_KEY);
             }
         }
 
@@ -3198,10 +3177,9 @@ public class Simulator {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
-            
+
             if (getGraphPanel() == getStatePanel()) {
                 getDeleteMenuItem().setAction(this);
-                getDeleteMenuItem().setAccelerator(Options.DELETE_KEY);
             }
         }
 
@@ -3264,7 +3242,6 @@ public class Simulator {
 
             if (getGraphPanel() == getRulePanel()) {
                 getDeleteMenuItem().setAction(this);
-                getDeleteMenuItem().setAccelerator(Options.DELETE_KEY);
             }
         }
 
@@ -3291,7 +3268,7 @@ public class Simulator {
     }
 
     /**
-     * Lazily creates and returns the graph edit action permanently associated
+     * Lazily creates and returns the state edit action permanently associated
      * with this simulator.
      */
     public EditGraphAction getEditGraphAction() {
@@ -3303,26 +3280,33 @@ public class Simulator {
     }
 
     /**
-     * The graph edit action permanently associated with this simulator.
+     * The state edit action permanently associated with this simulator.
      */
     private EditGraphAction editGraphAction;
 
     /**
-     * Action for editing the currently selected graph in the graph list.
+     * Action for editing the current state.
      */
     private class EditGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditGraphAction() {
-            super(Options.EDIT_GRAPH_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_STATE_ACTION_NAME, Groove.EDIT_ICON);
+            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
+        /**
+         * Checks if the enabling condition is satisfied, and if so, calls
+         * {@link #setEnabled(boolean)}.
+         */
         public void refresh() {
-            setEnabled(getGrammarStore() != null
-                && getGrammarStore().isModifiable()
-                && getStateList().getSelectedGraphs().size() == 1);
+            boolean enabled =
+                getGraphPanel() == getStatePanel()
+                    && getStatePanel().getJModel() != null;
+            if (enabled != isEnabled()) {
+                setEnabled(enabled);
+            }
             if (getGraphPanel() == getStatePanel()) {
                 getEditMenuItem().setAction(this);
-                getEditMenuItem().setAccelerator(Options.EDIT_KEY);
             }
         }
 
@@ -3332,12 +3316,8 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            String oldGraphName = (String) getStateList().getSelectedValue();
-            if (oldGraphName != null) {
-                GraphView oldGraphView =
-                    getGrammarView().getGraphView(oldGraphName);
-                handleEditGraph(oldGraphView.getView().toPlainGraph(), false);
-            }
+            GraphJModel stateModel = getStatePanel().getJModel();
+            handleEditGraph(stateModel.toPlainGraph(), false);
         }
     }
 
@@ -3480,6 +3460,7 @@ public class Simulator {
         /** Constructs an instance of the action. */
         EditRuleAction() {
             super(Options.EDIT_RULE_ACTION_NAME, Groove.EDIT_ICON);
+            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
         /**
@@ -3496,7 +3477,6 @@ public class Simulator {
 
             if (getGraphPanel() == getRulePanel()) {
                 getEditMenuItem().setAction(this);
-                getEditMenuItem().setAccelerator(Options.EDIT_KEY);
             }
         }
 
@@ -3525,61 +3505,6 @@ public class Simulator {
                     }
                 };
             dialog.start();
-        }
-    }
-
-    /**
-     * Lazily creates and returns the state edit action permanently associated
-     * with this simulator.
-     */
-    public EditStateAction getEditStateAction() {
-        // lazily create the action
-        if (this.editStateAction == null) {
-            this.editStateAction = new EditStateAction();
-        }
-        return this.editStateAction;
-    }
-
-    /**
-     * The state edit action permanently associated with this simulator.
-     */
-    private EditStateAction editStateAction;
-
-    /**
-     * Action for editing the current state.
-     */
-    private class EditStateAction extends RefreshableAction {
-        /** Constructs an instance of the action. */
-        EditStateAction() {
-            super(Options.EDIT_STATE_ACTION_NAME, Groove.EDIT_ICON);
-        }
-
-        /**
-         * Checks if the enabling condition is satisfied, and if so, calls
-         * {@link #setEnabled(boolean)}.
-         */
-        public void refresh() {
-            boolean enabled =
-                getGraphPanel() == getStatePanel() && getGrammarView() != null
-                    && getGrammarView().getStartGraphView() != null
-                    && getGrammarStore().isModifiable();
-            if (enabled != isEnabled()) {
-                setEnabled(enabled);
-            }
-            if (getGraphPanel() == getStatePanel()) {
-                getEditMenuItem().setAction(this);
-                getEditMenuItem().setAccelerator(Options.EDIT_KEY);
-            }
-        }
-
-        /**
-         * Invokes the editor on the current state. Handles the execution of an
-         * <code>EditGraphAction</code>, if the current panel is the state
-         * panel.
-         */
-        public void actionPerformed(ActionEvent e) {
-            GraphJModel stateModel = getStatePanel().getJModel();
-            handleEditGraph(stateModel.toPlainGraph(), false);
         }
     }
 
@@ -4283,7 +4208,7 @@ public class Simulator {
 
     private class NewGraphAction extends RefreshableAction {
         NewGraphAction() {
-            super(Options.NEW_GRAPH_ACTION_NAME, Groove.NEW_ICON);
+            super(Options.NEW_GRAPH_ACTION_NAME, Groove.NEW_GRAPH_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4318,7 +4243,7 @@ public class Simulator {
 
     private class NewRuleAction extends RefreshableAction {
         NewRuleAction() {
-            super(Options.NEW_RULE_ACTION_NAME, Groove.NEW_ICON);
+            super(Options.NEW_RULE_ACTION_NAME, Groove.NEW_RULE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4484,7 +4409,6 @@ public class Simulator {
             GraphSelectionListener, TreeSelectionListener {
         RelabelAction() {
             super(Options.RELABEL_ACTION_NAME, Groove.RENAME_ICON);
-            putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
             getStatePanel().getJGraph().addGraphSelectionListener(this);
             getStatePanel().getLabelTree().addTreeSelectionListener(this);
             getRulePanel().getJGraph().addGraphSelectionListener(this);
@@ -4553,21 +4477,16 @@ public class Simulator {
     private class RenameGraphAction extends RefreshableAction {
         RenameGraphAction() {
             super(Options.RENAME_GRAPH_ACTION_NAME, Groove.RENAME_ICON);
-            /*
-             * The F2-accelerator is not working, but I do not know why
-             * putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
-             * addAccelerator(this);
-             */
+            putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
         public void refresh() {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
-            
+
             if (getGraphPanel() == getStatePanel()) {
                 getRenameMenuItem().setAction(this);
-                getRenameMenuItem().setAccelerator(Options.RENAME_KEY);
             }
         }
 
@@ -4614,11 +4533,7 @@ public class Simulator {
     private class RenameRuleAction extends RefreshableAction {
         RenameRuleAction() {
             super(Options.RENAME_RULE_ACTION_NAME, Groove.RENAME_ICON);
-            /*
-             * The F2-accelerator is not working, but I do not know why
-             * putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
-             * addAccelerator(this);
-             */
+            putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
         /** This action is disabled if there is more than one selected rule. */
@@ -4635,7 +4550,6 @@ public class Simulator {
             setEnabled(getCurrentRule() != null);
             if (getGraphPanel() == getRulePanel()) {
                 getRenameMenuItem().setAction(this);
-                getRenameMenuItem().setAccelerator(Options.RENAME_KEY);
             }
         }
 

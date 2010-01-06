@@ -131,7 +131,7 @@ public class Groove {
     public static final String DEFAULT_CONTROL_NAME = "control";
 
     /** Default name for the type graph */
-    public static final String DEFAULT_TYPE_NAME = "typegraph";
+    public static final String DEFAULT_TYPE_NAME = "type";
     /** Extension for property files. */
     public static final String CONTROL_EXTENSION = ".gcp";
 
@@ -170,6 +170,15 @@ public class Groove {
     /** Icon for a New action. */
     public static final ImageIcon NEW_ICON =
         new ImageIcon(getResource("new.gif"));
+    /** Icon for a New Graph action. */
+    public static final ImageIcon NEW_GRAPH_ICON =
+        new ImageIcon(getResource("new-G.gif"));
+    /** Icon for a New Rule action. */
+    public static final ImageIcon NEW_RULE_ICON =
+        new ImageIcon(getResource("new-R.gif"));
+    /** Icon for a New Type action. */
+    public static final ImageIcon NEW_TYPE_ICON =
+        new ImageIcon(getResource("new-T.gif"));
     /** Rename action icon. */
     public static final ImageIcon RENAME_ICON =
         new ImageIcon(Groove.getResource("rename.gif"));

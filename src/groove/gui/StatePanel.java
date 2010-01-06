@@ -123,6 +123,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                 });
             }
         });
+        setEnabled(false);
     }
 
     /**
@@ -148,6 +149,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         this.stateJModelMap.clear();
+        this.graphJModelMap.clear();
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
             setJModel(AspectJModel.EMPTY_ASPECT_JMODEL);
@@ -264,6 +266,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                     : getGraphJModel(graphView);
         if (newModel != null) {
             setJModel(newModel);
+            setEnabled(true);
             refreshStatus();
         }
     }
