@@ -17,7 +17,9 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
+import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -66,6 +68,16 @@ public class Exploration {
     }
     
     /**
+     * Initializes a default exploration (breadth-first, final states, infinite results).
+     */
+    public Exploration() {
+        this(new BFSStrategy(),
+             new FinalStateAcceptor(),
+             new Result(0),
+             "Breadth-First/Final/*");
+    }
+    
+    /**
      * Prepares the strategy for exploration. Can be called when no state is currently selected. 
      * @param gts - the current gts
      */
@@ -81,7 +93,7 @@ public class Exploration {
     public void prepare(GTS gts, GraphState state) {
         this.strategy.prepare(gts, state);
     }
-    
+        
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.

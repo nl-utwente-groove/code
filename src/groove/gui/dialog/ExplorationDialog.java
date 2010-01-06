@@ -105,7 +105,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
      */
     public ExplorationDialog(Simulator simulator, JFrame owner) {       
         // Open a modal dialog, which cannot be resized and can be closed by the user.
-        super(owner, "ExplorationDialog", true);
+        super(owner, "Explore State Space", true);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setResizable(false);
         
@@ -211,7 +211,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         String shortName;
         String resultName;
         if (nrResults == 0)
-            resultName = "Infinite";
+            resultName = "*";
         else
             resultName = Integer.toString(nrResults);        
         shortName = this.strategySelector.getSelectedValue().getKeyword()

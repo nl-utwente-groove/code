@@ -66,6 +66,13 @@ public class Result {
         return this.elements;
     }
 
+    /**
+     * The bound of the result.
+     */
+    public int getBound() {
+        return this.bound;
+    }
+    
     /** Factory method for a new result of the same type as this one. */
     public Result newInstance() {
         return new Result(this.bound);
