@@ -17,6 +17,6 @@
 	<classpathentry kind="lib" path="lib/antlr_3.1/antlr-runtime-3.1b1.jar"/>
 	<classpathentry kind="lib" path="lib/antlr_3.1/stringtemplate-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="C:/Program Files/Java/jgraph-5_13_0/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
