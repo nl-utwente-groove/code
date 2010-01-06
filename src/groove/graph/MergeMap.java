@@ -122,16 +122,18 @@ public class MergeMap extends NodeEdgeHashMap {
     @Override
     public Node removeNode(Node key) {
         Node keyImage = getNode(key);
-        super.putNode(keyImage, UNDEFINED);
-        // now redirect all pre-images of keyImage, if necessary
-        if (this.mergeTargets.contains(keyImage)) {
-            // map all pre-images of keyImage to UNDEFINED
-            for (Map.Entry<Node,Node> entry : nodeMap().entrySet()) {
-                if (entry.getValue() == keyImage) {
-                    entry.setValue(UNDEFINED);
+        if (keyImage != null) {
+            super.putNode(keyImage, UNDEFINED);
+            // now redirect all pre-images of keyImage, if necessary
+            if (this.mergeTargets.contains(keyImage)) {
+                // map all pre-images of keyImage to UNDEFINED
+                for (Map.Entry<Node,Node> entry : nodeMap().entrySet()) {
+                    if (entry.getValue() == keyImage) {
+                        entry.setValue(UNDEFINED);
+                    }
                 }
+                this.mergeTargets.remove(keyImage);
             }
-            this.mergeTargets.remove(keyImage);
         }
         return keyImage;
     }
@@ -148,9 +150,9 @@ public class MergeMap extends NodeEdgeHashMap {
 
     /**
      * Converts a value from the external representation to the internal. If the
-     * value equals <tt>null</tt>, the internal value is {@link #UNDEFINED}.
-     * If the value equals the key, the internal value is <tt>null</tt>.
-     * Otherwise, the value is unchanged.
+     * value equals <tt>null</tt>, the internal value is {@link #UNDEFINED}. If
+     * the value equals the key, the internal value is <tt>null</tt>. Otherwise,
+     * the value is unchanged.
      * @param value the value to be converted
      * @param key the corresponding key
      */
@@ -166,9 +168,9 @@ public class MergeMap extends NodeEdgeHashMap {
 
     /**
      * Converts a value from the internal representation to the external. If the
-     * value equals {@link #UNDEFINED}, the external value is <tt>null</tt>.
-     * If the value equals <tt>null</tt>, the external value is the
-     * corresponding key. Otherwise, the value is unchanged.
+     * value equals {@link #UNDEFINED}, the external value is <tt>null</tt>. If
+     * the value equals <tt>null</tt>, the external value is the corresponding
+     * key. Otherwise, the value is unchanged.
      * @param value the value to be converted
      * @param key the corresponding key
      */

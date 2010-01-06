@@ -95,7 +95,7 @@ public class AspectParser {
                 text = toCurly(text);
             }
             // insert value separator if ambiguity may arise
-            explicitEnd =
+            explicitEnd |=
                 text.indexOf(VALUE_SEPARATOR) >= 0
                     && ExprParser.isIdentifierStartChar(text.charAt(0));
         }
