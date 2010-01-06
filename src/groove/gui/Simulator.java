@@ -1835,24 +1835,33 @@ public class Simulator {
      */
     private JMenu createFileMenu() {
         JMenu result = new JMenu(Options.FILE_MENU_NAME);
+        
         result.setMnemonic(Options.FILE_MENU_MNEMONIC);
-        result.add(createNewMenu());
+        result.add(new JMenuItem(getNewGrammarAction()));
         result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(new LoadURLAction()));
+        result.add(createOpenRecentMenu());
+
+        result.addSeparator();
+        
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getImportRuleAction()));
-        result.add(new JMenuItem(getRefreshGrammarAction()));
-        result.add(createOpenRecentMenu());
+        
         result.addSeparator();
+        
         result.add(new JMenuItem(getSaveGrammarAction()));
         result.add(new JMenuItem(getSaveGraphAction()));
         result.add(getExportGraphMenuItem());
         result.add(new JMenuItem(getExportAction()));
+
         result.addSeparator();
-        result.add(getEditMenuItem());
-        result.add(new JMenuItem(getEditSystemPropertiesAction()));
+
+        result.add(new JMenuItem(getRefreshGrammarAction()));
+        
         result.addSeparator();
+        
         result.add(new JMenuItem(getQuitAction()));
+        
         return result;
     }
 
@@ -1863,46 +1872,44 @@ public class Simulator {
         return this.history.getOpenRecentMenu();
     }
 
-    private JMenu createNewMenu() {
-        JMenu result = new JMenu(Options.CREATE_MENU_NAME);
-        result.setMnemonic(Options.CREATE_MENU_MNEMONIC);
-        String menuName = result.getText();
-        result.add(createItem(getNewGrammarAction(), menuName));
-        result.add(createItem(getNewGraphAction(), menuName));
-        result.add(createItem(getNewRuleAction(), menuName));
-        return result;
-    }
-
     /**
      * Creates and returns an edit menu for the menu bar.
      */
     private JMenu createEditMenu() {
         JMenu result = new JMenu(Options.EDIT_MENU_NAME);
+        
         result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
         result.add(getUndoAction());
         result.add(getRedoAction());
+        
         result.addSeparator();
+        
         result.add(getNewRuleAction());
+        result.add(getNewGraphAction());
+        
         result.addSeparator();
-        result.add(getEnableRuleAction());
+        
+        result.add(getEditMenuItem());
+        result.add(getCopyMenuItem());
+        result.add(getDeleteMenuItem());
+        result.add(getRenameMenuItem());
+        
         result.addSeparator();
-        result.add(getCopyRuleAction());
-        result.add(getDeleteRuleAction());
-        result.add(getRenameRuleAction());
-        result.addSeparator();
+
         result.add(getRelabelAction());
+        
         result.addSeparator();
-        result.add(getEditRuleAction());
-        result.add(getEditStateAction());
-        result.addSeparator();
+        
+        result.add(getEnableRuleAction());
         result.add(getEditRulePropertiesAction());
         result.add(getEditSystemPropertiesAction());
+     
         return result;
     }
 
     /**
-     * Returns the menu item in the file menu that specifies saving the
-     * currently displayed graph (in the currently selected graph panel).
+     * Returns the menu item in the edit menu that specifies editing the
+     * currently displayed graph or rule.
      */
     JMenuItem getEditMenuItem() {
         if (this.editGraphItem == null) {
@@ -1916,7 +1923,58 @@ public class Simulator {
         }
         return this.editGraphItem;
     }
+    
+    /**
+     * Returns the menu item in the edit menu that specifies copy the
+     * currently displayed graph or rule.
+     */
+    JMenuItem getCopyMenuItem() {
+        if (this.copyGraphItem == null) {
+            this.copyGraphItem = new JMenuItem();
+            // load the graph copy action as default
+            this.copyGraphItem.setAction(getCopyGraphAction());
+            // give the rule copy action a chance to replace the graph copy
+            // action
+            getCopyRuleAction();
+            this.copyGraphItem.setAccelerator(Options.COPY_KEY);
+        }
+        return this.copyGraphItem;
+    }
 
+    /**
+     * Returns the menu item in the edit menu that specifies delete the
+     * currently displayed graph or rule.
+     */
+    JMenuItem getDeleteMenuItem() {
+        if (this.deleteGraphItem == null) {
+            this.deleteGraphItem = new JMenuItem();
+            // load the graph delete action as default
+            this.deleteGraphItem.setAction(getDeleteGraphAction());
+            // give the rule delete action a chance to replace the graph delete
+            // action
+            getDeleteRuleAction();
+            this.deleteGraphItem.setAccelerator(Options.DELETE_KEY);
+        }
+        return this.deleteGraphItem;
+    }
+    
+    /**
+     * Returns the menu item in the edit menu that specifies delete the
+     * currently displayed graph or rule.
+     */
+    JMenuItem getRenameMenuItem() {
+        if (this.renameGraphItem == null) {
+            this.renameGraphItem = new JMenuItem();
+            // load the graph rename action as default
+            this.renameGraphItem.setAction(getRenameGraphAction());
+            // give the rule rename action a chance to replace the graph rename
+            // action
+            getRenameRuleAction();
+            this.renameGraphItem.setAccelerator(Options.RENAME_KEY);
+        }
+        return this.renameGraphItem;
+    }
+    
     /**
      * Returns the menu item that will contain the current export action.
      */
@@ -1986,28 +2044,27 @@ public class Simulator {
      */
     private JMenu createExploreMenu() {
         JMenu result = new JMenu();
+
         result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
         JMenu exploreMenu = new ScenarioMenu(this, false);
         result.setText(exploreMenu.getText());
         result.add(new JMenuItem(getBackAction()));
         result.add(new JMenuItem(getForwardAction()));
+        
         result.addSeparator();
+        
         result.add(new JMenuItem(getStartSimulationAction()));
         // IOVKA change to activate abstract simulation
-        result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        // ZAMBON Commented out...
+        // result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
+        
         result.addSeparator();
-        // copy the exploration menu
-        // for (Component menuComponent : exploreMenu.getMenuComponents()) {
-        // result.add(menuComponent);
-        // }
+        
         result.add(getExplorationDialogAction());
         result.add(getExploreRepeatAction());
 
-        // TODO uncomment the two lines to enable LTL model checking
-        // result.addSeparator();
-        // result.add(new JMenuItem(showResultAction()));
         return result;
     }
 
@@ -2070,24 +2127,6 @@ public class Simulator {
         JMenu result = new JMenu(HELP_MENU_NAME);
         result.setMnemonic(Options.HELP_MENU_MNEMONIC);
         result.add(new JMenuItem(new AboutAction()));
-        return result;
-    }
-
-    /**
-     * Creates a menu item from an action, while omitting some of the label
-     * text.
-     */
-    private JMenuItem createItem(Action action, String omit) {
-        JMenuItem result = new JMenuItem(action);
-        String text = (String) action.getValue(Action.NAME);
-        if (text != null) {
-            int omitIndex = text.indexOf(omit);
-            if (omitIndex >= 0) {
-                String pre = text.substring(0, omitIndex);
-                String post = text.substring(omitIndex + omit.length()).trim();
-                result.setText((pre + post).trim());
-            }
-        }
         return result;
     }
 
@@ -2789,9 +2828,12 @@ public class Simulator {
     private Action dummyExternalAction;
 
     /**
-     * Menu item in the file menu for one of the graph or rule edit actions.
+     * Menu items in the edit menu for one of the graph or rule edit actions.
      */
     private JMenuItem editGraphItem;
+    private JMenuItem copyGraphItem;
+    private JMenuItem deleteGraphItem;
+    private JMenuItem renameGraphItem;
 
     /** Returns the undo manager of this simulator. */
     private final UndoManager getUndoManager() {
@@ -3037,6 +3079,11 @@ public class Simulator {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
+            
+            if (getGraphPanel() == getStatePanel()) {
+                getCopyMenuItem().setAction(this);
+                getCopyMenuItem().setAccelerator(Options.COPY_KEY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -3088,6 +3135,11 @@ public class Simulator {
         public void refresh() {
             setEnabled(getCurrentRule() != null
                 && getGrammarStore().isModifiable());
+            
+            if (getGraphPanel() == getRulePanel()) {
+                getCopyMenuItem().setAction(this);
+                getCopyMenuItem().setAccelerator(Options.COPY_KEY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -3146,6 +3198,11 @@ public class Simulator {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
+            
+            if (getGraphPanel() == getStatePanel()) {
+                getDeleteMenuItem().setAction(this);
+                getDeleteMenuItem().setAccelerator(Options.DELETE_KEY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -3204,6 +3261,11 @@ public class Simulator {
         public void refresh() {
             setEnabled(getCurrentRule() != null
                 && getGrammarStore().isModifiable());
+
+            if (getGraphPanel() == getRulePanel()) {
+                getDeleteMenuItem().setAction(this);
+                getDeleteMenuItem().setAccelerator(Options.DELETE_KEY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -3258,6 +3320,10 @@ public class Simulator {
             setEnabled(getGrammarStore() != null
                 && getGrammarStore().isModifiable()
                 && getStateList().getSelectedGraphs().size() == 1);
+            if (getGraphPanel() == getStatePanel()) {
+                getEditMenuItem().setAction(this);
+                getEditMenuItem().setAccelerator(Options.EDIT_KEY);
+            }
         }
 
         /**
@@ -3427,6 +3493,7 @@ public class Simulator {
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
             }
+
             if (getGraphPanel() == getRulePanel()) {
                 getEditMenuItem().setAction(this);
                 getEditMenuItem().setAccelerator(Options.EDIT_KEY);
@@ -3499,7 +3566,7 @@ public class Simulator {
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
             }
-            if (enabled) {
+            if (getGraphPanel() == getStatePanel()) {
                 getEditMenuItem().setAction(this);
                 getEditMenuItem().setAccelerator(Options.EDIT_KEY);
             }
@@ -4497,6 +4564,11 @@ public class Simulator {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
+            
+            if (getGraphPanel() == getStatePanel()) {
+                getRenameMenuItem().setAction(this);
+                getRenameMenuItem().setAccelerator(Options.RENAME_KEY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4561,6 +4633,10 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getCurrentRule() != null);
+            if (getGraphPanel() == getRulePanel()) {
+                getRenameMenuItem().setAction(this);
+                getRenameMenuItem().setAccelerator(Options.RENAME_KEY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
