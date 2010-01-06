@@ -1272,7 +1272,11 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public Set<Label> getLabels() {
-            return ((LabelConstraint) this.guard).getLabels();
+            if (this.guard instanceof LabelConstraint) {
+                return ((LabelConstraint) this.guard).getLabels();
+            } else {
+                return Collections.emptySet();
+            }
         }
 
         /**

@@ -26,7 +26,6 @@ import groove.trans.SystemProperties;
 import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
 import groove.view.StoredGrammarView;
 
 import java.io.File;
@@ -106,9 +105,6 @@ public class IOTest extends TestCase {
             URL dir = Groove.toURL(new File(DIRECTORY));
             StoredGrammarView grammarView =
                 StoredGrammarView.newInstance(dir, ALT_START);
-            SystemProperties properties = grammarView.getProperties().clone();
-            properties.setControlName(ALT_CONTROL);
-            grammarView.getStore().putProperties(properties);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount,
                 edgecount);
         } catch (IOException e) {
@@ -117,7 +113,7 @@ public class IOTest extends TestCase {
 
     }
 
-    protected void testControl(GrammarView view, String startName,
+    protected void testControl(StoredGrammarView view, String startName,
             String controlName, int nodecount, int edgecount) {
         testExploration(view, "control", startName, controlName, 3, nodecount,
             edgecount);
@@ -130,11 +126,17 @@ public class IOTest extends TestCase {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(GrammarView view, String grammarName,
+    protected GTS testExploration(StoredGrammarView view, String grammarName,
             String startName, String controlName, int rulecount, int nodeCount,
             int edgeCount) {
         try {
+            // first set the control name directly (this is no longer done at
+            // load time)
+            SystemProperties properties = view.getProperties().clone();
+            properties.setControlName(controlName);
+            view.getStore().putProperties(properties);
 
+            // now instantiate the grammar
             GraphGrammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
@@ -158,7 +160,11 @@ public class IOTest extends TestCase {
             }
             return lts;
         } catch (FormatException exc) {
-            throw new RuntimeException(exc);
+            assertTrue(false);
+            return null;
+        } catch (IOException exc) {
+            assertTrue(false);
+            return null;
         }
     }
 
