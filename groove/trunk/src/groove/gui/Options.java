@@ -202,7 +202,7 @@ public class Options {
     /** Edit rule action name */
     public static final String EDIT_RULE_ACTION_NAME = "Edit Rule ...";
     /** Edit state action name */
-    public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
+    public static final String EDIT_STATE_ACTION_NAME = "Edit Graph ...";
     /** Edit type action name */
     public static final String EDIT_TYPE_ACTION_NAME = "Edit Type Graph ...";
     /** Name of the "Enable Control Program" action */
@@ -307,7 +307,7 @@ public class Options {
     /**
      * Start simulation action name
      */
-    public static final String START_SIMULATION_ACTION_NAME = "Run Simulation";
+    public static final String START_SIMULATION_ACTION_NAME = "Clear LTS";
     /**
      * Save action name
      */
@@ -364,7 +364,7 @@ public class Options {
      * Edit action name
      */
     public static final String SYSTEM_PROPERTIES_ACTION_NAME =
-        "System Properties ...";
+        "Grammar Properties ...";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
     /** Unfilter action name */
