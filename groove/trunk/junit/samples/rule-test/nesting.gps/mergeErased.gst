@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph id="mergeEraser-start" role="graph" edgeids="false" edgemode="directed">
+    <graph id="mergeErased" role="graph" edgeids="false" edgemode="directed">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -24,11 +24,6 @@
                 <string>Two nodes, which will be matched by both the top level A and the sublevel A</string>
             </attr>
         </edge>
-        <edge from="n138213" to="n138212">
-            <attr name="label">
-                <string>A-node</string>
-            </attr>
-        </edge>
         <edge from="n138210" to="n138210">
             <attr name="label">
                 <string>A</string>
@@ -49,14 +44,19 @@
                 <string>merged node</string>
             </attr>
         </edge>
+        <edge from="n138211" to="n138211">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
         <edge from="n138209" to="n138209">
             <attr name="label">
                 <string>The node to be merged with A on the sublevel (and therefore deleted)</string>
             </attr>
         </edge>
-        <edge from="n138211" to="n138211">
+        <edge from="n138213" to="n138212">
             <attr name="label">
-                <string>B</string>
+                <string>A-node</string>
             </attr>
         </edge>
     </graph>

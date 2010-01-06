@@ -1,31 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph id="mergeEraser" role="rule" edgeids="false" edgemode="directed">
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
+    <graph id="mergeErased" role="rule" edgeids="false" edgemode="directed">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n138158"/>
+        <node id="n138155"/>
         <node id="n138159"/>
+        <node id="n138158"/>
+        <node id="n138156"/>
         <node id="n138154"/>
         <node id="n138157"/>
-        <node id="n138155"/>
-        <node id="n138156"/>
-        <edge from="n138158" to="n138158">
-            <attr name="label">
-                <string>del:</string>
-            </attr>
-        </edge>
         <edge from="n138159" to="n138159">
             <attr name="label">
                 <string>forall=sub:</string>
             </attr>
         </edge>
-        <edge from="n138157" to="n138157">
+        <edge from="n138158" to="n138158">
             <attr name="label">
-                <string>rem:</string>
+                <string>del:</string>
             </attr>
         </edge>
         <edge from="n138156" to="n138156">
@@ -33,24 +25,9 @@
                 <string>rem:</string>
             </attr>
         </edge>
-        <edge from="n138154" to="n138154">
+        <edge from="n138157" to="n138157">
             <attr name="label">
-                <string>A</string>
-            </attr>
-        </edge>
-        <edge from="n138155" to="n138155">
-            <attr name="label">
-                <string>B</string>
-            </attr>
-        </edge>
-        <edge from="n138158" to="n138159">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge from="n138158" to="n138158">
-            <attr name="label">
-                <string>A</string>
+                <string>rem:</string>
             </attr>
         </edge>
         <edge from="n138157" to="n138154">
@@ -58,14 +35,34 @@
                 <string>top level A</string>
             </attr>
         </edge>
+        <edge from="n138158" to="n138159">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n138155" to="n138155">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n138157" to="n138157">
+            <attr name="label">
+                <string>Since the universal A will certainly also match the top level A, the top level will be deleted</string>
+            </attr>
+        </edge>
         <edge from="n138156" to="n138155">
             <attr name="label">
                 <string>merged on sublevel</string>
             </attr>
         </edge>
-        <edge from="n138154" to="n138155">
+        <edge from="n138158" to="n138158">
             <attr name="label">
-                <string>forall=sub:new:=</string>
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n138154" to="n138154">
+            <attr name="label">
+                <string>A</string>
             </attr>
         </edge>
         <edge from="n138157" to="n138158">
@@ -73,9 +70,9 @@
                 <string>universal A</string>
             </attr>
         </edge>
-        <edge from="n138157" to="n138157">
+        <edge from="n138154" to="n138155">
             <attr name="label">
-                <string>Since the universal A will certainly also match the top level A, the top level will be deleted</string>
+                <string>new:forall=sub:=</string>
             </attr>
         </edge>
         <edge from="n138156" to="n138156">
