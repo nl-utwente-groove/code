@@ -753,7 +753,6 @@ public class Simulator {
             doLoadGrammar(store, startGraphName);
             // now we know loading succeeded, we can set the current
             // names & files
-            setLastGrammarFile(grammarFile);
             getGrammarFileChooser().setSelectedFile(grammarFile);
             getRuleFileChooser().setCurrentDirectory(grammarFile);
             if (startGraphName != null) {
@@ -888,7 +887,6 @@ public class Simulator {
                 StoredGrammarView.newInstance(grammarFile, true);
             // now we know loading succeeded, we can set the current names &
             // files
-            setLastGrammarFile(grammarFile);
             getStateFileChooser().setCurrentDirectory(grammarFile);
             getStateFileChooser().setSelectedFile(new File(""));
             getGrammarFileChooser().setSelectedFile(grammarFile);
@@ -1096,10 +1094,6 @@ public class Simulator {
                 newView.setStartGraph(startGraphView.getView());
             }
             setGrammarView(newView);
-            // now we know saving succeeded, we can set the current names &
-            // files
-            setLastGrammarFile(grammarFile);
-
             setTitle();
             getGrammarFileChooser().setSelectedFile(grammarFile);
             updateGrammar();
@@ -2122,17 +2116,16 @@ public class Simulator {
      * Returns the last file from which a grammar was loaded.
      */
     File getLastGrammarFile() {
-        return this.lastGrammarFile;
-    }
-
-    /**
-     * Sets the last file from which a grammar was last loaded or to which a
-     * grammar was saved to a given value.
-     * @param grammarFile the file from which a grammar was most recently
-     *        loaded, or to which a grammar was most recently saved; non-null.
-     */
-    void setLastGrammarFile(File grammarFile) {
-        this.lastGrammarFile = grammarFile;
+        File result = null;
+        SystemStore store =
+            getGrammarView() == null ? null : getGrammarView().getStore();
+        Object location = store == null ? null : store.getLocation();
+        if (location instanceof File) {
+            result = (File) location;
+        } else if (location instanceof URL) {
+            result = Groove.toFile((URL) location);
+        }
+        return result;
     }
 
     /**
@@ -2660,12 +2653,6 @@ public class Simulator {
      * available (as is the case initially), the value should be set to null.
      */
     private Exploration lastExploration = null;
-
-    /**
-     * The file or directory containing the last loaded or saved grammar, or
-     * <tt>null</tt> if no grammar was loaded from file.
-     */
-    private File lastGrammarFile;
 
     /** The state generator strategy for the current GTS. */
     private StateGenerator stateGenerator;
@@ -3715,7 +3702,9 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent arg0) {
             ExportDialog dialog = new ExportDialog(Simulator.this);
-            dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
+            if (getLastGrammarFile() != null) {
+                dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
+            }
 
             if (dialog.showDialog(Simulator.this)) {
 
