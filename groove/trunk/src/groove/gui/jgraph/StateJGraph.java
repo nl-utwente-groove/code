@@ -79,7 +79,7 @@ public class StateJGraph extends JGraph {
         // IOVKA editing a graph is not allowed for abstract simulation
         if (!this.simulator.isAbstractSimulation()) {
             result.addSeparator();
-            result.add(this.simulator.getEditStateAction());
+            result.add(this.simulator.getEditGraphAction());
         }
         super.fillPopupMenu(result);
     }

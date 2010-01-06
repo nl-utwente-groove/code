@@ -126,13 +126,16 @@ public interface GenericSystemStore<R,G,T,C> {
     public G renameGraph(String oldName, String newName) throws IOException;
 
     /**
-     * Deletes a type graph from the store.
+     * Deletes a type graph from the store. Also resets the type graph name in
+     * the system properties, if it was set to the deleted type graph.
      * @param name name of the type graph to be deleted
      * @return the type graph with name <code>name</code>, or <code>null</code>
      *         if there was no such type
      * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if an error occurred while deleting the type graph
      */
-    public T deleteType(String name) throws UnsupportedOperationException;
+    public T deleteType(String name) throws UnsupportedOperationException,
+        IOException;
 
     /**
      * Adds or replaces a type graph in the store.
@@ -153,17 +156,22 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws IOException if an error occurred while storing the renamed graph
      * @throws UnsupportedOperationException if the store is immutable
      */
-    public T renameType(String oldName, String newName) throws IOException;
+    public T renameType(String oldName, String newName)
+        throws UnsupportedOperationException, IOException;
 
     /**
-     * Deletes a control program from the store.
+     * Deletes a control program from the store. Also resets the control program
+     * in the system properties and disables control if the deleted program was
+     * the currently set control program.
      * @param name name of the control program to be deleted
      * @return the program with name <code>name</code>, or <code>null</code> if
      *         there was no such program
+     * @throws IOException if an error occurred while deleting the control
+     *         program
      * @throws UnsupportedOperationException if the store is immutable
      */
     public String deleteControl(String name)
-        throws UnsupportedOperationException;
+        throws UnsupportedOperationException, IOException;
 
     /**
      * Adds or replaces a control program in the store.
