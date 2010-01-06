@@ -109,10 +109,18 @@ public class GraphJEdge extends JEdge implements GraphJCell {
 
     /** Indicates if this edge is filtered (and therefore invisible). */
     boolean isFiltered() {
-        boolean result = true;
-        Iterator<Label> listLabelIter = getListLabels().iterator();
-        while (result && listLabelIter.hasNext()) {
-            result = this.jModel.isFiltering(listLabelIter.next());
+        boolean result;
+        // we don't want vacuous filtering: there should be at least one
+        // filtered label
+        Collection<Label> listLabels = getListLabels();
+        if (listLabels.isEmpty()) {
+            result = false;
+        } else {
+            result = true;
+            Iterator<Label> listLabelIter = listLabels.iterator();
+            while (result && listLabelIter.hasNext()) {
+                result = this.jModel.isFiltering(listLabelIter.next());
+            }
         }
         return result;
     }

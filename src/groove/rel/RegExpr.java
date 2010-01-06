@@ -33,7 +33,6 @@ import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1335,42 +1334,44 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
-            RegExpr result = super.parseOperator(expr);
-            if (result == null) {
-                String[] operands =
-                    ExprParser.splitExpr(expr, getOperator(),
-                        ExprParser.PREFIX_POSITION);
-                if (operands == null) {
-                    return null;
-                } else {
-                    Pair<String,List<String>> operand =
-                        ExprParser.parseExpr(operands[0]);
-                    int subStringCount = operand.second().size();
-                    String identifier = operand.first();
-                    Property<Label> constraint = null;
-                    if (subStringCount > 1) {
+            RegExpr result = null;
+            String[] operands = ExprParser.splitExpr(expr, getOperator());
+            if (operands.length == 1) {
+                return result;
+            }
+            // TODO allow non-empty wildcard prefixes
+            if (operands.length != 2 || operands[0].length() != 0) {
+                throw new FormatException(
+                    "Can't parse wildcard expression '%s'", expr);
+            }
+            String prefix = operands[0];
+            String text = operands[1];
+            if (text.length() != 0) {
+                Pair<String,List<String>> operand = ExprParser.parseExpr(text);
+                int subStringCount = operand.second().size();
+                String identifier = operand.first();
+                Property<Label> constraint = null;
+                if (subStringCount > 1) {
+                    throw new FormatException(
+                        "Can't parse wildcard expression '%s'", expr);
+                } else if (subStringCount == 1) {
+                    String parameter = operand.second().iterator().next();
+                    if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
                         throw new FormatException(
-                            "Invalid wildcard parameter '%s'", operands[0]);
-                    } else if (subStringCount == 1) {
-                        String parameter = operand.second().iterator().next();
-                        if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
-                            throw new FormatException(
-                                "Invalid wildcard parameter '%s'", operands[0]);
-                        } else {
-                            constraint = getConstraint(parameter);
-                        }
-                        identifier =
-                            identifier.substring(0, identifier.length() - 1);
-                    }
-                    if (ExprParser.isIdentifier(identifier)) {
-                        result = newInstance(identifier, constraint);
-                    } else if (identifier.length() == 0) {
-                        result = newInstance(null, constraint);
+                            "Can't parse wildcard expression '%s'", expr);
                     } else {
-                        throw new FormatException(
-                            "Wildcard operand '%s' is not a valied identifier",
-                            operands[0]);
+                        constraint = getConstraint(prefix, parameter);
                     }
+                    identifier =
+                        identifier.substring(0, identifier.length() - 1);
+                }
+                if (ExprParser.isIdentifier(identifier)) {
+                    result = newInstance(identifier, constraint);
+                } else if (identifier.length() == 0) {
+                    result = newInstance(null, constraint);
+                } else {
+                    throw new FormatException(
+                        "Invalid wildcard identifier '%s'", text);
                 }
             }
             return result;
@@ -1383,8 +1384,9 @@ abstract public class RegExpr { // implements VarSetSupport {
          * @throws FormatException if <code>parameter</code> is not correctly
          *         formed as a constraint.
          */
-        private Property<Label> getConstraint(String parameter)
+        private Property<Label> getConstraint(String prefix, String parameter)
             throws FormatException {
+            boolean nodeType = TypeAspect.NODE_TYPE.getPrefix().equals(prefix);
             String constraintList =
                 ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN,
                     CONSTRAINT_CLOSE);
@@ -1403,7 +1405,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 throw new FormatException("Invalid constraint parameter '%s'",
                     parameter);
             }
-            final Collection<Label> constrainedLabels = new ArrayList<Label>();
+            final List<String> constrainedLabels = new ArrayList<String>();
             for (String part : constraintParts) {
                 RegExpr atom;
                 try {
@@ -1414,14 +1416,20 @@ abstract public class RegExpr { // implements VarSetSupport {
                         part, parameter);
                 }
                 if (atom instanceof Atom) {
-                    constrainedLabels.add(atom.toLabel());
+                    Label label = atom.toLabel();
+                    if (label.isNodeType()) {
+                        throw new FormatException(
+                            "Option '%s' in constraint '%s' should not be prefixed",
+                            part, parameter);
+                    }
+                    constrainedLabels.add(label.text());
                 } else {
                     throw new FormatException(
                         "Option '%s' in constraint '%s' should be an atom",
                         part, parameter);
                 }
             }
-            return new LabelConstraint(constrainedLabels, negated);
+            return new LabelConstraint(nodeType, constrainedLabels, negated);
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
@@ -1453,21 +1461,14 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         /** Constraint testing if a string is or is not in a set of strings. */
         private static class LabelConstraint extends Property<Label> {
-            LabelConstraint(Collection<Label> constrainedLabels, boolean negated) {
-                this.constrainedLabelSet =
-                    new HashSet<Label>(constrainedLabels);
-                List<String> constrained = new ArrayList<String>();
-                boolean anyNodeType = false;
-                for (Label constrainedLabel : constrainedLabels) {
-                    if (constrainedLabel.isNodeType()
-                        && constrainedLabel.text().length() == 0) {
-                        this.constrainedLabelSet.remove(constrainedLabel);
-                        anyNodeType = true;
-                    }
-                    constrained.add(DefaultLabel.toTypedString(constrainedLabel));
+            LabelConstraint(boolean nodeTypes, List<String> textList,
+                    boolean negated) {
+                this.textList = textList;
+                this.labelSet = new HashSet<Label>();
+                for (String text : textList) {
+                    this.labelSet.add(DefaultLabel.createLabel(text, nodeTypes));
                 }
-                this.anyNodeType = anyNodeType;
-                this.constrainedLabels = constrained.toArray(new String[0]);
+                this.nodeTypes = nodeTypes;
                 this.negated = negated;
             }
 
@@ -1483,12 +1484,18 @@ abstract public class RegExpr { // implements VarSetSupport {
              */
             public LabelConstraint relabel(Label oldLabel, Label newLabel) {
                 LabelConstraint result = this;
-                if (this.constrainedLabelSet.contains(oldLabel.text())) {
-                    Set<Label> newConstraint =
-                        new HashSet<Label>(this.constrainedLabelSet);
-                    newConstraint.remove(oldLabel);
-                    newConstraint.add(newLabel);
-                    result = new LabelConstraint(newConstraint, this.negated);
+                if (this.labelSet.contains(oldLabel)) {
+                    int index = this.textList.indexOf(oldLabel.text());
+                    List<String> newTextList =
+                        new ArrayList<String>(this.textList);
+                    if (newLabel.isNodeType() == this.nodeTypes) {
+                        newTextList.set(index, newLabel.text());
+                    } else {
+                        newTextList.remove(index);
+                    }
+                    result =
+                        new LabelConstraint(this.nodeTypes, newTextList,
+                            this.negated);
                 }
                 return result;
             }
@@ -1498,16 +1505,13 @@ abstract public class RegExpr { // implements VarSetSupport {
              * @see RegExpr#getLabels()
              */
             public Set<Label> getLabels() {
-                Set<Label> result = new HashSet<Label>();
-                for (String constrainedLabel : this.constrainedLabels) {
-                    result.add(DefaultLabel.createTypedLabel(constrainedLabel));
-                }
-                return result;
+                return this.labelSet;
             }
 
             @Override
             public boolean isSatisfied(Label value) {
-                return this.negated != (this.anyNodeType && value.isNodeType() || this.constrainedLabelSet.contains(value));
+                return this.nodeTypes == value.isNodeType()
+                    && this.negated != this.labelSet.contains(value);
             }
 
             @Override
@@ -1518,21 +1522,18 @@ abstract public class RegExpr { // implements VarSetSupport {
                 } else {
                     start = "" + CONSTRAINT_OPEN;
                 }
-                return Groove.toString(this.constrainedLabels, start, ""
+                return Groove.toString(this.textList.toArray(), start, ""
                     + CONSTRAINT_CLOSE, "" + CONSTRAINT_SEPARATOR);
             }
 
-            /** The set of strings to be tested for inclusion. */
-            private final Set<Label> constrainedLabelSet;
-            /**
-             * The set of strings to be tested for inclusion, as an array for
-             * {@link #toString()}.
-             */
-            private final String[] constrainedLabels;
+            /** The list of strings indicating the labels to be matched. */
+            private final List<String> textList;
+            /** The set of labels to be tested for inclusion. */
+            private final Set<Label> labelSet;
             /** Flag indicating if we are testing for absence or presence. */
             private final boolean negated;
-            /** Flag indicating if any node type label satisfies the constraint. */
-            private final boolean anyNodeType;
+            /** Flag indicating if we are testing (only) for node type labels. */
+            private final boolean nodeTypes;
         }
     }
 
