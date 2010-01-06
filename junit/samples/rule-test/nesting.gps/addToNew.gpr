@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph id="addEdgesToCreatedNode" role="rule" edgeids="false" edgemode="directed">
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
+    <graph id="addToNew" role="rule" edgeids="false" edgemode="directed">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -32,29 +29,14 @@
                 <string>rem:</string>
             </attr>
         </edge>
-        <edge from="n139044" to="n139041">
-            <attr name="label">
-                <string>node</string>
-            </attr>
-        </edge>
         <edge from="n139043" to="n139040">
             <attr name="label">
                 <string>target node</string>
             </attr>
         </edge>
-        <edge from="n139041" to="n139041">
+        <edge from="n139044" to="n139041">
             <attr name="label">
-                <string>B</string>
-            </attr>
-        </edge>
-        <edge from="n139040" to="n139040">
-            <attr name="label">
-                <string>A</string>
-            </attr>
-        </edge>
-        <edge from="n139044" to="n139044">
-            <attr name="label">
-                <string>Node created at top level</string>
+                <string>node</string>
             </attr>
         </edge>
         <edge from="n139040" to="n139042">
@@ -67,9 +49,24 @@
                 <string>a</string>
             </attr>
         </edge>
+        <edge from="n139040" to="n139040">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
         <edge from="n139043" to="n139043">
             <attr name="label">
                 <string>Edges to this node should be created at sub-level</string>
+            </attr>
+        </edge>
+        <edge from="n139041" to="n139041">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n139044" to="n139044">
+            <attr name="label">
+                <string>Node created at top level</string>
             </attr>
         </edge>
     </graph>

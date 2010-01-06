@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph id="complexLevels" role="rule" edgeids="false" edgemode="directed">
+    <graph id="AEA-levels" role="rule" edgeids="false" edgemode="directed">
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <node id="n138961"/>
+        <node id="n138966"/>
+        <node id="n138969"/>
         <node id="n138962"/>
         <node id="n138968"/>
-        <node id="n138969"/>
-        <node id="n138966"/>
-        <node id="n138965"/>
-        <node id="n138960"/>
-        <node id="n138961"/>
         <node id="n138967"/>
         <node id="n138964"/>
+        <node id="n138965"/>
         <node id="n138963"/>
-        <edge from="n138968" to="n138968">
+        <node id="n138960"/>
+        <edge from="n138961" to="n138961">
             <attr name="label">
                 <string>new:</string>
             </attr>
         </edge>
         <edge from="n138966" to="n138966">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n138968" to="n138968">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge from="n138967" to="n138967">
             <attr name="label">
                 <string>forall:</string>
             </attr>
@@ -34,34 +44,9 @@
                 <string>exists:</string>
             </attr>
         </edge>
-        <edge from="n138961" to="n138961">
+        <edge from="n138969" to="n138969">
             <attr name="label">
-                <string>new:</string>
-            </attr>
-        </edge>
-        <edge from="n138967" to="n138967">
-            <attr name="label">
-                <string>forall:</string>
-            </attr>
-        </edge>
-        <edge from="n138962" to="n138966">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge from="n138964" to="n138964">
-            <attr name="label">
-                <string>C</string>
-            </attr>
-        </edge>
-        <edge from="n138960" to="n138967">
-            <attr name="label">
-                <string>in</string>
-            </attr>
-        </edge>
-        <edge from="n138968" to="n138965">
-            <attr name="label">
-                <string>at</string>
+                <string>A</string>
             </attr>
         </edge>
         <edge from="n138965" to="n138967">
@@ -69,9 +54,9 @@
                 <string>in</string>
             </attr>
         </edge>
-        <edge from="n138968" to="n138968">
+        <edge from="n138962" to="n138962">
             <attr name="label">
-                <string>B</string>
+                <string>D</string>
             </attr>
         </edge>
         <edge from="n138964" to="n138960">
@@ -79,12 +64,7 @@
                 <string>at</string>
             </attr>
         </edge>
-        <edge from="n138962" to="n138962">
-            <attr name="label">
-                <string>D</string>
-            </attr>
-        </edge>
-        <edge from="n138963" to="n138968">
+        <edge from="n138969" to="n138961">
             <attr name="label">
                 <string>copy</string>
             </attr>
@@ -94,19 +74,59 @@
                 <string>B</string>
             </attr>
         </edge>
-        <edge from="n138961" to="n138968">
+        <edge from="n138962" to="n138966">
             <attr name="label">
-                <string>b</string>
+                <string>at</string>
             </attr>
         </edge>
-        <edge from="n138961" to="n138961">
+        <edge from="n138969" to="n138964">
             <attr name="label">
-                <string>A</string>
+                <string>del:c</string>
+            </attr>
+        </edge>
+        <edge from="n138960" to="n138967">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge from="n138963" to="n138962">
+            <attr name="label">
+                <string>del:d</string>
             </attr>
         </edge>
         <edge from="n138968" to="n138962">
             <attr name="label">
                 <string>d</string>
+            </attr>
+        </edge>
+        <edge from="n138964" to="n138964">
+            <attr name="label">
+                <string>C</string>
+            </attr>
+        </edge>
+        <edge from="n138961" to="n138968">
+            <attr name="label">
+                <string>b</string>
+            </attr>
+        </edge>
+        <edge from="n138963" to="n138968">
+            <attr name="label">
+                <string>copy</string>
+            </attr>
+        </edge>
+        <edge from="n138968" to="n138965">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n138963" to="n138965">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n138961" to="n138961">
+            <attr name="label">
+                <string>A</string>
             </attr>
         </edge>
         <edge from="n138966" to="n138965">
@@ -119,29 +139,9 @@
                 <string>del:b</string>
             </attr>
         </edge>
-        <edge from="n138963" to="n138962">
+        <edge from="n138968" to="n138968">
             <attr name="label">
-                <string>del:d</string>
-            </attr>
-        </edge>
-        <edge from="n138969" to="n138961">
-            <attr name="label">
-                <string>copy</string>
-            </attr>
-        </edge>
-        <edge from="n138969" to="n138964">
-            <attr name="label">
-                <string>del:c</string>
-            </attr>
-        </edge>
-        <edge from="n138963" to="n138965">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge from="n138969" to="n138969">
-            <attr name="label">
-                <string>A</string>
+                <string>B</string>
             </attr>
         </edge>
     </graph>
