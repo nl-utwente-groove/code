@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n162"/>
+        <node id="n158"/>
+        <node id="n160"/>
+        <node id="n163"/>
+        <node id="n164"/>
+        <node id="n159"/>
+        <node id="n161"/>
+        <edge from="n163" to="n163">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge from="n164" to="n161">
+            <attr name="label">
+                <string>not:next</string>
+            </attr>
+        </edge>
+        <edge from="n160" to="n160">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+        <edge from="n164" to="n158">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n160" to="n160">
+            <attr name="label">
+                <string>control</string>
+            </attr>
+        </edge>
+        <edge from="n162" to="n163">
+            <attr name="label">
+                <string>return</string>
+            </attr>
+        </edge>
+        <edge from="n160" to="n162">
+            <attr name="label">
+                <string>caller</string>
+            </attr>
+        </edge>
+        <edge from="n158" to="n159">
+            <attr name="label">
+                <string>val</string>
+            </attr>
+        </edge>
+        <edge from="n164" to="n159">
+            <attr name="label">
+                <string>not:val</string>
+            </attr>
+        </edge>
+        <edge from="n160" to="n164">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge from="n160" to="n159">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge from="n160" to="n160">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge from="n163" to="n163">
+            <attr name="label">
+                <string>void</string>
+            </attr>
+        </edge>
+        <edge from="n161" to="n161">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge from="n158" to="n158">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

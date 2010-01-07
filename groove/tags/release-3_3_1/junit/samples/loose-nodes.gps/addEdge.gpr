@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n29"/>
+        <node id="n30"/>
+        <edge from="n29" to="n30">
+            <attr name="label">
+                <string>not:distinct</string>
+            </attr>
+        </edge>
+        <edge from="n29" to="n30">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+        </edge>
+        <edge from="n29" to="n30">
+            <attr name="label">
+                <string>new:distinct</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
