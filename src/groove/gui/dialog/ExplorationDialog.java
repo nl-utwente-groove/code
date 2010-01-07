@@ -24,6 +24,7 @@ import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
+import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
 
@@ -69,7 +70,7 @@ import javax.swing.event.ListSelectionListener;
  * @version $Revision $
  */
 public class ExplorationDialog extends JDialog implements ActionListener {
-    private final String EXPLORE_COMMAND = "Explore State Space";  // button text
+    private final String EXPLORE_COMMAND = "Run";                  // button text
     private final String CANCEL_COMMAND = "Cancel";                // button text
     
     private final String STRATEGY_TOOLTIP = "<HTML>"               // tool tip to explain exploration strategy
@@ -88,6 +89,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
                                           + "The size of the atomic steps depends on the chosen strategy.<BR> "
                                           + "The interruption condition is determined by the indicated number of times that the acceptor succeeds."
                                           + "</HTML>";
+    private final String EXPLORE_TOOLTIP  = "<HTML>"               // tool tip to explain explore command
+                                          + "Run the customized exploration, and set it as the default."
+                                          + "</HTML>";
 
     private DocumentedSelection<Strategy> strategySelector;        // panel that holds the strategy selection
     private DocumentedSelection<Acceptor> acceptorSelector;        // panel that holds the acceptor selection
@@ -105,7 +109,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
      */
     public ExplorationDialog(Simulator simulator, JFrame owner) {       
         // Open a modal dialog, which cannot be resized and can be closed by the user.
-        super(owner, "Explore State Space", true);
+        super(owner, Options.EXPLORATION_DIALOG_ACTION_NAME, true);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setResizable(false);
         
@@ -138,17 +142,23 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         dialogContent.registerKeyboardAction(this.enterListener, enter, JComponent.WHEN_IN_FOCUSED_WINDOW);
         
         // Add the panels to the dialogContent.
-        this.strategySelector = new DocumentedSelection<Strategy>("exploration strategy", 
-                                                                  this.STRATEGY_TOOLTIP,
-                                                                  new StrategyEnumerator());
+        this.strategySelector = new DocumentedSelection<Strategy>(
+                "exploration strategy", 
+                this.STRATEGY_TOOLTIP,
+                new StrategyEnumerator(),
+                this.simulator.getDefaultExploration().getStrategyKeyword());
         dialogContent.add(this.strategySelector);
         dialogContent.add(new JLabel(" "));
-        this.acceptorSelector = new DocumentedSelection<Acceptor>("acceptor", 
-                                                                  this.ACCEPTOR_TOOLTIP,
-                                                                  new AcceptorEnumerator());
+        this.acceptorSelector = new DocumentedSelection<Acceptor>(
+                "acceptor", 
+                this.ACCEPTOR_TOOLTIP,
+                new AcceptorEnumerator(),
+                this.simulator.getDefaultExploration().getAcceptorKeyword());
         dialogContent.add(this.acceptorSelector);
         dialogContent.add(new JLabel(" "));
-        this.resultSelector = new ResultSelection(this.RESULT_TOOLTIP); 
+        this.resultSelector = new ResultSelection(
+                this.RESULT_TOOLTIP,
+                this.simulator.getDefaultExploration().getResult().getBound()); 
         dialogContent.add(this.resultSelector);
         dialogContent.add(new JLabel(" "));
         createButtonPanel();
@@ -172,6 +182,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         
         JButton exploreButton = new JButton(this.EXPLORE_COMMAND);
         exploreButton.addActionListener(this);
+        exploreButton.setToolTipText(this.EXPLORE_TOOLTIP);
         this.buttonPanel.add(exploreButton);
         if (this.simulator.getGrammarView() == null ||
             this.simulator.getGrammarView().getStartGraphView() == null)
@@ -208,19 +219,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         if (nrResults == null)
             return;
         
-        String shortName;
-        String resultName;
-        if (nrResults == 0)
-            resultName = "*";
-        else
-            resultName = Integer.toString(nrResults);        
-        shortName = this.strategySelector.getSelectedValue().getKeyword()
-                  + "/"
-                  + this.acceptorSelector.getSelectedValue().getKeyword()
-                  + "/"
-                  + resultName;
-        
-        Exploration exploration = new Exploration(strategy, acceptor, new Result(nrResults), shortName);           
+        Exploration exploration = new Exploration(
+            strategy, this.strategySelector.getSelectedValue().getKeyword(),
+            acceptor, this.acceptorSelector.getSelectedValue().getKeyword(),
+            new Result(nrResults));           
         closeDialog();
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
         this.simulator.doRunExploration(exploration);
@@ -272,24 +274,27 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         private Documented<A> currentlySelected;
         private JLabel currentInfo;
         
-        DocumentedSelection(String objectType, String tooltip, Enumerator<A> enumerator) {
+        DocumentedSelection(String objectType, String tooltip, Enumerator<A> enumerator, String initialValue) {
             super(new SpringLayout());
             
             this.enumerator = enumerator;
-            this.currentlySelected = enumerator.getElement(0);
             this.objectType = objectType;
             this.tooltip = tooltip;
             
-            this.add(leftColumn());
+            this.add(leftColumn(initialValue));
             this.add(rightColumn());
             SpringUtilities.makeCompactGrid(this, 1, 2, 0, 0, 10, 0);
             updateInfo();
         }
         
-        private JPanel leftColumn() {
+        private JPanel leftColumn(String initialValue) {
             JList list = new JList(this.enumerator.getAllNames());
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            list.setSelectedIndex(0);
+            for (int i = 0; i < this.enumerator.getSize(); i++)
+                if (this.enumerator.getElement(i).getKeyword() == initialValue) {
+                    list.setSelectedIndex(i);
+                    this.currentlySelected = this.enumerator.getElement(i);
+                }
             list.addListSelectionListener(this);
             JScrollPane listScroller = new JScrollPane(list);
             listScroller.setPreferredSize(new Dimension(300, 150));
@@ -365,21 +370,30 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         JRadioButton[] checkboxes;
         JTextField customNumber;
         
-        ResultSelection(String tooltip) {
+        ResultSelection(String tooltip, Integer initialValue) {
             super(new SpringLayout());
 
             this.checkboxes = new JRadioButton[3];
             this.checkboxes[0] = new JRadioButton("Infinite (don't interrupt)");
             this.checkboxes[1] = new JRadioButton("1 (interrupt as soon as acceptor succeeds)");
             this.checkboxes[2] = new JRadioButton("Custom: ");
-            this.checkboxes[0].setSelected(true);
             for (int i = 0; i < 3; i++)
                 this.checkboxes[i].addActionListener(this);
-            
-            this.customNumber = new JTextField("2", 3);
+
+            String initialCustomValue = "2";
+            if (initialValue == 0)
+                this.checkboxes[0].setSelected(true);
+            else if (initialValue == 1)
+                this.checkboxes[1].setSelected(true);
+            else {
+                this.checkboxes[2].setSelected(true);
+                initialCustomValue = Integer.toString(initialValue);
+            }
+
+            this.customNumber = new JTextField(initialCustomValue, 3);
             this.customNumber.addKeyListener(new OnlyListenToNumbers());
             this.customNumber.setEnabled(false);
-            
+           
             JLabel leadingLabel = new JLabel("<HTML><FONT color=green><B>Interrupt exploration when the following number of accepted results have been found: </HTML>");
             leadingLabel.setToolTipText(tooltip);
             this.add(leadingLabel);

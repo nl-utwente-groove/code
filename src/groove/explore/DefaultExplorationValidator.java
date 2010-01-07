@@ -23,41 +23,41 @@ import groove.gui.Simulator;
 import groove.view.StoredGrammarView;
 
 /**
- * Wrapper class that handles the update of the last exploration
+ * Wrapper class that handles the update of the default exploration
  * (which is stored in the simulator) when the grammar changes.
  * 
  * Overrides the following methods from SimulationAdapter:
- * - setGrammarUpdate       - checks whether the last exploration is still
+ * - setGrammarUpdate       - checks whether the default exploration is still
  *                            valid when the grammar changes
  *
  * @author Maarten de Mol
  * @version $Revision $
  */
-public class LastExplorationValidator extends SimulationAdapter {
+public class DefaultExplorationValidator extends SimulationAdapter {
     private final Simulator simulator;            // reference to the simulator 
     
     /**
      * Stores reference to the simulator, and sets itself up as a listener.
      * @simulator - reference to the simulator
      */
-    public LastExplorationValidator(Simulator simulator) {
+    public DefaultExplorationValidator(Simulator simulator) {
         this.simulator = simulator;
         this.simulator.addSimulationListener(this);
     }
 
     /**
-     * Checks whether the last exploration is still valid when the grammar
-     * changes. If it is no longer valid, the last exploration field is cleared
-     * from the simulator.
+     * Checks whether the default exploration is still valid when the grammar
+     * changes. If it is no longer valid, it is reset to the default constructor
+     * of the Exploration class.
      */
     @Override
     public void setGrammarUpdate(StoredGrammarView grammar) {
-        if (this.simulator.getLastExploration() != null) {
-            Acceptor acceptor = this.simulator.getLastExploration().getAcceptor();
+        if (this.simulator.getDefaultExploration() != null) {
+            Acceptor acceptor = this.simulator.getDefaultExploration().getAcceptor();
             if (acceptor instanceof ConditionalRuleAcceptor) {
                 Boolean success = ((ConditionalRuleAcceptor) acceptor).renewCondition(grammar);
                 if (!success)
-                    this.simulator.clearLastExploration();
+                    this.simulator.setDefaultExploration(new Exploration());
             }
         }
     }
