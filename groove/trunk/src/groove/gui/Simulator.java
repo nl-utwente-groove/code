@@ -37,8 +37,8 @@ import groove.abs.Abstraction;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
+import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
-import groove.explore.LastExplorationValidator;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
 import groove.explore.strategy.Boundary;
@@ -179,7 +179,8 @@ public class Simulator {
         loadModules();
         initGrammarLoaders();
         getFrame();
-        addSimulationListener(new LastExplorationValidator(this));
+        addSimulationListener(new DefaultExplorationValidator(this));
+        setDefaultExploration(new Exploration());
     }
 
     /**
@@ -383,35 +384,26 @@ public class Simulator {
     }
 
     /**
-     * Clears the internally stored last performed exploration.
+     * Returns the internally stored default exploration.
      */
-    public void clearLastExploration() {
-        setLastExploration(null);
+    public Exploration getDefaultExploration() {
+        return this.defaultExploration;
     }
 
     /**
-     * Returns the internally stored last performed exploration.
+     * Sets the internally stored default exploration.
+     * @exploration may not be null
      */
-    public Exploration getLastExploration() {
-        return this.lastExploration;
+    public void setDefaultExploration(Exploration exploration) {
+        this.defaultExploration = exploration;
+        this.defaultExplorationMenuItem.setToolTipText(
+            "<HTML>" +
+            Options.DEFAULT_EXPLORATION_ACTION_NAME +
+            " by means of <B>" +
+            exploration.getShortName() +
+            "</B></HTML>");
     }
-
-    /**
-     * Stores the last performed exploration.
-     */
-    public void setLastExploration(Exploration exploration) {
-        if (exploration == null) {
-            getExploreRepeatAction().putValue(Action.NAME,
-                "Repeat Last Exploration");
-            getExploreRepeatAction().setEnabled(false);
-        } else {
-            getExploreRepeatAction().putValue(Action.NAME,
-                "Repeat Exploration (" + exploration.getShortName() + ")");
-            getExploreRepeatAction().setEnabled(true);
-        }
-        this.lastExploration = exploration;
-    }
-
+    
     /**
      * Returns the currently selected rule, or <tt>null</tt> if none is
      * selected. The selected rule is the one displayed in the rule panel.
@@ -1041,7 +1033,7 @@ public class Simulator {
         if (ltsJGraph.getLayouter() != null) {
             ltsJGraph.getLayouter().start(false);
         }
-        setLastExploration(exploration);
+        setDefaultExploration(exploration);
     }
 
     /**
@@ -2041,9 +2033,9 @@ public class Simulator {
 
         result.addSeparator();
 
+        this.defaultExplorationMenuItem = result.add(getDefaultExplorationAction());
         result.add(getExplorationDialogAction());
-        result.add(getExploreRepeatAction());
-
+        
         return result;
     }
 
@@ -2666,11 +2658,18 @@ public class Simulator {
     private RuleEvent currentEvent;
 
     /**
-     * The last exploration that has been performed by the user. The results of
-     * the exploration are stored within its acceptor. If no last exploration is
-     * available (as is the case initially), the value should be set to null.
+     * The default exploration to be performed.
+     * This value is either the previous exploration, or the default
+     * constructor of the Exploration class (=breadth first).
+     * This value may never be null (and must be initialized explicitly).
      */
-    private Exploration lastExploration = null;
+    private Exploration defaultExploration;
+    
+    /**
+     * The menu item associated with the 'default exploration' action.
+     * This variable is used for setting the tool-tip.
+     */
+    private JMenuItem defaultExplorationMenuItem;
 
     /** The state generator strategy for the current GTS. */
     private StateGenerator stateGenerator;
@@ -3602,39 +3601,39 @@ public class Simulator {
     }
 
     /**
-     * Returns the exploration dialog action permanently associated with this
+     * Returns the 'default exploration' action that is associated with the
      * simulator.
      */
-    public ExploreRepeatAction getExploreRepeatAction() {
+    public DefaultExplorationAction getDefaultExplorationAction() {
         // lazily create the action
-        if (this.exploreRepeatAction == null) {
-            this.exploreRepeatAction = new ExploreRepeatAction();
+        if (this.defaultExplorationAction == null) {
+            this.defaultExplorationAction = new DefaultExplorationAction();
         }
-        return this.exploreRepeatAction;
+        
+        return this.defaultExplorationAction;
     }
 
     /**
-     * The exploration dialog action permanently associated with this simulator.
+     * The 'default exploration' action (variable).
      */
-    private ExploreRepeatAction exploreRepeatAction;
+    private DefaultExplorationAction defaultExplorationAction;
 
-    /** Action to run the last exploration again. */
-    private class ExploreRepeatAction extends RefreshableAction {
-        /** Constructs an instance of the action. */
-        ExploreRepeatAction() {
-            super("Repeat last exploration", null);
-            putValue(ACCELERATOR_KEY, Options.REPEAT_EXPLORE_KEY);
+    /**
+     * The 'default exploration' action (class).
+     */
+    private class DefaultExplorationAction extends RefreshableAction {
+        DefaultExplorationAction() {
+            super(Options.DEFAULT_EXPLORATION_ACTION_NAME, null);
+            putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
-            if (getLastExploration() != null) {
-                getLastExploration().clearResult();
-                doRunExploration(getLastExploration());
-            }
+            doRunExploration(getDefaultExploration());
         }
 
         public void refresh() {
-            setEnabled(getLastExploration() != null);
+            setEnabled(getGrammarView() != null
+                && getGrammarView().getStartGraphView() != null);
         }
     }
 
@@ -3660,7 +3659,6 @@ public class Simulator {
         /** Constructs an instance of the action. */
         ExplorationDialogAction() {
             super(Options.EXPLORATION_DIALOG_ACTION_NAME, null);
-            putValue(ACCELERATOR_KEY, Options.EXPLORE_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {

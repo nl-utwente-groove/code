@@ -169,6 +169,9 @@ public class Options {
     public static final String COPY_TYPE_ACTION_NAME = "Copy Type";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
+    /** Default exploration action name */
+    public static final String DEFAULT_EXPLORATION_ACTION_NAME =
+        "Explore State Space";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
     /** Delete control program action name */
@@ -209,7 +212,7 @@ public class Options {
     public static final String ENABLE_TYPE_ACTION_NAME = "Enable Typing";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
-        "Explore State Space";
+        "Customize Exploration";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export control action name */
@@ -392,6 +395,11 @@ public class Options {
      */
     public static final KeyStroke CUT_KEY = KeyStroke.getKeyStroke("control X");
     /**
+     * Keystroke for the 'default exploration' action.
+     */
+    public static final KeyStroke DEFAULT_EXPLORATION_KEY =
+        KeyStroke.getKeyStroke("control shift X");
+    /**
      * Delete keystroke
      */
     public static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE");
@@ -410,9 +418,7 @@ public class Options {
      */
     public static final KeyStroke EXPORT_KEY =
         KeyStroke.getKeyStroke("control alt S");
-    /** Exploration Dialog keystroke */
-    public static final KeyStroke EXPLORE_KEY =
-        KeyStroke.getKeyStroke("control shift E");
+    /** Explore state space keystroke */
     /** Back keystroke */
     public static final KeyStroke FORWARD_KEY =
         KeyStroke.getKeyStroke("control RIGHT");
@@ -423,6 +429,9 @@ public class Options {
      * Insert keystroke
      */
     public static final KeyStroke INSERT_KEY = KeyStroke.getKeyStroke("INSERT");
+    /** Last exploration keystroke */
+    public static final KeyStroke LAST_EXPLORE_KEY =
+        KeyStroke.getKeyStroke("control L");
     /** New keystroke */
     public static final KeyStroke NEW_KEY = KeyStroke.getKeyStroke("control N");
     /**
@@ -464,9 +473,6 @@ public class Options {
     /** Remove point keystroke. */
     public static final KeyStroke REMOVE_POINT_KEY =
         KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
-    /** Exploration Dialog keystroke */
-    public static final KeyStroke REPEAT_EXPLORE_KEY =
-        KeyStroke.getKeyStroke("control shift R");
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY =
         KeyStroke.getKeyStroke("control S");
