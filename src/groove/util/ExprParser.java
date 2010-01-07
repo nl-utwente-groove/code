@@ -188,8 +188,8 @@ public class ExprParser {
      * atomic, and whitespaces are trimmed from the result. A whitespace
      * character as <tt>split</tt> expression will therefore stand for a
      * sequence of whitespaces, with at least one occurrence of the precise
-     * <tt>split</tt> expression. Trailing empty strings are included in the
-     * result.
+     * <tt>split</tt> expression. Leading and trailing empty strings are
+     * included in the result.
      * @param expr the string to be split
      * @param split the regular expression used to split the expression.
      * @return the resulting array of strings
@@ -208,7 +208,7 @@ public class ExprParser {
             previousIndex++;
         }
         int index = parseExpr.indexOf(split, previousIndex);
-        while (index > 0) {
+        while (index >= 0) {
             strippedOperands.add(parseExpr.substring(previousIndex, index).trim());
             previousIndex = index + split.length();
             while (previousIndex < parseExpr.length()
@@ -233,16 +233,15 @@ public class ExprParser {
      * information (infix, prefix or postfix) Quoted strings and bracketed
      * sub-expressions are treated as atomic. Returns <tt>null</tt> if the
      * operator is a prefix or postfix operator and does not occur in the
-     * correct position; raises an <code>ExprFormatException</code> if there
-     * are empty or unbalanced operands.
+     * correct position; raises an <code>ExprFormatException</code> if there are
+     * empty or unbalanced operands.
      * @param expr the string to be split
-     * @param oper the operator; note that it is <i>not</i> a regular
-     *        expression
+     * @param oper the operator; note that it is <i>not</i> a regular expression
      * @param position the positioning property of the operator; one of
      *        <tt>INFIX</tt>, <tt>PREFIX</tt> or <tt>POSTFIX</tt>
      * @return the resulting array of strings
-     * @throws FormatException if <tt>expr</tt> has unbalanced brackets, or
-     *         the positioning of the operator is not as required
+     * @throws FormatException if <tt>expr</tt> has unbalanced brackets, or the
+     *         positioning of the operator is not as required
      */
     public String[] split(String expr, String oper, int position)
         throws FormatException {
@@ -314,31 +313,33 @@ public class ExprParser {
     private final List<Character> quoteChars = new LinkedList<Character>();
     /**
      * An list of opening bracket characters. The corresponding closing bracket
-     * character is at the same index of <tt>closeBrackets</tt>. This is
-     * encoded as a list of <tt>Character</tt>.
+     * character is at the same index of <tt>closeBrackets</tt>. This is encoded
+     * as a list of <tt>Character</tt>.
      * @invariant <tt>openBrackets.size() == closeBrachets.size()</tt>
      */
     private final List<Character> openBrackets = new LinkedList<Character>();
     /**
      * An list of closing bracket characters, The corresponding opening bracket
-     * character is at the same index of <tt>openBrackets</tt>. This is
-     * encoded as a list of <tt>Character</tt>.
+     * character is at the same index of <tt>openBrackets</tt>. This is encoded
+     * as a list of <tt>Character</tt>.
      * @invariant <tt>openBrackets.size() == closeBrachets.size()</tt>
      */
     private final List<Character> closeBrackets = new LinkedList<Character>();
-    /** The character to use as a placeholder in the parse result of this parser. */
+    /**
+     * The character to use as a placeholder in the parse result of this parser.
+     */
     private final char placeholder;
 
     /**
      * Parses a given string by recognising quoted and bracketed substrings. The
-     * quote characters are<tt>'</tt> and <tt>"</tt>; recognised bracket
-     * pairs are <tt>()</tt>, <tt>{}</tt>, <tt>&lt;&gt;</tt> and
-     * <tt>[]</tt>. Within quoted strings, escape codes are interpreted as in
-     * Java. Brackets are required to be properly nested. The result is given as
-     * a pair of objects: the first is the string with all quoted and bracketed
-     * substrings replaced by the character <tt>PLACEHOLDER</tt>, and the
-     * second is a list of the replaced substrings, in the order in which they
-     * appeared in the original string.
+     * quote characters are<tt>'</tt> and <tt>"</tt>; recognised bracket pairs are
+     * <tt>()</tt>, <tt>{}</tt>, <tt>&lt;&gt;</tt> and <tt>[]</tt>. Within
+     * quoted strings, escape codes are interpreted as in Java. Brackets are
+     * required to be properly nested. The result is given as a pair of objects:
+     * the first is the string with all quoted and bracketed substrings replaced
+     * by the character <tt>PLACEHOLDER</tt>, and the second is a list of the
+     * replaced substrings, in the order in which they appeared in the original
+     * string.
      * @param expr the string to be parsed
      * @return a pair of objects: the first is the string with all quoted and
      *         bracketed substrings replaced by the character
@@ -348,10 +349,9 @@ public class ExprParser {
      */
     static public Pair<String,List<String>> parseExpr(String expr)
         throws FormatException {
-        
+
         ExprParser p = ExprParser.prototype;
-        
-        
+
         return p.parse(expr);
     }
 
@@ -382,13 +382,12 @@ public class ExprParser {
     }
 
     /**
-     * Turns back the result of a {@link #parseExpr(String)}-action to a
-     * string.
+     * Turns back the result of a {@link #parseExpr(String)}-action to a string.
      * @param main the result of string parsing; for the format see
      *        {@link #parseExpr(String)}.
      * @return the string from which <tt>parsedString</tt> was originally
-     *         created; or <tt>null</tt> if <tt>parsedString</tt> is
-     *         improperly formatted
+     *         created; or <tt>null</tt> if <tt>parsedString</tt> is improperly
+     *         formatted
      */
     static public String toString(String main, List<String> args) {
         StringBuffer result = new StringBuffer();
@@ -526,13 +525,12 @@ public class ExprParser {
      * does not need to be quoted.
      * @param string the original string
      * @param quote the quote character to be used
-     * @boolean test if <code>true</code>, the method throws an exception
-     *          upon finding a format error; otherwise, it returns
-     *          <code>null</code>
+     * @boolean test if <code>true</code>, the method throws an exception upon
+     *          finding a format error; otherwise, it returns <code>null</code>
      * @return the unquoted string (which may equal the original, if there are
      *         no quotes or escaped characters in the string), or
-     *         <code>null</code> if <code>test</code> is <code>false</code>
-     *         and there is a format error.
+     *         <code>null</code> if <code>test</code> is <code>false</code> and
+     *         there is a format error.
      * @throws FormatException if there are unescaped quotes at any position
      *         except the first or last, or if there are no matching begin or
      *         end quotes
@@ -756,8 +754,7 @@ public class ExprParser {
      * {@link #isIdentifierStartChar(char)}), and contains only characters
      * satisfying {@link #isIdentifierChar(char)}.
      * @param text the text to be tested
-     * @return <tt>true</tt> if the text does not contain any special
-     *         characters
+     * @return <tt>true</tt> if the text does not contain any special characters
      */
     static public boolean isIdentifier(String text) {
         if (text.length() == 0) {
