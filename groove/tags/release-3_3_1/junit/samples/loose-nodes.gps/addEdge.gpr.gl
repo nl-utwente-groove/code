@@ -1,8 +1,0 @@
-# Layout information for loose-nodes.gps\addEdge.gpr
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-e n29 n30 "not:distinct" 254 146 105 97 174 59 247 99 12
-n n29 96 88 18 18 
-n n30 238 90 18 18 
-e n29 n30 "not:=" 254 146 105 97 174 59 247 99 12

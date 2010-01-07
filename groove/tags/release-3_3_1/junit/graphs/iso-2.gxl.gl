@@ -1,6 +1,0 @@
-# Layout information for H:\groove\junit\graphs\iso-2.gxl
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n43 71 163 18 18 
-n n42 69 67 18 18 
