@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="groove/view/DefaultRuleView.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="lib/castor-0_9_5_2.jar"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="lib/antlr_3.1/stringtemplate-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="C:/Program Files/Java/jgraph-5_13_0/src"/>
+	<classpathentry kind="lib" path="lib/groove-frontend-1_6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
