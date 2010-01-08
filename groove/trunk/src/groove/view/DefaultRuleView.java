@@ -1281,7 +1281,7 @@ public class DefaultRuleView implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
-                Label varLabel = ((AspectEdge) elem).getModelLabel(true);
+                Label varLabel = ((AspectEdge) elem).getModelLabel();
                 result = RegExprLabel.getWildcardId(varLabel) != null;
             }
             if (!result) {
@@ -1603,7 +1603,7 @@ public class DefaultRuleView implements RuleView {
          */
         private Edge computeEdgeImage(AspectEdge edge,
                 Map<? extends Node,Node> elementMap) throws FormatException {
-            assert edge.getModelLabel(true) != null : String.format(
+            assert edge.getModelLabel() != null : String.format(
                 "Edge '%s' does not belong in model", edge);
             Node[] ends = new Node[edge.endCount()];
             for (int i = 0; i < ends.length; i++) {
@@ -1618,7 +1618,7 @@ public class DefaultRuleView implements RuleView {
             }
             // compute the label; either a DefaultLabel or a RegExprLabel
             if (getAttributeValue(edge) == null) {
-                return createEdge(ends, edge.getModelLabel(true));
+                return createEdge(ends, edge.getModelLabel());
             } else {
                 return DefaultRuleView.this.attributeFactory.createAttributeEdge(
                     edge, ends);

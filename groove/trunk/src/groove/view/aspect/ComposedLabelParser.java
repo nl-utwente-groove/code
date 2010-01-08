@@ -14,10 +14,11 @@
  * 
  * $Id$
  */
-package groove.view;
+package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.view.FormatException;
 
 /**
  * Constructs a new label parser by combining existing ones.

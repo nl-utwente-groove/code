@@ -34,7 +34,6 @@ import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -215,7 +214,7 @@ public class AspectJModel extends GraphJModel {
             result.applyMap(RULE_EDGE_ATTR.get(role));
             try {
                 Label modelLabel =
-                    aspectEdge.getModelLabel(GraphInfo.hasRuleRole(getGraph()));
+                    aspectEdge.getModelLabel();
                 if (RegExprLabel.isEmpty(modelLabel)) {
                     // remove edge arrow
                     GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);

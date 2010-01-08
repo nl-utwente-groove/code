@@ -23,7 +23,6 @@ import groove.graph.Label;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
@@ -33,22 +32,6 @@ import java.util.List;
  */
 public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
         implements AspectElement {
-    /**
-     * Constructs a new edge from an array of end nodes, a label, and a
-     * collection of aspect values.
-     * @param ends the end nodes of the new edge
-     * @param label the label of the new edge
-     * @param values the aspect values for the new edge
-     * @throws FormatException
-     */
-    @Deprecated
-    public AspectEdge(List<AspectNode> ends, DefaultLabel label,
-            AspectValue... values) throws FormatException {
-        super(ends.get(SOURCE_INDEX), label, ends.get(TARGET_INDEX));
-        this.parseData = createParseData(label, values);
-        testLabel();
-    }
-
     /**
      * Constructs a new edge, with source and target node, label, and aspect
      * values as given.
@@ -128,11 +111,10 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     /**
      * Returns the label that this edge gets, when compiled to a model edge.
      * Convenience method for {@code getAspectMap().toModelLabel(regExpr)}
-     * @param regExpr if <code>true</code>, recognise regular expressions
      * @throws FormatException if the label contains a format error
      */
-    public Label getModelLabel(boolean regExpr) throws FormatException {
-        return getAspectMap().toModelLabel(regExpr);
+    public Label getModelLabel() throws FormatException {
+        return getAspectMap().toModelLabel();
     }
 
     /**
@@ -250,7 +232,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     @Deprecated
     final protected AspectMap computeDeclaredAspectMap(AspectValue[] values)
         throws FormatException {
-        AspectMap result = new AspectMap();
+        AspectMap result = new AspectMap(true);
         for (AspectValue value : values) {
             result.addDeclaredValue(value);
         }

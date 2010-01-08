@@ -14,10 +14,11 @@
  * 
  * $Id: LabelParser.java,v 1.4 2008-01-30 09:33:26 iovka Exp $
  */
-package groove.view;
+package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.view.FormatException;
 
 /** Interface for parsers from preliminary labels to real labels. */
 public interface LabelParser {

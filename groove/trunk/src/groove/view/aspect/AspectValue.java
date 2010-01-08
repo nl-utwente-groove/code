@@ -18,7 +18,6 @@ package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.view.FormatException;
-import groove.view.LabelParser;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,6 +87,14 @@ public class AspectValue {
      */
     public String getPrefix() {
         return this.name + VALUE_SEPARATOR;
+    }
+
+    /**
+     * Indicates if this aspect value must be the last in a sequence. This is
+     * the case if and only if it has a label parser.
+     */
+    public final boolean isLast() {
+        return this.labelParser != null;
     }
 
     /**

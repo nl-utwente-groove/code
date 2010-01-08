@@ -17,7 +17,6 @@
 package groove.view.aspect;
 
 import groove.view.FormatException;
-import groove.view.FreeLabelParser;
 
 import java.util.HashSet;
 import java.util.Set;

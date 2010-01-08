@@ -327,7 +327,7 @@ public class NewRuleView implements RuleView {
      */
     private Edge computeEdgeImage(AspectEdge edge,
             Map<? extends Node,Node> elementMap) throws FormatException {
-        assert edge.getModelLabel(true) != null : String.format(
+        assert edge.getModelLabel() != null : String.format(
             "Edge '%s' does not belong in model", edge);
         Node[] ends = new Node[edge.endCount()];
         for (int i = 0; i < ends.length; i++) {
@@ -341,7 +341,7 @@ public class NewRuleView implements RuleView {
         }
         // compute the label; either a DefaultLabel or a RegExprLabel
         if (getAttributeValue(edge) == null) {
-            return createEdge(ends, edge.getModelLabel(true));
+            return createEdge(ends, edge.getModelLabel());
         } else {
             return NewRuleView.this.attributeFactory.createAttributeEdge(edge,
                 ends);
@@ -1062,7 +1062,7 @@ public class NewRuleView implements RuleView {
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
                 try {
-                    Label varLabel = ((AspectEdge) elem).getModelLabel(true);
+                    Label varLabel = ((AspectEdge) elem).getModelLabel();
                     result = RegExprLabel.getWildcardId(varLabel) != null;
                 } catch (FormatException exc) {
                     result = false;
