@@ -14,10 +14,11 @@
  * 
  * $Id: FreeLabelParser.java,v 1.3 2008-01-30 09:33:25 iovka Exp $
  */
-package groove.view;
+package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.view.FormatException;
 
 /**
  * Parser that turns a string into a default label, without (un)quoting or

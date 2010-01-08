@@ -25,9 +25,6 @@ import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
-import groove.view.FreeLabelParser;
-import groove.view.LabelParser;
-import groove.view.RegExprLabelParser;
 
 /**
  * Graph aspect dealing with transformation rules. Values are: <i>eraser</i>,
@@ -64,6 +61,27 @@ public class RuleAspect extends AbstractAspect {
     @Override
     public void checkEdge(AspectEdge edge, AspectGraph graph)
         throws FormatException {
+        if (isEraser(edge)) {
+            Label label = edge.getModelLabel();
+            if (!(label instanceof DefaultLabel || RegExprLabel.isWildcard(label))) {
+                throw new FormatException(
+                    "Eraser label %s should be wildcard or atom", label);
+            }
+        } else if (isCreator(edge)) {
+            Label label = edge.label();
+            boolean allowed = true;
+            if (label instanceof RegExprLabel) {
+                RegExpr expr = ((RegExprLabel) label).getRegExpr();
+                allowed =
+                    expr.getWildcardId() != null
+                        && expr.getWildcardGuard() == null || expr.isEmpty();
+            }
+            if (!allowed) {
+                throw new FormatException(
+                    "Creator label %s should be named unguarded wildcard, merger or atom",
+                    label);
+            }
+        }
         // test for merge edges between creator nodes
         if (isMerger(edge)) {
             AspectNode creatorEnd = null;
@@ -269,9 +287,7 @@ public class RuleAspect extends AbstractAspect {
         boolean result = false;
         if (isCreator(edge)) {
             try {
-                result =
-                    RegExprLabel.isEmpty(CREATOR.getLabelParser().parse(
-                        edge.label()));
+                result = RegExprLabel.isEmpty(edge.getModelLabel());
             } catch (FormatException exc) {
                 // do nothing
             }
@@ -375,11 +391,11 @@ public class RuleAspect extends AbstractAspect {
             CNEW = instance.addValue(CNEW_NAME);
             READER = instance.addValue(READER_NAME);
             REMARK = instance.addValue(REMARK_NAME);
-            ERASER.setLabelParser(EraserParser.getInstance());
-            CREATOR.setLabelParser(CreatorParser.getInstance());
-            EMBARGO.setLabelParser(RegExprLabelParser.getInstance());
-            CNEW.setLabelParser(CreatorParser.getInstance());
-            READER.setLabelParser(RegExprLabelParser.getInstance());
+            // ERASER.setLabelParser(EraserParser.getInstance());
+            // CREATOR.setLabelParser(CreatorParser.getInstance());
+            // EMBARGO.setLabelParser(RegExprLabelParser.getInstance());
+            // CNEW.setLabelParser(CreatorParser.getInstance());
+            // READER.setLabelParser(RegExprLabelParser.getInstance());
             REMARK.setLabelParser(FreeLabelParser.getInstance());
             // RULE = null; //new RuleAspectValue(); // currently not added to
             // values!

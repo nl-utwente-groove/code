@@ -236,7 +236,7 @@ public class AspectualGraphView implements GraphView {
             Map<Node,Label> nodeTypeMap, NodeRelation subtypes,
             AspectEdge viewEdge) throws FormatException {
         if (AttributeAspect.isConstant(viewEdge)
-            || viewEdge.getModelLabel(false) == null) {
+            || viewEdge.getModelLabel() == null) {
             return;
         }
         for (AspectValue value : viewEdge.getAspectMap()) {
@@ -276,7 +276,7 @@ public class AspectualGraphView implements GraphView {
                 "Edge aspect value '%s' not allowed in graphs",
                 getAttributeValue(viewEdge));
         }
-        Label modelLabel = viewEdge.getModelLabel(false);
+        Label modelLabel = viewEdge.getModelLabel();
         // collect node types in a type graph
         if (GraphInfo.hasTypeRole(this.view) && modelLabel.isNodeType()) {
             Label oldType = nodeTypeMap.put(endImages[0], modelLabel);

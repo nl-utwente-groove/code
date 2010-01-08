@@ -19,11 +19,7 @@ package groove.view.aspect;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
-import groove.view.ComposedLabelParser;
 import groove.view.FormatException;
-import groove.view.FreeLabelParser;
-import groove.view.LabelParser;
-import groove.view.RegExprLabelParser;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,9 +36,12 @@ import java.util.Set;
  * @version $Revision $
  */
 public class AspectMap implements Iterable<AspectValue> {
-    /** Constructs an empty aspect map. */
-    public AspectMap() {
-        // empty
+    /**
+     * Constructs an empty aspect map.
+     * @param rule flag indicating if we are in the context of a rule.
+     */
+    public AspectMap(boolean rule) {
+        this.rule = rule;
     }
 
     /** Constructs a copy of a given aspect map. */
@@ -51,6 +50,7 @@ public class AspectMap implements Iterable<AspectValue> {
         this.declaredValues.addAll(other.declaredValues);
         this.text = other.getText();
         this.hasEnd = other.hasEnd();
+        this.rule = other.rule;
     }
 
     /**
@@ -236,12 +236,11 @@ public class AspectMap implements Iterable<AspectValue> {
     /**
      * Returns the label obtained by parsing the text according to the aspect
      * values in the map.
-     * @param regExpr if <code>true</code>, recognise regular expressions
      * @return the parsed label, or {@code null} if there is no label text or
      *         the element does not occur in the model
      * @throws FormatException if the label contains a format error
      */
-    public Label toModelLabel(boolean regExpr) throws FormatException {
+    public Label toModelLabel() throws FormatException {
         Label result = null;
         if (getText() != null
             && (get(RuleAspect.getInstance()) != null || get(NestingAspect.getInstance()) == null)
@@ -265,7 +264,7 @@ public class AspectMap implements Iterable<AspectValue> {
             // use the default parser if none is found
             if (parser == null) {
                 parser =
-                    regExpr && !hasEnd() ? RegExprLabelParser.getInstance()
+                    this.rule && !hasEnd() ? RegExprLabelParser.getInstance()
                             : FreeLabelParser.getInstance();
             }
             // parse the label
@@ -387,4 +386,10 @@ public class AspectMap implements Iterable<AspectValue> {
     private boolean hasEnd;
     /** Label text; may be {@code null} if the associated element is a node. */
     private String text;
+    /**
+     * Flag indicating if we are in the context of a rule. This affects the
+     * default parser, which is a {@link RegExprLabelParser} for a rule but a
+     * {@link FreeLabelParser} for a graph.
+     */
+    private final boolean rule;
 }

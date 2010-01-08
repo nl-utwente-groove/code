@@ -34,7 +34,6 @@ import groove.view.AspectualGraphView;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.NewRuleView;
-import groove.view.RegExprLabelParser;
 import groove.view.RuleView;
 import groove.view.View;
 
@@ -280,10 +279,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * version information into account.
      */
     private AspectParser getAspectParser(GraphShape graph) {
-        boolean convertToCurly =
-            Groove.RULE_ROLE.equals(GraphInfo.getRole(graph))
-                && GraphInfo.getVersion(graph) == null;
-        return AspectParser.getInstance(convertToCurly);
+        return new AspectParser(graph);
     }
 
     /**
@@ -435,7 +431,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             new HashMap<AspectEdge,AspectEdge>();
         for (AspectEdge edge : result.edgeSet()) {
             try {
-                Label label = edge.getModelLabel(GraphInfo.hasRuleRole(this));
+                Label label = edge.getModelLabel();
                 Label replacement = null;
                 if (label instanceof DefaultLabel) {
                     if (label.equals(oldLabel)) {

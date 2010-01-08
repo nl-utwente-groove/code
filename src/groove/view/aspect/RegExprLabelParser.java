@@ -14,7 +14,7 @@
  * 
  * $Id: RegExprLabelParser.java,v 1.6 2008-02-28 15:49:40 rensink Exp $
  */
-package groove.view;
+package groove.view.aspect;
 
 import static groove.rel.RegExpr.NEG_OPERATOR;
 import static groove.util.ExprParser.LCURLY_CHAR;
@@ -27,7 +27,7 @@ import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.util.ExprParser;
 import groove.util.Pair;
-import groove.view.aspect.Aspect;
+import groove.view.FormatException;
 
 import java.util.HashSet;
 import java.util.List;

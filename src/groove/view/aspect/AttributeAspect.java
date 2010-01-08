@@ -28,8 +28,6 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.FreeLabelParser;
-import groove.view.NumberLabelParser;
 
 import java.util.BitSet;
 import java.util.HashMap;
@@ -313,7 +311,7 @@ public class AttributeAspect extends AbstractAspect {
     static {
         try {
             ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
-            ARGUMENT.setLabelParser(NumberLabelParser.getInstance());
+            ARGUMENT.setLabelParser(new NumberLabelParser());
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
             for (String signatureName : AlgebraRegister.getSignatureNames()) {
@@ -335,13 +333,46 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
+     * Parser that turns a string into a default label, after testing the string
+     * for correct formatting using a callback method that can be overridden by
+     * subclasses.
+     */
+    private static class NumberLabelParser extends FreeLabelParser {
+        /** Empty constructor for the singleton instance. */
+        NumberLabelParser() {
+            // Empty
+        }
+
+        @Override
+        protected String getExceptionText(String text) {
+            try {
+                Integer.parseInt(text);
+                // if this succeeds, the problem was a negative number
+                return String.format("String '%s' is a negative number", text);
+            } catch (NumberFormatException exc) {
+                return String.format(
+                    "String '%s' cannot be parsed as a number", text);
+            }
+        }
+
+        @Override
+        protected boolean isCorrect(String text) {
+            try {
+                return Integer.parseInt(text) >= 0;
+            } catch (NumberFormatException exc) {
+                return false;
+            }
+        }
+    }
+
+    /**
      * Class that attempts to parse a string as the operation of a given
      * algebra, and returns the result as a DefaultLabel if successful.
      */
     private static class OperationLabelParser extends FreeLabelParser {
         /** Constructs an instance of this parser class for a given algebra. */
-        OperationLabelParser(String algebra) {
-            this.signature = algebra;
+        OperationLabelParser(String signature) {
+            this.signature = signature;
         }
 
         /**

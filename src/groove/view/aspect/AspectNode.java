@@ -30,7 +30,7 @@ public class AspectNode extends DefaultNode implements AspectElement {
     /** Constructs an aspect node with a given number. */
     AspectNode(int nr) {
         super(nr);
-        this.aspectMap = new AspectMap();
+        this.aspectMap = new AspectMap(true);
     }
 
     /**

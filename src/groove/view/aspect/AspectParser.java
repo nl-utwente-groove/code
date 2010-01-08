@@ -18,6 +18,8 @@ package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
+import groove.graph.GraphInfo;
+import groove.graph.GraphShape;
 import groove.rel.RegExpr;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -31,13 +33,11 @@ import java.util.Collection;
  */
 public class AspectParser {
     /**
-     * Constructs a parser with given leniency. If the parser is lenient, then
-     * certain errors in the labels are disregarded.
-     * @param convertToCurly flag indicating that label text should be converted
-     *        to curly-bracketed format
+     * Constructs a parser for a given aspect graph.
      */
-    private AspectParser(boolean convertToCurly) {
-        this.convertToCurly = convertToCurly;
+    public AspectParser(GraphShape graph) {
+        this.rule = GraphInfo.hasRuleRole(graph);
+        this.convertToCurly = this.rule && GraphInfo.getVersion(graph) == null;
     }
 
     /**
@@ -51,7 +51,7 @@ public class AspectParser {
      *         {@link AspectValue#getValue(String)}.
      */
     public AspectMap parse(String plainText) throws FormatException {
-        AspectMap result = new AspectMap();
+        AspectMap result = new AspectMap(this.rule);
         boolean explicitEnd = false;
         int prevIndex = 0;
         int nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
@@ -161,32 +161,12 @@ public class AspectParser {
         return value;
     }
 
+    /** Indicates that this parser works for a rule. */
+    private final boolean rule;
     /**
      * Indicates that label text should be converted to curly-bracketed format.
      */
     private final boolean convertToCurly;
-
-    /**
-     * Returns a parser instance.
-     * @param convertToCurly flag indicating that label text should be converted
-     *        to curly-bracketed format
-     */
-    public static AspectParser getInstance(boolean convertToCurly) {
-        return instances[convertToCurly ? 1 : 0];
-    }
-
-    /**
-     * Normalises a would-be label, by parsing it as if it were label text, and
-     * returning a string description of the parsed result.
-     * @param plainText the string to be normalised
-     * @return the parsed <code>plainText</code>, turned back into a string
-     * @throws FormatException if <code>plainText</code> is not formatted
-     *         correctly according to the rules of the parser.
-     * @see #parse(String)
-     */
-    public static String normalize(String plainText) throws FormatException {
-        return getInstance(false).parse(plainText).toString();
-    }
 
     /**
      * Turns an aspect value into a string that can be read by
@@ -213,8 +193,4 @@ public class AspectParser {
         result.append(labelText);
         return result;
     }
-
-    /** Default parser instances. */
-    private static final AspectParser[] instances =
-        new AspectParser[] {new AspectParser(false), new AspectParser(true)};
 }

@@ -20,7 +20,6 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.ExprParser;
 import groove.view.FormatException;
-import groove.view.LabelParser;
 
 /**
  * Graph aspect dealing with node types.
@@ -30,7 +29,7 @@ import groove.view.LabelParser;
 public class TypeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
     private TypeAspect() {
-        super(NODE_TYPE_ASPECT_NAME);
+        super(TYPE_ASPECT_NAME);
     }
 
     @Override
@@ -38,7 +37,10 @@ public class TypeAspect extends AbstractAspect {
         throws FormatException {
         if (isNodeType(edge) && !edge.source().equals(edge.opposite())) {
             throw new FormatException(
-                "Node type label '%s' only allowed on self-edges", edge.label());
+                "Node type label '%s' not allowed on edges", edge.label());
+        } else if (isFlag(edge) && !edge.source().equals(edge.opposite())) {
+            throw new FormatException("Flag label '%s' not allowed on edges",
+                edge.label());
         }
     }
 
@@ -46,6 +48,24 @@ public class TypeAspect extends AbstractAspect {
     public static boolean isNodeType(AspectEdge edge) {
         AspectValue value = edge.getValue(getInstance());
         return NODE_TYPE.equals(value);
+    }
+
+    /** Indicates if a given aspect edge stands for a flag. */
+    public static boolean isFlag(AspectEdge edge) {
+        AspectValue value = edge.getValue(getInstance());
+        return FLAG.equals(value);
+    }
+
+    /** Indicates if a given aspect edge stands for a path. */
+    public static boolean isPath(AspectEdge edge) {
+        AspectValue value = edge.getValue(getInstance());
+        return PATH.equals(value);
+    }
+
+    /** Indicates if a given aspect edge has an empty aspect value. */
+    public static boolean isEmpty(AspectEdge edge) {
+        AspectValue value = edge.getValue(getInstance());
+        return EMPTY.equals(value);
     }
 
     /**
@@ -60,20 +80,38 @@ public class TypeAspect extends AbstractAspect {
      */
     static private final TypeAspect instance = new TypeAspect();
     /** Name of this aspect. */
-    static public final String NODE_TYPE_ASPECT_NAME = "node type";
+    static public final String TYPE_ASPECT_NAME = "type";
     /** Name of the node type aspect value. */
     static public final String NODE_TYPE_NAME = "type";
-    /** Name of the node type aspect value. */
+    /** The node type aspect value. */
     static public final AspectValue NODE_TYPE;
+    /** Name of the flag aspect value. */
+    static public final String FLAG_NAME = "flag";
+    /** The flag aspect value. */
+    static public final AspectValue FLAG;
+    /** Name of the path aspect value. */
+    static public final String PATH_NAME = "path";
+    /** The path aspect value. */
+    static public final AspectValue PATH;
+    /** Name of the empty aspect value. */
+    static public final String EMPTY_NAME = "";
+    /** The empty aspect value. */
+    static public final AspectValue EMPTY;
 
     static {
         try {
             NODE_TYPE = instance.addEdgeValue(NODE_TYPE_NAME);
             NODE_TYPE.setLabelParser(NodeTypeLabelParser.getInstance());
+            FLAG = instance.addEdgeValue(FLAG_NAME);
+            FLAG.setLabelParser(NodeTypeLabelParser.getInstance());
+            PATH = instance.addEdgeValue(PATH_NAME);
+            PATH.setLabelParser(RegExprLabelParser.getInstance());
+            EMPTY = instance.addEdgeValue(EMPTY_NAME);
+            EMPTY.setLabelParser(FreeLabelParser.getInstance());
             // incompatibilities
             instance.setIncompatible(NestingAspect.getInstance());
         } catch (FormatException exc) {
-            throw new Error("Aspect '" + NODE_TYPE_ASPECT_NAME
+            throw new Error("Aspect '" + TYPE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
         }
     }
