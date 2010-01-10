@@ -586,14 +586,10 @@ public class LabelTree extends JTree implements GraphModelListener,
             text.append(Options.EMPTY_LABEL_TEXT);
             specialLabelColour = true;
         } else {
-            text.append(label.text());
+            text.append(DefaultLabel.toHtmlString(label));
         }
-        Converter.toHtml(text);
         if (specialLabelColour) {
             Converter.createColorTag(SPECIAL_COLOR).on(text);
-        }
-        if (label.isNodeType()) {
-            Converter.STRONG_TAG.on(text);
         }
         if (isFiltered(label)) {
             Converter.STRIKETHROUGH_TAG.on(text);
@@ -1177,17 +1173,19 @@ public class LabelTree extends JTree implements GraphModelListener,
                 for (String dataRow : data.split("\n")) {
                     int separatorIndex = dataRow.indexOf(' ');
                     if (separatorIndex < 0) {
-                        Label keyType = DefaultLabel.createLabel(dataRow, true);
+                        Label keyType =
+                            DefaultLabel.createLabel(dataRow, Label.NODE_TYPE);
                         if (!draggedLabels.containsKey(keyType)) {
                             draggedLabels.put(keyType, new HashSet<Label>());
                         }
                     } else {
                         Label keyType =
                             DefaultLabel.createLabel(dataRow.substring(0,
-                                separatorIndex), true);
+                                separatorIndex), Label.NODE_TYPE);
                         Label valueType =
                             DefaultLabel.createLabel(
-                                dataRow.substring(separatorIndex + 1), true);
+                                dataRow.substring(separatorIndex + 1),
+                                Label.NODE_TYPE);
                         Set<Label> values = draggedLabels.get(keyType);
                         if (values == null) {
                             draggedLabels.put(keyType, values =

@@ -24,12 +24,12 @@ import groove.view.FormatException;
 public interface LabelParser {
     /**
      * Method turning a default label into a possibly structured label.
-     * @param label the default label to be parsed
+     * @param text the default label to be parsed
      * @return the label constructed from <code>label</code>
      * @throws FormatException if <code>label</code> is not correctly formatted
      *         according to this parser.
      */
-    Label parse(Label label) throws FormatException;
+    Label parse(String text) throws FormatException;
 
     /**
      * Method turning a structured label into a default label from which the

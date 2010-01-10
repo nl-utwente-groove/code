@@ -81,13 +81,9 @@ public class TypeAspect extends AbstractAspect {
     static private final TypeAspect instance = new TypeAspect();
     /** Name of this aspect. */
     static public final String TYPE_ASPECT_NAME = "type";
-    /** Name of the node type aspect value. */
-    static public final String NODE_TYPE_NAME = "type";
     /** The node type aspect value. */
     static public final AspectValue NODE_TYPE;
     /** Name of the flag aspect value. */
-    static public final String FLAG_NAME = "flag";
-    /** The flag aspect value. */
     static public final AspectValue FLAG;
     /** Name of the path aspect value. */
     static public final String PATH_NAME = "path";
@@ -100,9 +96,9 @@ public class TypeAspect extends AbstractAspect {
 
     static {
         try {
-            NODE_TYPE = instance.addEdgeValue(NODE_TYPE_NAME);
+            NODE_TYPE = instance.addEdgeValue(DefaultLabel.NODE_TYPE_PREFIX);
             NODE_TYPE.setLabelParser(NodeTypeLabelParser.getInstance());
-            FLAG = instance.addEdgeValue(FLAG_NAME);
+            FLAG = instance.addEdgeValue(DefaultLabel.FLAG_PREFIX);
             FLAG.setLabelParser(NodeTypeLabelParser.getInstance());
             PATH = instance.addEdgeValue(PATH_NAME);
             PATH.setLabelParser(RegExprLabelParser.getInstance());
@@ -129,19 +125,18 @@ public class TypeAspect extends AbstractAspect {
         }
 
         @Override
-        public Label parse(Label label) throws FormatException {
-            String labelText = label.text();
-            if (ExprParser.isIdentifier(labelText)) {
-                return DefaultLabel.createLabel(labelText, true);
+        public Label parse(String text) throws FormatException {
+            if (ExprParser.isIdentifier(text)) {
+                return DefaultLabel.createLabel(text, Label.NODE_TYPE);
             } else {
                 throw new FormatException(
-                    "Node type label '%s' is not a valid identifier", labelText);
+                    "Node type label '%s' is not a valid identifier", text);
             }
         }
 
         @Override
         public DefaultLabel unparse(Label label) {
-            return DefaultLabel.createLabel(label.text(), label.isNodeType());
+            return DefaultLabel.createLabel(label.text(), label.getType());
         }
 
         /** Returns the singleton instance of this class. */

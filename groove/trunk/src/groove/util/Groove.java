@@ -197,6 +197,9 @@ public class Groove {
     /** Rule editing mode icon. */
     public static final ImageIcon RULE_MODE_ICON =
         new ImageIcon(getResource("rule-mode.gif"));
+    /** Type editing mode icon. */
+    public static final ImageIcon TYPE_MODE_ICON =
+        new ImageIcon(getResource("type-mode.gif"));
     /** Icon for graphs. */
     public static final ImageIcon GRAPH_ICON =
         new ImageIcon(getResource("graph.gif"));

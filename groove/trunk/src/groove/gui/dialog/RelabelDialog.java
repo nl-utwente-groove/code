@@ -127,9 +127,10 @@ public class RelabelDialog {
         String text = getNewField().getText();
         if (text.length() > 0) {
             boolean isNodeType = getNewTypeCheckbox().isSelected();
-            result = DefaultLabel.createLabel(text, isNodeType);
             if (isNodeType) {
-                TypeAspect.NODE_TYPE.getLabelParser().parse(result);
+                result = TypeAspect.NODE_TYPE.getLabelParser().parse(text);
+            } else {
+                result = DefaultLabel.createLabel(text);
             }
         } else {
             throw new FormatException("Empty replacement label not allowed");

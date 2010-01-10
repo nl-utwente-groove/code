@@ -394,6 +394,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     private GraphJEdge addBinaryEdge(BinaryEdge edge) {
         Node source = edge.source();
         Node target = edge.opposite();
+        // don't do this for node types, as they need to be typeset in bold
         if (!edge.label().isNodeType()) {
             // maybe a j-edge between this source and target is already in the
             // graph

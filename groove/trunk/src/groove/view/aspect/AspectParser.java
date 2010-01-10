@@ -42,7 +42,7 @@ public class AspectParser {
 
     /**
      * Extracts the aspect information from a plain label text.
-     * @param plainText the text to start from
+     * @param text the text to start from
      * @return an object containing information about the aspect value, the
      *         possible end marker, and the possible actual label text present
      *         in <code>plainText</code>
@@ -50,57 +50,43 @@ public class AspectParser {
      *         aspect value that is not recognised by
      *         {@link AspectValue#getValue(String)}.
      */
-    public AspectMap parse(String plainText) throws FormatException {
+    public AspectMap parse(String text) throws FormatException {
         AspectMap result = new AspectMap(this.rule);
-        boolean explicitEnd = false;
-        int prevIndex = 0;
-        int nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
-        while (nextIndex >= prevIndex) {
+        boolean end = false;
+        boolean edgeOnly = false;
+        int nextIndex = text.indexOf(VALUE_SEPARATOR);
+        while (!end && nextIndex >= 0) {
             // look for the next aspect value between prevIndex and nextIndex
-            String valueText = plainText.substring(prevIndex, nextIndex);
-            explicitEnd = valueText.length() == 0;
-            if (explicitEnd) {
-                // update prevIndex but not nextIndex, to ensure the end
-                prevIndex = nextIndex + 1;
-            } else if (ExprParser.isIdentifierStartChar(valueText.charAt(0))) {
-                try {
-                    String contentText;
-                    int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
-                    if (assignIndex < 0) {
-                        contentText = null;
-                    } else {
-                        contentText =
-                            valueText.substring(assignIndex
-                                + CONTENT_ASSIGN.length());
-                        valueText = valueText.substring(0, assignIndex);
-                    }
-                    result.addDeclaredValue(parseValue(valueText, contentText));
-                } catch (FormatException exc) {
-                    throw new FormatException("%s in '%s'", exc.getMessage(),
-                        plainText);
+            String valueText = text.substring(0, nextIndex);
+            try {
+                String contentText;
+                int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
+                if (assignIndex < 0) {
+                    contentText = null;
+                } else {
+                    contentText =
+                        valueText.substring(assignIndex
+                            + CONTENT_ASSIGN.length());
+                    valueText = valueText.substring(0, assignIndex);
                 }
-                prevIndex = nextIndex + 1;
-                nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
-            } else {
-                // the currently parsed substring is not an aspect value, so
-                // leave it in the text
-                nextIndex = prevIndex - 1;
+                AspectValue value = parseValue(valueText, contentText);
+                result.addDeclaredValue(value);
+                end = value.isLast();
+                edgeOnly |= !value.isNodeValue();
+            } catch (FormatException exc) {
+                throw new FormatException("%s in '%s'", exc.getMessage(), text);
             }
+            text = text.substring(nextIndex + 1);
+            nextIndex = text.indexOf(VALUE_SEPARATOR);
         }
-        String text = plainText.substring(prevIndex);
-        if (text.length() == 0 && !explicitEnd) {
-            text = null;
-        } else {
+        if (edgeOnly || text.length() > 0) {
             if (this.convertToCurly) {
                 text = toCurly(text);
             }
-            // insert value separator if ambiguity may arise
-            explicitEnd |=
-                text.indexOf(VALUE_SEPARATOR) >= 0
-                    && ExprParser.isIdentifierStartChar(text.charAt(0));
+        } else {
+            text = null;
         }
         result.setText(text);
-        result.setHasEnd(explicitEnd);
         return result;
     }
 

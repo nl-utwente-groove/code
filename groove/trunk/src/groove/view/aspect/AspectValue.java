@@ -44,7 +44,6 @@ public class AspectValue {
         this.aspect = aspect;
         this.name = name;
         this.incompatibles = new HashSet<AspectValue>();
-        registerValue(this);
     }
 
     /**
@@ -321,41 +320,38 @@ public class AspectValue {
     private boolean singular;
 
     /**
-     * Registers a new aspect value. For this to be successful, the value name
-     * must be fresh; otherwise, themathod throws a {@link FormatException}. If
-     * successful, afterwards <code>getValue(value.getName())</code> will yield
-     * <code>value</code>.
-     * @param value the new aspect value
-     * @throws FormatException if <code>value.getName()</code> is an already
-     *         existing aspect value name, as attested by
-     *         {@link #getValue(String)}.
-     * @see #getValue(String)
-     */
-    private static void registerValue(AspectValue value) throws FormatException {
-        String name = value.getName();
-        AspectValue previous = getValue(name);
-        if (previous != null) {
-            throw new FormatException("Aspect value name " + name
-                + " already used for " + previous.getAspect());
-        }
-        valueMap.put(value.getName(), value);
-    }
-
-    /**
      * Returns the aspect value associated with a given name, if any. Returns
      * <code>null</code> if there is no value associated.
      * @param name the name for which we want the corresponding aspect value.
      */
     public static AspectValue getValue(String name) {
-        return valueMap.get(name);
+        Aspect.getAllAspects();
+        return getValueMap().get(name);
     }
 
     /** Returns an unmodifiable view on the registered value names. */
     public static Set<String> getValueNames() {
-        return valueMap.keySet();
+        Aspect.getAllAspects();
+        return getValueMap().keySet();
+    }
+
+    /** Returns the register of aspect value names. */
+    private static Map<String,AspectValue> getValueMap() {
+        // initialise the value map, if necessary
+        if (valueMap == null) {
+            valueMap = new HashMap<String,AspectValue>();
+            for (Aspect aspect : Aspect.getAllAspects()) {
+                for (AspectValue value : aspect.getValues()) {
+                    String name = value.getName();
+                    AspectValue previous = valueMap.put(value.getName(), value);
+                    assert previous == null : String.format("Aspect value name "
+                        + name + " already used for " + previous.getAspect());
+                }
+            }
+        }
+        return valueMap;
     }
 
     /** The internally kept register of aspect value names. */
-    private static final Map<String,AspectValue> valueMap =
-        new HashMap<String,AspectValue>();
+    private static Map<String,AspectValue> valueMap;
 }

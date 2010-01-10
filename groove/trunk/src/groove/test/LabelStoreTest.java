@@ -278,10 +278,10 @@ public class LabelStoreTest extends TestCase {
 
     private LabelStore store1;
     private LabelStore store2;
-    private final Label typeA = DefaultLabel.createLabel("A", true);
-    private final Label typeB = DefaultLabel.createLabel("B", true);
-    private final Label typeC = DefaultLabel.createLabel("C", true);
-    private final Label typeD = DefaultLabel.createLabel("D", true);
+    private final Label typeA = DefaultLabel.createLabel("A", Label.NODE_TYPE);
+    private final Label typeB = DefaultLabel.createLabel("B", Label.NODE_TYPE);
+    private final Label typeC = DefaultLabel.createLabel("C", Label.NODE_TYPE);
+    private final Label typeD = DefaultLabel.createLabel("D", Label.NODE_TYPE);
     private final Label a = DefaultLabel.createLabel("a");
     private final Label b = DefaultLabel.createLabel("b");
     private final Label c = DefaultLabel.createLabel("c");

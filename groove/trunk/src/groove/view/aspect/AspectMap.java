@@ -16,8 +16,6 @@
  */
 package groove.view.aspect;
 
-import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.view.FormatException;
 
@@ -49,7 +47,6 @@ public class AspectMap implements Iterable<AspectValue> {
         this.aspectMap.putAll(other.aspectMap);
         this.declaredValues.addAll(other.declaredValues);
         this.text = other.getText();
-        this.hasEnd = other.hasEnd();
         this.rule = other.rule;
     }
 
@@ -62,10 +59,6 @@ public class AspectMap implements Iterable<AspectValue> {
         StringBuffer result = new StringBuffer();
         for (AspectValue value : getDeclaredValues()) {
             result.append(AspectParser.toString(value));
-        }
-        // append the end marking, if any
-        if (hasEnd()) {
-            result.append(VALUE_SEPARATOR);
         }
         // append the label text, if any
         String label = getText();
@@ -212,7 +205,6 @@ public class AspectMap implements Iterable<AspectValue> {
         if (this.text != null) {
             result += this.text.hashCode();
         }
-        result += this.hasEnd ? 1 : 0;
         return result;
     }
 
@@ -222,14 +214,12 @@ public class AspectMap implements Iterable<AspectValue> {
     }
 
     /**
-     * Indicates if the {@link #text} and {@link #hasEnd} parts of this map
-     * equal those of another.
+     * Indicates if the {@link #text} of this map equals that of another.
      */
     private boolean equalsText(AspectMap other) {
         boolean result =
             this.text == null ? other.text == null
                     : this.text.equals(other.text);
-        result |= this.hasEnd == other.hasEnd;
         return result;
     }
 
@@ -245,32 +235,39 @@ public class AspectMap implements Iterable<AspectValue> {
         if (getText() != null
             && (get(RuleAspect.getInstance()) != null || get(NestingAspect.getInstance()) == null)
             && !RuleAspect.REMARK.equals(get(RuleAspect.getInstance()))) {
-            LabelParser parser = null;
-            if (!hasEnd()) {
-                for (AspectValue value : this) {
-                    // find the parser for this aspect value
-                    LabelParser valueParser = value.getLabelParser();
-                    // set it as the label parser, or compose it with the
-                    // previously
-                    // found parser
-                    if (parser == null) {
-                        parser = valueParser;
-                    } else if (valueParser != null
-                        && !valueParser.equals(parser)) {
-                        parser = new ComposedLabelParser(parser, valueParser);
-                    }
-                }
-            }
-            // use the default parser if none is found
-            if (parser == null) {
-                parser =
-                    this.rule && !hasEnd() ? RegExprLabelParser.getInstance()
-                            : FreeLabelParser.getInstance();
-            }
             // parse the label
-            result = parser.parse(DefaultLabel.createLabel(getText()));
+            result = getLabelParser().parse(getText());
         }
         return result;
+    }
+
+    /**
+     * Retrieves the label parser from the aspect values. The result should be
+     * non-null.
+     */
+    private LabelParser getLabelParser() {
+        LabelParser result = null;
+        for (AspectValue value : this) {
+            // find the parser for this aspect value
+            result = value.getLabelParser();
+            if (result != null) {
+                break;
+            }
+        }
+        if (result == null) {
+            result = getDefaultLabelParser();
+        }
+        assert result != null : String.format("No label parser in %s",
+            toString());
+        return result;
+    }
+
+    /**
+     * Returns the default label parser (which depends on the {@link #rule}
+     * property).
+     */
+    private LabelParser getDefaultLabelParser() {
+        return (this.rule ? TypeAspect.PATH : TypeAspect.EMPTY).getLabelParser();
     }
 
     /**
@@ -302,7 +299,7 @@ public class AspectMap implements Iterable<AspectValue> {
         // check if the edge label complies with the new aspect value
         LabelParser parser = value.getLabelParser();
         if (parser != null && getText() != null) {
-            parser.parse(DefaultLabel.createLabel(getText()));
+            parser.parse(getText());
         }
         return this.aspectMap.put(aspect, value);
     }
@@ -361,11 +358,6 @@ public class AspectMap implements Iterable<AspectValue> {
         this.text = text;
     }
 
-    /** Sets the explicit end flag. */
-    void setHasEnd(boolean hasEnd) {
-        this.hasEnd = hasEnd;
-    }
-
     /**
      * Returns the label text of this aspect map. The label text may be {@code
      * null} if the associated aspect element is a node.
@@ -374,16 +366,6 @@ public class AspectMap implements Iterable<AspectValue> {
         return this.text;
     }
 
-    /** Indicates if the original aspect text has an explicit separator. */
-    boolean hasEnd() {
-        return this.hasEnd;
-    }
-
-    /**
-     * Flag indicating if there is an explicit separator between aspect prefixes
-     * and label text.
-     */
-    private boolean hasEnd;
     /** Label text; may be {@code null} if the associated element is a node. */
     private String text;
     /**

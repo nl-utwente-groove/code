@@ -30,7 +30,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractAspect implements Aspect {
+public abstract class AbstractAspect extends Aspect {
     /**
      * Constructs an aspect with a given name and an initially empty set of
      * aspect values.
@@ -103,13 +103,15 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * This implementation returns the internally stored set of aspects.
      */
+    @Override
     public Set<AspectValue> getValues() {
-        return Collections.unmodifiableSet(this.nodeValues);
+        return Collections.unmodifiableSet(this.allValues);
     }
 
     /**
      * This implementation returns the internally stored set of aspects.
      */
+    @Override
     public Set<AspectValue> getNodeValues() {
         return Collections.unmodifiableSet(this.nodeValues);
     }
@@ -117,6 +119,7 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * This implementation returns the internally stored set of aspects.
      */
+    @Override
     public Set<AspectValue> getEdgeValues() {
         return Collections.unmodifiableSet(this.edgeValues);
     }
@@ -130,6 +133,7 @@ public abstract class AbstractAspect implements Aspect {
     }
 
     /** This default implementation returns <code>null</code> always. */
+    @Override
     final public AspectValue getDefaultValue() {
         return this.defaultValue;
     }
@@ -211,6 +215,7 @@ public abstract class AbstractAspect implements Aspect {
      *         exception for two non-<code>null</code> elements of
      *         <code>values</code>
      */
+    @Override
     final public AspectValue getMax(AspectValue... values)
         throws FormatException {
         AspectValue result = null;
@@ -254,6 +259,7 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * This default implementation never throws the exception.
      */
+    @Override
     public void checkEdge(AspectEdge edge, AspectGraph graph)
         throws FormatException {
         // empty
@@ -262,6 +268,7 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * This default implementation never throws the exception.
      */
+    @Override
     public void checkNode(AspectNode node, AspectGraph graph)
         throws FormatException {
         // empty
@@ -270,6 +277,7 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * This default implementation never throws the exception.
      */
+    @Override
     public void testLabel(Label label, AspectValue declaredValue,
             AspectValue inferredValue) throws FormatException {
         // does nothing

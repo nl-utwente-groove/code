@@ -397,7 +397,8 @@ public class LabelStore implements Cloneable {
                     throw new FormatException(
                         "Invalid node type identifier '%s'", splitDecl[0]);
                 }
-                Label supertype = DefaultLabel.createLabel(splitDecl[0], true);
+                Label supertype =
+                    DefaultLabel.createLabel(splitDecl[0], Label.NODE_TYPE);
                 Set<Label> subtypes = result.get(supertype);
                 if (subtypes == null) {
                     result.put(supertype, subtypes = new TreeSet<Label>());
@@ -410,7 +411,8 @@ public class LabelStore implements Cloneable {
                         throw new FormatException(
                             "Invalid node type identifier '%s'", subtype);
                     }
-                    subtypes.add(DefaultLabel.createLabel(subtype, true));
+                    subtypes.add(DefaultLabel.createLabel(subtype,
+                        Label.NODE_TYPE));
                 }
             }
         }

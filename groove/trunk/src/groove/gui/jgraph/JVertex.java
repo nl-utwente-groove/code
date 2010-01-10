@@ -143,5 +143,5 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
 
     /** Pseudo-label for cells with an empty list label set. */
     static public final Label NO_LABEL =
-        DefaultLabel.createLabel("\u0000", true);
+        DefaultLabel.createLabel("\u0000", Label.NODE_TYPE);
 }
