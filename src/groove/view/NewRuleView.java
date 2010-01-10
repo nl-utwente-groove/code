@@ -548,7 +548,8 @@ public class NewRuleView implements RuleView {
          * @see NestingAspect#isPositive(groove.view.aspect.AspectElement)
          */
         public boolean isPositive() {
-            return NestingAspect.isPositive(this.levelNode);
+            return isImplicit() ? this.index.size() == 1
+                    : NestingAspect.isPositive(this.levelNode);
         }
 
         @Override
@@ -615,15 +616,21 @@ public class NewRuleView implements RuleView {
                     Set<AspectEdge> outEdges =
                         NewRuleView.this.graph.outEdgeSet(node);
                     if (outEdges.isEmpty()) {
-                        // this is a top node in the level node tree
-                        assert NestingAspect.isForall(node) : String.format(
-                            "Top level '%s' should not be existential", node);
-                        parentLevel = this.topLevelIndex;
+                        if (NestingAspect.isForall(node)) {
+                            parentLevel = this.topLevelIndex;
+                        } else {
+                            // create an artificial intermediate level to
+                            // accommodate erroneous top-level existential node
+                            parentLevel = new LevelIndex();
+                            metaNodeTree.put(parentLevel, createChildren());
+                            indexParentMap.put(parentLevel, this.topLevelIndex);
+                        }
                     } else {
                         AspectNode parentNode =
                             outEdges.iterator().next().opposite();
                         parentLevel = getIndex(parentNode);
                     }
+
                     indexParentMap.put(nodeLevel, parentLevel);
                 }
             }

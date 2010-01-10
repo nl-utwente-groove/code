@@ -32,7 +32,6 @@ import groove.lts.GraphState;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.view.aspect.AttributeAspect;
-import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -220,7 +219,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         Label edgeLabel = getLabel(edge);
         if (edgeLabel instanceof RegExprLabel) {
             result.append(Converter.ITALIC_TAG.on(edgeLabel));
-        } else if (edgeLabel.isNodeType()) {
+        } else if (!edgeLabel.isBinary()) {
             result.append(DefaultLabel.toHtmlString(edgeLabel));
         } else {
             result.append(edgeLabel);
@@ -294,14 +293,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * This implementation returns <code>edge.label().text()</code>
+     * This implementation calls {@link DefaultLabel#toTypedString(Label)} on
+     * the edge label.
      */
     public String getPlainLabel(Edge edge) {
-        String result = edge.label().text();
-        if (edge.label().isNodeType()) {
-            result = TypeAspect.NODE_TYPE.getPrefix() + result;
-        }
-        return result;
+        return DefaultLabel.toTypedString(edge.label());
     }
 
     /**

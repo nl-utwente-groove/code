@@ -65,7 +65,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      */
     private void addInferences(AspectMap edgeData, AspectMap sourceData,
             AspectMap targetData) throws FormatException {
-        for (Aspect aspect : Aspect.allAspects) {
+        for (Aspect aspect : Aspect.getAllAspects()) {
             AspectValue edgeValue = edgeData.get(aspect);
             AspectValue sourceValue = sourceData.get(aspect);
             AspectValue sourceInference =
@@ -123,7 +123,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     @Override
     protected int computeHashCode() {
         int result = super.computeHashCode();
-        for (Aspect aspect : Aspect.allAspects) {
+        for (Aspect aspect : Aspect.getAllAspects()) {
             AspectValue value = getValue(aspect);
             if (value != null) {
                 result += value.hashCode();
@@ -151,7 +151,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
 
     /** Tests if the aspect map of this edge equals that of the other. */
     protected boolean isAspectEqual(AspectEdge other) {
-        for (Aspect aspect : Aspect.allAspects) {
+        for (Aspect aspect : Aspect.getAllAspects()) {
             if (getValue(aspect) != other.getValue(aspect)) {
                 return false;
             }
@@ -209,34 +209,6 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
             AspectValue inferredValue = getAspectMap().get(aspect);
             aspect.testLabel(label(), declaredAspectValue, inferredValue);
         }
-    }
-
-    /** Callback factory method. */
-    @Deprecated
-    AspectMap createParseData(Label label, AspectValue[] values)
-        throws FormatException {
-        AspectMap result = new AspectMap(computeDeclaredAspectMap(values));
-        return result;
-    }
-
-    /**
-     * Converts an array of aspect values into an aspect map, and adds the
-     * values inferred from the source and target nodes.
-     * @param values the explicit aspect values for the edge
-     * @return an aspect map combining the explicit and the inferred aspect
-     *         values
-     * @throws FormatException if <code>values</code> contains duplicate values
-     *         for an aspect, or the values are inconsistent with the inferred
-     *         values
-     */
-    @Deprecated
-    final protected AspectMap computeDeclaredAspectMap(AspectValue[] values)
-        throws FormatException {
-        AspectMap result = new AspectMap(true);
-        for (AspectValue value : values) {
-            result.addDeclaredValue(value);
-        }
-        return result;
     }
 
     /**

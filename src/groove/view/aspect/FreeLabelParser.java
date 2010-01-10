@@ -38,15 +38,15 @@ public class FreeLabelParser implements LabelParser {
      * this succeeds, returns a {@link DefaultLabel} with <code>text</code> as
      * label text. If it fails, throws an exception determined by
      * {@link #getExceptionText(String)}.
-     * @throws FormatException if <code>text</code> is not correctly
-     *         formatted. The message of the exception should make clear what
-     *         the mismatch is.
+     * @throws FormatException if <code>text</code> is not correctly formatted.
+     *         The message of the exception should make clear what the mismatch
+     *         is.
      */
-    final public Label parse(Label label) throws FormatException {
-        if (!isCorrect(label.text())) {
-            throw new FormatException(getExceptionText(label.text()));
+    final public Label parse(String text) throws FormatException {
+        if (!isCorrect(text)) {
+            throw new FormatException(getExceptionText(text));
         }
-        return label;
+        return DefaultLabel.createLabel(text);
     }
 
     /**

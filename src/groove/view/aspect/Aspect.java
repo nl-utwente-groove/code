@@ -28,33 +28,33 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface Aspect {
+public abstract class Aspect {
     /**
      * Returns the set of all possible aspect values (for either nodes or
      * edges), as a set of <code>AspectValue</code>s.
      * @see #getNodeValues()
      * @see #getEdgeValues()
      */
-    Set<AspectValue> getValues();
+    abstract Set<AspectValue> getValues();
 
     /**
      * Returns the possible node aspect values, as a set of
      * <code>AspectValue</code>s.
      * @see #getValues()
      */
-    Set<AspectValue> getNodeValues();
+    abstract Set<AspectValue> getNodeValues();
 
     /**
      * Returns the possible edge aspect values, as a set of
      * <code>AspectValue</code>s.
      * @see #getValues()
      */
-    Set<AspectValue> getEdgeValues();
+    abstract Set<AspectValue> getEdgeValues();
 
     /**
      * Returns the default aspect value, if any.
      */
-    AspectValue getDefaultValue();
+    abstract AspectValue getDefaultValue();
 
     /**
      * Returns the maximum value for a number of aspect values. All values
@@ -66,7 +66,7 @@ public interface Aspect {
      * @throws IllegalArgumentException if <code>values.length == 0</code>
      * @throws FormatException if the values are incompatible
      */
-    AspectValue getMax(AspectValue... values) throws FormatException;
+    abstract AspectValue getMax(AspectValue... values) throws FormatException;
 
     /**
      * Tests the local correctness of a given aspect node, in terms of its
@@ -75,7 +75,8 @@ public interface Aspect {
      * @param node the node to be tested for correctness
      * @param graph aspect graph in which the node occurs
      */
-    void checkNode(AspectNode node, AspectGraph graph) throws FormatException;
+    abstract void checkNode(AspectNode node, AspectGraph graph)
+        throws FormatException;
 
     /**
      * Tests the local correctness of a given aspect edge, in terms of its
@@ -84,7 +85,8 @@ public interface Aspect {
      * @param edge the edge to be tested for correctness
      * @param graph aspect graph in which the node occurs
      */
-    void checkEdge(AspectEdge edge, AspectGraph graph) throws FormatException;
+    abstract void checkEdge(AspectEdge edge, AspectGraph graph)
+        throws FormatException;
 
     /**
      * Tests if an edge label is allowed, given a declared and an inferred
@@ -97,8 +99,19 @@ public interface Aspect {
      * @throws FormatException if the label is not correct, given the aspect
      *         values
      */
-    void testLabel(Label label, AspectValue declaredValue,
+    abstract void testLabel(Label label, AspectValue declaredValue,
             AspectValue inferredValue) throws FormatException;
+
+    /** Returns the array of all known aspects. */
+    static public Aspect[] getAllAspects() {
+        if (allAspects == null) {
+            allAspects =
+                new Aspect[] {AttributeAspect.getInstance(),
+                    RuleAspect.getInstance(), NestingAspect.getInstance(),
+                    ParameterAspect.getInstance(), TypeAspect.getInstance()};
+        }
+        return allAspects;
+    }
 
     /**
      * String used to separate the textual representation of aspect values in a
@@ -120,8 +133,5 @@ public interface Aspect {
     /**
      * Array of all known aspects.
      */
-    public Aspect[] allAspects =
-        {AttributeAspect.getInstance(), RuleAspect.getInstance(),
-            NestingAspect.getInstance(), ParameterAspect.getInstance(),
-            TypeAspect.getInstance()};
+    private static Aspect[] allAspects;
 }

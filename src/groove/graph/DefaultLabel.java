@@ -17,7 +17,6 @@
 package groove.graph;
 
 import groove.util.Converter;
-import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,30 +32,16 @@ import java.util.Map;
 public final class DefaultLabel extends AbstractLabel {
     /**
      * Constructs a standard implementation of Label on the basis of a given
-     * text. The constructed label is not a node type.
-     * @param text the text of the label
-     * @require <tt>text != null</tt>
-     * @ensure <tt>text().equals(text)</tt>
-     * @deprecated used only for the groove.util.Analyzer command line tool,
-     *             which is no longer maintained
-     */
-    @Deprecated
-    private DefaultLabel(String text) {
-        this.index = newLabelIndex(text, false);
-        this.hashCode = computeHashCode();
-        this.nodeType = false;
-    }
-
-    /**
-     * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.
      * @param index the index of the label text
-     * @param nodeType flag indicating if this label stands for a node type
+     * @param type indicator of the type of label (normal, node type or flag).
+     *        The value is respectively 0, {@link #NODE_TYPE_MASK} or
+     *        {@link #FLAG_MASK}.
      */
-    private DefaultLabel(char index, boolean nodeType) {
+    private DefaultLabel(char index, int type) {
         this.index = index;
         this.hashCode = computeHashCode();
-        this.nodeType = nodeType;
+        this.type = type;
     }
 
     public String text() {
@@ -64,8 +49,8 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     @Override
-    public boolean isNodeType() {
-        return this.nodeType;
+    public int getType() {
+        return this.type;
     }
 
     // ------------------------- OBJECT OVERRIDES ---------------------
@@ -89,13 +74,28 @@ public final class DefaultLabel extends AbstractLabel {
     /** Computes a hash code for this label. */
     private int computeHashCode() {
         int result = text().hashCode() * (this.index + 1);
-        return isNodeType() ? result ^ NODE_TYPE_MASK : result;
+        int mask;
+        switch (this.type) {
+        case NODE_TYPE:
+            mask = NODE_TYPE_MASK;
+            break;
+        case FLAG:
+            mask = FLAG_MASK;
+            break;
+        default:
+            mask = 0;
+        }
+        return result ^ mask;
     }
 
-    /** All node type labels are smaller than all standard labels. */
     @Override
     public int compareTo(Label obj) {
+        /* All node type labels are smaller than all others. */
         int result = boolToInt(obj.isNodeType()) - boolToInt(isNodeType());
+        /* All flag labels are smaller than all standard labels. */
+        if (result == 0) {
+            result = boolToInt(obj.isFlag()) - boolToInt(isFlag());
+        }
         if (result == 0) {
             result = super.compareTo(obj);
         }
@@ -128,50 +128,53 @@ public final class DefaultLabel extends AbstractLabel {
     private final char index;
     /** The hash code of this label. */
     private final int hashCode;
-    /** Flag indicating if this label stands for a node type. */
-    private final boolean nodeType;
+    /** The type of label (normal, node type or flag). */
+    private final int type;
 
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
      * string. The string is used as-is, and is guaranteed to equal the text of
-     * the resulting label. The returned label is not a node type.
+     * the resulting label. The returned label is binary.
      * @param text the text of the label; non-null
      * @return an existing or new label with the given text; non-null
-     * @see #createLabel(String, boolean)
      */
     public static DefaultLabel createLabel(String text) {
-        assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text, false));
+        return createLabel(text, BINARY);
     }
 
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
-     * string. The string is used as-is, and is guaranteed to equal the text of
-     * the resulting label.
+     * string and label type. The string is used as-is, and is guaranteed to
+     * equal the text of the resulting label.
      * @param text the text of the label; non-null
-     * @param nodeType flag indicating if the label stands for a node type
+     * @param labelType type of the label to be created
      * @return an existing or new label with the given text and node type
      *         property; non-null
+     * @see #getType()
      */
-    public static DefaultLabel createLabel(String text, boolean nodeType) {
+    public static DefaultLabel createLabel(String text, int labelType) {
         assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text, nodeType));
+        return getLabel(newLabelIndex(text, labelType));
     }
 
     /**
      * Returns a default or node type label, depending on the prefix in the
      * input string.
-     * @param prefixedText text of the label, possibly prefixed with
-     *        {@link TypeAspect#NODE_TYPE_NAME}.
-     * @return a label without the prefix, which is a node type if the prefix is
-     *         there.
+     * @param prefixedText text of the label, possibly prefixed with a type
+     *        prefix {@link #NODE_TYPE_PREFIX} or {@link #FLAG_PREFIX}
+     * @return a label without the prefix, with label type determined by the
+     *         prefix
      */
     public static DefaultLabel createTypedLabel(String prefixedText) {
-        String typePrefix = TypeAspect.NODE_TYPE.getPrefix();
-        boolean isType = prefixedText.startsWith(typePrefix);
+        int labelType = BINARY;
+        if (prefixedText.startsWith(getTypePrefix(NODE_TYPE))) {
+            labelType = NODE_TYPE;
+        } else if (prefixedText.startsWith(getTypePrefix(FLAG))) {
+            labelType = FLAG;
+        }
         String actualText =
-            isType ? prefixedText.substring(typePrefix.length()) : prefixedText;
-        return createLabel(actualText, isType);
+            prefixedText.substring(getTypePrefix(labelType).length());
+        return createLabel(actualText, labelType);
     }
 
     /**
@@ -183,7 +186,7 @@ public final class DefaultLabel extends AbstractLabel {
         do {
             freshLabelIndex++;
             text = "L" + freshLabelIndex;
-        } while (labelIndex(text, false) < Character.MAX_VALUE);
+        } while (labelIndex(text, BINARY) < Character.MAX_VALUE);
         return createLabel(text);
     }
 
@@ -233,21 +236,19 @@ public final class DefaultLabel extends AbstractLabel {
      * the label is a node type.
      */
     static public String toTypedString(Label label) {
-        String prefix =
-            label.isNodeType() ? TypeAspect.NODE_TYPE.getPrefix() : "";
-        return prefix + label.text();
+        return getTypePrefix(label.getType()) + label.text();
     }
 
     /**
      * Returns the index of a certain label text, if it is in the list. Returns
      * a special value if the text is not in the list.
      * @param text the label text being looked up
-     * @param nodeType flag indicating if the result should be node type label
+     * @param labelType the type of the label to be looked up or created
      * @return the index of <tt>text</tt>, if it is the list;
      *         <tt>Character.MAX_VALUE</tt> otherwise.
      */
-    static private char labelIndex(String text, boolean nodeType) {
-        Character index = getIndexMap(nodeType).get(text);
+    static private char labelIndex(String text, int labelType) {
+        Character index = getIndexMap(labelType).get(text);
         if (index == null) {
             return Character.MAX_VALUE;
         } else {
@@ -256,44 +257,21 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
-     * Modifies the static index map of this class. If the index map is not
-     * empty at the time of invocation, an exception is thrown. Intended for
-     * serialisation only.
-     * @param textList modification to the index map
-     * @throws IllegalStateException if the static index map is not empty at the
-     *         time of invocation.
-     * @deprecated used only for the groove.util.Analyzer command line tool,
-     *             which is no longer maintained
-     */
-    @Deprecated
-    static public void putTextList(List<String> textList) {
-        if (!DefaultLabel.textList.isEmpty()) {
-            throw new IllegalStateException();
-        }
-        DefaultLabel.textList.addAll(textList);
-        for (String text : textList) {
-            standardIndexMap.put(text, new Character((char) labelList.size()));
-            labelList.add(new DefaultLabel(text));
-        }
-    }
-
-    /**
      * Returns an index for a certain label text, creating a new entry if
-     * required..
+     * required.
      * @param text the label text being looked up
-     * @param nodeType flag indicating that the label will be used for node
-     *        types
+     * @param labelType the type of the label to be looked up or created
      * @return a valid index for <tt>text</tt>
      * @require <tt>text != null</tt>
      * @ensure <tt>labelText(result).equals(text)</tt>
      */
-    static private char newLabelIndex(String text, boolean nodeType) {
-        Character index = getIndexMap(nodeType).get(text);
+    static private char newLabelIndex(String text, int labelType) {
+        Character index = getIndexMap(labelType).get(text);
         if (index == null) {
             char result = (char) textList.size();
             textList.add(text);
-            labelList.add(new DefaultLabel(result, nodeType));
-            getIndexMap(nodeType).put(text, new Character(result));
+            labelList.add(new DefaultLabel(result, labelType));
+            getIndexMap(labelType).put(text, new Character(result));
             return result;
         } else {
             return index.charValue();
@@ -301,12 +279,36 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
-     * Returns the appropriate index map, taking the node type property into
-     * account.
-     * @param nodeType if <code>true</code>, the node type map is returned.
+     * Returns the appropriate index map for a given label type.
      */
-    static private Map<String,Character> getIndexMap(boolean nodeType) {
-        return nodeType ? nodeTypeIndexMap : standardIndexMap;
+    static private Map<String,Character> getIndexMap(int labelType) {
+        switch (labelType) {
+        case NODE_TYPE:
+            return nodeTypeIndexMap;
+        case FLAG:
+            return flagIndexMap;
+        default:
+            return standardIndexMap;
+        }
+    }
+
+    /**
+     * Returns the textual prefix belonging to a given label type.
+     * @return the label type corresponding to {@code labelType}, including the
+     *         {@link #TYPE_SEPARATOR} where necessary; {@code null} if {@code
+     *         labelType} is not a valid label type.
+     */
+    private static String getTypePrefix(int labelType) {
+        switch (labelType) {
+        case NODE_TYPE:
+            return NODE_TYPE_PREFIX + TYPE_SEPARATOR;
+        case FLAG:
+            return FLAG_PREFIX + TYPE_SEPARATOR;
+        case BINARY:
+            return "";
+        default:
+            return null;
+        }
     }
 
     /**
@@ -329,9 +331,46 @@ public final class DefaultLabel extends AbstractLabel {
      */
     static private final Map<String,Character> nodeTypeIndexMap =
         new HashMap<String,Character>();
+    /**
+     * The internal translation table from strings to flag label indices.
+     */
+    static private final Map<String,Character> flagIndexMap =
+        new HashMap<String,Character>();
 
     /** Counter to support the generation of fresh labels. */
     static private int freshLabelIndex;
-    /** Mask to distinguish the hash code of node type labels. */
+    /** Mask to distinguish (the hash code of) node type labels. */
     static private final int NODE_TYPE_MASK = 0xAAAA;
+    /** Mask to distinguish (the hash code of) flag labels. */
+    static private final int FLAG_MASK = 0x5555;
+
+    /**
+     * Determines the label type, based on a given prefix.
+     * @param prefix the tested prefix; should not include
+     *        {@link #TYPE_SEPARATOR}
+     * @return one of {@link #BINARY}, {@link #NODE_TYPE} or {@link #FLAG}, or a
+     *         negative number if {@code prefix} is not a known label type
+     * @see #getType()
+     * @see #NODE_TYPE_PREFIX
+     * @see #FLAG_PREFIX
+     */
+    static public int getLabelType(String prefix) {
+        if (prefix.length() == 0) {
+            return BINARY;
+        } else if (prefix.equals(NODE_TYPE_PREFIX)) {
+            return NODE_TYPE;
+        } else if (prefix.equals(FLAG_PREFIX)) {
+            return FLAG;
+        } else {
+            return -1;
+        }
+    }
+
+    /** Separator between label type prefix and label text. */
+    static public final char TYPE_SEPARATOR = ':';
+    /** Prefix indicating that a label is a node type. */
+    static public final String FLAG_PREFIX = "flag";
+    /** Prefix indicating that a label is a flag. */
+    static public final String NODE_TYPE_PREFIX = "type";
+
 }

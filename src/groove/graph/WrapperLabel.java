@@ -21,7 +21,8 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class WrapperLabel<Type extends Comparable<Type>> implements Label {
+public class WrapperLabel<Type extends Comparable<Type>> extends AbstractLabel
+        implements Label {
     /** Constructs a label wrapping a given object. */
     public WrapperLabel(Type content) {
         this.content = content;
@@ -35,10 +36,9 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
         return this.text;
     }
 
-    /** This implementation always returns <code>false</code>. */
     @Override
-    public boolean isNodeType() {
-        return false;
+    public int getType() {
+        return BINARY;
     }
 
     /**
@@ -54,6 +54,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
      * contents; otherwise, compares the text of both labels.
      */
     @SuppressWarnings("unchecked")
+    @Override
     public int compareTo(Label other) {
         if (other instanceof WrapperLabel) {
             return getContent().compareTo(
@@ -81,15 +82,6 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
     @Override
     public int hashCode() {
         return getContent().hashCode();
-    }
-
-    /**
-     * Returns the text of this label.
-     * @see #text()
-     */
-    @Override
-    public String toString() {
-        return text();
     }
 
     /**

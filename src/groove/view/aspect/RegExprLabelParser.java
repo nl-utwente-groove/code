@@ -45,18 +45,13 @@ public class RegExprLabelParser implements LabelParser {
      * expression, and if successful, turns the expression into a
      * {@link RegExprLabel}.
      */
-    public Label parse(Label label) throws FormatException {
+    public Label parse(String text) throws FormatException {
         Label result;
-        if (label.isNodeType()) {
-            result = label;
-        } else {
-            try {
-                RegExpr expr = parseAsRegExpr(label.text());
-                result = expr.toLabel();
-            } catch (FormatException exc) {
-                throw new FormatException(exc.getMessage() + " in label %s",
-                    label.text());
-            }
+        try {
+            RegExpr expr = parseAsRegExpr(text);
+            result = expr.toLabel();
+        } catch (FormatException exc) {
+            throw new FormatException(exc.getMessage() + " in label %s", text);
         }
         return result;
     }
@@ -161,7 +156,7 @@ public class RegExprLabelParser implements LabelParser {
             boolean quote;
             try {
                 // only quote if the label cannot be parsed as itself
-                Label parsedLabel = parse(label);
+                Label parsedLabel = parse(label.text());
                 quote = !parsedLabel.equals(label);
             } catch (FormatException exc) {
                 quote = true;

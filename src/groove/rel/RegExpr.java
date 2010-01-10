@@ -1335,16 +1335,30 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
             RegExpr result = null;
+            FormatException error =
+                new FormatException("Can't parse wildcard expression '%s'",
+                    expr);
             String[] operands = ExprParser.splitExpr(expr, getOperator());
             if (operands.length == 1) {
                 return result;
             }
             // TODO allow non-empty wildcard prefixes
             if (operands.length != 2 || operands[0].length() != 0) {
-                throw new FormatException(
-                    "Can't parse wildcard expression '%s'", expr);
+                throw error;
             }
             String prefix = operands[0];
+            int labelType = Label.BINARY;
+            int separatorPos = prefix.length() - 1;
+            if (separatorPos >= 0) {
+                if (prefix.charAt(separatorPos) != DefaultLabel.TYPE_SEPARATOR) {
+                    throw error;
+                }
+                labelType =
+                    DefaultLabel.getLabelType(prefix.substring(0, separatorPos));
+                if (labelType < 0) {
+                    throw error;
+                }
+            }
             String text = operands[1];
             if (text.length() != 0) {
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
@@ -1352,15 +1366,13 @@ abstract public class RegExpr { // implements VarSetSupport {
                 String identifier = operand.first();
                 Property<Label> constraint = null;
                 if (subStringCount > 1) {
-                    throw new FormatException(
-                        "Can't parse wildcard expression '%s'", expr);
+                    throw error;
                 } else if (subStringCount == 1) {
                     String parameter = operand.second().iterator().next();
                     if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
-                        throw new FormatException(
-                            "Can't parse wildcard expression '%s'", expr);
+                        throw error;
                     } else {
-                        constraint = getConstraint(prefix, parameter);
+                        constraint = getConstraint(labelType, parameter);
                     }
                     identifier =
                         identifier.substring(0, identifier.length() - 1);
@@ -1384,9 +1396,8 @@ abstract public class RegExpr { // implements VarSetSupport {
          * @throws FormatException if <code>parameter</code> is not correctly
          *         formed as a constraint.
          */
-        private Property<Label> getConstraint(String prefix, String parameter)
+        private Property<Label> getConstraint(int labelType, String parameter)
             throws FormatException {
-            boolean nodeType = TypeAspect.NODE_TYPE.getPrefix().equals(prefix);
             String constraintList =
                 ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN,
                     CONSTRAINT_CLOSE);
@@ -1417,7 +1428,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
                 if (atom instanceof Atom) {
                     Label label = atom.toLabel();
-                    if (label.isNodeType()) {
+                    if (!label.isBinary()) {
                         throw new FormatException(
                             "Option '%s' in constraint '%s' should not be prefixed",
                             part, parameter);
@@ -1429,7 +1440,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                         part, parameter);
                 }
             }
-            return new LabelConstraint(nodeType, constrainedLabels, negated);
+            return new LabelConstraint(labelType, constrainedLabels, negated);
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
@@ -1461,14 +1472,14 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         /** Constraint testing if a string is or is not in a set of strings. */
         private static class LabelConstraint extends Property<Label> {
-            LabelConstraint(boolean nodeTypes, List<String> textList,
+            LabelConstraint(int labelType, List<String> textList,
                     boolean negated) {
                 this.textList = textList;
                 this.labelSet = new HashSet<Label>();
                 for (String text : textList) {
-                    this.labelSet.add(DefaultLabel.createLabel(text, nodeTypes));
+                    this.labelSet.add(DefaultLabel.createLabel(text, labelType));
                 }
-                this.nodeTypes = nodeTypes;
+                this.labelType = labelType;
                 this.negated = negated;
             }
 
@@ -1488,13 +1499,13 @@ abstract public class RegExpr { // implements VarSetSupport {
                     int index = this.textList.indexOf(oldLabel.text());
                     List<String> newTextList =
                         new ArrayList<String>(this.textList);
-                    if (newLabel.isNodeType() == this.nodeTypes) {
+                    if (newLabel.getType() == this.labelType) {
                         newTextList.set(index, newLabel.text());
                     } else {
                         newTextList.remove(index);
                     }
                     result =
-                        new LabelConstraint(this.nodeTypes, newTextList,
+                        new LabelConstraint(this.labelType, newTextList,
                             this.negated);
                 }
                 return result;
@@ -1510,7 +1521,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
             @Override
             public boolean isSatisfied(Label value) {
-                return this.nodeTypes == value.isNodeType()
+                return this.labelType == value.getType()
                     && this.negated != this.labelSet.contains(value);
             }
 
@@ -1532,8 +1543,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             private final Set<Label> labelSet;
             /** Flag indicating if we are testing for absence or presence. */
             private final boolean negated;
-            /** Flag indicating if we are testing (only) for node type labels. */
-            private final boolean nodeTypes;
+            /** The type of label we are testing for. See {@link Label#getType()} */
+            private final int labelType;
         }
     }
 
