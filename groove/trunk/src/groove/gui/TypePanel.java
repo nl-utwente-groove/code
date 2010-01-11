@@ -326,6 +326,19 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         public void refresh();
     }
 
+    /** Lazily creates and returns the field displaying the type name. */
+    private JComboBox getNameField() {
+        if (this.nameField == null) {
+            this.nameField = new TypeNameField();
+            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
+            this.nameField.setMaximumSize(new Dimension(150, 24));
+        }
+        return this.nameField;
+    }
+
+    /** Name field of the type graph. */
+    private JComboBox nameField;
+
     private class TypeNameField extends JComboBox implements Refreshable {
         public TypeNameField() {
             setBorder(BorderFactory.createLoweredBevelBorder());
@@ -369,19 +382,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         private final ActionListener selectionListener;
     }
 
-    /** Lazily creates and returns the field displaying the type name. */
-    private JComboBox getNameField() {
-        if (this.nameField == null) {
-            this.nameField = new TypeNameField();
-            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
-            this.nameField.setMaximumSize(new Dimension(150, 24));
-        }
-        return this.nameField;
-    }
-
-    /** Name field of the type graph. */
-    private JComboBox nameField;
-
     /** Abstract superclass for actions that can refresh their own status. */
     private abstract class RefreshableAction extends AbstractAction implements
             Refreshable {
@@ -392,6 +392,20 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
             addRefreshable(this);
         }
     }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link CopyAction}.
+     */
+    private CopyAction getCopyAction() {
+        if (this.copyAction == null) {
+            this.copyAction = new CopyAction();
+        }
+        return this.copyAction;
+    }
+
+    /** Singular instance of the {@link CopyAction}. */
+    private CopyAction copyAction;
 
     /**
      * Action to copy the currently displayed type graph.
@@ -424,20 +438,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
             }
         }
     }
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link CopyAction}.
-     */
-    private CopyAction getCopyAction() {
-        if (this.copyAction == null) {
-            this.copyAction = new CopyAction();
-        }
-        return this.copyAction;
-    }
-
-    /** Singular instance of the {@link CopyAction}. */
-    private CopyAction copyAction;
 
     /**
      * Action listener class for the "create type graph" button
@@ -473,6 +473,20 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
             }
         }
     }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link DeleteAction}.
+     */
+    private DeleteAction getDeleteAction() {
+        if (this.deleteAction == null) {
+            this.deleteAction = new DeleteAction();
+        }
+        return this.deleteAction;
+    }
+
+    /** Singular instance of the {@link DeleteAction}. */
+    private DeleteAction deleteAction;
 
     /**
      * Action to delete the currently displayed type graph.
@@ -517,17 +531,17 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link DeleteAction}.
+     * {@link NewAction}.
      */
-    private DeleteAction getDeleteAction() {
-        if (this.deleteAction == null) {
-            this.deleteAction = new DeleteAction();
+    private DisableAction getDisableAction() {
+        if (this.disableAction == null) {
+            this.disableAction = new DisableAction();
         }
-        return this.deleteAction;
+        return this.disableAction;
     }
 
-    /** Singular instance of the {@link DeleteAction}. */
-    private DeleteAction deleteAction;
+    /** Singular instance of the {@link EnableAction}. */
+    private DisableAction disableAction;
 
     /** Action to disable the currently displayed type graph. */
     private class DisableAction extends RefreshableAction {
@@ -554,15 +568,15 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private DisableAction getDisableAction() {
-        if (this.disableAction == null) {
-            this.disableAction = new DisableAction();
+    private EnableAction getEnableAction() {
+        if (this.enableAction == null) {
+            this.enableAction = new EnableAction();
         }
-        return this.disableAction;
+        return this.enableAction;
     }
 
     /** Singular instance of the {@link EnableAction}. */
-    private DisableAction disableAction;
+    private EnableAction enableAction;
 
     /** Action to enable the currently displayed type graph. */
     private class EnableAction extends RefreshableAction {
@@ -593,15 +607,15 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private EnableAction getEnableAction() {
-        if (this.enableAction == null) {
-            this.enableAction = new EnableAction();
+    private EditAction getEditAction() {
+        if (this.editAction == null) {
+            this.editAction = new EditAction();
         }
-        return this.enableAction;
+        return this.editAction;
     }
 
-    /** Singular instance of the {@link EnableAction}. */
-    private EnableAction enableAction;
+    /** Singular instance of the {@link EditAction}. */
+    private EditAction editAction;
 
     /** Action to start editing the currently displayed type graph. */
     private class EditAction extends RefreshableAction {
@@ -629,15 +643,15 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private EditAction getEditAction() {
-        if (this.editAction == null) {
-            this.editAction = new EditAction();
+    NewAction getNewAction() {
+        if (this.newAction == null) {
+            this.newAction = new NewAction();
         }
-        return this.editAction;
+        return this.newAction;
     }
 
-    /** Singular instance of the {@link EditAction}. */
-    private EditAction editAction;
+    /** Singular instance of the {@link NewAction}. */
+    private NewAction newAction;
 
     /** Action to create and start editing a new type graph. */
     private class NewAction extends RefreshableAction {
@@ -661,17 +675,17 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link RenameAction}.
      */
-    private NewAction getNewAction() {
-        if (this.newAction == null) {
-            this.newAction = new NewAction();
+    private RenameAction getRenameAction() {
+        if (this.renameAction == null) {
+            this.renameAction = new RenameAction();
         }
-        return this.newAction;
+        return this.renameAction;
     }
 
-    /** Singular instance of the {@link NewAction}. */
-    private NewAction newAction;
+    /** Singular instance of the {@link RenameAction}. */
+    private RenameAction renameAction;
 
     /**
      * Action to rename the currently displayed type graph.
@@ -706,18 +720,4 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
             }
         }
     }
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link RenameAction}.
-     */
-    private RenameAction getRenameAction() {
-        if (this.renameAction == null) {
-            this.renameAction = new RenameAction();
-        }
-        return this.renameAction;
-    }
-
-    /** Singular instance of the {@link RenameAction}. */
-    private RenameAction renameAction;
 }

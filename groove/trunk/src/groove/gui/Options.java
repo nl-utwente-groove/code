@@ -346,6 +346,11 @@ public class Options {
     public static final String SET_RULE_ROLE_ACTION_NAME =
         "Set to rule editing";
     /**
+     * Type mode action name
+     */
+    public static final String SET_TYPE_ROLE_ACTION_NAME =
+        "Set to type editing";
+    /**
      * Show all labels action name
      */
     public static final String SHOW_ALL_LABELS_ACTION_NAME = "Show all labels";

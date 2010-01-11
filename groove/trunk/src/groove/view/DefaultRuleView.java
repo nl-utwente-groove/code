@@ -1574,13 +1574,6 @@ public class DefaultRuleView implements RuleView {
                 if (result != null) {
                     this.viewToRuleMap.putEdge(viewEdge, result);
                     Label edgeLabel = result.label();
-                    if (edgeLabel.isNodeType()) {
-                        if (!result.source().equals(result.opposite())) {
-                            throw new FormatException(
-                                "Node type label '%s' only allowed on self-edges",
-                                edgeLabel);
-                        }
-                    }
                     if (edgeLabel instanceof RegExprLabel) {
                         this.labelSet.addAll(((RegExprLabel) edgeLabel).getRegExpr().getLabels());
                     } else {

@@ -396,14 +396,11 @@ public class Simulator {
      */
     public void setDefaultExploration(Exploration exploration) {
         this.defaultExploration = exploration;
-        this.defaultExplorationMenuItem.setToolTipText(
-            "<HTML>" +
-            Options.DEFAULT_EXPLORATION_ACTION_NAME +
-            " by means of <B>" +
-            exploration.getShortName() +
-            "</B></HTML>");
+        this.defaultExplorationMenuItem.setToolTipText("<HTML>"
+            + Options.DEFAULT_EXPLORATION_ACTION_NAME + " by means of <B>"
+            + exploration.getShortName() + "</B></HTML>");
     }
-    
+
     /**
      * Returns the currently selected rule, or <tt>null</tt> if none is
      * selected. The selected rule is the one displayed in the rule panel.
@@ -1418,7 +1415,7 @@ public class Simulator {
                 getRulePanel(), "Selected rule");
             this.graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON,
                 getConditionalLTSPanel(), "Labelled transition system");
-            this.graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON,
+            this.graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON,
                 getControlPanel(), "Control specification");
             if (USE_TYPES) {
                 this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
@@ -1863,8 +1860,11 @@ public class Simulator {
 
         result.addSeparator();
 
-        result.add(getNewRuleAction());
         result.add(getNewGraphAction());
+        result.add(getNewRuleAction());
+        if (USE_TYPES) {
+            result.add(getNewTypeAction());
+        }
 
         result.addSeparator();
 
@@ -2033,9 +2033,10 @@ public class Simulator {
 
         result.addSeparator();
 
-        this.defaultExplorationMenuItem = result.add(getDefaultExplorationAction());
+        this.defaultExplorationMenuItem =
+            result.add(getDefaultExplorationAction());
         result.add(getExplorationDialogAction());
-        
+
         return result;
     }
 
@@ -2658,16 +2659,16 @@ public class Simulator {
     private RuleEvent currentEvent;
 
     /**
-     * The default exploration to be performed.
-     * This value is either the previous exploration, or the default
-     * constructor of the Exploration class (=breadth first).
-     * This value may never be null (and must be initialized explicitly).
+     * The default exploration to be performed. This value is either the
+     * previous exploration, or the default constructor of the Exploration class
+     * (=breadth first). This value may never be null (and must be initialized
+     * explicitly).
      */
     private Exploration defaultExploration;
-    
+
     /**
-     * The menu item associated with the 'default exploration' action.
-     * This variable is used for setting the tool-tip.
+     * The menu item associated with the 'default exploration' action. This
+     * variable is used for setting the tool-tip.
      */
     private JMenuItem defaultExplorationMenuItem;
 
@@ -3609,7 +3610,7 @@ public class Simulator {
         if (this.defaultExplorationAction == null) {
             this.defaultExplorationAction = new DefaultExplorationAction();
         }
-        
+
         return this.defaultExplorationAction;
     }
 
@@ -4272,6 +4273,14 @@ public class Simulator {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable());
         }
+    }
+
+    /**
+     * Returns the rule creation action permanently associated with this
+     * simulator.
+     */
+    public Action getNewTypeAction() {
+        return getTypePanel().getNewAction();
     }
 
     /** Returns the quit action permanently associated with this simulator. */

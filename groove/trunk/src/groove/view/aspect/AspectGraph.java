@@ -176,12 +176,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      *        empty
      */
     private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) {
+        AspectGraph result = new AspectGraph();
+        // we set the role now, because some of the aspects may depend on it
+        GraphInfo.setRole(result, GraphInfo.getRole(graph));
         List<String> errors = new ArrayList<String>();
         if (GraphInfo.hasErrors(graph)) {
             errors.addAll(GraphInfo.getErrors(graph));
         }
         assert elementMap != null && elementMap.isEmpty();
-        AspectGraph result = new AspectGraph();
         // first do the nodes;
         // map from original graph nodes to aspect graph nodes
         Map<Node,AspectNode> nodeMap = new HashMap<Node,AspectNode>();

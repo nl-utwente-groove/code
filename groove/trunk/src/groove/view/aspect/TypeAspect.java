@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -35,10 +36,14 @@ public class TypeAspect extends AbstractAspect {
     @Override
     public void checkEdge(AspectEdge edge, AspectGraph graph)
         throws FormatException {
-        if (isNodeType(edge) && !edge.source().equals(edge.opposite())) {
+        boolean isSelfEdge = edge.source().equals(edge.opposite());
+        boolean isSubtypeEdge =
+            SUB_LABEL.equals(edge.label().text())
+                && GraphInfo.hasTypeRole(graph);
+        if (isNodeType(edge) && !isSelfEdge && !isSubtypeEdge) {
             throw new FormatException(
                 "Node type label '%s' not allowed on edges", edge.label());
-        } else if (isFlag(edge) && !edge.source().equals(edge.opposite())) {
+        } else if (isFlag(edge) && !isSelfEdge) {
             throw new FormatException("Flag label '%s' not allowed on edges",
                 edge.label());
         }
@@ -89,6 +94,10 @@ public class TypeAspect extends AbstractAspect {
     static public final String PATH_NAME = "path";
     /** The path aspect value. */
     static public final AspectValue PATH;
+    /** Name of the subtype aspect value. */
+    static public final String SUB_NAME = "sub";
+    /** The subtype aspect value. */
+    static public final AspectValue SUB;
     /** Name of the empty aspect value. */
     static public final String EMPTY_NAME = "";
     /** The empty aspect value. */
@@ -102,6 +111,8 @@ public class TypeAspect extends AbstractAspect {
             FLAG.setLabelParser(NodeTypeLabelParser.getInstance());
             PATH = instance.addEdgeValue(PATH_NAME);
             PATH.setLabelParser(RegExprLabelParser.getInstance());
+            SUB = instance.addEdgeValue(SUB_NAME);
+            SUB.setLabelParser(EmptyLabelParser.getInstance());
             EMPTY = instance.addEdgeValue(EMPTY_NAME);
             EMPTY.setLabelParser(FreeLabelParser.getInstance());
             // incompatibilities
@@ -146,5 +157,35 @@ public class TypeAspect extends AbstractAspect {
 
         /** Singleton instance of this class. */
         static private NodeTypeLabelParser instance = new NodeTypeLabelParser();
+    }
+
+    /** Parser that only accepts empty labels. */
+    static private class EmptyLabelParser implements LabelParser {
+        /** Private constructor for this singleton class. */
+        private EmptyLabelParser() {
+            // empty constructor
+        }
+
+        @Override
+        public Label parse(String text) throws FormatException {
+            if (text.length() > 0) {
+                throw new FormatException(
+                    "Only empty label text allowed for '%s'-label", SUB);
+            }
+            return DefaultLabel.createLabel(text);
+        }
+
+        @Override
+        public DefaultLabel unparse(Label label) {
+            return DefaultLabel.createLabel("");
+        }
+
+        /** Returns the singleton instance of this class. */
+        static public EmptyLabelParser getInstance() {
+            return instance;
+        }
+
+        /** Singleton instance of this class. */
+        static private EmptyLabelParser instance = new EmptyLabelParser();
     }
 }
