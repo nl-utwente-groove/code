@@ -205,7 +205,8 @@ public class AspectualGraphView implements GraphView {
                 nodeInModel = false;
             } else if (!isAllowedValue(value)) {
                 throw new FormatException(
-                    "Node aspect value '%s' not allowed in graphs", value);
+                    "Node aspect value '%s' not allowed in %ss", value,
+                    GraphInfo.getRole(getView()));
             }
         }
         // include the node in the model if it is not virtual
@@ -219,8 +220,8 @@ public class AspectualGraphView implements GraphView {
                 model.addNode(nodeImage);
             } else {
                 throw new FormatException(
-                    "Node aspect value '%s' not allowed in graphs",
-                    getAttributeValue(viewNode));
+                    "Node aspect value '%s' not allowed in %ss",
+                    getAttributeValue(viewNode), GraphInfo.getRole(getView()));
             }
             elementMap.putNode(viewNode, nodeImage);
             // modelToViewMap.put(nodeImage, viewNode);
@@ -245,7 +246,8 @@ public class AspectualGraphView implements GraphView {
             }
             if (!isAllowedValue(value)) {
                 throw new FormatException(
-                    "Edge aspect value '%s' not allowed in graphs", value);
+                    "Edge aspect value '%s' not allowed in %ss", value,
+                    GraphInfo.getRole(getView()));
             }
         }
         // type edges must either be self-edges or "sub"-labelled edges in a
@@ -256,10 +258,6 @@ public class AspectualGraphView implements GraphView {
                 && viewEdge.label().equals(TypeAspect.SUB_LABEL)) {
                 subtypes.addRelated(viewEdge);
                 return;
-            } else {
-                throw new FormatException(
-                    "Node type label '%s' only allowed on self-edges",
-                    viewEdge.label());
             }
         }
         // include the edge in the model if all end nodes are there
@@ -273,8 +271,8 @@ public class AspectualGraphView implements GraphView {
         // create an image for the view edge
         if (this.attributeFactory.createAttributeEdge(viewEdge, endImages) != null) {
             throw new FormatException(
-                "Edge aspect value '%s' not allowed in graphs",
-                getAttributeValue(viewEdge));
+                "Edge aspect value '%s' not allowed in %ss",
+                getAttributeValue(viewEdge), GraphInfo.getRole(getView()));
         }
         Label modelLabel = viewEdge.getModelLabel();
         // collect node types in a type graph
@@ -307,12 +305,12 @@ public class AspectualGraphView implements GraphView {
     }
 
     /**
-     * Tests if a certain non-virtual aspect value is allowed for nodes in a
-     * graph view.
+     * Tests if a certain non-virtual aspect value is allowed in a graph view.
      */
     private boolean isAllowedValue(AspectValue value) {
         return value.getAspect() instanceof AttributeAspect
-            || value.getAspect() instanceof TypeAspect;
+            || value.getAspect() instanceof TypeAspect
+            && (GraphInfo.hasTypeRole(getView()) || !value.equals(TypeAspect.SUB));
     }
 
     /**

@@ -155,6 +155,9 @@ public class Groove {
     /** Copy action icon. */
     public static final ImageIcon COPY_ICON =
         new ImageIcon(Groove.getResource("copy.gif"));
+    /** Cut action icon. */
+    public static final ImageIcon CUT_ICON =
+        new ImageIcon(Groove.getResource("cut.gif"));
     /** Delete action icon. */
     public static final ImageIcon DELETE_ICON =
         new ImageIcon(Groove.getResource("delete.gif"));
@@ -194,12 +197,12 @@ public class Groove {
     /** Graph editing mode icon. */
     public static final ImageIcon GRAPH_MODE_ICON =
         new ImageIcon(getResource("graph-mode.gif"));
-    /** Rule editing mode icon. */
-    public static final ImageIcon RULE_MODE_ICON =
-        new ImageIcon(getResource("rule-mode.gif"));
-    /** Type editing mode icon. */
-    public static final ImageIcon TYPE_MODE_ICON =
-        new ImageIcon(getResource("type-mode.gif"));
+    /** Icon for Control Panel. */
+    public static final ImageIcon CONTROL_FRAME_ICON =
+        new ImageIcon(getResource("cp-frame.gif"));
+    /** Icon for Control Files. */
+    public static final ImageIcon CONTROL_FILE_ICON =
+        new ImageIcon(getResource("control-file.gif"));
     /** Icon for graphs. */
     public static final ImageIcon GRAPH_ICON =
         new ImageIcon(getResource("graph.gif"));
@@ -224,15 +227,21 @@ public class Groove {
     /** Icon for the rule panel of the simulator. */
     public static final ImageIcon RULE_FRAME_ICON =
         new ImageIcon(getResource("rule-frame.gif"));
+    /** Rule editing mode icon. */
+    public static final ImageIcon RULE_MODE_ICON =
+        new ImageIcon(getResource("rule-mode.gif"));
     /** Icon for the LTS panel of the simulator. */
     public static final ImageIcon LTS_FRAME_ICON =
         new ImageIcon(getResource("lts-frame.gif"));
-    /** Icon for Control Panel. */
-    public static final ImageIcon CTRL_FRAME_ICON =
-        new ImageIcon(getResource("cp-frame.gif"));
+    /** Icon for type (GTY) files. */
+    public static final ImageIcon TYPE_FILE_ICON =
+        new ImageIcon(getResource("type-file.gif"));
     /** Icon for Type Panel. */
     public static final ImageIcon TYPE_FRAME_ICON =
         new ImageIcon(getResource("type-frame.gif"));
+    /** Type editing mode icon. */
+    public static final ImageIcon TYPE_MODE_ICON =
+        new ImageIcon(getResource("type-mode.gif"));
     /** GROOVE project icon in 16x16 format. */
     public static final ImageIcon GROOVE_ICON_16x16 =
         new ImageIcon(getResource("groove-g-16x16.gif"));
@@ -248,6 +257,9 @@ public class Groove {
     /** Transparent open down-arrow icon. */
     public static final ImageIcon OPEN_DOWN_ARROW_ICON =
         new ImageIcon(getResource("open-down-arrow.gif"));
+    /** Paste action icon. */
+    public static final ImageIcon PASTE_ICON =
+        new ImageIcon(Groove.getResource("paste.gif"));
     /** Special icon denoting choice e/a. */
     public static final ImageIcon E_A_CHOICE_ICON =
         new ImageIcon(getResource("e-a-choice.gif"));
@@ -279,6 +291,24 @@ public class Groove {
     }
 
     /**
+     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. By
+     * default, the filter accepts directories.
+     */
+    public static ExtensionFilter createControlFilter() {
+        return createControlFilter(true);
+    }
+
+    /**
+     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. A switch
+     * controls whether the filter accepts directories.
+     * @param acceptDirectories if true, the filter accepts directories.
+     */
+    public static ExtensionFilter createControlFilter(boolean acceptDirectories) {
+        return new ExtensionFilter("Groove control files", CONTROL_EXTENSION,
+            acceptDirectories);
+    }
+
+    /**
      * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>. By default,
      * the filter accepts directories.
      * @see #GXL_EXTENSION
@@ -290,7 +320,7 @@ public class Groove {
     /**
      * Returns a fresh an extension filter for <tt>GXL_EXTENSION</tt>. A switch
      * controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directries.
+     * @param acceptDirectories if true, the filter accepts directories.
      * @see #GXL_EXTENSION
      */
     public static ExtensionFilter createGxlFilter(boolean acceptDirectories) {
@@ -373,15 +403,18 @@ public class Groove {
      * @see #TYPE_EXTENSION
      */
     public static ExtensionFilter createTypeFilter() {
-        return getFilter("Groove type graphs", TYPE_EXTENSION, true);
+        return createTypeFilter(true);
     }
 
     /**
-     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. By
-     * default, the filter accepts directories.
+     * Returns a fresh extension filter for {@link #TYPE_EXTENSION}. A switch
+     * controls whether the filter accepts directories.
+     * @param acceptDirectories if true, the filter accepts directories.
+     * @see #TYPE_EXTENSION
      */
-    public static ExtensionFilter createControlFilter() {
-        return new ExtensionFilter("Groove control files", CONTROL_EXTENSION);
+    public static ExtensionFilter createTypeFilter(boolean acceptDirectories) {
+        return getFilter("Groove type graphs", TYPE_EXTENSION,
+            acceptDirectories);
     }
 
     /**

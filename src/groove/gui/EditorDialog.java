@@ -62,7 +62,7 @@ abstract public class EditorDialog {
         };
         this.editor.setPlainGraph(graph);
         this.newContentPane =
-            this.editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph)));
+            this.editor.createContentPanel(createToolBar(GraphInfo.getRole(graph)));
     }
 
     /** Starts the dialog. */
@@ -118,16 +118,21 @@ abstract public class EditorDialog {
     /**
      * Creates and returns the tool bar.
      */
-    private JToolBar createToolBar(boolean graphRole) {
+    private JToolBar createToolBar(String role) {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         toolbar.add(createOkButton());
         toolbar.add(createCancelButton());
         toolbar.addSeparator();
-        if (graphRole) {
-            toolbar.add(this.editor.getGraphTypeButton());
-        } else {
-            toolbar.add(this.editor.getRuleTypeButton());
+        switch (Editor.roleIndexMap.get(role)) {
+        case Editor.GRAPH_INDEX:
+            toolbar.add(this.editor.getGraphRoleButton());
+            break;
+        case Editor.RULE_INDEX:
+            toolbar.add(this.editor.getRuleRoleButton());
+            break;
+        case Editor.TYPE_INDEX:
+            toolbar.add(this.editor.getTypeRoleButton());
         }
         this.editor.addModeButtons(toolbar);
         this.editor.addUndoButtons(toolbar);

@@ -30,69 +30,6 @@ import javax.swing.Icon;
  */
 public class GrooveFileView extends javax.swing.filechooser.FileView {
     /**
-     * Tests whether a given file is a graph file recognised by this program.
-     * This is the case if it is either a gxl file or a state file.
-     * @param f the file to be tested
-     * @return <tt>true</tt> if <code>f</code> is a graph file
-     * @require <tt>f != null</tt>
-     */
-    static protected boolean isGraphFile(File f) {
-        return isStateFile(f) || isGxlFile(f);
-    }
-
-    /**
-     * Tests whether a given file is a state file recognised by this program.
-     * @param f the file to be tested
-     * @return <tt>true</tt> if <code>f</code> is a state file
-     * @require <tt>f != null</tt>
-     */
-    static protected boolean isStateFile(File f) {
-        return stateFilter.accept(f);
-    }
-
-    /**
-     * Tests whether a given file is a gxl file recognised by this program.
-     * @param f the file to be tested
-     * @return <tt>true</tt> if <code>f</code> is a gxl file
-     * @require <tt>f != null</tt>
-     */
-    static protected boolean isGxlFile(File f) {
-        return gxlFilter.accept(f);
-    }
-
-    /**
-     * Tests whether a given file is a production rule file.
-     * @param f the file to be tested
-     * @return <tt>true</tt> if <code>f</code> is a production rule file
-     * @require <tt>f != null</tt>
-     */
-    static protected boolean isRuleFile(File f) {
-        return ruleFilter.accept(f);
-    }
-
-    /**
-     * Tests whether a given file is a GPS (graph production system) folder,
-     * i.e., a folder containing rule files.
-     * @param f the file to be tested
-     * @return <tt>true</tt> if <code>f</code> is a GPS folder
-     * @require <tt>f != null</tt>
-     */
-    static protected boolean isGpsFolder(File f) {
-        return ruleSystemFilter.accept(f);
-    }
-
-    static private final java.io.FileFilter gxlFilter =
-        Groove.createGxlFilter(false);
-    static private final java.io.FileFilter stateFilter =
-        Groove.createStateFilter(false);
-    static private final java.io.FileFilter ruleFilter =
-        Groove.createRuleFilter(false);
-    static private final java.io.FileFilter ruleSystemFilter =
-        Groove.createRuleSystemFilter(false);
-
-    // ------------------------- Constructors ----------------------------------
-
-    /**
      * Constructs a standard file view, in which production system directories
      * can be traversed.
      */
@@ -121,6 +58,10 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
             return Groove.GRAPH_FILE_ICON;
         } else if (isRuleFile(f)) {
             return Groove.RULE_FILE_ICON;
+        } else if (isTypeFile(f)) {
+            return Groove.TYPE_FILE_ICON;
+        } else if (isControlFile(f)) {
+            return Groove.CONTROL_FILE_ICON;
         } else if (isGpsFolder(f)) {
             return Groove.GPS_FOLDER_ICON;
         } else {
@@ -137,8 +78,12 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     @Override
     public String getDescription(File f) {
         String name = f.getName();
-        if (isRuleFile(f)) {
+        if (isControlFile(f)) {
+            return "A control program";
+        } else if (isRuleFile(f)) {
             return "A graph production rule";
+        } else if (isTypeFile(f)) {
+            return "A graph type";
         } else if (isStateFile(f)) {
             return "A state graph";
         } else if (isGpsFolder(f)) {
@@ -201,4 +146,87 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     }
 
     private boolean gpsTraversable;
+
+    /**
+     * Tests whether a given file is a control program.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a control program file
+     */
+    static protected boolean isControlFile(File f) {
+        return controlFilter.accept(f);
+    }
+
+    /**
+     * Tests whether a given file is a graph file recognised by this program.
+     * This is the case if it is either a gxl file or a state file.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a graph file
+     * @require <tt>f != null</tt>
+     */
+    static protected boolean isGraphFile(File f) {
+        return isStateFile(f) || isGxlFile(f);
+    }
+
+    /**
+     * Tests whether a given file is a state file recognised by this program.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a state file
+     * @require <tt>f != null</tt>
+     */
+    static protected boolean isStateFile(File f) {
+        return stateFilter.accept(f);
+    }
+
+    /**
+     * Tests whether a given file is a gxl file recognised by this program.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a gxl file
+     * @require <tt>f != null</tt>
+     */
+    static protected boolean isGxlFile(File f) {
+        return gxlFilter.accept(f);
+    }
+
+    /**
+     * Tests whether a given file is a production rule file.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a production rule file
+     * @require <tt>f != null</tt>
+     */
+    static protected boolean isRuleFile(File f) {
+        return ruleFilter.accept(f);
+    }
+
+    /**
+     * Tests whether a given file is a graph type file.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a graph type file
+     */
+    static protected boolean isTypeFile(File f) {
+        return typeFilter.accept(f);
+    }
+
+    /**
+     * Tests whether a given file is a GPS (graph production system) folder,
+     * i.e., a folder containing rule files.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a GPS folder
+     * @require <tt>f != null</tt>
+     */
+    static protected boolean isGpsFolder(File f) {
+        return ruleSystemFilter.accept(f);
+    }
+
+    static private final java.io.FileFilter controlFilter =
+        Groove.createControlFilter(false);
+    static private final java.io.FileFilter gxlFilter =
+        Groove.createGxlFilter(false);
+    static private final java.io.FileFilter stateFilter =
+        Groove.createStateFilter(false);
+    static private final java.io.FileFilter ruleFilter =
+        Groove.createRuleFilter(false);
+    static private final java.io.FileFilter typeFilter =
+        Groove.createTypeFilter(false);
+    static private final java.io.FileFilter ruleSystemFilter =
+        Groove.createRuleSystemFilter(false);
 }
