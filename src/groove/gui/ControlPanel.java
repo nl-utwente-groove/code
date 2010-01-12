@@ -754,7 +754,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            setEnabled(true);
+            setEnabled(getGrammarView() != null);
         }
     }
 
