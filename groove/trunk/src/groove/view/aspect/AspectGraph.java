@@ -31,6 +31,7 @@ import groove.rel.RegExprLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
+import groove.view.DefaultTypeView;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.NewRuleView;
@@ -504,7 +505,21 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     public GraphView toTypeView(SystemProperties properties)
         throws IllegalStateException {
-        return toGraphView(properties, Groove.TYPE_ROLE);
+        if (!GraphInfo.hasTypeRole(this)) {
+            throw new IllegalStateException(
+                String.format("Aspect graph does not represent a type graph"));
+        }
+        boolean refreshView = this.typeView == null;
+        if (!refreshView) {
+            String myName = GraphInfo.getName(this);
+            String viewName = this.typeView.getName();
+            refreshView =
+                myName == null ? viewName != null : !myName.equals(viewName);
+        }
+        if (refreshView) {
+            this.typeView = new DefaultTypeView(this, properties);
+        }
+        return this.typeView;
     }
 
     /**
@@ -586,6 +601,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             return toGraphView(null);
         }
     }
+
+    /** Auxiliary object for converting this aspect graph to a type graph. */
+    private DefaultTypeView typeView;
 
     /** Auxiliary object for converting this aspect graph to a state graph. */
     private AspectualGraphView graphView;

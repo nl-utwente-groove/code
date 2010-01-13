@@ -34,6 +34,11 @@ import java.util.Set;
  */
 public interface NodeRelation {
     /**
+     * Returns the set of nodes related to a given node.
+     */
+    Set<Node> getRelated(Node node);
+
+    /**
      * Returns the set of all related pairs, as a set of {@link Edge}s.
      */
     Set<? extends Edge> getAllRelated();
@@ -44,8 +49,8 @@ public interface NodeRelation {
      * in the relation.
      * @param pre the source of the pair to be added
      * @param post the target of the pair to be added
-     * @return <tt>true</tt> if the pair was actually added, <tt>false</tt>
-     *         if it was already in the relation.
+     * @return <tt>true</tt> if the pair was actually added, <tt>false</tt> if
+     *         it was already in the relation.
      */
     boolean addRelated(Node pre, Node post);
 
@@ -54,8 +59,8 @@ public interface NodeRelation {
      * given graph edge. The return value indicates if the pair was actually
      * added or was already in the relation.
      * @param edge the pair to be added to the relation
-     * @return <tt>true</tt> if the pair was actually added, <tt>false</tt>
-     *         if it was already in the relation.
+     * @return <tt>true</tt> if the pair was actually added, <tt>false</tt> if
+     *         it was already in the relation.
      * @ensure <tt>isRelated(edge.pre(), edge.post())</tt>.
      */
     boolean addRelated(Edge edge);
@@ -73,8 +78,7 @@ public interface NodeRelation {
      * Relates a node to itself.
      * @param node the node to be reflexively related
      * @return <tt>true</tt> if the reflexive relation was actually added;
-     *         <tt>false</tt> if <tt>node</tt> was ale=ready related to
-     *         itself.
+     *         <tt>false</tt> if <tt>node</tt> was ale=ready related to itself.
      */
     boolean addSelfRelated(Node node);
 
@@ -122,8 +126,8 @@ public interface NodeRelation {
 
     /**
      * Computes and returns the concatenation of this relation with another. In
-     * the result, <tt>areRelated(x,y)x/tt> if there is a <tt>z</tt> such
-     * that <tt>this.areRelated(x,z)</tt> and <tt>other.areRelated(z,y)</tt>.
+     * the result, <tt>areRelated(x,y)x/tt> if there is a <tt>z</tt> such that
+     * <tt>this.areRelated(x,z)</tt> and <tt>other.areRelated(z,y)</tt>.
      * @param other the other operand of the concatentation
      * @return the concatenation of <tt>this</tt> and <tt>other</tt>
      * @see #getAfter(NodeRelation)
@@ -140,8 +144,8 @@ public interface NodeRelation {
 
     /**
      * Computes and returns the concatenation of this relation after another. In
-     * the result, <tt>areRelated(x,y)</tt> if there is a <tt>z</tt> such
-     * that <tt>other.areRelated(x,z)</tt> and <tt>this.areRelated(z,y)</tt>.
+     * the result, <tt>areRelated(x,y)</tt> if there is a <tt>z</tt> such that
+     * <tt>other.areRelated(x,z)</tt> and <tt>this.areRelated(z,y)</tt>.
      * @param other the other operand of the concatentation
      * @return the concatenation of <tt>other</tt> and <tt>this</tt>
      * @see #getThen(NodeRelation)
@@ -156,8 +160,8 @@ public interface NodeRelation {
 
     /**
      * Has the effect of <tt>getOr(EdgeBasedRelation)</tt>, but modifies
-     * <tt>this</tt>. Returns <tt>true</tt> if this relation was changed as
-     * a result of the operation.
+     * <tt>this</tt>. Returns <tt>true</tt> if this relation was changed as a
+     * result of the operation.
      * @return <tt>true</tt> if this relation was changed as a result of the
      *         operation
      * @see #getOr(NodeRelation)
@@ -172,8 +176,8 @@ public interface NodeRelation {
 
     /**
      * Has the effect of <tt>getTransitiveClosure()</tt>, but modifies
-     * <tt>this</tt>. Returns <tt>true</tt> if this relation was changed as
-     * a result of the operation.
+     * <tt>this</tt>. Returns <tt>true</tt> if this relation was changed as a
+     * result of the operation.
      * @return <tt>true</tt> if this relation was changed as a result of the
      *         operation
      * @see #getTransitiveClosure()
@@ -188,8 +192,8 @@ public interface NodeRelation {
 
     /**
      * Has the effect of <tt>getReflexiveClosure()</tt>, but modifies
-     * <tt>this</tt>. Returns <tt>true</tt> if this relation was changed as
-     * a result of the operation.
+     * <tt>this</tt>. Returns <tt>true</tt> if this relation was changed as a
+     * result of the operation.
      * @return <tt>true</tt> if this relation was changed as a result of the
      *         operation
      * @see #getReflexiveClosure()

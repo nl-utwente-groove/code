@@ -17,7 +17,6 @@
 package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
-import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -37,10 +36,7 @@ public class TypeAspect extends AbstractAspect {
     public void checkEdge(AspectEdge edge, AspectGraph graph)
         throws FormatException {
         boolean isSelfEdge = edge.source().equals(edge.opposite());
-        boolean isSubtypeEdge =
-            SUB_LABEL.equals(edge.label().text())
-                && GraphInfo.hasTypeRole(graph);
-        if (isNodeType(edge) && !isSelfEdge && !isSubtypeEdge) {
+        if (isNodeType(edge) && !isSelfEdge) {
             throw new FormatException(
                 "Node type label '%s' not allowed on edges", edge.label());
         } else if (isFlag(edge) && !isSelfEdge) {
@@ -53,6 +49,12 @@ public class TypeAspect extends AbstractAspect {
     public static boolean isNodeType(AspectEdge edge) {
         AspectValue value = edge.getValue(getInstance());
         return NODE_TYPE.equals(value);
+    }
+
+    /** Indicates if a given aspect edge is a subtype edge. */
+    public static boolean isSubtype(AspectEdge edge) {
+        AspectValue value = edge.getValue(getInstance());
+        return SUB.equals(value);
     }
 
     /** Indicates if a given aspect edge stands for a flag. */
@@ -122,9 +124,6 @@ public class TypeAspect extends AbstractAspect {
                 + "' cannot be initialised due to name conflict", exc);
         }
     }
-
-    /** Label used for subtype edges in type graphs. */
-    public static final String SUB_LABEL = "sub";
 
     /**
      * Parser constructing node type labels.
