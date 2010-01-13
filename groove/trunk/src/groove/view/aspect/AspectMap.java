@@ -233,7 +233,7 @@ public class AspectMap implements Iterable<AspectValue> {
     public Label toModelLabel() throws FormatException {
         Label result = null;
         if (getText() != null
-            && (get(RuleAspect.getInstance()) != null || get(NestingAspect.getInstance()) == null)
+            && (this.rule || get(NestingAspect.getInstance()) == null)
             && !RuleAspect.REMARK.equals(get(RuleAspect.getInstance()))) {
             // parse the label
             result = getLabelParser().parse(getText());
