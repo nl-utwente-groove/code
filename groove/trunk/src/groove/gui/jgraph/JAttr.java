@@ -167,8 +167,8 @@ public class JAttr {
      */
     public static final Color DATA_BACKGROUND;
     /**
-     * Font for data nodes and edges; is <code>null</code> if no special font
-     * is set.
+     * Font for data nodes and edges; is <code>null</code> if no special font is
+     * set.
      */
     public static final Font DATA_FONT = DEFAULT_FONT;
 
@@ -582,6 +582,15 @@ public class JAttr {
     static private final int NESTED_ARROW_SIZE =
         GraphConstants.DEFAULTDECORATIONSIZE - 2;
     /**
+     * Arrow used for subtype edges.
+     */
+    static private final int SUBTYPE_ARROW = GraphConstants.ARROW_TECHNICAL;
+    /**
+     * Arrow size used for subtype edges.
+     */
+    static private final int SUBTYPE_ARROW_SIZE =
+        GraphConstants.DEFAULTDECORATIONSIZE + 5;
+    /**
      * Background colour for nesting nodes.
      */
     static private final Color NESTED_BACKGROUND = Color.WHITE;
@@ -640,6 +649,8 @@ public class JAttr {
     static public final AttributeMap NESTING_NODE_ATTR;
     /** Collection of attributes for nesting edges. */
     static public final AttributeMap NESTING_EDGE_ATTR;
+    /** Collection of attributes for subtype edges. */
+    static public final AttributeMap SUBTYPE_EDGE_ATTR;
     static {
         for (AspectValue role : RuleAspect.getInstance().getValues()) {
             // edge attributes
@@ -688,22 +699,26 @@ public class JAttr {
 
         // override edge styles for cnew from embargo and creator
         AttributeMap cnewMap = RULE_EDGE_ATTR.get(RuleAspect.EMBARGO).clone();
-        AttributeMap creatorMap = RULE_EDGE_ATTR.get(RuleAspect.CREATOR).clone();
-        GraphConstants.setForeground(cnewMap, GraphConstants.getForeground(creatorMap));
-//        GraphConstants.setFont(cnewMap, GraphConstants.getFont(creatorMap));
+        AttributeMap creatorMap =
+            RULE_EDGE_ATTR.get(RuleAspect.CREATOR).clone();
+        GraphConstants.setForeground(cnewMap,
+            GraphConstants.getForeground(creatorMap));
+        // GraphConstants.setFont(cnewMap, GraphConstants.getFont(creatorMap));
         GraphConstants.setLineWidth(cnewMap, 6);
         cnewMap.put("line2map", creatorMap);
         RULE_EDGE_ATTR.put(RuleAspect.CNEW, cnewMap);
-        
+
         // override node styles for cnew from embargo and creator
         cnewMap = RULE_NODE_ATTR.get(RuleAspect.EMBARGO).clone();
         creatorMap = RULE_NODE_ATTR.get(RuleAspect.CREATOR).clone();
         GraphConstants.setLineWidth(cnewMap, 6);
-        GraphConstants.setBackground(cnewMap, GraphConstants.getBackground(creatorMap));
-        GraphConstants.setForeground(cnewMap, GraphConstants.getForeground(creatorMap));
+        GraphConstants.setBackground(cnewMap,
+            GraphConstants.getBackground(creatorMap));
+        GraphConstants.setForeground(cnewMap,
+            GraphConstants.getForeground(creatorMap));
         cnewMap.put("line2map", creatorMap);
         RULE_NODE_ATTR.put(RuleAspect.CNEW, cnewMap);
-        
+
         NESTING_NODE_ATTR = JAttr.DEFAULT_NODE_ATTR.clone();
         GraphConstants.setBorder(NESTING_NODE_ATTR, JAttr.NESTED_BORDER);
         GraphConstants.setDashPattern(NESTING_NODE_ATTR, JAttr.NESTED_DASH);
@@ -712,6 +727,10 @@ public class JAttr {
         GraphConstants.setDashPattern(NESTING_EDGE_ATTR, JAttr.NESTED_DASH);
         GraphConstants.setLineEnd(NESTING_EDGE_ATTR, JAttr.NESTED_ARROW);
         GraphConstants.setEndSize(NESTING_EDGE_ATTR, JAttr.NESTED_ARROW_SIZE);
+        SUBTYPE_EDGE_ATTR = JAttr.DEFAULT_EDGE_ATTR.clone();
+        GraphConstants.setLineEnd(SUBTYPE_EDGE_ATTR, SUBTYPE_ARROW);
+        GraphConstants.setEndFill(SUBTYPE_EDGE_ATTR, false);
+        GraphConstants.setEndSize(SUBTYPE_EDGE_ATTR, JAttr.SUBTYPE_ARROW_SIZE);
     }
 
     /** Specialised class to avoid casting for {@link #clone()}. */
@@ -720,10 +739,11 @@ public class JAttr {
         public AttributeMap clone() {
             return (AttributeMap) super.clone();
         }
+
         @SuppressWarnings("unchecked")
         @Override
         public Object put(Object key, Object value) {
-            return super.put(key,value);
+            return super.put(key, value);
         }
     }
 }

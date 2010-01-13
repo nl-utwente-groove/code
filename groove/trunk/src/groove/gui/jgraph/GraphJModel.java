@@ -599,14 +599,22 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     protected void modifyJEdgeAttr(AttributeMap result,
             Set<? extends Edge> edgeSet) {
-        // change the font to bold if the edges contain a node type
         if (!edgeSet.isEmpty()) {
-            Edge edge = edgeSet.iterator().next();
-            if (edge.label().isNodeType()) {
-                setFontAttr(result, Font.BOLD);
-            } else if (edge.label() instanceof RegExprLabel) {
-                setFontAttr(result, Font.ITALIC);
-            }
+            modifyJEdgeAttr(result, edgeSet.iterator().next());
+        }
+    }
+
+    /**
+     * Modifies the edge attributes based on the set of edges contained in a
+     * j-edge. Callback method from {@link #createJEdgeAttr(JEdge)}
+     * @param result the map to be modified
+     */
+    protected void modifyJEdgeAttr(AttributeMap result, Edge edge) {
+        // change the font to bold if the edges contain a node type
+        if (edge.label().isNodeType()) {
+            setFontAttr(result, Font.BOLD);
+        } else if (edge.label() instanceof RegExprLabel) {
+            setFontAttr(result, Font.ITALIC);
         }
     }
 
