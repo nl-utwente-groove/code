@@ -23,6 +23,7 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -95,28 +96,21 @@ public class DefaultTypeView implements GraphView {
     /** Returns the set of labels used in this graph. */
     public Set<Label> getLabels() {
         initialise();
-        return this.labelSet;
+        return this.labelStore.getLabels();
     }
 
-    //
-    // /**
-    // * Invalidates the model and associated data structures.
-    // * This results in them being recomputed upon the next call of {@link
-    // #initialise()}.
-    // * Called in response to a change in the system properties.
-    // */
-    // private void invalidate() {
-    // model = null;
-    // errors = null;
-    // viewToModelMap = null;
-    // labelSet = null;
-    // }
-    //    
+    /** Returns the subtyping information induced by graph. */
+    public LabelStore getLabelStore() {
+        initialise();
+        return this.labelStore;
+    }
+
     /** Constructs the model and associated data structures from the view. */
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
             this.labelSet = new HashSet<Label>();
+            this.labelStore = new LabelStore();
             try {
                 Pair<Graph,NodeEdgeMap> modelPlusMap = computeModel(this.view);
                 this.model = modelPlusMap.first();
@@ -195,6 +189,11 @@ public class DefaultTypeView implements GraphView {
                 errors.addAll(exc.getErrors());
             }
         }
+        // add subtype relations to the label store
+        for (Edge edge : subtypes.getAllRelated()) {
+            this.labelStore.addSubtype(modelTypeMap.get(edge.opposite()),
+                modelTypeMap.get(edge.source()));
+        }
         checkModel(model, modelTypeMap, subtypes);
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
@@ -254,6 +253,7 @@ public class DefaultTypeView implements GraphView {
             Edge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);
             this.labelSet.add(modelLabel);
+            this.labelStore.addLabel(modelLabel);
             elementMap.putEdge(viewEdge, modelEdge);
         }
     }
@@ -374,6 +374,8 @@ public class DefaultTypeView implements GraphView {
     private NodeEdgeMap viewToModelMap;
     /** Set of labels occurring in this graph. */
     private Set<Label> labelSet;
+    /** The labels and subtype relations between them. */
+    private LabelStore labelStore;
     /** The graph factory used by this view, to construct the model. */
     private static final GraphFactory graphFactory = GraphFactory.getInstance();
 }

@@ -129,9 +129,10 @@ public class TypeAspect extends AbstractAspect {
      * Parser constructing node type labels.
      */
     static private class TypedLabelParser implements LabelParser {
-        /** 
+        /**
          * Private constructor for this singleton class.
-         * @param labelType the type of label to be created: either {@link Label#FLAG} or {@link Label#NODE_TYPE}.
+         * @param labelType the type of label to be created: either
+         *        {@link Label#FLAG} or {@link Label#NODE_TYPE}.
          */
         private TypedLabelParser(int labelType) {
             this.labelType = labelType;
@@ -140,7 +141,7 @@ public class TypeAspect extends AbstractAspect {
         @Override
         public Label parse(String text) throws FormatException {
             if (ExprParser.isIdentifier(text)) {
-                return DefaultLabel.createLabel(text, labelType);
+                return DefaultLabel.createLabel(text, this.labelType);
             } else {
                 throw new FormatException(
                     "Node type label '%s' is not a valid identifier", text);
@@ -152,16 +153,24 @@ public class TypeAspect extends AbstractAspect {
             return DefaultLabel.createLabel(label.text(), label.getType());
         }
 
-        /** The type of label to be created (either {@link Label#FLAG} or {@link Label#NODE_TYPE}). */
+        /**
+         * The type of label to be created (either {@link Label#FLAG} or
+         * {@link Label#NODE_TYPE}).
+         */
         private final int labelType;
-        
-        /** Returns an instance of this class, for a given label type (either {@link Label#FLAG} or {@link Label#NODE_TYPE}). */
+
+        /**
+         * Returns an instance of this class, for a given label type (either
+         * {@link Label#FLAG} or {@link Label#NODE_TYPE}).
+         */
         static public TypedLabelParser getInstance(int labelType) {
             return instances[labelType];
         }
 
         /** Singleton instance of this class. */
-        static private TypedLabelParser[] instances = { null, new TypedLabelParser(Label.NODE_TYPE), new TypedLabelParser(Label.FLAG) };
+        static private TypedLabelParser[] instances =
+            {null, new TypedLabelParser(Label.NODE_TYPE),
+                new TypedLabelParser(Label.FLAG)};
     }
 
     /** Parser that only accepts empty labels. */
