@@ -22,6 +22,7 @@ import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_EDGE_EMPH_CHANGE;
 import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
+import static groove.gui.jgraph.JAttr.SUBTYPE_EDGE_ATTR;
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import static groove.view.aspect.NestingAspect.getNestingValue;
 import static groove.view.aspect.RuleAspect.CNEW;
@@ -54,6 +55,7 @@ import groove.view.aspect.NamedAspectValue;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
+import groove.view.aspect.TypeAspect;
 
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -62,7 +64,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -201,20 +202,18 @@ public class AspectJModel extends GraphJModel {
     }
 
     @Override
-    protected void modifyJEdgeAttr(AttributeMap result,
-            Set<? extends Edge> edgeSet) {
-        assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
-        super.modifyJEdgeAttr(result, edgeSet);
-        AspectEdge aspectEdge = (AspectEdge) edgeSet.iterator().next();
-        AspectValue nestingValue = getNestingValue(aspectEdge);
-        if (nestingValue != null && !nestingValue.isNodeValue()) {
+    protected void modifyJEdgeAttr(AttributeMap result, Edge edge) {
+        super.modifyJEdgeAttr(result, edge);
+        AspectEdge aspectEdge = (AspectEdge) edge;
+        if (TypeAspect.isSubtype(aspectEdge)) {
+            result.applyMap(SUBTYPE_EDGE_ATTR);
+        } else if (NestingAspect.isMetaElement(aspectEdge)) {
             result.applyMap(NESTING_EDGE_ATTR);
         } else {
             AspectValue role = role(aspectEdge);
             result.applyMap(RULE_EDGE_ATTR.get(role));
             try {
-                Label modelLabel =
-                    aspectEdge.getModelLabel();
+                Label modelLabel = aspectEdge.getModelLabel();
                 if (RegExprLabel.isEmpty(modelLabel)) {
                     // remove edge arrow
                     GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
