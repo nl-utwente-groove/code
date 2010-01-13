@@ -250,16 +250,6 @@ public class AspectualGraphView implements GraphView {
                     GraphInfo.getRole(getView()));
             }
         }
-        // type edges must either be self-edges or "sub"-labelled edges in a
-        // type graph
-        if (TypeAspect.isNodeType(viewEdge)
-            && !viewEdge.source().equals(viewEdge.opposite())) {
-            if (GraphInfo.hasTypeRole(this.view)
-                && viewEdge.label().equals(TypeAspect.SUB_LABEL)) {
-                subtypes.addRelated(viewEdge);
-                return;
-            }
-        }
         // include the edge in the model if all end nodes are there
         Node[] endImages = new Node[viewEdge.endCount()];
         for (int i = 0; i < endImages.length; i++) {

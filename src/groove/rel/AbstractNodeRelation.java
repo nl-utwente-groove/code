@@ -24,6 +24,7 @@ import groove.graph.Node;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -39,6 +40,17 @@ public abstract class AbstractNodeRelation implements NodeRelation {
      */
     protected AbstractNodeRelation(GraphShape graph) {
         this.graph = graph;
+    }
+
+    @Override
+    public Set<Node> getRelated(Node node) {
+        Set<Node> result = new HashSet<Node>();
+        for (Edge relation : getAllRelated()) {
+            if (relation.source().equals(node)) {
+                result.add(relation.opposite());
+            }
+        }
+        return result;
     }
 
     public Set<? extends Edge> getAllRelated() {

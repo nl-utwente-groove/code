@@ -170,11 +170,20 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
-     * Tests if a given aspect element carries an {@link AttributeAspect} value
-     * that corresponds to a type.
+     * Tests if a given aspect value corresponds to a data type; i.e., if it is
+     * not equal to {@link #ARGUMENT}, {@link #VALUE} or {@link #PRODUCT}
      */
-    static public boolean isTypeElement(AspectElement elem) {
-        return algebraMap.containsKey(elem);
+    static public boolean isDataValue(AspectValue value) {
+        return algebraMap.containsKey(value);
+    }
+
+    /**
+     * Tests if a given aspect element carries an {@link AttributeAspect} value
+     * that corresponds to a data type.
+     * @see #isDataValue(AspectValue)
+     */
+    static public boolean isDataElement(AspectElement elem) {
+        return isDataValue(getAttributeValue(elem));
     }
 
     /**

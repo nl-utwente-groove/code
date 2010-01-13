@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import groove.algebra.AlgebraRegister;
 import groove.util.Converter;
 
 import java.util.ArrayList;
@@ -237,6 +238,16 @@ public final class DefaultLabel extends AbstractLabel {
      */
     static public String toTypedString(Label label) {
         return getTypePrefix(label.getType()) + label.text();
+    }
+
+    /**
+     * Tests if a given label is a node type label with a name corresponding to
+     * one of the predefined data type signatures.
+     * @see AlgebraRegister#getSignatureNames()
+     */
+    static public boolean isDataType(Label label) {
+        return label.isNodeType()
+            && AlgebraRegister.getSignatureNames().contains(label.text());
     }
 
     /**
