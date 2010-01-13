@@ -215,6 +215,15 @@ public class NewRuleView implements RuleView {
     }
 
     /**
+     * Indicates if the rule is typed. If so, this imposes more constraints on
+     * the rule.
+     */
+    private final boolean isTyped() {
+        return getProperties() != null
+            && getProperties().getTypeName().length() > 0;
+    }
+
+    /**
      * Invalidates any previous construction of the underlying rule. This means
      * the rule will be reconstructed when there is a call for it, using
      * {@link #initialise()}.
@@ -1057,7 +1066,7 @@ public class NewRuleView implements RuleView {
         private boolean isForNextLevel(AspectElement elem) { // throws
             // FormatException
             // {
-            boolean result;
+            boolean result = false;
             if (elem instanceof AspectNode) {
                 // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
@@ -1068,11 +1077,18 @@ public class NewRuleView implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
+                // we also push down node type labels in case the rule is typed
+                // TODO this is to simplify type checking but it adversely
+                // affects performance
                 try {
                     Label varLabel = ((AspectEdge) elem).getModelLabel();
-                    result = RegExprLabel.getWildcardId(varLabel) != null;
+                    if (varLabel != null) {
+                        result =
+                            RegExprLabel.getWildcardId(varLabel) != null
+                                || isTyped() && varLabel.isNodeType();
+                    }
                 } catch (FormatException exc) {
-                    result = false;
+                    // do nothing
                 }
             }
             if (!result) {
@@ -1092,8 +1108,6 @@ public class NewRuleView implements RuleView {
             this.rhsMap = new NodeEdgeHashMap();
             this.nacNodeSet = new HashSet<Node>();
             this.nacEdgeSet = new HashSet<Edge>();
-            this.addedTypes = new HashMap<Node,Label>();
-            this.deletedTypes = new HashSet<Node>();
             Set<String> errors = new TreeSet<String>();
             for (Map.Entry<AspectNode,Node> viewNodeEntry : this.viewNodes.entrySet()) {
                 try {
@@ -1114,6 +1128,11 @@ public class NewRuleView implements RuleView {
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
+            }
+            // test the presence of node types on all nodes
+            if (isTyped() && !this.untypedNodes.isEmpty()) {
+                errors.add(String.format("Rule contains untyped nodes %s",
+                    this.untypedNodes));
             }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -1151,6 +1170,7 @@ public class NewRuleView implements RuleView {
                     this.ruleMorph.putNode(lhsNode, rhsNode);
                 }
             }
+            this.untypedNodes.add(lhsNode);
             return result;
         }
 
@@ -1163,9 +1183,6 @@ public class NewRuleView implements RuleView {
                 } else {
                     this.nacEdgeSet.add(lhsEdge);
                 }
-                if (!RuleAspect.inRHS(viewEdge) && lhsEdge.label().isNodeType()) {
-                    this.deletedTypes.add(lhsEdge.source());
-                }
             }
             if (RuleAspect.inRHS(viewEdge) && !RuleAspect.isMerger(viewEdge)) {
                 Edge rhsEdge =
@@ -1177,12 +1194,10 @@ public class NewRuleView implements RuleView {
                 this.rhs.addEdge(rhsEdge);
                 if (RuleAspect.inLHS(viewEdge)) {
                     this.ruleMorph.putEdge(lhsEdge, rhsEdge);
-                } else {
-                    Label edgeLabel = rhsEdge.label();
-                    if (RuleAspect.inLHS(viewEdge.source())
-                        && edgeLabel.isNodeType()) {
-                        this.addedTypes.put(rhsEdge.source(), edgeLabel);
-                    }
+                }
+                // if this is a node type edge, the source node is typed.
+                if (lhsEdge.label().isNodeType()) {
+                    this.untypedNodes.remove(lhsEdge.source());
                 }
             }
         }
@@ -1335,23 +1350,6 @@ public class NewRuleView implements RuleView {
                 nacVars.removeAll(boundVars);
                 errors.add(String.format(
                     "NAC variables %s not bound on left hand side", nacVars));
-            }
-
-            // check if node type additions and deletions are balanced
-            for (Node deletedType : this.deletedTypes) {
-                this.addedTypes.remove(deletedType);
-            }
-            if (!this.addedTypes.isEmpty()) {
-                StringBuilder error = new StringBuilder();
-                for (Label type : this.addedTypes.values()) {
-                    if (error.length() > 0) {
-                        error.append(String.format("%n"));
-                    }
-                    error.append(String.format(
-                        "New node type '%s' not allowed without removing old type",
-                        type));
-                }
-                errors.add(error.toString());
             }
             // the resulting rule
             if (this.index.isExistential()) {
@@ -1634,12 +1632,10 @@ public class NewRuleView implements RuleView {
         private Set<Edge> nacEdgeSet;
         /** Node partition on this quantification level. */
         private Map<AspectNode,SortedSet<AspectNode>> partition;
-        /** Mapping from rule nodes to type labels added to that node. */
-        private Map<Node,Label> addedTypes;
-        /** Set of nodes for which a type label is deleted. */
-        private Set<Node> deletedTypes;
         /** The current mode of this level data. */
         private LevelMode mode = LevelMode.START;
+        /** Set of nodes without a node type label. */
+        private Set<Node> untypedNodes;
     }
 
     /** Intermediate mode values for {@link Level}. */

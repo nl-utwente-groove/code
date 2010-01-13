@@ -84,7 +84,9 @@ import java.util.TreeSet;
  * </ul>
  * @author Arend Rensink
  * @version $Revision: 1923 $
+ * @deprecated replaced by {@link NewRuleView}
  */
+@Deprecated
 public class DefaultRuleView implements RuleView {
     /**
      * Constructs a rule view from an aspect graph. The rule properties are
