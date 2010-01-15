@@ -22,6 +22,7 @@ import groove.lts.GTS;
 import groove.lts.State;
 import groove.trans.Condition;
 import groove.trans.RuleName;
+import groove.util.ExprParser;
 import groove.verify.CTLStarFormula.All;
 import groove.verify.CTLStarFormula.And;
 import groove.verify.CTLStarFormula.Atom;
@@ -144,8 +145,9 @@ public abstract class TemporalFormula {
      * @throws FormatException if the text contains a special character
      */
     protected void assertAtom(String text) throws FormatException {
+        String parsedText = ExprParser.parseExpr(text).first();
         for (int c = 0; c < operators.size(); c++) {
-            if (text.indexOf(operators.get(c)) >= 0) {
+            if (parsedText.indexOf(operators.get(c)) >= 0) {
                 throw new FormatException("Operator " + operators.get(c)
                     + " in unquoted atom " + text);
             }
