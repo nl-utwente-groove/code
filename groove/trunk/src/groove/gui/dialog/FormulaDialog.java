@@ -102,6 +102,7 @@ public class FormulaDialog {
         // select formula from list
         this.historyBox = new JComboBox(this.history.toArray());
         this.historyBox.addActionListener(new SelectionListener());
+        this.historyBox.setPrototypeDisplayValue("The longest value we want to display completely");
         history.add(this.historyBox);
 
         // OK or CANCEL

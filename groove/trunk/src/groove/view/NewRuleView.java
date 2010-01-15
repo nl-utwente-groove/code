@@ -1108,6 +1108,7 @@ public class NewRuleView implements RuleView {
             this.rhsMap = new NodeEdgeHashMap();
             this.nacNodeSet = new HashSet<Node>();
             this.nacEdgeSet = new HashSet<Edge>();
+            this.untypedNodes = new HashSet<Node>();
             Set<String> errors = new TreeSet<String>();
             for (Map.Entry<AspectNode,Node> viewNodeEntry : this.viewNodes.entrySet()) {
                 try {
