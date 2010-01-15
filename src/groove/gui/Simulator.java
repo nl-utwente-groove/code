@@ -4869,7 +4869,6 @@ public class Simulator {
         /** Constructs an instance of the action. */
         VerifyCTLAction() {
             super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME, null);
-            setEnabled(true);
         }
 
         public void actionPerformed(ActionEvent evt) {
