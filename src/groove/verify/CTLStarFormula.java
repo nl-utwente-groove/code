@@ -1014,6 +1014,21 @@ public class CTLStarFormula {
         return instance;
     }
 
+    /** Helper method for a test if this class. */
+    static private void test(String text) {
+        try {
+            System.out.printf("Input: %s%n", text);
+            System.out.printf("Output: %s%n", parseFormula(text));
+        } catch (FormatException e) {
+            System.out.println("Error:  " + e.getMessage());
+        }
+    }
+
+    /** Tests this class. */
+    static public void main(String[] args) {
+        test(args[0]);
+    }
+
     /**
      * The singleton instance of this class.
      */
