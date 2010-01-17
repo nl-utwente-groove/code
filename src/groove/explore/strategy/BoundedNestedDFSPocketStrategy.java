@@ -35,7 +35,7 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
     @Override
     protected void processFinalState(BuchiTransition transition) {
         Set<? extends ProductTransition> productTransitions =
-            addProductTransition(null, transition.getTargetLocation());
+            addProductTransition(null, transition.target());
         assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
             + productTransitions.size();
         // we should set the state to pocket but that is
