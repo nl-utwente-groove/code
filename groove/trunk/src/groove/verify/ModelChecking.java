@@ -16,13 +16,6 @@
  */
 package groove.verify;
 
-import groove.graph.Edge;
-import groove.trans.Rule;
-
-import java.util.Collection;
-
-import rwth.i2.ltl2ba4j.model.IGraphProposition;
-
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
