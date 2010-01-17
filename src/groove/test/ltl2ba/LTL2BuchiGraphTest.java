@@ -21,7 +21,6 @@ import groove.verify.BuchiTransition;
 import groove.verify.ltl2ba.BuchiGraph;
 import groove.verify.ltl2ba.BuchiGraphFactory;
 import groove.verify.ltl2ba.LTL2BuchiGraph;
-import groove.verify.ltl2ba.NASABuchiGraph;
 
 import java.util.Arrays;
 import java.util.HashSet;
