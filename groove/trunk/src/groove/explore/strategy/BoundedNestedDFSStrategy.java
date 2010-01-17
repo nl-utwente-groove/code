@@ -101,7 +101,7 @@ public class BoundedNestedDFSStrategy extends
             Set<String> applicableRules = filterRuleNames(outTransitions);
 
             for (BuchiTransition nextPropertyTransition : getAtBuchiLocation().outTransitions()) {
-                if (isEnabled(nextPropertyTransition, applicableRules)) {
+                if (nextPropertyTransition.isEnabled(applicableRules)) {
                     boolean finalState = true;
                     for (GraphTransition nextTransition : getGTS().outEdgeSet(
                         getAtBuchiState().getGraphState())) {
@@ -110,7 +110,7 @@ public class BoundedNestedDFSStrategy extends
 
                             Set<? extends ProductTransition> productTransitions =
                                 addProductTransition(nextTransition,
-                                    nextPropertyTransition.getTargetLocation());
+                                    nextPropertyTransition.target());
                             assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
                                 + productTransitions.size();
                             if (counterExample(getAtBuchiState(),
@@ -157,7 +157,7 @@ public class BoundedNestedDFSStrategy extends
             getAtBuchiState().setColour(ModelChecking.RED);
         } else {
             Set<? extends ProductTransition> productTransitions =
-                addProductTransition(null, transition.getTargetLocation());
+                addProductTransition(null, transition.target());
             assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
                 + productTransitions.size();
         }

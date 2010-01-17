@@ -193,45 +193,6 @@ public class ModelChecking {
         return NEXT_FREE_COLOUR++;
     }
 
-    /**
-     * Checks whether a Buchi-transition is enabled, given a set of rule-names
-     * of applicable rules.
-     * @return <tt>true</tt> if the given transition is enabled, <tt>false</tt>
-     *         otherwise
-     */
-    public static boolean isPropertyTransitionEnabled(
-            BuchiTransition transition, Collection<Rule> rules) {
-        boolean result = true;
-        for (IGraphProposition gp : transition.getLabels()) {
-            if (gp.getFullLabel().equals(SIGMA)) {
-                continue;
-            }
-            boolean applicable = false;
-            // only take the label of the proposition - negation will be checked
-            // afterwards
-            String prop = gp.getLabel();
-            for (Rule rule : rules) {
-                if (prop.equals(rule.getName().text())) {
-                    applicable = true;
-                }
-            }
-            boolean match = (gp.isNegated() ^ applicable);
-            result = result && match;
-        }
-        return result;
-    }
-
-    /**
-     * Checks whether the given edge is labelled with
-     * {@link ModelChecking#SIGMA}.
-     * @param edge the edge to be checked
-     * @return <tt>true</tt> if the edge is indeed labelled with
-     *         {@link ModelChecking#SIGMA}, <tt>false</tt> otherwise
-     */
-    public static boolean hasSigmaLabel(Edge edge) {
-        return edge.label().text().equals(SIGMA);
-    }
-
     /** Reporter for profiling information. */
     // static public final Reporter reporter =
     // Reporter.register(ModelChecking.class);
