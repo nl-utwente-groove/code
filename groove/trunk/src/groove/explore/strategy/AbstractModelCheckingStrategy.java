@@ -71,7 +71,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     private final static int NASABUCHI = 2;
 
-    private int LTL2BUCHI_METHOD = LTL2BA;
+    private int LTL2BUCHI_METHOD = NASABUCHI;
 
     /** This implementation initialises the product automaton as well. */
     @Override
