@@ -71,12 +71,33 @@ public class LabelStore implements Cloneable {
         }
     }
 
-    /** Adds a direct subtype pair to the subtyping relation. */
-    public void addSubtype(Label type, Label subtype) {
-        assert type.isNodeType() : String.format(
-            "Non-node type label '%s' cannot get subtype '%s'", type, subtype);
-        assert subtype.isNodeType() : String.format(
-            "Non-node type label '%s' cannot be subtype of '%s'", subtype, type);
+    /**
+     * Adds a direct subtype pair to the subtyping relation. Both sub- and
+     * supertype labels have to be node type labels, and the new subtype pair
+     * should not introduce a cycle.
+     * @throws IllegalArgumentException if one of the types is a data type or
+     *         not a node type, or the new subtype pair introduces a cycle
+     */
+    public void addSubtype(Label type, Label subtype)
+        throws IllegalArgumentException {
+        if (!type.isNodeType()) {
+            throw new IllegalArgumentException(String.format(
+                "Non-node type label '%s' cannot get subtype '%s'", type,
+                subtype));
+        }
+        if (!subtype.isNodeType()) {
+            throw new IllegalArgumentException(String.format(
+                "Non-node type label '%s' cannot be subtype of '%s'", subtype,
+                type));
+        }
+        if (DefaultLabel.isDataType(type)) {
+            throw new IllegalArgumentException(String.format(
+                "Data type label '%s' cannot be supertype", type));
+        }
+        if (DefaultLabel.isDataType(subtype)) {
+            throw new IllegalArgumentException(String.format(
+                "Data type label '%s' cannot be subtype", subtype));
+        }
         addLabel(type);
         addLabel(subtype);
         if (getSubtypes(subtype).contains(type)) {

@@ -113,12 +113,12 @@ public class StoredGrammarView implements GrammarView, Observer {
         return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
     }
 
-    public GraphView getTypeView(String name) {
+    public TypeView getTypeView(String name) {
         AspectGraph typeGraph = getStore().getTypes().get(name);
         return typeGraph == null ? null : typeGraph.toTypeView(getProperties());
     }
 
-    public GraphView getTypeView() {
+    public TypeView getTypeView() {
         return this.typeName == null ? null : getTypeView(this.typeName);
     }
 
