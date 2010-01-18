@@ -36,6 +36,7 @@ import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.NewRuleView;
 import groove.view.RuleView;
+import groove.view.TypeView;
 import groove.view.View;
 
 import java.io.File;
@@ -503,7 +504,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link Groove#TYPE_ROLE}
      */
-    public GraphView toTypeView(SystemProperties properties)
+    public TypeView toTypeView(SystemProperties properties)
         throws IllegalStateException {
         if (!GraphInfo.hasTypeRole(this)) {
             throw new IllegalStateException(
@@ -603,7 +604,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     }
 
     /** Auxiliary object for converting this aspect graph to a type graph. */
-    private DefaultTypeView typeView;
+    private TypeView typeView;
 
     /** Auxiliary object for converting this aspect graph to a state graph. */
     private AspectualGraphView graphView;
