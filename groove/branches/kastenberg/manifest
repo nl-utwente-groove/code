@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Class-Path: lib/castor-0_9_5_2.jar lib/epsgraphics-1.0.0.jar lib/groove-gxl-1_0.jar 
+ lib/jgraph-5_10_1.jar lib/jgraphaddons-1_0_4.jar lib/junit-3_8_1.jar lib/layouts.jar 
+ lib/looks-2.1.4.jar lib/ltl2ba4j.jar lib/xerces-2_6_0-xercesImpl.jar 
+ org.eclipse.jdt.launching.JRE_CONTAINER lib/antlr_3.1/antlr-3.1b1.jar 
+ lib/antlr_3.1/stringtemplate-3.1.jar lib/antlr_3.1/antlr-runtime-3.1b1.jar lib/antlr_3.1/antlr-2.7.7.jar
+Main-Class: groove.Simulator

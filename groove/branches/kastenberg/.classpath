@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="lib" path="lib/castor-0_9_5_2.jar"/>
+	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/groove-gxl-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/jgraphaddons-1_0_4.jar"/>
+	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
+	<classpathentry kind="lib" path="lib/layouts.jar"/>
+	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/xerces-2_6_0-xercesImpl.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/antlr_3.1/antlr-2.7.7.jar"/>
+	<classpathentry kind="lib" path="lib/antlr_3.1/antlr-3.1b1.jar"/>
+	<classpathentry kind="lib" path="lib/antlr_3.1/antlr-runtime-3.1b1.jar"/>
+	<classpathentry kind="lib" path="lib/antlr_3.1/stringtemplate-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="C:/Program Files/Java/jgraph_5-13-0/src"/>
+	<classpathentry kind="lib" path="lib/groove-frontend-1_6.jar"/>
+	<classpathentry kind="lib" path="lib/ltl2buchi.jar"/>
+	<classpathentry kind="lib" path="lib/ltl2ba4j.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

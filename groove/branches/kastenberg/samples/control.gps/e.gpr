@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="rule" edgeids="false" edgemode="directed">
+        <attr name="priority">
+            <string>0</string>
+        </attr>
+    </graph>
+</gxl>
