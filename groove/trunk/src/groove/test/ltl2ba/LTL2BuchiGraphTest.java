@@ -198,12 +198,4 @@ public class LTL2BuchiGraphTest
             }
         }
     }
-
-    private void testTransition(BuchiTransition transition, Set<String> applicableRules)
-    {
-        if (transition.isEnabled(applicableRules))
-        {
-            System.out.println("Transition " + transition.toString() + " is enabled by " + applicableRules.toString());
-        }
-    }
 }
