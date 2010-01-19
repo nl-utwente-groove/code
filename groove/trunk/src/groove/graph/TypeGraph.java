@@ -87,6 +87,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         return result;
     }
 
+    /** Tests if a given node type label occurs in this type graph. */
+    public boolean isNodeType(Label nodeLabel) {
+        assert nodeLabel.isNodeType() : String.format(
+            "Label '%s' is not a node type label", nodeLabel);
+        return this.labels.getSubtypes(nodeLabel) != null;
+    }
+
+    /** Tests for a subtype relation between node labels. */
+    public boolean isSubtype(Label subLabel, Label superLabel) {
+        assert subLabel.isNodeType() : String.format(
+            "Label '%s' is not a node type label", subLabel);
+        assert superLabel.isNodeType() : String.format(
+            "Label '%s' is not a node type label", superLabel);
+        Set<Label> subtypes = this.labels.getSubtypes(superLabel);
+        return subtypes != null && subtypes.contains(subLabel);
+    }
+
     /** Tests if a given node has a given type or a supertype. */
     public boolean hasType(Node node, Label label) {
         assert label.isNodeType() : String.format(
@@ -94,7 +111,29 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         return this.labels.getSubtypes(getType(node)).contains(label);
     }
 
-    /** Returns the opposite node for a given type node and binary edge label. */
+    /**
+     * Returns the opposite node for a given node type label and outgoing binary
+     * edge label, or {@code null} if the binary edge does not occur for the
+     * node type or any of its supertypes.
+     */
+    public Label getTarget(Label nodeLabel, Label label) {
+        Node result = null;
+        assert nodeLabel.isNodeType() : String.format(
+            "Label '%s' is not a node type label", nodeLabel);
+        assert label.isBinary() : String.format(
+            "Label '%s' is not a binary edge label", label);
+        Set<Label> supertypes = this.labels.getSupertypes(nodeLabel);
+        Set<? extends Edge> edges = labelEdgeSet(2, label);
+        for (Edge edge : edges) {
+            if (supertypes.contains(getType(edge.source()))) {
+                result = edge.opposite();
+                break;
+            }
+        }
+        return result == null ? null : getType(result);
+    }
+
+    /** Returns the opposite node for a given node label and binary edge label. */
     public Node getTarget(Node node, Label label) {
         Node result = null;
         assert label.isBinary() : String.format(
@@ -104,6 +143,21 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         for (Edge edge : edges) {
             if (supertypes.contains(getType(edge.source()))) {
                 result = edge.opposite();
+                break;
+            }
+        }
+        return result;
+    }
+
+    /** Tests if a given node type (or a supertype) has a given flag. */
+    public boolean hasFlag(Label node, Label flag) {
+        boolean result = false;
+        assert flag.isFlag() : String.format("Label '%s' is not a flag", flag);
+        Set<Label> supertypes = this.labels.getSupertypes(node);
+        Set<? extends Edge> edges = labelEdgeSet(2, flag);
+        for (Edge edge : edges) {
+            if (supertypes.contains(getType(edge.source()))) {
+                result = true;
                 break;
             }
         }

@@ -24,7 +24,6 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
-import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -53,7 +52,7 @@ public class DefaultTypeView implements TypeView {
      * Constructs an instance from a given aspect graph.
      * @see GraphInfo#getName(groove.graph.GraphShape)
      */
-    public DefaultTypeView(AspectGraph view, SystemProperties properties) {
+    public DefaultTypeView(AspectGraph view) {
         this.view = view;
         String name = GraphInfo.getName(view);
         this.name = name == null ? "" : name;
