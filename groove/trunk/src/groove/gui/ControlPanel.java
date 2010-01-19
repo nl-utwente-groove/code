@@ -48,6 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -84,6 +85,13 @@ public class ControlPanel extends JPanel implements SimulationListener {
             new RTextScrollPane(500, 400, getControlTextArea(), true);
         this.add(createToolbar(), BorderLayout.NORTH);
         this.add(scroller, BorderLayout.CENTER);
+        // add keyboard binding for Save key
+        InputMap focusedInputMap =
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        focusedInputMap.put(Options.SAVE_KEY, Options.SAVE_ACTION_NAME);
+        focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
+        getActionMap().put(Options.SAVE_ACTION_NAME, getSaveAction());
+        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         // start listening
         simulator.addSimulationListener(this);
     }
@@ -238,6 +246,13 @@ public class ControlPanel extends JPanel implements SimulationListener {
             if (!confirm || confirmAbandon()) {
                 this.editing = false;
                 setDirty(false);
+                // if we cancelled editing a new control program
+                // the selected name should be reset
+                if (!getGrammarView().getControlNames().contains(
+                    getSelectedControl())) {
+                    setSelectedControl(null);
+                }
+                getParent().requestFocusInWindow();
                 refreshAll();
             } else {
                 result = false;
@@ -332,8 +347,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
             this.selectionListener = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (getSelectedItem() != null && stopEditing(true)) {
-                        setSelectedControl((String) getSelectedItem());
+                    String selectedItem = (String) getSelectedItem();
+                    if (selectedItem != null && stopEditing(true)) {
+                        setSelectedControl(selectedItem);
                         refreshAll();
                     }
                 }
@@ -351,7 +367,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
             } else {
                 Set<String> names =
                     new TreeSet<String>(getGrammarView().getControlNames());
-                if (isControlSelected()) {
+                if (isControlSelected() && isEditing()) {
                     names.add(getSelectedControl());
                 }
                 for (String controlName : names) {
@@ -424,7 +440,11 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void refresh() {
             // if the text area has focus, don't do any refreshing
             // as that would destroy the current state of the editing
-            if (this.listenToRefresh) {
+            if (isDirty()) {
+                setEnabled(true);
+                setEditable(true);
+                requestFocusInWindow();
+            } else if (this.listenToRefresh) {
                 getDocument().removeDocumentListener(this.changeListener);
                 // we enable the area only if it is being edited.
                 setEditable(isEditing());
@@ -450,7 +470,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
                 setText(program);
                 discardAllEdits();
                 if (isEditing()) {
-                    requestFocus();
+                    requestFocusInWindow();
                 }
                 getDocument().addDocumentListener(this.changeListener);
             }
@@ -889,11 +909,14 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private class SaveAction extends RefreshableAction {
         public SaveAction() {
             super(Options.SAVE_CONTROL_ACTION_NAME, Groove.SAVE_ICON);
+            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {
-            doSave(getSelectedControl(), getControlTextArea().getText());
-            stopEditing(false);
+            if (isDirty()) {
+                doSave(getSelectedControl(), getControlTextArea().getText());
+                stopEditing(false);
+            }
         }
 
         /** Executes the save action. */
@@ -903,7 +926,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            setEnabled(isDirty());
+            setEnabled(isEditing());
         }
     }
 
