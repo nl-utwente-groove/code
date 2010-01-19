@@ -16,19 +16,14 @@
  */
 package groove.view;
 
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.rel.NodeRelation;
-import groove.rel.SetNodeRelation;
+import groove.graph.TypeGraph;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
@@ -53,7 +48,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultTypeView implements GraphView {
+public class DefaultTypeView implements TypeView {
     /**
      * Constructs an instance from a given aspect graph.
      * @see GraphInfo#getName(groove.graph.GraphShape)
@@ -73,7 +68,7 @@ public class DefaultTypeView implements GraphView {
         return this.view;
     }
 
-    public Graph toModel() throws FormatException {
+    public TypeGraph toModel() throws FormatException {
         initialise();
         if (this.model == null) {
             throw new FormatException(getErrors());
@@ -96,23 +91,16 @@ public class DefaultTypeView implements GraphView {
     /** Returns the set of labels used in this graph. */
     public Set<Label> getLabels() {
         initialise();
-        return this.labelStore.getLabels();
-    }
-
-    /** Returns the subtyping information induced by graph. */
-    public LabelStore getLabelStore() {
-        initialise();
-        return this.labelStore;
+        return this.model.getLabelStore().getLabels();
     }
 
     /** Constructs the model and associated data structures from the view. */
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
-            this.labelSet = new HashSet<Label>();
-            this.labelStore = new LabelStore();
             try {
-                Pair<Graph,NodeEdgeMap> modelPlusMap = computeModel(this.view);
+                Pair<TypeGraph,NodeEdgeMap> modelPlusMap =
+                    computeModel(this.view);
                 this.model = modelPlusMap.first();
                 this.viewToModelMap = modelPlusMap.second();
                 this.errors = Collections.emptyList();
@@ -128,10 +116,10 @@ public class DefaultTypeView implements GraphView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<Graph,NodeEdgeMap> computeModel(AspectGraph view)
+    private Pair<TypeGraph,NodeEdgeMap> computeModel(AspectGraph view)
         throws FormatException {
         Set<String> errors = new TreeSet<String>(view.getErrors());
-        Graph model = getGraphFactory().newGraph();
+        TypeGraph model = new TypeGraph();
         // first check the nodes for allowed aspect values
         for (AspectNode viewNode : view.nodeSet()) {
             checkViewNode(viewNode);
@@ -179,27 +167,35 @@ public class DefaultTypeView implements GraphView {
             errors.add(String.format("Untyped nodes %s in type graph",
                 untypedNodes));
         }
-        // collection of declared subtypes
-        NodeRelation subtypes = new SetNodeRelation(model);
         // copy the edges from view to model
         for (AspectEdge viewEdge : view.edgeSet()) {
             try {
-                processViewEdge(model, elementMap, subtypes, viewEdge);
+                processViewEdge(model, elementMap, viewEdge);
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }
         }
-        // add subtype relations to the label store
-        for (Edge edge : subtypes.getAllRelated()) {
-            this.labelStore.addSubtype(modelTypeMap.get(edge.opposite()),
-                modelTypeMap.get(edge.source()));
+        // add subtype relations to the model
+        for (AspectEdge viewEdge : view.edgeSet()) {
+            try {
+                if (TypeAspect.isSubtype(viewEdge)) {
+                    model.addSubtype(elementMap.getNode(viewEdge.target()),
+                        elementMap.getNode(viewEdge.source()));
+                }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
         }
-        checkModel(model, modelTypeMap, subtypes);
+        try {
+            model.test();
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
         if (errors.isEmpty()) {
             model.setFixed();
-            return new Pair<Graph,NodeEdgeMap>(model, elementMap);
+            return new Pair<TypeGraph,NodeEdgeMap>(model, elementMap);
         } else {
             throw new FormatException(new ArrayList<String>(errors));
         }
@@ -226,8 +222,8 @@ public class DefaultTypeView implements GraphView {
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processViewEdge(Graph model, NodeEdgeMap elementMap,
-            NodeRelation subtypes, AspectEdge viewEdge) throws FormatException {
+    private void processViewEdge(TypeGraph model, NodeEdgeMap elementMap,
+            AspectEdge viewEdge) throws FormatException {
         for (AspectValue value : viewEdge.getAspectMap()) {
             if (isVirtualValue(value)) {
                 return;
@@ -246,14 +242,10 @@ public class DefaultTypeView implements GraphView {
             "Target of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
         // register subtype edges
-        if (TypeAspect.isSubtype(viewEdge)) {
-            subtypes.addRelated(modelSource, modelTarget);
-        } else {
+        if (!TypeAspect.isSubtype(viewEdge)) {
             Label modelLabel = viewEdge.getModelLabel();
             Edge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);
-            this.labelSet.add(modelLabel);
-            this.labelStore.addLabel(modelLabel);
             elementMap.putEdge(viewEdge, modelEdge);
         }
     }
@@ -276,106 +268,16 @@ public class DefaultTypeView implements GraphView {
         return DefaultNode.createNode(viewSource.getNumber());
     }
 
-    /** Checks if a given graph satisfies the properties of a type graph. */
-    private void checkModel(Graph model, Map<Node,Label> typeMap,
-            NodeRelation subtypes) throws FormatException {
-        Set<String> errors = new TreeSet<String>();
-        // check for self-subtypes and subtype declarations between data types
-        for (Edge subtypePair : subtypes.getAllRelated()) {
-            if (subtypePair.source().equals(subtypePair.opposite())) {
-                errors.add(String.format(
-                    "Type '%s' cannot be a subtype of itself",
-                    typeMap.get(subtypePair.source())));
-            } else {
-                Label sourceType = typeMap.get(subtypePair.source());
-                Label targetType = typeMap.get(subtypePair.opposite());
-                if (DefaultLabel.isDataType(sourceType)) {
-                    errors.add(String.format(
-                        "Data type '%s' cannot be declared as subtype",
-                        sourceType));
-                }
-                if (DefaultLabel.isDataType(targetType)) {
-                    errors.add(String.format(
-                        "Data type '%s' cannot be declared as supertype",
-                        sourceType));
-                }
-            }
-        }
-        // check for outgoing edge types from data types
-        for (Edge typeEdge : model.edgeSet()) {
-            Label sourceType = typeMap.get(typeEdge.source());
-            if (!typeEdge.label().isNodeType()
-                && DefaultLabel.isDataType(sourceType)) {
-                errors.add(String.format("Data type '%s' cannot have %s",
-                    sourceType, typeEdge.label().isFlag() ? "flags"
-                            : "outgoing edges"));
-            }
-        }
-        // check for cycles in the subtyping relation
-        NodeRelation downClosure = subtypes.getTransitiveClosure().getInverse();
-        if (errors.isEmpty()) {
-            Set<Label> cyclicSubtypes = new HashSet<Label>();
-            for (Edge typeEdge : downClosure.getAllRelated()) {
-                if (typeEdge.source().equals(typeEdge.opposite())) {
-                    cyclicSubtypes.add(typeMap.get(typeEdge.source()));
-                }
-            }
-            if (!cyclicSubtypes.isEmpty()) {
-                errors.add(String.format("Subtyping relation is cyclic in %s",
-                    cyclicSubtypes));
-            }
-        }
-        // check for name shadowing of edge types
-        downClosure.doReflexiveClosure();
-        Map<Node,Map<Label,Node>> outTypeMap =
-            new HashMap<Node,Map<Label,Node>>();
-        for (Edge typeEdge : model.edgeSet()) {
-            if (!typeEdge.label().isNodeType()) {
-                Node source = typeEdge.source();
-                for (Node subtype : downClosure.getRelated(source)) {
-                    Map<Label,Node> outTypes = outTypeMap.get(subtype);
-                    if (outTypes == null) {
-                        outTypeMap.put(subtype, outTypes =
-                            new HashMap<Label,Node>());
-                    }
-                    Node oldTypeNode = outTypes.put(typeEdge.label(), subtype);
-                    if (oldTypeNode != null) {
-                        errors.add(String.format(
-                            "Conflicting edge type '%s' in '%s' and '%s'",
-                            typeEdge.label(), typeMap.get(source),
-                            typeMap.get(oldTypeNode)));
-                    }
-                }
-            }
-        }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
-    }
-
-    /**
-     * Returns the graph factory used to construct the model.
-     */
-    private GraphFactory getGraphFactory() {
-        return graphFactory;
-    }
-
     /** The name of the view. */
     private final String name;
     /** The view represented by this object. */
     private final AspectGraph view;
     /** The graph model that is being viewed. */
-    private Graph model;
+    private TypeGraph model;
     /**
      * List of errors in the view that prevent the model from being constructed.
      */
     private List<String> errors;
     /** Map from view to model nodes. */
     private NodeEdgeMap viewToModelMap;
-    /** Set of labels occurring in this graph. */
-    private Set<Label> labelSet;
-    /** The labels and subtype relations between them. */
-    private LabelStore labelStore;
-    /** The graph factory used by this view, to construct the model. */
-    private static final GraphFactory graphFactory = GraphFactory.getInstance();
 }

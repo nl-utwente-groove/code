@@ -16,9 +16,9 @@
  */
 package groove.view;
 
-import groove.graph.Graph;
+import groove.graph.TypeGraph;
 
 /** Specialised view interface for models that are type graphs. */
-public interface GraphView extends View<Graph> {
+public interface TypeView extends View<TypeGraph> {
     // no additional functionality
 }

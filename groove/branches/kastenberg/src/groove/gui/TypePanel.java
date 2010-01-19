@@ -33,8 +33,8 @@ import groove.trans.SystemProperties;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GraphView;
 import groove.view.StoredGrammarView;
+import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -246,7 +246,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * from {@link #typeJModelMap}; if there is no image for the requested state
      * then one is created.
      */
-    private AspectJModel getTypeJModel(GraphView graph) {
+    private AspectJModel getTypeJModel(TypeView graph) {
         AspectJModel result = this.typeJModelMap.get(graph);
         if (result == null) {
             result = AspectJModel.newInstance(graph, getOptions());
@@ -259,8 +259,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<GraphView,AspectJModel> typeJModelMap =
-        new HashMap<GraphView,AspectJModel>();
+    private final Map<TypeView,AspectJModel> typeJModelMap =
+        new HashMap<TypeView,AspectJModel>();
 
     /** Name of the currently visible type graph. */
     private String selectedType;
@@ -421,7 +421,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 getSimulator().askNewTypeName("Select new type graph name",
                     oldName, true);
             if (newName != null) {
-                GraphView oldTypeView = getGrammarView().getTypeView(oldName);
+                TypeView oldTypeView = getGrammarView().getTypeView(oldName);
                 AspectGraph newType = oldTypeView.getView().clone();
                 GraphInfo.setName(newType, newName);
                 getSimulator().doAddType(newType);
@@ -702,7 +702,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                 getSimulator().askNewTypeName("Select new type graph name",
                     oldName, false);
             if (newName != null && !oldName.equals(newName)) {
-                GraphView type = getGrammarView().getTypeView(oldName);
+                TypeView type = getGrammarView().getTypeView(oldName);
                 getSimulator().doRenameType(type.getView(), newName);
                 if (oldName.equals(getGrammarView().getTypeName())) {
                     getEnableAction().doEnable(newName);
