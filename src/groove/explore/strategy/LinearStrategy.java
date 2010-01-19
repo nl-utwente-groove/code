@@ -88,9 +88,9 @@ public class LinearStrategy extends AbstractStrategy {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
         gts.getRecord().setCollapse(false);
-        super.prepare(gts, state);
         gts.getRecord().setCopyGraphs(false);
         gts.getRecord().setReuseEvents(false);
+        super.prepare(gts, state);
         gts.addGraphListener(this.collector);
     }
 
