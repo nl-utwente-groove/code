@@ -18,8 +18,10 @@ package groove.view;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.GraphGrammar;
@@ -103,9 +105,21 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public GraphView getGraphView(String name) {
+        GraphView result = null;
         AspectGraph stateGraph = getStore().getGraphs().get(name);
-        return stateGraph == null ? null
-                : stateGraph.toGraphView(getProperties());
+        if (stateGraph != null) {
+            result = stateGraph.toGraphView(getProperties());
+            TypeGraph type = null;
+            if (getTypeView() != null) {
+                try {
+                    type = getTypeView().toModel();
+                } catch (FormatException e) {
+                    // don't set the type graph
+                }
+            }
+            result.setType(type);
+        }
+        return result;
     }
 
     public RuleView getRuleView(RuleName name) {
@@ -119,7 +133,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public TypeView getTypeView() {
-        return this.typeName == null ? null : getTypeView(this.typeName);
+        return getTypeName() == null ? null : getTypeView(getTypeName());
     }
 
     /**
@@ -347,8 +361,10 @@ public class StoredGrammarView implements GrammarView, Observer {
             }
         } else {
             try {
-                result.setStartGraph(getStartGraphView().toModel());
+                Graph startGraph = getStartGraphView().toModel();
+                result.setStartGraph(startGraph);
                 this.labelStore.addLabels(getStartGraphView().getLabels());
+                errors.addAll(GraphInfo.getErrors(startGraph));
             } catch (FormatException exc) {
                 for (String error : exc.getErrors()) {
                     errors.add(String.format("Format error in start graph: %s",
@@ -420,10 +436,6 @@ public class StoredGrammarView implements GrammarView, Observer {
      * system; <code>null</code> otherwise.
      */
     private String startGraphName;
-    /**
-     * Name of the current type graph, if any.
-     */
-    private String typeName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<String> errors;
     /** The graph grammar derived from the rule views. */

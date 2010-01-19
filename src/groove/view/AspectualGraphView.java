@@ -17,6 +17,7 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import groove.algebra.AlgebraRegister;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -27,6 +28,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
 import groove.rel.NodeRelation;
@@ -43,7 +45,6 @@ import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,27 +67,10 @@ public class AspectualGraphView implements GraphView {
     public AspectualGraphView(AspectGraph view, SystemProperties properties) {
         this.view = view;
         this.attributeFactory = createAttributeFactory(properties);
-        this.labelSet = new HashSet<Label>();
         // we fix the view; is it conceptually right to do that here?
         view.setFixed();
         String name = GraphInfo.getName(view);
         this.name = name == null ? "" : name;
-        Graph model;
-        NodeEdgeMap viewToModelMap;
-        List<String> errors;
-        try {
-            Pair<Graph,NodeEdgeMap> modelPlusMap = computeModel(view);
-            model = modelPlusMap.first();
-            viewToModelMap = modelPlusMap.second();
-            errors = Collections.emptyList();
-        } catch (FormatException e) {
-            model = null;
-            viewToModelMap = new NodeEdgeHashMap();
-            errors = e.getErrors();
-        }
-        this.model = model;
-        this.viewToModelMap = viewToModelMap;
-        this.errors = errors;
     }
 
     public String getName() {
@@ -99,6 +83,7 @@ public class AspectualGraphView implements GraphView {
     }
 
     public Graph toModel() throws FormatException {
+        initialise();
         if (this.model == null) {
             throw new FormatException(getErrors());
         } else {
@@ -107,29 +92,63 @@ public class AspectualGraphView implements GraphView {
     }
 
     public List<String> getErrors() {
+        initialise();
         return this.errors;
     }
 
     @Override
     public NodeEdgeMap getMap() {
+        initialise();
         return this.viewToModelMap;
     }
 
     /**
-     * Tests if the properties object with which this view was created is
-     * <i>essentially equal</i> to a given properties object. Only tests for
-     * equality of the algebra family property.
-     * @param properties the properties to be compared with the internal ones
-     * @return <code>true</code> if the properties objects are essentially equal
-     * @see SystemProperties#getAlgebraFamily()
+     * Changes the system properties under which the model is to be created.
      */
-    public boolean hasProperties(SystemProperties properties) {
-        return this.attributeFactory.equals(createAttributeFactory(properties));
+    public void setProperties(SystemProperties properties) {
+        AttributeElementFactory newFactory = createAttributeFactory(properties);
+        if (!newFactory.equals(this.attributeFactory)) {
+            this.attributeFactory = newFactory;
+            invalidate();
+        }
+    }
+
+    /** Changes the type graph under against which the model should be tested. */
+    @Override
+    public void setType(TypeGraph type) {
+        if (this.type != type) {
+            this.type = type;
+            invalidate();
+        }
     }
 
     /** Returns the set of labels used in this graph. */
     public Set<Label> getLabels() {
+        initialise();
         return this.labelSet;
+    }
+
+    /** Constructs the model and associated data structures from the view. */
+    private void initialise() {
+        // first test if there is something to be done
+        if (this.errors == null) {
+            this.labelSet = new HashSet<Label>();
+            Pair<Graph,NodeEdgeMap> modelPlusMap = computeModel(this.view);
+            this.model = modelPlusMap.first();
+            this.viewToModelMap = modelPlusMap.second();
+            this.errors = GraphInfo.getErrors(this.model);
+        }
+    }
+
+    /**
+     * Resets the constructed fields of this view to {@code null}, so that they
+     * will be reconstructed again.
+     */
+    private void invalidate() {
+        this.errors = null;
+        this.model = null;
+        this.viewToModelMap = null;
+        this.labelSet = null;
     }
 
     /** Factory method. */
@@ -142,8 +161,7 @@ public class AspectualGraphView implements GraphView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<Graph,NodeEdgeMap> computeModel(AspectGraph view)
-        throws FormatException {
+    private Pair<Graph,NodeEdgeMap> computeModel(AspectGraph view) {
         Set<String> errors = new TreeSet<String>(view.getErrors());
         Graph model = getGraphFactory().newGraph();
         // we need to record the view-to-model element map for layout transfer
@@ -182,14 +200,69 @@ public class AspectualGraphView implements GraphView {
                 viewToModelIter.remove();
             }
         }
+        // test against the type graph, if any
+        if (this.type != null) {
+            // test if all nodes have valid types
+            for (Node node : model.nodeSet()) {
+                Label nodeType = nodeTypes.get(node);
+                if (nodeType == null) {
+                    if (node instanceof ValueNode) {
+                        String signature =
+                            AlgebraRegister.getSignatureName(((ValueNode) node).getAlgebra());
+                        nodeTypes.put(node, DefaultLabel.createLabel(signature,
+                            Label.NODE_TYPE));
+                    } else {
+                        errors.add(String.format("Node '%s' is untyped", node));
+                    }
+                } else if (!this.type.isNodeType(nodeType)) {
+                    errors.add(String.format(
+                        "Node '%s' has nonexistent type '%s'", node, nodeType));
+                }
+            }
+            for (Edge edge : model.edgeSet()) {
+                Node source = edge.source();
+                Label sourceType = nodeTypes.get(source);
+                Label targetType = nodeTypes.get(edge.opposite());
+                if (sourceType == null || targetType == null) {
+                    // this must be due to an untyped node
+                    // which was already reported as an error
+                    continue;
+                }
+                Label edgeType = edge.label();
+                if (edgeType.isFlag()) {
+                    if (!this.type.hasFlag(sourceType, edgeType)) {
+                        errors.add(String.format(
+                            "Node '%s' with type '%s' has nonexistent flag '%s'",
+                            source, sourceType, edgeType));
+                    }
+                } else if (edgeType.isBinary()) {
+                    Label declaredTargetType =
+                        this.type.getTarget(sourceType, edgeType);
+                    if (declaredTargetType == null) {
+                        errors.add(String.format(
+                            "Node '%s' with type '%s' has outgoing edge with nonexistent type '%s'",
+                            source, sourceType, edgeType));
+                    } else if (DefaultLabel.isDataType(declaredTargetType)
+                        || DefaultLabel.isDataType(targetType)) {
+                        if (!targetType.equals(declaredTargetType)) {
+                            errors.add(String.format(
+                                "Target node of '%s' has type '%s' but should have data type '%s'",
+                                edge, targetType, declaredTargetType));
+                        }
+                    } else if (!this.type.isSubtype(targetType,
+                        declaredTargetType)) {
+                        errors.add(String.format(
+                            "Target node of '%s' has type '%s' which is not a subtype of '%s'",
+                            edge, targetType, declaredTargetType));
+                    }
+                }
+            }
+        }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
-        if (errors.isEmpty()) {
-            model.setFixed();
-            return new Pair<Graph,NodeEdgeMap>(model, elementMap);
-        } else {
-            throw new FormatException(new ArrayList<String>(errors));
-        }
+        GraphInfo.setErrors(model, new ArrayList<String>(errors));
+        model.setFixed();
+        return new Pair<Graph,NodeEdgeMap>(model, elementMap);
     }
 
     /**
@@ -272,6 +345,8 @@ public class AspectualGraphView implements GraphView {
         if (DefaultLabel.isDataType(modelLabel)) {
             throw new FormatException(
                 "Data type label '%s' not allowed in graphs", modelLabel);
+        } else if (modelLabel.isNodeType()) {
+            nodeTypeMap.put(modelSource, modelLabel);
         }
         Edge modelEdge = model.addEdge(modelSource, modelLabel, modelTarget);
         this.labelSet.add(modelLabel);
@@ -315,17 +390,19 @@ public class AspectualGraphView implements GraphView {
     /** The view represented by this object. */
     private final AspectGraph view;
     /** The graph model that is being viewed. */
-    private final Graph model;
+    private Graph model;
     /**
      * List of errors in the view that prevent the model from being constructed.
      */
-    private final List<String> errors;
+    private List<String> errors;
     /** Map from view to model nodes. */
-    private final NodeEdgeMap viewToModelMap;
+    private NodeEdgeMap viewToModelMap;
     /** Set of labels occurring in this graph. */
-    private final Set<Label> labelSet;
+    private Set<Label> labelSet;
     /** The attribute element factory for this view. */
-    private final AttributeElementFactory attributeFactory;
+    private AttributeElementFactory attributeFactory;
+    /** Optional type graph for this aspect graph. */
+    private TypeGraph type;
     /** The graph factory used by this view, to construct the model. */
     private static final GraphFactory graphFactory = GraphFactory.getInstance();
 }

@@ -564,7 +564,12 @@ public class Simulator {
             } else {
                 getGrammarStore().putType(typeGraph);
                 result = true;
-                refresh();
+                if (GraphInfo.getName(typeGraph).equals(
+                    getGrammarView().getTypeName())) {
+                    updateGrammar();
+                } else {
+                    refresh();
+                }
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving type graph '%s'",
@@ -5163,7 +5168,7 @@ public class Simulator {
         new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
 
     /** Flag controlling if types should be used. */
-    private static final boolean USE_TYPES = false;
+    private static final boolean USE_TYPES = true;
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
 }
