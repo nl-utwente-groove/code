@@ -52,20 +52,21 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Constructs a (named) graph condition based on a given graph to be matched
      * and root map.
-     * 
+     * @param name the name of the condition; may be <code>null</code>
      * @param target the graph to be matched
      * @param rootMap element map from the context to the anchor elements of
      *        <code>target</code>; may be <code>null</code> if the condition is
      *        ground
-     * @param name the name of the condition; may be <code>null</code>
+     * @param labelStore label store specifying the subtype relation
      * @param properties properties for matching the condition
      */
-    protected AbstractCondition(Graph target, NodeEdgeMap rootMap,
-            RuleName name, SystemProperties properties) {
+    protected AbstractCondition(RuleName name, Graph target,
+            NodeEdgeMap rootMap, LabelStore labelStore,
+            SystemProperties properties) {
         this.rootMap = rootMap == null ? new NodeEdgeHashMap() : rootMap;
         this.target = target;
         this.properties = properties;
-        if (properties != null) {
+        if (labelStore == null && properties != null) {
             try {
                 this.labelStore =
                     LabelStore.createLabelStore(properties.getSubtypes());
@@ -76,18 +77,9 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                         properties.getSubtypes()));
             }
         } else {
-            this.labelStore = null;
+            this.labelStore = labelStore;
         }
         this.name = name;
-    }
-
-    /**
-     * Constructs a (named) ground graph condition based on a given target
-     * graph. The name may be <code>null</code>.
-     */
-    protected AbstractCondition(Graph target, RuleName name,
-            SystemProperties properties) {
-        this(target, null, name, properties);
     }
 
     /**

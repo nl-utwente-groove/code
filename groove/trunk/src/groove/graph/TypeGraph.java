@@ -103,7 +103,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             Label label = edge.label();
             if (label.isNodeType()) {
                 if (isNodeType(label)) {
-                    nodeTypes.put(node, label);
+                    Label oldLabel = nodeTypes.put(node, label);
+                    if (oldLabel != null) {
+                        errors.add(String.format(
+                            "Duplicate types '%s' and '%s' on node '%s'",
+                            oldLabel, label, node));
+                    }
                 } else {
                     errors.add(String.format(
                         "Unknown node type '%s' for node '%s'", label, node));

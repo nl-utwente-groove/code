@@ -27,6 +27,7 @@ import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -1417,7 +1418,9 @@ public class NewRuleView implements RuleView {
                 Edge embargoEdge = nacEdgeSet.iterator().next();
                 if (RegExprLabel.isEmpty(embargoEdge.label())) {
                     // this is supposed to be a merge embargo
-                    result = createMergeEmbargo(lhs, embargoEdge.ends());
+                    result =
+                        createMergeEmbargo(lhs, embargoEdge.source(),
+                            embargoEdge.opposite());
                 } else {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);
@@ -1482,13 +1485,14 @@ public class NewRuleView implements RuleView {
         /**
          * Callback method to create a merge embargo.
          * @param context the context-graph
-         * @param embargoNodes the nodes involved in this merge-embargo
+         * @param embargoSource the source node of the merge embargo
          * @return the new {@link groove.trans.MergeEmbargo}
          * @see #toRule()
          */
         private MergeEmbargo createMergeEmbargo(Graph context,
-                Node[] embargoNodes) {
-            return new MergeEmbargo(context, embargoNodes, getProperties());
+                Node embargoSource, Node embargoTarget) {
+            return new MergeEmbargo(context, embargoSource, embargoTarget,
+                getLabelStore(), getProperties());
         }
 
         /**
@@ -1499,7 +1503,8 @@ public class NewRuleView implements RuleView {
          * @see #toRule()
          */
         private EdgeEmbargo createEdgeEmbargo(Graph context, Edge embargoEdge) {
-            return new EdgeEmbargo(context, embargoEdge, getProperties());
+            return new EdgeEmbargo(context, embargoEdge, getProperties(),
+                getLabelStore());
         }
 
         /**
@@ -1509,7 +1514,8 @@ public class NewRuleView implements RuleView {
          * @see #toRule()
          */
         private NotCondition createNAC(Graph context) {
-            return new NotCondition(context.newGraph(), getProperties());
+            return new NotCondition(context.newGraph(), getProperties(),
+                getLabelStore());
         }
 
         /**
@@ -1523,8 +1529,8 @@ public class NewRuleView implements RuleView {
          */
         private SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap,
                 NodeEdgeMap coRootMap, String name) {
-            return new SPORule(ruleMorphism, rootMap, coRootMap, new RuleName(
-                name), getProperties());
+            return new SPORule(new RuleName(name), ruleMorphism, rootMap,
+                coRootMap, getLabelStore(), getProperties());
         }
 
         /**
@@ -1539,10 +1545,19 @@ public class NewRuleView implements RuleView {
         private ForallCondition createForall(Graph target, NodeEdgeMap rootMap,
                 String name, boolean positive) {
             ForallCondition result =
-                new ForallCondition(target, rootMap, new RuleName(name),
-                    getProperties());
+                new ForallCondition(new RuleName(name), target, rootMap,
+                    getLabelStore(), getProperties());
             if (positive) {
                 result.setPositive();
+            }
+            return result;
+        }
+
+        /** Retrieves the label store from the type graph, if any. */
+        private LabelStore getLabelStore() {
+            LabelStore result = null;
+            if (NewRuleView.this.type != null) {
+                result = NewRuleView.this.type.getLabelStore();
             }
             return result;
         }
