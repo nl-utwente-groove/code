@@ -18,6 +18,7 @@ package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.graph.MergeLabel;
 import groove.graph.Node;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
@@ -287,7 +288,7 @@ public class RuleAspect extends AbstractAspect {
         boolean result = false;
         if (isCreator(edge)) {
             try {
-                result = RegExprLabel.isEmpty(edge.getModelLabel());
+                result = edge.getModelLabel() instanceof MergeLabel;
             } catch (FormatException exc) {
                 // do nothing
             }

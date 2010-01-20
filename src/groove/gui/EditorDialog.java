@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Container;
@@ -43,10 +44,12 @@ abstract public class EditorDialog {
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param owner the parent frame for the dialog
      * @param graph the input graph for the editor
+     * @param typeView type graph against which the edited object should be
+     *        checked
      * @throws HeadlessException
      */
-    public EditorDialog(JFrame owner, Options options, Graph graph)
-        throws HeadlessException {
+    public EditorDialog(JFrame owner, Options options, Graph graph,
+            TypeView typeView) throws HeadlessException {
         this.parent = owner;
         this.oldJMenuBar = this.parent.getJMenuBar();
         this.oldContentPane = this.parent.getContentPane();
@@ -61,6 +64,7 @@ abstract public class EditorDialog {
             }
         };
         this.editor.setPlainGraph(graph);
+        this.editor.setTypeView(typeView);
         this.newContentPane =
             this.editor.createContentPanel(createToolBar(GraphInfo.getRole(graph)));
     }
@@ -133,6 +137,9 @@ abstract public class EditorDialog {
             break;
         case Editor.TYPE_INDEX:
             toolbar.add(this.editor.getTypeRoleButton());
+        }
+        if (this.editor.getType() != null) {
+            toolbar.add(this.editor.getPreviewTypeAction());
         }
         this.editor.addModeButtons(toolbar);
         this.editor.addUndoButtons(toolbar);

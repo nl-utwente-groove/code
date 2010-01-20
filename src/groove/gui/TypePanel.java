@@ -190,7 +190,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      */
     private void handleEditType(final Graph type, final boolean fresh) {
         EditorDialog dialog =
-            new EditorDialog(getSimulator().getFrame(), getOptions(), type) {
+            new EditorDialog(getSimulator().getFrame(), getOptions(), type, null) {
                 @Override
                 public void finish() {
                     String typeName =

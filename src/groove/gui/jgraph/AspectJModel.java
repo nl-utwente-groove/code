@@ -36,6 +36,7 @@ import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.graph.MergeLabel;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -214,7 +215,10 @@ public class AspectJModel extends GraphJModel {
             result.applyMap(RULE_EDGE_ATTR.get(role));
             try {
                 Label modelLabel = aspectEdge.getModelLabel();
-                if (RegExprLabel.isEmpty(modelLabel)) {
+                if (modelLabel instanceof MergeLabel
+                    || RegExprLabel.isEmpty(modelLabel)
+                    || RegExprLabel.isNeg(modelLabel)
+                    && RegExprLabel.getNegOperand(modelLabel).isEmpty()) {
                     // remove edge arrow
                     GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
                 } else if (modelLabel instanceof RegExprLabel) {
