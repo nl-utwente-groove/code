@@ -251,12 +251,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
      */
     public View<?> toView() {
         View<?> result = toAspectGraph().toView();
-        if (this.type != null) {
+        if (getType() != null) {
             if (result instanceof GraphView) {
-                ((GraphView) result).setType(this.type);
+                ((GraphView) result).setType(getType());
             }
             if (result instanceof RuleView) {
-                ((RuleView) result).setType(this.type);
+                ((RuleView) result).setType(getType());
             }
         }
         return result;

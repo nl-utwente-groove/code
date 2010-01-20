@@ -63,8 +63,8 @@ abstract public class EditorDialog {
                 handleCancel();
             }
         };
-        this.editor.setPlainGraph(graph);
         this.editor.setTypeView(typeView);
+        this.editor.setPlainGraph(graph);
         this.newContentPane =
             this.editor.createContentPanel(createToolBar(GraphInfo.getRole(graph)));
     }

@@ -318,6 +318,20 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
+        // check type correctness
+        if (!getTypeName().isEmpty()) {
+            TypeView typeView = getTypeView();
+            if (typeView == null) {
+                errors.add(String.format("Type graph '%s' cannot be found",
+                    getTypeName()));
+            } else {
+                try {
+                    typeView.toModel();
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
+                }
+            }
+        }
         // set rules
         for (RuleName ruleName : getRuleNames()) {
             RuleView ruleView = getRuleView(ruleName);
@@ -338,7 +352,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             ControlView controlView = getControlView(getControlName());
             if (controlView == null) {
                 errors.add(String.format(
-                    "Control program '%s' cannot be loaded", getControlName()));
+                    "Control program '%s' cannot be found", getControlName()));
             } else if (result.hasMultiplePriorities()) {
                 errors.add("Rule priorities and control programs are incompatible, please disable either.");
             } else {
