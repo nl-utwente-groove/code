@@ -17,6 +17,8 @@
 
 package groove;
 
+import groove.gui.dialog.BugReportDialog;
+
 /**
  * Wrapper class for the editor.
  * @see groove.gui.Editor
@@ -30,6 +32,14 @@ public class Editor {
      * @param args list of command-line arguments
      */
     static public void main(String[] args) {
+
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            public void uncaughtException(Thread t, Throwable e) {
+                new BugReportDialog(e);
+                System.exit(1);
+            }
+        });
+
         groove.gui.Editor.main(args);
     }
 }

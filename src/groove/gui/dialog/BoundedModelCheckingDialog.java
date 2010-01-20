@@ -15,7 +15,7 @@
  * $Id: OptimizedBoundedNestedDFSStrategy.java,v 1.2 2008/02/22 13:02:45 rensink
  * Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
@@ -51,7 +51,7 @@ import com.jhlabs.awt.ParagraphLayout;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision$
+ * @version $Revision: 1787 $
  */
 public class BoundedModelCheckingDialog {
 
