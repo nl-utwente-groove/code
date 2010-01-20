@@ -31,6 +31,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.TypeGraph;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -195,6 +196,11 @@ public class DefaultRuleView implements RuleView {
     @Override
     public String toString() {
         return String.format("Rule view on '%s'", getName());
+    }
+
+    @Override
+    public void setType(TypeGraph type) {
+        // do nothing
     }
 
     /**

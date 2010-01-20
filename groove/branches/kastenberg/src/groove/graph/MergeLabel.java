@@ -14,13 +14,27 @@
  * 
  * $Id$
  */
-package groove.view;
+package groove.graph;
 
-import groove.graph.Graph;
-import groove.graph.TypeGraph;
+import groove.rel.RegExpr;
 
-/** Specialised view interface for models that are type graphs. */
-public interface GraphView extends View<Graph> {
-    /** Changes the type graph under against which the model should be tested. */
-    public void setType(TypeGraph type);
+/** Label for merger edges in a transformation rule. */
+public class MergeLabel extends AbstractLabel {
+    private MergeLabel() {
+        // empty
+    }
+
+    @Override
+    public String text() {
+        return MERGE_LABEL_TEXT;
+    }
+
+    /** Returns the singleton instance of this class. */
+    public static MergeLabel getInstance() {
+        return instance;
+    }
+
+    private static final MergeLabel instance = new MergeLabel();
+    /** The text of a merge label. */
+    static private final String MERGE_LABEL_TEXT = "" + RegExpr.EMPTY_OPERATOR;
 }

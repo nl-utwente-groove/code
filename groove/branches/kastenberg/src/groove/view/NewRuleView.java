@@ -31,6 +31,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.TypeGraph;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -192,6 +193,15 @@ public class NewRuleView implements RuleView {
         }
     }
 
+    /** Changes the type graph under against which the model should be tested. */
+    @Override
+    public void setType(TypeGraph type) {
+        if (this.type != type) {
+            this.type = type;
+            invalidate();
+        }
+    }
+
     @Override
     public String toString() {
         return String.format("Rule view on '%s'", getName());
@@ -215,15 +225,6 @@ public class NewRuleView implements RuleView {
     }
 
     /**
-     * Indicates if the rule is typed. If so, this imposes more constraints on
-     * the rule.
-     */
-    private final boolean isTyped() {
-        return getProperties() != null
-            && getProperties().getTypeName().length() > 0;
-    }
-
-    /**
      * Invalidates any previous construction of the underlying rule. This means
      * the rule will be reconstructed when there is a call for it, using
      * {@link #initialise()}.
@@ -240,7 +241,7 @@ public class NewRuleView implements RuleView {
         // only do something if there is something to be done
         if (this.attributeFactory == null) {
             this.attributeFactory =
-                new AttributeElementFactory(this.graph, this.properties);
+                new AttributeElementFactory(this.graph, getProperties());
             this.ruleErrors = new ArrayList<String>();
             if (this.viewErrors != null) {
                 this.ruleErrors.addAll(this.viewErrors);
@@ -358,6 +359,14 @@ public class NewRuleView implements RuleView {
     }
 
     /**
+     * Callback method to create a graph that can serve as LHS or RHS of a rule.
+     * @see #getView()
+     */
+    private Graph createGraph() {
+        return graphFactory.newGraph();
+    }
+
+    /**
      * Callback factory method for a binary edge.
      * @param ends the end nodes for the new edge; should contain exactly two
      *        element
@@ -385,6 +394,8 @@ public class NewRuleView implements RuleView {
     private final List<String> viewErrors;
     /** The attribute element factory for this view. */
     private AttributeElementFactory attributeFactory;
+    /** Thye graph for this view, if any. */
+    private TypeGraph type;
     /** The level tree for this rule view. */
     private LevelMap levelTree;
     /** Errors found while converting the view to a rule. */
@@ -741,6 +752,13 @@ public class NewRuleView implements RuleView {
                     }
                 }
             }
+            // check typing
+            if (NewRuleView.this.type != null) {
+                Graph graph = createGraph();
+                graph.addNodeSet(this.viewToRuleMap.nodeMap().values());
+                graph.addEdgeSet(this.viewToRuleMap.edgeMap().values());
+                errors.addAll(NewRuleView.this.type.checkTyping(graph));
+            }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
@@ -1077,15 +1095,10 @@ public class NewRuleView implements RuleView {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
                 // (there is currently no way to do this only when required)
-                // we also push down node type labels in case the rule is typed
-                // TODO this is to simplify type checking but it adversely
-                // affects performance
                 try {
                     Label varLabel = ((AspectEdge) elem).getModelLabel();
                     if (varLabel != null) {
-                        result =
-                            RegExprLabel.getWildcardId(varLabel) != null
-                                || isTyped() && varLabel.isNodeType();
+                        result = RegExprLabel.getWildcardId(varLabel) != null;
                     }
                 } catch (FormatException exc) {
                     // do nothing
@@ -1108,7 +1121,6 @@ public class NewRuleView implements RuleView {
             this.rhsMap = new NodeEdgeHashMap();
             this.nacNodeSet = new HashSet<Node>();
             this.nacEdgeSet = new HashSet<Edge>();
-            this.untypedNodes = new HashSet<Node>();
             Set<String> errors = new TreeSet<String>();
             for (Map.Entry<AspectNode,Node> viewNodeEntry : this.viewNodes.entrySet()) {
                 try {
@@ -1129,11 +1141,6 @@ public class NewRuleView implements RuleView {
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
-            }
-            // test the presence of node types on all nodes
-            if (isTyped() && !this.untypedNodes.isEmpty()) {
-                errors.add(String.format("Rule contains untyped nodes %s",
-                    this.untypedNodes));
             }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -1171,7 +1178,6 @@ public class NewRuleView implements RuleView {
                     this.ruleMorph.putNode(lhsNode, rhsNode);
                 }
             }
-            this.untypedNodes.add(lhsNode);
             return result;
         }
 
@@ -1195,10 +1201,6 @@ public class NewRuleView implements RuleView {
                 this.rhs.addEdge(rhsEdge);
                 if (RuleAspect.inLHS(viewEdge)) {
                     this.ruleMorph.putEdge(lhsEdge, rhsEdge);
-                }
-                // if this is a node type edge, the source node is typed.
-                if (lhsEdge.label().isNodeType()) {
-                    this.untypedNodes.remove(lhsEdge.source());
                 }
             }
         }
@@ -1554,15 +1556,6 @@ public class NewRuleView implements RuleView {
         }
 
         /**
-         * Callback method to create a graph that can serve as LHS or RHS of a
-         * rule.
-         * @see #getView()
-         */
-        private Graph createGraph() {
-            return graphFactory.newGraph();
-        }
-
-        /**
          * Sets the mode for this level data to a next value.
          * @param mode the new level mode.
          * @throws IllegalArgumentException if the transition from the current
@@ -1635,8 +1628,6 @@ public class NewRuleView implements RuleView {
         private Map<AspectNode,SortedSet<AspectNode>> partition;
         /** The current mode of this level data. */
         private LevelMode mode = LevelMode.START;
-        /** Set of nodes without a node type label. */
-        private Set<Node> untypedNodes;
     }
 
     /** Intermediate mode values for {@link Level}. */

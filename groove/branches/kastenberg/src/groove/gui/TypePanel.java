@@ -149,11 +149,11 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
         String setTypeName = null;
         this.typeJModelMap.clear();
         if (grammar != null) {
-            if (isTypeSelected()
-                && grammar.getTypeNames().contains(getSelectedType())) {
+            String grammarType = grammar.getTypeName();
+            if (isTypeSelected() && grammarHasType(getSelectedType())) {
                 setTypeName = getSelectedType();
-            } else if (grammar.getTypeName().length() > 0) {
-                setTypeName = grammar.getTypeName();
+            } else if (grammarHasType(grammarType)) {
+                setTypeName = grammarType;
             } else if (!grammar.getTypeNames().isEmpty()) {
                 setTypeName = grammar.getTypeNames().iterator().next();
             }
@@ -190,7 +190,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      */
     private void handleEditType(final Graph type, final boolean fresh) {
         EditorDialog dialog =
-            new EditorDialog(getSimulator().getFrame(), getOptions(), type) {
+            new EditorDialog(getSimulator().getFrame(), getOptions(), type,
+                null) {
                 @Override
                 public void finish() {
                     String typeName =

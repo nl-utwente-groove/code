@@ -491,7 +491,24 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     public GraphView toGraphView(SystemProperties properties)
         throws IllegalStateException {
-        return toGraphView(properties, Groove.GRAPH_ROLE);
+        if (!GraphInfo.hasGraphRole(this)) {
+            throw new IllegalStateException(
+                "Aspect graph does not represent a graph");
+        }
+        boolean refreshView = this.graphView == null;
+        if (!refreshView) {
+            String myName = GraphInfo.getName(this);
+            String viewName = this.graphView.getName();
+            refreshView =
+                myName == null ? viewName != null : !myName.equals(viewName);
+        }
+        if (refreshView) {
+            this.graphView = new AspectualGraphView(this, properties);
+        } else {
+            this.graphView.setProperties(properties);
+        }
+        return this.graphView;
+
     }
 
     /**
@@ -518,42 +535,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.typeView = new DefaultTypeView(this, properties);
+            this.typeView = new DefaultTypeView(this);
         }
         return this.typeView;
-    }
-
-    /**
-     * Creates a view from this aspect graph. Further information for the
-     * conversion is given through a properties object. The view object is
-     * reused when possible.
-     * @param properties the properties object with respect to which the view is
-     *        to be constructed
-     * @param role role of the returned view
-     * @return the resulting view (non-null)
-     * @throws IllegalStateException if the aspect graph role is not {@code
-     *         role}
-     */
-    private GraphView toGraphView(SystemProperties properties, String role)
-        throws IllegalStateException {
-        if (!role.equals(GraphInfo.getRole(this))) {
-            throw new IllegalStateException(String.format(
-                "Aspect graph does not represent a %s", role));
-        }
-        boolean refreshView = this.graphView == null;
-        if (!refreshView) {
-            String myName = GraphInfo.getName(this);
-            String viewName = this.graphView.getName();
-            refreshView =
-                myName == null ? viewName != null : !myName.equals(viewName);
-        }
-        if (!refreshView) {
-            refreshView = !this.graphView.hasProperties(properties);
-        }
-        if (refreshView) {
-            this.graphView = new AspectualGraphView(this, properties);
-        }
-        return this.graphView;
     }
 
     /**

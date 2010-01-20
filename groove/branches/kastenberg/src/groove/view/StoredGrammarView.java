@@ -18,8 +18,10 @@ package groove.view;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.GraphGrammar;
@@ -103,14 +105,39 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public GraphView getGraphView(String name) {
+        GraphView result = null;
         AspectGraph stateGraph = getStore().getGraphs().get(name);
-        return stateGraph == null ? null
-                : stateGraph.toGraphView(getProperties());
+        if (stateGraph != null) {
+            result = stateGraph.toGraphView(getProperties());
+            TypeGraph type = null;
+            if (getTypeView() != null) {
+                try {
+                    type = getTypeView().toModel();
+                } catch (FormatException e) {
+                    // don't set the type graph
+                }
+            }
+            result.setType(type);
+        }
+        return result;
     }
 
     public RuleView getRuleView(RuleName name) {
+        RuleView result = null;
         AspectGraph ruleGraph = getStore().getRules().get(name);
-        return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
+        if (ruleGraph != null) {
+            result = ruleGraph.toRuleView(getProperties());
+            TypeGraph type = null;
+            if (getTypeView() != null) {
+                try {
+                    type = getTypeView().toModel();
+                } catch (FormatException e) {
+                    // don't set the type graph
+                }
+            }
+            result.setType(type);
+        }
+        return result;
     }
 
     public TypeView getTypeView(String name) {
@@ -119,7 +146,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public TypeView getTypeView() {
-        return this.typeName == null ? null : getTypeView(this.typeName);
+        return getTypeName() == null ? null : getTypeView(getTypeName());
     }
 
     /**
@@ -291,12 +318,24 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
-        this.labelStore = new LabelStore();
+        // check type correctness
+        if (!getTypeName().isEmpty()) {
+            TypeView typeView = getTypeView();
+            if (typeView == null) {
+                errors.add(String.format("Type graph '%s' cannot be found",
+                    getTypeName()));
+            } else {
+                try {
+                    typeView.toModel();
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
+                }
+            }
+        }
         // set rules
-        for (AspectGraph ruleGraph : getStore().getRules().values()) {
-            RuleView ruleView = ruleGraph.toRuleView(getProperties());
+        for (RuleName ruleName : getRuleNames()) {
+            RuleView ruleView = getRuleView(ruleName);
             try {
-                this.labelStore.addLabels(ruleView.getLabels());
                 // only add the enabled rules
                 if (ruleView.isEnabled()) {
                     result.add(ruleView.toRule());
@@ -313,7 +352,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             ControlView controlView = getControlView(getControlName());
             if (controlView == null) {
                 errors.add(String.format(
-                    "Control program '%s' cannot be loaded", getControlName()));
+                    "Control program '%s' cannot be found", getControlName()));
             } else if (result.hasMultiplePriorities()) {
                 errors.add("Rule priorities and control programs are incompatible, please disable either.");
             } else {
@@ -329,12 +368,6 @@ public class StoredGrammarView implements GrammarView, Observer {
                 }
             }
         }
-        // add subtyping relation from properties to label store
-        this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
-        // add types from all known graphs to label store
-        for (String graphName : getGraphNames()) {
-            this.labelStore.addLabels(getGraphView(graphName).getLabels());
-        }
         // set properties
         result.setProperties(getProperties());
         // set start graph
@@ -346,21 +379,41 @@ public class StoredGrammarView implements GrammarView, Observer {
                     getStartGraphName()));
             }
         } else {
+            List<String> startGraphErrors;
             try {
-                result.setStartGraph(getStartGraphView().toModel());
-                this.labelStore.addLabels(getStartGraphView().getLabels());
+                Graph startGraph = getStartGraphView().toModel();
+                result.setStartGraph(startGraph);
+                startGraphErrors = GraphInfo.getErrors(startGraph);
             } catch (FormatException exc) {
-                for (String error : exc.getErrors()) {
-                    errors.add(String.format("Format error in start graph: %s",
-                        error));
-                }
+                startGraphErrors = exc.getErrors();
             }
-            result.setLabelStore(this.labelStore);
-            try {
-                result.setFixed();
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
+            for (String error : startGraphErrors) {
+                errors.add(String.format("Format error in start graph: %s",
+                    error));
             }
+        }
+        this.labelStore = new LabelStore();
+        for (RuleName ruleName : getRuleNames()) {
+            this.labelStore.addLabels(getRuleView(ruleName).getLabels());
+        }
+        // add types from all known graphs to label store
+        for (String graphName : getGraphNames()) {
+            this.labelStore.addLabels(getGraphView(graphName).getLabels());
+        }
+        if (getStartGraphView() != null) {
+            this.labelStore.addLabels(getStartGraphView().getLabels());
+        }
+        // add subtyping relation from properties to label store
+        this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
+        if (getTypeView() != null) {
+            this.labelStore.add(getTypeView().toModel().getLabelStore());
+            this.labelStore.setFixed();
+        }
+        result.setLabelStore(this.labelStore);
+        try {
+            result.setFixed();
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
         }
         if (errors.isEmpty()) {
             return result;
@@ -420,10 +473,6 @@ public class StoredGrammarView implements GrammarView, Observer {
      * system; <code>null</code> otherwise.
      */
     private String startGraphName;
-    /**
-     * Name of the current type graph, if any.
-     */
-    private String typeName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<String> errors;
     /** The graph grammar derived from the rule views. */

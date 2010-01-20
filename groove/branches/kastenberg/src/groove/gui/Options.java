@@ -270,6 +270,15 @@ public class Options {
     public static final String PASTE_ACTION_NAME = "Paste";
     /** Preview action name */
     public static final String PREVIEW_ACTION_NAME = "Preview ...";
+    /** Preview control action name */
+    public static final String PREVIEW_CONTROL_ACTION_NAME =
+        "Preview Control ...";
+    /** Preview graph action name */
+    public static final String PREVIEW_GRAPH_ACTION_NAME = "Preview Graph ...";
+    /** Preview rule action name */
+    public static final String PREVIEW_RULE_ACTION_NAME = "Preview Rule ...";
+    /** Preview type action name */
+    public static final String PREVIEW_TYPE_ACTION_NAME = "Preview Type ...";
     /** Provide ctl formula action name */
     public static final String PROVIDE_CTL_FORMULA_ACTION_NAME =
         "CTL Formula ...";

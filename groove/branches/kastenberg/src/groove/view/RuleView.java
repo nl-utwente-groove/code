@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import groove.graph.TypeGraph;
 import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -31,6 +32,9 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * rule to be rebuilt.
      */
     public void setProperties(SystemProperties properties);
+
+    /** Changes the type graph under against which the model should be tested. */
+    public void setType(TypeGraph type);
 
     /**
      * Returns the rule of which this is a view. The rule is possibly

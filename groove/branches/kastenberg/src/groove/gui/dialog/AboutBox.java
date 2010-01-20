@@ -14,7 +14,7 @@
  * 
  * $Id: AboutBox.java,v 1.3 2008-01-30 09:33:36 iovka Exp $
  */
-package groove.gui;
+package groove.gui.dialog;
 
 import groove.util.Version;
 
@@ -32,7 +32,7 @@ import javax.swing.JTextArea;
 /**
  * Dialog to display About information on the Groove tool.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1896 $
  */
 public class AboutBox extends JDialog {
     /** The title of the dialog. */

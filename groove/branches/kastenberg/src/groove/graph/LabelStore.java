@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import groove.util.DefaultFixable;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -35,7 +36,7 @@ import java.util.TreeSet;
  * @author Arend
  * @version $Revision $
  */
-public class LabelStore implements Cloneable {
+public class LabelStore extends DefaultFixable implements Cloneable {
     /**
      * Constructs a new (initially empty) label inheritance relation.
      */
@@ -45,6 +46,7 @@ public class LabelStore implements Cloneable {
 
     /** Adds all labels and subtypes from another label store to this one. */
     public void add(LabelStore other) {
+        testFixed(false);
         addLabels(other.getLabels());
         for (Map.Entry<Label,Set<Label>> directSubtypeEntry : other.directSubtypeMap.entrySet()) {
             for (Label subtype : directSubtypeEntry.getValue()) {
@@ -55,6 +57,7 @@ public class LabelStore implements Cloneable {
 
     /** Adds a label to the set of known labels. */
     public void addLabel(Label label) {
+        testFixed(false);
         if (!this.subtypeMap.containsKey(label)) {
             Set<Label> subtypes = new TreeSet<Label>();
             subtypes.add(label);
@@ -66,6 +69,7 @@ public class LabelStore implements Cloneable {
 
     /** Adds a set of labels to the set of known labels. */
     public void addLabels(Set<Label> labels) {
+        testFixed(false);
         for (Label label : labels) {
             addLabel(label);
         }
@@ -80,6 +84,7 @@ public class LabelStore implements Cloneable {
      */
     public void addSubtype(Label type, Label subtype)
         throws IllegalArgumentException {
+        testFixed(false);
         if (!type.isNodeType()) {
             throw new IllegalArgumentException(String.format(
                 "Non-node type label '%s' cannot get subtype '%s'", type,
@@ -116,6 +121,7 @@ public class LabelStore implements Cloneable {
 
     /** Removes a direct subtype pair from the subtyping relation. */
     public void removeSubtype(Label type, Label subtype) {
+        testFixed(false);
         if (this.directSubtypeMap.get(type).remove(subtype)) {
             // recalculate the transitive closure of the subtypes
             calculateSubtypes();

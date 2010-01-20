@@ -16,6 +16,8 @@ import static groove.gui.Options.HELP_MENU_NAME;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.TypeGraph;
+import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.jgraph.AspectJModel;
@@ -32,6 +34,10 @@ import groove.io.PriorityFileName;
 import groove.util.Groove;
 import groove.util.Property;
 import groove.util.Version;
+import groove.view.FormatException;
+import groove.view.GraphView;
+import groove.view.RuleView;
+import groove.view.TypeView;
 import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
@@ -94,7 +100,6 @@ import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 /**
@@ -180,6 +185,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
     }
 
+    /** Sets the type graph for this editor. */
+    public void setTypeView(TypeView typeView) {
+        this.type = null;
+        this.typeView = null;
+        if (typeView != null) {
+            try {
+                this.type = typeView.toModel();
+                this.typeView = typeView;
+            } catch (FormatException e) {
+                // do nothing
+            }
+        }
+    }
+
     /** Returns a plain graph constructed from the editor j-model and role. */
     public Graph getPlainGraph() {
         Graph result = getModel().toPlainGraph();
@@ -218,11 +237,30 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         return this.jgraph.getModel();
     }
 
+    /** Returns the type graph set in this editor, if any. */
+    public TypeView getTypeView() {
+        return this.typeView;
+    }
+
+    /** Returns the type graph set in this editor, if any. */
+    public TypeGraph getType() {
+        return this.type;
+    }
+
     /**
      * Creates and returns a view, based on the current plain graph.
      */
     public View<?> toView() {
-        return toAspectGraph().toView();
+        View<?> result = toAspectGraph().toView();
+        if (getType() != null) {
+            if (result instanceof GraphView) {
+                ((GraphView) result).setType(getType());
+            }
+            if (result instanceof RuleView) {
+                ((RuleView) result).setType(getType());
+            }
+        }
+        return result;
     }
 
     /**
@@ -240,17 +278,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
     public void graphChanged(GraphModelEvent e) {
         boolean changed =
             e.getChange().getInserted() != null
-                || e.getChange().getRemoved() != null;
-        Map<?,?> changes = e.getChange().getAttributes();
-        if (!changed && changes != null) {
-            for (Object change : changes.values()) {
-                changed =
-                    ((Map<?,?>) change).keySet().contains(GraphConstants.VALUE);
-                if (changed) {
-                    break;
-                }
-            }
-        }
+                || e.getChange().getRemoved() != null
+                || e.getChange().getAttributes() != null;
         if (changed) {
             setErrors(null);
             updateStatus();
@@ -1305,7 +1334,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
 
     /** Index of the currently set editor role */
     private int roleIndex = -1;
-
+    /** Type view against which the edited graph is checked. */
+    private TypeView typeView;
+    /** Type against which the edited graph is checked. */
+    private TypeGraph type;
     /**
      * Collection of errors in the currently loaded graph; <code>null</code> if
      * there are none.
@@ -1351,7 +1383,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             result.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     result.setToolTipText(result.isSelected()
-                            ? Options.PREVIEW_ACTION_NAME
+                            ? Options.PREVIEW_GRAPH_ACTION_NAME
                             : Options.SET_GRAPH_ROLE_ACTION_NAME);
                 }
             });
@@ -1374,7 +1406,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             result.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     result.setToolTipText(result.isSelected()
-                            ? Options.PREVIEW_ACTION_NAME
+                            ? Options.PREVIEW_RULE_ACTION_NAME
                             : Options.SET_RULE_ROLE_ACTION_NAME);
                 }
             });
@@ -1396,7 +1428,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
             result.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     result.setToolTipText(result.isSelected()
-                            ? Options.PREVIEW_ACTION_NAME
+                            ? Options.PREVIEW_TYPE_ACTION_NAME
                             : Options.SET_TYPE_ROLE_ACTION_NAME);
                 }
             });
@@ -1936,7 +1968,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         }
     }
 
-    /** Returns the rule preview action, lazily creating it first. */
+    /** Returns the type role action, lazily creating it first. */
     private Action getSetTypeRoleAction() {
         if (this.setTypeRoleAction == null) {
             this.setTypeRoleAction = new SetTypeRoleAction();
@@ -1944,7 +1976,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
         return this.setTypeRoleAction;
     }
 
-    /** Action to create a rule preview dialog. */
+    /** Action to set the edited graph to the type role. */
     private Action setTypeRoleAction;
 
     /**
@@ -1957,18 +1989,45 @@ public class Editor implements GraphModelListener, PropertyChangeListener,
                 Groove.TYPE_MODE_ICON);
         }
 
-        /**
-         * (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
         @Override
         public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            if (!setRole(TYPE_INDEX)) {
-                // only do a preview if the type was not changed (on the second
-                // click)
-                handlePreview(null);
+            if (getType() != null) {
+                showPreviewDialog(getTypeView(), Options.OK_BUTTON);
+            } else {
+                super.actionPerformed(evt);
+                if (!setRole(TYPE_INDEX)) {
+                    // only do a preview if the type was not changed (on the
+                    // second
+                    // click)
+                    handlePreview(null);
+                }
             }
+        }
+    }
+
+    /** Returns the type preview action, lazily creating it first. */
+    Action getPreviewTypeAction() {
+        if (this.setPreviewTypeAction == null) {
+            this.setPreviewTypeAction = new PreviewTypeAction();
+        }
+        return this.setPreviewTypeAction;
+    }
+
+    /** Action to create a type preview dialog. */
+    private Action setPreviewTypeAction;
+
+    /**
+     * Action to preview the current type graph.
+     */
+    private class PreviewTypeAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        protected PreviewTypeAction() {
+            super(Options.PREVIEW_TYPE_ACTION_NAME, null, Groove.TYPE_MODE_ICON);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            showPreviewDialog(getTypeView(), Options.OK_BUTTON);
         }
     }
 

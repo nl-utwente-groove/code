@@ -797,7 +797,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class PreviewAction extends RefreshableAction {
         public PreviewAction() {
-            super(Options.PREVIEW_ACTION_NAME, Groove.GRAPH_MODE_ICON);
+            super(Options.PREVIEW_CONTROL_ACTION_NAME, Groove.GRAPH_MODE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
