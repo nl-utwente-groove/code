@@ -17,6 +17,7 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.TypeGraph;
+import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.jgraph.AspectJModel;
