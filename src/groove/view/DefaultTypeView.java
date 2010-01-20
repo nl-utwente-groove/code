@@ -185,10 +185,12 @@ public class DefaultTypeView implements TypeView {
                 errors.addAll(exc.getErrors());
             }
         }
-        try {
-            model.test();
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
+        if (errors.isEmpty()) {
+            try {
+                model.test();
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
         }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
