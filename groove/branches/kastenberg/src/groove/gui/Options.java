@@ -390,6 +390,9 @@ public class Options {
     /** Back keystroke */
     public static final KeyStroke BACK_KEY =
         KeyStroke.getKeyStroke("control LEFT");
+    /** Save keystroke */
+    public static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke("ESCAPE");
+
     /**
      * Copy keystroke
      */
