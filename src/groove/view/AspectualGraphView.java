@@ -17,7 +17,6 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
-import groove.algebra.AlgebraRegister;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -31,8 +30,6 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
-import groove.rel.NodeRelation;
-import groove.rel.SetNodeRelation;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
@@ -45,7 +42,6 @@ import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -174,15 +170,10 @@ public class AspectualGraphView implements GraphView {
                 errors.addAll(exc.getErrors());
             }
         }
-        // mapping from nodes to node type labels found
-        Map<Node,Label> nodeTypes = new HashMap<Node,Label>();
-        // collection of declared subtypes
-        NodeRelation subtypes = new SetNodeRelation(view);
         // copy the edges from view to model
         for (AspectEdge viewEdge : view.edgeSet()) {
             try {
-                processViewEdge(model, elementMap, nodeTypes, subtypes,
-                    viewEdge);
+                processViewEdge(model, elementMap, viewEdge);
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }
@@ -202,61 +193,7 @@ public class AspectualGraphView implements GraphView {
         }
         // test against the type graph, if any
         if (this.type != null) {
-            // test if all nodes have valid types
-            for (Node node : model.nodeSet()) {
-                Label nodeType = nodeTypes.get(node);
-                if (nodeType == null) {
-                    if (node instanceof ValueNode) {
-                        String signature =
-                            AlgebraRegister.getSignatureName(((ValueNode) node).getAlgebra());
-                        nodeTypes.put(node, DefaultLabel.createLabel(signature,
-                            Label.NODE_TYPE));
-                    } else {
-                        errors.add(String.format("Node '%s' is untyped", node));
-                    }
-                } else if (!this.type.isNodeType(nodeType)) {
-                    errors.add(String.format(
-                        "Node '%s' has nonexistent type '%s'", node, nodeType));
-                }
-            }
-            for (Edge edge : model.edgeSet()) {
-                Node source = edge.source();
-                Label sourceType = nodeTypes.get(source);
-                Label targetType = nodeTypes.get(edge.opposite());
-                if (sourceType == null || targetType == null) {
-                    // this must be due to an untyped node
-                    // which was already reported as an error
-                    continue;
-                }
-                Label edgeType = edge.label();
-                if (edgeType.isFlag()) {
-                    if (!this.type.hasFlag(sourceType, edgeType)) {
-                        errors.add(String.format(
-                            "Node '%s' with type '%s' has nonexistent flag '%s'",
-                            source, sourceType, edgeType));
-                    }
-                } else if (edgeType.isBinary()) {
-                    Label declaredTargetType =
-                        this.type.getTarget(sourceType, edgeType);
-                    if (declaredTargetType == null) {
-                        errors.add(String.format(
-                            "Node '%s' with type '%s' has outgoing edge with nonexistent type '%s'",
-                            source, sourceType, edgeType));
-                    } else if (DefaultLabel.isDataType(declaredTargetType)
-                        || DefaultLabel.isDataType(targetType)) {
-                        if (!targetType.equals(declaredTargetType)) {
-                            errors.add(String.format(
-                                "Target node of '%s' has type '%s' but should have data type '%s'",
-                                edge, targetType, declaredTargetType));
-                        }
-                    } else if (!this.type.isSubtype(targetType,
-                        declaredTargetType)) {
-                        errors.add(String.format(
-                            "Target node of '%s' has type '%s' which is not a subtype of '%s'",
-                            edge, targetType, declaredTargetType));
-                    }
-                }
-            }
+            errors.addAll(this.type.checkTyping(model));
         }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
@@ -311,7 +248,6 @@ public class AspectualGraphView implements GraphView {
      * @throws FormatException if the presence of the edge signifies an error
      */
     private void processViewEdge(Graph model, NodeEdgeMap elementMap,
-            Map<Node,Label> nodeTypeMap, NodeRelation subtypes,
             AspectEdge viewEdge) throws FormatException {
         if (AttributeAspect.isConstant(viewEdge)
             || viewEdge.getModelLabel() == null) {
@@ -345,8 +281,6 @@ public class AspectualGraphView implements GraphView {
         if (DefaultLabel.isDataType(modelLabel)) {
             throw new FormatException(
                 "Data type label '%s' not allowed in graphs", modelLabel);
-        } else if (modelLabel.isNodeType()) {
-            nodeTypeMap.put(modelSource, modelLabel);
         }
         Edge modelEdge = model.addEdge(modelSource, modelLabel, modelTarget);
         this.labelSet.add(modelLabel);

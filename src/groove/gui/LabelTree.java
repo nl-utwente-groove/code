@@ -106,6 +106,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      *        subtype display and operations, by using the jgraph's label store.
      */
     public LabelTree(JGraph jgraph, boolean supportsSubtypes) {
+        this.jgraph = jgraph;
         this.supportsSubtypes = supportsSubtypes;
         this.filteredLabels = jgraph.getFilteredLabels();
         this.filtering = this.filteredLabels != null;
@@ -126,7 +127,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         setRootVisible(false);
         setShowsRootHandles(true);
         // set drag and drop
-        setDragEnabled(true);
+        setDragEnabled(getLabelStore() != null && !getLabelStore().isFixed());
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new MyTransferHandler());
         // make sure the checkbox never selects the label
@@ -145,7 +146,6 @@ public class LabelTree extends JTree implements GraphModelListener,
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
-        this.jgraph = jgraph;
         addMouseListener(new MyMouseListener());
         // add a mouse listener to the jgraph to clear the selection of this
         // tree
