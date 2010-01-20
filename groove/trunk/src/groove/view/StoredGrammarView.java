@@ -123,8 +123,21 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public RuleView getRuleView(RuleName name) {
+        RuleView result = null;
         AspectGraph ruleGraph = getStore().getRules().get(name);
-        return ruleGraph == null ? null : ruleGraph.toRuleView(getProperties());
+        if (ruleGraph != null) {
+            result = ruleGraph.toRuleView(getProperties());
+            TypeGraph type = null;
+            if (getTypeView() != null) {
+                try {
+                    type = getTypeView().toModel();
+                } catch (FormatException e) {
+                    // don't set the type graph
+                }
+            }
+            result.setType(type);
+        }
+        return result;
     }
 
     public TypeView getTypeView(String name) {
@@ -305,12 +318,10 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<String> errors = new ArrayList<String>();
-        this.labelStore = new LabelStore();
         // set rules
-        for (AspectGraph ruleGraph : getStore().getRules().values()) {
-            RuleView ruleView = ruleGraph.toRuleView(getProperties());
+        for (RuleName ruleName : getRuleNames()) {
+            RuleView ruleView = getRuleView(ruleName);
             try {
-                this.labelStore.addLabels(ruleView.getLabels());
                 // only add the enabled rules
                 if (ruleView.isEnabled()) {
                     result.add(ruleView.toRule());
@@ -343,12 +354,6 @@ public class StoredGrammarView implements GrammarView, Observer {
                 }
             }
         }
-        // add subtyping relation from properties to label store
-        this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
-        // add types from all known graphs to label store
-        for (String graphName : getGraphNames()) {
-            this.labelStore.addLabels(getGraphView(graphName).getLabels());
-        }
         // set properties
         result.setProperties(getProperties());
         // set start graph
@@ -360,23 +365,41 @@ public class StoredGrammarView implements GrammarView, Observer {
                     getStartGraphName()));
             }
         } else {
+            List<String> startGraphErrors;
             try {
                 Graph startGraph = getStartGraphView().toModel();
                 result.setStartGraph(startGraph);
-                this.labelStore.addLabels(getStartGraphView().getLabels());
-                errors.addAll(GraphInfo.getErrors(startGraph));
+                startGraphErrors = GraphInfo.getErrors(startGraph);
             } catch (FormatException exc) {
-                for (String error : exc.getErrors()) {
-                    errors.add(String.format("Format error in start graph: %s",
-                        error));
-                }
+                startGraphErrors = exc.getErrors();
             }
-            result.setLabelStore(this.labelStore);
-            try {
-                result.setFixed();
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
+            for (String error : startGraphErrors) {
+                errors.add(String.format("Format error in start graph: %s",
+                    error));
             }
+        }
+        this.labelStore = new LabelStore();
+        for (RuleName ruleName : getRuleNames()) {
+            this.labelStore.addLabels(getRuleView(ruleName).getLabels());
+        }
+        // add types from all known graphs to label store
+        for (String graphName : getGraphNames()) {
+            this.labelStore.addLabels(getGraphView(graphName).getLabels());
+        }
+        if (getStartGraphView() != null) {
+            this.labelStore.addLabels(getStartGraphView().getLabels());
+        }
+        // add subtyping relation from properties to label store
+        this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
+        if (getTypeView() != null) {
+            this.labelStore.add(getTypeView().toModel().getLabelStore());
+            this.labelStore.setFixed();
+        }
+        result.setLabelStore(this.labelStore);
+        try {
+            result.setFixed();
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
         }
         if (errors.isEmpty()) {
             return result;
