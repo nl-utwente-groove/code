@@ -54,6 +54,8 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.gui.dialog.AboutBox;
+import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
