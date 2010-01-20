@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.graph.LabelStore;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
@@ -33,9 +34,9 @@ public class ExistsCondition extends PositiveCondition<ExistsMatch> {
      * Constructs a (named) graph condition based on a given pattern morphism.
      * The name may be <code>null</code>.
      */
-    public ExistsCondition(Graph target, NodeEdgeMap patternMap, RuleName name,
-            SystemProperties properties) {
-        super(target, patternMap, name, properties);
+    public ExistsCondition(RuleName name, Graph target, NodeEdgeMap patternMap,
+            LabelStore labelStore, SystemProperties properties) {
+        super(name, target, patternMap, labelStore, properties);
     }
 
     /**

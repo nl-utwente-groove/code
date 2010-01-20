@@ -57,24 +57,11 @@ public class ControlView {
     }
 
     /**
-     * This method should only be called from DefaultGrammarView.computeGrammar
-     * Create the automaton once, then, use getAutomaton() to get the automaton.
+     * Returns the control automaton for a given grammar. 
      */
     public ControlAutomaton toAutomaton(GraphGrammar grammar)
         throws FormatException {
-        if (this.automaton == null) {
-            this.automaton = computeAutomaton(grammar);
-        }
-
-        return this.automaton;
-    }
-
-    /**
-     * Resets the pre-computed control automaton. Called when the underlying
-     * grammar changes, so that the automaton has to be computed anew.
-     */
-    public void invalidateAutomaton() {
-        this.automaton = null;
+        return computeAutomaton(grammar);
     }
 
     /**
@@ -178,8 +165,6 @@ public class ControlView {
 
     /** The control program loaded at construction time. */
     private final String controlProgram;
-    /** The control automaton constructed from the program. */
-    private ControlAutomaton automaton;
     /** The name of the control program, set at construction time. */
     private final String controlName;
 

@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -62,7 +63,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     public SPORule(Morphism morph, RuleName name, int priority,
             boolean confluent, SystemProperties properties) {
-        super(morph.dom(), name, properties);
+        super(name, morph.dom(), null, null, properties);
         this.morphism = morph;
         this.priority = priority;
         this.confluent = confluent;
@@ -73,17 +74,19 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Constructs a rule that is a sub-condition of another rule. The
      * information should be completed lated by a call to
      * {@link #setParent(SPORule, int[])}.
+     * @param name the name of the new rule
      * @param morph the morphism on which this production is to be based
      * @param rootMap pattern map leading into the LHS
      * @param coRootMap map of creator nodes in the parent rule to creator nodes
      *        of this rule
-     * @param name the name of the new rule
+     * @param labelStore label store specifying the subtype relation
      * @param properties the factory this rule used to instantiate related
      *        classes
      */
-    public SPORule(Morphism morph, NodeEdgeMap rootMap, NodeEdgeMap coRootMap,
-            RuleName name, SystemProperties properties) {
-        super(morph.dom(), rootMap, name, properties);
+    public SPORule(RuleName name, Morphism morph, NodeEdgeMap rootMap,
+            NodeEdgeMap coRootMap, LabelStore labelStore,
+            SystemProperties properties) {
+        super(name, morph.dom(), rootMap, labelStore, properties);
         this.coRootMap = coRootMap == null ? new NodeEdgeHashMap() : coRootMap;
         this.morphism = morph;
         this.priority = DEFAULT_PRIORITY;
@@ -599,13 +602,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                 if (getProperties().isCheckCreatorEdges()) {
                     for (Edge edge : getSimpleCreatorEdges()) {
                         addSubCondition(new EdgeEmbargo(lhs(),
-                            getCreatorMap().mapEdge(edge), getProperties()));
+                            getCreatorMap().mapEdge(edge), getProperties(),
+                            getLabelStore()));
                     }
                 }
                 if (getProperties().isRhsAsNac() && hasCreators()) {
                     Condition rhsNac =
                         new NotCondition(rhs(), getMorphism().elementMap(),
-                            getProperties());
+                            getLabelStore(), getProperties());
                     rhsNac.setFixed();
                     addSubCondition(rhsNac);
                 }

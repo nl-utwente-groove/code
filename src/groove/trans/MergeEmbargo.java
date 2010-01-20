@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.Graph;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 
 /**
@@ -33,32 +34,18 @@ public class MergeEmbargo extends NotCondition {
      * @param source the graph on which this embargo works
      * @param node1 the first of the nodes that may not be merged
      * @param node2 the second of the nodes that may not me merged
+     * @param labelStore label store specifying the subtype relation
      * @require <tt>source.contains(node1) && source.contains(node2)</tt>
      * @ensure <tt>node1().equals(node1) && node2().equals(node2)</tt>
      */
     public MergeEmbargo(Graph source, Node node1, Node node2,
-            SystemProperties properties) {
-        super(source.newGraph(), properties);
+            LabelStore labelStore, SystemProperties properties) {
+        super(source.newGraph(), properties, labelStore);
         this.node1 = node1;
         this.node2 = node2;
         Node codNode = getTarget().addNode();
         getRootMap().putNode(node1, codNode);
         getRootMap().putNode(node2, codNode);
-    }
-
-    /**
-     * Constructs a merge embargo on a given graph, between the endpoints in a
-     * given array of length 2.
-     * @param source the context for this embargo
-     * @param embargoNodes the nodes that should be matched injectively
-     * @require <code>embargoEdge.endCount() == 2</code>
-     */
-    public MergeEmbargo(Graph source, Node[] embargoNodes,
-            SystemProperties properties) {
-        this(source, embargoNodes[0], embargoNodes[1], properties);
-        if (embargoNodes.length != 2) {
-            throw new IllegalArgumentException("Merge embargo must be binary");
-        }
     }
 
     /**

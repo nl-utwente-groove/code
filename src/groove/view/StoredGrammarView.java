@@ -404,8 +404,9 @@ public class StoredGrammarView implements GrammarView, Observer {
             this.labelStore.addLabels(getStartGraphView().getLabels());
         }
         // add subtyping relation from properties to label store
-        this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
-        if (getTypeView() != null) {
+        if (getTypeView() == null) {
+            this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
+        } else {
             this.labelStore.add(getTypeView().toModel().getLabelStore());
             this.labelStore.setFixed();
         }

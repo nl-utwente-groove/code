@@ -19,6 +19,7 @@ package groove.trans;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ArgumentEdge;
@@ -48,26 +49,18 @@ abstract public class PositiveCondition<M extends Match> extends
     /**
      * Constructs a (named) graph condition based on a given target graph and
      * root morphism.
+     * @param name the name of the condition; may be <code>null</code>
      * @param target the graph to be matched
      * @param rootMap element map from the context to the anchor elements of
      *        <code>target</code>; may be <code>null</code> if the condition is
      *        ground
-     * @param name the name of the condition; may be <code>null</code>
+     * @param labelStore label store specifying the subtype relation
      * @param properties properties for matching the condition; may be
      *        <code>null</code>
      */
-    PositiveCondition(Graph target, NodeEdgeMap rootMap, RuleName name,
-            SystemProperties properties) {
-        super(target, rootMap, name, properties);
-    }
-
-    /**
-     * Constructs a (named) ground graph condition based on a given pattern
-     * target. and initially empty nested predicate. The name may be
-     * <code>null</code>.
-     */
-    PositiveCondition(Graph target, RuleName name, SystemProperties properties) {
-        super(target, name, properties);
+    PositiveCondition(RuleName name, Graph target, NodeEdgeMap rootMap,
+            LabelStore labelStore, SystemProperties properties) {
+        super(name, target, rootMap, labelStore, properties);
     }
 
     @Override

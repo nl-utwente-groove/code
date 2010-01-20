@@ -101,7 +101,7 @@ public class NACTest extends TestCase {
                 SystemProperties.DEFAULT_PROPERTIES);
 
         this.NACs[0] =
-            new MergeEmbargo(lhs, this.n[0][0], this.n[0][1],
+            new MergeEmbargo(lhs, this.n[0][0], this.n[0][1], null,
                 SystemProperties.getInstance());
         // String[] NAC1Lab = {"c"};
         // NACs[1] = new Embargo(lhs, n[0][1],labelArray(NAC1Lab));
@@ -109,7 +109,7 @@ public class NACTest extends TestCase {
         // NACs[2] = new Embargo(lhs, n[0][1],labelArray(NAC2Lab));
         this.NACs[3] =
             new EdgeEmbargo(lhs, DefaultEdge.createEdge(this.n[0][1], "c",
-                this.n[0][0]), SystemProperties.getInstance());
+                this.n[0][0]), SystemProperties.getInstance(), null);
 
         Graph protGraph = new DefaultGraph();
         int[] g0Src = {1, 1, 2};

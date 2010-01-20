@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.graph.LabelStore;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
@@ -39,16 +40,17 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
      * given root map.
      */
     public NotCondition(Graph target, NodeEdgeMap rootMap,
-            SystemProperties properties) {
-        super(target, rootMap, null, properties);
+            LabelStore labelStore, SystemProperties properties) {
+        super(null, target, rootMap, labelStore, properties);
     }
 
     /**
      * Creates a NAC over a default context and an initially empty target
      * pattern.
      */
-    public NotCondition(Graph pattern, SystemProperties properties) {
-        this(pattern, new NodeEdgeHashMap(), properties);
+    public NotCondition(Graph pattern, SystemProperties properties,
+            LabelStore labelStore) {
+        this(pattern, new NodeEdgeHashMap(), labelStore, properties);
     }
 
     /**
