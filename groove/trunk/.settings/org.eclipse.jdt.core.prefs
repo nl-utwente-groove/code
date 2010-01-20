@@ -1,4 +1,4 @@
-#Wed Jan 20 15:35:44 CET 2010
+#Wed Jan 20 15:58:02 CET 2010
 eclipse.preferences.version=1
 org.eclipse.jdt.core.codeComplete.argumentPrefixes=
 org.eclipse.jdt.core.codeComplete.argumentSuffixes=
@@ -146,7 +146,7 @@ org.eclipse.jdt.core.formatter.comment.clear_blank_lines_in_javadoc_comment=fals
 org.eclipse.jdt.core.formatter.comment.format_block_comments=false
 org.eclipse.jdt.core.formatter.comment.format_header=true
 org.eclipse.jdt.core.formatter.comment.format_html=true
-org.eclipse.jdt.core.formatter.comment.format_javadoc_comments=true
+org.eclipse.jdt.core.formatter.comment.format_javadoc_comments=false
 org.eclipse.jdt.core.formatter.comment.format_line_comments=false
 org.eclipse.jdt.core.formatter.comment.format_source_code=true
 org.eclipse.jdt.core.formatter.comment.indent_parameter_description=false
