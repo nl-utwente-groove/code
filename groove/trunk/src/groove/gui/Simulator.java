@@ -95,6 +95,7 @@ import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
+import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -277,6 +278,23 @@ public class Simulator {
         return getGrammarView() == null ? null : getGrammarView().getStore();
     }
 
+    /** Returns the type graph associated with the grammar, if any. */
+    private TypeView getTypeView() {
+        return getGrammarView() == null ? null : getGrammarView().getTypeView();
+        //        TypeGraph result = null;
+        //        if (getGrammarView() != null) {
+        //            TypeView typeView = getGrammarView().getTypeView();
+        //            if (typeView != null) {
+        //                try {
+        //                    result = typeView.toModel();
+        //                } catch (FormatException e) {
+        //                    // the type graph is not valie
+        //                }
+        //            }
+        //        }
+        //        return result;
+    }
+
     /**
      * Sets the {@link #grammarView} and {@link #currentRuleName} fields.
      */
@@ -448,7 +466,7 @@ public class Simulator {
      */
     void handleEditGraph(final Graph graph, final boolean fresh) {
         EditorDialog dialog =
-            new EditorDialog(getFrame(), getOptions(), graph) {
+            new EditorDialog(getFrame(), getOptions(), graph, getTypeView()) {
                 @Override
                 public void finish() {
                     String oldGraphName = GraphInfo.getName(graph);
@@ -3495,7 +3513,7 @@ public class Simulator {
             final String ruleName = getCurrentRule().getName();
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(),
-                    getCurrentRule().getView().toPlainGraph()) {
+                    getCurrentRule().getView().toPlainGraph(), getTypeView()) {
                     @Override
                     public void finish() {
                         if (confirmAbandon(false)) {
@@ -4255,7 +4273,8 @@ public class Simulator {
                 Graph newRule = GraphFactory.getInstance().newGraph();
                 GraphInfo.setRuleRole(newRule);
                 EditorDialog dialog =
-                    new EditorDialog(getFrame(), getOptions(), newRule) {
+                    new EditorDialog(getFrame(), getOptions(), newRule,
+                        getTypeView()) {
                         @Override
                         public void finish() {
                             final RuleName ruleName =

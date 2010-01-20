@@ -151,6 +151,8 @@ public class RegExprLabelParser implements LabelParser {
         DefaultLabel result;
         if (label instanceof RegExprLabel) {
             result = unparse(((RegExprLabel) label).getRegExpr());
+        } else if (label.isNodeType()) {
+            result = (DefaultLabel) label;
         } else {
             // test if the label should be quoted
             boolean quote;

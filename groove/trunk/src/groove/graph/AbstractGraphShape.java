@@ -195,6 +195,14 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         setCacheCollectable();
     }
 
+    @Override
+    public void testFixed(boolean fixed) throws IllegalStateException {
+        if (isFixed() != fixed) {
+            throw new IllegalStateException(String.format(
+                "Expected graph to be %s", fixed ? "fixed" : "unfixed"));
+        }
+    }
+
     /** Calls {@link #toString(GraphShape)}. */
     @Override
     public String toString() {

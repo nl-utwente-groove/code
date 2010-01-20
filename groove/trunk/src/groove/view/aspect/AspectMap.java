@@ -17,6 +17,8 @@
 package groove.view.aspect;
 
 import groove.graph.Label;
+import groove.graph.MergeLabel;
+import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -237,6 +239,11 @@ public class AspectMap implements Iterable<AspectValue> {
             && !RuleAspect.REMARK.equals(get(RuleAspect.getInstance()))) {
             // parse the label
             result = getLabelParser().parse(getText());
+            // create a merge label if appropriate
+            if (RuleAspect.CREATOR.equals(get(RuleAspect.getInstance()))
+                && RegExprLabel.isEmpty(result)) {
+                result = MergeLabel.getInstance();
+            }
         }
         return result;
     }

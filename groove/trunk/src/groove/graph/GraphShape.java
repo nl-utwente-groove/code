@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.util.Fixable;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -24,7 +26,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:53 $
  */
-public interface GraphShape extends java.io.Serializable {
+public interface GraphShape extends java.io.Serializable, Fixable {
     /**
      * Returns the set of nodes of this graph. The return value is an
      * unmodifiable view of the underlying node set, which is <i>not</i>
@@ -96,9 +98,9 @@ public interface GraphShape extends java.io.Serializable {
     /**
      * Returns the set of all edges in this graph with a given label and arity.
      * Convenience method for
-     * <tt>(Collection) labelEdgeMap(arity).get(label)</tt> Although the
-     * return type is a <tt>Collection</tt> to allow efficient implementation,
-     * it is guaranteed to contain distinct elements.
+     * <tt>(Collection) labelEdgeMap(arity).get(label)</tt> Although the return
+     * type is a <tt>Collection</tt> to allow efficient implementation, it is
+     * guaranteed to contain distinct elements.
      * @param label the label of the required edges
      * @param arity the number of endpoints of the required edges
      * @require <tt>label != null</tt> and
@@ -120,10 +122,10 @@ public interface GraphShape extends java.io.Serializable {
     boolean isEmpty();
 
     /**
-     * Indicates whether the graph is modifiable, i.e., if the <tt>add</tt>
-     * and <tt>remove</tt> methods can change the graph. The graph is
-     * modifiable when it is created, and becomes fixed only after an invocation
-     * of <tt>setFixed()</tt>.
+     * Indicates whether the graph is modifiable, i.e., if the <tt>add</tt> and
+     * <tt>remove</tt> methods can change the graph. The graph is modifiable
+     * when it is created, and becomes fixed only after an invocation of
+     * <tt>setFixed()</tt>.
      * @return <tt>true</tt> iff <tt>setFixed()</tt> has been invoked
      * @see #setFixed()
      */
@@ -188,8 +190,8 @@ public interface GraphShape extends java.io.Serializable {
     /**
      * Sets an information object with additional information about this graph,
      * by copying an existing information object.
-     * @param info an information object; may be <code>null</code> to reset
-     *        the graph info
+     * @param info an information object; may be <code>null</code> to reset the
+     *        graph info
      * @return a shallow copy of <code>info</code>, or <code>null</code> if
      *         <code>info</code> was <code>null</code>
      */

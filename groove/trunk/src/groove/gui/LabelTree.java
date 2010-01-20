@@ -260,6 +260,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             }
         }
         updateTree();
+        setDragEnabled(getLabelStore() != null && !getLabelStore().isFixed());
         setEnabled(true);
     }
 

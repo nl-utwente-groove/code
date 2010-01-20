@@ -56,6 +56,14 @@ public class ProductGTS implements LTS {
         this.graphGrammar = grammar;
     }
 
+    @Override
+    public void testFixed(boolean fixed) throws IllegalStateException {
+        if (isFixed() != fixed) {
+            throw new IllegalStateException(String.format(
+                "Expected LTS to be %s", fixed ? "fixed" : "unfixed"));
+        }
+    }
+
     /**
      * Sets the Buechi start-state of the gts.
      * @param startState the Buechi start-state
