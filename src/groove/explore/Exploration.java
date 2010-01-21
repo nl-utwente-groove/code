@@ -48,13 +48,16 @@ import groove.util.Reporter;
 public class Exploration {
     private Strategy strategy;
     private String strategyKeyword;
+    private String strategyArgumentValues;
     private Acceptor acceptor;
     private String acceptorKeyword;
+    private String acceptorArgumentValues;
     private boolean interrupted;
 
-    static private final Reporter reporter = Reporter.register(DefaultScenario.class);
-    static private final int RUNNING       = reporter.newMethod("playScenario()");
-   
+    static private final Reporter reporter =
+        Reporter.register(DefaultScenario.class);
+    static private final int RUNNING = reporter.newMethod("playScenario()");
+
     /**
      * Initialize an exploration by storing a strategy and an acceptor in the local
      * variables. The result is stored (set) within the acceptor. 
@@ -65,26 +68,25 @@ public class Exploration {
      * @param result    - result   component of the exploration
      */
     public Exploration(Strategy strategy, String strategyKeyword,
-            Acceptor acceptor, String acceptorKeyword,
-            Result result) {
+            String strategyArgumentValues, Acceptor acceptor,
+            String acceptorKeyword, String acceptorArgumentValues, Result result) {
         this.strategy = strategy;
         this.strategyKeyword = strategyKeyword;
+        this.strategyArgumentValues = strategyArgumentValues;
         this.acceptor = acceptor;
         this.acceptorKeyword = acceptorKeyword;
+        this.acceptorArgumentValues = acceptorArgumentValues;
         this.acceptor.setResult(result);
     }
-    
+
     /**
      * Initializes a default exploration (breadth-first, final states, infinite results).
      */
     public Exploration() {
-        this(new BFSStrategy(),
-             "Breadth-First",
-             new FinalStateAcceptor(),
-             "Final",
-             new Result(0));
+        this(new BFSStrategy(), "Breadth-First", "", new FinalStateAcceptor(),
+            "Final", "", new Result(0));
     }
-    
+
     /**
      * Prepares the strategy for exploration. Can be called when no state is currently selected. 
      * @param gts - the current gts
@@ -92,7 +94,7 @@ public class Exploration {
     public void prepare(GTS gts) {
         prepare(gts, null);
     }
-    
+
     /**
      * Prepares the strategy for exploration.
      * @param gts - the current gts
@@ -101,21 +103,22 @@ public class Exploration {
     public void prepare(GTS gts, GraphState state) {
         this.strategy.prepare(gts, state);
     }
-        
+
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.
      * @return the set of results that have been stored within the acceptor during exploration
      */
     public Result play() {
-        
+
         // initialize profiling and prepare graph listener
         reporter.start(RUNNING);
         this.strategy.addGTSListener(this.acceptor);
         this.interrupted = false;
 
         // start working until done or nothing to do
-        while (!this.interrupted && !this.acceptor.getResult().done() && this.strategy.next()) {
+        while (!this.interrupted && !this.acceptor.getResult().done()
+            && this.strategy.next()) {
             this.interrupted = Thread.currentThread().isInterrupted();
         }
 
@@ -126,7 +129,7 @@ public class Exploration {
         // return result
         return this.acceptor.getResult();
     }
-    
+
     /**
      * Clears the Result set that is stored on the acceptor, which enables an earlier
      * performed exploration to be run again.
@@ -142,7 +145,7 @@ public class Exploration {
     public boolean isInterrupted() {
         return this.interrupted;
     }
-    
+
     /**
      * Getter for the acceptor.
      * @return the acceptor of the exploration
@@ -150,7 +153,7 @@ public class Exploration {
     public Acceptor getAcceptor() {
         return this.acceptor;
     }
-    
+
     /**
      * Getter for the acceptor keyword.
      * @return the keyword of the acceptor of the exploration
@@ -167,7 +170,7 @@ public class Exploration {
     public long getRunningTime() {
         return reporter.getTotalTime(RUNNING);
     }
-    
+
     /**
      * Returns the result of the exploration (which is stored on the acceptor). 
      * @return the result (set of graph states)
@@ -175,23 +178,21 @@ public class Exploration {
     public Result getResult() {
         return this.acceptor.getResult();
     }
-    
+
     /**
      * Returns a short String identification of the exploration, which is constructed
      * out of the stored keywords and the bound of the Result. 
      */
     public String getShortName() {
         String resultName;
-        if (getResult().getBound() == 0)
+        if (getResult().getBound() == 0) {
             resultName = "*";
-        else
-            resultName = Integer.toString(getResult().getBound());        
-        
-        return (this.getStrategyKeyword() +
-                "/" +
-                this.getAcceptorKeyword() +
-                "/" +
-                resultName);
+        } else {
+            resultName = Integer.toString(getResult().getBound());
+        }
+
+        return (this.getStrategyKeyword() + this.strategyArgumentValues + "/"
+            + this.getAcceptorKeyword() + this.acceptorArgumentValues + "/" + resultName);
     }
 
     /**
@@ -201,4 +202,4 @@ public class Exploration {
     public String getStrategyKeyword() {
         return this.strategyKeyword;
     }
- }
+}

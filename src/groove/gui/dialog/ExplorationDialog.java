@@ -19,8 +19,10 @@ package groove.gui.dialog;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Documented;
 import groove.explore.Enumerator;
+import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
+import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -111,6 +113,10 @@ public class ExplorationDialog extends JDialog implements ActionListener {
      * Color to be used for the background of the info panel.
      */
     public static final Color INFO_BG_COLOR = new Color(230, 230, 255);
+    /**
+     * Color to be used for the background boxes on the info panel.
+     */
+    public static final Color INFO_BOX_BG_COLOR = new Color(210, 210, 255);
 
     // The four main panels (strategy / acceptor / result / buttons).
     private DocumentedSelection<Strategy> strategySelector;
@@ -213,34 +219,26 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     // NOTE: simulator.doRunExploration will remember the exploration as the
     // default for the next explore.
     private void doExploration() {
-        /*
         Strategy strategy =
-            this.strategySelector.getSelectedValue().getObjectForUI(
-                this.simulator, this);
-        if (strategy == null) {
-            return;
-        }
+            this.strategySelector.getSelectedValue().getObject();
         Acceptor acceptor =
-            this.acceptorSelector.getSelectedValue().getObjectForUI(
-                this.simulator, this);
-        if (acceptor == null) {
-            return;
-        }
+            this.acceptorSelector.getSelectedValue().getObject();
         Integer nrResults = this.resultSelector.getSelectedValue();
-        if (nrResults == null) {
+        if (strategy == null || acceptor == null || nrResults == null) {
             return;
         }
 
         Exploration exploration =
             new Exploration(strategy,
                 this.strategySelector.getSelectedValue().getKeyword(),
+                this.strategySelector.getSelectedValue().getArgumentValues(),
                 acceptor,
                 this.acceptorSelector.getSelectedValue().getKeyword(),
+                this.acceptorSelector.getSelectedValue().getArgumentValues(),
                 new Result(nrResults));
-        */
         closeDialog();
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
-        // this.simulator.doRunExploration(exploration);
+        this.simulator.doRunExploration(exploration);
     }
 
     // The action listener of the dialog. Responds to button presses only.
@@ -292,6 +290,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             this.add(itemList(initialValue));
             this.add(this.infoPanel);
             SpringUtilities.makeCompactGrid(this, 3, 1, 0, 0, 0, 3);
+            updateInfoPanel();
         }
 
         private JLabel headerText(String objectType, String tooltip) {
@@ -315,7 +314,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
             list.addListSelectionListener(this);
 
             JScrollPane listScroller = new JScrollPane(list);
-            listScroller.setPreferredSize(new Dimension(300, 200));
+            listScroller.setPreferredSize(new Dimension(350, 200));
             return listScroller;
         }
 
@@ -323,7 +322,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         private void initializeInfoPanel(String initialValue,
                 Simulator simulator) {
             this.infoPanel = new JPanel(new CardLayout());
-            this.infoPanel.setPreferredSize(new Dimension(300, 200));
+            this.infoPanel.setPreferredSize(new Dimension(350, 200));
             this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(
                 150, 150, 255)));
 
@@ -341,7 +340,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
                     + ExplorationDialog.INFO_COLOR + ">"
                     + this.enumerator.getElementAt(i).getExplanation()
                     + "</FONT></B></HTML>"));
-                elementPanel.add(new JLabel(" "));
+                elementPanel.add(Box.createRigidArea(new Dimension(0, 6)));
                 elementPanel.add(new JLabel("<HTML><FONT color="
                     + ExplorationDialog.INFO_COLOR + ">"
                     + "Keyword for command line: <B>"
@@ -352,10 +351,11 @@ public class ExplorationDialog extends JDialog implements ActionListener {
                     + "Additional arguments required: <B>"
                     + ((argumentPanel == null) ? "No" : "Yes")
                     + "</B>.</FONT></HTML>"));
+                elementPanel.add(Box.createRigidArea(new Dimension(0, 6)));
                 elementPanel.add((argumentPanel == null) ? (new JLabel(""))
                         : argumentPanel);
 
-                SpringUtilities.makeCompactGrid(elementPanel, 6, 1, 2, 2, 0, 0);
+                SpringUtilities.makeCompactGrid(elementPanel, 7, 1, 2, 2, 0, 0);
                 this.infoPanel.add(elementPanel,
                     this.enumerator.getElementAt(i).getKeyword());
             }
@@ -412,7 +412,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
 
             this.customNumber = new JTextField(initialCustomValue, 3);
             this.customNumber.addKeyListener(new OnlyListenToNumbers());
-            this.customNumber.setEnabled(false);
+            this.customNumber.setEnabled(initialValue >= 2);
 
             JLabel leadingLabel =
                 new JLabel("<HTML><FONT color="

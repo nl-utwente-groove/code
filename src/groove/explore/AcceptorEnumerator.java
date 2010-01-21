@@ -24,17 +24,18 @@ import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.RuleApplicationAcceptor;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
-import groove.gui.layout.SpringUtilities;
 import groove.trans.Rule;
 import groove.trans.RuleName;
 
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SpringLayout;
 
 /**
  * An enumeration of Documented<Acceptor>.
@@ -81,17 +82,23 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
      * created argument panel, or by parsing a command line argument.
      * (the latter is not implemented yet). 
      */
-    private class AcceptorRequiringRule extends Documented<Acceptor> {
+    private class AcceptorRequiringRule extends Documented<Acceptor> implements
+            ActionListener {
 
         private boolean mayBeNegated;
         private JPanel argumentPanel;
 
+        private String POSITIVE = "Positive (stop when rule is applicable)";
+        private String NEGATIVE = "Negative (stop when rule is not applicable)";
+
+        private Rule selectedRule;
+        private Boolean selectedMode;
+
         public AcceptorRequiringRule(String keyword, String name,
                 String explanation, boolean mayBeNegated,
                 ConditionalAcceptor<Rule> acceptor) {
-            super(null, keyword, name, explanation);
+            super(acceptor, keyword, name, explanation);
             this.mayBeNegated = mayBeNegated;
-            this.object = acceptor;
             this.argumentPanel = null;
         }
 
@@ -102,34 +109,67 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
             }
 
             JComboBox ruleSelector = new JComboBox();
+            ruleSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
             Set<RuleName> ruleSet = simulator.getGrammarView().getRuleNames();
             for (RuleName name : ruleSet) {
                 if (simulator.getGrammarView().getRuleView(name).isEnabled()) {
-                    ruleSelector.addItem("<HTML><B><FONT color="
+                    ruleSelector.addItem("<HTML><FONT color="
                         + ExplorationDialog.INFO_COLOR + ">" + name
-                        + "</FONT></B></HTML>");
+                        + "</FONT></HTML>");
                 }
             }
+            ruleSelector.addActionListener(this);
 
-            ruleSelector.addItem("<HTML><B>Bogus #1</B></HTML>");
-            ruleSelector.addItem("Bogus #2");
-            ruleSelector.setBackground(ExplorationDialog.INFO_BG_COLOR);
+            JComboBox modeSelector = new JComboBox();
+            modeSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+            modeSelector.setBorder(BorderFactory.createEmptyBorder());
+            modeSelector.addItem("<HTML><FONT color="
+                + ExplorationDialog.INFO_COLOR + ">" + this.POSITIVE
+                + "</FONT></HTML>");
+            modeSelector.addItem("<HTML><FONT color="
+                + ExplorationDialog.INFO_COLOR + ">" + this.NEGATIVE
+                + "</FONT></HTML>");
+            modeSelector.addActionListener(this);
 
-            JPanel argumentLine =
-                new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            argumentLine.setBackground(ExplorationDialog.INFO_BG_COLOR);
-            argumentLine.add(new JLabel("<HTML><FONT color="
+            JPanel ruleLine = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            ruleLine.setBackground(ExplorationDialog.INFO_BG_COLOR);
+            ruleLine.add(ruleSelector);
+            ruleLine.add(new JLabel("<HTML><FONT color="
                 + ExplorationDialog.INFO_COLOR
-                + ">Rule argument: </FONT></HTML>"));
-            argumentLine.add(ruleSelector);
+                + "><B>&nbsp(Rule)</B></FONT></HTML>"));
 
-            this.argumentPanel = new JPanel(new SpringLayout());
+            JPanel modeLine = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            modeLine.setBackground(ExplorationDialog.INFO_BG_COLOR);
+            modeLine.add(modeSelector);
+            modeLine.add(new JLabel("<HTML><FONT color="
+                + ExplorationDialog.INFO_COLOR
+                + "><B>&nbsp(Mode)</B></FONT></HTML>"));
+
+            this.argumentPanel =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             this.argumentPanel.setBackground(ExplorationDialog.INFO_BG_COLOR);
-            this.argumentPanel.add(argumentLine);
-            SpringUtilities.makeCompactGrid(this.argumentPanel, 1, 1, 0, 0, 0,
-                0);
+            this.argumentPanel.add(ruleLine);
+            if (this.mayBeNegated) {
+                this.argumentPanel.add(modeLine);
+            }
             return this.argumentPanel;
         }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // TODO Auto-generated method stub
+
+        }
+
+        /*
+        @Override
+        public Acceptor getObject() {
+            IsRuleApplicableCondition condition =
+                new IsRuleApplicableCondition(this.selectedRule, this.selectedMode);
+            this.object).setCondition(condition);
+            return this.object;
+        }
+        */
 
         /*
         @Override
