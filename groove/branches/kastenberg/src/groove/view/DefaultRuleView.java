@@ -476,7 +476,9 @@ public class DefaultRuleView implements RuleView {
             Edge embargoEdge = nacEdgeSet.iterator().next();
             if (RegExprLabel.isEmpty(embargoEdge.label())) {
                 // this is supposed to be a merge embargo
-                result = createMergeEmbargo(lhs, embargoEdge.ends());
+                result =
+                    createMergeEmbargo(lhs, embargoEdge.source(),
+                        embargoEdge.opposite());
             } else {
                 // this is supposed to be an edge embargo
                 result = createEdgeEmbargo(lhs, embargoEdge);
@@ -536,12 +538,15 @@ public class DefaultRuleView implements RuleView {
     /**
      * Callback method to create a merge embargo.
      * @param context the context-graph
-     * @param embargoNodes the nodes involved in this merge-embargo
+     * @param embargoSource the source node of the merge-embargo
+     * @param embargoTarget the target node of the merge-embargo
      * @return the new {@link groove.trans.MergeEmbargo}
      * @see #toRule()
      */
-    private MergeEmbargo createMergeEmbargo(Graph context, Node[] embargoNodes) {
-        return new MergeEmbargo(context, embargoNodes, getProperties());
+    private MergeEmbargo createMergeEmbargo(Graph context, Node embargoSource,
+            Node embargoTarget) {
+        return new MergeEmbargo(context, embargoSource, embargoTarget, null,
+            getProperties());
     }
 
     /**
@@ -552,7 +557,7 @@ public class DefaultRuleView implements RuleView {
      * @see #toRule()
      */
     private EdgeEmbargo createEdgeEmbargo(Graph context, Edge embargoEdge) {
-        return new EdgeEmbargo(context, embargoEdge, getProperties());
+        return new EdgeEmbargo(context, embargoEdge, getProperties(), null);
     }
 
     /**
@@ -562,7 +567,7 @@ public class DefaultRuleView implements RuleView {
      * @see #toRule()
      */
     private NotCondition createNAC(Graph context) {
-        return new NotCondition(context.newGraph(), getProperties());
+        return new NotCondition(context.newGraph(), getProperties(), null);
     }
 
     /**
@@ -576,8 +581,8 @@ public class DefaultRuleView implements RuleView {
      */
     private SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap,
             NodeEdgeMap coRootMap, String name) {
-        return new SPORule(ruleMorphism, rootMap, coRootMap,
-            new RuleName(name), getProperties());
+        return new SPORule(new RuleName(name), ruleMorphism, rootMap,
+            coRootMap, null, getProperties());
     }
 
     /**
@@ -592,7 +597,7 @@ public class DefaultRuleView implements RuleView {
     private ForallCondition createForall(Graph target, NodeEdgeMap rootMap,
             String name, boolean positive) {
         ForallCondition result =
-            new ForallCondition(target, rootMap, new RuleName(name),
+            new ForallCondition(new RuleName(name), target, rootMap, null,
                 getProperties());
         if (positive) {
             result.setPositive();

@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.graph.LabelStore;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
@@ -33,9 +34,9 @@ import java.util.List;
  */
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /** Constructs an instance based on a given target and root map. */
-    public ForallCondition(Graph target, NodeEdgeMap rootMap, RuleName name,
-            SystemProperties properties) {
-        super(target, rootMap, name, properties);
+    public ForallCondition(RuleName name, Graph target, NodeEdgeMap rootMap,
+            LabelStore labelStore, SystemProperties properties) {
+        super(name, target, rootMap, labelStore, properties);
     }
 
     @Override

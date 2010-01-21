@@ -18,50 +18,38 @@ package groove.explore;
 
 /**
  * An enumerator class for objects of type Documented<A>.
- * The elements of the enumerator must be specified explicitly by means of extending
- * the default constructor.
- *
- * Implements the following public methods:
- * - addObject               - add a Documented<A> object to the enumerator
- * - getElement              - gets an element from the array
- * - getSize                 - returns the number of stored Documented<A>'s
- * - getAllNames             - returns an array with the names of the stored Documented<A>'s 
- * - findByKeyword           - find a Documented<A> with the specified keyword
- * - findByName              - find a Documented<A> with the specified name
- * - findByExplanation       - find a Documented<A> with the specified explanation
- *
- * Implements the following private methods:
+ * Default implementation is the empty enumeration.
+ * Subclasses must override the constructor to initialize the enumeration.
  * 
  * @author Maarten de Mol
  * @version $Revision $
- * 
  */
 public class Enumerator<A> {
     private Object[] array;
     private int nrElements;
-    
+
     /**
-     * Default constructor. Initializes local data only.
+     * Default constructor. Initializes to empty enumeration.
      */
     public Enumerator() {
         this.nrElements = 0;
         this.array = new Object[100];
     }
-    
+
     /**
      * Add a Documented<A> to the enumerator.
      * @param object - the object to be added
      */
     public void addObject(Documented<A> object) {
         this.nrElements++;
-        this.array[this.nrElements-1] = object;
+        this.array[this.nrElements - 1] = object;
     }
 
     /**
      * @return The element at the stored index.
      */
     @SuppressWarnings("unchecked")
-    public Documented<A> getElement(int index) {
+    public Documented<A> getElementAt(int index) {
         return ((Documented<A>) this.array[index]);
     }
 
@@ -71,39 +59,42 @@ public class Enumerator<A> {
     public int getSize() {
         return this.nrElements;
     }
-      
+
     /**
      * @return array with the names of the stored Documented<A>'s.
      */
     public String[] getAllNames() {
         String[] result = new String[this.nrElements];
-        for (int i = 0; i < this.nrElements; i++)
-            result[i] = getElement(i).getName();
+        for (int i = 0; i < this.nrElements; i++) {
+            result[i] = getElementAt(i).getName();
+        }
         return result;
     }
-    
+
     /**
      * Find a Documented<A> with the specified keyword.
      * @param keyword - the keyword
-     * @return the object associated with the keyword; if keyword is unused, then returns null
+     * @return the object associated with the keyword (null if not found)
      */
     public Documented<A> findByKeyword(String keyword) {
         for (int i = 0; i < this.nrElements; i++) {
-            if (getElement(i).getKeyword().equals(keyword))
-                return getElement(i);
+            if (getElementAt(i).getKeyword().equals(keyword)) {
+                return getElementAt(i);
+            }
         }
         return null;
     }
-  
+
     /**
      * Find a Documented<A> with the specified name.
      * @param name - the name
-     * @return the object associated with the name; if name is unused, then returns null
+     * @return the object associated with the name (null if not found)
      */
     public Documented<A> findByName(String name) {
         for (int i = 0; i < this.nrElements; i++) {
-            if (getElement(i).getName().equals(name))
-                return getElement(i);
+            if (getElementAt(i).getName().equals(name)) {
+                return getElementAt(i);
+            }
         }
         return null;
     }
@@ -111,12 +102,13 @@ public class Enumerator<A> {
     /**
      * Find a Documented<A> with the specified explanation.
      * @param explanation - the explanation
-     * @return the object associated with the explanation; if explanation unused, then returns null
+     * @return the object associated with the explanation (null if not found)
      */
     public Documented<A> findByExplanation(String explanation) {
         for (int i = 0; i < this.nrElements; i++) {
-            if (getElement(i).getExplanation().equals(explanation))
-                return getElement(i);
+            if (getElementAt(i).getExplanation().equals(explanation)) {
+                return getElementAt(i);
+            }
         }
         return null;
     }
