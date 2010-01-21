@@ -37,46 +37,32 @@ public class StrategyEnumerator extends Enumerator<Strategy> {
      */
     public StrategyEnumerator() {
         super();
-        
-        // MdM - disable for now, seems to do the same as Breadth-First, 
-        // but with worse performance
-        /*
-        addObject(new Documented<Strategy>(new BranchingStrategy(),
-            "Branching",
-            "Full Exploration (branching, aliasing)",
-            "This strategy first generates all possible transitions from each open state, " +
-            "and then continues in a breadth-first fashion.<BR>" +
-            "<I>This strategy does not use local cache and is optimized for memory consumption.</I>"));
-        */
 
-        addObject(new Documented<Strategy>(new BFSStrategy(),
-            "Breadth-First",
+        addObject(new Documented<Strategy>(new BFSStrategy(), "Breadth-First",
             "Breadth-First Exploration",
-            "This strategy first generates all possible transitions from each open state, " +
-            "and then continues in a breadth-first fashion."));
-       
+            "This strategy first generates all possible transitions from each "
+                + "open state, and then continues in a breadth-first fashion."));
+
         addObject(new Documented<Strategy>(new ExploreRuleDFStrategy(),
-            "Depth-First",
-            "Depth-First Exploration",
-            "This strategy first generates all possible transitions from each open state, " +
-            "and then continues in a depth-first fashion."));
+            "Depth-First", "Depth-First Exploration",
+            "This strategy first generates all possible transitions from each "
+                + "open state, and then continues in a depth-first fashion."));
 
         addObject(new Documented<Strategy>(new LinearConfluentRules(),
-            "LinearConfluent",
-            "Linear Confluent Exploration",
-            "This strategy generates all possible transitions from each open state, " +
-            "but only takes one transition of each pair of transitions that have been marked as confluent."));
+            "LinearConfluent", "Linear Confluent Exploration",
+            "This strategy generates all possible transitions from each open "
+                + "state, but only takes one transition of each pair of "
+                + "transitions that have been marked as confluent."));
 
-        addObject(new Documented<Strategy>(new LinearStrategy(),
-            "Linear",
+        addObject(new Documented<Strategy>(new LinearStrategy(), "Linear",
             "Linear Exploration",
-            "This strategy chooses one transition from each open state. " +
-            "The transition of choice will be the same within one incarnation of Groove."));
-       
+            "This strategy chooses one transition from each open state. "
+                + "The transition of choice will be the same within one "
+                + "incarnation of Groove."));
+
         addObject(new Documented<Strategy>(new RandomLinearStrategy(),
-            "RandomLinear",
-            "Random Linear Exploration",
-            "This strategy chooses one transition from each open state. " +
-            "The transition is chosen randomly."));
+            "RandomLinear", "Random Linear Exploration",
+            "This strategy chooses one transition from each open state. "
+                + "The transition is chosen randomly."));
     }
 }
