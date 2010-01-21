@@ -212,7 +212,7 @@ public class Options {
     public static final String ENABLE_TYPE_ACTION_NAME = "Enable Typing";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
-        "Customize Exploration";
+        "Customize Exploration ...";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export control action name */
