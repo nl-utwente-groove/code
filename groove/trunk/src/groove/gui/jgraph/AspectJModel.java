@@ -612,7 +612,7 @@ public class AspectJModel extends GraphJModel {
          */
         @Override
         public boolean addEdge(BinaryEdge edge) {
-            if (((AspectEdge) edge).getAspectMap().equals(
+            if (((AspectEdge) edge).getAspectMap().equalsAspects(
                 getEdge().getAspectMap())) {
                 return super.addEdge(edge);
             } else {
