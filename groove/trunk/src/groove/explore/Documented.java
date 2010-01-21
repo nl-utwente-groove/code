@@ -104,4 +104,12 @@ public class Documented<A> {
     public String getExplanation() {
         return this.explanation;
     }
+
+    /**
+     * @return a serialized representation of the argument values
+     * This method must be overridden if additional arguments are required.
+     */
+    public String getArgumentValues() {
+        return new String("");
+    }
 }
