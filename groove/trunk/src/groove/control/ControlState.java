@@ -23,6 +23,7 @@ import groove.trans.Rule;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -133,26 +134,43 @@ public class ControlState implements Node {
         return this.ruleTargetMap.keySet();
     }
 
-    /** Returns the init of this control state. */
-    public Set<String> getInit() {
+    /** 
+     * Returns the initial actions of this control state. 
+     */
+    public Map<String,ControlTransition> getInit() {
         return this.init;
     }
 
-    /** Adds the init of the passed state to the init of this state * */
+    /** 
+     * Adds the initial actions of the passed state to the initial actions
+     * of this state 
+     */
     public void addInit(ControlState state) {
-        this.init.addAll(state.getInit());
+        this.init.putAll(state.getInit());
     }
 
-    /** Adds a label to the init of this state * */
+    /** 
+     * Adds a label to the initial actions of this state 
+     * @param label the label to add
+     */
     public void addInit(String label) {
-        this.init.add(label);
+        this.init.put(label, null);
+    }
+    
+    /**
+     * Adds a label and its corresponding ControlTransition to the initial
+     * actions of this state
+     * @param ct the ControlTransition to add
+     */
+    public void addInit(ControlTransition ct) {
+        this.init.put(ct.getLabel(), ct);
     }
 
-    /** Removes a label from the init of this state * */
+    /** Removes a label from the init of this state */
     public void delInit(String label) {
         this.init.remove(label);
     }
-
+    
     /**
      * Marks a variable as active (ready to use as input)
      * @param varName the name of the variable
@@ -197,7 +215,8 @@ public class ControlState implements Node {
         return this.hasMerged;
     }
 
-    private final HashSet<String> init = new HashSet<String>();
+    /** The initial actions for this state. */
+    private final HashMap<String,ControlTransition> init = new HashMap<String,ControlTransition>();
     private final ControlShape parent;
     /** Internal number to identify the state. */
     private final int stateNumber;

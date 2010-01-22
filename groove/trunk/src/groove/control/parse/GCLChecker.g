@@ -10,6 +10,7 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
+import groove.trans.Rule;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -42,7 +43,7 @@ import java.util.HashSet;
     
     private void debug(String msg) {
     	if (namespace.usesVariables()) {
-    		System.err.println("Variables debug (GCLChecker): "+msg);
+    		//System.err.println("Variables debug (GCLChecker): "+msg);
     	}
     }
 }
@@ -87,14 +88,6 @@ expression
 	| ^(PLUS e1=expression) -> ^(PLUS $e1 $e1)
 	| ^(STAR expression)
 	| ^(SHARP expression)
-	| ^(CALL r=IDENTIFIER { currentRule = r.getText(); } param* {
-		debug("currentRule: "+currentRule);
-		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getNumParameters()) {
-			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getNumParameters()+") on line "+$IDENTIFIER.line);
-		}
-		numParameters = 0;
-		currentOutputParameters.clear();
-	}) 
 	| rule
 	| ANY
 	| OTHER
@@ -107,7 +100,17 @@ condition
   ;
 
 rule
-  : IDENTIFIER
+  : ^(CALL r=IDENTIFIER { currentRule = r.getText(); } param* {
+		debug("currentRule: "+currentRule);
+		if (!namespace.hasRule($r.text)) {
+			errors.add("No such rule: "+$r.text+" on line "+$r.line);
+		}
+		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {
+			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getVisibleParCount()+") on line "+$IDENTIFIER.line);
+		}
+		numParameters = 0;
+		currentOutputParameters.clear();
+	}) 
   ;
 
 var_declaration
@@ -137,7 +140,7 @@ param
 			
 			if (st.isDeclared($IDENTIFIER.text)) {
 				if (!st.canInitialize($IDENTIFIER.text)) {
-					errors.add("You are not allowed to initialize a variable in more than one location. "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);
+					errors.add("Variable already initialized: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);
 				} else {
 					st.initializeSymbol($IDENTIFIER.text);
 				}

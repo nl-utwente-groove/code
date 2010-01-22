@@ -40,6 +40,10 @@ public class AntlrParser {
                 System.out.println("Builder");
                 org.antlr.Tool.main(new String[] {"GCLBuilder.g"});
                 break;
+            case 3:
+                System.out.println("DeterminismChecker");
+                org.antlr.Tool.main(new String[] {"GCLDeterminismChecker.g"});
+                break;
             default:
                 printUsageMessage();
             }
@@ -55,5 +59,6 @@ public class AntlrParser {
         System.err.printf("Option values: 0 for lexer/parser generation%n");
         System.err.printf("               1 for checker generation%n");
         System.err.printf("               2 for builder generation%n");
+        System.err.printf("               3 for determinism checker generation%n");
     }
 }

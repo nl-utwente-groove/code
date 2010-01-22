@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLBuilder.g 2009-11-19 12:16:11
+// $ANTLR 3.1b1 GCLBuilder.g 2010-01-22 12:45:20
 
 package groove.control.parse;
 import groove.control.*;
@@ -100,21 +100,23 @@ public class GCLBuilder extends TreeParser {
         
         private void debug(String msg) {
         	if (builder.usesVariables()) {
-        		System.err.println("Variables debug (GCLBuilder): "+msg);
+        		//System.err.println("Variables debug (GCLBuilder): "+msg);
         	}
         }
+        
+        ControlTransition currentTransition;
 
 
 
     // $ANTLR start program
-    // GCLBuilder.g:52:1: program returns [ControlAutomaton aut=null] : ^( PROGRAM functions block ) ;
+    // GCLBuilder.g:54:1: program returns [ControlAutomaton aut=null] : ^( PROGRAM functions block ) ;
     public final ControlAutomaton program() throws RecognitionException {
         ControlAutomaton aut = null;
 
          ControlState start; ControlState end; 
         try {
-            // GCLBuilder.g:54:3: ( ^( PROGRAM functions block ) )
-            // GCLBuilder.g:54:5: ^( PROGRAM functions block )
+            // GCLBuilder.g:56:3: ( ^( PROGRAM functions block ) )
+            // GCLBuilder.g:56:5: ^( PROGRAM functions block )
             {
             match(input,PROGRAM,FOLLOW_PROGRAM_in_program58); 
 
@@ -156,17 +158,17 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start functions
-    // GCLBuilder.g:65:1: functions : ^( FUNCTIONS ( function )* ) ;
+    // GCLBuilder.g:67:1: functions : ^( FUNCTIONS ( function )* ) ;
     public final void functions() throws RecognitionException {
         try {
-            // GCLBuilder.g:66:3: ( ^( FUNCTIONS ( function )* ) )
-            // GCLBuilder.g:66:5: ^( FUNCTIONS ( function )* )
+            // GCLBuilder.g:68:3: ( ^( FUNCTIONS ( function )* ) )
+            // GCLBuilder.g:68:5: ^( FUNCTIONS ( function )* )
             {
             match(input,FUNCTIONS,FOLLOW_FUNCTIONS_in_functions82); 
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLBuilder.g:66:17: ( function )*
+                // GCLBuilder.g:68:17: ( function )*
                 loop1:
                 do {
                     int alt1=2;
@@ -179,7 +181,7 @@ public class GCLBuilder extends TreeParser {
 
                     switch (alt1) {
                 	case 1 :
-                	    // GCLBuilder.g:66:17: function
+                	    // GCLBuilder.g:68:17: function
                 	    {
                 	    pushFollow(FOLLOW_function_in_functions84);
                 	    function();
@@ -214,11 +216,11 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start function
-    // GCLBuilder.g:68:1: function : ^( FUNCTION IDENTIFIER ) ;
+    // GCLBuilder.g:70:1: function : ^( FUNCTION IDENTIFIER ) ;
     public final void function() throws RecognitionException {
         try {
-            // GCLBuilder.g:69:3: ( ^( FUNCTION IDENTIFIER ) )
-            // GCLBuilder.g:69:5: ^( FUNCTION IDENTIFIER )
+            // GCLBuilder.g:71:3: ( ^( FUNCTION IDENTIFIER ) )
+            // GCLBuilder.g:71:5: ^( FUNCTION IDENTIFIER )
             {
             match(input,FUNCTION,FOLLOW_FUNCTION_in_function97); 
 
@@ -242,7 +244,7 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start block
-    // GCLBuilder.g:71:1: block : ^( BLOCK ( statement )* ) ;
+    // GCLBuilder.g:73:1: block : ^( BLOCK ( statement )* ) ;
     public final void block() throws RecognitionException {
          
         	ControlState start = builder.getStart(); 
@@ -254,14 +256,14 @@ public class GCLBuilder extends TreeParser {
           	ControlState tmpStart = start;
 
         try {
-            // GCLBuilder.g:80:3: ( ^( BLOCK ( statement )* ) )
-            // GCLBuilder.g:80:5: ^( BLOCK ( statement )* )
+            // GCLBuilder.g:82:3: ( ^( BLOCK ( statement )* ) )
+            // GCLBuilder.g:82:5: ^( BLOCK ( statement )* )
             {
             match(input,BLOCK,FOLLOW_BLOCK_in_block115); 
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLBuilder.g:80:13: ( statement )*
+                // GCLBuilder.g:82:13: ( statement )*
                 loop2:
                 do {
                     int alt2=2;
@@ -274,7 +276,7 @@ public class GCLBuilder extends TreeParser {
 
                     switch (alt2) {
                 	case 1 :
-                	    // GCLBuilder.g:80:14: statement
+                	    // GCLBuilder.g:82:14: statement
                 	    {
                 	    pushFollow(FOLLOW_statement_in_block118);
                 	    statement();
@@ -325,7 +327,7 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start statement
-    // GCLBuilder.g:99:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration );
+    // GCLBuilder.g:101:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration );
     public final void statement() throws RecognitionException {
         
         	ControlState start = builder.getStart();
@@ -334,7 +336,7 @@ public class GCLBuilder extends TreeParser {
         	ControlTransition fail;
 
         try {
-            // GCLBuilder.g:105:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration )
+            // GCLBuilder.g:107:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration )
             int alt6=9;
             switch ( input.LA(1) ) {
             case ALAP:
@@ -399,7 +401,7 @@ public class GCLBuilder extends TreeParser {
 
             switch (alt6) {
                 case 1 :
-                    // GCLBuilder.g:105:5: ^( ALAP block )
+                    // GCLBuilder.g:107:5: ^( ALAP block )
                     {
                     match(input,ALAP,FOLLOW_ALAP_in_statement147); 
 
@@ -427,7 +429,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLBuilder.g:116:5: ^( WHILE condition block )
+                    // GCLBuilder.g:118:5: ^( WHILE condition block )
                     {
                     match(input,WHILE,FOLLOW_WHILE_in_statement164); 
 
@@ -462,7 +464,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLBuilder.g:127:5: ^( UNTIL condition block )
+                    // GCLBuilder.g:129:5: ^( UNTIL condition block )
                     {
                     match(input,UNTIL,FOLLOW_UNTIL_in_statement181); 
 
@@ -498,7 +500,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLBuilder.g:139:5: ^( DO block condition )
+                    // GCLBuilder.g:141:5: ^( DO block condition )
                     {
                     match(input,DO,FOLLOW_DO_in_statement198); 
 
@@ -534,17 +536,19 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLBuilder.g:151:5: ^( TRY block ( block )? )
+                    // GCLBuilder.g:153:5: ^( TRY block ( block )? )
                     {
                     match(input,TRY,FOLLOW_TRY_in_statement215); 
 
                      
+                        	debug("TRY STARTS HERE");
                     		newState = builder.newState(); 
                     		builder.copyInitializedVariables(start, newState);
                     		builder.copyInitializedVariables(start, end);
                     		builder.restore(start, newState); 
                     		fail = builder.addElse(); 
                     		builder.restore(start, end);
+                    		debug("TRY PART ENDS HERE");
                     	
 
                     match(input, Token.DOWN, null); 
@@ -554,11 +558,13 @@ public class GCLBuilder extends TreeParser {
                     state._fsp--;
 
                     
+                    		debug("BLOCK STARTS HERE ");
                     		builder.fail(start, fail);
                     		builder.restore(newState, end); 
                     		boolean block = false;
+                    		debug("BLOCK ENDS HERE");
                     	
-                    // GCLBuilder.g:163:4: ( block )?
+                    // GCLBuilder.g:169:4: ( block )?
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -567,7 +573,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     switch (alt3) {
                         case 1 :
-                            // GCLBuilder.g:163:6: block
+                            // GCLBuilder.g:169:6: block
                             {
                             pushFollow(FOLLOW_block_in_statement229);
                             block();
@@ -575,7 +581,9 @@ public class GCLBuilder extends TreeParser {
                             state._fsp--;
 
                             
+                            		debug("BLOCK2 STARTS HERE");
                             		block = true;
+                            		debug("BLOCK2 ENDS HERE");
                             	
 
                             }
@@ -584,12 +592,14 @@ public class GCLBuilder extends TreeParser {
                     }
 
                     
+                    		debug("TRY PART 2 STARTS HERE");
                     		if (!block) {
                     			builder.merge(); 
                     			builder.tagDelta(start);
                     		} else {
                     			builder.initCopy(newState, start);
                     		}
+                    		debug("TRY ENDS HERE");
                     	
 
                     match(input, Token.UP, null); 
@@ -597,7 +607,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLBuilder.g:173:5: ^( IF condition block ( block )? )
+                    // GCLBuilder.g:183:5: ^( IF condition block ( block )? )
                     {
                     match(input,IF,FOLLOW_IF_in_statement244); 
 
@@ -628,7 +638,7 @@ public class GCLBuilder extends TreeParser {
                     		builder.restore(newState,end); 
                     		boolean block = false;
                     	
-                    // GCLBuilder.g:185:4: ( block )?
+                    // GCLBuilder.g:195:4: ( block )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -637,7 +647,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     switch (alt4) {
                         case 1 :
-                            // GCLBuilder.g:185:6: block
+                            // GCLBuilder.g:195:6: block
                             {
                             pushFollow(FOLLOW_block_in_statement258);
                             block();
@@ -667,12 +677,12 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLBuilder.g:195:5: ^( CHOICE ( block )+ )
+                    // GCLBuilder.g:205:5: ^( CHOICE ( block )+ )
                     {
                     match(input,CHOICE,FOLLOW_CHOICE_in_statement272); 
 
                     match(input, Token.DOWN, null); 
-                    // GCLBuilder.g:195:14: ( block )+
+                    // GCLBuilder.g:205:14: ( block )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -686,7 +696,7 @@ public class GCLBuilder extends TreeParser {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // GCLBuilder.g:195:16: block
+                    	    // GCLBuilder.g:205:16: block
                     	    {
                     	     
                     	    		newState = builder.newState(); 
@@ -721,7 +731,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLBuilder.g:203:7: expression
+                    // GCLBuilder.g:213:7: expression
                     {
                     pushFollow(FOLLOW_expression_in_statement288);
                     expression();
@@ -732,7 +742,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 9 :
-                    // GCLBuilder.g:204:4: var_declaration
+                    // GCLBuilder.g:214:4: var_declaration
                     {
                     pushFollow(FOLLOW_var_declaration_in_statement293);
                     var_declaration();
@@ -757,7 +767,7 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start expression
-    // GCLBuilder.g:206:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ( parameter )* ) | TRUE | OTHER | ANY | rule );
+    // GCLBuilder.g:216:1: expression : ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ( parameter )* ) | TRUE | OTHER | ANY | rule );
     public final void expression() throws RecognitionException {
         CommonTree IDENTIFIER1=null;
 
@@ -769,7 +779,7 @@ public class GCLBuilder extends TreeParser {
         	parameters.clear();
 
         try {
-            // GCLBuilder.g:213:3: ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ( parameter )* ) | TRUE | OTHER | ANY | rule )
+            // GCLBuilder.g:223:3: ( ^( OR expression expression ) | ^( PLUS expression expression ) | ^( STAR expression ) | ^( SHARP expression ) | ^( CALL IDENTIFIER ( parameter )* ) | TRUE | OTHER | ANY | rule )
             int alt8=9;
             switch ( input.LA(1) ) {
             case OR:
@@ -826,7 +836,7 @@ public class GCLBuilder extends TreeParser {
 
             switch (alt8) {
                 case 1 :
-                    // GCLBuilder.g:213:5: ^( OR expression expression )
+                    // GCLBuilder.g:223:5: ^( OR expression expression )
                     {
                     match(input,OR,FOLLOW_OR_in_expression307); 
 
@@ -850,7 +860,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLBuilder.g:216:5: ^( PLUS expression expression )
+                    // GCLBuilder.g:226:5: ^( PLUS expression expression )
                     {
                     match(input,PLUS,FOLLOW_PLUS_in_expression321); 
 
@@ -874,7 +884,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLBuilder.g:219:5: ^( STAR expression )
+                    // GCLBuilder.g:229:5: ^( STAR expression )
                     {
                     match(input,STAR,FOLLOW_STAR_in_expression334); 
 
@@ -902,7 +912,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLBuilder.g:229:5: ^( SHARP expression )
+                    // GCLBuilder.g:239:5: ^( SHARP expression )
                     {
                     match(input,SHARP,FOLLOW_SHARP_in_expression347); 
 
@@ -926,13 +936,13 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLBuilder.g:235:5: ^( CALL IDENTIFIER ( parameter )* )
+                    // GCLBuilder.g:245:5: ^( CALL IDENTIFIER ( parameter )* )
                     {
                     match(input,CALL,FOLLOW_CALL_in_expression360); 
 
                     match(input, Token.DOWN, null); 
                     IDENTIFIER1=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_expression362); 
-                    // GCLBuilder.g:235:23: ( parameter )*
+                    // GCLBuilder.g:245:23: ( parameter )*
                     loop7:
                     do {
                         int alt7=2;
@@ -945,7 +955,7 @@ public class GCLBuilder extends TreeParser {
 
                         switch (alt7) {
                     	case 1 :
-                    	    // GCLBuilder.g:235:23: parameter
+                    	    // GCLBuilder.g:245:23: parameter
                     	    {
                     	    pushFollow(FOLLOW_parameter_in_expression364);
                     	    parameter();
@@ -974,13 +984,14 @@ public class GCLBuilder extends TreeParser {
                     				ct.addParameter(parameter.first(), parameter.second()); 
                     				ct.setRule(builder.getRule((IDENTIFIER1!=null?IDENTIFIER1.getText():null)));
                     			}
+                    			currentTransition = ct;
                     		}
                     	
 
                     }
                     break;
                 case 6 :
-                    // GCLBuilder.g:248:5: TRUE
+                    // GCLBuilder.g:259:5: TRUE
                     {
                     match(input,TRUE,FOLLOW_TRUE_in_expression374); 
                      
@@ -991,7 +1002,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLBuilder.g:252:5: OTHER
+                    // GCLBuilder.g:263:5: OTHER
                     {
                     match(input,OTHER,FOLLOW_OTHER_in_expression382); 
                      
@@ -1001,7 +1012,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLBuilder.g:255:5: ANY
+                    // GCLBuilder.g:266:5: ANY
                     {
                     match(input,ANY,FOLLOW_ANY_in_expression390); 
                      
@@ -1011,7 +1022,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 9 :
-                    // GCLBuilder.g:258:5: rule
+                    // GCLBuilder.g:269:5: rule
                     {
                     pushFollow(FOLLOW_rule_in_expression398);
                     rule();
@@ -1036,11 +1047,11 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start condition
-    // GCLBuilder.g:261:1: condition : expression ;
+    // GCLBuilder.g:272:1: condition : expression ;
     public final void condition() throws RecognitionException {
         try {
-            // GCLBuilder.g:262:3: ( expression )
-            // GCLBuilder.g:262:5: expression
+            // GCLBuilder.g:273:3: ( expression )
+            // GCLBuilder.g:273:5: expression
             {
             pushFollow(FOLLOW_expression_in_condition413);
             expression();
@@ -1063,13 +1074,13 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start rule
-    // GCLBuilder.g:265:1: rule : IDENTIFIER ;
+    // GCLBuilder.g:276:1: rule : IDENTIFIER ;
     public final void rule() throws RecognitionException {
         CommonTree IDENTIFIER2=null;
 
         try {
-            // GCLBuilder.g:266:3: ( IDENTIFIER )
-            // GCLBuilder.g:266:5: IDENTIFIER
+            // GCLBuilder.g:277:3: ( IDENTIFIER )
+            // GCLBuilder.g:277:5: IDENTIFIER
             {
             IDENTIFIER2=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule426); 
              builder.addTransition((IDENTIFIER2!=null?IDENTIFIER2.getText():null)); 
@@ -1089,11 +1100,11 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start var_declaration
-    // GCLBuilder.g:270:1: var_declaration : ^( VAR var_type IDENTIFIER ) ;
+    // GCLBuilder.g:281:1: var_declaration : ^( VAR var_type IDENTIFIER ) ;
     public final void var_declaration() throws RecognitionException {
         try {
-            // GCLBuilder.g:271:3: ( ^( VAR var_type IDENTIFIER ) )
-            // GCLBuilder.g:271:5: ^( VAR var_type IDENTIFIER )
+            // GCLBuilder.g:282:3: ( ^( VAR var_type IDENTIFIER ) )
+            // GCLBuilder.g:282:5: ^( VAR var_type IDENTIFIER )
             {
             match(input,VAR,FOLLOW_VAR_in_var_declaration444); 
 
@@ -1123,11 +1134,11 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start var_type
-    // GCLBuilder.g:274:1: var_type : NODE_TYPE ;
+    // GCLBuilder.g:285:1: var_type : NODE_TYPE ;
     public final void var_type() throws RecognitionException {
         try {
-            // GCLBuilder.g:275:3: ( NODE_TYPE )
-            // GCLBuilder.g:275:5: NODE_TYPE
+            // GCLBuilder.g:286:3: ( NODE_TYPE )
+            // GCLBuilder.g:286:5: NODE_TYPE
             {
             match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type466); 
 
@@ -1146,13 +1157,13 @@ public class GCLBuilder extends TreeParser {
 
 
     // $ANTLR start parameter
-    // GCLBuilder.g:277:1: parameter : ( ^( PARAM OUT IDENTIFIER ) | ^( PARAM IDENTIFIER ) | ^( PARAM DONT_CARE ) );
+    // GCLBuilder.g:288:1: parameter : ( ^( PARAM OUT IDENTIFIER ) | ^( PARAM IDENTIFIER ) | ^( PARAM DONT_CARE ) );
     public final void parameter() throws RecognitionException {
         CommonTree IDENTIFIER3=null;
         CommonTree IDENTIFIER4=null;
 
         try {
-            // GCLBuilder.g:278:3: ( ^( PARAM OUT IDENTIFIER ) | ^( PARAM IDENTIFIER ) | ^( PARAM DONT_CARE ) )
+            // GCLBuilder.g:289:3: ( ^( PARAM OUT IDENTIFIER ) | ^( PARAM IDENTIFIER ) | ^( PARAM DONT_CARE ) )
             int alt9=3;
             int LA9_0 = input.LA(1);
 
@@ -1199,7 +1210,7 @@ public class GCLBuilder extends TreeParser {
             }
             switch (alt9) {
                 case 1 :
-                    // GCLBuilder.g:278:5: ^( PARAM OUT IDENTIFIER )
+                    // GCLBuilder.g:289:5: ^( PARAM OUT IDENTIFIER )
                     {
                     match(input,PARAM,FOLLOW_PARAM_in_parameter479); 
 
@@ -1216,7 +1227,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLBuilder.g:282:5: ^( PARAM IDENTIFIER )
+                    // GCLBuilder.g:293:5: ^( PARAM IDENTIFIER )
                     {
                     match(input,PARAM,FOLLOW_PARAM_in_parameter493); 
 
@@ -1231,7 +1242,7 @@ public class GCLBuilder extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLBuilder.g:285:5: ^( PARAM DONT_CARE )
+                    // GCLBuilder.g:296:5: ^( PARAM DONT_CARE )
                     {
                     match(input,PARAM,FOLLOW_PARAM_in_parameter505); 
 
