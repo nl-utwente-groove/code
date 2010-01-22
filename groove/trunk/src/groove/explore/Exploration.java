@@ -17,9 +17,7 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
-import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
-import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -27,31 +25,17 @@ import groove.util.Reporter;
 
 /**
  * Wrapper class that handles the execution of an exploration.
- * An exploration is given by a combination of a strategy, an acceptor and a result.
- * 
- * Implements the following public methods:
- * - prepare                - prepare stored strategy for exploration
- * - play                   - run the exploration
- * - clearResult            - clears the Result set that is stored on the acceptor
- * - isInterrupted          - checks whether the LaunchThread has been interrupted during play()
- * - getAcceptor            - returns the acceptor of the exploration
- * - getAcceptorKeyword     - returns the keyword of the acceptor
- * - getRunningTime         - returns the total running time of the exploration
- * - getResult              - returns the result of the exploration (which is stored on the acceptor)
- * - getShortName           - returns a short String identification of the exploration
- * - getStrategyKeyword     - returns the keyword of the strategy
- * - respondToGrammarChange - updates the exploration when the grammar changes
- *
+ * An exploration is given by a combination of a documented strategy, a
+ * documented acceptor and a result.
+
  * @author Maarten de Mol
  * @version $Revision $
  */
 public class Exploration {
-    private Strategy strategy;
-    private String strategyKeyword;
-    private String strategyArgumentValues;
-    private Acceptor acceptor;
-    private String acceptorKeyword;
-    private String acceptorArgumentValues;
+    private Documented<Strategy> docStrategy;
+    private Documented<Acceptor> docAcceptor;
+    private Strategy strategy; // link into docStrategy
+    private Acceptor acceptor; // link into docAcceptor
     private boolean interrupted;
 
     static private final Reporter reporter =
@@ -59,36 +43,33 @@ public class Exploration {
     static private final int RUNNING = reporter.newMethod("playScenario()");
 
     /**
-     * Initialize an exploration by storing a strategy and an acceptor in the local
-     * variables. The result is stored (set) within the acceptor. 
+     * Initialize an exploration. Expects that getObject returns non-null,
+     * both for the strategy and the acceptor. 
      * @param strategy  - strategy component of the exploration
-     * @param strategyKeyword - keyword of the the strategy component
      * @param acceptor  - acceptor component of the exploration
-     * @param acceptorKeyword - keyword of the acceptor component
      * @param result    - result   component of the exploration
      */
-    public Exploration(Strategy strategy, String strategyKeyword,
-            String strategyArgumentValues, Acceptor acceptor,
-            String acceptorKeyword, String acceptorArgumentValues, Result result) {
-        this.strategy = strategy;
-        this.strategyKeyword = strategyKeyword;
-        this.strategyArgumentValues = strategyArgumentValues;
-        this.acceptor = acceptor;
-        this.acceptorKeyword = acceptorKeyword;
-        this.acceptorArgumentValues = acceptorArgumentValues;
+    public Exploration(Documented<Strategy> strategy,
+            Documented<Acceptor> acceptor, Result result) {
+        this.docStrategy = strategy;
+        this.strategy = this.docStrategy.getObject();
+        this.docAcceptor = acceptor;
+        this.acceptor = this.docAcceptor.getObject();
         this.acceptor.setResult(result);
     }
 
     /**
-     * Initializes a default exploration (breadth-first, final states, infinite results).
+     * Initializes a default exploration (breadth-first, final states,
+     * infinite results).
      */
     public Exploration() {
-        this(new BFSStrategy(), "Breadth-First", "", new FinalStateAcceptor(),
-            "Final", "", new Result(0));
+        this((new StrategyEnumerator()).findByKeyword("Breadth-First"),
+            (new AcceptorEnumerator()).findByKeyword("Final"), new Result(0));
     }
 
     /**
-     * Prepares the strategy for exploration. Can be called when no state is currently selected. 
+     * Prepares the strategy for exploration. Can be called when no state is
+     * currently selected. 
      * @param gts - the current gts
      */
     public void prepare(GTS gts) {
@@ -107,7 +88,8 @@ public class Exploration {
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.
-     * @return the set of results that have been stored within the acceptor during exploration
+     * @return the set of results that have been stored within the acceptor
+     * during exploration
      */
     public Result play() {
 
@@ -131,8 +113,8 @@ public class Exploration {
     }
 
     /**
-     * Clears the Result set that is stored on the acceptor, which enables an earlier
-     * performed exploration to be run again.
+     * Clears the Result set that is stored on the acceptor, which enables an
+     * earlier performed exploration to be run again.
      */
     public void clearResult() {
         this.acceptor.setResult(this.acceptor.getResult().newInstance());
@@ -147,19 +129,11 @@ public class Exploration {
     }
 
     /**
-     * Getter for the acceptor.
-     * @return the acceptor of the exploration
+     * Getter for the documented acceptor.
+     * @return the documented acceptor of the exploration
      */
-    public Acceptor getAcceptor() {
-        return this.acceptor;
-    }
-
-    /**
-     * Getter for the acceptor keyword.
-     * @return the keyword of the acceptor of the exploration
-     */
-    public String getAcceptorKeyword() {
-        return this.acceptorKeyword;
+    public Documented<Acceptor> getAcceptor() {
+        return this.docAcceptor;
     }
 
     /** 
@@ -180,8 +154,8 @@ public class Exploration {
     }
 
     /**
-     * Returns a short String identification of the exploration, which is constructed
-     * out of the stored keywords and the bound of the Result. 
+     * Returns a short String identification of the exploration, which is
+     * constructed out of the stored documentation and the bound of the Result. 
      */
     public String getShortName() {
         String resultName;
@@ -191,15 +165,20 @@ public class Exploration {
             resultName = Integer.toString(getResult().getBound());
         }
 
-        return (this.getStrategyKeyword() + this.strategyArgumentValues + "/"
-            + this.getAcceptorKeyword() + this.acceptorArgumentValues + "/" + resultName);
+        String strategyArgs = this.docStrategy.getArgumentValues();
+        String acceptorArgs = this.docAcceptor.getArgumentValues();
+
+        return (this.docStrategy.getKeyword()
+            + ((strategyArgs == null) ? "" : " (" + strategyArgs + ")") + "/"
+            + this.docAcceptor.getKeyword()
+            + ((acceptorArgs == null) ? "" : " (" + acceptorArgs + ")") + "/" + resultName);
     }
 
     /**
-     * Getter for the strategy keyword.
-     * @return the keyword of the strategy of the exploration
+     * Getter for the documented strategy.
+     * @return the documented strategy of the exploration
      */
-    public String getStrategyKeyword() {
-        return this.strategyKeyword;
+    public Documented<Strategy> getStrategy() {
+        return this.docStrategy;
     }
 }

@@ -30,14 +30,12 @@ import javax.swing.JPanel;
  * 
  */
 public class Documented<A> {
-    /**
-     * The internally stored object. May be changed by subclasses.
-     */
-    protected A object;
-
+    private A object;
     private String keyword;
     private String name;
     private String explanation;
+    @SuppressWarnings("unused")
+    private String commandLine; // for use in getObject (when overridden)
 
     /**
      * Default constructor. Creates a static instance that does not require
@@ -53,14 +51,13 @@ public class Documented<A> {
         this.keyword = keyword;
         this.name = name;
         this.explanation = explanation;
+        this.commandLine = null;
     }
 
     /**
      * Returns a JPanel in which the user can select the values for additional
-     * arguments. When this happens, the panel should (re-)set the object.
-     * Returns null if the object does not require additional arguments.
-     * 
-     * This method must be overridden if additional arguments are required.
+     * arguments. This method must be overridden if additional arguments are
+     * required.
      * 
      * @return a JPanel, possibly null
      */
@@ -69,15 +66,9 @@ public class Documented<A> {
     }
 
     /**
-     * Sets the object value, using the command line to obtain the values of
-     * additional arguments. Default implementation does nothing. Must be
-     * overridden if additional arguments can be parsed from the command line.
-     */
-    public void parseCommandLine(String commandLineArgument) {
-        // Default action does nothing.
-    }
-
-    /**
+     * This method must be overridden if additional arguments are
+     * required. In that case, either the GUI (the argument panel) or the
+     * command line should be checked for the additional arguments.
      * @return the stored object
      */
     public A getObject() {
@@ -107,9 +98,18 @@ public class Documented<A> {
 
     /**
      * @return a serialized representation of the argument values
+     * This method returns null if the object does not have arguments.
      * This method must be overridden if additional arguments are required.
      */
     public String getArgumentValues() {
-        return new String("");
+        return null;
+    }
+
+    /**
+     * Sets the command line.
+     * @commandLine representation of command line
+     */
+    public void setCommandLine(String commandLine) {
+        this.commandLine = commandLine;
     }
 }
