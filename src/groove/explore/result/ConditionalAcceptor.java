@@ -58,12 +58,12 @@ public abstract class ConditionalAcceptor<C> extends Acceptor {
     public void setCondition(ExploreCondition<C> condition) {
         this.condition = condition;
     }
-    
+
     @Override
     public abstract Acceptor newInstance();
 
     /** The pre-set condition. */
-    protected ExploreCondition<C> getCondition() {
+    public ExploreCondition<C> getCondition() {
         return this.condition;
     }
 

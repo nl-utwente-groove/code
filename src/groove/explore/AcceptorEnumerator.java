@@ -21,6 +21,7 @@ import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
+import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.RuleApplicationAcceptor;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
@@ -28,8 +29,6 @@ import groove.trans.Rule;
 import groove.trans.RuleName;
 
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -82,24 +81,28 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
      * created argument panel, or by parsing a command line argument.
      * (the latter is not implemented yet). 
      */
-    private class AcceptorRequiringRule extends Documented<Acceptor> implements
-            ActionListener {
+    private class AcceptorRequiringRule extends Documented<Acceptor> {
 
         private boolean mayBeNegated;
         private JPanel argumentPanel;
+        private Simulator simulator;
+        private ConditionalAcceptor<Rule> acceptor;
 
         private String POSITIVE = "Positive (stop when rule is applicable)";
         private String NEGATIVE = "Negative (stop when rule is not applicable)";
 
-        private Rule selectedRule;
-        private Boolean selectedMode;
+        private JComboBox ruleSelector;
+        private JComboBox modeSelector;
+        private RuleName[] ruleNames;
 
         public AcceptorRequiringRule(String keyword, String name,
                 String explanation, boolean mayBeNegated,
                 ConditionalAcceptor<Rule> acceptor) {
-            super(acceptor, keyword, name, explanation);
+            super(null, keyword, name, explanation);
             this.mayBeNegated = mayBeNegated;
             this.argumentPanel = null;
+            this.simulator = null;
+            this.acceptor = acceptor;
         }
 
         @Override
@@ -108,39 +111,56 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
                 return this.argumentPanel;
             }
 
-            JComboBox ruleSelector = new JComboBox();
-            ruleSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+            /*
+            ExploreCondition<Rule> prevCondition = null;
+            Acceptor prevAcceptor =
+                simulator.getDefaultExploration().getAcceptor().getObject();
+            if (prevAcceptor.getClass() == this.acceptor.getClass()) {
+                prevCondition =
+                    ((ConditionalAcceptor<Rule>) prevAcceptor).getCondition();
+            }
+            */
+
+            this.ruleSelector = new JComboBox();
+            this.ruleSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
             Set<RuleName> ruleSet = simulator.getGrammarView().getRuleNames();
+            this.ruleNames = new RuleName[ruleSet.size()];
+            Integer index = 0;
             for (RuleName name : ruleSet) {
                 if (simulator.getGrammarView().getRuleView(name).isEnabled()) {
-                    ruleSelector.addItem("<HTML><FONT color="
+                    this.ruleSelector.addItem("<HTML><FONT color="
                         + ExplorationDialog.INFO_COLOR + ">" + name
                         + "</FONT></HTML>");
+                    this.ruleNames[index] = name;
+                    index++;
                 }
             }
-            ruleSelector.addActionListener(this);
 
-            JComboBox modeSelector = new JComboBox();
-            modeSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
-            modeSelector.setBorder(BorderFactory.createEmptyBorder());
-            modeSelector.addItem("<HTML><FONT color="
+            this.modeSelector = new JComboBox();
+            this.modeSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+            this.modeSelector.setBorder(BorderFactory.createEmptyBorder());
+            this.modeSelector.addItem("<HTML><FONT color="
                 + ExplorationDialog.INFO_COLOR + ">" + this.POSITIVE
                 + "</FONT></HTML>");
-            modeSelector.addItem("<HTML><FONT color="
+            this.modeSelector.addItem("<HTML><FONT color="
                 + ExplorationDialog.INFO_COLOR + ">" + this.NEGATIVE
                 + "</FONT></HTML>");
-            modeSelector.addActionListener(this);
+            /*
+            if (prevCondition != null && prevCondition.isNegated()) {
+                this.modeSelector.setSelectedIndex(1);
+            }
+            */
 
             JPanel ruleLine = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             ruleLine.setBackground(ExplorationDialog.INFO_BG_COLOR);
-            ruleLine.add(ruleSelector);
+            ruleLine.add(this.ruleSelector);
             ruleLine.add(new JLabel("<HTML><FONT color="
                 + ExplorationDialog.INFO_COLOR
                 + "><B>&nbsp(Rule)</B></FONT></HTML>"));
 
             JPanel modeLine = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             modeLine.setBackground(ExplorationDialog.INFO_BG_COLOR);
-            modeLine.add(modeSelector);
+            modeLine.add(this.modeSelector);
             modeLine.add(new JLabel("<HTML><FONT color="
                 + ExplorationDialog.INFO_COLOR
                 + "><B>&nbsp(Mode)</B></FONT></HTML>"));
@@ -152,42 +172,34 @@ public class AcceptorEnumerator extends Enumerator<Acceptor> {
             if (this.mayBeNegated) {
                 this.argumentPanel.add(modeLine);
             }
+
+            this.simulator = simulator;
             return this.argumentPanel;
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            // TODO Auto-generated method stub
-
-        }
-
-        /*
-        @Override
         public Acceptor getObject() {
-            IsRuleApplicableCondition condition =
-                new IsRuleApplicableCondition(this.selectedRule, this.selectedMode);
-            this.object).setCondition(condition);
-            return this.object;
-        }
-        */
+            RuleName ruleName =
+                this.ruleNames[this.ruleSelector.getSelectedIndex()];
+            Rule rule = this.simulator.getGTS().getGrammar().getRule(ruleName);
+            Boolean negated = this.modeSelector.getSelectedIndex() == 1;
 
-        /*
+            IsRuleApplicableCondition condition =
+                new IsRuleApplicableCondition(rule, negated);
+            this.acceptor.setCondition(condition);
+            return this.acceptor;
+        }
+
         @Override
-        public Acceptor queryUser(Simulator simulator, Component owner) {
-            RuleSelectionDialog dialog =
-                new RuleSelectionDialog(simulator, owner, this.mayBeNegated);
-            if (dialog.wasCanceled()) {
-                return null;
+        public String getArgumentValues() {
+            RuleName ruleName =
+                this.ruleNames[this.ruleSelector.getSelectedIndex()];
+            Boolean negated = this.modeSelector.getSelectedIndex() == 1;
+            if (negated) {
+                return "~" + ruleName;
             } else {
-                Rule rule = dialog.getSelectedRule();
-                boolean isNegated = dialog.isNegated();
-                dialog.dispose();
-                IsRuleApplicableCondition condition =
-                    new IsRuleApplicableCondition(rule, isNegated);
-                this.acceptor.setCondition(condition);
-                return this.acceptor;
+                return "" + ruleName;
             }
         }
-        */
     }
 }

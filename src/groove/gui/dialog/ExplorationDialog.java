@@ -172,24 +172,23 @@ public class ExplorationDialog extends JDialog implements ActionListener {
 
         // Create the panel that holds the strategy and acceptor selectors.
         JPanel selectors = new JPanel(new SpringLayout());
+        Exploration defExpl = this.simulator.getDefaultExploration();
         this.strategySelector =
             new DocumentedSelection<Strategy>("exploration strategy",
                 this.STRATEGY_TOOLTIP, new StrategyEnumerator(),
-                this.simulator.getDefaultExploration().getStrategyKeyword(),
-                this.simulator);
+                defExpl.getStrategy().getKeyword(), this.simulator);
         selectors.add(this.strategySelector);
         this.acceptorSelector =
             new DocumentedSelection<Acceptor>("acceptor",
                 this.ACCEPTOR_TOOLTIP, new AcceptorEnumerator(),
-                this.simulator.getDefaultExploration().getAcceptorKeyword(),
-                this.simulator);
+                defExpl.getAcceptor().getKeyword(), this.simulator);
         selectors.add(this.acceptorSelector);
         SpringUtilities.makeCompactGrid(selectors, 1, 2, 0, 0, 15, 0);
 
         // Create the panel that holds the result selector.
         this.resultSelector =
             new ResultSelection(this.RESULT_TOOLTIP,
-                this.simulator.getDefaultExploration().getResult().getBound());
+                defExpl.getResult().getBound());
 
         // Add all panels to the dialogContrent.
         dialogContent.add(selectors);
@@ -219,23 +218,17 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     // NOTE: simulator.doRunExploration will remember the exploration as the
     // default for the next explore.
     private void doExploration() {
-        Strategy strategy =
-            this.strategySelector.getSelectedValue().getObject();
-        Acceptor acceptor =
-            this.acceptorSelector.getSelectedValue().getObject();
+        Documented<Strategy> strategy =
+            this.strategySelector.getSelectedValue();
+        Documented<Acceptor> acceptor =
+            this.acceptorSelector.getSelectedValue();
         Integer nrResults = this.resultSelector.getSelectedValue();
         if (strategy == null || acceptor == null || nrResults == null) {
             return;
         }
 
         Exploration exploration =
-            new Exploration(strategy,
-                this.strategySelector.getSelectedValue().getKeyword(),
-                this.strategySelector.getSelectedValue().getArgumentValues(),
-                acceptor,
-                this.acceptorSelector.getSelectedValue().getKeyword(),
-                this.acceptorSelector.getSelectedValue().getArgumentValues(),
-                new Result(nrResults));
+            new Exploration(strategy, acceptor, new Result(nrResults));
         closeDialog();
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
         this.simulator.doRunExploration(exploration);
