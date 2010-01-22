@@ -21,6 +21,7 @@ import groove.control.parse.AutomatonBuilder;
 import groove.control.parse.Counter;
 import groove.control.parse.GCLBuilder;
 import groove.control.parse.GCLChecker;
+import groove.control.parse.GCLDeterminismChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
 import groove.trans.GraphGrammar;
@@ -123,6 +124,27 @@ public class ControlView {
             // fetch checker tree (since it was edited)
             nodes = new CommonTreeNodeStream(c_r.getTree());
 
+            GCLDeterminismChecker determinismChecker = new GCLDeterminismChecker(nodes);
+            determinismChecker.setNamespace(builder);
+            GCLDeterminismChecker.program_return dc_r = determinismChecker.program();
+           
+            errors = determinismChecker.getErrors();
+            if (errors.size() != 0) {
+                errors.add(0, "Encountered determinism checker errors in control program");
+                throw new FormatException(errors);
+            }
+
+            if (DEBUG) {
+                ASTFrame frame =
+                    new ASTFrame("determinism checker result",
+                        (org.antlr.runtime.tree.CommonTree) dc_r.getTree());
+                frame.setSize(500, 1000);
+                frame.setVisible(true);
+            }
+ 
+            nodes = new CommonTreeNodeStream(dc_r.getTree());
+            
+            
             GCLBuilder gclb = new GCLBuilder(nodes);
             gclb.setBuilder(builder);
             gclb.setName(getName());

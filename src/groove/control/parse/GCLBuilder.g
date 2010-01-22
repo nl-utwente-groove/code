@@ -44,9 +44,11 @@ import groove.graph.GraphInfo;
     
     private void debug(String msg) {
     	if (builder.usesVariables()) {
-    		System.err.println("Variables debug (GCLBuilder): "+msg);
+    		//System.err.println("Variables debug (GCLBuilder): "+msg);
     	}
     }
+    
+    ControlTransition currentTransition;
 }
 
 program returns [ControlAutomaton aut=null] 
@@ -150,25 +152,33 @@ statement
 	}
 ) | ^(TRY
     { 
+    	debug("TRY STARTS HERE");
 		newState = builder.newState(); 
 		builder.copyInitializedVariables(start, newState);
 		builder.copyInitializedVariables(start, end);
 		builder.restore(start, newState); 
 		fail = builder.addElse(); 
 		builder.restore(start, end);
+		debug("TRY PART ENDS HERE");
 	} block {
+		debug("BLOCK STARTS HERE ");
 		builder.fail(start, fail);
 		builder.restore(newState, end); 
 		boolean block = false;
+		debug("BLOCK ENDS HERE");
 	} ( block {
+		debug("BLOCK2 STARTS HERE");
 		block = true;
+		debug("BLOCK2 ENDS HERE");
 	} )? {
+		debug("TRY PART 2 STARTS HERE");
 		if (!block) {
 			builder.merge(); 
 			builder.tagDelta(start);
 		} else {
 			builder.initCopy(newState, start);
 		}
+		debug("TRY ENDS HERE");
 	} 
 ) |	^(IF { 
 		newState = builder.newState(); 
@@ -243,6 +253,7 @@ expression
 				ct.addParameter(parameter.first(), parameter.second()); 
 				ct.setRule(builder.getRule($IDENTIFIER.text));
 			}
+			currentTransition = ct;
 		}
 	}
   | TRUE { 
