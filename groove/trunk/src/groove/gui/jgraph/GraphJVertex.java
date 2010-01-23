@@ -25,6 +25,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -99,7 +100,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (isFiltered()) {
             result =
                 this.jModel.isShowUnfilteredEdges() && hasVisibleIncidentEdge();
-        } else if (hasValue() || isDataNode()) {
+        } else if (isDataNode() || isDataTypeNode()) {
             result = hasVisibleIncidentEdge();
         } else {
             result = true;
@@ -152,10 +153,12 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         return result;
     }
 
-    /** Constant nodes are only listable when data nodes are shown. */
+    /** Constant and type nodes are only listable when data nodes are shown. */
     @Override
     public boolean isListable() {
-        return !hasValue() || this.jModel.isShowValueNodes();
+        boolean result =
+            this.jModel.isShowValueNodes() || !hasValue() || !isDataTypeNode();
+        return result;
     }
 
     /** This implementation adds the data edges to the super result. */
@@ -224,10 +227,17 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         } else {
             result.append(edgeLabel);
             if (edge.opposite() != getNode()) {
+                // this is a binary edge displayed as a node label
                 GraphJVertex oppositeVertex =
                     this.jModel.getJVertex(edge.opposite());
-                result.append(ASSIGN_TEXT);
-                result.append(oppositeVertex.getValueLabel());
+                Node actualTarget = oppositeVertex.getActualNode();
+                if (actualTarget instanceof ValueNode) {
+                    result.append(ASSIGN_TEXT);
+                    result.append(((ValueNode) actualTarget).getValue());
+                } else {
+                    result.append(TYPE_TEXT);
+                    result.append(((TypeNode) actualTarget).getType());
+                }
             }
             result = Converter.toHtml(result);
         }
@@ -387,6 +397,15 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
+     * Callback method to determine whether the underlying graph node is data
+     * attribute-related.
+     */
+    boolean isDataTypeNode() {
+        return getActualNode() instanceof TypeNode
+            && DefaultLabel.isDataType(((TypeNode) getActualNode()).getType());
+    }
+
+    /**
      * @return true if this node is a value node, false otherwise.
      */
     public boolean isValueNode() {
@@ -509,4 +528,5 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     private final Node node;
 
     static private final String ASSIGN_TEXT = " = ";
+    static private final String TYPE_TEXT = ": ";
 }

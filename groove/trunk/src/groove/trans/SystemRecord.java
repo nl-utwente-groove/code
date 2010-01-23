@@ -163,7 +163,7 @@ public class SystemRecord implements NodeFactory {
         int result = 0;
         for (Node node : graph.nodeSet()) {
             if (node.getClass() == DefaultNode.class) {
-                result = Math.max(result, ((DefaultNode) node).getNumber());
+                result = Math.max(result, node.getNumber());
             }
         }
         return result;

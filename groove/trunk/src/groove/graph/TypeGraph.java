@@ -40,6 +40,18 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class TypeGraph extends NodeSetEdgeSetGraph {
+    @Override
+    public boolean addNode(Node node) {
+        assert node instanceof TypeNode;
+        return super.addNode(node);
+    }
+
+    /** @throw UnsupportedOperationException always */
+    @Override
+    public Node addNode() {
+        throw new UnsupportedOperationException();
+    }
+
     /** Adds the label as well as the edge. */
     @Override
     public BinaryEdge addEdge(Node source, Label label, Node target) {
@@ -288,16 +300,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
 
     /** Returns the unique node type label of a given node. */
     private Label getType(Node node) {
-        Label result = null;
-        Set<? extends Edge> edgeSet = nodeEdgeMap().get(node);
-        for (Edge edge : edgeSet) {
-            Label label = edge.label();
-            if (label.isNodeType()) {
-                result = label;
-                break;
-            }
-        }
-        return result;
+        return ((TypeNode) node).getType();
     }
 
     /** Checks if the graph satisfies the properties of a type graph. */

@@ -28,8 +28,6 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.layout.LayoutMap;
-import groove.lts.AbstractGraphState;
-import groove.lts.State;
 
 import java.awt.Color;
 import java.io.BufferedReader;
@@ -90,12 +88,7 @@ public class Converter {
         Set<Node> restNodes = new NodeSet();
         // iterate over the existing nodes
         for (Node node : graph.nodeSet()) {
-            int nodeNr = -1;
-            if ((node instanceof DefaultNode)) {
-                nodeNr = ((DefaultNode) node).getNumber();
-            } else if (node instanceof State) {
-                nodeNr = ((AbstractGraphState) node).getNumber();
-            }
+            int nodeNr = node.getNumber();
             if (nodeNr >= 0 && nodeNr < nodeCount) {
                 nodeList.set(nodeNr);
                 nodeNrMap.put(node, nodeNr);

@@ -16,7 +16,6 @@
  */
 package groove.view;
 
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
@@ -24,6 +23,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
+import groove.graph.TypeNode;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -128,7 +128,7 @@ public class DefaultTypeView implements TypeView {
         // mapping from model nodes to types
         Map<Node,Label> modelTypeMap = new HashMap<Node,Label>();
         // mapping from types to model nodes
-        Map<Label,Node> typeNodeMap = new HashMap<Label,Node>();
+        Map<Label,TypeNode> typeNodeMap = new HashMap<Label,TypeNode>();
         // View-to-model element map
         NodeEdgeMap elementMap = new NodeEdgeHashMap();
         // collect node type edges and build the view type map
@@ -136,10 +136,18 @@ public class DefaultTypeView implements TypeView {
             Label modelLabel = viewEdge.getModelLabel();
             if (modelLabel != null && modelLabel.isNodeType()) {
                 AspectNode viewSource = viewEdge.source();
+                TypeNode oldTypeNode =
+                    (TypeNode) elementMap.getNode(viewSource);
+                if (oldTypeNode != null) {
+                    errors.add(String.format(
+                        "Node '%s' has types '%s' and '%s'", viewSource,
+                        modelLabel, oldTypeNode.getType()));
+                    continue;
+                }
                 viewTypeMap.put(viewSource, modelLabel);
-                Node typeNode = typeNodeMap.get(modelLabel);
+                TypeNode typeNode = typeNodeMap.get(modelLabel);
                 if (typeNode == null) {
-                    typeNode = createModelNode(viewSource);
+                    typeNode = new TypeNode(viewSource.getNumber(), modelLabel);
                     model.addNode(typeNode);
                     typeNodeMap.put(modelLabel, typeNode);
                     modelTypeMap.put(typeNode, modelLabel);
@@ -157,7 +165,7 @@ public class DefaultTypeView implements TypeView {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
-                Node modelNode = createModelNode(viewNode);
+                TypeNode modelNode = new TypeNode(viewNode.getNumber());
                 model.addNode(modelNode);
                 elementMap.putNode(viewNode, modelNode);
             }
@@ -263,10 +271,6 @@ public class DefaultTypeView implements TypeView {
      */
     private boolean isVirtualValue(AspectValue value) {
         return RuleAspect.REMARK.equals(value);
-    }
-
-    private DefaultNode createModelNode(AspectNode viewSource) {
-        return DefaultNode.createNode(viewSource.getNumber());
     }
 
     /** The name of the view. */

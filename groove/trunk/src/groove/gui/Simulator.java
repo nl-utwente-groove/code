@@ -102,7 +102,6 @@ import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1186,7 +1185,7 @@ public class Simulator {
         refresh();
         List<String> grammarErrors = getGrammarView().getErrors();
         boolean grammarCorrect = grammarErrors.isEmpty();
-        getErrorPanel().setErrors(grammarErrors);
+        setErrors(grammarErrors);
         if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
             if (isAbstractSimulation()) {
                 startAbstrSimulation();
@@ -1195,6 +1194,21 @@ public class Simulator {
             }
         }
         this.history.updateLoadGrammar();
+    }
+
+    /**
+     * Displays a list of errors, or hides the error panel if the list is empty.
+     */
+    private void setErrors(List<String> grammarErrors) {
+        getErrorPanel().setErrors(grammarErrors);
+        JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
+        if (getErrorPanel().isVisible()) {
+            contentPane.setBottomComponent(getErrorPanel());
+            contentPane.setDividerSize(5);
+        } else {
+            contentPane.remove(getErrorPanel());
+            contentPane.setDividerSize(0);
+        }
     }
 
     /**
@@ -1398,7 +1412,6 @@ public class Simulator {
                     doQuit();
                 }
             });
-            // frame.setContentPane(splitPane);
             this.frame.setJMenuBar(createMenuBar());
 
             JSplitPane leftPanel =
@@ -1407,11 +1420,7 @@ public class Simulator {
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
-            // Embedded Editor
-            JSplitPane rightPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphViewsPanel(),
-                    getEditorPanel());
-            getEditorPanel().setVisible(false);
+            JComponent rightPanel = getGraphViewsPanel();
 
             // Set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
@@ -1420,10 +1429,14 @@ public class Simulator {
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
                     rightPanel);
 
-            Container contentPane = this.frame.getContentPane();
-            contentPane.setLayout(new BorderLayout());
-            contentPane.add(splitPane);
-            contentPane.add(getErrorPanel(), BorderLayout.SOUTH);
+            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            contentPane.setTopComponent(splitPane);
+            contentPane.setResizeWeight(0.8);
+            contentPane.setDividerSize(0);//, getErrorPanel());
+            this.frame.setContentPane(contentPane);
+            //            contentPane.setLayout(new BorderLayout());
+            //            contentPane.add(splitPane);
+            //            contentPane.add(getErrorPanel(), BorderLayout.SOUTH);
         }
         return this.frame;
     }
@@ -1554,26 +1567,11 @@ public class Simulator {
         return result;
     }
 
-    /**
-     * Creates and returns the panel with the Embedded Editor (mzimakova).
-     */
-    JPanel getEditorPanel() {
-        if (this.editorPanel == null) {
-            // panel for Editor display
-            this.editorPanel = new JPanel(new BorderLayout(), false);
-
-            JScrollPane editorPane =
-                new JScrollPane(/* this.getStateList() */) {
-                    @Override
-                    public Dimension getPreferredSize() {
-                        Dimension superSize = super.getPreferredSize();
-                        return new Dimension((int) superSize.getWidth(),
-                            START_LIST_MINIMUM_HEIGHT);
-                    }
-                };
-            this.editorPanel.add(editorPane, BorderLayout.CENTER);
+    private ErrorListPanel getErrorPanel() {
+        if (this.errorPanel == null) {
+            this.errorPanel = new ErrorListPanel();
         }
-        return this.editorPanel;
+        return this.errorPanel;
     }
 
     /**
@@ -2209,13 +2207,6 @@ public class Simulator {
         return this.exploreStateStrategy;
     }
 
-    private ErrorListPanel getErrorPanel() {
-        if (this.errorPanel == null) {
-            this.errorPanel = new ErrorListPanel();
-        }
-        return this.errorPanel;
-    }
-
     /**
      * Adds all implemented grammar loaders to the menu.
      */
@@ -2794,9 +2785,6 @@ public class Simulator {
 
     /** State display panel. */
     private StatePanel statePanel;
-
-    /** Editor display panel. */
-    private JPanel editorPanel;
 
     /** Control display panel. */
     private ControlPanel controlPanel;
