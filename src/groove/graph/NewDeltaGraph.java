@@ -251,7 +251,8 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
                 backward.initData();
                 while (!basisChain.isEmpty()) {
                     NewDeltaGraph forward = basisChain.pop();
-                    DataTarget target = forward.basis.getDataTarget(basisChain.size());
+                    DataTarget target =
+                        forward.basis.getDataTarget(basisChain.size());
                     // apply the delta to fill the structures
                     forward.delta.applyDelta(target);
                     target.install(forward);
@@ -265,7 +266,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     private boolean isDataInitialised() {
         return this.edgeSet != null;
     }
-    
+
     /**
      * Creates a delta target that will construct the necessary data structures
      * for a child graph.
@@ -279,8 +280,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         if (depth % MAX_CHAIN_DEPTH == 0) {
             result = new CopyTarget();
         } else {
-            result =
-            this.copyData ? new CopyTarget() : new SwingTarget();
+            result = this.copyData ? new CopyTarget() : new SwingTarget();
         }
         reporter.stop();
         return result;
@@ -312,9 +312,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public CertificateStrategy getCertifier(boolean strong) {
-        CertificateStrategy result = this.certifier == null ? null : this.certifier.get();
+        CertificateStrategy result =
+            this.certifier == null ? null : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
-            result = AbstractGraph.getCertificateFactory().newInstance(this, strong);
+            result =
+                AbstractGraph.getCertificateFactory().newInstance(this, strong);
             this.certifier = new WeakReference<CertificateStrategy>(result);
         }
         return result;
