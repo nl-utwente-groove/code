@@ -104,7 +104,13 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * method from {@link #isSourceLabel()}.
      */
     boolean isDataEdgeSourceLabel() {
-        return !this.jModel.isShowValueNodes() && getTargetVertex().hasValue();
+        boolean result = !this.jModel.isShowValueNodes();
+        if (result) {
+            result =
+                getTargetVertex().hasValue()
+                    || getTargetVertex().isDataTypeNode();
+        }
+        return result;
     }
 
     /** Indicates if this edge is filtered (and therefore invisible). */

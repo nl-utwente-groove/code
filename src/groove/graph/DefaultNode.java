@@ -40,17 +40,6 @@ public class DefaultNode implements Node {
         this.hashCode = computeHashCode();
     }
 
-    //
-    // /**
-    // * Constructor for subclasses that do not have their own node counter.
-    // */
-    // protected DefaultNode() {
-    // this(nextExtNodeNr());
-    // }
-
-    // ----------------------------- OBJECT OVERRIDES
-    // -----------------------------
-
     /**
      * Returns an alias to this node itself (which is immutable).
      */
