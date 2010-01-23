@@ -277,7 +277,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         reporter.start(TRANSFER_DATA);
         // data should have been initialised
         assert isDataInitialised();
-        if (depth % MAX_CHAIN_DEPTH == 0) {
+        if ((depth + 1) % MAX_CHAIN_DEPTH == 0) {
             result = new CopyTarget();
         } else {
             result = this.copyData ? new CopyTarget() : new SwingTarget();
