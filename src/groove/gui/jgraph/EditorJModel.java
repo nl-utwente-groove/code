@@ -16,7 +16,7 @@
  */
 package groove.gui.jgraph;
 
-import groove.gui.Options;
+import groove.gui.Editor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,79 +40,16 @@ import org.jgraph.graph.GraphConstants;
  */
 public class EditorJModel extends JModel {
     /**
-     * Creates an anonymous model.
-     * @param options the options object for the new j-model.
-     */
-    public EditorJModel(Options options) {
-        super(options);
-    }
-
-    /**
      * Creates a new, anonymous editor as a copy of a given j-model.
-     * @param jModel the model to be copied.
+     * @param editor the associated editor
      */
-    public EditorJModel(JModel jModel) {
-        this(jModel.getOptions());
-        // map from the cells of jModel to their copies created for this model
-        Map<JCell,JCell> toResultCellMap = new HashMap<JCell,JCell>();
-        // list of new jcells kept to make sure nodes go in front
-        List<Object> newRoots = new ArrayList<Object>();
-        // the same for the ports
-        Map<DefaultPort,DefaultPort> portMap =
-            new HashMap<DefaultPort,DefaultPort>();
-        ConnectionSet connections = new ConnectionSet();
-        // new connections
-        Object[] rootCells = getRoots(jModel);
-        // first do the nodes
-        for (int i = 0; i < rootCells.length; i++) {
-            if (!(rootCells[i] instanceof DefaultEdge)) {
-                assert rootCells[i] instanceof GraphJVertex;
-                GraphJVertex node = (GraphJVertex) rootCells[i];
-                // create node image and attributes
-                JVertex nodeImage = copyJVertex(node);
-                // add new port to port map (for correct edge cloning)
-                portMap.put(node.getPort(), nodeImage.getPort());
-                toResultCellMap.put(node, nodeImage);
-                newRoots.add(nodeImage);
-            }
+    public EditorJModel(Editor editor) {
+        super(editor.getOptions());
+        this.editor = editor;
+        JModel jModel = editor.getModel();
+        if (jModel != null) {
+            replace(jModel);
         }
-        // now do the edges
-        for (Object element : rootCells) {
-            if (element instanceof DefaultEdge) {
-                assert element instanceof GraphJEdge;
-                GraphJEdge edge = (GraphJEdge) element;
-                // create edge image and attributes
-                JEdge edgeImage = copyJEdge(edge);
-                // assert
-                // GraphConstants.getPoints(edgeImage.getAttributes()).size() !=
-                // 0 : "Edge "
-                // + edgeImage + " does not have points in attributes "
-                // + edgeImage.getAttributes();
-                // connect up edge image
-                assert edge.getSource() != null : "Edge " + edge
-                    + " has no source";
-                connections.connect(edgeImage, portMap.get(edge.getSource()),
-                    true);
-                if (edge.getTarget() != null) {
-                    connections.connect(edgeImage,
-                        portMap.get(edge.getTarget()), false);
-                }
-                toResultCellMap.put(edge, edgeImage);
-                newRoots.add(0, edgeImage);
-            }
-        }
-        // ok, now let the new graph model have it
-        insert(newRoots.toArray(), null, connections, null, null);
-        // copy the layoutables
-        for (JCell cell : this.layoutableJCells) {
-            // edges without extra points are not layoutable
-            if (!(cell instanceof JEdge)
-                || GraphConstants.getPoints(((JEdge) cell).getAttributes()).size() > 2) {
-                this.layoutableJCells.add(toResultCellMap.get(cell));
-            }
-        }
-        setProperties(jModel.getProperties());
-        setName(jModel.getName());
     }
 
     /**
@@ -120,7 +57,7 @@ public class EditorJModel extends JModel {
      * other model are copied, not aliased. Uses a single edit event to announce
      * the change to the listeners.
      */
-    public void replace(GraphJModel jModel) {
+    public void replace(JModel jModel) {
         Object[] oldRoots = getRoots(this);
         // map from the cells of jModel to their copies created for this model
         Map<JCell,JCell> toResultCellMap = new HashMap<JCell,JCell>();
@@ -166,12 +103,7 @@ public class EditorJModel extends JModel {
             }
         }
         // ok, now let the new graph model have it
-        GraphModelEdit edit =
-            createEdit(newRoots.toArray(), oldRoots, null, connections, null,
-                null);
-        edit.execute();
-        edit.end();
-        postEdit(edit);
+        edit(newRoots.toArray(), oldRoots, null, connections, null, null);
         // copy the layoutables
         this.layoutableJCells.clear();
         for (JCell cell : this.layoutableJCells) {
@@ -204,37 +136,6 @@ public class EditorJModel extends JModel {
     }
 
     /**
-     * Callback factory method for a j-vertex instance for this j-model that is
-     * a copy of an existing j-vertex.
-     */
-    protected EditableJVertex copyJVertex(JVertex original) {
-        EditableJVertex result = new EditableJVertex(original);
-        result.getAttributes().applyMap(createJVertexAttr(result));
-        return result;
-    }
-
-    /**
-     * Callback factory method for a j-edge instance for this j-model that is a
-     * copy of an existing j-edge.
-     */
-    protected EditableJEdge copyJEdge(JEdge original) {
-        EditableJEdge result = new EditableJEdge(original);
-        result.getAttributes().applyMap(createJEdgeAttr(result));
-        return result;
-    }
-
-    /**
-     * Callback factory method to create an editable j-vertex. The return value
-     * has attributes initialised through
-     * {@link JModel#createJVertexAttr(JVertex)}.
-     */
-    protected EditableJVertex computeJVertex() {
-        EditableJVertex result = new EditableJVertex(createNewNodeNr());
-        result.getAttributes().applyMap(createJVertexAttr(result));
-        return result;
-    }
-
-    /**
      * Returns the first non-negative number that is not used as a node number
      * in this model.
      */
@@ -253,11 +154,47 @@ public class EditorJModel extends JModel {
         return nr;
     }
 
+    @Override
+    public boolean hasError(JCell cell) {
+        return this.editor.hasError(cell);
+    }
+
+    /**
+     * Callback factory method for a j-vertex instance for this j-model that is
+     * a copy of an existing j-vertex.
+     */
+    private EditableJVertex copyJVertex(JVertex original) {
+        EditableJVertex result = new EditableJVertex(original);
+        result.getAttributes().applyMap(createJVertexAttr(result));
+        return result;
+    }
+
+    /**
+     * Callback factory method for a j-edge instance for this j-model that is a
+     * copy of an existing j-edge.
+     */
+    private EditableJEdge copyJEdge(JEdge original) {
+        EditableJEdge result = new EditableJEdge(original);
+        result.getAttributes().applyMap(createJEdgeAttr(result));
+        return result;
+    }
+
+    /**
+     * Callback factory method to create an editable j-vertex. The return value
+     * has attributes initialised through
+     * {@link JModel#createJVertexAttr(JVertex)}.
+     */
+    EditableJVertex computeJVertex() {
+        EditableJVertex result = new EditableJVertex(createNewNodeNr());
+        result.getAttributes().applyMap(createJVertexAttr(result));
+        return result;
+    }
+
     /**
      * Callback factory method to create an editable j-edge. The return value
      * has attributes initialised through {@link JModel#createJEdgeAttr(JEdge)}.
      */
-    protected EditableJEdge computeJEdge() {
+    EditableJEdge computeJEdge() {
         EditableJEdge result = new EditableJEdge();
         result.getAttributes().applyMap(createJEdgeAttr(result));
         return result;
@@ -287,4 +224,7 @@ public class EditorJModel extends JModel {
         GraphConstants.setDisconnectable(result, true);
         return result;
     }
+
+    /** The associated editor. */
+    private final Editor editor;
 }

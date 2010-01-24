@@ -32,7 +32,6 @@ import groove.view.aspect.AspectValue;
 import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,7 +75,7 @@ public class DefaultTypeView implements TypeView {
         }
     }
 
-    public List<String> getErrors() {
+    public List<FormatError> getErrors() {
         initialise();
         return this.errors;
     }
@@ -117,7 +116,7 @@ public class DefaultTypeView implements TypeView {
      */
     private Pair<TypeGraph,NodeEdgeMap> computeModel(AspectGraph view)
         throws FormatException {
-        Set<String> errors = new TreeSet<String>(view.getErrors());
+        Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
         TypeGraph model = new TypeGraph();
         // first check the nodes for allowed aspect values
         for (AspectNode viewNode : view.nodeSet()) {
@@ -139,7 +138,7 @@ public class DefaultTypeView implements TypeView {
                 TypeNode oldTypeNode =
                     (TypeNode) elementMap.getNode(viewSource);
                 if (oldTypeNode != null) {
-                    errors.add(String.format(
+                    errors.add(new FormatError(
                         "Node '%s' has types '%s' and '%s'", viewSource,
                         modelLabel, oldTypeNode.getType()));
                     continue;
@@ -170,9 +169,9 @@ public class DefaultTypeView implements TypeView {
                 elementMap.putNode(viewNode, modelNode);
             }
         }
-        if (!untypedNodes.isEmpty()) {
-            errors.add(String.format("Untyped nodes %s in type graph",
-                untypedNodes));
+        for (AspectNode untypedNode : untypedNodes) {
+            errors.add(new FormatError("Node '%s' has no type label",
+                untypedNode));
         }
         // copy the edges from view to model
         for (AspectEdge viewEdge : view.edgeSet()) {
@@ -206,7 +205,7 @@ public class DefaultTypeView implements TypeView {
             model.setFixed();
             return new Pair<TypeGraph,NodeEdgeMap>(model, elementMap);
         } else {
-            throw new FormatException(new ArrayList<String>(errors));
+            throw new FormatException(errors);
         }
     }
 
@@ -282,7 +281,7 @@ public class DefaultTypeView implements TypeView {
     /**
      * List of errors in the view that prevent the model from being constructed.
      */
-    private List<String> errors;
+    private List<FormatError> errors;
     /** Map from view to model nodes. */
     private NodeEdgeMap viewToModelMap;
 }

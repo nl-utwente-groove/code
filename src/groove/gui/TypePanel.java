@@ -198,7 +198,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
                         getSimulator().askNewTypeName("Select type graph name",
                             GraphInfo.getName(type), fresh);
                     if (typeName != null) {
-                        AspectGraph newType = toAspectGraph();
+                        AspectGraph newType = getAspectGraph();
                         GraphInfo.setName(newType, typeName);
                         if (getSimulator().doAddType(newType)) {
                             setSelectedType(typeName);

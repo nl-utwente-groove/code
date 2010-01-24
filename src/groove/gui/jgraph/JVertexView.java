@@ -638,6 +638,8 @@ public class JVertexView extends VertexView {
             setFont((font != null) ? font : graph.getFont());
             setBorder(createEmptyBorder());
             setText(this.view.getText());
+            this.error =
+                ((JGraph) graph).getModel().hasError((JCell) view.getCell());
             return this;
         }
 
@@ -672,6 +674,10 @@ public class JVertexView extends VertexView {
             paintForeground(g2, shape);
             if (this.selected) {
                 paintSelectionBorder(g2, shape);
+            }
+            if (this.error) {
+                g.setColor(JAttr.ERROR_COLOR);
+                g2.fill(shape);
             }
         }
 
@@ -874,6 +880,7 @@ public class JVertexView extends VertexView {
         private Color line2color;
         private float[] line2dash;
         private float line2width;
-
+        /** Flag indicating that the vertex has an error. */
+        private boolean error;
     }
 }

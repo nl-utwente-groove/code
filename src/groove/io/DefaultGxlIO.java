@@ -32,6 +32,7 @@ import groove.graph.Node;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
+import groove.view.FormatError;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -94,9 +95,9 @@ public class DefaultGxlIO {
         if (!Version.isKnownGxlVersion(GraphInfo.getVersion(result))) {
             GraphInfo.addErrors(
                 result,
-                Arrays.asList(new String[] {String.format(
+                Arrays.asList(new FormatError(
                     "GXL file format version '%s' is higher than supported version '%s'",
-                    GraphInfo.getVersion(result), Version.GXL_VERSION)}));
+                    GraphInfo.getVersion(result), Version.GXL_VERSION)));
         }
         return new Pair<Graph,Map<String,Node>>(result, conversion);
     }
@@ -358,8 +359,8 @@ public class DefaultGxlIO {
                 ((AttributeLabel) edge.label()).getAttributes();
             String labelText = attributes.get(LABEL_ATTR_NAME).trim();
             if (labelText.length() == 0) {
-                GraphInfo.addErrors(graph,
-                    Arrays.asList("Empty label in graph"));
+                GraphInfo.addErrors(graph, Arrays.asList(new FormatError(
+                    "Empty label in graph")));
             } else {
                 graph.addEdge(edge.ends(), DefaultLabel.createLabel(labelText));
             }

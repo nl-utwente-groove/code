@@ -20,6 +20,7 @@ import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -41,7 +42,8 @@ import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +89,7 @@ public class AspectualGraphView implements GraphView {
         }
     }
 
-    public List<String> getErrors() {
+    public List<FormatError> getErrors() {
         initialise();
         return this.errors;
     }
@@ -158,7 +160,7 @@ public class AspectualGraphView implements GraphView {
      * from the aspect graph's node to the (fresh) graph nodes.
      */
     private Pair<Graph,NodeEdgeMap> computeModel(AspectGraph view) {
-        Set<String> errors = new TreeSet<String>(view.getErrors());
+        Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
         Graph model = getGraphFactory().newGraph();
         // we need to record the view-to-model element map for layout transfer
         NodeEdgeMap elementMap = new NodeEdgeHashMap();
@@ -193,11 +195,25 @@ public class AspectualGraphView implements GraphView {
         }
         // test against the type graph, if any
         if (this.type != null) {
-            errors.addAll(this.type.checkTyping(model));
+            Collection<FormatError> typeErrors = this.type.checkTyping(model);
+            if (!typeErrors.isEmpty()) {
+                // compute inverse element map
+                Map<Element,Element> inverseMap =
+                    new HashMap<Element,Element>();
+                for (Map.Entry<Node,Node> nodeEntry : elementMap.nodeMap().entrySet()) {
+                    inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
+                }
+                for (Map.Entry<Edge,Edge> edgeEntry : elementMap.edgeMap().entrySet()) {
+                    inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
+                }
+                for (FormatError error : typeErrors) {
+                    errors.add(error.transfer(inverseMap));
+                }
+            }
         }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(view, model, elementMap);
-        GraphInfo.setErrors(model, new ArrayList<String>(errors));
+        GraphInfo.setErrors(model, errors);
         model.setFixed();
         return new Pair<Graph,NodeEdgeMap>(model, elementMap);
     }
@@ -209,15 +225,16 @@ public class AspectualGraphView implements GraphView {
      */
     private void processViewNode(Graph model, NodeEdgeMap elementMap,
             AspectNode viewNode) throws FormatException {
-        String error = null;
+        FormatError error = null;
         boolean nodeInModel = true;
         for (AspectValue value : viewNode.getAspectMap()) {
             if (isVirtualValue(value)) {
                 nodeInModel = false;
             } else if (!isAllowedValue(value)) {
                 error =
-                    String.format(
-                        "Node aspect value '%s' not allowed in graphs", value);
+                    new FormatError(
+                        "Node aspect value '%s' not allowed in graphs", value,
+                        viewNode);
             }
         }
         // include the node in the model if it is not virtual
@@ -231,9 +248,9 @@ public class AspectualGraphView implements GraphView {
                 model.addNode(nodeImage);
             } else {
                 error =
-                    String.format(
+                    new FormatError(
                         "Node aspect value '%s' not allowed in graphs",
-                        getAttributeValue(viewNode));
+                        getAttributeValue(viewNode), viewNode);
             }
             elementMap.putNode(viewNode, nodeImage);
         }
@@ -259,7 +276,8 @@ public class AspectualGraphView implements GraphView {
             }
             if (!isAllowedValue(value)) {
                 throw new FormatException(
-                    "Edge aspect value '%s' not allowed in graphs", value);
+                    "Edge aspect value '%s' not allowed in graphs", value,
+                    viewEdge);
             }
         }
         Node modelSource = elementMap.getNode(viewEdge.source());
@@ -275,12 +293,13 @@ public class AspectualGraphView implements GraphView {
             modelSource, modelTarget}) != null) {
             throw new FormatException(
                 "Edge aspect value '%s' not allowed in graphs",
-                getAttributeValue(viewEdge));
+                getAttributeValue(viewEdge), viewEdge);
         }
         Label modelLabel = viewEdge.getModelLabel();
         if (DefaultLabel.isDataType(modelLabel)) {
             throw new FormatException(
-                "Data type label '%s' not allowed in graphs", modelLabel);
+                "Data type label '%s' not allowed in graphs", modelLabel,
+                viewEdge);
         }
         Edge modelEdge = model.addEdge(modelSource, modelLabel, modelTarget);
         this.labelSet.add(modelLabel);
@@ -328,7 +347,7 @@ public class AspectualGraphView implements GraphView {
     /**
      * List of errors in the view that prevent the model from being constructed.
      */
-    private List<String> errors;
+    private List<FormatError> errors;
     /** Map from view to model nodes. */
     private NodeEdgeMap viewToModelMap;
     /** Set of labels occurring in this graph. */

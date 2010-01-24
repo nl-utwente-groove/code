@@ -19,6 +19,7 @@ package groove.trans;
 import groove.control.ControlAutomaton;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -135,26 +136,13 @@ public class GraphGrammar extends RuleSystem {
     /** Combines the consistency errors in the rules and start graph. */
     @Override
     public void testConsistent() throws FormatException {
-        List<String> errors = new ArrayList<String>();
+        List<FormatError> errors = new ArrayList<FormatError>();
         // collect the exception of the super test, if any
         try {
             super.testConsistent();
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
-        // chain the consistency problems in the start graph
-        // if (!getProperties().isAttributed() &&
-        // ValueNode.hasValueNodes(getStartGraph())) {
-        // String attributeKey = SystemProperties.ATTRIBUTES_KEY;
-        // String attributeProperty = getProperties().getProperty(attributeKey);
-        // if (attributeProperty == null) {
-        // errors.add(String.format("Start graph uses attributes, but \"%s\" not
-        // declared", attributeKey));
-        // } else {
-        // errors.add(String.format("Start graph uses attributes, violating
-        // \"%s=%s\"", attributeKey, attributeProperty));
-        // }
-        // }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }

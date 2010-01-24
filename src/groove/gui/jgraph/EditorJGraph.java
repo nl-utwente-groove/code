@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import groove.gui.Editor;
-import groove.gui.IEditorModes;
 import groove.gui.SetLayoutMenu;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
@@ -50,12 +49,12 @@ public class EditorJGraph extends JGraph {
     /**
      * Constructs an editor j-graph with an initially empty {@link EditorJModel}
      * .
-     * @param editor the {@link IEditorModes} to which this j-graph is
+     * @param editor the editor to which this j-graph is
      *        associated
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(new EditorJModel(editor.getOptions()), false, null);
+        super(new EditorJModel(editor), false, null);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
         getGraphLayoutCache().setSelectsLocalInsertedCells(true);
@@ -95,14 +94,6 @@ public class EditorJGraph extends JGraph {
     }
 
     /**
-     * @return the editor{@link IEditorModes} to which this j-graph is
-     *         associated
-     */
-    protected IEditorModes getEditor() {
-        return this.editor;
-    }
-
-    /**
      * This implementation returns a {@link EditorMarqueeHandler}. (non-Javadoc)
      * @see groove.gui.jgraph.JGraph#createMarqueeHandler()
      */
@@ -116,7 +107,7 @@ public class EditorJGraph extends JGraph {
      * point is in screen coorinates
      * @param screenPoint the intended central point for the new j-vertex
      */
-    protected void addVertex(Point2D screenPoint) {
+    void addVertex(Point2D screenPoint) {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
@@ -146,7 +137,7 @@ public class EditorJGraph extends JGraph {
      * @param screenFrom The start point of the new edge
      * @param screenTo The end point of the new edge
      */
-    protected void addEdge(Point2D screenFrom, Point2D screenTo) {
+    void addEdge(Point2D screenFrom, Point2D screenTo) {
         stopEditing();
         // translate screen coordinates to real coordinates
         PortView fromPortView =
@@ -192,17 +183,12 @@ public class EditorJGraph extends JGraph {
      * @param evt the event on the basis of which the judgement is made
      * @return <tt>true</tt> if edge creation mode is available and enabled
      */
-    protected boolean isEdgeMode(MouseEvent evt) {
-        /* added by Carel */
-        if (getEditor() == null) {
-            return false;
+    boolean isEdgeMode(MouseEvent evt) {
+        boolean result = false;
+        if (this.editor != null && this.editor.isEdgeMode()) {
+            result = isVertex(getFirstCellForLocation(evt.getX(), evt.getY()));
         }
-        /* end */
-        if (!getEditor().isEdgeMode()) {
-            return false;
-        }
-        Object cell = getFirstCellForLocation(evt.getX(), evt.getY());
-        return isVertex(cell);
+        return result;
     }
 
     /**
@@ -211,29 +197,26 @@ public class EditorJGraph extends JGraph {
      * @param evt evt the event on the basis of which the judgement is made
      * @return <tt>true</tt> if node creation mode is available and enabled
      */
-    protected boolean isNodeMode(MouseEvent evt) {
-        /* added by Carel */
-        if (getEditor() == null) {
-            return false;
+    boolean isNodeMode(MouseEvent evt) {
+        boolean result = false;
+        if (this.editor != null && this.editor.isNodeMode()) {
+            result = getFirstCellForLocation(evt.getX(), evt.getY()) == null;
         }
-        /* end */
-
-        return (getEditor().isNodeMode() && getFirstCellForLocation(evt.getX(),
-            evt.getY()) == null);
+        return result;
     }
 
     /**
      * Flag to indicate creating a node will immediately start aditing the node
      * label
      */
-    protected boolean startEditingNewNode = false;
+    private boolean startEditingNewNode = false;
     /**
      * Flag to indicate creating an edge will immediately start aditing the edge
      * label
      */
-    protected boolean startEditingNewEdge = true;
+    private boolean startEditingNewEdge = true;
     /**
      * The editor component in which this j-graph is placed.
      */
-    private final IEditorModes editor;
+    private final Editor editor;
 }

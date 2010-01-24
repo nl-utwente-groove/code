@@ -21,6 +21,8 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
@@ -210,13 +212,24 @@ abstract public class JModel extends DefaultGraphModel {
         return result;
     }
 
+    /** 
+     * Converts this model to a plain Groove graph.
+     * @see #toPlainGraph(Map)
+     */
+    public Graph toPlainGraph() {
+        Map<Element,JCell> dummyMap = new HashMap<Element,JCell>();
+        return toPlainGraph(dummyMap);
+    }
+
     /**
      * Converts this j-model to a plain groove graph. Layout information is also
      * transferred. A plain graph is one in which the nodes and edges are
      * {@link DefaultNode}s and {@link DefaultEdge}s, and all further
      * information is in the labels.
+     * @param elementMap receives the mapping from elements of the new graph
+     * to root cells of this model
      */
-    public groove.graph.Graph toPlainGraph() {
+    public groove.graph.Graph toPlainGraph(Map<Element,JCell> elementMap) {
         groove.graph.Graph result = new DefaultGraph();
         LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
         Map<JVertex,Node> nodeMap = new HashMap<JVertex,Node>();
@@ -226,6 +239,7 @@ abstract public class JModel extends DefaultGraphModel {
             if (root instanceof JVertex) {
                 Node node = addFreshNode(result, ((JVertex) root));
                 nodeMap.put((JVertex) root, node);
+                elementMap.put(node, (JVertex) root);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
                 for (String label : ((JVertex) root).getPlainLabels()) {
                     result.addEdge(node, DefaultLabel.createLabel(label), node);
@@ -255,6 +269,7 @@ abstract public class JModel extends DefaultGraphModel {
                     if (!attrIsDefault) {
                         layoutMap.putEdge(edge, edgeAttr);
                     }
+                    elementMap.put(edge, jEdge);
                 }
             }
         }
@@ -487,6 +502,12 @@ abstract public class JModel extends DefaultGraphModel {
         this.emphJCells.clear();
         refresh(oldEmphSet);
     }
+
+    /**
+     * Indicates if the given element has an error,
+     * in which case it needs to be displayed in a special way.
+     */
+    abstract public boolean hasError(JCell cell);
 
     /**
      * Invokes {@link JCellContent#clone()} to do the job.

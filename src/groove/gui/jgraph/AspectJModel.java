@@ -44,6 +44,7 @@ import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.util.Groove;
+import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
@@ -63,8 +64,10 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -106,6 +109,34 @@ public class AspectJModel extends GraphJModel {
     @Override
     public Graph toPlainGraph() {
         return getGraph().toPlainGraph();
+    }
+
+    @Override
+    public boolean hasError(JCell cell) {
+        return this.errorCells.contains(cell);
+    }
+
+    @Override
+    public void reload() {
+        super.reload();
+        List<FormatError> graphErrors = this.view.getErrors();
+        if (graphErrors != null) {
+            for (FormatError error : graphErrors) {
+                JCell errorCell = null;
+                if (error.getObject() instanceof Node) {
+                    errorCell = getJVertex((Node) error.getObject());
+                } else if (error.getObject() instanceof Edge) {
+                    errorCell = getJCell((Edge) error.getObject());
+                    if (errorCell instanceof GraphJEdge
+                        && ((GraphJEdge) errorCell).isDataEdgeSourceLabel()) {
+                        errorCell = ((GraphJEdge) errorCell).getSourceVertex();
+                    }
+                }
+                if (errorCell != null) {
+                    this.errorCells.add(errorCell);
+                }
+            }
+        }
     }
 
     /**
@@ -279,6 +310,8 @@ public class AspectJModel extends GraphJModel {
      */
     private final View<?> view;
     /** Mapping from the elements of the model to those of the view. */
+    /** Set of cells with a format error. */
+    private final Set<JCell> errorCells = new HashSet<JCell>();
     private NodeEdgeMap modelToViewMap;
 
     /**

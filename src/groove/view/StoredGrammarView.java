@@ -209,7 +209,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /** Collects and returns the permanent errors of the rule views. */
-    public List<String> getErrors() {
+    public List<FormatError> getErrors() {
         if (this.errors == null) {
             initGrammar();
         }
@@ -306,7 +306,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             this.grammar = computeGrammar();
             this.errors = Collections.emptyList();
         } catch (FormatException exc) {
-            this.errors = new ArrayList<String>(exc.getErrors());
+            this.errors = new ArrayList<FormatError>(exc.getErrors());
             Collections.sort(this.errors);
         }
     }
@@ -317,12 +317,12 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
-        List<String> errors = new ArrayList<String>();
+        List<FormatError> errors = new ArrayList<FormatError>();
         // check type correctness
         if (!getTypeName().isEmpty()) {
             TypeView typeView = getTypeView();
             if (typeView == null) {
-                errors.add(String.format("Type graph '%s' cannot be found",
+                errors.add(new FormatError("Type graph '%s' cannot be found",
                     getTypeName()));
             } else {
                 try {
@@ -341,9 +341,9 @@ public class StoredGrammarView implements GrammarView, Observer {
                     result.add(ruleView.toRule());
                 }
             } catch (FormatException exc) {
-                for (String error : exc.getErrors()) {
-                    errors.add(String.format("Format error in rule '%s': %s",
-                        ruleView.getName(), error));
+                for (FormatError error : exc.getErrors()) {
+                    errors.add(new FormatError("Format error in rule '%s': %s",
+                        ruleView.getName(), error, ruleView.getView()));
                 }
             }
         }
@@ -351,19 +351,20 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (isUseControl()) {
             ControlView controlView = getControlView(getControlName());
             if (controlView == null) {
-                errors.add(String.format(
+                errors.add(new FormatError(
                     "Control program '%s' cannot be found", getControlName()));
             } else if (result.hasMultiplePriorities()) {
-                errors.add("Rule priorities and control programs are incompatible, please disable either.");
+                errors.add(new FormatError(
+                    "Rule priorities and control programs are incompatible, please disable either."));
             } else {
                 try {
                     ControlAutomaton ca = controlView.toAutomaton(result);
                     result.setControl(ca);
                 } catch (FormatException exc) {
-                    for (String error : exc.getErrors()) {
-                        errors.add(String.format(
+                    for (FormatError error : exc.getErrors()) {
+                        errors.add(new FormatError(
                             "Format error in control program '%s': %s",
-                            getControlName(), error));
+                            getControlName(), error, controlView));
                     }
                 }
             }
@@ -373,13 +374,13 @@ public class StoredGrammarView implements GrammarView, Observer {
         // set start graph
         if (getStartGraphView() == null) {
             if (getStartGraphName() == null) {
-                errors.add(String.format("No start graph set"));
+                errors.add(new FormatError("No start graph set"));
             } else {
-                errors.add(String.format("Start graph '%s' cannot be loaded",
+                errors.add(new FormatError("Start graph '%s' cannot be loaded",
                     getStartGraphName()));
             }
         } else {
-            List<String> startGraphErrors;
+            List<FormatError> startGraphErrors;
             try {
                 Graph startGraph = getStartGraphView().toModel();
                 result.setStartGraph(startGraph);
@@ -387,9 +388,9 @@ public class StoredGrammarView implements GrammarView, Observer {
             } catch (FormatException exc) {
                 startGraphErrors = exc.getErrors();
             }
-            for (String error : startGraphErrors) {
-                errors.add(String.format("Format error in start graph: %s",
-                    error));
+            for (FormatError error : startGraphErrors) {
+                errors.add(new FormatError("Format error in start graph: %s",
+                    error, getStartGraphView().getView()));
             }
         }
         this.labelStore = new LabelStore();
@@ -475,7 +476,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     private String startGraphName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
-    private List<String> errors;
+    private List<FormatError> errors;
     /** The graph grammar derived from the rule views. */
     private GraphGrammar grammar;
     /** The labels occurring in this view. */

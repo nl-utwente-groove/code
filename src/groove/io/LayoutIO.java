@@ -26,6 +26,7 @@ import groove.gui.layout.LayoutMap;
 import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.awt.Point;
@@ -93,7 +94,7 @@ public class LayoutIO {
         BufferedReader layoutReader =
             new BufferedReader(new InputStreamReader(in));
         LayoutMap<Node,Edge> result = new LayoutMap<Node,Edge>();
-        List<String> errors = new ArrayList<String>();
+        List<FormatError> errors = new ArrayList<FormatError>();
         try {
             int version = 1;
             // read in from the layout file until done
@@ -119,9 +120,9 @@ public class LayoutIO {
                         }
                     }
                 } catch (FormatException exc) {
-                    for (String error : exc.getErrors()) {
-                        errors.add(String.format(LAYOUT_FORMAT_ERROR + ": %s",
-                            error));
+                    for (FormatError error : exc.getErrors()) {
+                        errors.add(new FormatError(
+                            LAYOUT_FORMAT_ERROR + ": %s", error));
                     }
                 }
             }
