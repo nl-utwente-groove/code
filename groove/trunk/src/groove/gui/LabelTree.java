@@ -22,7 +22,6 @@ import groove.graph.LabelStore;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.JVertex;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
@@ -580,8 +579,11 @@ public class LabelTree extends JTree implements GraphModelListener,
     private String getText(Label label) {
         StringBuilder text = new StringBuilder();
         boolean specialLabelColour = false;
-        if (label.equals(JVertex.NO_LABEL)) {
+        if (label.equals(JCell.NO_LABEL)) {
             text.append(Options.NO_LABEL_TEXT);
+            specialLabelColour = true;
+        } else if (label.equals(JCell.SUBTYPE_LABEL)) {
+            text.append(Options.SUBTYPE_LABEL_TEXT);
             specialLabelColour = true;
         } else if (label.text().length() == 0) {
             text.append(Options.EMPTY_LABEL_TEXT);

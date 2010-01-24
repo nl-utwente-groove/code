@@ -225,7 +225,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      *        there is no type graph in the current grammar, or an existing name
      *        in the type graph names of the current grammar.
      */
-    private void setSelectedType(String name) {
+    public void setSelectedType(String name) {
         this.selectedType = name;
     }
 

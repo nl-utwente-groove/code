@@ -17,9 +17,8 @@
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
-import static groove.util.Converter.STRONG_TAG;
 import groove.abs.AbstrGraph;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebra;
 import groove.control.Location;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
@@ -189,11 +188,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 ITALIC_TAG.on(new StringBuilder(mult))));
         }
         // add signature label for typed variable nodes
-        if (getActualNode() instanceof VariableNode
-            && !(getActualNode() instanceof ValueNode)
-            && ((VariableNode) getActualNode()).getAlgebra() != null) {
-            result.add(STRONG_TAG.on(new StringBuilder(
-                AlgebraRegister.getSignatureName(((VariableNode) getActualNode()).getAlgebra()))));
+        if (isVariableNode() && getAlgebra() != null) {
+            result.add(new StringBuilder(
+                DefaultLabel.toHtmlString(DefaultLabel.createDataType(getAlgebra()))));
         }
         for (Edge edge : getSelfEdges()) {
             if (getLabel(edge).isNodeType()
@@ -252,7 +249,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     /**
      * This implementation returns a special constant label in case the node is
      * a constant, followed by the self-edge labels and data-edge labels; or
-     * {@link JVertex#NO_LABEL} if the result would otherwise be empty.
+     * {@link JCell#NO_LABEL} if the result would otherwise be empty.
      */
     public Collection<Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
@@ -262,7 +259,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         for (Edge edge : getSelfEdges()) {
             result.addAll(getListLabels(edge));
         }
-        if (getSelfEdges().isEmpty()) {
+        if (isVariableNode() && getAlgebra() != null) {
+            result.add(DefaultLabel.createDataType(getAlgebra()));
+        } else if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
         for (Edge edge : getDataEdges()) {
@@ -406,10 +405,15 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * @return true if this node is a value node, false otherwise.
+     * @return true if this node is a (variable or constant) value node, false otherwise.
      */
     public boolean isValueNode() {
         return getActualNode() instanceof VariableNode;
+    }
+
+    /** @return {@code true} if this node is a variable node. */
+    public boolean isVariableNode() {
+        return isValueNode() && !hasValue();
     }
 
     /**
@@ -449,9 +453,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * This method returns <code>null</code> if and only if {@link #hasValue()}
      * holds.
      */
-    groove.algebra.Algebra<?> getAlgebra() {
-        if (getActualNode() instanceof ValueNode) {
-            return ((ValueNode) getActualNode()).getAlgebra();
+    Algebra<?> getAlgebra() {
+        if (getActualNode() instanceof VariableNode) {
+            return ((VariableNode) getActualNode()).getAlgebra();
         } else {
             return null;
         }

@@ -71,7 +71,7 @@ public class ControlView {
     private ControlAutomaton computeAutomaton(GraphGrammar grammar)
         throws FormatException {
         if (this.controlProgram == null) {
-            throw new FormatException("Error in control:no program available ");
+            throw new FormatException("Error in control: no program available");
         }
         AutomatonBuilder builder = new AutomatonBuilder();
         builder.setRuleNames(grammar.getRuleNames());

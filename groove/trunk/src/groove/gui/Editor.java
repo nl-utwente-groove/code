@@ -101,6 +101,8 @@ import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableCellEditor;
@@ -997,9 +999,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Lazily creates and returns the error panel. */
-    private ErrorListPanel getErrorPanel() {
+    private NewErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            this.errorPanel = new ErrorListPanel();
+            final NewErrorListPanel result =
+                this.errorPanel = new NewErrorListPanel();
+            result.addSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    JCell errorCell =
+                        Editor.this.errorCellMap.get(result.getSelectedError());
+                    if (errorCell != null) {
+                        getJGraph().setSelectionCell(errorCell);
+                    }
+                }
+            });
         }
         return this.errorPanel;
     }
@@ -1084,11 +1097,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
         errors.addAll(toView().getErrors());
         this.errorCells.clear();
+        this.errorCellMap.clear();
         for (FormatError error : errors) {
             if (error.getObject() != null) {
                 JCell errorCell = this.graphToModelMap.get(error.getObject());
                 if (errorCell != null) {
                     this.errorCells.add(errorCell);
+                    this.errorCellMap.put(error, errorCell);
                 }
             }
         }
@@ -1360,7 +1375,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Panel containing the error panel and status par. */
     private JPanel statusPanel;
     /** Panel displaying format error messages. */
-    private ErrorListPanel errorPanel;
+    private NewErrorListPanel errorPanel;
     /** The size of the (previous) preview dialog. */
     private Dimension previewSize;
 
@@ -1376,6 +1391,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private Map<Element,JCell> graphToModelMap;
     /** Set of erroneous cells in the current editor model. */
     private Set<JCell> errorCells = new HashSet<JCell>();
+    /** Mapping from error messages to the corresponding cells. */
+    private Map<FormatError,JCell> errorCellMap =
+        new HashMap<FormatError,JCell>();
     /** Index of the currently set editor role */
     private int roleIndex = -1;
     /** Type view against which the edited graph is checked. */

@@ -59,6 +59,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -165,6 +166,11 @@ public class ControlPanel extends JPanel implements SimulationListener {
         // nothing happens
     }
 
+    /** Selects a line in the currently displayed control program, if possible. */
+    public void selectLine(int lineNr) {
+        getControlTextArea().selectLine(lineNr);
+    }
+
     /**
      * Creates and shows a confirmation dialog for abandoning the currently
      * edited control program.
@@ -215,7 +221,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      *        there is no control program in the current grammar, or an existing
      *        name in the control names of the current grammar.
      */
-    private void setSelectedControl(String name) {
+    public void setSelectedControl(String name) {
         this.selectedControl = name;
     }
 
@@ -338,6 +344,19 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public void refresh();
     }
 
+    /** Lazily creates and returns the field displaying the control name. */
+    private JComboBox getNameField() {
+        if (this.nameField == null) {
+            this.nameField = new ControlNameField();
+            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
+            this.nameField.setMaximumSize(new Dimension(150, 24));
+        }
+        return this.nameField;
+    }
+
+    /** Name field of the control program. */
+    private JComboBox nameField;
+
     private class ControlNameField extends JComboBox implements Refreshable {
         public ControlNameField() {
             setBorder(BorderFactory.createLoweredBevelBorder());
@@ -382,18 +401,16 @@ public class ControlPanel extends JPanel implements SimulationListener {
         private final ActionListener selectionListener;
     }
 
-    /** Lazily creates and returns the field displaying the control name. */
-    private JComboBox getNameField() {
-        if (this.nameField == null) {
-            this.nameField = new ControlNameField();
-            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
-            this.nameField.setMaximumSize(new Dimension(150, 24));
+    /** Lazily creates and returns the area displaying the control program. */
+    private ControlTextArea getControlTextArea() {
+        if (this.controlTextArea == null) {
+            this.controlTextArea = new ControlTextArea();
         }
-        return this.nameField;
+        return this.controlTextArea;
     }
 
-    /** Name field of the control program. */
-    private JComboBox nameField;
+    /** Panel showing the control program. */
+    private ControlTextArea controlTextArea;
 
     private class ControlTextArea extends RSyntaxTextArea implements
             Refreshable {
@@ -476,21 +493,20 @@ public class ControlPanel extends JPanel implements SimulationListener {
             }
         }
 
+        /** Selects a line in the currently displayed control program, if possible. */
+        public void selectLine(int lineNr) {
+            try {
+                int start = getLineStartOffset(lineNr - 1);
+                getCaret().setDot(start);
+            } catch (BadLocationException e) {
+                // do nothing
+            }
+        }
+
         private final DocumentListener changeListener;
         /** Flag indicating if refresh actions should be currently listened to. */
         private boolean listenToRefresh = true;
     }
-
-    /** Lazily creates and returns the area displaying the control program. */
-    private RSyntaxTextArea getControlTextArea() {
-        if (this.controlTextArea == null) {
-            this.controlTextArea = new ControlTextArea();
-        }
-        return this.controlTextArea;
-    }
-
-    /** Panel showing the control program. */
-    private RSyntaxTextArea controlTextArea;
 
     /** Abstract superclass for actions that can refresh their own status. */
     private abstract class RefreshableAction extends AbstractAction implements
@@ -502,6 +518,20 @@ public class ControlPanel extends JPanel implements SimulationListener {
             addRefreshable(this);
         }
     }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link CancelAction}.
+     */
+    private CancelAction getCancelAction() {
+        if (this.cancelAction == null) {
+            this.cancelAction = new CancelAction();
+        }
+        return this.cancelAction;
+    }
+
+    /** Singular instance of the {@link CancelAction}. */
+    private CancelAction cancelAction;
 
     /**
      * Action to cancel editing the currently displayed control program.
@@ -523,17 +553,17 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link CancelAction}.
+     * {@link CopyAction}.
      */
-    private CancelAction getCancelAction() {
-        if (this.cancelAction == null) {
-            this.cancelAction = new CancelAction();
+    private CopyAction getCopyAction() {
+        if (this.copyAction == null) {
+            this.copyAction = new CopyAction();
         }
-        return this.cancelAction;
+        return this.copyAction;
     }
 
-    /** Singular instance of the {@link CancelAction}. */
-    private CancelAction cancelAction;
+    /** Singular instance of the {@link CopyAction}. */
+    private CopyAction copyAction;
 
     /**
      * Action to copy the currently displayed control program.
@@ -570,17 +600,17 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link CopyAction}.
+     * {@link DeleteAction}.
      */
-    private CopyAction getCopyAction() {
-        if (this.copyAction == null) {
-            this.copyAction = new CopyAction();
+    private DeleteAction getDeleteAction() {
+        if (this.deleteAction == null) {
+            this.deleteAction = new DeleteAction();
         }
-        return this.copyAction;
+        return this.deleteAction;
     }
 
-    /** Singular instance of the {@link CopyAction}. */
-    private CopyAction copyAction;
+    /** Singular instance of the {@link DeleteAction}. */
+    private DeleteAction deleteAction;
 
     /**
      * Action to delete the currently displayed control program.
@@ -625,17 +655,17 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link DeleteAction}.
+     * {@link NewAction}.
      */
-    private DeleteAction getDeleteAction() {
-        if (this.deleteAction == null) {
-            this.deleteAction = new DeleteAction();
+    private DisableAction getDisableAction() {
+        if (this.disableAction == null) {
+            this.disableAction = new DisableAction();
         }
-        return this.deleteAction;
+        return this.disableAction;
     }
 
-    /** Singular instance of the {@link DeleteAction}. */
-    private DeleteAction deleteAction;
+    /** Singular instance of the {@link EnableAction}. */
+    private DisableAction disableAction;
 
     /** Action to disable the currently displayed control program. */
     private class DisableAction extends RefreshableAction {
@@ -664,15 +694,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private DisableAction getDisableAction() {
-        if (this.disableAction == null) {
-            this.disableAction = new DisableAction();
+    private EnableAction getEnableAction() {
+        if (this.enableAction == null) {
+            this.enableAction = new EnableAction();
         }
-        return this.disableAction;
+        return this.enableAction;
     }
 
     /** Singular instance of the {@link EnableAction}. */
-    private DisableAction disableAction;
+    private EnableAction enableAction;
 
     /** Action to enable the currently displayed control program. */
     private class EnableAction extends RefreshableAction {
@@ -707,15 +737,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private EnableAction getEnableAction() {
-        if (this.enableAction == null) {
-            this.enableAction = new EnableAction();
+    private EditAction getEditAction() {
+        if (this.editAction == null) {
+            this.editAction = new EditAction();
         }
-        return this.enableAction;
+        return this.editAction;
     }
 
-    /** Singular instance of the {@link EnableAction}. */
-    private EnableAction enableAction;
+    /** Singular instance of the {@link EditAction}. */
+    private EditAction editAction;
 
     /** Action to start editing the currently displayed control program. */
     private class EditAction extends RefreshableAction {
@@ -740,15 +770,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private EditAction getEditAction() {
-        if (this.editAction == null) {
-            this.editAction = new EditAction();
+    private NewAction getNewAction() {
+        if (this.newAction == null) {
+            this.newAction = new NewAction();
         }
-        return this.editAction;
+        return this.newAction;
     }
 
-    /** Singular instance of the {@link EditAction}. */
-    private EditAction editAction;
+    /** Singular instance of the {@link NewAction}. */
+    private NewAction newAction;
 
     /** Action to create and start editing a new control program. */
     private class NewAction extends RefreshableAction {
@@ -782,15 +812,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
-    private NewAction getNewAction() {
-        if (this.newAction == null) {
-            this.newAction = new NewAction();
+    private PreviewAction getPreviewAction() {
+        if (this.previewAction == null) {
+            this.previewAction = new PreviewAction();
         }
-        return this.newAction;
+        return this.previewAction;
     }
 
-    /** Singular instance of the {@link NewAction}. */
-    private NewAction newAction;
+    /** Singular instance of the {@link PreviewAction}. */
+    private PreviewAction previewAction;
 
     /**
      * Creates a dialog showing the control automaton.
@@ -843,17 +873,17 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link RenameAction}.
      */
-    private PreviewAction getPreviewAction() {
-        if (this.previewAction == null) {
-            this.previewAction = new PreviewAction();
+    private RenameAction getRenameAction() {
+        if (this.renameAction == null) {
+            this.renameAction = new RenameAction();
         }
-        return this.previewAction;
+        return this.renameAction;
     }
 
-    /** Singular instance of the {@link PreviewAction}. */
-    private PreviewAction previewAction;
+    /** Singular instance of the {@link RenameAction}. */
+    private RenameAction renameAction;
 
     /**
      * Action to rename the currently displayed control program.
@@ -894,17 +924,17 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link RenameAction}.
+     * {@link NewAction}.
      */
-    private RenameAction getRenameAction() {
-        if (this.renameAction == null) {
-            this.renameAction = new RenameAction();
+    private SaveAction getSaveAction() {
+        if (this.saveAction == null) {
+            this.saveAction = new SaveAction();
         }
-        return this.renameAction;
+        return this.saveAction;
     }
 
-    /** Singular instance of the {@link RenameAction}. */
-    private RenameAction renameAction;
+    /** Singular instance of the {@link SaveAction}. */
+    private SaveAction saveAction;
 
     private class SaveAction extends RefreshableAction {
         public SaveAction() {
@@ -929,20 +959,6 @@ public class ControlPanel extends JPanel implements SimulationListener {
             setEnabled(isEditing());
         }
     }
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
-     */
-    private SaveAction getSaveAction() {
-        if (this.saveAction == null) {
-            this.saveAction = new SaveAction();
-        }
-        return this.saveAction;
-    }
-
-    /** Singular instance of the {@link SaveAction}. */
-    private SaveAction saveAction;
 
     private class AutomatonPanel extends JGraphPanel<ControlJGraph> {
         /**
