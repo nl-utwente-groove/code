@@ -124,13 +124,16 @@ public class ControlView {
             // fetch checker tree (since it was edited)
             nodes = new CommonTreeNodeStream(c_r.getTree());
 
-            GCLDeterminismChecker determinismChecker = new GCLDeterminismChecker(nodes);
+            GCLDeterminismChecker determinismChecker =
+                new GCLDeterminismChecker(nodes);
             determinismChecker.setNamespace(builder);
-            GCLDeterminismChecker.program_return dc_r = determinismChecker.program();
-           
+            GCLDeterminismChecker.program_return dc_r =
+                determinismChecker.program();
+
             errors = determinismChecker.getErrors();
             if (errors.size() != 0) {
-                errors.add(0, "Encountered determinism checker errors in control program");
+                errors.add(0,
+                    "Encountered determinism checker errors in control program");
                 throw new FormatException(errors);
             }
 
@@ -141,10 +144,9 @@ public class ControlView {
                 frame.setSize(500, 1000);
                 frame.setVisible(true);
             }
- 
+
             nodes = new CommonTreeNodeStream(dc_r.getTree());
-            
-            
+
             GCLBuilder gclb = new GCLBuilder(nodes);
             gclb.setBuilder(builder);
             gclb.setName(getName());
@@ -172,7 +174,7 @@ public class ControlView {
 
             return aut;
         } catch (RecognitionException re) {
-            throw new FormatException(re);
+            throw new FormatException(re.getMessage());
         }
     }
 

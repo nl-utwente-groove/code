@@ -59,7 +59,11 @@ public class AspectNode extends DefaultNode implements AspectElement {
      *         <code>value.getAspect()</code>
      */
     public void addInferredValue(AspectValue value) throws FormatException {
-        getAspectMap().addInferredValue(value);
+        try {
+            getAspectMap().addInferredValue(value);
+        } catch (FormatException e) {
+            throw e.extend(this);
+        }
     }
 
     /**
@@ -69,7 +73,11 @@ public class AspectNode extends DefaultNode implements AspectElement {
      *         <code>value.getAspect()</code>
      */
     public void addDeclaredValue(AspectValue value) throws FormatException {
-        getAspectMap().addDeclaredValue(value);
+        try {
+            getAspectMap().addDeclaredValue(value);
+        } catch (FormatException e) {
+            throw e.extend(this);
+        }
     }
 
     public AspectValue getValue(Aspect aspect) {

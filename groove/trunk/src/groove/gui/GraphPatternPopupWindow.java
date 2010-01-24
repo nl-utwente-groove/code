@@ -40,7 +40,8 @@ public class GraphPatternPopupWindow {
     public GraphPatternPopupWindow(GraphPattern graph, Options options,
             String windowTitle) {
         this.jgraph =
-            new JGraph(PatternGraphJModel.getInstance(graph, options), false, null);
+            new JGraph(PatternGraphJModel.getInstance(graph, options), false,
+                null);
         this.jgraph.setPreferredSize(new Dimension(250, 250));
         this.title = windowTitle;
 

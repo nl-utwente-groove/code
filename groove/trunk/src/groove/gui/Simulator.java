@@ -93,6 +93,7 @@ import groove.util.Pair;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
+import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
@@ -476,7 +477,7 @@ public class Simulator {
                             oldGraphName == null ? NEW_GRAPH_NAME
                                     : oldGraphName, fresh);
                     if (newGraphName != null) {
-                        AspectGraph newGraph = toAspectGraph();
+                        AspectGraph newGraph = getAspectGraph();
                         GraphInfo.setName(newGraph, newGraphName);
                         if (doAddGraph(newGraph)
                             && confirmLoadStartState(newGraphName)) {
@@ -1183,7 +1184,7 @@ public class Simulator {
         setGTS(null);
         fireSetGrammar(getGrammarView());
         refresh();
-        List<String> grammarErrors = getGrammarView().getErrors();
+        List<FormatError> grammarErrors = getGrammarView().getErrors();
         boolean grammarCorrect = grammarErrors.isEmpty();
         setErrors(grammarErrors);
         if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
@@ -1199,7 +1200,7 @@ public class Simulator {
     /**
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
-    private void setErrors(List<String> grammarErrors) {
+    private void setErrors(List<FormatError> grammarErrors) {
         getErrorPanel().setErrors(grammarErrors);
         JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
         if (getErrorPanel().isVisible()) {
@@ -3507,7 +3508,7 @@ public class Simulator {
                     @Override
                     public void finish() {
                         if (confirmAbandon(false)) {
-                            AspectGraph ruleAsAspectGraph = toAspectGraph();
+                            AspectGraph ruleAsAspectGraph = getAspectGraph();
                             RuleName newRuleName =
                                 askNewRuleName("Name for edited rule",
                                     ruleName, false);
@@ -4270,9 +4271,9 @@ public class Simulator {
                             final RuleName ruleName =
                                 askNewRuleName(null, NEW_RULE_NAME, true);
                             if (ruleName != null) {
-                                AspectGraph newRule = toAspectGraph();
+                                AspectGraph newRule = getAspectGraph();
                                 GraphInfo.setName(newRule, ruleName.text());
-                                if (doAddRule(ruleName, toAspectGraph())) {
+                                if (doAddRule(ruleName, getAspectGraph())) {
                                     setRule(ruleName);
                                 }
                             }

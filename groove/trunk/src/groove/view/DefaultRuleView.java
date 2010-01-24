@@ -157,7 +157,7 @@ public class DefaultRuleView implements RuleView {
         }
     }
 
-    public List<String> getErrors() {
+    public List<FormatError> getErrors() {
         initialise();
         return this.ruleErrors;
     }
@@ -246,7 +246,7 @@ public class DefaultRuleView implements RuleView {
                 try {
                     this.levelMap.initialise();
                     this.rule = computeRule();
-                    this.ruleErrors = Collections.<String>emptyList();
+                    this.ruleErrors = Collections.<FormatError>emptyList();
                 } catch (FormatException exc) {
                     this.ruleErrors = exc.getErrors();
                 }
@@ -264,7 +264,8 @@ public class DefaultRuleView implements RuleView {
      */
     private Rule computeRule() throws FormatException {
         SPORule rule;
-        Set<String> errors = new TreeSet<String>(this.graph.getErrors());
+        Set<FormatError> errors =
+            new TreeSet<FormatError>(this.graph.getErrors());
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -301,7 +302,7 @@ public class DefaultRuleView implements RuleView {
         if (errors.isEmpty()) {
             return rule;
         } else {
-            throw new FormatException(new ArrayList<String>(errors));
+            throw new FormatException(errors);
         }
     }
 
@@ -631,7 +632,7 @@ public class DefaultRuleView implements RuleView {
      * The list of errors in the view graph; if <code>null</code>, there are no
      * view errors.
      */
-    private final List<String> viewErrors;
+    private final List<FormatError> viewErrors;
     /** The attribute element factory for this view. */
     private AttributeElementFactory attributeFactory;
     /** The level tree for this rule view. */
@@ -639,7 +640,7 @@ public class DefaultRuleView implements RuleView {
     /** The level map for this rule view. */
     private LevelMap levelMap;
     /** Errors found while converting the view to a rule. */
-    private List<String> ruleErrors;
+    private List<FormatError> ruleErrors;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
     /** Rule properties set for this rule. */

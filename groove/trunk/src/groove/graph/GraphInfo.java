@@ -19,9 +19,11 @@ package groove.graph;
 import groove.gui.layout.LayoutMap;
 import groove.util.Groove;
 import groove.util.Version;
+import groove.view.FormatError;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,20 +49,20 @@ public class GraphInfo {
     /**
      * Returns the list of format errors associated with the graph, if any.
      * @return an error list stored in the info object, or <code>null</code>
-     * @see #setErrors(List)
+     * @see #setErrors(Collection)
      */
     @SuppressWarnings("unchecked")
-    public List<String> getErrors() {
-        return (List<String>) this.data.get(ERRORS_KEY);
+    public List<FormatError> getErrors() {
+        return (List<FormatError>) this.data.get(ERRORS_KEY);
     }
 
     /**
      * Adds a given list of errors to those already stored. If there are no
      * errors stored, creates the list.
-     * @see #setErrors(List)
+     * @see #setErrors(Collection)
      */
-    public void addErrors(List<String> errors) {
-        List<String> myErrors = getErrors();
+    public void addErrors(List<FormatError> errors) {
+        List<FormatError> myErrors = getErrors();
         if (myErrors == null) {
             setErrors(errors);
         } else {
@@ -75,11 +77,11 @@ public class GraphInfo {
      * is removed altogether.
      * @see #getErrors()
      */
-    public void setErrors(List<String> errors) {
+    public void setErrors(Collection<FormatError> errors) {
         if (errors == null) {
             this.data.remove(ERRORS_KEY);
         } else {
-            this.data.put(ERRORS_KEY, new ArrayList<String>(errors));
+            this.data.put(ERRORS_KEY, new ArrayList<FormatError>(errors));
         }
     }
 
@@ -297,7 +299,7 @@ public class GraphInfo {
      * Convenience method to retrieve the list of format errors of a graph.
      * @see #getErrors()
      */
-    public static List<String> getErrors(GraphShape graph) {
+    public static List<FormatError> getErrors(GraphShape graph) {
         GraphInfo graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
@@ -310,15 +312,16 @@ public class GraphInfo {
      * Convenience method to add a list of errors to a graph.
      * @see #addErrors(List)
      */
-    public static void addErrors(GraphShape graph, List<String> errors) {
+    public static void addErrors(GraphShape graph, List<FormatError> errors) {
         getInfo(graph, true).addErrors(errors);
     }
 
     /**
      * Convenience method to set the list of format errors of a graph.
-     * @see #setErrors(List)
+     * @see #setErrors(Collection)
      */
-    public static void setErrors(GraphShape graph, List<String> errors) {
+    public static void setErrors(GraphShape graph,
+            Collection<FormatError> errors) {
         if (errors != null) {
             getInfo(graph, true).setErrors(errors);
         }
@@ -543,12 +546,24 @@ public class GraphInfo {
         GraphInfo sourceInfo = source.getInfo();
         if (sourceInfo != null) {
             // copy all the info
-            target.setInfo(sourceInfo);
-            // modify the layout map using the element map
-            LayoutMap<Node,Edge> layoutMap = sourceInfo.getLayoutMap();
-            if (layoutMap != null && elementMap != null) {
-                layoutMap = layoutMap.afterInverse(elementMap);
-                target.getInfo().setLayoutMap(layoutMap);
+            GraphInfo targetInfo = target.setInfo(sourceInfo);
+            if (elementMap != null) {
+                // modify the layout map using the element map
+                LayoutMap<Node,Edge> sourceLayoutMap =
+                    sourceInfo.getLayoutMap();
+                if (sourceLayoutMap != null) {
+                    targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
+                }
+                List<FormatError> sourceErrors = sourceInfo.getErrors();
+                if (sourceErrors != null) {
+                    List<FormatError> targetErrors =
+                        new ArrayList<FormatError>();
+                    for (FormatError error : sourceErrors) {
+                        targetErrors.add(error.transfer(elementMap.nodeMap()).transfer(
+                            elementMap.edgeMap()));
+                    }
+                    targetInfo.setErrors(targetErrors);
+                }
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties(false);

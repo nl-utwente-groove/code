@@ -22,6 +22,7 @@ import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -158,7 +159,7 @@ public class NewRuleView implements RuleView {
         }
     }
 
-    public List<String> getErrors() {
+    public List<FormatError> getErrors() {
         initialise();
         return this.ruleErrors;
     }
@@ -243,7 +244,7 @@ public class NewRuleView implements RuleView {
         if (this.attributeFactory == null) {
             this.attributeFactory =
                 new AttributeElementFactory(this.graph, getProperties());
-            this.ruleErrors = new ArrayList<String>();
+            this.ruleErrors = new ArrayList<FormatError>();
             if (this.viewErrors != null) {
                 this.ruleErrors.addAll(this.viewErrors);
             }
@@ -265,7 +266,7 @@ public class NewRuleView implements RuleView {
      */
     private Rule computeRule() throws FormatException {
         SPORule rule;
-        Set<String> errors = new TreeSet<String>();
+        Set<FormatError> errors = new TreeSet<FormatError>();
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -392,15 +393,15 @@ public class NewRuleView implements RuleView {
      * The list of errors in the view graph; if <code>null</code>, there are no
      * view errors.
      */
-    private final List<String> viewErrors;
+    private final List<FormatError> viewErrors;
     /** The attribute element factory for this view. */
     private AttributeElementFactory attributeFactory;
-    /** Thye graph for this view, if any. */
+    /** The graph for this view, if any. */
     private TypeGraph type;
     /** The level tree for this rule view. */
     private LevelMap levelTree;
     /** Errors found while converting the view to a rule. */
-    private List<String> ruleErrors;
+    private List<FormatError> ruleErrors;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
     /** Rule properties set for this rule. */
@@ -727,7 +728,7 @@ public class NewRuleView implements RuleView {
         }
 
         private void initData() throws FormatException {
-            Set<String> errors = new TreeSet<String>();
+            Set<FormatError> errors = new TreeSet<FormatError>();
             // add nodes to nesting data structures
             for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
                 if (RuleAspect.inRule(node)) {
@@ -758,7 +759,22 @@ public class NewRuleView implements RuleView {
                 Graph graph = createGraph();
                 graph.addNodeSet(this.viewToRuleMap.nodeMap().values());
                 graph.addEdgeSet(this.viewToRuleMap.edgeMap().values());
-                errors.addAll(NewRuleView.this.type.checkTyping(graph));
+                Collection<FormatError> typeErrors =
+                    NewRuleView.this.type.checkTyping(graph);
+                if (!typeErrors.isEmpty()) {
+                    // compute inverse element map
+                    Map<Element,Element> inverseMap =
+                        new HashMap<Element,Element>();
+                    for (Map.Entry<Node,Node> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
+                        inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
+                    }
+                    for (Map.Entry<Edge,Edge> edgeEntry : this.viewToRuleMap.edgeMap().entrySet()) {
+                        inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
+                    }
+                    for (FormatError error : typeErrors) {
+                        errors.add(error.transfer(inverseMap));
+                    }
+                }
             }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -1122,7 +1138,7 @@ public class NewRuleView implements RuleView {
             this.rhsMap = new NodeEdgeHashMap();
             this.nacNodeSet = new HashSet<Node>();
             this.nacEdgeSet = new HashSet<Edge>();
-            Set<String> errors = new TreeSet<String>();
+            Set<FormatError> errors = new TreeSet<FormatError>();
             for (Map.Entry<AspectNode,Node> viewNodeEntry : this.viewNodes.entrySet()) {
                 try {
                     processNode(viewNodeEntry.getKey(),
@@ -1678,7 +1694,7 @@ public class NewRuleView implements RuleView {
 
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
-            Set<String> errors = new TreeSet<String>();
+            Set<FormatError> errors = new TreeSet<FormatError>();
             SortedMap<Integer,Node> inParMap = new TreeMap<Integer,Node>();
             SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
             this.hiddenPars = new HashSet<Node>();

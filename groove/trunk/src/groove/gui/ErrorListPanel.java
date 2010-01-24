@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.util.Groove;
+import groove.view.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -55,7 +56,7 @@ public class ErrorListPanel extends JPanel {
      * Shows or appends a list of error messages in the error window.
      * @param errors the list of error messages to be shown
      */
-    public void setErrors(List<String> errors) {
+    public void setErrors(List<FormatError> errors) {
         if (errors.isEmpty()) {
             if (isVisible()) {
                 setVisible(false);

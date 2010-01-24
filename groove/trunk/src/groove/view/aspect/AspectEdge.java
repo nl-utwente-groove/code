@@ -20,9 +20,12 @@ import groove.graph.AbstractBinaryEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
@@ -44,40 +47,75 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     AspectEdge(AspectNode source, AspectNode target, AspectMap parseData)
         throws FormatException {
         super(source, DefaultLabel.createLabel(parseData.getText()), target);
-        for (AspectValue value : parseData.getDeclaredValues()) {
+        this.parseData = parseData;
+    }
+
+    /** 
+     * Initialises and checks all aspect value-related properties.
+     * This method should always be called immediately after the constructor. 
+     * @throws FormatException if there are aspect-related errors.
+     */
+    public void initAspects() throws FormatException {
+        for (AspectValue value : this.parseData.getDeclaredValues()) {
             if (!value.isEdgeValue()) {
                 throw new FormatException(
-                    "Aspect value '%s' cannot be used on edges", value);
+                    "Aspect value '%s' cannot be used on edges", value, this);
             }
         }
-        addInferences(parseData, source.getAspectMap(), target.getAspectMap());
-        this.parseData = parseData;
+        addInferences();
         testLabel();
     }
 
     /**
      * Adds values to the aspect map of an edge that are inferred from source
      * and target nodes.
-     * @param sourceData map of aspect values for the source node
-     * @param targetData map of aspect values for the target node
      * @throws FormatException if an explicitly declared aspect value is
      *         overruled
      */
-    private void addInferences(AspectMap edgeData, AspectMap sourceData,
-            AspectMap targetData) throws FormatException {
+    private void addInferences() throws FormatException {
+        AspectMap sourceData = source().getAspectMap();
+        AspectMap targetData = target().getAspectMap();
         for (Aspect aspect : Aspect.getAllAspects()) {
-            AspectValue edgeValue = edgeData.get(aspect);
-            AspectValue sourceValue = sourceData.get(aspect);
-            AspectValue sourceInference =
-                sourceValue == null ? null : sourceValue.sourceToEdge();
-            AspectValue targetValue = targetData.get(aspect);
-            AspectValue targetInference =
-                targetValue == null ? null : targetValue.targetToEdge();
-            AspectValue result =
-                aspect.getMax(edgeValue, sourceInference, targetInference);
-            if (result != null && !result.equals(edgeValue)) {
-                edgeData.addInferredValue(result);
+            try {
+                AspectValue edgeValue = this.parseData.get(aspect);
+                AspectValue sourceValue = sourceData.get(aspect);
+                AspectValue sourceInference =
+                    sourceValue == null ? null : sourceValue.sourceToEdge();
+                AspectValue targetValue = targetData.get(aspect);
+                AspectValue targetInference =
+                    targetValue == null ? null : targetValue.targetToEdge();
+                AspectValue result =
+                    aspect.getMax(edgeValue, sourceInference, targetInference);
+                if (result != null && !result.equals(edgeValue)) {
+                    this.parseData.addInferredValue(result);
+                }
+            } catch (FormatException e) {
+                throw e.extend(this);
             }
+        }
+    }
+
+    /**
+     * Tests if the parsed edge label is allowed by all inferred aspects.
+     * @throws FormatException if there is an aspect whose value for this edge
+     *         is incompatible with the edge label
+     * @see Aspect#testLabel(Label, AspectValue, AspectValue)
+     */
+    private void testLabel() throws FormatException {
+        List<FormatError> errors = new ArrayList<FormatError>();
+        for (AspectValue declaredAspectValue : getDeclaredValues()) {
+            Aspect aspect = declaredAspectValue.getAspect();
+            AspectValue inferredValue = getAspectMap().get(aspect);
+            try {
+                aspect.testLabel(label(), declaredAspectValue, inferredValue);
+            } catch (FormatException e) {
+                for (FormatError error : e.getErrors()) {
+                    errors.add(error.extend(this));
+                }
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
         }
     }
 
@@ -195,20 +233,6 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     @Override
     protected String getLabelText() {
         return getPlainText();
-    }
-
-    /**
-     * Tests if the parsed edge label is allowed by all inferred aspects.
-     * @throws FormatException if there is an aspect whose value for this edge
-     *         is incompatible with the edge label
-     * @see Aspect#testLabel(Label, AspectValue, AspectValue)
-     */
-    protected void testLabel() throws FormatException {
-        for (AspectValue declaredAspectValue : getDeclaredValues()) {
-            Aspect aspect = declaredAspectValue.getAspect();
-            AspectValue inferredValue = getAspectMap().get(aspect);
-            aspect.testLabel(label(), declaredAspectValue, inferredValue);
-        }
     }
 
     /**
