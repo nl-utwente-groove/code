@@ -16,8 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
 import groove.util.Converter;
 
 import org.jgraph.graph.DefaultGraphCell;
@@ -141,7 +139,4 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
 
-    /** Pseudo-label for cells with an empty list label set. */
-    static public final Label NO_LABEL =
-        DefaultLabel.createLabel("\u0000", Label.NODE_TYPE);
 }

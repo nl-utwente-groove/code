@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import groove.control.ControlView;
 import groove.graph.Element;
 import groove.view.aspect.AspectGraph;
 
@@ -30,8 +31,8 @@ public class FormatError implements Comparable<FormatError> {
     /** Constructs an error for a given graph, erroneous element and string message. */
     public FormatError(AspectGraph graph, Element object, String message) {
         this(message);
-        this.errorGraph = graph;
-        this.errorObject = object;
+        this.graph = graph;
+        this.object = object;
     }
 
     /** Constructs an error consisting of a string message. */
@@ -49,25 +50,35 @@ public class FormatError implements Comparable<FormatError> {
     public FormatError(String message, Object... pars) {
         this(String.format(message, pars));
         for (Object par : pars) {
-            if (par instanceof FormatError) {
-                this.errorGraph = ((FormatError) par).getGraph();
-                this.errorObject = ((FormatError) par).getObject();
-            } else if (par instanceof AspectGraph) {
-                this.errorGraph = (AspectGraph) par;
-            } else if (par instanceof Element) {
-                this.errorObject = (Element) par;
-            }
+            addContext(par);
+        }
+    }
+
+    /**
+     * Attempts to set a context value ({@link #graph}, {@link #control}, 
+     * {@link #object}) from a given object.
+     */
+    private void addContext(Object par) {
+        if (par instanceof FormatError) {
+            this.graph = ((FormatError) par).getGraph();
+            this.object = ((FormatError) par).getObject();
+        } else if (par instanceof AspectGraph) {
+            this.graph = (AspectGraph) par;
+        } else if (par instanceof ControlView) {
+            this.control = (ControlView) par;
+        } else if (par instanceof Element) {
+            this.object = (Element) par;
         }
     }
 
     /** Constructs an error from an existing error, by adding extra information. */
     public FormatError(FormatError prior, Object... pars) {
         this(prior.toString(), pars);
-        if (this.errorObject == null) {
-            this.errorObject = prior.getObject();
+        if (this.object == null) {
+            this.object = prior.getObject();
         }
-        if (this.errorGraph == null) {
-            this.errorGraph = prior.getGraph();
+        if (this.graph == null) {
+            this.graph = prior.getGraph();
         }
     }
 
@@ -86,6 +97,9 @@ public class FormatError implements Comparable<FormatError> {
                 getGraph() == null ? err.getGraph() == null
                         : getGraph().equals(err.getGraph());
             result &=
+                getControl() == null ? err.getControl() == null
+                        : getControl().equals(err.getControl());
+            result &=
                 getObject() == null ? err.getObject() == null
                         : getObject().equals(err.getObject());
             result &= toString().equals(err.toString());
@@ -98,6 +112,7 @@ public class FormatError implements Comparable<FormatError> {
     public int hashCode() {
         int result = toString().hashCode();
         result += getGraph() == null ? 0 : getGraph().hashCode();
+        result += getControl() == null ? 0 : getControl().hashCode();
         result += getObject() == null ? 0 : getObject().hashCode();
         return result;
     }
@@ -128,14 +143,19 @@ public class FormatError implements Comparable<FormatError> {
         return result;
     }
 
+    /** Returns the control view in which the error occurs. May be {@code null}. */
+    public final ControlView getControl() {
+        return this.control;
+    }
+
     /** Returns the graph in which the error occurs. May be {@code null}. */
     public final AspectGraph getGraph() {
-        return this.errorGraph;
+        return this.graph;
     }
 
     /** Returns the graph element in which the error occurs. May be {@code null}. */
     public final Element getObject() {
-        return this.errorObject;
+        return this.object;
     }
 
     /** Returns a new format error that extends this one with context information. */
@@ -145,21 +165,23 @@ public class FormatError implements Comparable<FormatError> {
 
     /** Returns a new format error in which the context information is transferred. */
     public FormatError transfer(Map<?,?> map) {
-        Element newObject = this.errorObject;
+        Element newObject = this.object;
         if (map.containsKey(newObject)) {
             newObject = (Element) map.get(newObject);
         }
-        AspectGraph newGraph = this.errorGraph;
+        AspectGraph newGraph = this.graph;
         if (map.containsKey(newGraph)) {
             newGraph = (AspectGraph) map.get(newGraph);
         }
         return new FormatError(this, newObject, newGraph);
     }
 
+    /** The control view in which the error occurs. */
+    private ControlView control;
     /** The graph in which the error occurs. */
-    private AspectGraph errorGraph;
+    private AspectGraph graph;
     /** The erroneous element. */
-    private Element errorObject;
+    private Element object;
     /** The error message. */
     private final String message;
 }

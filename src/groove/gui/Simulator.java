@@ -160,6 +160,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -1568,12 +1570,62 @@ public class Simulator {
         return result;
     }
 
-    private ErrorListPanel getErrorPanel() {
+    private NewErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            this.errorPanel = new ErrorListPanel();
+            final NewErrorListPanel result =
+                this.errorPanel = new NewErrorListPanel();
+            result.addSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    FormatError error = result.getSelectedError();
+                    AspectGraph errorGraph = error.getGraph();
+                    if (errorGraph != null) {
+                        JGraphPanel<?> panel = null;
+                        String name = GraphInfo.getName(errorGraph);
+                        if (GraphInfo.hasRuleRole(errorGraph)) {
+                            panel = getRulePanel();
+                            setRule(new RuleName(name));
+                        } else if (GraphInfo.hasGraphRole(errorGraph)) {
+                            panel = getStatePanel();
+                            getStateList().setSelectedValue(name, true);
+                        } else if (GraphInfo.hasTypeRole(errorGraph)) {
+                            panel = getTypePanel();
+                            getTypePanel().setSelectedType(name);
+                        }
+                        // select the error cell and switch to the panel
+                        if (panel != null) {
+                            if (error.getObject() != null) {
+                                panel.selectJCell(error.getObject());
+                            }
+                            setGraphPanel(panel);
+                        }
+                    } else if (error.getControl() != null) {
+                        getControlPanel().setSelectedControl(
+                            error.getControl().getName());
+                        String LINE_PATTERN = "on line ";
+                        int index = error.toString().indexOf(LINE_PATTERN);
+                        if (index >= 0) {
+                            index += LINE_PATTERN.length();
+                            String line = error.toString().substring(index);
+                            int lineNr;
+                            try {
+                                lineNr = Integer.parseInt(line);
+                                getControlPanel().selectLine(lineNr);
+                            } catch (NumberFormatException e1) {
+                                // do nothing
+                            }
+                        }
+                        getGraphViewsPanel().setSelectedComponent(
+                            getControlPanel());
+                    }
+                }
+            });
         }
         return this.errorPanel;
     }
+
+    /** Error display. */
+    private NewErrorListPanel errorPanel;
 
     /**
      * Returns the simulator panel on which the current state is displayed. Note
@@ -2798,9 +2850,6 @@ public class Simulator {
 
     /** Type graph display panel. */
     private TypePanel typePanel;
-
-    /** Error display. */
-    private ErrorListPanel errorPanel;
 
     /** Undo history. */
     private UndoHistory undoHistory;

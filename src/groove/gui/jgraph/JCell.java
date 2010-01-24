@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 
 import java.io.Serializable;
@@ -74,4 +75,12 @@ public interface JCell extends GraphCell, Serializable {
      * Returns tool tip text for this j-cell.
      */
     public abstract String getToolTipText();
+
+    /** Pseudo-label for cells with an empty list label set. */
+    static public final Label NO_LABEL =
+        DefaultLabel.createLabel("\u0000", Label.NODE_TYPE);
+    /** Pseudo-label for subtype edges. */
+    static public final Label SUBTYPE_LABEL =
+        DefaultLabel.createLabel("\u0001", Label.NODE_TYPE);
+
 }

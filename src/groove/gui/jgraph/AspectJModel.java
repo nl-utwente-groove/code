@@ -641,7 +641,6 @@ public class AspectJModel extends GraphJModel {
         /**
          * Returns <tt>true</tt> only if the aspect values of the edge to be
          * added equal those of this j-edge, and the superclass is also willing.
-         * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
          */
         @Override
         public boolean addEdge(BinaryEdge edge) {
@@ -710,7 +709,7 @@ public class AspectJModel extends GraphJModel {
          * values as the source node. This is to prevent ambiguities.
          */
         @Override
-        boolean isDataEdgeSourceLabel() {
+        public boolean isDataEdgeSourceLabel() {
             return super.isDataEdgeSourceLabel()
                 && getEdge().getAspectMap().equalsAspects(
                     getSourceNode().getAspectMap())

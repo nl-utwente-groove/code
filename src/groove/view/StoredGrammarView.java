@@ -342,7 +342,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
-                    errors.add(new FormatError("Format error in rule '%s': %s",
+                    errors.add(new FormatError("Error in rule '%s': %s",
                         ruleView.getName(), error, ruleView.getView()));
                 }
             }
@@ -363,7 +363,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
-                            "Format error in control program '%s': %s",
+                            "Error in control program '%s': %s",
                             getControlName(), error, controlView));
                     }
                 }
@@ -389,8 +389,8 @@ public class StoredGrammarView implements GrammarView, Observer {
                 startGraphErrors = exc.getErrors();
             }
             for (FormatError error : startGraphErrors) {
-                errors.add(new FormatError("Format error in start graph: %s",
-                    error, getStartGraphView().getView()));
+                errors.add(new FormatError("Error in start graph: %s", error,
+                    getStartGraphView().getView()));
             }
         }
         this.labelStore = new LabelStore();

@@ -16,6 +16,12 @@
  */
 package groove.gui;
 
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.Node;
+import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.util.Pair;
@@ -122,6 +128,28 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         this.jGraph.setEnabled(enabled);
         this.statusBar.setEnabled(enabled);
         super.setEnabled(enabled);
+    }
+
+    /**
+     * If the underlying model is a {@link GraphJModel},
+     * selects the element corresponding to a given graph element.
+     */
+    public void selectJCell(Element elem) {
+        if (getJModel() instanceof GraphJModel) {
+            JCell cell = null;
+            if (elem instanceof Node) {
+                cell = ((GraphJModel) getJModel()).getJVertex((Node) elem);
+            } else if (elem instanceof Edge) {
+                cell = ((GraphJModel) getJModel()).getJCell((Edge) elem);
+            }
+            if (cell != null) {
+                if (cell instanceof GraphJEdge
+                    && ((GraphJEdge) cell).isDataEdgeSourceLabel()) {
+                    cell = ((GraphJEdge) cell).getSourceVertex();
+                }
+                getJGraph().setSelectionCell(cell);
+            }
+        }
     }
 
     /**

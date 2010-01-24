@@ -529,6 +529,8 @@ public class Options {
 
     /** Indication for an empty label in a list of labels. */
     static public final String EMPTY_LABEL_TEXT = "(empty)";
+    /** Indication for a subtype edge in a list of labels. */
+    static public final String SUBTYPE_LABEL_TEXT = "(subtype)";
     /** Indication for no label in a list of labels. */
     static public final String NO_LABEL_TEXT = "(none)";
     /** The name of the Bezier line style. */

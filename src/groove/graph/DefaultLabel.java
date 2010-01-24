@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.util.Converter;
 
@@ -238,6 +239,11 @@ public final class DefaultLabel extends AbstractLabel {
      */
     static public String toTypedString(Label label) {
         return getTypePrefix(label.getType()) + label.text();
+    }
+
+    /** Creates a data type label for a given algebra. */
+    public static DefaultLabel createDataType(Algebra<?> algebra) {
+        return createLabel(AlgebraRegister.getSignatureName(algebra), NODE_TYPE);
     }
 
     /**
