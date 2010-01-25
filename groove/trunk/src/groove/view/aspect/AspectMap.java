@@ -357,6 +357,14 @@ public class AspectMap implements Iterable<AspectValue> {
         return Collections.unmodifiableSet(this.declaredValues);
     }
 
+    /** Returns the set of inferred values in this aspect map. */
+    public final Set<AspectValue> getInferredValues() {
+        Set<AspectValue> result =
+            new HashSet<AspectValue>(this.aspectMap.values());
+        result.removeAll(this.declaredValues);
+        return Collections.unmodifiableSet(result);
+    }
+
     /** The (sub)set of declared aspect values. */
     private final Set<AspectValue> declaredValues = new HashSet<AspectValue>();
 

@@ -519,9 +519,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Implements the functionality of {@link #relabel(Label, Label)}. Returns
      * an undoable edit wrapping this functionality.
      */
-    private RelabelEdit doRelabel(Label oldLabel, Label newLabel)
+    private MyCompoundEdit doRelabel(Label oldLabel, Label newLabel)
         throws IOException {
-        RelabelEdit result = new RelabelEdit();
+        MyCompoundEdit result = new MyCompoundEdit(Options.RELABEL_ACTION_NAME);
         for (AspectGraph graph : getGraphs().values()) {
             AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
             if (newGraph != graph) {
@@ -548,6 +548,49 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         if (newProperties != this.properties) {
             Edit edit = doPutProperties(newProperties);
             result.addEdit(edit);
+        }
+        result.end();
+        return result.getChange() == 0 ? null : result;
+    }
+
+    /** Renumbers all nodes in the rules and graphs of this grammar
+     * to a consecutive sequence starting with {@code 0}.
+     * @throws IOException
+     */
+    public void renumber() throws IOException {
+        Edit edit = doRenumber();
+        if (edit != null) {
+            postEdit(edit);
+        }
+    }
+
+    /**
+     * Implements the functionality of {@link #renumber()}. Returns
+     * an undoable edit wrapping this functionality.
+     */
+    private MyCompoundEdit doRenumber() throws IOException {
+        MyCompoundEdit result =
+            new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
+        for (AspectGraph graph : getGraphs().values()) {
+            AspectGraph newGraph = graph.renumber();
+            if (newGraph != graph) {
+                Edit edit = doPutGraph(newGraph);
+                result.addEdit(edit);
+            }
+        }
+        for (AspectGraph type : getTypes().values()) {
+            AspectGraph newType = type.renumber();
+            if (newType != type) {
+                Edit edit = doPutType(newType);
+                result.addEdit(edit);
+            }
+        }
+        for (AspectGraph rule : getRules().values()) {
+            AspectGraph newRule = rule.renumber();
+            if (newRule != rule) {
+                Edit edit = doPutRule(newRule);
+                result.addEdit(edit);
+            }
         }
         result.end();
         return result.getChange() == 0 ? null : result;
@@ -1039,6 +1082,52 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final int change;
     }
 
+    /** Edit wrapping a relabelling. */
+    private class MyCompoundEdit extends CompoundEdit implements Edit {
+        /** Constructs a compound edit with a given name. */
+        public MyCompoundEdit(String presentationName) {
+            this.presentationName = presentationName;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return this.presentationName;
+        }
+
+        @Override
+        public String getRedoPresentationName() {
+            return Options.REDO_ACTION_NAME + " " + getPresentationName();
+        }
+
+        @Override
+        public String getUndoPresentationName() {
+            return Options.UNDO_ACTION_NAME + " " + getPresentationName();
+        }
+
+        @Override
+        public boolean addEdit(UndoableEdit anEdit) {
+            boolean result = super.addEdit(anEdit);
+            if (result) {
+                assert anEdit instanceof Edit;
+                this.change |= ((Edit) anEdit).getChange();
+            }
+            return result;
+        }
+
+        @Override
+        public int getChange() {
+            return this.change;
+        }
+
+        /**
+         * The change information in this edit.
+         * @see #getChange()
+         */
+        private int change;
+        /** The name of this edit. */
+        private final String presentationName;
+    }
+
     /** Edit consisting of the deletion of a control program. */
     private class DeleteControlEdit extends MyEdit {
         public DeleteControlEdit(String name, String control,
@@ -1230,45 +1319,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final SystemProperties oldProps;
         /** The new system properties; possibly {@code null}. */
         private final SystemProperties newProps;
-    }
-
-    /** Edit wrapping a relabelling. */
-    private class RelabelEdit extends CompoundEdit implements Edit {
-        @Override
-        public String getPresentationName() {
-            return Options.RELABEL_ACTION_NAME;
-        }
-
-        @Override
-        public String getRedoPresentationName() {
-            return Options.REDO_ACTION_NAME + " " + getPresentationName();
-        }
-
-        @Override
-        public String getUndoPresentationName() {
-            return Options.UNDO_ACTION_NAME + " " + getPresentationName();
-        }
-
-        @Override
-        public boolean addEdit(UndoableEdit anEdit) {
-            boolean result = super.addEdit(anEdit);
-            if (result) {
-                assert anEdit instanceof Edit;
-                this.change |= ((Edit) anEdit).getChange();
-            }
-            return result;
-        }
-
-        @Override
-        public int getChange() {
-            return this.change;
-        }
-
-        /**
-         * The change information in this edit.
-         * @see #getChange()
-         */
-        private int change;
     }
 
     /** Edit consisting of the renaming of a graph. */

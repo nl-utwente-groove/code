@@ -48,6 +48,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Graph implementation to convert from a label prefix representation of an
@@ -424,6 +426,49 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     private Label createLabel(String text) {
         return DefaultLabel.createLabel(text);
+    }
+
+    /** 
+     * Returns a new aspect graph obtained from this one
+     * by renumbering the nodes in a consecutive sequence starting from {@code 0}
+     */
+    public AspectGraph renumber() {
+        AspectGraph result = this;
+        // renumber the nodes in their original order
+        SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(nodeSet());
+        if (nodes.last().getNumber() != nodeCount() - 1) {
+            try {
+                result = new AspectGraph();
+                NodeEdgeMap elementMap = new NodeEdgeHashMap();
+                int nodeNr = 0;
+                for (AspectNode node : nodes) {
+                    AspectNode image = new AspectNode(nodeNr);
+                    for (AspectValue value : node.getAspectMap().getDeclaredValues()) {
+                        image.addDeclaredValue(value);
+                    }
+                    for (AspectValue value : node.getAspectMap().getInferredValues()) {
+                        image.addInferredValue(value);
+                    }
+                    result.addNode(image);
+                    elementMap.putNode(node, image);
+                    nodeNr++;
+                }
+                for (AspectEdge edge : edgeSet()) {
+                    AspectEdge image =
+                        createAspectEdge(
+                            (AspectNode) elementMap.getNode(edge.source()),
+                            (AspectNode) elementMap.getNode(edge.opposite()),
+                            edge.getAspectMap());
+                    result.addEdge(image);
+                    elementMap.putEdge(edge, image);
+                }
+                GraphInfo.transfer(this, result, elementMap);
+            } catch (FormatException exc) {
+                assert false : String.format("Exception when renumbering: %s",
+                    exc.getMessage());
+            }
+        }
+        return result;
     }
 
     /**
