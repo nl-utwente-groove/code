@@ -68,7 +68,7 @@ statement
     ;
 
 conditionliteral
-	: TRUE | IDENTIFIER ;
+	: TRUE | call ;
 
 expression	
 	: expression2 (OR^ expression)?

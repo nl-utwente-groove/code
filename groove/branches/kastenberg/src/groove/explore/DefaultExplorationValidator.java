@@ -25,17 +25,13 @@ import groove.view.StoredGrammarView;
 /**
  * Wrapper class that handles the update of the default exploration
  * (which is stored in the simulator) when the grammar changes.
- * 
- * Overrides the following methods from SimulationAdapter:
- * - setGrammarUpdate       - checks whether the default exploration is still
- *                            valid when the grammar changes
  *
  * @author Maarten de Mol
  * @version $Revision $
  */
 public class DefaultExplorationValidator extends SimulationAdapter {
-    private final Simulator simulator;            // reference to the simulator 
-    
+    private final Simulator simulator; // reference to the simulator 
+
     /**
      * Stores reference to the simulator, and sets itself up as a listener.
      * @simulator - reference to the simulator
@@ -52,12 +48,15 @@ public class DefaultExplorationValidator extends SimulationAdapter {
      */
     @Override
     public void setGrammarUpdate(StoredGrammarView grammar) {
-        if (this.simulator.getDefaultExploration() != null) {
-            Acceptor acceptor = this.simulator.getDefaultExploration().getAcceptor();
+        Exploration defExpl = this.simulator.getDefaultExploration();
+        if (defExpl != null) {
+            Acceptor acceptor = defExpl.getAcceptor().getObject();
             if (acceptor instanceof ConditionalRuleAcceptor) {
-                Boolean success = ((ConditionalRuleAcceptor) acceptor).renewCondition(grammar);
-                if (!success)
+                Boolean success =
+                    ((ConditionalRuleAcceptor) acceptor).renewCondition(grammar);
+                if (!success) {
                     this.simulator.setDefaultExploration(new Exploration());
+                }
             }
         }
     }

@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.LabelStore;
 import groove.util.CollectionOfCollections;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -310,9 +311,9 @@ public class RuleSystem {
             try {
                 rule.testConsistent();
             } catch (FormatException exc) {
-                for (String error : exc.getErrors()) {
-                    errors.add(String.format("System property error in %s: %s",
-                        rule.getName(), error));
+                for (FormatError error : exc.getErrors()) {
+                    errors.add(String.format("Error in %s: %s", rule.getName(),
+                        error));
                 }
             }
         }

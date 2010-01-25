@@ -146,11 +146,13 @@ public class AutomatonBuilder extends Namespace {
         ControlTransition ct =
             new ControlTransition(this.currentStart, this.currentEnd, label);
         
+        // copy the variables that are already initialized in the start state 
+        // to the end state
         this.currentEnd.initializeVariables(this.currentStart.getInitializedVariables());
         
-        // basic init stuff: if an outgoing transitions is added, the init of
-        // the state gets the label added
-        this.currentStart.addInit(label);
+        // basic init stuff: if an outgoing transitions is added, the initial 
+        // actions of the state gets the label added
+        this.currentStart.addInit(ct);
 
         debug("addTransition: " + ct);
 
@@ -232,7 +234,7 @@ public class AutomatonBuilder extends Namespace {
      */
     public void deltaInitCopy(ControlState source, ControlState target) {
         debug("deltaInitCopy: " + source + " to " + target);
-        if (target.getInit().contains(_DELTA_)) {
+        if (target.getInit().keySet().contains(_DELTA_)) {
             debug("deltaInitCopy: Delta found in " + target + target.getInit());
             target.delInit(_DELTA_);
             target.addInit(source);
@@ -340,9 +342,8 @@ public class AutomatonBuilder extends Namespace {
             this.aut.setStart(this.currentEnd);
         }
 
-        // copy any init values, since the states are considered only seperated
-        // by a lambda,
-        // the target init is reachable from the source also
+        // copy any init values, since the states are considered only separated
+        // by a lambda, the target init is reachable from the source also
         this.currentEnd.addInit(this.currentStart);
 
         // also merge the variables
@@ -412,7 +413,7 @@ public class AutomatonBuilder extends Namespace {
         Set<ControlTransition> remove = new HashSet<ControlTransition>();
 
         for (ControlTransition ct : this.transitions) {
-            if (ct.getFailures().contains(_DELTA_)) {
+            if (ct.getFailures().keySet().contains(_DELTA_)) {
                 checkOrphan.add(ct.target());
                 remove.add(ct);
             }
@@ -430,7 +431,7 @@ public class AutomatonBuilder extends Namespace {
                     delete = false;
                 }
             }
-            // delete is it is not the startstate
+            // delete is it is not the start state
             if (delete && this.aut.getStart() != t) {
                 rmState(t);
             }
@@ -524,18 +525,18 @@ public class AutomatonBuilder extends Namespace {
         // this assumes that there are no outgoing lambda's from states that
         // have else-transitions
         for (ControlTransition transition : this.transitions) {
-            Set<String> failureNames = transition.getFailures();
+            Set<String> failureNames = transition.getFailures().keySet();
             if (failureNames.remove(_OTHER_)) {
                 failureNames.addAll(otherRuleNames);
             }
             if (failureNames.remove(_ANY_)) {
                 failureNames.addAll(getRuleNames());
             }
-            Set<Rule> failures = new HashSet<Rule>();
+            Set<Rule> failureRules = new HashSet<Rule>();
             for (String s : failureNames) {
-                failures.add(grammar.getRule(s));
+                failureRules.add(grammar.getRule(s));
             }
-            transition.setFailureSet(failures);
+            transition.setFailureSet(failureRules);
         }
         return;
     }
@@ -579,6 +580,6 @@ public class AutomatonBuilder extends Namespace {
     }
 
     private void debug(String msg) {
-//        System.err.println("debug: " + msg);
+        //System.err.println("debug: " + msg);
     }
 }

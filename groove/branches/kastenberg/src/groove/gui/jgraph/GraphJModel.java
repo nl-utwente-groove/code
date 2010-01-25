@@ -332,6 +332,11 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         return result;
     }
 
+    @Override
+    public boolean hasError(JCell cell) {
+        return false;
+    }
+
     /** This method reuses the node identity of the JVertex. */
     @Override
     protected Node addFreshNode(Graph graph, JVertex root) {
@@ -753,7 +758,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
     private final List<JCell> addedJCells = new LinkedList<JCell>();
-
     /**
      * Set of GraphModel connections. Used in the process of constructing a
      * GraphJModel.

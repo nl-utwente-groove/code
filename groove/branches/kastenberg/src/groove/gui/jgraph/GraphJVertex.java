@@ -17,14 +17,14 @@
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
-import static groove.util.Converter.STRONG_TAG;
 import groove.abs.AbstrGraph;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebra;
 import groove.control.Location;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -99,7 +99,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (isFiltered()) {
             result =
                 this.jModel.isShowUnfilteredEdges() && hasVisibleIncidentEdge();
-        } else if (hasValue() || isDataNode()) {
+        } else if (isDataNode() || isDataTypeNode()) {
             result = hasVisibleIncidentEdge();
         } else {
             result = true;
@@ -152,10 +152,12 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         return result;
     }
 
-    /** Constant nodes are only listable when data nodes are shown. */
+    /** Constant and type nodes are only listable when data nodes are shown. */
     @Override
     public boolean isListable() {
-        return !hasValue() || this.jModel.isShowValueNodes();
+        boolean result =
+            this.jModel.isShowValueNodes() || !hasValue() || !isDataTypeNode();
+        return result;
     }
 
     /** This implementation adds the data edges to the super result. */
@@ -186,11 +188,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 ITALIC_TAG.on(new StringBuilder(mult))));
         }
         // add signature label for typed variable nodes
-        if (getActualNode() instanceof VariableNode
-            && !(getActualNode() instanceof ValueNode)
-            && ((VariableNode) getActualNode()).getAlgebra() != null) {
-            result.add(STRONG_TAG.on(new StringBuilder(
-                AlgebraRegister.getSignatureName(((VariableNode) getActualNode()).getAlgebra()))));
+        if (isVariableNode() && getAlgebra() != null) {
+            result.add(new StringBuilder(
+                DefaultLabel.toHtmlString(DefaultLabel.createDataType(getAlgebra()))));
         }
         for (Edge edge : getSelfEdges()) {
             if (getLabel(edge).isNodeType()
@@ -224,10 +224,17 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         } else {
             result.append(edgeLabel);
             if (edge.opposite() != getNode()) {
+                // this is a binary edge displayed as a node label
                 GraphJVertex oppositeVertex =
                     this.jModel.getJVertex(edge.opposite());
-                result.append(ASSIGN_TEXT);
-                result.append(oppositeVertex.getValueLabel());
+                Node actualTarget = oppositeVertex.getActualNode();
+                if (actualTarget instanceof ValueNode) {
+                    result.append(ASSIGN_TEXT);
+                    result.append(((ValueNode) actualTarget).getValue());
+                } else {
+                    result.append(TYPE_TEXT);
+                    result.append(((TypeNode) actualTarget).getType());
+                }
             }
             result = Converter.toHtml(result);
         }
@@ -242,7 +249,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     /**
      * This implementation returns a special constant label in case the node is
      * a constant, followed by the self-edge labels and data-edge labels; or
-     * {@link JVertex#NO_LABEL} if the result would otherwise be empty.
+     * {@link JCell#NO_LABEL} if the result would otherwise be empty.
      */
     public Collection<Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
@@ -252,7 +259,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         for (Edge edge : getSelfEdges()) {
             result.addAll(getListLabels(edge));
         }
-        if (getSelfEdges().isEmpty()) {
+        if (isVariableNode() && getAlgebra() != null) {
+            result.add(DefaultLabel.createDataType(getAlgebra()));
+        } else if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
         for (Edge edge : getDataEdges()) {
@@ -387,10 +396,24 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * @return true if this node is a value node, false otherwise.
+     * Callback method to determine whether the underlying graph node is data
+     * attribute-related.
+     */
+    boolean isDataTypeNode() {
+        return getActualNode() instanceof TypeNode
+            && DefaultLabel.isDataType(((TypeNode) getActualNode()).getType());
+    }
+
+    /**
+     * @return true if this node is a (variable or constant) value node, false otherwise.
      */
     public boolean isValueNode() {
         return getActualNode() instanceof VariableNode;
+    }
+
+    /** @return {@code true} if this node is a variable node. */
+    public boolean isVariableNode() {
+        return isValueNode() && !hasValue();
     }
 
     /**
@@ -430,9 +453,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * This method returns <code>null</code> if and only if {@link #hasValue()}
      * holds.
      */
-    groove.algebra.Algebra<?> getAlgebra() {
-        if (getActualNode() instanceof ValueNode) {
-            return ((ValueNode) getActualNode()).getAlgebra();
+    Algebra<?> getAlgebra() {
+        if (getActualNode() instanceof VariableNode) {
+            return ((VariableNode) getActualNode()).getAlgebra();
         } else {
             return null;
         }
@@ -509,4 +532,5 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     private final Node node;
 
     static private final String ASSIGN_TEXT = " = ";
+    static private final String TYPE_TEXT = ": ";
 }

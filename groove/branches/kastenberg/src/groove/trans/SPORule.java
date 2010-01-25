@@ -228,22 +228,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.outPars = outPars;
         debug("set " + this.outPars.size() + " creator params");
         this.hiddenPars = hiddenPars;
+        initializeParameterTypes();
     }
-
-    /**
-     * Gets the parameter type from a numbered parameter
-     * @param param the number of the parameter under inquiry
-     * @return PARAMETER_INPUT, PARAMETER_OUTPUT, PARAMETER_BOTH
-     */
-    private int getParameterType(int param) {
-        // check if this parameter even exists
-        if (param > getVisibleParCount()) {
-            debug("nonexistant parameter: " + param);
-            return PARAMETER_DOES_NOT_EXIST;
-        }
-
-        // check if the result is cached
-        if (this.parameterTypes.get(param) == null) {
+    
+    private void initializeParameterTypes() {
+        for (int param=1; param<=getVisibleParCount(); param++) {
             int result = PARAMETER_DOES_NOT_EXIST;
 
             // if it's in creatorParameters, it may only be an output node
@@ -262,6 +251,20 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
             this.parameterTypes.put(param, result);
         }
+    }
+
+    /**
+     * Gets the parameter type from a numbered parameter
+     * @param param the number of the parameter under inquiry
+     * @return PARAMETER_INPUT, PARAMETER_OUTPUT, PARAMETER_BOTH
+     */
+    private int getParameterType(int param) {
+        // check if this parameter even exists
+        if (param > getVisibleParCount()) {
+            debug("nonexistant parameter: " + param);
+            return PARAMETER_DOES_NOT_EXIST;
+        }
+
         return this.parameterTypes.get(param);
     }
 
@@ -279,14 +282,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         return count;
     }
-
+    
     /**
      * Returns whether a numbered parameter can be used as an output parameter
      * @param param the number of the parameter under inquiry
      * @return true if this parameter can be used as output parameter
      */
     public boolean isOutputParameter(int param) {
-        debug("params: " + this.parameterTypes.size());
         return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
     }
 
@@ -814,7 +816,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Computes the eraser (i.e., lhs-only) nodes.
      */
     private Node[] computeEraserNodes() {
-        testFixed(true);
+        //testFixed(true);
         Set<Node> eraserNodeSet = new HashSet<Node>(lhs().nodeSet());
         eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
         // eraserNodeSet.removeAll(getCoRootMap().nodeMap().values());

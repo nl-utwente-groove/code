@@ -93,6 +93,7 @@ import groove.util.Pair;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
+import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
@@ -102,7 +103,6 @@ import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -160,6 +160,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -477,7 +479,7 @@ public class Simulator {
                             oldGraphName == null ? NEW_GRAPH_NAME
                                     : oldGraphName, fresh);
                     if (newGraphName != null) {
-                        AspectGraph newGraph = toAspectGraph();
+                        AspectGraph newGraph = getAspectGraph();
                         GraphInfo.setName(newGraph, newGraphName);
                         if (doAddGraph(newGraph)
                             && confirmLoadStartState(newGraphName)) {
@@ -965,6 +967,18 @@ public class Simulator {
         }
     }
 
+    /** Renumbers the nodes in all graphs from {@code 0} upwards. */
+    void doRenumber() {
+        if (getGrammarStore() instanceof DefaultFileSystemStore) {
+            try {
+                ((DefaultFileSystemStore) getGrammarStore()).renumber();
+                updateGrammar();
+            } catch (IOException exc) {
+                showErrorDialog("Error while renumbering", exc);
+            }
+        }
+    }
+
     /**
      * Renames one of the graphs in the graph list. If the graph was the start
      * graph, uses the renamed graph again as start graph.
@@ -1184,9 +1198,9 @@ public class Simulator {
         setGTS(null);
         fireSetGrammar(getGrammarView());
         refresh();
-        List<String> grammarErrors = getGrammarView().getErrors();
+        List<FormatError> grammarErrors = getGrammarView().getErrors();
         boolean grammarCorrect = grammarErrors.isEmpty();
-        getErrorPanel().setErrors(grammarErrors);
+        setErrors(grammarErrors);
         if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
             if (isAbstractSimulation()) {
                 startAbstrSimulation();
@@ -1195,6 +1209,21 @@ public class Simulator {
             }
         }
         this.history.updateLoadGrammar();
+    }
+
+    /**
+     * Displays a list of errors, or hides the error panel if the list is empty.
+     */
+    private void setErrors(List<FormatError> grammarErrors) {
+        getErrorPanel().setErrors(grammarErrors);
+        JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
+        if (getErrorPanel().isVisible()) {
+            contentPane.setBottomComponent(getErrorPanel());
+            contentPane.setDividerSize(5);
+        } else {
+            contentPane.remove(getErrorPanel());
+            contentPane.setDividerSize(0);
+        }
     }
 
     /**
@@ -1398,7 +1427,6 @@ public class Simulator {
                     doQuit();
                 }
             });
-            // frame.setContentPane(splitPane);
             this.frame.setJMenuBar(createMenuBar());
 
             JSplitPane leftPanel =
@@ -1407,11 +1435,7 @@ public class Simulator {
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
-            // Embedded Editor
-            JSplitPane rightPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphViewsPanel(),
-                    getEditorPanel());
-            getEditorPanel().setVisible(false);
+            JComponent rightPanel = getGraphViewsPanel();
 
             // Set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
@@ -1420,10 +1444,14 @@ public class Simulator {
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
                     rightPanel);
 
-            Container contentPane = this.frame.getContentPane();
-            contentPane.setLayout(new BorderLayout());
-            contentPane.add(splitPane);
-            contentPane.add(getErrorPanel(), BorderLayout.SOUTH);
+            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            contentPane.setTopComponent(splitPane);
+            contentPane.setResizeWeight(0.8);
+            contentPane.setDividerSize(0);//, getErrorPanel());
+            this.frame.setContentPane(contentPane);
+            //            contentPane.setLayout(new BorderLayout());
+            //            contentPane.add(splitPane);
+            //            contentPane.add(getErrorPanel(), BorderLayout.SOUTH);
         }
         return this.frame;
     }
@@ -1554,27 +1582,62 @@ public class Simulator {
         return result;
     }
 
-    /**
-     * Creates and returns the panel with the Embedded Editor (mzimakova).
-     */
-    JPanel getEditorPanel() {
-        if (this.editorPanel == null) {
-            // panel for Editor display
-            this.editorPanel = new JPanel(new BorderLayout(), false);
-
-            JScrollPane editorPane =
-                new JScrollPane(/* this.getStateList() */) {
-                    @Override
-                    public Dimension getPreferredSize() {
-                        Dimension superSize = super.getPreferredSize();
-                        return new Dimension((int) superSize.getWidth(),
-                            START_LIST_MINIMUM_HEIGHT);
+    private NewErrorListPanel getErrorPanel() {
+        if (this.errorPanel == null) {
+            final NewErrorListPanel result =
+                this.errorPanel = new NewErrorListPanel();
+            result.addSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    FormatError error = result.getSelectedError();
+                    AspectGraph errorGraph = error.getGraph();
+                    if (errorGraph != null) {
+                        JGraphPanel<?> panel = null;
+                        String name = GraphInfo.getName(errorGraph);
+                        if (GraphInfo.hasRuleRole(errorGraph)) {
+                            panel = getRulePanel();
+                            setRule(new RuleName(name));
+                        } else if (GraphInfo.hasGraphRole(errorGraph)) {
+                            panel = getStatePanel();
+                            getStateList().setSelectedValue(name, true);
+                        } else if (GraphInfo.hasTypeRole(errorGraph)) {
+                            panel = getTypePanel();
+                            getTypePanel().setSelectedType(name);
+                        }
+                        // select the error cell and switch to the panel
+                        if (panel != null) {
+                            if (error.getObject() != null) {
+                                panel.selectJCell(error.getObject());
+                            }
+                            setGraphPanel(panel);
+                        }
+                    } else if (error.getControl() != null) {
+                        getControlPanel().setSelectedControl(
+                            error.getControl().getName());
+                        String LINE_PATTERN = "on line ";
+                        int index = error.toString().indexOf(LINE_PATTERN);
+                        if (index >= 0) {
+                            index += LINE_PATTERN.length();
+                            String line = error.toString().substring(index);
+                            int lineNr;
+                            try {
+                                lineNr = Integer.parseInt(line);
+                                getControlPanel().selectLine(lineNr);
+                            } catch (NumberFormatException e1) {
+                                // do nothing
+                            }
+                        }
+                        getGraphViewsPanel().setSelectedComponent(
+                            getControlPanel());
                     }
-                };
-            this.editorPanel.add(editorPane, BorderLayout.CENTER);
+                }
+            });
         }
-        return this.editorPanel;
+        return this.errorPanel;
     }
+
+    /** Error display. */
+    private NewErrorListPanel errorPanel;
 
     /**
      * Returns the simulator panel on which the current state is displayed. Note
@@ -1901,6 +1964,7 @@ public class Simulator {
         result.addSeparator();
 
         result.add(getRelabelAction());
+        result.add(getRenumberAction());
 
         result.addSeparator();
 
@@ -2207,13 +2271,6 @@ public class Simulator {
             this.exploreStateStrategy = new ExploreStateStrategy();
         }
         return this.exploreStateStrategy;
-    }
-
-    private ErrorListPanel getErrorPanel() {
-        if (this.errorPanel == null) {
-            this.errorPanel = new ErrorListPanel();
-        }
-        return this.errorPanel;
     }
 
     /**
@@ -2795,9 +2852,6 @@ public class Simulator {
     /** State display panel. */
     private StatePanel statePanel;
 
-    /** Editor display panel. */
-    private JPanel editorPanel;
-
     /** Control display panel. */
     private ControlPanel controlPanel;
 
@@ -2809,9 +2863,6 @@ public class Simulator {
 
     /** Type graph display panel. */
     private TypePanel typePanel;
-
-    /** Error display. */
-    private ErrorListPanel errorPanel;
 
     /** Undo history. */
     private UndoHistory undoHistory;
@@ -3519,7 +3570,7 @@ public class Simulator {
                     @Override
                     public void finish() {
                         if (confirmAbandon(false)) {
-                            AspectGraph ruleAsAspectGraph = toAspectGraph();
+                            AspectGraph ruleAsAspectGraph = getAspectGraph();
                             RuleName newRuleName =
                                 askNewRuleName("Name for edited rule",
                                     ruleName, false);
@@ -4282,9 +4333,9 @@ public class Simulator {
                             final RuleName ruleName =
                                 askNewRuleName(null, NEW_RULE_NAME, true);
                             if (ruleName != null) {
-                                AspectGraph newRule = toAspectGraph();
+                                AspectGraph newRule = getAspectGraph();
                                 GraphInfo.setName(newRule, ruleName.text());
-                                if (doAddRule(ruleName, toAspectGraph())) {
+                                if (doAddRule(ruleName, getAspectGraph())) {
                                     setRule(ruleName);
                                 }
                             }
@@ -4418,6 +4469,38 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getGrammarView() != null);
+        }
+    }
+
+    /**
+     * Returns the renumbering action permanently associated with this
+     * simulator.
+     */
+    public RenumberAction getRenumberAction() {
+        // lazily create the action
+        if (this.renumberAction == null) {
+            this.renumberAction = new RenumberAction();
+        }
+        return this.renumberAction;
+    }
+
+    /**
+     * The renumbering action permanently associated with this simulator.
+     */
+    private RenumberAction renumberAction;
+
+    private class RenumberAction extends RefreshableAction {
+        RenumberAction() {
+            super(Options.RENUMBER_ACTION_NAME, null);
+        }
+
+        public void refresh() {
+            setEnabled(getGrammarView() != null
+                && getGrammarStore().isModifiable());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            doRenumber();
         }
     }
 

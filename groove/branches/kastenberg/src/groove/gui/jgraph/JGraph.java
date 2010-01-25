@@ -36,6 +36,7 @@ import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
@@ -125,6 +126,20 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         // Turn off double buffering for speed
         setDoubleBuffered(false);
         addMouseListener(new MyMouseListener());
+    }
+
+    /** Paints a border around a cell to indicate that it contains an error. */
+    public void paintError(JCell cell) {
+        CellView view = getGraphLayoutCache().getMapping(cell, false);
+        if (view != null) {
+            Rectangle2D bounds2D = view.getBounds();
+            if (bounds2D != null) {
+                Rectangle bounds = bounds2D.getBounds();
+                Graphics g = getGraphics();
+                g.setColor(new Color(255, 0, 0, 50));
+                g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            }
+        }
     }
 
     /**

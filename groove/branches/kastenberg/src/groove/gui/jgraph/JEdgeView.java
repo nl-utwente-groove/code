@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
@@ -503,6 +504,68 @@ public class JEdgeView extends EdgeView {
 
     /** Renderer subclass to enable our special line style. */
     static public class MyEdgeRenderer extends EdgeRenderer {
+        @Override
+        public Component getRendererComponent(org.jgraph.JGraph jGraph,
+                CellView view, boolean sel, boolean focus, boolean preview) {
+
+            assert view instanceof JEdgeView : String.format(
+                "This renderer is only meant for %s", JVertexView.class);
+
+            JEdgeView theView = (JEdgeView) view;
+            AttributeMap secondMap =
+                (AttributeMap) theView.getAllAttributes().get("line2map");
+            if (secondMap != null) {
+                this.twoLines = true;
+                this.line2color = GraphConstants.getLineColor(secondMap);
+                this.line2width = GraphConstants.getLineWidth(secondMap);
+                this.line2dash = GraphConstants.getDashPattern(secondMap);
+                this.line2map = secondMap;
+            } else {
+                this.twoLines = false;
+            }
+            this.error =
+                ((JGraph) jGraph).getModel().hasError((JCell) view.getCell());
+            if (this.error) {
+                this.errorBounds =
+                    getLabelBounds(jGraph, (EdgeView) view).getBounds();
+            }
+            return super.getRendererComponent(jGraph, view, sel, focus, preview);
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            super.paint(g);
+
+            if (this.twoLines) {
+                // draw the second line
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(this.line2color);
+                g2.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
+                g2.draw(this.view.lineShape);
+                g2.fill(this.view.endShape);
+                g2.draw(this.view.endShape);
+
+                // write text again
+
+                g2.setStroke(new BasicStroke(1));
+                g.setFont(GraphConstants.getFont(this.line2map));
+
+                JGraph graph = (JGraph) this.graph.get();
+                if (graph.getEditingCell() != this.view.getCell()) {
+                    Object label = graph.convertValueToString(this.view);
+                    if (label != null) {
+                        paintLabel(g, label.toString(),
+                            getLabelPosition(this.view), true);
+                    }
+                }
+            }
+            if (this.error) {
+                g.setColor(JAttr.ERROR_COLOR);
+                g.fillRect(this.errorBounds.x, this.errorBounds.y,
+                    this.errorBounds.width, this.errorBounds.height);
+            }
+        }
+
         /**
          * Overrides the method to take {@link JAttr#STYLE_MANHATTAN} into
          * account.
@@ -609,60 +672,8 @@ public class JEdgeView extends EdgeView {
         private float line2width;
         private float[] line2dash;
         private AttributeMap line2map;
-
-        @Override
-        public Component getRendererComponent(org.jgraph.JGraph arg0,
-                CellView arg1, boolean arg2, boolean arg3, boolean arg4) {
-
-            assert arg1 instanceof JEdgeView : String.format(
-                "This renderer is only meant for %s", JVertexView.class);
-
-            JEdgeView theView = (JEdgeView) arg1;
-            AttributeMap secondMap =
-                (AttributeMap) theView.getAllAttributes().get("line2map");
-            if (secondMap != null) {
-                this.twoLines = true;
-                this.line2color = GraphConstants.getLineColor(secondMap);
-                this.line2width = GraphConstants.getLineWidth(secondMap);
-                this.line2dash = GraphConstants.getDashPattern(secondMap);
-                this.line2map = secondMap;
-            } else {
-                this.twoLines = false;
-            }
-
-            return super.getRendererComponent(arg0, arg1, arg2, arg3, arg4);
-        }
-
-        @Override
-        public void paint(Graphics g) {
-            // TODO Auto-generated method stub
-            super.paint(g);
-
-            if (this.twoLines) {
-                // draw the second line
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(this.line2color);
-                g2.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
-                g2.draw(this.view.lineShape);
-                g2.fill(this.view.endShape);
-                g2.draw(this.view.endShape);
-
-                // write text again
-
-                g2.setStroke(new BasicStroke(1));
-                g.setFont(GraphConstants.getFont(this.line2map));
-                
-                JGraph graph = (JGraph) this.graph.get();
-                if (graph.getEditingCell() != this.view.getCell()) {
-                    Object label = graph.convertValueToString(this.view);
-                    if (label != null) {
-                        paintLabel(g, label.toString(), getLabelPosition(this.view),
-                            true);
-                    }
-                }
-
-            }
-        }
-
+        /** Flag indicating that the underlying edge has an error. */
+        private boolean error;
+        private Rectangle errorBounds;
     }
 }

@@ -300,6 +300,8 @@ public class Options {
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /** Type rename action name */
     public static final String RENAME_TYPE_ACTION_NAME = "Rename Type";
+    /** Renumber action name */
+    public static final String RENUMBER_ACTION_NAME = "Renumber Nodes";
     /** Reset label position action name */
     static public final String RESET_LABEL_POSITION_ACTION = "Reset Label";
     /**
@@ -529,6 +531,8 @@ public class Options {
 
     /** Indication for an empty label in a list of labels. */
     static public final String EMPTY_LABEL_TEXT = "(empty)";
+    /** Indication for a subtype edge in a list of labels. */
+    static public final String SUBTYPE_LABEL_TEXT = "(subtype)";
     /** Indication for no label in a list of labels. */
     static public final String NO_LABEL_TEXT = "(none)";
     /** The name of the Bezier line style. */

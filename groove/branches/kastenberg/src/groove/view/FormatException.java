@@ -18,11 +18,10 @@ package groove.view;
 
 import groove.util.Groove;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * General exception class signalling a format error found during a conversion
@@ -36,53 +35,40 @@ public class FormatException extends Exception {
     static public final String FORMAT_EXCEPTION = "Format exception";
 
     /**
-     * Constructs a format exception with prior exception and a given formatted
+     * Constructs a format exception with a given formatted
      * message. Calls {@link String#format(String, Object[])} with the message
      * and parameters, and inserts both the prior exceptions messages and the
      * resulting test in the message list.
      * @see #getErrors()
      */
-    public FormatException(Exception exc, String message, Object... parameters) {
+    public FormatException(String message, Object... parameters) {
         super(String.format(message, parameters));
         this.errors = createMessageList();
-        if (exc instanceof FormatException) {
-            this.errors.addAll(((FormatException) exc).getErrors());
-        } else if (exc != null) {
-            this.errors.add(exc.getMessage());
-        }
-        this.errors.add(super.getMessage());
+        this.errors.add(new FormatError(message, parameters));
     }
 
     /**
-     * Constructs a format exception with a given formatted message and no prior
-     * exception.
-     * @see #FormatException(Exception, String, Object[])
+     * Constructs a format exception from a given error and additional context info.
      */
-    public FormatException(String message, Object... parameters) {
-        this(null, message, parameters);
-    }
-
-    /**
-     * Constructs a format exception from another exception.
-     * @see java.lang.Exception#Exception(java.lang.Throwable)
-     */
-    public FormatException(Exception exc) {
-        super(exc);
+    public FormatException(FormatError exc, Object... info) {
+        super(exc.toString());
         this.errors = createMessageList();
-        this.errors.add(exc.getMessage());
-    }
-
-    /** Constructs a format exception based on a given list of errors. */
-    public FormatException(List<String> errors) {
-        this.errors = new ArrayList<String>(errors);
+        this.errors.add(new FormatError(exc, info));
     }
 
     /**
      * Constructs a format exception based on a given set of errors. The order
      * of the errors is determined by the set iterator.
      */
-    public FormatException(Set<String> errors) {
-        this.errors = new ArrayList<String>(errors);
+    public FormatException(Collection<?> errors) {
+        this.errors = createMessageList();
+        for (Object error : errors) {
+            if (error instanceof FormatError) {
+                this.errors.add((FormatError) error);
+            } else {
+                this.errors.add(new FormatError(error.toString()));
+            }
+        }
     }
 
     /**
@@ -103,7 +89,7 @@ public class FormatException extends Exception {
     }
 
     /** Returns a list of error messages collected in this exception. */
-    public List<String> getErrors() {
+    public List<FormatError> getErrors() {
         return Collections.unmodifiableList(this.errors);
     }
 
@@ -113,13 +99,26 @@ public class FormatException extends Exception {
         return Groove.toString(getErrors().toArray(), "", "", "\n");
     }
 
+    /** 
+     * Returns a new format exception that extends all the errors 
+     * stored in this exception with additional context information.
+     * @see FormatError#extend(Object) 
+     */
+    public FormatException extend(Object par) {
+        List<FormatError> newErrors = createMessageList();
+        for (FormatError error : getErrors()) {
+            newErrors.add(error.extend(par));
+        }
+        return new FormatException(newErrors);
+    }
+
     /**
      * Callback factory method for an empty list of error messages.
      */
-    protected List<String> createMessageList() {
-        return new LinkedList<String>();
+    protected List<FormatError> createMessageList() {
+        return new LinkedList<FormatError>();
     }
 
     /** List of error messages carried around by this exception. */
-    private final List<String> errors;
+    private final List<FormatError> errors;
 }

@@ -32,6 +32,7 @@ import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.DefaultTypeView;
+import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.NewRuleView;
@@ -47,6 +48,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Graph implementation to convert from a label prefix representation of an
@@ -114,14 +117,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @return a possibly empty, non-<code>null</code> list of format errors in
      *         this aspect graph
      */
-    public List<String> getErrors() {
-        List<String> result;
+    public List<FormatError> getErrors() {
+        List<FormatError> result;
         if (getInfo() == null) {
-            result = Collections.<String>emptyList();
+            result = Collections.<FormatError>emptyList();
         } else {
             result = getInfo().getErrors();
             if (result == null) {
-                result = Collections.<String>emptyList();
+                result = Collections.<FormatError>emptyList();
             }
         }
         return result;
@@ -137,14 +140,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     }
 
     /** Sets the list of errors to a copy of a given list. */
-    private void setErrors(List<String> errors) {
-        if (errors == null) {
-            errors = Collections.emptyList();
-        } else {
-            errors = new ArrayList<String>(errors);
+    private void addErrors(List<FormatError> errors) {
+        List<FormatError> newErrors = new ArrayList<FormatError>();
+        if (GraphInfo.hasErrors(this)) {
+            newErrors.addAll(GraphInfo.getErrors(this));
         }
-        Collections.sort(errors);
-        GraphInfo.getInfo(this, true).setErrors(errors);
+        if (errors != null) {
+            newErrors.addAll(errors);
+        }
+        Collections.sort(newErrors);
+        GraphInfo.setErrors(this, newErrors);
     }
 
     /**
@@ -171,26 +176,23 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * treated as indicating the node aspect. The mapping from the old to the
      * new graph is stored in a parameter. The method never throws an exception,
      * but the resulting graph may have format errors, reported in
-     * {@link #getErrors()}.
+     * {@link #getErrors()} as well as in the graph errors of the result.
      * @param graph the graph to take as input.
      * @param elementMap output parameter for mapping from plain graph elements
      *        to resulting {@link AspectGraph} elements; should be initially
      *        empty
      */
-    private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) {
+    public AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) {
         AspectGraph result = new AspectGraph();
         // we set the role now, because some of the aspects may depend on it
         GraphInfo.setRole(result, GraphInfo.getRole(graph));
-        List<String> errors = new ArrayList<String>();
-        if (GraphInfo.hasErrors(graph)) {
-            errors.addAll(GraphInfo.getErrors(graph));
-        }
+        List<FormatError> errors = new ArrayList<FormatError>();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
         // map from original graph nodes to aspect graph nodes
         Map<Node,AspectNode> nodeMap = new HashMap<Node,AspectNode>();
         for (Node node : graph.nodeSet()) {
-            AspectNode nodeImage = createNode(node.getNumber());
+            AspectNode nodeImage = createAspectNode(node.getNumber());
             result.addNode(nodeImage);
             // update the maps
             nodeMap.put(node, nodeImage);
@@ -204,8 +206,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 AspectNode sourceImage = nodeMap.get(edge.source());
                 AspectNode targetImage = nodeMap.get(edge.opposite());
                 String labelText = edge.label().text();
-                AspectValue nodeValue =
-                    getNodeValue(edge, getAspectParser(graph));
+                AspectValue nodeValue = null;
+                try {
+                    nodeValue = getNodeValue(edge, getAspectParser(graph));
+                } catch (FormatException e) {
+                    throw e.extend(sourceImage);
+                }
                 if (nodeValue != null) {
                     // the edge encodes a node aspect
                     sourceImage.addDeclaredValue(nodeValue);
@@ -233,18 +239,19 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         for (Map.Entry<Edge,AspectMap> entry : edgeDataMap.entrySet()) {
             Edge edge = entry.getKey();
             try {
-                Edge edgeImage =
+                AspectEdge edgeImage =
                     createAspectEdge(nodeMap.get(edge.source()),
                         nodeMap.get(edge.opposite()), entry.getValue());
                 result.addEdge(edgeImage);
                 elementMap.putEdge(edge, edgeImage);
+                edgeImage.initAspects();
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
         }
         result.checkAspects(errors);
         GraphInfo.transfer(graph, result, elementMap);
-        result.setErrors(errors);
+        result.addErrors(errors);
         result.setFixed();
         return result;
     }
@@ -254,7 +261,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @see Aspect#checkNode(AspectNode, AspectGraph)
      * @see Aspect#checkEdge(AspectEdge, AspectGraph)
      */
-    private List<String> checkAspects(List<String> errors) {
+    private List<FormatError> checkAspects(List<FormatError> errors) {
         // now test all nodes and edges for context correctness w.r.t. all their
         // aspect values
         for (AspectNode node : nodeSet()) {
@@ -399,7 +406,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     }
 
     /** Factory method for an aspect node with a given number. */
-    private AspectNode createNode(int nr) {
+    private AspectNode createAspectNode(int nr) {
         return new AspectNode(nr);
     }
 
@@ -419,6 +426,49 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     private Label createLabel(String text) {
         return DefaultLabel.createLabel(text);
+    }
+
+    /** 
+     * Returns a new aspect graph obtained from this one
+     * by renumbering the nodes in a consecutive sequence starting from {@code 0}
+     */
+    public AspectGraph renumber() {
+        AspectGraph result = this;
+        // renumber the nodes in their original order
+        SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(nodeSet());
+        if (nodes.last().getNumber() != nodeCount() - 1) {
+            try {
+                result = new AspectGraph();
+                NodeEdgeMap elementMap = new NodeEdgeHashMap();
+                int nodeNr = 0;
+                for (AspectNode node : nodes) {
+                    AspectNode image = new AspectNode(nodeNr);
+                    for (AspectValue value : node.getAspectMap().getDeclaredValues()) {
+                        image.addDeclaredValue(value);
+                    }
+                    for (AspectValue value : node.getAspectMap().getInferredValues()) {
+                        image.addInferredValue(value);
+                    }
+                    result.addNode(image);
+                    elementMap.putNode(node, image);
+                    nodeNr++;
+                }
+                for (AspectEdge edge : edgeSet()) {
+                    AspectEdge image =
+                        createAspectEdge(
+                            (AspectNode) elementMap.getNode(edge.source()),
+                            (AspectNode) elementMap.getNode(edge.opposite()),
+                            edge.getAspectMap());
+                    result.addEdge(image);
+                    elementMap.putEdge(edge, image);
+                }
+                GraphInfo.transfer(this, result, elementMap);
+            } catch (FormatException exc) {
+                assert false : String.format("Exception when renumbering: %s",
+                    exc.getMessage());
+            }
+        }
+        return result;
     }
 
     /**
@@ -458,8 +508,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                                 replacement);
                     }
                     newData.setText(replacement.text());
-                    // AspectParser.getInstance(false).unparse(replacement,
-                    // newData);
                     oldToNew.put(edge, createAspectEdge(edge.source(),
                         edge.target(), newData));
                 }
@@ -473,8 +521,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             result.removeEdgeSet(oldToNew.keySet());
             result.addEdgeSet(oldToNew.values());
             // get errors by converting to a plain graph and back
-            result.setErrors(Collections.<String>emptyList());
-            result.setErrors(fromPlainGraph(result.toPlainGraph()).getErrors());
+            result.addErrors(Collections.<FormatError>emptyList());
+            result.addErrors(fromPlainGraph(result.toPlainGraph()).getErrors());
             return result;
         }
     }
@@ -606,7 +654,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         result.addNodeSet(nodeSet());
         result.addEdgeSetWithoutCheck(edgeSet());
         GraphInfo.transfer(this, result, null);
-        result.setErrors(getErrors());
+        result.addErrors(getErrors());
         return result;
     }
 

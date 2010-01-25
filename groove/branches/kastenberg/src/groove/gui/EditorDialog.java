@@ -82,8 +82,8 @@ abstract public class EditorDialog {
     }
 
     /** Returns the resulting aspect graph of the editor. */
-    public AspectGraph toAspectGraph() {
-        return AspectGraph.newInstance(this.editor.getPlainGraph());
+    public AspectGraph getAspectGraph() {
+        return this.editor.getAspectGraph();
     }
 
     /**
@@ -211,7 +211,7 @@ abstract public class EditorDialog {
 
     /** Indicates if the resulting aspect graph has syntax errors. */
     private boolean hasErrors() {
-        return toAspectGraph().hasErrors();
+        return getAspectGraph().hasErrors();
     }
 
     /**

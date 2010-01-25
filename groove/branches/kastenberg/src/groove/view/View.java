@@ -71,5 +71,5 @@ public interface View<Model> {
      * can only be successful if this list is empty.
      * @return a non-<code>null</code>, possibly empty list of syntax errors
      */
-    List<String> getErrors();
+    List<FormatError> getErrors();
 }

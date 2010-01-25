@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCL.g 2009-10-13 21:12:57
+// $ANTLR 3.1b1 GCL.g 2010-01-22 12:45:06
 
 package groove.control.parse;
 import groove.control.*;
@@ -1198,37 +1198,65 @@ public class GCLParser extends Parser {
     };
 
     // $ANTLR start conditionliteral
-    // GCL.g:70:1: conditionliteral : ( TRUE | IDENTIFIER );
+    // GCL.g:70:1: conditionliteral : ( TRUE | call );
     public final GCLParser.conditionliteral_return conditionliteral() throws RecognitionException {
         GCLParser.conditionliteral_return retval = new GCLParser.conditionliteral_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token set53=null;
+        Token TRUE53=null;
+        GCLParser.call_return call54 = null;
 
-        Object set53_tree=null;
+
+        Object TRUE53_tree=null;
 
         try {
-            // GCL.g:71:2: ( TRUE | IDENTIFIER )
-            // GCL.g:
-            {
-            root_0 = (Object)adaptor.nil();
+            // GCL.g:71:2: ( TRUE | call )
+            int alt10=2;
+            int LA10_0 = input.LA(1);
 
-            set53=(Token)input.LT(1);
-            if ( input.LA(1)==IDENTIFIER||input.LA(1)==TRUE ) {
-                input.consume();
-                adaptor.addChild(root_0, (Object)adaptor.create(set53));
-                state.errorRecovery=false;
+            if ( (LA10_0==TRUE) ) {
+                alt10=1;
+            }
+            else if ( (LA10_0==IDENTIFIER) ) {
+                alt10=2;
             }
             else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                throw mse;
+                NoViableAltException nvae =
+                    new NoViableAltException("", 10, 0, input);
+
+                throw nvae;
             }
+            switch (alt10) {
+                case 1 :
+                    // GCL.g:71:4: TRUE
+                    {
+                    root_0 = (Object)adaptor.nil();
 
+                    TRUE53=(Token)match(input,TRUE,FOLLOW_TRUE_in_conditionliteral396); 
+                    TRUE53_tree = (Object)adaptor.create(TRUE53);
+                    adaptor.addChild(root_0, TRUE53_tree);
+
+
+                    }
+                    break;
+                case 2 :
+                    // GCL.g:71:11: call
+                    {
+                    root_0 = (Object)adaptor.nil();
+
+                    pushFollow(FOLLOW_call_in_conditionliteral400);
+                    call54=call();
+
+                    state._fsp--;
+
+                    adaptor.addChild(root_0, call54.getTree());
+
+                    }
+                    break;
 
             }
-
             retval.stop = input.LT(-1);
 
             retval.tree = (Object)adaptor.rulePostProcessing(root_0);
@@ -1260,13 +1288,13 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token OR55=null;
-        GCLParser.expression2_return expression254 = null;
+        Token OR56=null;
+        GCLParser.expression2_return expression255 = null;
 
-        GCLParser.expression_return expression56 = null;
+        GCLParser.expression_return expression57 = null;
 
 
-        Object OR55_tree=null;
+        Object OR56_tree=null;
 
         try {
             // GCL.g:74:2: ( expression2 ( OR expression )? )
@@ -1275,32 +1303,32 @@ public class GCLParser extends Parser {
             root_0 = (Object)adaptor.nil();
 
             pushFollow(FOLLOW_expression2_in_expression411);
-            expression254=expression2();
+            expression255=expression2();
 
             state._fsp--;
 
-            adaptor.addChild(root_0, expression254.getTree());
+            adaptor.addChild(root_0, expression255.getTree());
             // GCL.g:74:16: ( OR expression )?
-            int alt10=2;
-            int LA10_0 = input.LA(1);
+            int alt11=2;
+            int LA11_0 = input.LA(1);
 
-            if ( (LA10_0==OR) ) {
-                alt10=1;
+            if ( (LA11_0==OR) ) {
+                alt11=1;
             }
-            switch (alt10) {
+            switch (alt11) {
                 case 1 :
                     // GCL.g:74:17: OR expression
                     {
-                    OR55=(Token)match(input,OR,FOLLOW_OR_in_expression414); 
-                    OR55_tree = (Object)adaptor.create(OR55);
-                    root_0 = (Object)adaptor.becomeRoot(OR55_tree, root_0);
+                    OR56=(Token)match(input,OR,FOLLOW_OR_in_expression414); 
+                    OR56_tree = (Object)adaptor.create(OR56);
+                    root_0 = (Object)adaptor.becomeRoot(OR56_tree, root_0);
 
                     pushFollow(FOLLOW_expression_in_expression417);
-                    expression56=expression();
+                    expression57=expression();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, expression56.getTree());
+                    adaptor.addChild(root_0, expression57.getTree());
 
                     }
                     break;
@@ -1341,64 +1369,64 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token PLUS58=null;
-        Token STAR59=null;
-        Token SHARP60=null;
-        GCLParser.expression_atom_return expression_atom57 = null;
+        Token PLUS59=null;
+        Token STAR60=null;
+        Token SHARP61=null;
+        GCLParser.expression_atom_return expression_atom58 = null;
 
-        GCLParser.expression_atom_return expression_atom61 = null;
+        GCLParser.expression_atom_return expression_atom62 = null;
 
 
-        Object PLUS58_tree=null;
-        Object STAR59_tree=null;
-        Object SHARP60_tree=null;
+        Object PLUS59_tree=null;
+        Object STAR60_tree=null;
+        Object SHARP61_tree=null;
 
         try {
             // GCL.g:78:5: ( expression_atom ( PLUS | STAR )? | SHARP expression_atom )
-            int alt12=2;
-            int LA12_0 = input.LA(1);
+            int alt13=2;
+            int LA13_0 = input.LA(1);
 
-            if ( (LA12_0==IDENTIFIER||(LA12_0>=ANY && LA12_0<=OTHER)||LA12_0==40) ) {
-                alt12=1;
+            if ( (LA13_0==IDENTIFIER||(LA13_0>=ANY && LA13_0<=OTHER)||LA13_0==40) ) {
+                alt13=1;
             }
-            else if ( (LA12_0==SHARP) ) {
-                alt12=2;
+            else if ( (LA13_0==SHARP) ) {
+                alt13=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 12, 0, input);
+                    new NoViableAltException("", 13, 0, input);
 
                 throw nvae;
             }
-            switch (alt12) {
+            switch (alt13) {
                 case 1 :
                     // GCL.g:78:7: expression_atom ( PLUS | STAR )?
                     {
                     root_0 = (Object)adaptor.nil();
 
                     pushFollow(FOLLOW_expression_atom_in_expression2433);
-                    expression_atom57=expression_atom();
+                    expression_atom58=expression_atom();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, expression_atom57.getTree());
+                    adaptor.addChild(root_0, expression_atom58.getTree());
                     // GCL.g:78:23: ( PLUS | STAR )?
-                    int alt11=3;
-                    int LA11_0 = input.LA(1);
+                    int alt12=3;
+                    int LA12_0 = input.LA(1);
 
-                    if ( (LA11_0==PLUS) ) {
-                        alt11=1;
+                    if ( (LA12_0==PLUS) ) {
+                        alt12=1;
                     }
-                    else if ( (LA11_0==STAR) ) {
-                        alt11=2;
+                    else if ( (LA12_0==STAR) ) {
+                        alt12=2;
                     }
-                    switch (alt11) {
+                    switch (alt12) {
                         case 1 :
                             // GCL.g:78:24: PLUS
                             {
-                            PLUS58=(Token)match(input,PLUS,FOLLOW_PLUS_in_expression2436); 
-                            PLUS58_tree = (Object)adaptor.create(PLUS58);
-                            root_0 = (Object)adaptor.becomeRoot(PLUS58_tree, root_0);
+                            PLUS59=(Token)match(input,PLUS,FOLLOW_PLUS_in_expression2436); 
+                            PLUS59_tree = (Object)adaptor.create(PLUS59);
+                            root_0 = (Object)adaptor.becomeRoot(PLUS59_tree, root_0);
 
 
                             }
@@ -1406,9 +1434,9 @@ public class GCLParser extends Parser {
                         case 2 :
                             // GCL.g:78:32: STAR
                             {
-                            STAR59=(Token)match(input,STAR,FOLLOW_STAR_in_expression2441); 
-                            STAR59_tree = (Object)adaptor.create(STAR59);
-                            root_0 = (Object)adaptor.becomeRoot(STAR59_tree, root_0);
+                            STAR60=(Token)match(input,STAR,FOLLOW_STAR_in_expression2441); 
+                            STAR60_tree = (Object)adaptor.create(STAR60);
+                            root_0 = (Object)adaptor.becomeRoot(STAR60_tree, root_0);
 
 
                             }
@@ -1424,16 +1452,16 @@ public class GCLParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    SHARP60=(Token)match(input,SHARP,FOLLOW_SHARP_in_expression2452); 
-                    SHARP60_tree = (Object)adaptor.create(SHARP60);
-                    root_0 = (Object)adaptor.becomeRoot(SHARP60_tree, root_0);
+                    SHARP61=(Token)match(input,SHARP,FOLLOW_SHARP_in_expression2452); 
+                    SHARP61_tree = (Object)adaptor.create(SHARP61);
+                    root_0 = (Object)adaptor.becomeRoot(SHARP61_tree, root_0);
 
                     pushFollow(FOLLOW_expression_atom_in_expression2455);
-                    expression_atom61=expression_atom();
+                    expression_atom62=expression_atom();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, expression_atom61.getTree());
+                    adaptor.addChild(root_0, expression_atom62.getTree());
 
                     }
                     break;
@@ -1470,35 +1498,35 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token ANY62=null;
-        Token OTHER63=null;
-        Token char_literal65=null;
-        Token char_literal67=null;
-        GCLParser.rule_return rule64 = null;
+        Token ANY63=null;
+        Token OTHER64=null;
+        Token char_literal66=null;
+        Token char_literal68=null;
+        GCLParser.rule_return rule65 = null;
 
-        GCLParser.expression_return expression66 = null;
+        GCLParser.expression_return expression67 = null;
 
-        GCLParser.call_return call68 = null;
+        GCLParser.call_return call69 = null;
 
 
-        Object ANY62_tree=null;
-        Object OTHER63_tree=null;
-        Object char_literal65_tree=null;
-        Object char_literal67_tree=null;
+        Object ANY63_tree=null;
+        Object OTHER64_tree=null;
+        Object char_literal66_tree=null;
+        Object char_literal68_tree=null;
 
         try {
             // GCL.g:83:2: ( ANY | OTHER | rule | '(' expression ')' | call )
-            int alt13=5;
-            alt13 = dfa13.predict(input);
-            switch (alt13) {
+            int alt14=5;
+            alt14 = dfa14.predict(input);
+            switch (alt14) {
                 case 1 :
                     // GCL.g:83:4: ANY
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    ANY62=(Token)match(input,ANY,FOLLOW_ANY_in_expression_atom469); 
-                    ANY62_tree = (Object)adaptor.create(ANY62);
-                    adaptor.addChild(root_0, ANY62_tree);
+                    ANY63=(Token)match(input,ANY,FOLLOW_ANY_in_expression_atom469); 
+                    ANY63_tree = (Object)adaptor.create(ANY63);
+                    adaptor.addChild(root_0, ANY63_tree);
 
 
                     }
@@ -1508,9 +1536,9 @@ public class GCLParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    OTHER63=(Token)match(input,OTHER,FOLLOW_OTHER_in_expression_atom474); 
-                    OTHER63_tree = (Object)adaptor.create(OTHER63);
-                    adaptor.addChild(root_0, OTHER63_tree);
+                    OTHER64=(Token)match(input,OTHER,FOLLOW_OTHER_in_expression_atom474); 
+                    OTHER64_tree = (Object)adaptor.create(OTHER64);
+                    adaptor.addChild(root_0, OTHER64_tree);
 
 
                     }
@@ -1521,11 +1549,11 @@ public class GCLParser extends Parser {
                     root_0 = (Object)adaptor.nil();
 
                     pushFollow(FOLLOW_rule_in_expression_atom479);
-                    rule64=rule();
+                    rule65=rule();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, rule64.getTree());
+                    adaptor.addChild(root_0, rule65.getTree());
 
                     }
                     break;
@@ -1534,14 +1562,14 @@ public class GCLParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    char_literal65=(Token)match(input,40,FOLLOW_40_in_expression_atom484); 
+                    char_literal66=(Token)match(input,40,FOLLOW_40_in_expression_atom484); 
                     pushFollow(FOLLOW_expression_in_expression_atom487);
-                    expression66=expression();
+                    expression67=expression();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, expression66.getTree());
-                    char_literal67=(Token)match(input,41,FOLLOW_41_in_expression_atom489); 
+                    adaptor.addChild(root_0, expression67.getTree());
+                    char_literal68=(Token)match(input,41,FOLLOW_41_in_expression_atom489); 
 
                     }
                     break;
@@ -1551,11 +1579,11 @@ public class GCLParser extends Parser {
                     root_0 = (Object)adaptor.nil();
 
                     pushFollow(FOLLOW_call_in_expression_atom495);
-                    call68=call();
+                    call69=call();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, call68.getTree());
+                    adaptor.addChild(root_0, call69.getTree());
 
                     }
                     break;
@@ -1592,15 +1620,15 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token IDENTIFIER69=null;
-        Token char_literal70=null;
-        Token char_literal72=null;
-        GCLParser.var_list_return var_list71 = null;
+        Token IDENTIFIER70=null;
+        Token char_literal71=null;
+        Token char_literal73=null;
+        GCLParser.var_list_return var_list72 = null;
 
 
-        Object IDENTIFIER69_tree=null;
-        Object char_literal70_tree=null;
-        Object char_literal72_tree=null;
+        Object IDENTIFIER70_tree=null;
+        Object char_literal71_tree=null;
+        Object char_literal73_tree=null;
         RewriteRuleTokenStream stream_41=new RewriteRuleTokenStream(adaptor,"token 41");
         RewriteRuleTokenStream stream_40=new RewriteRuleTokenStream(adaptor,"token 40");
         RewriteRuleTokenStream stream_IDENTIFIER=new RewriteRuleTokenStream(adaptor,"token IDENTIFIER");
@@ -1609,37 +1637,37 @@ public class GCLParser extends Parser {
             // GCL.g:91:2: ( IDENTIFIER '(' ( var_list )? ')' -> ^( CALL IDENTIFIER ( var_list )? ) )
             // GCL.g:91:4: IDENTIFIER '(' ( var_list )? ')'
             {
-            IDENTIFIER69=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_call507);  
-            stream_IDENTIFIER.add(IDENTIFIER69);
+            IDENTIFIER70=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_call507);  
+            stream_IDENTIFIER.add(IDENTIFIER70);
 
-            char_literal70=(Token)match(input,40,FOLLOW_40_in_call509);  
-            stream_40.add(char_literal70);
+            char_literal71=(Token)match(input,40,FOLLOW_40_in_call509);  
+            stream_40.add(char_literal71);
 
             // GCL.g:91:19: ( var_list )?
-            int alt14=2;
-            int LA14_0 = input.LA(1);
+            int alt15=2;
+            int LA15_0 = input.LA(1);
 
-            if ( (LA14_0==IDENTIFIER||(LA14_0>=OUT && LA14_0<=DONT_CARE)) ) {
-                alt14=1;
+            if ( (LA15_0==IDENTIFIER||(LA15_0>=OUT && LA15_0<=DONT_CARE)) ) {
+                alt15=1;
             }
-            switch (alt14) {
+            switch (alt15) {
                 case 1 :
                     // GCL.g:91:19: var_list
                     {
                     pushFollow(FOLLOW_var_list_in_call511);
-                    var_list71=var_list();
+                    var_list72=var_list();
 
                     state._fsp--;
 
-                    stream_var_list.add(var_list71.getTree());
+                    stream_var_list.add(var_list72.getTree());
 
                     }
                     break;
 
             }
 
-            char_literal72=(Token)match(input,41,FOLLOW_41_in_call514);  
-            stream_41.add(char_literal72);
+            char_literal73=(Token)match(input,41,FOLLOW_41_in_call514);  
+            stream_41.add(char_literal73);
 
 
 
@@ -1707,17 +1735,17 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token IDENTIFIER73=null;
+        Token IDENTIFIER74=null;
 
-        Object IDENTIFIER73_tree=null;
+        Object IDENTIFIER74_tree=null;
         RewriteRuleTokenStream stream_IDENTIFIER=new RewriteRuleTokenStream(adaptor,"token IDENTIFIER");
 
         try {
             // GCL.g:93:7: ( IDENTIFIER -> ^( CALL IDENTIFIER ) )
             // GCL.g:93:9: IDENTIFIER
             {
-            IDENTIFIER73=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule534);  
-            stream_IDENTIFIER.add(IDENTIFIER73);
+            IDENTIFIER74=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule534);  
+            stream_IDENTIFIER.add(IDENTIFIER74);
 
 
 
@@ -1779,15 +1807,15 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token IDENTIFIER75=null;
-        Token char_literal76=null;
-        Token IDENTIFIER77=null;
-        GCLParser.var_type_return var_type74 = null;
+        Token IDENTIFIER76=null;
+        Token char_literal77=null;
+        Token IDENTIFIER78=null;
+        GCLParser.var_type_return var_type75 = null;
 
 
-        Object IDENTIFIER75_tree=null;
-        Object char_literal76_tree=null;
-        Object IDENTIFIER77_tree=null;
+        Object IDENTIFIER76_tree=null;
+        Object char_literal77_tree=null;
+        Object IDENTIFIER78_tree=null;
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleTokenStream stream_IDENTIFIER=new RewriteRuleTokenStream(adaptor,"token IDENTIFIER");
         RewriteRuleSubtreeStream stream_var_type=new RewriteRuleSubtreeStream(adaptor,"rule var_type");
@@ -1796,41 +1824,41 @@ public class GCLParser extends Parser {
             // GCL.g:96:4: var_type IDENTIFIER ( ',' IDENTIFIER )*
             {
             pushFollow(FOLLOW_var_type_in_var_declaration551);
-            var_type74=var_type();
+            var_type75=var_type();
 
             state._fsp--;
 
-            stream_var_type.add(var_type74.getTree());
-            IDENTIFIER75=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration553);  
-            stream_IDENTIFIER.add(IDENTIFIER75);
+            stream_var_type.add(var_type75.getTree());
+            IDENTIFIER76=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration553);  
+            stream_IDENTIFIER.add(IDENTIFIER76);
 
             // GCL.g:96:24: ( ',' IDENTIFIER )*
-            loop15:
+            loop16:
             do {
-                int alt15=2;
-                int LA15_0 = input.LA(1);
+                int alt16=2;
+                int LA16_0 = input.LA(1);
 
-                if ( (LA15_0==COMMA) ) {
-                    alt15=1;
+                if ( (LA16_0==COMMA) ) {
+                    alt16=1;
                 }
 
 
-                switch (alt15) {
+                switch (alt16) {
             	case 1 :
             	    // GCL.g:96:25: ',' IDENTIFIER
             	    {
-            	    char_literal76=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_declaration556);  
-            	    stream_COMMA.add(char_literal76);
+            	    char_literal77=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_declaration556);  
+            	    stream_COMMA.add(char_literal77);
 
-            	    IDENTIFIER77=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration558);  
-            	    stream_IDENTIFIER.add(IDENTIFIER77);
+            	    IDENTIFIER78=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration558);  
+            	    stream_IDENTIFIER.add(IDENTIFIER78);
 
 
             	    }
             	    break;
 
             	default :
-            	    break loop15;
+            	    break loop16;
                 }
             } while (true);
 
@@ -1903,9 +1931,9 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token NODE_TYPE78=null;
+        Token NODE_TYPE79=null;
 
-        Object NODE_TYPE78_tree=null;
+        Object NODE_TYPE79_tree=null;
 
         try {
             // GCL.g:100:2: ( NODE_TYPE )
@@ -1913,9 +1941,9 @@ public class GCLParser extends Parser {
             {
             root_0 = (Object)adaptor.nil();
 
-            NODE_TYPE78=(Token)match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type582); 
-            NODE_TYPE78_tree = (Object)adaptor.create(NODE_TYPE78);
-            adaptor.addChild(root_0, NODE_TYPE78_tree);
+            NODE_TYPE79=(Token)match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type582); 
+            NODE_TYPE79_tree = (Object)adaptor.create(NODE_TYPE79);
+            adaptor.addChild(root_0, NODE_TYPE79_tree);
 
 
             }
@@ -1951,13 +1979,13 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token COMMA80=null;
-        GCLParser.variable_return variable79 = null;
+        Token COMMA81=null;
+        GCLParser.variable_return variable80 = null;
 
-        GCLParser.var_list_return var_list81 = null;
+        GCLParser.var_list_return var_list82 = null;
 
 
-        Object COMMA80_tree=null;
+        Object COMMA81_tree=null;
 
         try {
             // GCL.g:104:2: ( variable ( COMMA var_list )? )
@@ -1966,29 +1994,29 @@ public class GCLParser extends Parser {
             root_0 = (Object)adaptor.nil();
 
             pushFollow(FOLLOW_variable_in_var_list594);
-            variable79=variable();
+            variable80=variable();
 
             state._fsp--;
 
-            adaptor.addChild(root_0, variable79.getTree());
+            adaptor.addChild(root_0, variable80.getTree());
             // GCL.g:104:13: ( COMMA var_list )?
-            int alt16=2;
-            int LA16_0 = input.LA(1);
+            int alt17=2;
+            int LA17_0 = input.LA(1);
 
-            if ( (LA16_0==COMMA) ) {
-                alt16=1;
+            if ( (LA17_0==COMMA) ) {
+                alt17=1;
             }
-            switch (alt16) {
+            switch (alt17) {
                 case 1 :
                     // GCL.g:104:14: COMMA var_list
                     {
-                    COMMA80=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_list597); 
+                    COMMA81=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_list597); 
                     pushFollow(FOLLOW_var_list_in_var_list600);
-                    var_list81=var_list();
+                    var_list82=var_list();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, var_list81.getTree());
+                    adaptor.addChild(root_0, var_list82.getTree());
 
                     }
                     break;
@@ -2029,54 +2057,54 @@ public class GCLParser extends Parser {
 
         Object root_0 = null;
 
-        Token OUT82=null;
-        Token IDENTIFIER83=null;
+        Token OUT83=null;
         Token IDENTIFIER84=null;
-        Token DONT_CARE85=null;
+        Token IDENTIFIER85=null;
+        Token DONT_CARE86=null;
 
-        Object OUT82_tree=null;
-        Object IDENTIFIER83_tree=null;
+        Object OUT83_tree=null;
         Object IDENTIFIER84_tree=null;
-        Object DONT_CARE85_tree=null;
+        Object IDENTIFIER85_tree=null;
+        Object DONT_CARE86_tree=null;
         RewriteRuleTokenStream stream_DONT_CARE=new RewriteRuleTokenStream(adaptor,"token DONT_CARE");
         RewriteRuleTokenStream stream_OUT=new RewriteRuleTokenStream(adaptor,"token OUT");
         RewriteRuleTokenStream stream_IDENTIFIER=new RewriteRuleTokenStream(adaptor,"token IDENTIFIER");
 
         try {
             // GCL.g:108:2: ( OUT IDENTIFIER -> ^( PARAM OUT IDENTIFIER ) | IDENTIFIER -> ^( PARAM IDENTIFIER ) | DONT_CARE -> ^( PARAM DONT_CARE ) )
-            int alt17=3;
+            int alt18=3;
             switch ( input.LA(1) ) {
             case OUT:
                 {
-                alt17=1;
+                alt18=1;
                 }
                 break;
             case IDENTIFIER:
                 {
-                alt17=2;
+                alt18=2;
                 }
                 break;
             case DONT_CARE:
                 {
-                alt17=3;
+                alt18=3;
                 }
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("", 17, 0, input);
+                    new NoViableAltException("", 18, 0, input);
 
                 throw nvae;
             }
 
-            switch (alt17) {
+            switch (alt18) {
                 case 1 :
                     // GCL.g:108:4: OUT IDENTIFIER
                     {
-                    OUT82=(Token)match(input,OUT,FOLLOW_OUT_in_variable614);  
-                    stream_OUT.add(OUT82);
+                    OUT83=(Token)match(input,OUT,FOLLOW_OUT_in_variable614);  
+                    stream_OUT.add(OUT83);
 
-                    IDENTIFIER83=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_variable616);  
-                    stream_IDENTIFIER.add(IDENTIFIER83);
+                    IDENTIFIER84=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_variable616);  
+                    stream_IDENTIFIER.add(IDENTIFIER84);
 
 
 
@@ -2111,8 +2139,8 @@ public class GCLParser extends Parser {
                 case 2 :
                     // GCL.g:109:4: IDENTIFIER
                     {
-                    IDENTIFIER84=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_variable631);  
-                    stream_IDENTIFIER.add(IDENTIFIER84);
+                    IDENTIFIER85=(Token)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_variable631);  
+                    stream_IDENTIFIER.add(IDENTIFIER85);
 
 
 
@@ -2146,8 +2174,8 @@ public class GCLParser extends Parser {
                 case 3 :
                     // GCL.g:110:4: DONT_CARE
                     {
-                    DONT_CARE85=(Token)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_variable644);  
-                    stream_DONT_CARE.add(DONT_CARE85);
+                    DONT_CARE86=(Token)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_variable644);  
+                    stream_DONT_CARE.add(DONT_CARE86);
 
 
 
@@ -2207,7 +2235,7 @@ public class GCLParser extends Parser {
     protected DFA6 dfa6 = new DFA6(this);
     protected DFA7 dfa7 = new DFA7(this);
     protected DFA8 dfa8 = new DFA8(this);
-    protected DFA13 dfa13 = new DFA13(this);
+    protected DFA14 dfa14 = new DFA14(this);
     static final String DFA1_eotS =
         "\20\uffff";
     static final String DFA1_eofS =
@@ -2601,19 +2629,19 @@ public class GCLParser extends Parser {
             return "()* loopback of 65:20: ( CH_OR block )*";
         }
     }
-    static final String DFA13_eotS =
+    static final String DFA14_eotS =
         "\13\uffff";
-    static final String DFA13_eofS =
+    static final String DFA14_eofS =
         "\13\uffff";
-    static final String DFA13_minS =
+    static final String DFA14_minS =
         "\1\14\2\uffff\1\15\7\uffff";
-    static final String DFA13_maxS =
+    static final String DFA14_maxS =
         "\1\50\2\uffff\1\52\7\uffff";
-    static final String DFA13_acceptS =
+    static final String DFA14_acceptS =
         "\1\uffff\1\1\1\2\1\uffff\1\4\1\5\1\3\4\uffff";
-    static final String DFA13_specialS =
+    static final String DFA14_specialS =
         "\13\uffff}>";
-    static final String[] DFA13_transitionS = {
+    static final String[] DFA14_transitionS = {
             "\1\3\15\uffff\1\1\1\2\14\uffff\1\4",
             "",
             "",
@@ -2627,34 +2655,34 @@ public class GCLParser extends Parser {
             ""
     };
 
-    static final short[] DFA13_eot = DFA.unpackEncodedString(DFA13_eotS);
-    static final short[] DFA13_eof = DFA.unpackEncodedString(DFA13_eofS);
-    static final char[] DFA13_min = DFA.unpackEncodedStringToUnsignedChars(DFA13_minS);
-    static final char[] DFA13_max = DFA.unpackEncodedStringToUnsignedChars(DFA13_maxS);
-    static final short[] DFA13_accept = DFA.unpackEncodedString(DFA13_acceptS);
-    static final short[] DFA13_special = DFA.unpackEncodedString(DFA13_specialS);
-    static final short[][] DFA13_transition;
+    static final short[] DFA14_eot = DFA.unpackEncodedString(DFA14_eotS);
+    static final short[] DFA14_eof = DFA.unpackEncodedString(DFA14_eofS);
+    static final char[] DFA14_min = DFA.unpackEncodedStringToUnsignedChars(DFA14_minS);
+    static final char[] DFA14_max = DFA.unpackEncodedStringToUnsignedChars(DFA14_maxS);
+    static final short[] DFA14_accept = DFA.unpackEncodedString(DFA14_acceptS);
+    static final short[] DFA14_special = DFA.unpackEncodedString(DFA14_specialS);
+    static final short[][] DFA14_transition;
 
     static {
-        int numStates = DFA13_transitionS.length;
-        DFA13_transition = new short[numStates][];
+        int numStates = DFA14_transitionS.length;
+        DFA14_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA13_transition[i] = DFA.unpackEncodedString(DFA13_transitionS[i]);
+            DFA14_transition[i] = DFA.unpackEncodedString(DFA14_transitionS[i]);
         }
     }
 
-    class DFA13 extends DFA {
+    class DFA14 extends DFA {
 
-        public DFA13(BaseRecognizer recognizer) {
+        public DFA14(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 13;
-            this.eot = DFA13_eot;
-            this.eof = DFA13_eof;
-            this.min = DFA13_min;
-            this.max = DFA13_max;
-            this.accept = DFA13_accept;
-            this.special = DFA13_special;
-            this.transition = DFA13_transition;
+            this.decisionNumber = 14;
+            this.eot = DFA14_eot;
+            this.eof = DFA14_eof;
+            this.min = DFA14_min;
+            this.max = DFA14_max;
+            this.accept = DFA14_accept;
+            this.special = DFA14_special;
+            this.transition = DFA14_transition;
         }
         public String getDescription() {
             return "82:1: expression_atom : ( ANY | OTHER | rule | '(' expression ')' | call );";
@@ -2673,18 +2701,18 @@ public class GCLParser extends Parser {
     public static final BitSet FOLLOW_41_in_function150 = new BitSet(new long[]{0x0000004000000000L});
     public static final BitSet FOLLOW_block_in_function152 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_conditionliteral_in_condition171 = new BitSet(new long[]{0x0000000000002002L});
-    public static final BitSet FOLLOW_OR_in_condition174 = new BitSet(new long[]{0x0000000000401000L});
+    public static final BitSet FOLLOW_OR_in_condition174 = new BitSet(new long[]{0x000001000C401000L});
     public static final BitSet FOLLOW_condition_in_condition177 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ALAP_in_statement192 = new BitSet(new long[]{0x0000004000000000L});
     public static final BitSet FOLLOW_block_in_statement194 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_WHILE_in_statement207 = new BitSet(new long[]{0x0000010000000000L});
-    public static final BitSet FOLLOW_40_in_statement209 = new BitSet(new long[]{0x0000000000401000L});
+    public static final BitSet FOLLOW_40_in_statement209 = new BitSet(new long[]{0x000001000C401000L});
     public static final BitSet FOLLOW_condition_in_statement211 = new BitSet(new long[]{0x0000020000000000L});
     public static final BitSet FOLLOW_41_in_statement213 = new BitSet(new long[]{0x0000004000000200L});
     public static final BitSet FOLLOW_DO_in_statement215 = new BitSet(new long[]{0x0000004000000200L});
     public static final BitSet FOLLOW_block_in_statement218 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_UNTIL_in_statement233 = new BitSet(new long[]{0x0000010000000000L});
-    public static final BitSet FOLLOW_40_in_statement235 = new BitSet(new long[]{0x0000000000401000L});
+    public static final BitSet FOLLOW_40_in_statement235 = new BitSet(new long[]{0x000001000C401000L});
     public static final BitSet FOLLOW_condition_in_statement237 = new BitSet(new long[]{0x0000020000000000L});
     public static final BitSet FOLLOW_41_in_statement239 = new BitSet(new long[]{0x0000004000000200L});
     public static final BitSet FOLLOW_DO_in_statement241 = new BitSet(new long[]{0x0000004000000200L});
@@ -2692,7 +2720,7 @@ public class GCLParser extends Parser {
     public static final BitSet FOLLOW_DO_in_statement259 = new BitSet(new long[]{0x0000004000000200L});
     public static final BitSet FOLLOW_block_in_statement261 = new BitSet(new long[]{0x0000000000008000L});
     public static final BitSet FOLLOW_WHILE_in_statement263 = new BitSet(new long[]{0x0000010000000000L});
-    public static final BitSet FOLLOW_40_in_statement265 = new BitSet(new long[]{0x0000000000401000L});
+    public static final BitSet FOLLOW_40_in_statement265 = new BitSet(new long[]{0x000001000C401000L});
     public static final BitSet FOLLOW_condition_in_statement267 = new BitSet(new long[]{0x0000020000000000L});
     public static final BitSet FOLLOW_41_in_statement269 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_TRY_in_statement284 = new BitSet(new long[]{0x0000004000000200L});
@@ -2700,7 +2728,7 @@ public class GCLParser extends Parser {
     public static final BitSet FOLLOW_ELSE_in_statement289 = new BitSet(new long[]{0x0000004000000200L});
     public static final BitSet FOLLOW_block_in_statement291 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_IF_in_statement307 = new BitSet(new long[]{0x0000010000000000L});
-    public static final BitSet FOLLOW_40_in_statement309 = new BitSet(new long[]{0x0000000000401000L});
+    public static final BitSet FOLLOW_40_in_statement309 = new BitSet(new long[]{0x000001000C401000L});
     public static final BitSet FOLLOW_condition_in_statement311 = new BitSet(new long[]{0x0000020000000000L});
     public static final BitSet FOLLOW_41_in_statement313 = new BitSet(new long[]{0x0000004000000200L});
     public static final BitSet FOLLOW_block_in_statement315 = new BitSet(new long[]{0x0000000000040002L});
@@ -2714,14 +2742,15 @@ public class GCLParser extends Parser {
     public static final BitSet FOLLOW_42_in_statement366 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_var_declaration_in_statement375 = new BitSet(new long[]{0x0000040000000000L});
     public static final BitSet FOLLOW_42_in_statement377 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_conditionliteral0 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRUE_in_conditionliteral396 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_call_in_conditionliteral400 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_expression2_in_expression411 = new BitSet(new long[]{0x0000000000002002L});
     public static final BitSet FOLLOW_OR_in_expression414 = new BitSet(new long[]{0x000001000E001000L});
     public static final BitSet FOLLOW_expression_in_expression417 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_expression_atom_in_expression2433 = new BitSet(new long[]{0x0000000001800002L});
     public static final BitSet FOLLOW_PLUS_in_expression2436 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_STAR_in_expression2441 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SHARP_in_expression2452 = new BitSet(new long[]{0x000001000C001000L});
+    public static final BitSet FOLLOW_SHARP_in_expression2452 = new BitSet(new long[]{0x000001000C401000L});
     public static final BitSet FOLLOW_expression_atom_in_expression2455 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ANY_in_expression_atom469 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_OTHER_in_expression_atom474 = new BitSet(new long[]{0x0000000000000002L});

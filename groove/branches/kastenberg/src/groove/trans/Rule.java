@@ -141,7 +141,7 @@ public interface Rule extends Comparable<Rule>, Condition {
     public static final int PARAMETER_OUTPUT = 2;
     /** Both Input/Output flag */
     public static final int PARAMETER_BOTH = 3;
-    /** Any parameter flag */
+    /** Don't_care parameter flag */
     public static final int PARAMETER_DONT_CARE = 0;
     /** Non-existent flag */
     public static final int PARAMETER_DOES_NOT_EXIST = -1;

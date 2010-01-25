@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.util.Groove;
 import groove.view.FormatError;
 
 import java.awt.BorderLayout;
@@ -26,22 +25,24 @@ import java.awt.SystemColor;
 import java.util.List;
 
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Panel showing a list of error messages. The panel hides itself when the error
  * list is empty.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2142 $
  */
-public class ErrorListPanel extends JPanel {
+public class NewErrorListPanel extends JPanel {
     /**
      * Constructs a new panel.
      */
-    public ErrorListPanel() {
+    public NewErrorListPanel() {
         super(new BorderLayout());
         add(new JLabel("<html><b>Format errors in graph</b></html>"),
             BorderLayout.NORTH);
@@ -60,31 +61,36 @@ public class ErrorListPanel extends JPanel {
         if (errors.isEmpty()) {
             if (isVisible()) {
                 setVisible(false);
-                getErrorArea().setText("");
             }
         } else {
-            StringBuffer text = new StringBuffer();
-            text.append(Groove.toString(errors.toArray(), "", "", "\n"));
-            getErrorArea().setText(text.toString());
-            getErrorArea().setSelectionStart(0);
+            getErrorArea().setListData(errors.toArray());
             if (!isVisible()) {
                 setVisible(true);
             }
         }
     }
 
+    /** Adds a selection listener to the error list. */
+    public void addSelectionListener(ListSelectionListener listener) {
+        getErrorArea().addListSelectionListener(listener);
+    }
+
+    /** Returns the list of currently selected format errors. */
+    public FormatError getSelectedError() {
+        return (FormatError) getErrorArea().getSelectedValue();
+    }
+
     /** Lazily creates and returns the error panel. */
-    private JTextArea getErrorArea() {
+    private JList getErrorArea() {
         if (this.errorArea == null) {
-            this.errorArea = new JTextArea();
-            this.errorArea.setEditable(false);
-            this.errorArea.setBackground(SystemColor.text);
-            this.errorArea.setForeground(Color.RED);
-            // errorArea.setPreferredSize(new Dimension(0, 70));
+            JList result = this.errorArea = new JList();
+            result.setBackground(SystemColor.text);
+            result.setForeground(Color.RED);
+            result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
         return this.errorArea;
     }
 
     /** The text area containing the error messages. */
-    private JTextArea errorArea;
+    private JList errorArea;
 }

@@ -144,7 +144,7 @@ public class Namespace {
     
     private void debug(String msg) {
         if (this.usesVariables()) {
-            System.err.println("Variables debug (NameSpace): "+msg);
+            //System.err.println("Variables debug (NameSpace): "+msg);
         }
     }
 

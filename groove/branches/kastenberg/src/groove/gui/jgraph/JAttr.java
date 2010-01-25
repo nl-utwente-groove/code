@@ -142,6 +142,8 @@ public class JAttr {
     static private final int BACKGROUND_WHITEWASH = 90;
     /** Maximum value of the colour dimensions. */
     static private final int MAX_VALUE = 255;
+    /** Colour used for indicating errors in the graph. */
+    static public final Color ERROR_COLOR = new Color(MAX_VALUE, 50, 0, 40);
 
     /**
      * The linewidth used for edges and node borders.
