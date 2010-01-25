@@ -967,6 +967,18 @@ public class Simulator {
         }
     }
 
+    /** Renumbers the nodes in all graphs from {@code 0} upwards. */
+    void doRenumber() {
+        if (getGrammarStore() instanceof DefaultFileSystemStore) {
+            try {
+                ((DefaultFileSystemStore) getGrammarStore()).renumber();
+                updateGrammar();
+            } catch (IOException exc) {
+                showErrorDialog("Error while renumbering", exc);
+            }
+        }
+    }
+
     /**
      * Renames one of the graphs in the graph list. If the graph was the start
      * graph, uses the renamed graph again as start graph.
@@ -1952,6 +1964,7 @@ public class Simulator {
         result.addSeparator();
 
         result.add(getRelabelAction());
+        result.add(getRenumberAction());
 
         result.addSeparator();
 
@@ -4456,6 +4469,38 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getGrammarView() != null);
+        }
+    }
+
+    /**
+     * Returns the renumbering action permanently associated with this
+     * simulator.
+     */
+    public RenumberAction getRenumberAction() {
+        // lazily create the action
+        if (this.renumberAction == null) {
+            this.renumberAction = new RenumberAction();
+        }
+        return this.renumberAction;
+    }
+
+    /**
+     * The renumbering action permanently associated with this simulator.
+     */
+    private RenumberAction renumberAction;
+
+    private class RenumberAction extends RefreshableAction {
+        RenumberAction() {
+            super(Options.RENUMBER_ACTION_NAME, null);
+        }
+
+        public void refresh() {
+            setEnabled(getGrammarView() != null
+                && getGrammarStore().isModifiable());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            doRenumber();
         }
     }
 

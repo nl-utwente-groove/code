@@ -300,6 +300,8 @@ public class Options {
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /** Type rename action name */
     public static final String RENAME_TYPE_ACTION_NAME = "Rename Type";
+    /** Renumber action name */
+    public static final String RENUMBER_ACTION_NAME = "Renumber Nodes";
     /** Reset label position action name */
     static public final String RESET_LABEL_POSITION_ACTION = "Reset Label";
     /**
