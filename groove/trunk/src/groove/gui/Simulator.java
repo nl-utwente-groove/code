@@ -682,9 +682,11 @@ public class Simulator {
         for (RuleView rule : rules) {
             AspectGraph ruleGraph = rule.getView();
             GraphProperties properties =
-                GraphInfo.getProperties(ruleGraph, true);
+                GraphInfo.getProperties(ruleGraph, true).clone();
             properties.setEnabled(!properties.isEnabled());
-            doAddRule(rule.getRuleName(), ruleGraph);
+            AspectGraph newRuleGraph = ruleGraph.clone();
+            GraphInfo.setProperties(newRuleGraph, properties);
+            doAddRule(rule.getRuleName(), newRuleGraph);
         }
     }
 

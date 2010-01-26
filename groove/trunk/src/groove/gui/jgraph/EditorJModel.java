@@ -126,6 +126,15 @@ public class EditorJModel extends JModel {
     }
 
     @Override
+    public Map<?,?> cloneCells(Object[] cells) {
+        Map<?,?> result;
+        collectNodeNrs();
+        result = super.cloneCells(cells);
+        resetNodeNrs();
+        return result;
+    }
+
+    @Override
     protected Object cloneCell(Object cell) {
         Object result = super.cloneCell(cell);
         if (cell instanceof EditableJVertex) {
@@ -135,23 +144,42 @@ public class EditorJModel extends JModel {
         return result;
     }
 
+    /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
+    private boolean collectNodeNrs() {
+        boolean result = this.usedNrs == null;
+        if (result) {
+            this.usedNrs = new HashSet<Integer>();
+            for (Object root : getRoots()) {
+                if (root instanceof JVertex) {
+                    this.usedNrs.add(((JVertex) root).getNumber());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Resets the set of used node numbers to {@code null}. */
+    private void resetNodeNrs() {
+        this.usedNrs = null;
+    }
+
     /**
      * Returns the first non-negative number that is not used as a node number
      * in this model.
      */
     private int createNewNodeNr() {
+        int result = 0;
+        boolean collect = collectNodeNrs();
         // search for an unused node number
-        Set<Integer> usedNrs = new HashSet<Integer>();
-        for (Object root : getRoots()) {
-            if (root instanceof JVertex) {
-                usedNrs.add(((JVertex) root).getNumber());
-            }
+        while (this.usedNrs.contains(result)) {
+            result++;
         }
-        int nr = 0;
-        while (usedNrs.contains(nr)) {
-            nr++;
+        if (collect) {
+            resetNodeNrs();
+        } else {
+            this.usedNrs.add(result);
         }
-        return nr;
+        return result;
     }
 
     @Override
@@ -227,4 +255,6 @@ public class EditorJModel extends JModel {
 
     /** The associated editor. */
     private final Editor editor;
+    /** The set of used node numbers. */
+    private Set<Integer> usedNrs;
 }
