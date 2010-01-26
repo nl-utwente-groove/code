@@ -94,7 +94,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      */
     public DefaultApplication(RuleEvent event, Graph source, Graph target,
             Node[] coanchorImage) {
-        this(event,source,coanchorImage);
+        this(event, source, coanchorImage);
         this.target = target;
     }
 
@@ -161,14 +161,18 @@ public class DefaultApplication implements RuleApplication, Derivation {
     private Morphism computeMorphism() {
         Morphism result = createMorphism();
         NodeEdgeMap mergeMap = getMergeMap();
-        for (Node node : this.source.nodeSet()) {
+        // copy the source node and edge set, to avoid modification exceptions
+        // in case graph aliasing was used
+        Set<Node> sourceNodes = new HashSet<Node>(this.source.nodeSet());
+        Set<Edge> sourceEdges = new HashSet<Edge>(this.source.edgeSet());
+        for (Node node : sourceNodes) {
             Node nodeImage = mergeMap.getNode(node);
             if (nodeImage != null && getTarget().containsElement(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
         }
         Set<Edge> erasedEdges = getErasedEdges();
-        for (Edge edge : this.source.edgeSet()) {
+        for (Edge edge : sourceEdges) {
             if (!erasedEdges.contains(edge)) {
                 Edge edgeImage = mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsElement(edgeImage)) {
