@@ -560,6 +560,7 @@ public class Simulator {
         try {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             getGrammarStore().putRule(ruleAsGraph);
+            ruleAsGraph.invalidateView();
             result = true;
             updateGrammar();
         } catch (IOException exc) {
@@ -3471,7 +3472,8 @@ public class Simulator {
                 for (int i = 0; i < rules.size(); i++) {
                     rule = rules.get(i);
                     ruleGraph = rule.getView();
-                    ruleProperties = GraphInfo.getProperties(ruleGraph, true);
+                    ruleProperties =
+                        GraphInfo.getProperties(ruleGraph, true).clone();
 
                     if (rules.size() > 1) {
 
@@ -3506,7 +3508,9 @@ public class Simulator {
                     // Set new properties
                     ruleProperties.clear();
                     ruleProperties.putAll(editedProperties);
-                    doAddRule(rule.getRuleName(), ruleGraph);
+                    AspectGraph newRuleGraph = ruleGraph.clone();
+                    GraphInfo.setProperties(newRuleGraph, ruleProperties);
+                    doAddRule(rule.getRuleName(), newRuleGraph);
                 }
             }
         }
