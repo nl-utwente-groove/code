@@ -59,9 +59,9 @@ public interface Label extends Comparable<Label>, java.io.Serializable {
     boolean isBinary();
 
     /** Type indicator of a label for a (normal) binary edge. @see #getType() */
-    int BINARY = 0;
+    int BINARY = 2;
     /** Type indicator of a node type label. @see #getType() */
-    int NODE_TYPE = 1;
+    int NODE_TYPE = 0;
     /** Type indicator of a flag label. @see #getType() */
-    int FLAG = 2;
+    int FLAG = 1;
 }

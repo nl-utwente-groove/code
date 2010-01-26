@@ -4535,6 +4535,8 @@ public class Simulator {
             getStatePanel().getLabelTree().addTreeSelectionListener(this);
             getRulePanel().getJGraph().addGraphSelectionListener(this);
             getRulePanel().getLabelTree().addTreeSelectionListener(this);
+            getTypePanel().getJGraph().addGraphSelectionListener(this);
+            getTypePanel().getLabelTree().addTreeSelectionListener(this);
         }
 
         public void refresh() {
