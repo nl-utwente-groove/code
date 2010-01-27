@@ -87,7 +87,7 @@ functions
 
 function
   : 
-  ^(FUNCTION IDENTIFIER block);
+  ^(FUNCTION IDENTIFIER block) -> ^(FUNCTION IDENTIFIER);
   
 block
   : ^(b=BLOCK { boolean firstStatement = true; ArrayList<CommonTree> statements = new ArrayList<CommonTree>(); } (s=statement { 
