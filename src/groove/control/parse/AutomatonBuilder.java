@@ -102,18 +102,19 @@ public class AutomatonBuilder extends Namespace {
     public void copyInitializedVariables(ControlState s1, ControlState s2) {
         s2.initializeVariables(s1.getInitializedVariables());
     }
-    
+
     /**
      * @param s1
      * @param s2
      * @param tar
      */
-    public void mergeInitializedVariables(ControlState s1, ControlState s2, ControlState tar) {
+    public void mergeInitializedVariables(ControlState s1, ControlState s2,
+            ControlState tar) {
         Set<String> variables = s1.getInitializedVariables();
         variables.retainAll(s2.getInitializedVariables());
         tar.setInitializedVariables(variables);
     }
-    
+
     /**
      * Start method for building the automaton of a program
      */
@@ -145,11 +146,11 @@ public class AutomatonBuilder extends Namespace {
     public ControlTransition addTransition(String label) {
         ControlTransition ct =
             new ControlTransition(this.currentStart, this.currentEnd, label);
-        
+
         // copy the variables that are already initialized in the start state 
         // to the end state
         this.currentEnd.initializeVariables(this.currentStart.getInitializedVariables());
-        
+
         // basic init stuff: if an outgoing transitions is added, the initial 
         // actions of the state gets the label added
         this.currentStart.addInit(ct);
@@ -348,12 +349,13 @@ public class AutomatonBuilder extends Namespace {
 
         // also merge the variables
         if (this.currentEnd.getMerged()) {
-            mergeInitializedVariables(this.currentStart, this.currentEnd, this.currentEnd);
+            mergeInitializedVariables(this.currentStart, this.currentEnd,
+                this.currentEnd);
         } else {
             this.currentEnd.setMerged();
             copyInitializedVariables(this.currentStart, this.currentEnd);
         }
-        
+
         rmState(this.currentStart);
 
         debug("merge: removed " + this.currentStart);
@@ -367,7 +369,6 @@ public class AutomatonBuilder extends Namespace {
      * states. Removes failures with delta's. Removes unreachable states.
      */
     public void optimize() {
-
         Set<ControlState> checkOrphan = new HashSet<ControlState>();
 
         Set<ControlTransition> merge = new HashSet<ControlTransition>();
@@ -397,7 +398,6 @@ public class AutomatonBuilder extends Namespace {
             if (!targetProblem || !sourceProblem) {
                 merge.add(ct);
             }
-
         }
 
         // now we know what to merge we can do it
@@ -414,15 +414,27 @@ public class AutomatonBuilder extends Namespace {
 
         for (ControlTransition ct : this.transitions) {
             if (ct.getFailures().keySet().contains(_DELTA_)) {
+                System.out.println(ct);
                 checkOrphan.add(ct.target());
                 remove.add(ct);
             }
         }
+
+        //consolidateFailureTransitions();
+
         // Do actual remove
         for (ControlTransition ct : remove) {
             rmTransition(ct);
         }
 
+        removeUnreachableStates(checkOrphan);
+    }
+
+    /**
+     * Removes unreachable states from the given set of ControlStates
+     * @param checkOrphan a set of states to be checked
+     */
+    private void removeUnreachableStates(Set<ControlState> checkOrphan) {
         // Removing unreachable states
         for (ControlState t : checkOrphan) {
             boolean delete = true;
@@ -431,10 +443,57 @@ public class AutomatonBuilder extends Namespace {
                     delete = false;
                 }
             }
-            // delete is it is not the start state
+            // delete if it is not the start state
             if (delete && this.aut.getStart() != t) {
                 rmState(t);
             }
+        }
+    }
+
+    /**
+     * Consolidates failure transitions by replacing them with actual 
+     * transitions with a failure set.
+     * @return the transitions that need to be removed
+     */
+    private void consolidateFailureTransitions() {
+        Set<ControlState> checkOrphan = new HashSet<ControlState>();
+        Set<ControlTransition> remove = new HashSet<ControlTransition>();
+        Set<ControlTransition> replace = new HashSet<ControlTransition>();
+        for (ControlTransition t : this.transitions) {
+            if (t.hasFailures()) {
+                System.out.println("This transition will be replaced: " + t);
+                replace.add(t);
+            }
+        }
+
+        for (ControlTransition t : replace) {
+            ControlState source = t.source();
+            ControlState target = t.target();
+            checkOrphan.add(target);
+            for (ControlTransition t2 : getTransitionsFrom(target)) {
+                ControlTransition newTransition =
+                    new ControlTransition(source, t2.target(), t2.getLabel(),
+                        t2.getFailures());
+                Set<Rule> failureSet = new HashSet<Rule>();
+                for (String s : t.getFailures().keySet()) {
+                    failureSet.add(this.getRule(s));
+                }
+                newTransition.setFailureSet(failureSet);
+
+                this.transitions.add(newTransition);
+                this.aut.addTransition(newTransition);
+                //this.currentEnd = t2.target();
+                //this.currentStart = source;
+                //addTransition(t2.getLabel());
+                remove.add(t);
+            }
+        }
+
+        for (ControlTransition t : remove) {
+            System.out.println("removing: " + t);
+            //rmState(t.target());
+            // TODO: ERROR HERE :((((
+            rmTransition(t);
         }
     }
 
@@ -538,7 +597,18 @@ public class AutomatonBuilder extends Namespace {
             }
             transition.setFailureSet(failureRules);
         }
+
         return;
+    }
+
+    private Set<ControlTransition> getTransitionsFrom(ControlState state) {
+        Set<ControlTransition> ret = new HashSet<ControlTransition>();
+        for (ControlTransition t : this.transitions) {
+            if (t.source() == state) {
+                ret.add(t);
+            }
+        }
+        return ret;
     }
 
     /**

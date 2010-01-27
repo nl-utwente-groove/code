@@ -43,6 +43,17 @@ public class Namespace {
     }
 
     /**
+     * Stores all the procs for a control program
+     * @param ast a FUNCTION node for the control program
+     */
+    public void storeProcs(CommonTree ast) {
+        for (int i = 0; i < ast.getChildCount(); i++) {
+            CommonTree ct = (CommonTree) ast.getChild(i);
+            store(ct.getChild(0).toString(), (CommonTree) ct.getChild(1));
+        }
+    }
+
+    /**
      * Returns the AST for a function.
      */
     public CommonTree getProc(String name) {
@@ -64,12 +75,13 @@ public class Namespace {
     public boolean hasRule(String name) {
         return this.ruleNames.contains(name);
     }
-    
+
     /**
      * Returns the rule associated with a given rule name
      */
     public SPORule getRule(String name) {
-        debug("trying to get rule: "+name+", currently "+this.ruleMap.size()+" rules known");
+        debug("trying to get rule: " + name + ", currently "
+            + this.ruleMap.size() + " rules known");
         return this.ruleMap.get(name);
     }
 
@@ -79,18 +91,18 @@ public class Namespace {
             this.ruleNames.add(rule.text());
         }
     }
-    
+
     /**
      * Sets the rules so that the control program may know about them
      * @param rules a collection of the rules used in this grammar
      */
     public void setRules(Collection<Rule> rules) {
-        for(Rule r : rules) {
-            debug(" == adding rule: "+r.getName().toString());
-            this.ruleMap.put(r.getName().toString(), (SPORule)r);
+        for (Rule r : rules) {
+            debug(" == adding rule: " + r.getName().toString());
+            this.ruleMap.put(r.getName().toString(), (SPORule) r);
         }
     }
-    
+
     /**
      * Returns whether this program uses variables.
      * @return true if variables are being used, false if not
@@ -98,7 +110,7 @@ public class Namespace {
     public boolean usesVariables() {
         return !this.variables.isEmpty();
     }
-    
+
     /** 
      * Adds a variable name from the control program to the list of 
      * variable names. 
@@ -106,7 +118,7 @@ public class Namespace {
     public void addVariable(String name) {
         this.variables.put(name, false);
     }
-    
+
     /**
      * Marks a variable as initialized.
      */
@@ -114,7 +126,9 @@ public class Namespace {
         if (hasVariable(name)) {
             this.variables.put(name, true);
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -123,16 +137,18 @@ public class Namespace {
     public boolean hasVariable(String name) {
         return this.variables.containsKey(name);
     }
-    
+
     /**
      * Tests if the variable with the given name is initialized.
      */
     public boolean isInitialized(String name) {
         if (hasVariable(name)) {
             return this.variables.get(name);
-        } else return false;
+        } else {
+            return false;
+        }
     }
-    
+
     /**
      * Returns the set of rule names associated with this name space. Only
      * returns a value different from <code>null</code> if the rule names have
@@ -141,7 +157,7 @@ public class Namespace {
     public Set<String> getRuleNames() {
         return this.ruleNames;
     }
-    
+
     private void debug(String msg) {
         if (this.usesVariables()) {
             //System.err.println("Variables debug (NameSpace): "+msg);
@@ -149,10 +165,12 @@ public class Namespace {
     }
 
     private final Set<String> ruleNames = new HashSet<String>();
-    private final HashMap<String,SPORule> ruleMap = new HashMap<String,SPORule>();
+    private final HashMap<String,SPORule> ruleMap =
+        new HashMap<String,SPORule>();
 
     private final HashMap<String,CommonTree> procs =
         new HashMap<String,CommonTree>();
-    
-    private final HashMap<String,Boolean> variables = new HashMap<String,Boolean>();
+
+    private final HashMap<String,Boolean> variables =
+        new HashMap<String,Boolean>();
 }
