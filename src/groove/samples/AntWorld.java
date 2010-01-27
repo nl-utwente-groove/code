@@ -80,7 +80,7 @@ public class AntWorld {
             System.out.printf("%n%s:\t%s\t%s\t%s\t%s%n", "Turn", "Time",
                 "Rings", "Fields", "Ants");
             System.out.printf("%d:\t%d\t%d\t%d\t%d%n", turnCount,
-                (endTime - startTime), ringCount, fieldCount, antCount);
+                (endTime - startTime), ringCount, fieldCount + 16, antCount);
         } catch (IOException exc) {
             System.err.printf("Can't read in grammar %s: %s", grammarName,
                 exc.getMessage());
