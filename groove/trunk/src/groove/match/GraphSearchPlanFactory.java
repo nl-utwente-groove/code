@@ -87,11 +87,10 @@ public class GraphSearchPlanFactory {
     public SearchPlanStrategy createMatcher(GraphShape graph,
             Collection<? extends Node> anchorNodes,
             Collection<? extends Edge> anchorEdges, LabelStore labelStore) {
-        PlanData data = new PlanData(graph);
+        PlanData data = new PlanData(graph, labelStore);
         SearchPlanStrategy result =
             new SearchPlanStrategy(graph,
-                data.getPlan(anchorNodes, anchorEdges), labelStore,
-                this.injective);
+                data.getPlan(anchorNodes, anchorEdges), this.injective);
         result.setFixed();
         return result;
     }
@@ -161,14 +160,16 @@ public class GraphSearchPlanFactory {
          * Construct a given plan data object for a given graph, with certain
          * sets of already pre-matched elements.
          * @param graph the graph to be matched by the plan
+         * @param labelStore the label store containing the subtype relation
          */
-        PlanData(GraphShape graph) {
+        PlanData(GraphShape graph, LabelStore labelStore) {
             // compute the set of remaining (unmatched) nodes
             this.remainingNodes = new LinkedHashSet<Node>(graph.nodeSet());
             // compute the set of remaining (unmatched) edges and variables
             this.remainingEdges = new LinkedHashSet<Edge>(graph.edgeSet());
             this.remainingVars =
                 new LinkedHashSet<String>(VarSupport.getAllVars(graph));
+            this.labelStore = labelStore;
         }
 
         /**
@@ -335,7 +336,7 @@ public class GraphSearchPlanFactory {
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
             } else if (label.isNodeType()) {
-                return new NodeTypeSearchItem((BinaryEdge) edge);
+                return new NodeTypeSearchItem((BinaryEdge) edge, labelStore);
             } else if (RegExprLabel.getWildcardId(label) != null) {
                 return new VarEdgeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.isWildcard(label)) {
@@ -415,6 +416,8 @@ public class GraphSearchPlanFactory {
          * The set of variables to be matched.
          */
         private final Set<String> remainingVars;
+        /** The label store containing the subtype relation. */
+        private final LabelStore labelStore;
         /**
          * The comparators used to determine the order in which the edges should
          * be matched.
