@@ -1593,45 +1593,53 @@ public class Simulator {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
                     FormatError error = result.getSelectedError();
-                    AspectGraph errorGraph = error.getGraph();
-                    if (errorGraph != null) {
-                        JGraphPanel<?> panel = null;
-                        String name = GraphInfo.getName(errorGraph);
-                        if (GraphInfo.hasRuleRole(errorGraph)) {
-                            panel = getRulePanel();
-                            setRule(new RuleName(name));
-                        } else if (GraphInfo.hasGraphRole(errorGraph)) {
-                            panel = getStatePanel();
-                            getStateList().setSelectedValue(name, true);
-                        } else if (GraphInfo.hasTypeRole(errorGraph)) {
-                            panel = getTypePanel();
-                            getTypePanel().setSelectedType(name);
-                        }
-                        // select the error cell and switch to the panel
-                        if (panel != null) {
-                            if (error.getObject() != null) {
-                                panel.selectJCell(error.getObject());
+                    if (error != null) {
+                        AspectGraph errorGraph = error.getGraph();
+                        if (errorGraph != null) {
+                            JGraphPanel<?> panel = null;
+                            String name = GraphInfo.getName(errorGraph);
+                            if (GraphInfo.hasRuleRole(errorGraph)) {
+                                panel = getRulePanel();
+                                setRule(new RuleName(name));
+                            } else if (GraphInfo.hasGraphRole(errorGraph)) {
+                                panel = getStatePanel();
+                                getStateList().setSelectedValue(name, true);
+                            } else if (GraphInfo.hasTypeRole(errorGraph)) {
+                                panel = getTypePanel();
+                                getTypePanel().setSelectedType(name);
                             }
-                            setGraphPanel(panel);
-                        }
-                    } else if (error.getControl() != null) {
-                        getControlPanel().setSelectedControl(
-                            error.getControl().getName());
-                        String LINE_PATTERN = "on line ";
-                        int index = error.toString().indexOf(LINE_PATTERN);
-                        if (index >= 0) {
-                            index += LINE_PATTERN.length();
-                            String line = error.toString().substring(index);
-                            int lineNr;
-                            try {
-                                lineNr = Integer.parseInt(line);
-                                getControlPanel().selectLine(lineNr);
-                            } catch (NumberFormatException e1) {
-                                // do nothing
+                            // select the error cell and switch to the panel
+                            if (panel != null) {
+                                if (error.getObject() != null) {
+                                    panel.selectJCell(error.getObject());
+                                }
+                                setGraphPanel(panel);
                             }
+                        } else if (error.getControl() != null) {
+                            getControlPanel().setSelectedControl(
+                                error.getControl().getName());
+                            String LINE_PATTERN = "line ";
+                            String message = error.toString();
+                            int index = message.indexOf(LINE_PATTERN);
+                            if (index >= 0) {
+                                index += LINE_PATTERN.length();
+                                int end = message.indexOf(':', index);
+                                if (end < 0) {
+                                    end = message.length();
+                                }
+                                String line =
+                                    error.toString().substring(index, end);
+                                int lineNr;
+                                try {
+                                    lineNr = Integer.parseInt(line);
+                                    getControlPanel().selectLine(lineNr);
+                                } catch (NumberFormatException e1) {
+                                    // do nothing
+                                }
+                            }
+                            getGraphViewsPanel().setSelectedComponent(
+                                getControlPanel());
                         }
-                        getGraphViewsPanel().setSelectedComponent(
-                            getControlPanel());
                     }
                 }
             });

@@ -60,13 +60,22 @@ statement
 	| WHILE '(' condition ')' DO? block -> ^(WHILE condition block)
 	| UNTIL '(' condition ')' DO? block -> ^(UNTIL condition block)
 	| DO block WHILE '(' condition ')' -> ^(DO block condition)
-	| TRY block (ELSE block)? -> ^(TRY block+)
-	| IF '(' condition ')' block (ELSE block)? -> ^(IF condition block+)
+	| ifstatement
     | CHOICE block (CH_OR block)* -> ^(CHOICE block+)
 	| expression ';' -> expression
 	| var_declaration ';' -> var_declaration 
     ;
 
+ifstatement
+    : IF '(' condition ')' block (ELSE elseblock)? -> ^(IF condition block elseblock?)
+    | TRY block (ELSE elseblock)? -> ^(TRY block elseblock?)
+    ;
+    
+elseblock
+    : block
+    | ifstatement -> ^(BLOCK ifstatement)
+    ;
+     
 conditionliteral
 	: TRUE | call | rule ;
 

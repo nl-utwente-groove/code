@@ -95,8 +95,7 @@ public class ControlView {
             }
 
             List<String> errors = parser.getErrors();
-            if (errors.size() != 0) {
-                errors.add(0, "Encountered parse errors in control program");
+            if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
             // fetch the resulting tree
