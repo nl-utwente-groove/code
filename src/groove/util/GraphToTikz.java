@@ -22,17 +22,17 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
+import groove.gui.jgraph.ControlJModel;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.ControlJModel.StateJVertex;
+import groove.gui.jgraph.LTSJModel;
 import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.lts.LTS;
 import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
@@ -528,9 +528,11 @@ public final class GraphToTikz {
     private static void appendEdgeLabelInPath(GraphJEdge edge, String labStyle,
             StringBuilder s) {
 
-        s.append(NODE);
-        s.append(encloseBrack(labStyle));
-        appendEdgeLabel(edge, s);
+        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
+            s.append(NODE);
+            s.append(encloseBrack(labStyle));
+            appendEdgeLabel(edge, s);
+        }
     }
 
     /**
@@ -540,22 +542,23 @@ public final class GraphToTikz {
     private static void appendEdgeLabel(GraphJEdge edge, JEdgeLayout layout,
             String labStyle, List<Point2D> points, StringBuilder s) {
 
-        Point2D labelPos =
-            convertRelativeLabelPositionToAbsolute(layout.getLabelPosition(),
-                points);
-        // Extra path for the label position.
-        s.append(BEGIN_NODE);
-        s.append(encloseBrack(labStyle));
-        s.append(encloseSpace(AT_KEYWORD));
-        appendPoint(labelPos, s);
-        appendEdgeLabel(edge, s);
+        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
+            Point2D labelPos =
+                convertRelativeLabelPositionToAbsolute(
+                    layout.getLabelPosition(), points);
+            // Extra path for the label position.
+            s.append(BEGIN_NODE);
+            s.append(encloseBrack(labStyle));
+            s.append(encloseSpace(AT_KEYWORD));
+            appendPoint(labelPos, s);
+            appendEdgeLabel(edge, s);
+        }
     }
 
     /**
      * Appends the point in position i of a list of points to a string builder.
      */
     private static void appendPoint(List<Point2D> points, int i, StringBuilder s) {
-
         appendPoint(points.get(i), s);
     }
 
@@ -563,6 +566,7 @@ public final class GraphToTikz {
      * Converts a point to a string.
      * @param point the point to be converted.
      * @param usePar flag to indicate whether the point coordinates should be
+
      *               enclosed in parentheses or not.
      * @return the string representation of the given point.
      */
@@ -975,10 +979,20 @@ public final class GraphToTikz {
     private static String convertStyles(GraphJVertex node,
             boolean showBackground, boolean isEmphasized, boolean isGrayedOut) {
 
-        if (node instanceof StateJVertex) {
-            return convertStyles((StateJVertex) node, showBackground,
-                isEmphasized, isGrayedOut);
+        if (node instanceof ControlJModel.StateJVertex) {
+            // Node from control automaton.
+            return convertControlNodeStyles((ControlJModel.StateJVertex) node,
+                showBackground, isEmphasized, isGrayedOut);
         }
+
+        if (node instanceof LTSJModel.StateJVertex) {
+            // Node from LTS.
+            return convertLTSNodeStyles((LTSJModel.StateJVertex) node,
+                showBackground, isEmphasized, isGrayedOut);
+        }
+
+        // If we got to this point we have either a node from a rule,
+        // a state graph or a type graph.
 
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
@@ -1016,15 +1030,6 @@ public final class GraphToTikz {
 
         }
 
-        // LTS nodes
-        if (allLabels.contains(LTS.FINAL_LABEL_TEXT)) {
-            styles.add(FINAL_NODE_STYLE);
-        } else if (allLabels.contains(LTS.OPEN_LABEL_TEXT)) {
-            styles.add(OPEN_NODE_STYLE);
-        } else if (allLabels.contains(LTS.START_LABEL_TEXT)) {
-            styles.add(START_NODE_STYLE);
-        }
-
         if (isEmphasized) {
             styles.add(BOLD_LINE);
         }
@@ -1044,8 +1049,9 @@ public final class GraphToTikz {
      * @param isGrayedOut flag that indicates if the node is grayed out.
      * @return a string with all the Tikz styles to be used.
      */
-    private static String convertStyles(StateJVertex node,
-            boolean showBackground, boolean isEmphasized, boolean isGrayedOut) {
+    private static String convertControlNodeStyles(
+            ControlJModel.StateJVertex node, boolean showBackground,
+            boolean isEmphasized, boolean isGrayedOut) {
 
         ArrayList<String> styles = new ArrayList<String>();
 
@@ -1063,6 +1069,44 @@ public final class GraphToTikz {
 
         if (isGrayedOut) {
             styles.add(THIN_NODE_STYLE);
+        }
+
+        if (!showBackground) {
+            styles.add(WHITE_FILL);
+        }
+
+        return styles.toString();
+    }
+
+    /**
+     * Produces a string with the proper Tikz styles of a given LTS node.
+     * @param node the LTS node to be converted.
+     * @param showBackground flag to indicate if the node should be filled.
+     * @param isEmphasized flag that indicates if the node is emphasized.
+     * @param isGrayedOut flag that indicates if the node is grayed out.
+     * @return a string with all the Tikz styles to be used.
+     */
+    private static String convertLTSNodeStyles(LTSJModel.StateJVertex node,
+            boolean showBackground, boolean isEmphasized, boolean isGrayedOut) {
+
+        ArrayList<String> styles = new ArrayList<String>();
+
+        if (isGrayedOut) {
+            styles.add(THIN_NODE_STYLE);
+        } else {
+            styles.add(BASIC_NODE_STYLE);
+        }
+
+        if (node.isStart()) {
+            styles.add(START_NODE_STYLE);
+        } else if (node.isFinal()) {
+            styles.add(FINAL_NODE_STYLE);
+        } else if (!node.isClosed()) {
+            styles.add(OPEN_NODE_STYLE);
+        }
+
+        if (isEmphasized) {
+            styles.add(BOLD_LINE);
         }
 
         if (!showBackground) {
@@ -1100,8 +1144,13 @@ public final class GraphToTikz {
             styles.add(EMBARGO_EDGE_STYLE);
             styles.add(EMBARGO_LABEL_STYLE);
         } else { // role == "use"
-            styles.add(BASIC_EDGE_STYLE);
-            styles.add(BASIC_LABEL_STYLE);
+            if (edge.getPlainLabels().contains(SUB)) {
+                styles.add(INHERITANCE_EDGE_STYLE);
+                styles.add(INHERITANCE_LABEL_STYLE);
+            } else {
+                styles.add(BASIC_EDGE_STYLE);
+                styles.add(BASIC_LABEL_STYLE);
+            }
         }
 
         // Quantification edges.
@@ -1195,6 +1244,7 @@ public final class GraphToTikz {
     private static final String NEW = "new";
     private static final String NOT_COL = "not:";
     private static final String NOT = "not";
+    private static final String SUB = "sub::";
 
     // Tikz output
     private static final String CRLF = "\\\\";
@@ -1244,6 +1294,8 @@ public final class GraphToTikz {
     private static final String CONTROL_LAMBDA_EDGE_STYLE = "clambda";
     private static final String CONTROL_FAILURE_EDGE_STYLE = "cfailure";
     private static final String UNDIRECTED_EDGE_STYLE = "-";
+    private static final String INHERITANCE_EDGE_STYLE = "subedge";
+    private static final String INHERITANCE_LABEL_STYLE = "none";
     private static final String CONTROL_LABEL_STYLE = "clab";
     private static final String FINAL_NODE_STYLE = "final";
     private static final String START_NODE_STYLE = "start";
