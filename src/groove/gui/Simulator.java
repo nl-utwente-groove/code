@@ -285,18 +285,6 @@ public class Simulator {
     /** Returns the type graph associated with the grammar, if any. */
     private TypeView getTypeView() {
         return getGrammarView() == null ? null : getGrammarView().getTypeView();
-        //        TypeGraph result = null;
-        //        if (getGrammarView() != null) {
-        //            TypeView typeView = getGrammarView().getTypeView();
-        //            if (typeView != null) {
-        //                try {
-        //                    result = typeView.toModel();
-        //                } catch (FormatException e) {
-        //                    // the type graph is not valie
-        //                }
-        //            }
-        //        }
-        //        return result;
     }
 
     /**
@@ -3645,6 +3633,14 @@ public class Simulator {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable());
         }
+    }
+
+    /**
+     * Lazily creates and returns the type edit action permanently associated
+     * with this simulator.
+     */
+    public Action getEditTypeAction() {
+        return getTypePanel().getEditAction();
     }
 
     /**

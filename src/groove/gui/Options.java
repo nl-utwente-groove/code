@@ -224,6 +224,8 @@ public class Options {
     public static final String EXPORT_LTS_ACTION_NAME = "Export LTS ...";
     /** Export state action name */
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
+    /** Export type action name */
+    public static final String EXPORT_TYPE_ACTION_NAME = "Export Type ...";
     /** Export state action name */
     public static final String FILTER_ACTION_NAME = "Filter labels";
     /** Back action name */

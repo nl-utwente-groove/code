@@ -22,7 +22,7 @@ import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.StateJGraph;
+import groove.gui.jgraph.TypeJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -62,7 +62,7 @@ import javax.swing.JToolBar;
  * @author Frank van Es
  * @version $Revision $
  */
-public class TypePanel extends JGraphPanel<StateJGraph> implements
+public class TypePanel extends JGraphPanel<TypeJGraph> implements
         SimulationListener {
     /**
      * Constructor for this TypePanel Creates a new TypePanel instance and
@@ -70,7 +70,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
      * @param simulator The simulator this type panel belongs to.
      */
     public TypePanel(final Simulator simulator) {
-        super(new StateJGraph(simulator), true, true, simulator.getOptions());
+        super(new TypeJGraph(simulator), true, true, simulator.getOptions());
         this.simulator = simulator;
         add(createToolbar(), BorderLayout.NORTH);
         simulator.addSimulationListener(this);
@@ -606,9 +606,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link EditAction}.
      */
-    private EditAction getEditAction() {
+    EditAction getEditAction() {
         if (this.editAction == null) {
             this.editAction = new EditAction();
         }
