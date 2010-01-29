@@ -260,7 +260,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         Graph prototype =
             GraphFactory.getInstance(BuchiAutomatonGraph.getPrototype()).newGraph();
         assert (prototype instanceof BuchiAutomatonGraph) : "Resulting graph wrongly instantiated.";
-        Map<IState, DefaultBuchiLocation> state2location =
+        Map<IState,DefaultBuchiLocation> state2location =
             new HashMap<IState,DefaultBuchiLocation>();
         // BuchiAutomatonGraph result = (BuchiAutomatonGraph) prototype;
 
@@ -418,7 +418,8 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
             break;
         }
 
-        BuchiGraph buchiGraph = graphFactory.newBuchiGraph("! " + this.property);
+        BuchiGraph buchiGraph =
+            graphFactory.newBuchiGraph("!(" + this.property + ")");
         setBuchiGraph(buchiGraph);
         this.initialLocation = buchiGraph.initialLocations().iterator().next();
     }
@@ -526,7 +527,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     private StateGenerator productGenerator;
     private String property;
-    private Collection<ITransition> automaton;
     private groove.verify.ltl2ba.BuchiGraph buchiGraph;
     private BuchiLocation initialLocation;
     private Stack<BuchiGraphState> searchStack;
