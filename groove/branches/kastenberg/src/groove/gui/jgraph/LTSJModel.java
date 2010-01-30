@@ -383,7 +383,7 @@ public class LTSJModel extends GraphJModel {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private class StateJVertex extends GraphJVertex {
+    public class StateJVertex extends GraphJVertex {
         /**
          * Creates a new instance for a given node (required to be a
          * {@link GraphState}) in an LTS model.
@@ -437,19 +437,39 @@ public class LTSJModel extends GraphJModel {
          */
         @Override
         public Collection<String> getPlainLabels() {
-            LTS lts = getGraph();
             Set<String> result = new HashSet<String>();
-            if (lts.startState().equals(getNode())) {
+            if (isStart()) {
                 result.add(LTS.START_LABEL_TEXT);
             }
-            if (!getNode().isClosed()) {
+            if (!isClosed()) {
                 result.add(LTS.OPEN_LABEL_TEXT);
             }
-            if (lts.isFinal(getNode())) {
+            if (isFinal()) {
                 result.add(LTS.FINAL_LABEL_TEXT);
             }
             result.addAll(super.getPlainLabels());
             return result;
+        }
+
+        /**
+         * @return true if the state is a start state.
+         */
+        public boolean isStart() {
+            return getGraph().startState().equals(getNode());
+        }
+
+        /**
+         * @return true if the state is closed.
+         */
+        public boolean isClosed() {
+            return getNode().isClosed();
+        }
+
+        /**
+         * @return true if the state is final.
+         */
+        public boolean isFinal() {
+            return getGraph().isFinal(getNode());
         }
 
         /**

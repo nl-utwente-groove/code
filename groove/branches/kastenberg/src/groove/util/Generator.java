@@ -51,7 +51,6 @@ import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.lts.StateGenerator;
@@ -1214,11 +1213,7 @@ public class Generator extends CommandLineTool {
 
         @Override
         public void addUpdate(GraphShape graph, Edge edge) {
-            GraphTransition trans = (GraphTransition) edge;
-            if (trans.getEvent().getRule().getName().getContent().equals(
-                "end_turn")) {
-                System.out.println("\n" + trans.getEvent());
-            }
+            // do nothing
         }
 
         /** Returns the number of nodes in the added states. */

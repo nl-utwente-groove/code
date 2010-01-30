@@ -35,11 +35,7 @@ import javax.swing.JDialog;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.TokenStream;
-import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
-import org.antlr.runtime.tree.TreeAdaptor;
 
 /**
  * @author Olaf Keijsers
@@ -63,6 +59,8 @@ public class ControlTest {
             File ctlFile = new File(ctlFileName);
             File grammarFile = new File(grammarFileName);
 
+            System.out.println(("=== " + ctlFile.getName() + ":"));
+
             // load the program
             String program = loadProgram(ctlFile);
 
@@ -81,8 +79,7 @@ public class ControlTest {
             GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
             GCLParser.program_return r = parser.program();
 
-            boolean DEBUG = false;
-
+            boolean DEBUG = true;
             if (DEBUG) {
                 ASTFrame frame =
                     new ASTFrame("parser result",
@@ -101,9 +98,9 @@ public class ControlTest {
             // checker will store and remove functions
             GCLChecker checker = new GCLChecker(nodes);
             checker.setNamespace(builder);
-            
+
             GCLChecker.program_return c_r = checker.program();
-            
+
             errors = checker.getErrors();
             if (errors.size() != 0) {
                 errors.add(0, "Encountered checker errors in control program");
@@ -120,19 +117,17 @@ public class ControlTest {
 
             // fetch checker tree (since it was edited)
             nodes = new CommonTreeNodeStream(c_r.getTree());
-            
-            
-            
-            
-            GCLDeterminismChecker determinismChecker = new GCLDeterminismChecker(nodes);
-            determinismChecker.setNamespace(builder);
-//            determinismChecker.setTreeAdaptor(adaptor);
-            GCLDeterminismChecker.program_return dc_r = determinismChecker.program();
 
-           
+            GCLDeterminismChecker determinismChecker =
+                new GCLDeterminismChecker(nodes);
+            determinismChecker.setNamespace(builder);
+            GCLDeterminismChecker.program_return dc_r =
+                determinismChecker.program();
+
             errors = determinismChecker.getErrors();
             if (errors.size() != 0) {
-                errors.add(0, "Encountered determinism checker errors in control program");
+                errors.add(0,
+                    "Encountered determinism checker errors in control program");
                 throw new FormatException(errors);
             }
 
@@ -143,9 +138,8 @@ public class ControlTest {
                 frame.setSize(500, 1000);
                 frame.setVisible(true);
             }
- 
+
             nodes = new CommonTreeNodeStream(dc_r.getTree());
-            
             GCLBuilder gclb = new GCLBuilder(nodes);
             gclb.setBuilder(builder);
             // reset the counter for unique controlstate numbers to 0
@@ -214,18 +208,19 @@ public class ControlTest {
         // someone testing this will probably want to change this method ;)
         final String TEST_DIRECTORY = "D:\\Studie\\Afstuderen\\Groove\\test";
         ControlTest ct;
-        //System.out.println("== test1.ctl:");
         //ct = new ControlTest(TEST_DIRECTORY + "\\test1.ctl", 
-         //TEST_DIRECTORY + "\\varTest.gps", true);
-        //System.out.println("== test2.ctl:");
+        //TEST_DIRECTORY + "\\varTest.gps", true);
         //ct = new ControlTest(TEST_DIRECTORY+"\\test2.ctl",
-         //TEST_DIRECTORY+"\\varTest.gps", true);
-        //System.out.println("== test3.ctl:");
+        //TEST_DIRECTORY+"\\varTest.gps", true);
         //ct = new ControlTest(TEST_DIRECTORY+"\\test3.ctl",
-         //TEST_DIRECTORY+"\\varTest.gps", true);
-        System.out.println("== test4.ctl:");
-          ct = new ControlTest(TEST_DIRECTORY+"\\test4.ctl",
-          TEST_DIRECTORY+"\\varTest.gps", true);
+        //TEST_DIRECTORY+"\\varTest.gps", true);
+        ct =
+            new ControlTest(TEST_DIRECTORY + "\\test4.ctl", TEST_DIRECTORY
+                + "\\varTest.gps", true);
+        ct =
+            new ControlTest(
+                "D:\\Studie\\Afstuderen\\antworld.gps\\control.gcp",
+                "D:\\Studie\\Afstuderen\\antworld.gps", true);
     }
 
     /**

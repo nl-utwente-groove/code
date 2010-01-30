@@ -285,18 +285,6 @@ public class Simulator {
     /** Returns the type graph associated with the grammar, if any. */
     private TypeView getTypeView() {
         return getGrammarView() == null ? null : getGrammarView().getTypeView();
-        //        TypeGraph result = null;
-        //        if (getGrammarView() != null) {
-        //            TypeView typeView = getGrammarView().getTypeView();
-        //            if (typeView != null) {
-        //                try {
-        //                    result = typeView.toModel();
-        //                } catch (FormatException e) {
-        //                    // the type graph is not valie
-        //                }
-        //            }
-        //        }
-        //        return result;
     }
 
     /**
@@ -560,6 +548,7 @@ public class Simulator {
         try {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             getGrammarStore().putRule(ruleAsGraph);
+            ruleAsGraph.invalidateView();
             result = true;
             updateGrammar();
         } catch (IOException exc) {
@@ -681,9 +670,11 @@ public class Simulator {
         for (RuleView rule : rules) {
             AspectGraph ruleGraph = rule.getView();
             GraphProperties properties =
-                GraphInfo.getProperties(ruleGraph, true);
+                GraphInfo.getProperties(ruleGraph, true).clone();
             properties.setEnabled(!properties.isEnabled());
-            doAddRule(rule.getRuleName(), ruleGraph);
+            AspectGraph newRuleGraph = ruleGraph.clone();
+            GraphInfo.setProperties(newRuleGraph, properties);
+            doAddRule(rule.getRuleName(), newRuleGraph);
         }
     }
 
@@ -1590,45 +1581,53 @@ public class Simulator {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
                     FormatError error = result.getSelectedError();
-                    AspectGraph errorGraph = error.getGraph();
-                    if (errorGraph != null) {
-                        JGraphPanel<?> panel = null;
-                        String name = GraphInfo.getName(errorGraph);
-                        if (GraphInfo.hasRuleRole(errorGraph)) {
-                            panel = getRulePanel();
-                            setRule(new RuleName(name));
-                        } else if (GraphInfo.hasGraphRole(errorGraph)) {
-                            panel = getStatePanel();
-                            getStateList().setSelectedValue(name, true);
-                        } else if (GraphInfo.hasTypeRole(errorGraph)) {
-                            panel = getTypePanel();
-                            getTypePanel().setSelectedType(name);
-                        }
-                        // select the error cell and switch to the panel
-                        if (panel != null) {
-                            if (error.getObject() != null) {
-                                panel.selectJCell(error.getObject());
+                    if (error != null) {
+                        AspectGraph errorGraph = error.getGraph();
+                        if (errorGraph != null) {
+                            JGraphPanel<?> panel = null;
+                            String name = GraphInfo.getName(errorGraph);
+                            if (GraphInfo.hasRuleRole(errorGraph)) {
+                                panel = getRulePanel();
+                                setRule(new RuleName(name));
+                            } else if (GraphInfo.hasGraphRole(errorGraph)) {
+                                panel = getStatePanel();
+                                getStateList().setSelectedValue(name, true);
+                            } else if (GraphInfo.hasTypeRole(errorGraph)) {
+                                panel = getTypePanel();
+                                getTypePanel().setSelectedType(name);
                             }
-                            setGraphPanel(panel);
-                        }
-                    } else if (error.getControl() != null) {
-                        getControlPanel().setSelectedControl(
-                            error.getControl().getName());
-                        String LINE_PATTERN = "on line ";
-                        int index = error.toString().indexOf(LINE_PATTERN);
-                        if (index >= 0) {
-                            index += LINE_PATTERN.length();
-                            String line = error.toString().substring(index);
-                            int lineNr;
-                            try {
-                                lineNr = Integer.parseInt(line);
-                                getControlPanel().selectLine(lineNr);
-                            } catch (NumberFormatException e1) {
-                                // do nothing
+                            // select the error cell and switch to the panel
+                            if (panel != null) {
+                                if (error.getObject() != null) {
+                                    panel.selectJCell(error.getObject());
+                                }
+                                setGraphPanel(panel);
                             }
+                        } else if (error.getControl() != null) {
+                            getControlPanel().setSelectedControl(
+                                error.getControl().getName());
+                            String LINE_PATTERN = "line ";
+                            String message = error.toString();
+                            int index = message.indexOf(LINE_PATTERN);
+                            if (index >= 0) {
+                                index += LINE_PATTERN.length();
+                                int end = message.indexOf(':', index);
+                                if (end < 0) {
+                                    end = message.length();
+                                }
+                                String line =
+                                    error.toString().substring(index, end);
+                                int lineNr;
+                                try {
+                                    lineNr = Integer.parseInt(line);
+                                    getControlPanel().selectLine(lineNr);
+                                } catch (NumberFormatException e1) {
+                                    // do nothing
+                                }
+                            }
+                            getGraphViewsPanel().setSelectedComponent(
+                                getControlPanel());
                         }
-                        getGraphViewsPanel().setSelectedComponent(
-                            getControlPanel());
                     }
                 }
             });
@@ -3471,7 +3470,8 @@ public class Simulator {
                 for (int i = 0; i < rules.size(); i++) {
                     rule = rules.get(i);
                     ruleGraph = rule.getView();
-                    ruleProperties = GraphInfo.getProperties(ruleGraph, true);
+                    ruleProperties =
+                        GraphInfo.getProperties(ruleGraph, true).clone();
 
                     if (rules.size() > 1) {
 
@@ -3506,7 +3506,9 @@ public class Simulator {
                     // Set new properties
                     ruleProperties.clear();
                     ruleProperties.putAll(editedProperties);
-                    doAddRule(rule.getRuleName(), ruleGraph);
+                    AspectGraph newRuleGraph = ruleGraph.clone();
+                    GraphInfo.setProperties(newRuleGraph, ruleProperties);
+                    doAddRule(rule.getRuleName(), newRuleGraph);
                 }
             }
         }
@@ -3631,6 +3633,14 @@ public class Simulator {
             setEnabled(getGrammarView() != null
                 && getGrammarStore().isModifiable());
         }
+    }
+
+    /**
+     * Lazily creates and returns the type edit action permanently associated
+     * with this simulator.
+     */
+    public Action getEditTypeAction() {
+        return getTypePanel().getEditAction();
     }
 
     /**
@@ -4529,6 +4539,8 @@ public class Simulator {
             getStatePanel().getLabelTree().addTreeSelectionListener(this);
             getRulePanel().getJGraph().addGraphSelectionListener(this);
             getRulePanel().getLabelTree().addTreeSelectionListener(this);
+            getTypePanel().getJGraph().addGraphSelectionListener(this);
+            getTypePanel().getLabelTree().addTreeSelectionListener(this);
         }
 
         public void refresh() {

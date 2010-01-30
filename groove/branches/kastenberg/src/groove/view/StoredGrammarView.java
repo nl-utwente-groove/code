@@ -328,7 +328,11 @@ public class StoredGrammarView implements GrammarView, Observer {
                 try {
                     typeView.toModel();
                 } catch (FormatException exc) {
-                    errors.addAll(exc.getErrors());
+                    for (FormatError error : exc.getErrors()) {
+                        errors.add(new FormatError(
+                            "Error in type graph '%s': '%s'",
+                            typeView.getName(), error, typeView.getView()));
+                    }
                 }
             }
         }

@@ -20,7 +20,6 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.Converter;
 import groove.view.FormatException;
-import groove.view.aspect.TypeAspect;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,7 +31,6 @@ import java.util.Set;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -41,9 +39,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -94,8 +90,10 @@ public class RelabelDialog {
      */
     private void propagateSelection() {
         Label selection = (Label) getOldField().getSelectedItem();
-        getOldTypeCheckbox().setSelected(selection.isNodeType());
-        getNewTypeCheckbox().setSelected(selection.isNodeType());
+        getOldTypeLabel().setText(LABEL_TYPE_TEXT[selection.getType()]);
+        //        getOldTypeCombobox().setSelectedIndex(selection.getType());
+        getNewTypeCombobox().setSelectedIndex(selection.getType());
+        //        getNewTypeCheckbox().setSelected(selection.isNodeType());
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
         getNewField().setSelectionEnd(selection.text().length());
@@ -126,12 +124,14 @@ public class RelabelDialog {
         Label result = null;
         String text = getNewField().getText();
         if (text.length() > 0) {
-            boolean isNodeType = getNewTypeCheckbox().isSelected();
-            if (isNodeType) {
-                result = TypeAspect.NODE_TYPE.getLabelParser().parse(text);
-            } else {
-                result = DefaultLabel.createLabel(text);
-            }
+            int labelType = getNewTypeCombobox().getSelectedIndex();
+            result = DefaultLabel.createLabel(text, labelType);
+            //            boolean isNodeType = getNewTypeCheckbox().isSelected();
+            //            if (isNodeType) {
+            //                result = TypeAspect.NODE_TYPE.getLabelParser().parse(text);
+            //            } else {
+            //                result = DefaultLabel.createLabel(text);
+            //            }
         } else {
             throw new FormatException("Empty replacement label not allowed");
         }
@@ -175,11 +175,11 @@ public class RelabelDialog {
             JPanel oldPanel = new JPanel(new BorderLayout());
             oldPanel.add(oldLabel, BorderLayout.WEST);
             oldPanel.add(getOldField(), BorderLayout.CENTER);
-            oldPanel.add(getOldTypeCheckbox(), BorderLayout.EAST);
+            oldPanel.add(getOldTypeLabel(), BorderLayout.EAST);
             JPanel newPanel = new JPanel(new BorderLayout());
             newPanel.add(newLabel, BorderLayout.WEST);
             newPanel.add(getNewField(), BorderLayout.CENTER);
-            newPanel.add(getNewTypeCheckbox(), BorderLayout.EAST);
+            newPanel.add(getNewTypeCombobox(), BorderLayout.EAST);
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.add(getErrorLabel());
             errorPanel.setPreferredSize(oldPanel.getPreferredSize());
@@ -282,52 +282,59 @@ public class RelabelDialog {
     /** Label displaying the current error in the renaming (if any). */
     private JLabel errorLabel;
 
-    private JCheckBox getOldTypeCheckbox() {
-        if (this.oldTypeCheckbox == null) {
-            final JCheckBox result =
-                this.oldTypeCheckbox = new JCheckBox(NODE_TYPE_TEXT);
-            result.setHorizontalTextPosition(SwingConstants.LEADING);
+    /** Returns the combobox for the old label's type. */
+    private JLabel getOldTypeLabel() {
+        if (this.oldTypeLabel == null) {
+            final JLabel result = this.oldTypeLabel = new JLabel();
+            result.setText(LABEL_TYPE_TEXT[getOldLabel().getType()]);
+            result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
+            result.setBorder(new EtchedBorder());
+            result.setEnabled(true);
             result.setFocusable(false);
-            // result.setEnabled(false);
-            result.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    boolean nodeType = getOldLabel().isNodeType();
-                    if (result.isSelected() != nodeType) {
-                        result.setSelected(nodeType);
-                    }
-                }
-            });
         }
-        return this.oldTypeCheckbox;
+        return this.oldTypeLabel;
     }
 
-    /** Checkbox to indicate that the old label is a node type. */
-    private JCheckBox oldTypeCheckbox;
+    /** Combobox showing the new label's type. */
+    private JLabel oldTypeLabel;
 
-    private JCheckBox getNewTypeCheckbox() {
-        if (this.newTypeCheckbox == null) {
-            final JCheckBox result =
-                this.newTypeCheckbox = new JCheckBox(NODE_TYPE_TEXT);
-            result.setHorizontalTextPosition(SwingConstants.LEADING);
+    /** Returns the combobox for the new label's type. */
+    private JComboBox getNewTypeCombobox() {
+        if (this.newTypeChoice == null) {
+            final JComboBox result = this.newTypeChoice = new JComboBox();
+            for (int i = 0; i < LABEL_TYPE_TEXT.length; i++) {
+                result.addItem(LABEL_TYPE_TEXT[i]);
+            }
+            result.setSelectedIndex(getOldLabel().getType());
+            result.setEnabled(true);
             result.setFocusable(false);
-            result.addChangeListener(new ChangeListener() {
+            result.addActionListener(new ActionListener() {
                 @Override
-                public void stateChanged(ChangeEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     Font font = getNewField().getFont();
-                    font =
-                        font.deriveFont(result.isSelected() ? Font.BOLD
-                                : Font.PLAIN);
+                    int fontProperty;
+                    switch (result.getSelectedIndex()) {
+                    case Label.NODE_TYPE:
+                        fontProperty = Font.BOLD;
+                        break;
+                    case Label.FLAG:
+                        fontProperty = Font.ITALIC;
+                        break;
+                    default:
+                        fontProperty = Font.PLAIN;
+                    }
+                    font = font.deriveFont(fontProperty);
                     getNewField().setFont(font);
                     setOkEnabled();
                 }
             });
+
         }
-        return this.newTypeCheckbox;
+        return this.newTypeChoice;
     }
 
-    /** Checkbox to indicate that the new label is to be a node type. */
-    private JCheckBox newTypeCheckbox;
+    /** Combobox showing the old label's type. */
+    private JComboBox newTypeChoice;
 
     /** Set of existing rule names. */
     private final Set<Label> existingLabels;
@@ -342,6 +349,13 @@ public class RelabelDialog {
     static private String NEW_TEXT = "New label: ";
     /** Text of node type checkbox */
     static private String NODE_TYPE_TEXT = "  Node type";
+
+    static private String[] LABEL_TYPE_TEXT = new String[3];
+    {
+        LABEL_TYPE_TEXT[Label.BINARY] = "Binary";
+        LABEL_TYPE_TEXT[Label.NODE_TYPE] = "Node Type";
+        LABEL_TYPE_TEXT[Label.FLAG] = "Flag";
+    }
 
     /**
      * Action listener that closes the dialog and sets the option pane's value

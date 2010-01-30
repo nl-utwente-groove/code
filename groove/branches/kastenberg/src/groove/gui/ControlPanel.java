@@ -751,6 +751,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private class EditAction extends RefreshableAction {
         public EditAction() {
             super(Options.EDIT_CONTROL_ACTION_NAME, Groove.EDIT_ICON);
+            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {

@@ -28,6 +28,7 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.VarNodeEdgeMap;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Abstract superclass of conditions that test for the existence of a (sub)graph
@@ -79,6 +81,7 @@ abstract public class PositiveCondition<M extends Match> extends
      * @throws FormatException if the algebra part cannot be matched
      */
     private void testAlgebra() throws FormatException {
+        Set<FormatError> errors = new TreeSet<FormatError>();
         // collect value and product nodes
         Set<VariableNode> unresolvedVariableNodes = new HashSet<VariableNode>();
         Map<ProductNode,BitSet> unresolvedProductNodes =
@@ -135,10 +138,9 @@ abstract public class PositiveCondition<M extends Match> extends
                 }
             }
         }
-        if (!unresolvedVariableNodes.isEmpty()) {
-            throw new FormatException(
-                "Cannot resolve attribute value nodes %s",
-                unresolvedVariableNodes);
+        for (Node node : unresolvedVariableNodes) {
+            errors.add(new FormatError(
+                "Cannot resolve attribute value node '%s'", node));
         }
         if (!unresolvedProductNodes.isEmpty()) {
             Map.Entry<ProductNode,BitSet> productEntry =
@@ -147,10 +149,13 @@ abstract public class PositiveCondition<M extends Match> extends
             BitSet arguments = productEntry.getValue();
             if (arguments.cardinality() != product.arity()) {
                 arguments.flip(0, product.arity());
-                throw new FormatException(
+                errors.add(new FormatError(
                     "Argument edges %s of product node %s missing in sub-condition",
-                    arguments, product);
+                    arguments, product));
             }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
         }
     }
 

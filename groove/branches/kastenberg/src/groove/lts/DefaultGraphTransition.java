@@ -23,6 +23,7 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -149,8 +150,8 @@ public class DefaultGraphTransition extends
     protected Morphism computeMorphism() {
         RuleApplication appl = getEvent().newApplication(source().getGraph());
         if (isSymmetry()) {
-            Graph derivedTarget = appl.getTarget();
-            Graph realTarget = target().getGraph();
+            Graph derivedTarget = new NodeSetEdgeSetGraph(appl.getTarget());
+            Graph realTarget = new NodeSetEdgeSetGraph(target().getGraph());
             Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition "
                 + this

@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLBuilder.g 2010-01-22 12:45:20
+// $ANTLR 3.1b1 GCLBuilder.g 2010-01-27 15:00:35
 
 package groove.control.parse;
 import groove.control.*;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 @SuppressWarnings("all")              
 public class GCLBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "TRY", "ELSE", "IF", "CHOICE", "CH_OR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "NODE_TYPE", "COMMA", "OUT", "DONT_CARE", "AND", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "NODE_TYPE", "COMMA", "OUT", "DONT_CARE", "AND", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
     public static final int FUNCTION=7;
     public static final int T__42=42;
@@ -27,7 +27,7 @@ public class GCLBuilder extends TreeParser {
     public static final int WHILE=15;
     public static final int FUNCTIONS=6;
     public static final int NODE_TYPE=28;
-    public static final int ELSE=18;
+    public static final int ELSE=20;
     public static final int DO=9;
     public static final int PARAM=11;
     public static final int NOT=34;
@@ -35,7 +35,7 @@ public class GCLBuilder extends TreeParser {
     public static final int AND=32;
     public static final int EOF=-1;
     public static final int TRUE=22;
-    public static final int TRY=17;
+    public static final int TRY=21;
     public static final int IF=19;
     public static final int DONT_CARE=31;
     public static final int ML_COMMENT=35;
@@ -50,13 +50,13 @@ public class GCLBuilder extends TreeParser {
     public static final int BLOCK=5;
     public static final int OR=13;
     public static final int SL_COMMENT=36;
-    public static final int CH_OR=21;
+    public static final int CH_OR=18;
     public static final int PROGRAM=4;
     public static final int PLUS=23;
     public static final int VAR=10;
     public static final int CALL=8;
     public static final int DOT=33;
-    public static final int CHOICE=20;
+    public static final int CHOICE=17;
 
     // delegates
     // delegators
@@ -269,7 +269,7 @@ public class GCLBuilder extends TreeParser {
                     int alt2=2;
                     int LA2_0 = input.LA(1);
 
-                    if ( ((LA2_0>=CALL && LA2_0<=VAR)||(LA2_0>=IDENTIFIER && LA2_0<=TRY)||(LA2_0>=IF && LA2_0<=CHOICE)||(LA2_0>=TRUE && LA2_0<=OTHER)) ) {
+                    if ( ((LA2_0>=CALL && LA2_0<=VAR)||(LA2_0>=IDENTIFIER && LA2_0<=CHOICE)||LA2_0==IF||(LA2_0>=TRY && LA2_0<=OTHER)) ) {
                         alt2=1;
                     }
 
@@ -1282,7 +1282,7 @@ public class GCLBuilder extends TreeParser {
     public static final BitSet FOLLOW_FUNCTION_in_function97 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_IDENTIFIER_in_function99 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_BLOCK_in_block115 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_statement_in_block118 = new BitSet(new long[]{0x000000000FDBF708L});
+    public static final BitSet FOLLOW_statement_in_block118 = new BitSet(new long[]{0x000000000FEBF708L});
     public static final BitSet FOLLOW_ALAP_in_statement147 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_block_in_statement155 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_WHILE_in_statement164 = new BitSet(new long[]{0x0000000000000004L});

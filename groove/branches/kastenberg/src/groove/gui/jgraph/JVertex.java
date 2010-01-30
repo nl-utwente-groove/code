@@ -78,7 +78,8 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
 
     @Override
     public String toString() {
-        return "JVertex with labels " + getListLabels();
+        return String.format("JVertex %d with labels %s", getNumber(),
+            getListLabels());
     }
 
     @Override

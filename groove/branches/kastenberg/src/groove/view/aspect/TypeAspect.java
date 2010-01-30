@@ -168,9 +168,11 @@ public class TypeAspect extends AbstractAspect {
         }
 
         /** Singleton instance of this class. */
-        static private TypedLabelParser[] instances =
-            {null, new TypedLabelParser(Label.NODE_TYPE),
-                new TypedLabelParser(Label.FLAG)};
+        static private TypedLabelParser[] instances = new TypedLabelParser[3];
+        static {
+            instances[Label.NODE_TYPE] = new TypedLabelParser(Label.NODE_TYPE);
+            instances[Label.FLAG] = new TypedLabelParser(Label.FLAG);
+        }
     }
 
     /** Parser that only accepts empty labels. */

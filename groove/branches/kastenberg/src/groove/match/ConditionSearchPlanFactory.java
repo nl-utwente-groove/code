@@ -118,7 +118,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         }
         SearchPlanStrategy result =
             new SearchPlanStrategy(condition.getTarget(), plan,
-                condition.getLabelStore(), isInjective());
+                isInjective());
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
@@ -157,7 +157,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
          *        plan
          */
         GrammarPlanData(Condition condition) {
-            super(condition.getTarget());
+            super(condition.getTarget(), condition.getLabelStore());
             this.condition = condition;
         }
 

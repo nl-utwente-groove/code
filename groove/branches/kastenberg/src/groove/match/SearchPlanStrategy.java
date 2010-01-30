@@ -21,7 +21,6 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
@@ -50,18 +49,15 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
      * @param plan the search items that make up the search plan
-     * @param labelStore node subtype relation
      * @param injective flag to indicate that the matching should be injective
      */
     public SearchPlanStrategy(GraphShape source,
-            List<? extends SearchItem> plan, LabelStore labelStore,
-            boolean injective) {
+            List<? extends SearchItem> plan, boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
         this.edgeIxMap = new HashMap<Edge,Integer>();
         this.varIxMap = new HashMap<String,Integer>();
         this.plan = plan;
         this.injective = injective;
-        this.labelStore = labelStore;
     }
 
     public Iterator<VarNodeEdgeMap> getMatchIter(GraphShape host,
@@ -255,8 +251,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     final List<? extends SearchItem> plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
-    /** Label subtype relation. */
-    final LabelStore labelStore;
     /**
      * Map from source graph nodes to (distinct) indices.
      */
@@ -562,15 +556,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         /** Returns the target graph of the search. */
         public GraphShape getHost() {
             return this.host;
-        }
-
-        /**
-         * Returns the set of subtypes of a given label, or <code>null</code> if
-         * there are no subtypes set.
-         */
-        public Set<Label> getSubtypes(Label label) {
-            LabelStore store = SearchPlanStrategy.this.labelStore;
-            return store == null ? null : store.getSubtypes(label);
         }
 
         /**

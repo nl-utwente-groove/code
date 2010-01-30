@@ -527,6 +527,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         }
     }
 
+    /** 
+     * Method to make sure that the graph, rule or type view is reconstructed.
+     * This is necessary after a change to the aspect graph properties, in particular the rule priority. 
+     */
+    public void invalidateView() {
+        this.graphView = null;
+        this.ruleView = null;
+        this.typeView = null;
+    }
+
     /**
      * Creates a graph view from this aspect graph. Further information for the
      * conversion is given through a properties object. The view object is

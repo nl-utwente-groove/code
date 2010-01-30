@@ -80,7 +80,17 @@ import groove.util.Reporter;
  * 
  */
 public class DefaultScenario implements Scenario {
-    /** Creates a scenario with a given strategy and acceptor. */
+    /** 
+     * Creates a scenario from a given strategy, with a {@link FinalStateAcceptor}.
+     */
+    public DefaultScenario(Strategy strategy) {
+        this(strategy, null);
+    }
+
+    /** 
+     * Creates a scenario with a given strategy and acceptor.
+     * The acceptor may be {@code null}, in which case a {@link FinalStateAcceptor} will be used. 
+     */
     public DefaultScenario(Strategy strategy, Acceptor acceptor) {
         this(strategy, acceptor, null, null);
     }

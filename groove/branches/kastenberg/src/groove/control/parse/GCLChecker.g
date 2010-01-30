@@ -53,19 +53,15 @@ program
   ;
 
 functions
-  : ^(FUNCTIONS function*);
+  : ^(f=FUNCTIONS { namespace.storeProcs(f); } function*);
 
 function
-  : 
-  ^(FUNCTION IDENTIFIER block {
+  : ^(FUNCTION IDENTIFIER block {
+  		debug("proc: "+$IDENTIFIER.text);
   		if (namespace.hasRule($IDENTIFIER.text)) {
   			errors.add("There already exists a rule with the name: "+$IDENTIFIER.text);
-  		} else if (namespace.hasProc($IDENTIFIER.text)) {
-  			errors.add("Multiple definitions of the function: "+$IDENTIFIER.text);
-  		} else {
-  			namespace.store( $IDENTIFIER.text , $block.tree);
-  		} 
-  	} )  -> ^(FUNCTION IDENTIFIER);
+  		}
+  	} );
   
 block
   : ^(BLOCK { st.openScope(); } (statement)* { st.closeScope(); })
@@ -102,7 +98,9 @@ condition
 rule
   : ^(CALL r=IDENTIFIER { currentRule = r.getText(); } param* {
 		debug("currentRule: "+currentRule);
-		if (!namespace.hasRule($r.text)) {
+		debug("checking if "+$r.text+" exists");
+		if (!namespace.hasRule($r.text) && !namespace.hasProc($r.text)) {
+			debug("ERROR!");
 			errors.add("No such rule: "+$r.text+" on line "+$r.line);
 		}
 		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {

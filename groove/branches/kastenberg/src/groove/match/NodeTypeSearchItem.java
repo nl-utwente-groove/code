@@ -20,6 +20,7 @@ import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.util.NestedIterator;
@@ -40,8 +41,9 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a given node type edge.
      * @param edge the edge to be matched
+     * @param labelStore label store containing the subtypes of the node type
      */
-    public NodeTypeSearchItem(BinaryEdge edge) {
+    public NodeTypeSearchItem(BinaryEdge edge, LabelStore labelStore) {
         this.edge = edge;
         this.source = edge.source();
         this.label = edge.label();
@@ -49,6 +51,9 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             "Label '%s' is not a node type", this.label);
         this.arity = edge.endCount();
         this.boundNodes = new HashSet<Node>(Arrays.asList(edge.source()));
+        this.subtypes = new HashSet<Label>(labelStore.getSubtypes(this.label));
+        this.hasProperSubtypes =
+            this.subtypes != null && this.subtypes.size() > 1;
     }
 
     /**
@@ -174,6 +179,10 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     int sourceIx;
     /** Indicates if the source is found before this item is invoked. */
     boolean sourceFound;
+    /** The collection of subtypes of this node type. */
+    final Collection<Label> subtypes;
+    /** Flag indicating if the node type has non-trivial subtypes. */
+    final boolean hasProperSubtypes;
 
     /**
      * Search record to be used if the node type image is completely determined
@@ -188,15 +197,12 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.sourcePreMatch = search.getNodeAnchor(sourceIx);
-            this.subTypes = search.getSubtypes(NodeTypeSearchItem.this.label);
-            this.hasProperSubtypes =
-                this.subTypes != null && this.subTypes.size() > 1;
         }
 
         @Override
         final boolean set() {
             boolean result = false;
-            if (this.hasProperSubtypes) {
+            if (NodeTypeSearchItem.this.hasProperSubtypes) {
                 // iterate over the subtypes
                 Iterator<Edge> edgeImageIter = getEdgeImageIter();
                 while (edgeImageIter.hasNext()) {
@@ -241,7 +247,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             assert sourceFind != null : String.format(
                 "Source node of %s has not been found",
                 NodeTypeSearchItem.this.edge);
-            final Iterator<Label> subtypeIter = this.subTypes.iterator();
+            final Iterator<Label> subtypeIter =
+                NodeTypeSearchItem.this.subtypes.iterator();
             return new Iterator<Edge>() {
                 @Override
                 public boolean hasNext() {
@@ -294,10 +301,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         private final int edgeIx;
         /** The index of the source in the search. */
         private final int sourceIx;
-        /** Set of subtypes of the node type. */
-        private final Set<Label> subTypes;
-        /** Flag indicating if the set of subtypes is a singleton. */
-        private final boolean hasProperSubtypes;
     }
 
     /**
@@ -319,9 +322,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             this.sourcePreMatch = search.getNodeAnchor(sourceIx);
             assert search.getEdge(edgeIx) == null : String.format(
                 "Edge %s already in %s", NodeTypeSearchItem.this.edge, search);
-            this.subTypes = search.getSubtypes(NodeTypeSearchItem.this.label);
-            this.hasProperSubtypes =
-                this.subTypes != null && this.subTypes.size() > 1;
         }
 
         @Override
@@ -349,8 +349,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                 }
             }
             if (this.checkLabel) {
-                if (this.hasProperSubtypes
-                    && this.subTypes.contains(image.label())
+                if (NodeTypeSearchItem.this.hasProperSubtypes
+                    && NodeTypeSearchItem.this.subtypes.contains(image.label())
                     || NodeTypeSearchItem.this.label == image.label()) {
                     return false;
                 }
@@ -391,10 +391,10 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                 this.checkLabel = true;
                 this.checkSource = false;
             } else {
-                if (this.hasProperSubtypes) {
+                if (NodeTypeSearchItem.this.hasProperSubtypes) {
                     // iterate over all edges of all subtypes
                     final Iterator<Label> subtypeIter =
-                        this.subTypes.iterator();
+                        NodeTypeSearchItem.this.subtypes.iterator();
                     this.imageIter =
                         new NestedIterator<Edge>(
                             new Iterator<Iterator<? extends Edge>>() {
@@ -440,10 +440,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         private final Node sourcePreMatch;
 
-        /** Set of subtypes of the node type. */
-        private final Set<Label> subTypes;
-        /** Flag indicating if the set of subtypes is a singleton. */
-        private final boolean hasProperSubtypes;
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the
