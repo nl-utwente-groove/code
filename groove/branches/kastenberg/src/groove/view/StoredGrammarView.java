@@ -188,8 +188,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (!GraphInfo.hasGraphRole(startGraph)) {
-            throw new IllegalArgumentException(
-                String.format("Prospective start graph '%s' is not a graph"));
+            throw new IllegalArgumentException(String.format(
+                "Prospective start graph '%s' is not a graph", startGraph));
         }
         this.startGraph = startGraph.toGraphView(getProperties());
         this.startGraphName = null;

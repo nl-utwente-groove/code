@@ -51,7 +51,10 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             "Label '%s' is not a node type", this.label);
         this.arity = edge.endCount();
         this.boundNodes = new HashSet<Node>(Arrays.asList(edge.source()));
-        this.subtypes = new HashSet<Label>(labelStore.getSubtypes(this.label));
+        Set<Label> labelStoreSubtypes = labelStore.getSubtypes(this.label);
+        this.subtypes =
+            labelStoreSubtypes == null ? null : new HashSet<Label>(
+                labelStoreSubtypes);
         this.hasProperSubtypes =
             this.subtypes != null && this.subtypes.size() > 1;
     }
