@@ -336,7 +336,8 @@ public class GraphSearchPlanFactory {
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
             } else if (label.isNodeType()) {
-                return new NodeTypeSearchItem((BinaryEdge) edge, labelStore);
+                return new NodeTypeSearchItem((BinaryEdge) edge,
+                    this.labelStore);
             } else if (RegExprLabel.getWildcardId(label) != null) {
                 return new VarEdgeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.isWildcard(label)) {

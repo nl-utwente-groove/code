@@ -451,7 +451,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             result = new RenameRuleEdit(oldName, newName, oldRule);
         } else if (this.ruleMap.containsKey(newRuleName)) {
             this.marshaller.deleteGraph(createRuleFile(newRuleName));
-            AspectGraph oldRule = this.ruleMap.remove(newName);
+            AspectGraph oldRule = this.ruleMap.remove(newRuleName);
             result = new RenameRuleEdit(oldName, newName, oldRule);
         }
         return result;
