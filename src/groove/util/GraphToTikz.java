@@ -272,6 +272,17 @@ public final class GraphToTikz {
         GraphJVertex srcVertex = edge.getSourceVertex();
         GraphJVertex tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
+
+        if (points.size() == 2) {
+            appendSourceNode(srcVertex, tgtVertex, layoutMap, s);
+            s.append(encloseSpace(connection));
+            appendTargetNode(srcVertex, tgtVertex, layoutMap, s);
+            s.append(END_PATH);
+            appendEdgeLabel(edge, layout, labStyle, points, s);
+            s.append(END_EDGE);
+            return;
+        }
+
         int firstPoint = 1;
         int lastPoint = points.size() - 2;
 
