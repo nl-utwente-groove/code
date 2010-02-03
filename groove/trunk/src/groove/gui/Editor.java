@@ -70,6 +70,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -101,8 +103,6 @@ import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableCellEditor;
@@ -318,6 +318,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         getGraphRoleButton().setSelected(getRoleIndex() == GRAPH_INDEX);
         getRuleRoleButton().setSelected(getRoleIndex() == RULE_INDEX);
         getTypeRoleButton().setSelected(getRoleIndex() == TYPE_INDEX);
+        // we need to refresh because the errors may have changed
         updateStatus();
         updateTitle();
     }
@@ -999,17 +1000,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Lazily creates and returns the error panel. */
-    private NewErrorListPanel getErrorPanel() {
+    private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            final NewErrorListPanel result =
-                this.errorPanel = new NewErrorListPanel();
-            result.addSelectionListener(new ListSelectionListener() {
+            final ErrorListPanel result =
+                this.errorPanel = new ErrorListPanel();
+            result.addSelectionListener(new Observer() {
                 @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    JCell errorCell =
-                        Editor.this.errorCellMap.get(result.getSelectedError());
-                    if (errorCell != null) {
-                        getJGraph().setSelectionCell(errorCell);
+                public void update(Observable o, Object arg) {
+                    if (arg != null) {
+                        JCell errorCell = Editor.this.errorCellMap.get(arg);
+                        if (errorCell != null) {
+                            getJGraph().setSelectionCell(errorCell);
+                        }
                     }
                 }
             });
@@ -1084,7 +1086,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * Updates the status bar with information about the currently edited graph.
+     * Updates the status bar and the error panel 
+     * with information about the currently edited graph.
      */
     protected void updateStatus() {
         setAspectGraph();
@@ -1108,6 +1111,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             }
         }
         getErrorPanel().setErrors(errors);
+        this.jgraph.refresh();
     }
 
     /** Sets the property whether all inserted cells are automatically selected. */
@@ -1375,7 +1379,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Panel containing the error panel and status par. */
     private JPanel statusPanel;
     /** Panel displaying format error messages. */
-    private NewErrorListPanel errorPanel;
+    private ErrorListPanel errorPanel;
     /** The size of the (previous) preview dialog. */
     private Dimension previewSize;
 
