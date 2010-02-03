@@ -308,7 +308,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     protected void computeBuchiGraph(String property) {
         try {
             gov.nasa.ltl.graph.Graph ltlGraph =
-                LTL2Buchi.translate("!" + property);
+                LTL2Buchi.translate("!(" + property + ")");
             ltlGraph.forAllNodes(new TransformNodeVisitor());
             ltlGraph.forAllEdges(new TransformEdgeVisitor());
             this.initialLocation =
