@@ -237,7 +237,7 @@ public class PropertiesDialog {
     public boolean isEditable() {
         return this.editable;
     }
-    
+
     /**
      * Public getter for the inner JTable.
      * Used within Editor.java to create the proper 'Ok' button on the preview
@@ -557,8 +557,14 @@ public class PropertiesDialog {
             } else if (columnIndex == PROPERTY_COLUMN) {
                 return getDefaultKeys() == null
                     || rowIndex >= getDefaultKeys().size();
-            } else {
-                return rowIndex < getProperties().size();
+            } else { // VALUE_COLUMN
+                if (rowIndex >= getProperties().size()) {
+                    return false;
+                } else {
+                    Property<String> property =
+                        getDefaultKeys().get(getPropertyKey(rowIndex));
+                    return property == null || property.isEditable();
+                }
             }
         }
 

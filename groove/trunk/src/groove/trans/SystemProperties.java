@@ -584,6 +584,17 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * Property name for the algebra to be used during simulation.
      */
     static public final String ALGEBRA_KEY = "algebraFamily";
+
+    /**
+     * Property name for the GROOVE version.
+     */
+    static public final String GROOVE_VERSION_KEY = "grooveVersion";
+
+    /**
+     * Property name for the Grammar version.
+     */
+    static public final String GRAMMAR_VERSION_KEY = "grammarVersion";
+
     /**
      * List of system-defined keys, in the order in which they are to appear in
      * a properties editor.
@@ -593,6 +604,10 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     static {
         Map<String,Property<String>> defaultKeys =
             new LinkedHashMap<String,Property<String>>();
+        defaultKeys.put(GROOVE_VERSION_KEY, new Property.Unmodifiable<String>(
+            "The Groove version that created this grammar"));
+        defaultKeys.put(GRAMMAR_VERSION_KEY, new Property.Unmodifiable<String>(
+            "The version of this grammar"));
         defaultKeys.put(REMARK_KEY, new Property.True<String>(
             "A one-line description of the graph production system"));
         defaultKeys.put(SUBTYPE_KEY, new IsSubtypeString());
