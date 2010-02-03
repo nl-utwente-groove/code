@@ -41,41 +41,6 @@ import javax.swing.border.EmptyBorder;
  * @version $Revision$
  */
 public class ErrorDialog extends JDialog {
-    /** Dialog title. */
-    public static final String ERROR_MESSAGE_TEXT = "Error message";
-    /** Button text of the Details button. */
-    public static final String NO_DETAILS_BUTTON_TEXT = "Details >>";
-    /** Button text of the More Details button. */
-    public static final String SOME_DETAILS_BUTTON_TEXT = "More >>";
-    /** Button text of the No Details button. */
-    public static final String ALL_DETAILS_BUTTON_TEXT = "Details <<";
-    /** Button text of the Cancel button. */
-    public static final String CANCEL_BUTTON_TEXT = "OK";
-
-    /** Details status: no details. */
-    public static final int NO_DETAILS = 0;
-    /** Details status: some details. */
-    public static final int SOME_DETAILS = 1;
-    /** Details status: full details. */
-    public static final int FULL_DETAILS = 2;
-
-    /** Details text array. */
-    private static final String[] DETAILS_LEVEL_TEXT =
-        {NO_DETAILS_BUTTON_TEXT, SOME_DETAILS_BUTTON_TEXT,
-            ALL_DETAILS_BUTTON_TEXT};
-
-    /**
-     * Searches upwards in the hierarchy of parent components until it finds a
-     * <tt>JFrame</tt> or <tt>null</tt>.
-     */
-    static protected JFrame getParentFrame(Component component) {
-        if (component == null || component instanceof JFrame) {
-            return (JFrame) component;
-        } else {
-            return getParentFrame(component.getParent());
-        }
-    }
-
     /**
      * Consructs a new error dialog, with the same top-level frame as the given
      * component, a simple error message, and an exception giving more detail
@@ -169,6 +134,53 @@ public class ErrorDialog extends JDialog {
         pack();
     }
 
+    /** Button to control the amount of detail shown about the error. */
+    protected final JButton detailsButton;
+    /** The button cancelling the display of the dialog. */
+    protected final JButton cancelButton;
+    /** The panel which may show or hide the details text panel */
+    protected final JPanel detailsPane;
+    /** The text area with error details. */
+    protected final JTextArea detailsArea;
+    /** The panel upon which <tt>detailsArea</tt> is shown */
+    protected final JScrollPane detailsTextPane;
+    /** The exception reported by this dialog. */
+    protected final Throwable exc;
+
+    /** The level of details in the error dialog. */
+    protected int detailsLevel = NO_DETAILS;
+    /**
+     * Searches upwards in the hierarchy of parent components until it finds a
+     * <tt>JFrame</tt> or <tt>null</tt>.
+     */
+    static protected JFrame getParentFrame(Component component) {
+        if (component == null || component instanceof JFrame) {
+            return (JFrame) component;
+        } else {
+            return getParentFrame(component.getParent());
+        }
+    }
+
+    /** Dialog title. */
+    public static final String ERROR_MESSAGE_TEXT = "Error message";
+    /** Button text of the Details button. */
+    public static final String NO_DETAILS_BUTTON_TEXT = "Details >>";
+    /** Button text of the More Details button. */
+    public static final String SOME_DETAILS_BUTTON_TEXT = "More >>";
+    /** Button text of the No Details button. */
+    public static final String ALL_DETAILS_BUTTON_TEXT = "Details <<";
+    /** Button text of the Cancel button. */
+    public static final String CANCEL_BUTTON_TEXT = "OK";
+    /** Details status: no details. */
+    public static final int NO_DETAILS = 0;
+    /** Details status: some details. */
+    public static final int SOME_DETAILS = 1;
+    /** Details status: full details. */
+    public static final int FULL_DETAILS = 2;
+    /** Details text array. */
+    private static final String[] DETAILS_LEVEL_TEXT =
+        {NO_DETAILS_BUTTON_TEXT, SOME_DETAILS_BUTTON_TEXT,
+            ALL_DETAILS_BUTTON_TEXT};
     /** Action listener that takes care of the dialog buttons. */
     protected class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
@@ -187,20 +199,4 @@ public class ErrorDialog extends JDialog {
             }
         }
     }
-
-    /** Button to control the amount of detail shown about the error. */
-    protected final JButton detailsButton;
-    /** The button cancelling the display of the dialog. */
-    protected final JButton cancelButton;
-    /** The panel which may show or hide the details text panel */
-    protected final JPanel detailsPane;
-    /** The text area with error details. */
-    protected final JTextArea detailsArea;
-    /** The panel upon which <tt>detailsArea</tt> is shown */
-    protected final JScrollPane detailsTextPane;
-    /** The exception reported by this dialog. */
-    protected final Throwable exc;
-
-    /** The level of details in the error dialog. */
-    protected int detailsLevel = NO_DETAILS;
 }

@@ -160,8 +160,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -1573,15 +1571,15 @@ public class Simulator {
         return result;
     }
 
-    private NewErrorListPanel getErrorPanel() {
+    private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            final NewErrorListPanel result =
-                this.errorPanel = new NewErrorListPanel();
-            result.addSelectionListener(new ListSelectionListener() {
+            final ErrorListPanel result =
+                this.errorPanel = new ErrorListPanel();
+            result.addSelectionListener(new Observer() {
                 @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    FormatError error = result.getSelectedError();
-                    if (error != null) {
+                public void update(Observable observable, Object arg) {
+                    if (arg != null) {
+                        FormatError error = (FormatError) arg;
                         AspectGraph errorGraph = error.getGraph();
                         if (errorGraph != null) {
                             JGraphPanel<?> panel = null;
@@ -1636,7 +1634,7 @@ public class Simulator {
     }
 
     /** Error display. */
-    private NewErrorListPanel errorPanel;
+    private ErrorListPanel errorPanel;
 
     /**
      * Returns the simulator panel on which the current state is displayed. Note
