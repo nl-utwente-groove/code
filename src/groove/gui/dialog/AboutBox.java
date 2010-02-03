@@ -84,7 +84,7 @@ public class AboutBox extends JDialog {
         result.append("GROOVE tool set\n");
         result.append("Version: ");
         result.append(Version.NUMBER);
-        result.append("\n(c) University of Twente, 2002, 2009\n\n");
+        result.append("\n(c) University of Twente, 2002, 2010\n\n");
         result.append("Libraries used: \n* ");
         result.append(getCastorText());
         result.append("\n* ");

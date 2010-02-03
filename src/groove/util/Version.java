@@ -61,23 +61,43 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "2009"; // eventually automatically set
-                                                // during Ant compilation!
+    public static final String BUILD = "2010"; // eventually automatically set
+    // during Ant compilation!
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "11.06.2009"; // eventually automatically
-                                                    // set during Ant
-                                                    // compilation!
+    public static final String DATE = "03.02.2010"; // eventually automatically
+    // set during Ant
+    // compilation!
 
     /**
-     * Version number of format x.y.z, with
+     * Groove Version number of format x.y.z, with
      * <ul>
      * <li>x = major version
      * <li>y = minor version
      * <li>z = bug fix version
      * </ul>
+     * or developer version.
      */
-    public static final String NUMBER = "3.2.2";
+    public static final String NUMBER = "Development";
+
+    /**
+     * Array of grammar versions.
+     * The grammar version is related to the Groove version:
+     * Groove <= 3.3.1 : Grammar 1.0
+     * Groove > 3.3.1  : Grammar 2.0  
+     */
+    public static final String[] GRAMMAR_VERSIONS = {"1.0", "2.0"};
+    /**
+     * Index of the last grammar version in the array above. 
+     */
+    public static final int lastGrammarIndex = 1;
+
+    /**
+     * @return the string of the last grammar version.
+     */
+    public static String getLastGrammarVersion() {
+        return GRAMMAR_VERSIONS[lastGrammarIndex];
+    }
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.5";

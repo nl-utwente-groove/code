@@ -57,6 +57,13 @@ abstract public class Property<S> {
     abstract public boolean isSatisfied(S value);
 
     /**
+     * Indicates if this property can be edited.
+     */
+    public boolean isEditable() {
+        return true;
+    }
+
+    /**
      * Provides a description of the value(s) that satisfy this property. This
      * implementation returns <code>null</code>.
      */
@@ -107,6 +114,24 @@ abstract public class Property<S> {
         @Override
         public boolean isSatisfied(S state) {
             return true;
+        }
+    }
+
+    /**
+     * Class for properties that cannot be edited.
+     */
+    static public class Unmodifiable<S> extends True<S> {
+
+        /**
+         * Constructs an instance with the given comment.
+         */
+        public Unmodifiable(String comment) {
+            super(comment);
+        }
+
+        @Override
+        public boolean isEditable() {
+            return false;
         }
     }
 
@@ -246,7 +271,7 @@ abstract public class Property<S> {
             return result;
         }
     }
-    
+
     /**
      * Property that is satisfied by any of the values from a given predetermined set.
      */
@@ -256,7 +281,7 @@ abstract public class Property<S> {
             this.values = new HashSet<S>(Arrays.asList(values));
             this.comment = comment;
         }
-        
+
         @Override
         public String getComment() {
             return this.comment;
