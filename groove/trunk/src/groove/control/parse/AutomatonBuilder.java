@@ -25,8 +25,10 @@ import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.view.FormatException;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -53,6 +55,9 @@ public class AutomatonBuilder extends Namespace {
     /** Contains transitions that may lead to merging of source and target. */
     private final HashSet<ControlTransition> mergeCandidates =
         new HashSet<ControlTransition>();
+
+    private final HashSet<ControlState> possibleOrphans =
+        new HashSet<ControlState>();
 
     /**
      * The automaton that is created. It is returned as an empty automaton by
@@ -420,13 +425,14 @@ public class AutomatonBuilder extends Namespace {
             }
         }
 
-        //consolidateFailureTransitions();
+        //consolidateFailures(this.aut.getStart(), new HashSet<ControlState>());
 
         // Do actual remove
         for (ControlTransition ct : remove) {
             rmTransition(ct);
         }
 
+        checkOrphan.addAll(this.possibleOrphans);
         removeUnreachableStates(checkOrphan);
     }
 
@@ -445,56 +451,61 @@ public class AutomatonBuilder extends Namespace {
             }
             // delete if it is not the start state
             if (delete && this.aut.getStart() != t) {
+                for (ControlTransition ct : getTransitionsFrom(t)) {
+                    rmTransition(ct);
+                }
                 rmState(t);
             }
         }
     }
 
     /**
-     * Consolidates failure transitions by replacing them with actual 
-     * transitions with a failure set.
-     * @return the transitions that need to be removed
+     * Consolidates failure transitions into new transitions consisting of a 
+     * rule name and a set of failures.
+     * @param cs the ControlState to consolidate
      */
-    private void consolidateFailureTransitions() {
-        Set<ControlState> checkOrphan = new HashSet<ControlState>();
-        Set<ControlTransition> remove = new HashSet<ControlTransition>();
-        Set<ControlTransition> replace = new HashSet<ControlTransition>();
-        for (ControlTransition t : this.transitions) {
-            if (t.hasFailures()) {
-                System.out.println("This transition will be replaced: " + t);
-                replace.add(t);
-            }
-        }
+    public Set<ControlTransition> consolidateFailures(ControlState cs,
+            Set<ControlState> examined) {
+        Set<ControlTransition> ret = new HashSet<ControlTransition>();
+        examined.add(cs);
 
-        for (ControlTransition t : replace) {
-            ControlState source = t.source();
-            ControlState target = t.target();
-            checkOrphan.add(target);
-            for (ControlTransition t2 : getTransitionsFrom(target)) {
-                ControlTransition newTransition =
-                    new ControlTransition(source, t2.target(), t2.getLabel(),
-                        t2.getFailures());
-                Set<Rule> failureSet = new HashSet<Rule>();
-                for (String s : t.getFailures().keySet()) {
-                    failureSet.add(this.getRule(s));
+        for (ControlTransition ct : getTransitionsFrom(cs)) {
+            if (ct.hasFailures() && ct.getRule() == null && cs != ct.target()) {
+                this.possibleOrphans.add(ct.target());
+                rmTransition(ct);
+
+                Map<String,ControlTransition> currentFailures =
+                    ct.getFailures();
+
+                Set<ControlTransition> consolidated =
+                    consolidateFailures(ct.target(), examined);
+                for (ControlTransition ct2 : consolidated) {
+                    ControlTransition newTransition = ct2.clone();
+                    newTransition.setSource(ct.source());
+
+                    Map<String,ControlTransition> newFailures =
+                        new HashMap<String,ControlTransition>(currentFailures);
+                    newFailures.putAll(ct2.getFailures());
+                    newTransition.setFailures(newFailures);
+                    ret.add(newTransition);
+                    this.transitions.add(newTransition);
+                    this.aut.addTransition(newTransition);
+                    ct.source().add(newTransition);
+                    debug("Transition added by consolidate: " + newTransition);
                 }
-                newTransition.setFailureSet(failureSet);
-
-                this.transitions.add(newTransition);
-                this.aut.addTransition(newTransition);
-                //this.currentEnd = t2.target();
-                //this.currentStart = source;
-                //addTransition(t2.getLabel());
-                remove.add(t);
+                if (consolidated.isEmpty()) {
+                    this.transitions.add(ct);
+                    this.aut.addTransition(ct);
+                    ct.source().add(ct);
+                }
+            } else {
+                if (!examined.contains(ct.target())) {
+                    consolidateFailures(ct.target(), examined);
+                }
+                ret.add(ct);
             }
         }
-
-        for (ControlTransition t : remove) {
-            System.out.println("removing: " + t);
-            //rmState(t.target());
-            // TODO: ERROR HERE :((((
-            rmTransition(t);
-        }
+        return ret;
     }
 
     /**

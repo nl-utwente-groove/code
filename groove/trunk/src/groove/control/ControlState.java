@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class ControlState implements Node {
+public class ControlState implements Node, Location {
     /**
      * Create a ControlState. A ControlState needs to know the ControlShape it
      * is in to be able to properly delete it.
@@ -156,7 +156,7 @@ public class ControlState implements Node {
     public void addInit(String label) {
         this.init.put(label, null);
     }
-    
+
     /**
      * Adds a label and its corresponding ControlTransition to the initial
      * actions of this state
@@ -170,7 +170,7 @@ public class ControlState implements Node {
     public void delInit(String label) {
         this.init.remove(label);
     }
-    
+
     /**
      * Marks a variable as active (ready to use as input)
      * @param varName the name of the variable
@@ -178,21 +178,21 @@ public class ControlState implements Node {
     public void initializeVariable(String varName) {
         this.initializedVariables.add(varName);
     }
-    
+
     /**
      * @return a set of initialized variables
      */
     public Set<String> getInitializedVariables() {
         return this.initializedVariables;
     }
-    
+
     /**
      * @param variables
      */
     public void initializeVariables(Set<String> variables) {
         this.initializedVariables.addAll(variables);
     }
-    
+
     /**
      * @param variables
      */
@@ -200,14 +200,14 @@ public class ControlState implements Node {
         this.initializedVariables.clear();
         initializeVariables(variables);
     }
-    
+
     /**
      * Mark this state as merged.
      */
     public void setMerged() {
         this.hasMerged = true;
     }
-    
+
     /**
      * @return the merged flag of this state.
      */
@@ -216,7 +216,8 @@ public class ControlState implements Node {
     }
 
     /** The initial actions for this state. */
-    private final HashMap<String,ControlTransition> init = new HashMap<String,ControlTransition>();
+    private final HashMap<String,ControlTransition> init =
+        new HashMap<String,ControlTransition>();
     private final ControlShape parent;
     /** Internal number to identify the state. */
     private final int stateNumber;
@@ -231,6 +232,62 @@ public class ControlState implements Node {
     private final Set<ControlTransition> elseTransitions =
         new HashSet<ControlTransition>();
     private final Set<String> initializedVariables = new HashSet<String>();
-    
+
     private boolean hasMerged = false;
+
+    @Override
+    public Set<Rule> getDependency(Rule rule) {
+        Set<Rule> ret = new HashSet<Rule>();
+        // this is a rule that has a failure dependency
+        if (!this.ruleTargetMap.containsKey(rule)) {
+            for (ControlTransition ct : this.elseTransitions) {
+                if (ct.getRule() == rule) {
+                    ret.addAll(ct.getFailureSet());
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public Set<Rule> getEnabledRules(Set<Rule> matched, Set<Rule> failed) {
+        Set<Rule> ret = new HashSet<Rule>();
+        // add all the rules that are enabled by default:
+        ret.addAll(this.ruleTargetMap.keySet());
+
+        // now add the rules for which the failures are satisfied
+        for (ControlTransition ct : this.elseTransitions) {
+            if (failed.containsAll(ct.getFailureSet())) {
+                ret.add(ct.getRule());
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public String getName() {
+        return this.toString();
+    }
+
+    @Override
+    public Location getTarget(Rule rule, Set<Rule> failedRules) {
+        if (this.ruleTargetMap.containsKey(rule)) {
+            return this.ruleTargetMap.get(rule).iterator().next();
+        } else {
+            for (ControlTransition ct : this.elseTransitions) {
+                if (ct.getRule() == rule) {
+                    if (failedRules.containsAll(ct.getFailureSet())) {
+                        return ct.target();
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isSuccess(Set<Rule> rules) {
+        // TODO maybe this is not correct
+        return this.ruleTargetMap.isEmpty() && this.elseTransitions.isEmpty();
+    }
 }
