@@ -227,9 +227,9 @@ public final class DefaultLabel extends AbstractLabel {
      */
     static public String toHtmlString(Label label) {
         if (label.isNodeType()) {
-            return Converter.STRONG_TAG.on(label.text());
+            return Converter.STRONG_TAG.on(Converter.toHtml(label.text()));
         } else {
-            return label.text();
+            return Converter.toHtml(label.text());
         }
     }
 
