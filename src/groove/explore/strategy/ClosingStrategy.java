@@ -69,7 +69,8 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
-        gts.getRecord().setCopyGraphs(false);
+        // TODO switched off again due to observed problems
+        gts.getRecord().setCopyGraphs(true);
         getGTS().addGraphListener(this.exploreListener);
         this.newStates.clear();
         this.virtualEvents = null;
@@ -103,7 +104,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
 
     /** Clears the pool, in order to prepare the strategy for reuse. */
     abstract protected void clearPool();
-    
+
     /**
      * This collector takes the virtual events for the current state into
      * account.
