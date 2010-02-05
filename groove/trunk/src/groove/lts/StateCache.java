@@ -57,7 +57,8 @@ class StateCache {
         boolean result = getStubSet().add(stub);
         if (result && this.transitionMap != null) {
             GraphState oldState =
-                this.transitionMap.put(stub.getEvent(this.state), stub.getTarget(this.state));
+                this.transitionMap.put(stub.getEvent(this.state),
+                    stub.getTarget(this.state));
             assert oldState == null;
         }
         return result;
@@ -71,7 +72,7 @@ class StateCache {
     void setGraph(Graph graph) {
         this.graph = graph;
     }
-    
+
     /**
      * Lazily creates and returns the graph of the underlying state. This is
      * only supported if the state is a {@link GraphNextState}
@@ -111,7 +112,7 @@ class StateCache {
         }
         return result;
     }
-    
+
     /**
      * Compute the graph from the information in the state. The state is assumed
      * to be a {@link DefaultGraphNextState}.
@@ -157,17 +158,18 @@ class StateCache {
         }
         return result;
     }
-//
-//    /**
-//     * Decides whether the underlying graph should be frozen. The decision is
-//     * taken on the basis of the <i>freeze count</i>, as computed by
-//     * {@link #getFreezeCount()}; the graph is frozen if the freeze count
-//     * exceeds {@link #FREEZE_BOUND}.
-//     * @return <code>true</code> if the graph should be frozen
-//     */
-//    private boolean isFreezeGraph() {
-//        return isFreezeGraph(getFreezeCount());
-//    }
+
+    //
+    //    /**
+    //     * Decides whether the underlying graph should be frozen. The decision is
+    //     * taken on the basis of the <i>freeze count</i>, as computed by
+    //     * {@link #getFreezeCount()}; the graph is frozen if the freeze count
+    //     * exceeds {@link #FREEZE_BOUND}.
+    //     * @return <code>true</code> if the graph should be frozen
+    //     */
+    //    private boolean isFreezeGraph() {
+    //        return isFreezeGraph(getFreezeCount());
+    //    }
 
     /**
      * Decides whether the underlying graph should be frozen. The decision is
@@ -179,43 +181,44 @@ class StateCache {
     private boolean isFreezeGraph(int freezeCount) {
         return this.freezeGraphs && freezeCount > FREEZE_BOUND;
     }
-//
-//    /**
-//     * Computes a number expressing the urgency of freezing the underlying
-//     * graph. The current measure is based on the number of steps from the
-//     * previous frozen graph.
-//     * @return the freeze count of the underlying state
-//     */
-//    private int getFreezeCount() {
-//        if (this.state instanceof DefaultGraphNextState) {
-//            return getFreezeCount((DefaultGraphNextState) this.state);
-//        } else {
-//            return 0;
-//        }
-//    }
-//
-//    /**
-//     * Computes a number expressing the urgency of freezing the graph of a given
-//     * state. The current measure is based on the number of steps from the
-//     * previous frozen graph, following the chain of parents from the given
-//     * state.
-//     * @return the freeze count of a given state
-//     */
-//    private int getFreezeCount(DefaultGraphNextState state) {
-//        // determine the freeze count of the state's parent state
-//        int parentCount;
-//        AbstractGraphState parent = state.source();
-//        parentCount = 1;
-//        while (parent instanceof DefaultGraphNextState && parent.getFrozenGraph() != null) {
-//            if (parent.isCacheCleared()) {
-//                parent = ((DefaultGraphNextState) parent).source();
-//                parentCount++;
-//            } else {
-//                parentCount += parent.getCache().getFreezeCount();
-//            }
-//        }
-//        return parentCount;
-//    }
+
+    //
+    //    /**
+    //     * Computes a number expressing the urgency of freezing the underlying
+    //     * graph. The current measure is based on the number of steps from the
+    //     * previous frozen graph.
+    //     * @return the freeze count of the underlying state
+    //     */
+    //    private int getFreezeCount() {
+    //        if (this.state instanceof DefaultGraphNextState) {
+    //            return getFreezeCount((DefaultGraphNextState) this.state);
+    //        } else {
+    //            return 0;
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Computes a number expressing the urgency of freezing the graph of a given
+    //     * state. The current measure is based on the number of steps from the
+    //     * previous frozen graph, following the chain of parents from the given
+    //     * state.
+    //     * @return the freeze count of a given state
+    //     */
+    //    private int getFreezeCount(DefaultGraphNextState state) {
+    //        // determine the freeze count of the state's parent state
+    //        int parentCount;
+    //        AbstractGraphState parent = state.source();
+    //        parentCount = 1;
+    //        while (parent instanceof DefaultGraphNextState && parent.getFrozenGraph() != null) {
+    //            if (parent.isCacheCleared()) {
+    //                parent = ((DefaultGraphNextState) parent).source();
+    //                parentCount++;
+    //            } else {
+    //                parentCount += parent.getCache().getFreezeCount();
+    //            }
+    //        }
+    //        return parentCount;
+    //    }
 
     /**
      * Computes a frozen graph representation from a given graph. The frozen

@@ -4,7 +4,6 @@ package groove.trans;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlLocation;
-import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.LocationCache;
 import groove.explore.util.PriorityCache;
@@ -204,103 +203,6 @@ public class SystemRecord implements NodeFactory {
     }
 
     /**
-     * Sets the policy of the GTS in determining state equivalence. This is only
-     * relevant if {@link #isCollapse()} is set to <code>true</code>.
-     * @param check if <code>true</code>, states with isomorphic graph
-     *        structure are considered equivalent; otherwise, only equal graphs
-     *        (with the same set of nodes and edges) are considered equivalent.
-     */
-    public void setCheckIso(boolean check) {
-        this.checkIso = check;
-    }
-
-    /**
-     * Returns the current value of the isomorphism checking policy.
-     * @see #setCheckIso(boolean)
-     */
-    public boolean isCheckIso() {
-        return this.checkIso;
-    }
-
-    /**
-     * Sets the policy of the GTS in collapsing equivalent states. Which states
-     * are equivalent is partially determined by #isCheckIso. Not collapsing
-     * states only makes sense in linear exploration strategies.
-     * @param collapse if <code>true</code>, equivalent states are collapsed;
-     *        otherwise, new states are always added to the GTS, without
-     *        comparing them to existing states.
-     */
-    public void setCollapse(boolean collapse) {
-        this.collapseStates = collapse;
-    }
-
-    /**
-     * Returns the current value of the state collapsing policy.
-     * @see #setCollapse(boolean)
-     */
-    public boolean isCollapse() {
-        return this.collapseStates;
-    }
-
-    /**
-     * Changes the behaviour of the GTS in reusing previous rule events.
-     * Unpredictable behaviour will ensue if this method is called while an
-     * existing GTS is being explored. Initially the property is set to
-     * <code>true</code>
-     * @param reuse if <code>true</code>, events are stored and reused
-     */
-    public void setReuseEvents(boolean reuse) {
-        this.reuseEvents = reuse;
-    }
-
-    /**
-     * Returns the current value of the reuse property.
-     * @return if <code>true</code>, previously found results are reused
-     */
-    public boolean isReuseEvents() {
-        return this.reuseEvents;
-    }
-
-    /**
-     * Changes the state of the copyGraphs property.
-     * @see #isCopyGraphs()
-     */
-    public void setCopyGraphs(boolean copy) {
-        this.copyGraphs = copy;
-    }
-
-    /**
-     * Indicates if new graphs are obtained by copying the content of their
-     * parents.
-     * @return <code>true</code> if new graphs are obtained by copying;
-     *         <code>false</code> if the parent's data structure is
-     *         "borrowed". The latter runs the risk of
-     *         {@link ConcurrentModificationException}s if iterators over the
-     *         parent's data structures are still alive.
-     */
-    public boolean isCopyGraphs() {
-        return this.copyGraphs;
-    }
-
-    /**
-     * Changes the state of the storeTransitions property.
-     * @see #isCopyGraphs()
-     */
-    public void setStoreTransitions(boolean store) {
-        this.storeTransitions = store;
-    }
-
-    /**
-     * Indicates transitions are stored in the GTS.
-     * @return <code>true</code> if all transitions are stored;
-     *         <code>false</code> if no transitions, or only unmodifying
-     *         transitions, are stored (this is up to the strategy).
-     */
-    public boolean isStoreTransitions() {
-        return this.storeTransitions;
-    }
-
-    /**
      * Constructs an appropriate fresh explore cache for the graph grammar. The
      * constructed cache is fresh in the sense that next is not called on it
      * yet.
@@ -322,11 +224,11 @@ public class SystemRecord implements NodeFactory {
                 result =
                     new LocationCache((ControlLocation) state.getLocation(),
                         state, isRandomized);
-            } else {
-                result =
-                    new ControlStateCache(
-                        (ControlLocation) state.getLocation(), state,
-                        isRandomized);
+                //            } else {
+                //                result =
+                //                    new ControlStateCache(
+                //                        (ControlLocation) state.getLocation(), state,
+                //                        isRandomized);
             }
         } else {
             result = new SimpleCache(this.ruleSystem.getRules(), isRandomized);
@@ -392,24 +294,107 @@ public class SystemRecord implements NodeFactory {
         };
 
     /**
+     * Sets the policy of the GTS in determining state equivalence. This is only
+     * relevant if {@link #isCollapse()} is set to <code>true</code>.
+     * @param check if <code>true</code>, states with isomorphic graph
+     *        structure are considered equivalent; otherwise, only equal graphs
+     *        (with the same set of nodes and edges) are considered equivalent.
+     */
+    public void setCheckIso(boolean check) {
+        this.checkIso = check;
+    }
+
+    /**
+     * Returns the current value of the isomorphism checking policy.
+     * @see #setCheckIso(boolean)
+     */
+    public boolean isCheckIso() {
+        return this.checkIso;
+    }
+
+    /**
      * Flag indicating if states with isomorphic graph structure are to be
      * considered equivalent. If <code>true</code>, new states are compared
      * with old ones modulo isomorphism; otherwise, they are compared modulo
      * equality of node and edge sets. Default value is <code>true</code>.
      */
     private boolean checkIso = true;
+
+    /**
+     * Sets the policy of the GTS in collapsing equivalent states. Which states
+     * are equivalent is partially determined by #isCheckIso. Not collapsing
+     * states only makes sense in linear exploration strategies.
+     * @param collapse if <code>true</code>, equivalent states are collapsed;
+     *        otherwise, new states are always added to the GTS, without
+     *        comparing them to existing states.
+     */
+    public void setCollapse(boolean collapse) {
+        this.collapseStates = collapse;
+    }
+
+    /**
+     * Returns the current value of the state collapsing policy.
+     * @see #setCollapse(boolean)
+     */
+    public boolean isCollapse() {
+        return this.collapseStates;
+    }
+
     /**
      * Flag indicating if equivalent states are to be collapsed in the GTS. If
      * <code>false</code>, new states are not compared with old ones, and are
      * added to the state set straight away. Default value is <code>true</code>.
      */
     private boolean collapseStates = true;
+
+    /**
+     * Changes the behaviour of the GTS in reusing previous rule events.
+     * Unpredictable behaviour will ensue if this method is called while an
+     * existing GTS is being explored. Initially the property is set to
+     * <code>true</code>
+     * @param reuse if <code>true</code>, events are stored and reused
+     */
+    public void setReuseEvents(boolean reuse) {
+        this.reuseEvents = reuse;
+    }
+
+    /**
+     * Returns the current value of the reuse property.
+     * @return if <code>true</code>, previously found results are reused
+     */
+    public boolean isReuseEvents() {
+        return this.reuseEvents;
+    }
+
     /**
      * Flag indicating if events are to be reused, meaning that there is a
      * global store {@link #eventMap} of "normal" event representatives. Default
      * value: <code>true</code>.
      */
     private boolean reuseEvents = true;
+
+    /**
+     * Changes the state of the copyGraphs property.
+     * @see #isCopyGraphs()
+     * @see #isRandomAccess()
+     */
+    public void setCopyGraphs(boolean copy) {
+        this.copyGraphs = copy;
+    }
+
+    /**
+     * Indicates if new graphs are obtained by copying the content of their
+     * parents.
+     * @return <code>true</code> if new graphs are to be obtained by copying;
+     *         <code>false</code> if the parent's data structure is
+     *         "borrowed". The latter runs the risk of
+     *         {@link ConcurrentModificationException}s if iterators over the
+     *         parent's data structures are still alive.
+     */
+    public boolean isCopyGraphs() {
+        return this.copyGraphs && !this.randomAccess;
+    }
+
     /**
      * Flag indicating if new graphs are obtained by copying the content of
      * their parents; if <code>false</code>, the parent's data structure is
@@ -418,13 +403,56 @@ public class SystemRecord implements NodeFactory {
      * data structures are still alive.
      */
     private boolean copyGraphs = true;
+
+    /**
+     * Changes the state of the storeTransitions property.
+     * @see #isCopyGraphs()
+     */
+    public void setStoreTransitions(boolean store) {
+        this.storeTransitions = store;
+    }
+
+    /**
+     * Indicates transitions are stored in the GTS.
+     * @return <code>true</code> if all transitions are stored;
+     *         <code>false</code> if no transitions, or only unmodifying
+     *         transitions, are stored (this is up to the strategy).
+     */
+    public boolean isStoreTransitions() {
+        return this.storeTransitions;
+    }
+
     /**
      * Flag indicating if transitions are to be stored in the GTS. If
-     * <code>false</code>, only states (and possibly unmidofying transitions)
+     * <code>false</code>, only states (and possibly unmodifying transitions)
      * are stored.
      */
     private boolean storeTransitions = true;
 
+    /**
+     * Changes the random access property.
+     * @see #isRandomAccess()
+     */
+    public void setRandomAccess(boolean access) {
+        this.randomAccess = access;
+    }
+
+    /**
+     * Indicates that the GTS may be accessed randomly, as in the 
+     * Simulator. This implies that graphs should be copied, not shared.
+     * @return <code>true</code> if the data structures should allow for
+     * random access; <code>false</code> if access is determined entirely
+     * by the exploration strategy.
+     */
+    public boolean isRandomAccess() {
+        return this.randomAccess;
+    }
+
+    /**
+     * Flag indicating that the generated states may be randomly accessed,
+     * as in the simulator. This means the copyGraphs should never be disabled.
+     */
+    private boolean randomAccess = false;
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");
 
