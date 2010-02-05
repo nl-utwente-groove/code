@@ -4,6 +4,7 @@ package groove.trans;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlLocation;
+import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.LocationCache;
 import groove.explore.util.PriorityCache;
@@ -224,11 +225,11 @@ public class SystemRecord implements NodeFactory {
                 result =
                     new LocationCache((ControlLocation) state.getLocation(),
                         state, isRandomized);
-                //            } else {
-                //                result =
-                //                    new ControlStateCache(
-                //                        (ControlLocation) state.getLocation(), state,
-                //                        isRandomized);
+            } else {
+                result =
+                    new ControlStateCache(
+                        (ControlLocation) state.getLocation(), state,
+                        isRandomized);
             }
         } else {
             result = new SimpleCache(this.ruleSystem.getRules(), isRandomized);
