@@ -318,7 +318,7 @@ public class SystemRecord implements NodeFactory {
             result =
                 new PriorityCache(this.ruleSystem.getRuleMap(), isRandomized);
         } else if (state.getLocation() != null) {
-            if (true) {
+            if (false) {
                 result =
                     new LocationCache((ControlLocation) state.getLocation(),
                         state, isRandomized);
