@@ -1223,7 +1223,9 @@ public class Simulator {
      */
     public synchronized void startSimulation() {
         try {
-            setGTS(new GTS(getGrammarView().toGrammar()));
+            GTS gts = new GTS(getGrammarView().toGrammar());
+            gts.getRecord().setRandomAccess(true);
+            setGTS(gts);
             // getGenerator().explore(getCurrentState());
             fireStartSimulation(getGTS());
             refresh();
@@ -1260,6 +1262,7 @@ public class Simulator {
                     properties.getRadius(), properties.getPrecision(),
                     properties.getMaxIncidence());
             AGTS agts = new AGTS(getGrammarView().toGrammar(), options);
+            agts.getRecord().setRandomAccess(true);
             setGTS(agts);
             fireStartSimulation(getGTS());
             refresh();
