@@ -694,6 +694,7 @@ public class Simulator {
                 return;
             }
             ((ModelCheckingScenario) scenario).setProperty(property);
+            doRefreshGrammar();
         }
 
         /*
@@ -710,6 +711,7 @@ public class Simulator {
                 return;
             }
             ((BoundedModelCheckingStrategy) scenario.getStrategy()).setBoundary(boundary);
+            doRefreshGrammar();
         }
 
         scenario.prepare(getGTS(), getCurrentState());
