@@ -37,33 +37,33 @@ public abstract class AbstractBuchiGraph implements BuchiGraph
     @Override
     public Set<BuchiLocation> initialLocations()
     {
+        if (null == this.initialLocations)
+        {
+            this.initialLocations = new HashSet<BuchiLocation>();
+        }
         return this.initialLocations;
     }
 
     @Override
     public Set<BuchiLocation> acceptingLocations()
     {
+        if (null == this.acceptingLocations)
+        {
+            this.acceptingLocations = new HashSet<BuchiLocation>();
+        }
         return this.acceptingLocations;
     }
 
     @Override
     public boolean addInitialLocation(BuchiLocation location)
     {
-        if (null == this.initialLocations)
-        {
-            this.initialLocations = new HashSet<BuchiLocation>();
-        }
-        return this.initialLocations.add(location);
+        return initialLocations().add(location);
     }
 
     @Override
     public boolean addAcceptingLocation(BuchiLocation location)
     {
-        if (null == this.acceptingLocations)
-        {
-            this.acceptingLocations = new HashSet<BuchiLocation>();
-        }
-        return this.acceptingLocations.add(location);
+        return acceptingLocations().add(location);
     }
 
     @Override
