@@ -27,13 +27,13 @@ import groove.verify.DefaultBuchiLocation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
 public class NASABuchiGraph extends AbstractBuchiGraph {
+    private static final String FALSE = "false";
     private Map<Node,BuchiLocation> node2location;
 
     private NASABuchiGraph() {
@@ -48,24 +48,69 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
     }
 
     @Override
-    public boolean isEnabled(BuchiTransition transition,
-            Set<String> applicableRules) {
-        // TODO Auto-generated method stub
-        return false;
+    public BuchiGraph newBuchiGraph(String formula) {
+        String strippedFormula = stripSurroundingParentheses(formula);
+        if (isFalse(strippedFormula)) {
+            return getFalseBuchiGraph();
+        } else {
+            final BuchiGraph result = new NASABuchiGraph();
+            try {
+                Graph graph = LTL2Buchi.translate(strippedFormula);
+                Node init = graph.getInit();
+                IVisitor visitor = new Visitor(result);
+                visitor.visitNode(init);
+                result.addInitialLocation(getLocation(init));
+            } catch (ParseErrorException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
     }
 
-    public BuchiGraph newBuchiGraph(String formula) {
-        final BuchiGraph result = new NASABuchiGraph();
-        try {
-            Graph graph = LTL2Buchi.translate(formula);
-            Node init = graph.getInit();
-            IVisitor visitor = new Visitor(result);
-            visitor.visitNode(init);
-            result.addInitialLocation(getLocation(init));
-        } catch (ParseErrorException e) {
-            e.printStackTrace();
-        }
+    private BuchiGraph getFalseBuchiGraph() {
+        BuchiGraph result = new NASABuchiGraph();
+        result.addInitialLocation(new DefaultBuchiLocation());
         return result;
+    }
+
+    /**
+     * Strips surrounding parentheses to effectively parse the given formula.
+     * @param formula the formula to be stripped
+     * @return the stripped formula
+     */
+    private String stripSurroundingParentheses(String formula) {
+        if (formula.startsWith("(") && formula.endsWith(")")) {
+            return stripSurroundingParentheses(formula.substring(1, formula.length()-1));
+        } else {
+            return formula;
+        }
+    }
+
+    /**
+     * Checks whether the given string equals the formula false (<code>ff</code>).
+     * @param formula the formula to check for falseness
+     * @return <code>true</code> if the given string represents the false formula, <code>false</code> otherwise
+     */
+    private boolean isFalse(String formula) {
+        if (formula.startsWith("!")) {
+            return isTrue(stripSurroundingParentheses(formula.substring(1)));
+        } else {
+            if (formula.equalsIgnoreCase(FALSE))
+                return true;
+            else
+                return false;
+        }
+    }
+
+    private boolean isTrue(String formula) {
+        if (formula.startsWith("!")) {
+            return isFalse(stripSurroundingParentheses(formula.substring(1)));
+        } else {
+            if (formula.equalsIgnoreCase("true"))
+                return true;
+            else
+                return false;
+        }
     }
 
     private BuchiLocation getLocation(Node node) {
@@ -96,8 +141,7 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
     private class Visitor implements IVisitor {
         private BuchiGraph graph;
 
-        public Visitor(BuchiGraph graph)
-        {
+        public Visitor(BuchiGraph graph) {
             this.graph = graph;
         }
 

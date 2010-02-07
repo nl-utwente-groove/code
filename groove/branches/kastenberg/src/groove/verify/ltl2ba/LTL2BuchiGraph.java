@@ -16,19 +16,15 @@
  */
 package groove.verify.ltl2ba;
 
-import groove.verify.BuchiLabel;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.DefaultBuchiLocation;
-import groove.verify.ModelChecking;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import rwth.i2.ltl2ba4j.LTL2BA4J;
-import rwth.i2.ltl2ba4j.model.IGraphProposition;
 import rwth.i2.ltl2ba4j.model.IState;
 import rwth.i2.ltl2ba4j.model.ITransition;
 
@@ -54,38 +50,6 @@ public class LTL2BuchiGraph extends AbstractBuchiGraph
     static public BuchiGraph getPrototype()
     {
         return new LTL2BuchiGraph();
-    }
-
-    @Override
-    public boolean isEnabled(BuchiTransition transition, Set<String> applicableRules)
-    {
-        boolean result = true;
-        BuchiLabel label = transition.label();
-        assert (label instanceof LTL2BuchiLabel) : "The BuchiLabel is not of the correct type: "
-            + label.getClass()
-            + " instead of "
-            + LTL2BuchiLabel.class;
-        for (IGraphProposition gp : ((LTL2BuchiLabel) label).getLabels())
-        {
-            if (gp.getFullLabel().equals(ModelChecking.SIGMA))
-            {
-                continue;
-            }
-            boolean applicable = false;
-            // only take the label of the proposition - negation will be checked
-            // afterwards
-            String prop = gp.getLabel();
-            for (String ruleName : applicableRules)
-            {
-                if (prop.equals(ruleName))
-                {
-                    applicable = true;
-                }
-            }
-            boolean match = (gp.isNegated() ^ applicable);
-            result = result && match;
-        }
-        return result;
     }
 
     public BuchiGraph newBuchiGraph(String formula)

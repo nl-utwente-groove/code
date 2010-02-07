@@ -27,19 +27,6 @@ import java.util.Set;
  */
 public interface BuchiGraph {
     /**
-     * Checks whether a given set of names of applicable rules enable a given
-     * {@link groove.verify.DefaultBuchiTransition} .
-     * 
-     * @param transition the transition for which the enabledness must be
-     *        checked
-     * @param applicableRules the set of names of rule
-     * @return <code>true</code> if the set of rule names enable the given
-     *         transition, <code>false</code> otherwise
-     */
-    public boolean isEnabled(BuchiTransition transition,
-            Set<String> applicableRules);
-
-    /**
      * Create a {@link BuchiGraph} from the provided LTL formula.
      * 
      * @param formula the formula for which to create an equivalent
