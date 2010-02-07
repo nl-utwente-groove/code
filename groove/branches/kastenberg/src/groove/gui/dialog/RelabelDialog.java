@@ -347,8 +347,6 @@ public class RelabelDialog {
     static private String OLD_TEXT = "Old label:";
     /** Text of replace label on dialog */
     static private String NEW_TEXT = "New label: ";
-    /** Text of node type checkbox */
-    static private String NODE_TYPE_TEXT = "  Node type";
 
     static private String[] LABEL_TYPE_TEXT = new String[3];
     {

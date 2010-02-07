@@ -190,6 +190,10 @@ public class Converter {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             switch (c) {
+            case '/':
+                text.replace(i, i + 1, "&#47;");
+                i += 4;
+                break;
             case '<':
                 text.replace(i, i + 1, "&lt;");
                 i += 3;

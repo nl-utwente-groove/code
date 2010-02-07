@@ -38,10 +38,10 @@ public class TypeAspect extends AbstractAspect {
         boolean isSelfEdge = edge.source().equals(edge.opposite());
         if (isNodeType(edge) && !isSelfEdge) {
             throw new FormatException(
-                "Node type label '%s' not allowed on edges", edge.label());
+                "Node type label '%s' not allowed on edges", edge.label(), edge);
         } else if (isFlag(edge) && !isSelfEdge) {
             throw new FormatException("Flag label '%s' not allowed on edges",
-                edge.label());
+                edge.label(), edge);
         }
     }
 

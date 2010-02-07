@@ -79,7 +79,8 @@ public class ControlTest {
             GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
             GCLParser.program_return r = parser.program();
 
-            boolean DEBUG = true;
+            boolean DEBUG = false;
+
             if (DEBUG) {
                 ASTFrame frame =
                     new ASTFrame("parser result",
@@ -176,7 +177,6 @@ public class ControlTest {
             jf.setSize(600, 700);
             Point p = sim.getFrame().getLocation();
             jf.setLocation(new Point(p.x + 50, p.y + 50));
-            System.err.println("showing panel");
             jf.setVisible(true);
 
             cjg.getLayouter().start(true);
@@ -214,13 +214,16 @@ public class ControlTest {
         //TEST_DIRECTORY+"\\varTest.gps", true);
         //ct = new ControlTest(TEST_DIRECTORY+"\\test3.ctl",
         //TEST_DIRECTORY+"\\varTest.gps", true);
-        ct =
-            new ControlTest(TEST_DIRECTORY + "\\test4.ctl", TEST_DIRECTORY
-                + "\\varTest.gps", true);
-        ct =
-            new ControlTest(
-                "D:\\Studie\\Afstuderen\\antworld.gps\\control.gcp",
-                "D:\\Studie\\Afstuderen\\antworld.gps", true);
+        if (true) {
+            ct =
+                new ControlTest(TEST_DIRECTORY + "\\test4.ctl", TEST_DIRECTORY
+                    + "\\varTest.gps", true);
+        } else {
+            ct =
+                new ControlTest(
+                    "D:\\Studie\\Afstuderen\\antworld.gps\\control.gcp",
+                    "D:\\Studie\\Afstuderen\\antworld.gps", true);
+        }
     }
 
     /**
