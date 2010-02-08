@@ -118,6 +118,7 @@ public class RuleArgument implements SerializedArgument {
                 add(this.ruleSelector);
                 setStatus(true);
             }
+            this.ruleSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
 
             // Find the initially selected rule, which should correspond to
             // the parent ruleName if possible (otherwise choose the first).

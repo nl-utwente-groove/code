@@ -142,6 +142,7 @@ public class OptionArgument implements SerializedArgument {
                     + ExplorationDialog.INFO_COLOR + ">"
                     + this.parent.getIdentifierAt(i) + "</FONT></HTML>");
             }
+            this.optionSelector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
             this.optionSelector.addActionListener(this);
             add(this.optionSelector);
             setStatus(true);
