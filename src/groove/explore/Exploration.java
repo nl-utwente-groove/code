@@ -17,45 +17,56 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
+import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.Strategy;
+import groove.gui.Simulator;
+import groove.gui.dialog.ErrorDialog;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
 
-/**
- * Wrapper class that handles the execution of an exploration.
- * An exploration is given by a combination of a documented strategy, a
- * documented acceptor and a result.
+import javax.swing.JDialog;
 
+/**
+ * Wrapper class for explorations. Provides functionality for storing and
+ * executing an exploration. Also remembers the Result set of the last time
+ * the exploration was executed. 
+ * An exploration is given by a combination of a serialized strategy, a
+ * serialized acceptor, and the number of results.
+ *
  * @author Maarten de Mol
  * @version $Revision $
  */
 public class Exploration {
-    private Documented<Strategy> docStrategy;
-    private Documented<Acceptor> docAcceptor;
-    private Strategy strategy; // link into docStrategy
-    private Acceptor acceptor; // link into docAcceptor
-    private boolean interrupted;
+    // The serialized strategy.
+    private Serialized<Strategy> strategy;
+    // The serialized acceptor.
+    private Serialized<Acceptor> acceptor;
+    // The number of results to store.
+    private int nrResults;
+    // The result set of the last exploration.
+    private Result lastResult;
 
+    // Internal info, needed during execution of the exploration.
+    private boolean interrupted;
     static private final Reporter reporter =
         Reporter.register(DefaultScenario.class);
     static private final int RUNNING = reporter.newMethod("playScenario()");
 
     /**
-     * Initialize an exploration. Expects that getObject returns non-null,
-     * both for the strategy and the acceptor. 
-     * @param strategy  - strategy component of the exploration
-     * @param acceptor  - acceptor component of the exploration
-     * @param result    - result   component of the exploration
+     * Initialize an exploration. 
+     * @param strategy - strategy component of the exploration
+     * @param acceptor - acceptor component of the exploration
+     * @param nrResults - nrResults component of the exploration
      */
-    public Exploration(Documented<Strategy> strategy,
-            Documented<Acceptor> acceptor, Result result) {
-        this.docStrategy = strategy;
-        this.strategy = this.docStrategy.getObject();
-        this.docAcceptor = acceptor;
-        this.acceptor = this.docAcceptor.getObject();
-        this.acceptor.setResult(result);
+    public Exploration(Serialized<Strategy> strategy,
+            Serialized<Acceptor> acceptor, int nrResults) {
+        this.strategy = strategy;
+        this.acceptor = acceptor;
+        this.nrResults = nrResults;
+        this.lastResult = new Result(0);
     }
 
     /**
@@ -63,61 +74,111 @@ public class Exploration {
      * infinite results).
      */
     public Exploration() {
-        this((new StrategyEnumerator()).findByKeyword("Breadth-First"),
-            (new AcceptorEnumerator()).findByKeyword("Final"), new Result(0));
+        this(new Serialized<Strategy>("Breadth-First", new BFSStrategy()),
+            new Serialized<Acceptor>("Final", new FinalStateAcceptor()), 0);
     }
 
     /**
-     * Prepares the strategy for exploration. Can be called when no state is
-     * currently selected. 
-     * @param gts - the current gts
+     * Returns a string that identifies the exploration.
+     * @return the identifying string
      */
-    public void prepare(GTS gts) {
-        prepare(gts, null);
+    public String getIdentifier() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("(");
+        buffer.append(this.strategy.getIdentifier());
+        buffer.append(", ");
+        buffer.append(this.acceptor.getIdentifier());
+        buffer.append(", ");
+        if (this.nrResults == 0) {
+            buffer.append("Infinite");
+        } else {
+            buffer.append(this.nrResults);
+        }
+        buffer.append(")");
+        return buffer.toString();
     }
 
     /**
-     * Prepares the strategy for exploration.
-     * @param gts - the current gts
-     * @param state - the currently selected state (null if none is selected) 
+     * Getter for the serialized strategy.
+     * @return the serialized strategy
      */
-    public void prepare(GTS gts, GraphState state) {
-        this.strategy.prepare(gts, state);
+    public Serialized<Strategy> getStrategy() {
+        return this.strategy;
+    }
+
+    /**
+     * Getter for the serialized acceptor.
+     * @return the serialized acceptor
+     */
+    public Serialized<Acceptor> getAcceptor() {
+        return this.acceptor;
+    }
+
+    /**
+     * Getter for the number of results.
+     * @return the number of results
+     */
+    public int getNrResults() {
+        return this.nrResults;
+    }
+
+    /**
+     * Returns the result of the last exploration. 
+     * @return the result (set of graph states)
+     */
+    public Result getLastResult() {
+        return this.lastResult;
     }
 
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.
-     * @return the set of results that have been stored within the acceptor
-     * during exploration
+     * @param simulator - reference to the Simulator, needed to materialize
+     * @param gts - reference to the GTS, which must be prepared
+     * @param state - the state in which exploration will start (may be null)
      */
-    public Result play() {
+    public void play(Simulator simulator, GTS gts, GraphState state) {
+
+        // materialize
+        Strategy strategy = this.strategy.materialize(simulator);
+        Acceptor acceptor = this.acceptor.materialize(simulator);
+
+        if (strategy == null || acceptor == null) {
+            StringBuffer errorMessage = new StringBuffer();
+            errorMessage.append("<HTML>Unable to bind the exploration");
+            errorMessage.append("<BR><FONT color=#FF4500><B>");
+            errorMessage.append(getIdentifier());
+            errorMessage.append("</B></FONT><BR>");
+            errorMessage.append("to the current grammar.<BR><P>");
+
+            JDialog errorDialog =
+                new ErrorDialog(simulator.getFrame(), errorMessage.toString(),
+                    null);
+            errorDialog.setVisible(true);
+            return;
+        }
+
+        // initialize acceptor and GTS
+        acceptor.setResult(new Result(this.nrResults));
+        strategy.prepare(gts, state);
 
         // initialize profiling and prepare graph listener
         reporter.start(RUNNING);
-        this.strategy.addGTSListener(this.acceptor);
+        strategy.addGTSListener(acceptor);
         this.interrupted = false;
 
         // start working until done or nothing to do
-        while (!this.interrupted && !this.acceptor.getResult().done()
-            && this.strategy.next()) {
+        while (!this.interrupted && !acceptor.getResult().done()
+            && strategy.next()) {
             this.interrupted = Thread.currentThread().isInterrupted();
         }
 
         // remove graph listener and stop profiling       
-        this.strategy.removeGTSListener(this.acceptor);
+        strategy.removeGTSListener(acceptor);
         reporter.stop();
 
-        // return result
-        return this.acceptor.getResult();
-    }
-
-    /**
-     * Clears the Result set that is stored on the acceptor, which enables an
-     * earlier performed exploration to be run again.
-     */
-    public void clearResult() {
-        this.acceptor.setResult(this.acceptor.getResult().newInstance());
+        // store result
+        this.lastResult = acceptor.getResult();
     }
 
     /**
@@ -128,14 +189,6 @@ public class Exploration {
         return this.interrupted;
     }
 
-    /**
-     * Getter for the documented acceptor.
-     * @return the documented acceptor of the exploration
-     */
-    public Documented<Acceptor> getAcceptor() {
-        return this.docAcceptor;
-    }
-
     /** 
      * Returns the total running time of the exploration.
      * This information can be used for profiling.
@@ -143,42 +196,5 @@ public class Exploration {
      */
     public long getRunningTime() {
         return reporter.getTotalTime(RUNNING);
-    }
-
-    /**
-     * Returns the result of the exploration (which is stored on the acceptor). 
-     * @return the result (set of graph states)
-     */
-    public Result getResult() {
-        return this.acceptor.getResult();
-    }
-
-    /**
-     * Returns a short String identification of the exploration, which is
-     * constructed out of the stored documentation and the bound of the Result. 
-     */
-    public String getShortName() {
-        String resultName;
-        if (getResult().getBound() == 0) {
-            resultName = "*";
-        } else {
-            resultName = Integer.toString(getResult().getBound());
-        }
-
-        String strategyArgs = this.docStrategy.getArgumentValues();
-        String acceptorArgs = this.docAcceptor.getArgumentValues();
-
-        return (this.docStrategy.getKeyword()
-            + ((strategyArgs == null) ? "" : " (" + strategyArgs + ")") + "/"
-            + this.docAcceptor.getKeyword()
-            + ((acceptorArgs == null) ? "" : " (" + acceptorArgs + ")") + "/" + resultName);
-    }
-
-    /**
-     * Getter for the documented strategy.
-     * @return the documented strategy of the exploration
-     */
-    public Documented<Strategy> getStrategy() {
-        return this.docStrategy;
     }
 }
