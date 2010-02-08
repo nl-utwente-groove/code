@@ -17,15 +17,15 @@
 package groove.gui.dialog;
 
 import groove.explore.AcceptorEnumerator;
-import groove.explore.Documented;
 import groove.explore.Enumerator;
 import groove.explore.Exploration;
+import groove.explore.Serialized;
 import groove.explore.StrategyEnumerator;
 import groove.explore.result.Acceptor;
-import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.StatusPanel;
 import groove.gui.layout.SpringUtilities;
 
 import java.awt.CardLayout;
@@ -124,6 +124,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     private ResultSelection resultSelector;
     private JPanel buttonPanel;
 
+    // The explore button on the button panel.
+    private JButton exploreButton;
+
     // Reference to the simulator.
     private Simulator simulator;
 
@@ -162,6 +165,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         JPanel dialogContent = new JPanel(new SpringLayout());
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
 
+        // Create the button panel (before creating the selector panels).        
+        createButtonPanel();
+
         // Make sure that the dialog listens to Escape and Enter.
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
@@ -173,29 +179,31 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         // Create the panel that holds the strategy and acceptor selectors.
         JPanel selectors = new JPanel(new SpringLayout());
         Exploration defExpl = this.simulator.getDefaultExploration();
+        StrategyEnumerator strategies = new StrategyEnumerator();
+        strategies.replaceObject(defExpl.getStrategy());
+        AcceptorEnumerator acceptors = new AcceptorEnumerator(this.simulator);
+        acceptors.replaceObject(defExpl.getAcceptor());
         this.strategySelector =
             new DocumentedSelection<Strategy>("exploration strategy",
-                this.STRATEGY_TOOLTIP, new StrategyEnumerator(),
-                defExpl.getStrategy().getKeyword(), this.simulator);
+                this.STRATEGY_TOOLTIP, strategies,
+                defExpl.getStrategy().getObjectOnly());
         selectors.add(this.strategySelector);
         this.acceptorSelector =
             new DocumentedSelection<Acceptor>("acceptor",
-                this.ACCEPTOR_TOOLTIP, new AcceptorEnumerator(),
-                defExpl.getAcceptor().getKeyword(), this.simulator);
+                this.ACCEPTOR_TOOLTIP, acceptors,
+                defExpl.getAcceptor().getObjectOnly());
         selectors.add(this.acceptorSelector);
         SpringUtilities.makeCompactGrid(selectors, 1, 2, 0, 0, 15, 0);
 
         // Create the panel that holds the result selector.
         this.resultSelector =
-            new ResultSelection(this.RESULT_TOOLTIP,
-                defExpl.getResult().getBound());
+            new ResultSelection(this.RESULT_TOOLTIP, defExpl.getNrResults());
 
         // Add all panels to the dialogContrent.
         dialogContent.add(selectors);
         dialogContent.add(new JLabel(" "));
         dialogContent.add(this.resultSelector);
         dialogContent.add(new JLabel(" "));
-        createButtonPanel();
         dialogContent.add(this.buttonPanel);
         SpringUtilities.makeCompactGrid(dialogContent, 5, 1, 0, 0, 0, 0);
 
@@ -218,9 +226,9 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     // NOTE: simulator.doRunExploration will remember the exploration as the
     // default for the next explore.
     private void doExploration() {
-        Documented<Strategy> strategy =
+        Serialized<Strategy> strategy =
             this.strategySelector.getSelectedValue();
-        Documented<Acceptor> acceptor =
+        Serialized<Acceptor> acceptor =
             this.acceptorSelector.getSelectedValue();
         Integer nrResults = this.resultSelector.getSelectedValue();
         if (strategy == null || acceptor == null || nrResults == null) {
@@ -228,7 +236,7 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         }
 
         Exploration exploration =
-            new Exploration(strategy, acceptor, new Result(nrResults));
+            new Exploration(strategy, acceptor, nrResults);
         closeDialog();
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
         this.simulator.doRunExploration(exploration);
@@ -269,16 +277,17 @@ public class ExplorationDialog extends JDialog implements ActionListener {
     private class DocumentedSelection<A> extends JPanel implements
             ListSelectionListener {
         private Enumerator<A> enumerator;
-        private Documented<A> currentlySelected;
         private JPanel infoPanel;
+        private JList list;
+
+        private Boolean[] validity;
 
         DocumentedSelection(String objectType, String tooltip,
-                Enumerator<A> enumerator, String initialValue,
-                Simulator simulator) {
+                Enumerator<A> enumerator, String initialValue) {
             super(new SpringLayout());
             this.enumerator = enumerator;
 
-            initializeInfoPanel(initialValue, simulator);
+            initializeInfoPanel(initialValue);
             this.add(headerText(objectType, tooltip));
             this.add(itemList(initialValue));
             this.add(this.infoPanel);
@@ -296,81 +305,86 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         }
 
         private JScrollPane itemList(String initialValue) {
-            JList list = new JList(this.enumerator.getAllNames());
-            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            this.list = new JList(this.enumerator.getNameArray());
+            this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             for (int i = 0; i < this.enumerator.getSize(); i++) {
-                if (this.enumerator.getElementAt(i).getKeyword() == initialValue) {
-                    list.setSelectedIndex(i);
-                    this.currentlySelected = this.enumerator.getElementAt(i);
+                if (this.enumerator.getKeywordAt(i).equals(initialValue)) {
+                    this.list.setSelectedIndex(i);
                 }
             }
-            list.addListSelectionListener(this);
+            this.list.addListSelectionListener(this);
 
-            JScrollPane listScroller = new JScrollPane(list);
+            JScrollPane listScroller = new JScrollPane(this.list);
             listScroller.setPreferredSize(new Dimension(350, 200));
             return listScroller;
         }
 
-        // TO DO: Initialize additional arguments properly.
-        private void initializeInfoPanel(String initialValue,
-                Simulator simulator) {
+        private void initializeInfoPanel(String initialValue) {
             this.infoPanel = new JPanel(new CardLayout());
             this.infoPanel.setPreferredSize(new Dimension(350, 200));
             this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(
                 150, 150, 255)));
 
+            this.validity = new Boolean[this.enumerator.getSize()];
             for (int i = 0; i < this.enumerator.getSize(); i++) {
-                JPanel argumentPanel =
-                    this.enumerator.getElementAt(i).getArgumentPanel(simulator);
-
                 JPanel elementPanel = new JPanel(new SpringLayout());
+                this.validity[i] = true;
+
                 elementPanel.setBackground(ExplorationDialog.INFO_BG_COLOR);
                 elementPanel.add(new JLabel("<HTML><B><U><FONT color="
                     + ExplorationDialog.INFO_COLOR + ">"
-                    + this.enumerator.getElementAt(i).getName()
-                    + ":</FONT></U></B></HTML>"));
+                    + this.enumerator.getNameAt(i) + ":</FONT></U></B></HTML>"));
                 elementPanel.add(new JLabel("<HTML><FONT color="
                     + ExplorationDialog.INFO_COLOR + ">"
-                    + this.enumerator.getElementAt(i).getExplanation()
+                    + this.enumerator.getExplanationAt(i)
                     + "</FONT></B></HTML>"));
                 elementPanel.add(Box.createRigidArea(new Dimension(0, 6)));
                 elementPanel.add(new JLabel("<HTML><FONT color="
                     + ExplorationDialog.INFO_COLOR + ">"
                     + "Keyword for command line: <B>"
-                    + this.enumerator.getElementAt(i).getKeyword()
-                    + "</B></FONT>.</HTML>"));
-                elementPanel.add(new JLabel("<HTML><FONT color="
-                    + ExplorationDialog.INFO_COLOR + ">"
-                    + "Additional arguments required: <B>"
-                    + ((argumentPanel == null) ? "No" : "Yes")
-                    + "</B>.</FONT></HTML>"));
+                    + this.enumerator.getKeywordAt(i) + "</B></FONT>.</HTML>"));
+                elementPanel.add(new JLabel(
+                    "<HTML><FONT color="
+                        + ExplorationDialog.INFO_COLOR
+                        + ">"
+                        + "Additional arguments: <B>"
+                        + Integer.toString(this.enumerator.getObjectAt(i).getNrArguments())
+                        + "</B>"
+                        + ((this.enumerator.getObjectAt(i).getNrArguments() == 0)
+                                ? "." : " (select values below).")
+                        + "</FONT></HTML>"));
                 elementPanel.add(Box.createRigidArea(new Dimension(0, 6)));
-                elementPanel.add((argumentPanel == null) ? (new JLabel(""))
-                        : argumentPanel);
+                for (int j = 0; j < this.enumerator.getObjectAt(i).getNrArguments(); j++) {
+                    StatusPanel argumentPanel =
+                        this.enumerator.getObjectAt(i).createSelectorPanel(j,
+                            ExplorationDialog.this.simulator);
+                    elementPanel.add(argumentPanel);
+                    this.validity[i] =
+                        this.validity[i] && argumentPanel.getStatus();
+                }
+                elementPanel.add(Box.createRigidArea(new Dimension(0, 400)));
 
-                SpringUtilities.makeCompactGrid(elementPanel, 7, 1, 2, 2, 0, 0);
+                SpringUtilities.makeCompactGrid(elementPanel,
+                    7 + this.enumerator.getObjectAt(i).getNrArguments(), 1, 2,
+                    2, 0, 0);
                 this.infoPanel.add(elementPanel,
-                    this.enumerator.getElementAt(i).getKeyword());
+                    this.enumerator.getKeywordAt(i));
             }
         }
 
         private void updateInfoPanel() {
-
             CardLayout cards = (CardLayout) (this.infoPanel.getLayout());
-            cards.show(this.infoPanel, this.currentlySelected.getKeyword());
+            cards.show(this.infoPanel, getSelectedValue().getObjectOnly());
+            setExploreEnabled(this.validity[this.list.getSelectedIndex()]);
         }
 
-        public Documented<A> getSelectedValue() {
-            return this.currentlySelected;
+        public Serialized<A> getSelectedValue() {
+            return this.enumerator.getObjectAt(this.list.getSelectedIndex());
         }
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
-            Documented<A> newSelected =
-                this.enumerator.findByName((String) ((JList) e.getSource()).getSelectedValue());
-            if (newSelected != null) {
-                this.currentlySelected = newSelected;
-                updateInfoPanel();
-            }
+            updateInfoPanel();
         }
     }
 
@@ -471,21 +485,30 @@ public class ExplorationDialog extends JDialog implements ActionListener {
         }
     }
 
-    // Create the button panel.
+    /**
+     * Create the button panel.
+     */
     private void createButtonPanel() {
         this.buttonPanel = new JPanel();
 
-        JButton exploreButton = new JButton(this.EXPLORE_COMMAND);
-        exploreButton.addActionListener(this);
-        exploreButton.setToolTipText(this.EXPLORE_TOOLTIP);
-        this.buttonPanel.add(exploreButton);
+        this.exploreButton = new JButton(this.EXPLORE_COMMAND);
+        this.exploreButton.addActionListener(this);
+        this.exploreButton.setToolTipText(this.EXPLORE_TOOLTIP);
+        this.buttonPanel.add(this.exploreButton);
         if (this.simulator.getGrammarView() == null
             || this.simulator.getGrammarView().getStartGraphView() == null) {
-            exploreButton.setEnabled(false);
+            this.exploreButton.setEnabled(false);
         }
 
         JButton cancelButton = new JButton(this.CANCEL_COMMAND);
         cancelButton.addActionListener(this);
         this.buttonPanel.add(cancelButton);
+    }
+
+    /**
+     * Set 'enabled' of the explore button.
+     */
+    private void setExploreEnabled(Boolean enabled) {
+        this.exploreButton.setEnabled(enabled);
     }
 }

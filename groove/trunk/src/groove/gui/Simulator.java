@@ -406,7 +406,7 @@ public class Simulator {
         this.defaultExploration = exploration;
         this.defaultExplorationMenuItem.setToolTipText("<HTML>"
             + Options.DEFAULT_EXPLORATION_ACTION_NAME + " by means of <B>"
-            + exploration.getShortName() + "</B></HTML>");
+            + exploration.getIdentifier() + "</B></HTML>");
     }
 
     /**
@@ -1035,7 +1035,6 @@ public class Simulator {
      * @param exploration - the exploration strategy to be used
      */
     public void doRunExploration(Exploration exploration) {
-        exploration.prepare(getGTS(), getCurrentState());
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
@@ -3986,6 +3985,7 @@ public class Simulator {
          */
         LaunchThread(Exploration exploration) {
             super(getLtsPanel(), "Exploring state space");
+
             this.scenario = null;
             this.exploration = exploration;
             this.progressListener = createProgressListener();
@@ -4000,7 +4000,8 @@ public class Simulator {
             if (this.exploration == null) {
                 this.scenario.play();
             } else {
-                this.exploration.play();
+                this.exploration.play(Simulator.this, getGTS(),
+                    getCurrentState());
             }
             gts.removeGraphListener(this.progressListener);
         }
@@ -4076,7 +4077,7 @@ public class Simulator {
             if (this.exploration == null) {
                 result = this.scenario.getResult().getValue();
             } else {
-                result = this.exploration.getResult().getValue();
+                result = this.exploration.getLastResult().getValue();
             }
             Collection<GraphState> states = new HashSet<GraphState>();
             for (Object object : result) {

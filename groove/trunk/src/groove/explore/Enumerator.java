@@ -16,8 +16,12 @@
  */
 package groove.explore;
 
+import groove.explore.Serialized.Materialize;
+import groove.explore.Serialized.SerializedArgument;
+
 /**
- * An enumerator class for objects of type Documented<A>.
+ * An enumerator class for serialized objects.
+ * Each object is also accompanied by a descriptive name, and an explanation.  
  * Default implementation is the empty enumeration.
  * Subclasses must override the constructor to initialize the enumeration.
  * 
@@ -25,7 +29,13 @@ package groove.explore;
  * @version $Revision $
  */
 public class Enumerator<A> {
-    private Object[] array;
+    // Array holding the serialized objects.
+    private Object[] objects;
+    // Array holding the names of the serialized objects.
+    private String[] names;
+    // Array holding the explanations of the serialized objects/
+    private String[] explanations;
+    // Counter for the number of stored elements.
     private int nrElements;
 
     /**
@@ -33,83 +43,127 @@ public class Enumerator<A> {
      */
     public Enumerator() {
         this.nrElements = 0;
-        this.array = new Object[100];
+        this.objects = new Object[100];
+        this.names = new String[100];
+        this.explanations = new String[100];
     }
 
     /**
-     * Add a Documented<A> to the enumerator.
-     * @param object - the object to be added
+     * Add an element to the enumerator.
+     * @param object - the serialized object to be added
+     * @param name - the descriptive name of the object
+     * @param explanation - the explanation of the object
      */
-    public void addObject(Documented<A> object) {
+    public void addElement(Serialized<A> object, String name, String explanation) {
         this.nrElements++;
-        this.array[this.nrElements - 1] = object;
+        this.objects[this.nrElements - 1] = object;
+        this.names[this.nrElements - 1] = name;
+        this.explanations[this.nrElements - 1] = explanation;
     }
 
     /**
-     * @return The element at the stored index.
+     * Add a fixed element (a serialized with no arguments) to the enumerator. 
      */
-    @SuppressWarnings("unchecked")
-    public Documented<A> getElementAt(int index) {
-        return ((Documented<A>) this.array[index]);
+    public void addElement(String identifier, String name, String explanation,
+            A object) {
+        addElement(new Serialized<A>(identifier, object), name, explanation);
     }
 
     /**
-     * @return The number of stored Documented<A>'s.
+     * Add a dynamic element (a serialized with 1 argument) to the enumerator. 
+     */
+    public void addElement(String identifier, String name, String explanation,
+            SerializedArgument arg1, Materialize<A> materialize) {
+        addElement(new Serialized<A>(identifier, arg1, materialize), name,
+            explanation);
+    }
+
+    /**
+     * Add a dynamic element (a serialized with 2 arguments) to the enumerator. 
+     */
+    public void addElement(String identifier, String name, String explanation,
+            SerializedArgument arg1, SerializedArgument arg2,
+            Materialize<A> materialize) {
+        addElement(new Serialized<A>(identifier, arg1, arg2, materialize),
+            name, explanation);
+    }
+
+    /**
+     * @return The number of stored elements.
      */
     public int getSize() {
         return this.nrElements;
     }
 
     /**
-     * @return array with the names of the stored Documented<A>'s.
+     * @param index - the index of the element
+     * @return the serialized object at the indicated index
      */
-    public String[] getAllNames() {
-        String[] result = new String[this.nrElements];
-        for (int i = 0; i < this.nrElements; i++) {
-            result[i] = getElementAt(i).getName();
+    @SuppressWarnings("unchecked")
+    public Serialized<A> getObjectAt(int index) {
+        if (index < 0 || index >= this.nrElements) {
+            return null;
+        } else {
+            return (Serialized<A>) this.objects[index];
         }
-        return result;
     }
 
     /**
-     * Find a Documented<A> with the specified keyword.
-     * @param keyword - the keyword
-     * @return the object associated with the keyword (null if not found)
+     * @param index - the index of the element
+     * @return the keyword at the indicated index
      */
-    public Documented<A> findByKeyword(String keyword) {
-        for (int i = 0; i < this.nrElements; i++) {
-            if (getElementAt(i).getKeyword().equals(keyword)) {
-                return getElementAt(i);
-            }
+    @SuppressWarnings("unchecked")
+    public String getKeywordAt(int index) {
+        if (index < 0 || index >= this.nrElements) {
+            return null;
+        } else {
+            return ((Serialized<A>) this.objects[index]).getObjectOnly();
         }
-        return null;
     }
 
     /**
-     * Find a Documented<A> with the specified name.
-     * @param name - the name
-     * @return the object associated with the name (null if not found)
+     * @param index - the index of the element
+     * @return the descriptive name at the indicated index
      */
-    public Documented<A> findByName(String name) {
-        for (int i = 0; i < this.nrElements; i++) {
-            if (getElementAt(i).getName().equals(name)) {
-                return getElementAt(i);
-            }
+    public String getNameAt(int index) {
+        if (index < 0 || index >= this.nrElements) {
+            return null;
+        } else {
+            return this.names[index];
         }
-        return null;
     }
 
     /**
-     * Find a Documented<A> with the specified explanation.
-     * @param explanation - the explanation
-     * @return the object associated with the explanation (null if not found)
+     * @return pointer to array of names
      */
-    public Documented<A> findByExplanation(String explanation) {
+    public String[] getNameArray() {
+        return this.names;
+    }
+
+    /**
+     * @param index - the index of the element
+     * @return the explanation at the indicated index
+     */
+    public String getExplanationAt(int index) {
+        if (index < 0 || index >= this.nrElements) {
+            return null;
+        } else {
+            return this.explanations[index];
+        }
+    }
+
+    /**
+     * Replaces an object with the indicated one.
+     * Uses 'getObjectOnly' to find the object. If the object does not
+     * exist, no replacement (or addition) takes place.
+     */
+    @SuppressWarnings("unchecked")
+    public void replaceObject(Serialized<A> newObject) {
         for (int i = 0; i < this.nrElements; i++) {
-            if (getElementAt(i).getExplanation().equals(explanation)) {
-                return getElementAt(i);
+            Serialized<A> stored = (Serialized<A>) this.objects[i];
+            if (stored.getObjectOnly().equals(newObject.getObjectOnly())) {
+                this.objects[i] = newObject;
             }
         }
-        return null;
     }
 }
