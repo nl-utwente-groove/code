@@ -240,7 +240,7 @@ expression
 		addInit($ornode.tree, getInit($orexpr1.tree));
 		addInit($ornode.tree, getInit($orexpr2.tree));
 	})
-	| ^(plusnode=PLUS plusexpr=expression { 
+	| ^(plusnode=PLUS plusexpr=expression expression {
 		it.put($plusnode.tree, it.get($plusexpr.tree));
 		addInit($plusnode.tree, getInit($plusexpr.tree));
 	})
