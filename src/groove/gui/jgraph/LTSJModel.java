@@ -23,6 +23,7 @@ import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
 import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
@@ -30,6 +31,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.WrapperLabel;
 import groove.gui.Options;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
@@ -63,8 +65,8 @@ public class LTSJModel extends GraphJModel {
 
     /** Specialises the return type. */
     @Override
-    public LTS getGraph() {
-        return (LTS) super.getGraph();
+    public GTS getGraph() {
+        return (GTS) super.getGraph();
     }
 
     /**
@@ -175,6 +177,7 @@ public class LTSJModel extends GraphJModel {
      * @see JAttr#LTS_START_NODE_ATTR
      * @see JAttr#LTS_OPEN_NODE_ATTR
      * @see JAttr#LTS_FINAL_NODE_ATTR
+     * @see JAttr#LTS_RESULT_NODE_ATTR
      * @see JAttr#LTS_NODE_ACTIVE_CHANGE
      */
     @Override
@@ -182,7 +185,9 @@ public class LTSJModel extends GraphJModel {
         AttributeMap result;
         GraphState state = (GraphState) node;
 
-        if (state.equals(getGraph().startState())) {
+        if (getGraph().isResult(state)) {
+            result = LTS_RESULT_NODE_ATTR.clone();
+        } else if (state.equals(getGraph().startState())) {
             result = LTS_START_NODE_ATTR.clone();
         } else if (!state.isClosed()) {
             result = LTS_OPEN_NODE_ATTR.clone();

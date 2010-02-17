@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.control.Location;
 import groove.control.LocationAutomatonBuilder;
+import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -125,6 +126,13 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return this.finalStates;
     }
 
+    /**
+     * @return the set of result states.
+     */
+    public Collection<GraphState> getResultStates() {
+        return this.resultStates;
+    }
+
     public boolean hasFinalStates() {
         return !getFinalStates().isEmpty();
     }
@@ -133,9 +141,24 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return getFinalStates().contains(state);
     }
 
+    /**
+     * @param state the state to be checked.
+     * @return true if the state is a result state.
+     */
+    public boolean isResult(State state) {
+        return getResultStates().contains(state);
+    }
+
     /** Adds a given state to the final states of this GTS. */
     private void setFinal(State state) {
         this.finalStates.add((GraphState) state);
+    }
+
+    /**
+     * @param result the set of result states.
+     */
+    public void setResult(Result result) {
+        this.resultStates.addAll(result.getValue());
     }
 
     public boolean isOpen(State state) {
@@ -413,6 +436,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * @invariant <tt>freshStates \subseteq nodes</tt>
      */
     private final Set<GraphState> finalStates = new HashSet<GraphState>();
+
+    private final Set<GraphState> resultStates = new HashSet<GraphState>();
 
     /** The system record for this GTS. */
     private SystemRecord record;
