@@ -388,6 +388,13 @@ public class JAttr {
      */
     static private final Color LTS_FINAL_BACKGROUND =
         Colors.findColor(Groove.getGUIProperty("lts.final.background"));
+
+    /**
+     * Background colour of result LTS cells.
+     */
+    static private final Color LTS_RESULT_BACKGROUND =
+        Colors.findColor(Groove.getGUIProperty("lts.result.background"));
+
     //
     // /**
     // * Borders of ordinary (non-active) LTS nodes.
@@ -416,6 +423,8 @@ public class JAttr {
     static public final AttributeMap LTS_OPEN_NODE_ATTR;
     /** Final node attributes */
     static public final AttributeMap LTS_FINAL_NODE_ATTR;
+    /** Result node attributes */
+    static public final AttributeMap LTS_RESULT_NODE_ATTR;
     /** The default edge attributes of the LTS */
     static public final AttributeMap LTS_EDGE_ATTR;
 
@@ -460,6 +469,10 @@ public class JAttr {
         LTS_FINAL_NODE_ATTR = LTS_NODE_ATTR.clone();
         GraphConstants.setBackground(LTS_FINAL_NODE_ATTR,
             JAttr.LTS_FINAL_BACKGROUND);
+        // LTS result nodes
+        LTS_RESULT_NODE_ATTR = LTS_NODE_ATTR.clone();
+        GraphConstants.setBackground(LTS_RESULT_NODE_ATTR,
+            JAttr.LTS_RESULT_BACKGROUND);
         LTS_ACTIVE_EMPH_NODE_CHANGE = new AttributeMap();
         GraphConstants.setBorder(LTS_ACTIVE_EMPH_NODE_CHANGE,
             JAttr.LTS_ACTIVE_EMPH_BORDER);

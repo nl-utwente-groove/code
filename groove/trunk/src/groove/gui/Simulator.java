@@ -1046,6 +1046,8 @@ public class Simulator {
             Thread generateThread = new LaunchThread(exploration);
             // go!
             generateThread.start();
+            // collect the result states
+            getGTS().setResult(exploration.getLastResult());
             // get the lts' jmodel back on line and re-synchronize its state
             ltsJModel.reload();
             // re-enable rule application
