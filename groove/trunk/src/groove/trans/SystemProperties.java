@@ -67,6 +67,30 @@ public class SystemProperties extends java.util.Properties implements Fixable,
         setProperty(PARAMETERS_KEY, "" + useParameters);
     }
 
+    /** Sets the {@link #GROOVE_VERSION_KEY} property to the given value */
+    public void setGrooveVersion(String version) {
+        setProperty(GROOVE_VERSION_KEY, version);
+    }
+
+    /**
+     * @return the version of Groove that created the grammar.
+     */
+    public String getGrooveVersion() {
+        return getProperty(GROOVE_VERSION_KEY);
+    }
+
+    /** Sets the {@link #GRAMMAR_VERSION_KEY} property to the given value */
+    public void setGrammarVersion(String version) {
+        setProperty(GRAMMAR_VERSION_KEY, version);
+    }
+
+    /**
+     * @return the version of the grammar.
+     */
+    public String getGrammarVersion() {
+        return getProperty(GRAMMAR_VERSION_KEY);
+    }
+
     /**
      * Returns a list of control labels, according to the
      * {@link #CONTROL_LABELS_KEY} property of the rule system.
@@ -278,7 +302,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     /**
      * Before calling the super method, tests if the properties are fixed and
      * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixesd.
+     * @throws IllegalStateException if the graph has been fixed.
      * @see #setFixed()
      */
     @Override
