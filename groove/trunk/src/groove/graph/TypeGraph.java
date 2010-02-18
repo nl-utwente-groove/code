@@ -216,7 +216,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 } else if (!isSubtype(targetType, declaredTargetType)) {
                     errors.add(new FormatError(
                         "%s-node '%s' is '%s.%s'-target and hence should be subtype of '%s'",
-                        targetType, source, sourceType, edgeType,
+                        targetType, target, sourceType, edgeType,
                         declaredTargetType));
                 }
             }
