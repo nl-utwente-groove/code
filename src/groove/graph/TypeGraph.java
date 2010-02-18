@@ -210,7 +210,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     if (!targetType.equals(declaredTargetType)) {
                         errors.add(new FormatError(
                             "%s-node '%s' is '%s.%s'-target and hence should be of type '%s'",
-                            targetType, source, sourceType, edgeType,
+                            targetType, target, sourceType, edgeType,
                             declaredTargetType));
                     }
                 } else if (!isSubtype(targetType, declaredTargetType)) {
