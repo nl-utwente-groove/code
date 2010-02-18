@@ -14,6 +14,7 @@ import groove.trans.Rule;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
+import java.util.HashMap;
 }
 
 @members{

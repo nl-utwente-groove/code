@@ -24,6 +24,7 @@ import groove.gui.Options;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.util.Version;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -94,6 +95,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
         this.marshaller =
             createGraphMarshaller(GraphFactory.getInstance(), true);
+        if (create) {
+            this.createVersionProperties();
+        }
     }
 
     /**
@@ -109,6 +113,18 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     public DefaultFileSystemStore(URL location) throws IllegalArgumentException {
         this(toFile(location), false);
         this.url = location;
+    }
+
+    private void createVersionProperties() {
+        SystemProperties prop = new SystemProperties();
+        prop.setGrooveVersion(Version.getGrooveVersion());
+        prop.setGrammarVersion(Version.getLastGrammarVersion());
+        try {
+            this.reload();
+            this.putProperties(prop);
+        } catch (IOException e) {
+            // Should not happen...
+        }
     }
 
     @Override
@@ -776,6 +792,12 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             grammarProperties.load(s);
             s.close();
             this.properties.putAll(grammarProperties);
+        }
+        if (!this.properties.containsKey(SystemProperties.GROOVE_VERSION_KEY)) {
+            this.properties.setGrooveVersion(Version.getApproximateGrooveVersion());
+        }
+        if (!this.properties.containsKey(SystemProperties.GRAMMAR_VERSION_KEY)) {
+            this.properties.setGrammarVersion(Version.getInitialGrammarVersion());
         }
     }
 

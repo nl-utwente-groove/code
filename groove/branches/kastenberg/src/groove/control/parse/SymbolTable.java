@@ -25,40 +25,28 @@ import java.util.ArrayDeque;
  * Class SymbolTable
  * Keeps track of symbols used in the control language, including scopes
  */
-@SuppressWarnings("all")
 public class SymbolTable {
     /**
      * Creates a new SymbolTable
      */
     public SymbolTable() {
-        scopes = new ArrayDeque<Scope>();
+        this.scopes = new ArrayDeque<Scope>();
     }
-    
+
     /**
      * Opens a scope, which can hold symbols which will be kept until the scope is closed
      */
     public void openScope() {
-        Scope s = new Scope();
-        if (!scopes.isEmpty()) {
-            scopes.peek().addSubScope(s);
-            debug("adding subscope");
-        }
-        scopes.push(s);
-        debug("opening scope");
+        this.scopes.push(new Scope());
     }
-    
+
     /**
      * Removes the current scope
      */
     public void closeScope() {
-        Scope s = scopes.pop();
-        debug("closing scope with vars: "+s.getInitialized().toString());
-        if (!scopes.isEmpty()) {
-            scopes.peek().closeSubScope(s);
-            debug("closing subscope");
-        }
+        this.scopes.pop();
     }
-    
+
     /**
      * Declares a symbol in the current scope
      * @param symbolName the name of the symbol to be declared
@@ -66,15 +54,14 @@ public class SymbolTable {
      * @return true if the declaration succeeded, false if not
      */
     public boolean declareSymbol(String symbolName) {
-        if (!scopes.peek().isDeclared(symbolName)) { 
-            scopes.peek().declare(symbolName);
-            debug("declaring variable: "+symbolName);
+        if (!this.scopes.peek().isDeclared(symbolName)) {
+            this.scopes.peek().declare(symbolName);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Initialized a symbol in the current scope
      * @param symbolName the symbol to be initialized
@@ -82,66 +69,58 @@ public class SymbolTable {
      */
     public void initializeSymbol(String symbolName) {
         boolean found = false;
-        for (Scope s : scopes) {
+        for (Scope s : this.scopes) {
             if (s.isDeclared(symbolName)) {
                 found = true;
             }
         }
         if (found) {
-            scopes.peek().initialize(symbolName);
+            this.scopes.peek().initialize(symbolName);
         }
-        debug("initializing variable: "+symbolName);
     }
-    
+
     /**
      * Checks if the given symbol is initialized in this scope or a higher one
      * @param symbolName the symbol to be checked
      * @return true if the symbol is initialized, false if not
      */
     public boolean isInitialized(String symbolName) {
-        debug("checking if initialized: "+symbolName);
-        for (Scope s : scopes) {
+        for (Scope s : this.scopes) {
             if (s.isInitialized(symbolName)) {
-                debug("   yes");
                 return true;
             }
         }
-        debug("   no");
         return false;
     }
-    
+
+    /**
+     * Checks whether we can initialize a given variable. Variables may only be
+     * initialized once in a given program.
+     * @param symbolName the variable to check
+     * @return true if the variable can be initialized, false otherwise
+     */
     public boolean canInitialize(String symbolName) {
-        debug("checking if we can initialize: "+symbolName);
-        for (Scope s : scopes) {
-            if (s.isInitializedHere(symbolName)) {
-                debug("    no");
+        for (Scope s : this.scopes) {
+            if (s.isInitialized(symbolName)) {
                 return false;
             }
         }
-        debug("    yes");
         return true;
     }
-    
+
     /**
      * Checks if the given symbol is declared in this scope or a higher one
      * @param symbolName the symbol to be checked
      * @return true if the symbol is declared, false if not
      */
     public boolean isDeclared(String symbolName) {
-        debug("checking if declared: "+symbolName);
-        for (Scope s : scopes) {
+        for (Scope s : this.scopes) {
             if (s.isDeclared(symbolName)) {
-                debug("   true");
                 return true;
             }
         }
-        debug("   false");
         return false;
     }
-    
-    private void debug(String msg) {
-        //System.out.println("== ST DEBUG: "+msg);
-    }
-    
+
     private ArrayDeque<Scope> scopes;
 }

@@ -132,7 +132,7 @@ public class Groove {
 
     /** Default name for the type graph */
     public static final String DEFAULT_TYPE_NAME = "type";
-    /** Extension for property files. */
+    /** Extension for control files. */
     public static final String CONTROL_EXTENSION = ".gcp";
 
     /** Default name for property files. */

@@ -25,72 +25,48 @@ import java.util.Set;
  * 
  * Class Scope, keeps track of variables declared and initialized in a given scope
  */
-@SuppressWarnings("all")
 public class Scope {
+    /**
+     * Creates a new Scope with empty declared and initialized sets
+     */
     public Scope() {
-        declared = new HashSet<String>();
-        initialized = new HashSet<String>();
-        initializedBySubScopes = new HashSet<String>();
-        subScopes = new HashSet<Scope>();
+        this.declared = new HashSet<String>();
+        this.initialized = new HashSet<String>();
     }
-    
+
+    /**
+     * Declares a variable in this Scope
+     * @param var the variable to declare
+     */
     public void declare(String var) {
-        declared.add(var);
+        this.declared.add(var);
     }
-    
+
+    /**
+     * Initializes a variable in this Scope
+     * @param var the variable to initialize
+     */
     public void initialize(String var) {
-        initialized.add(var);
+        this.initialized.add(var);
     }
-    
+
+    /**
+     * Checks whether a given variable is declared in this Scope
+     * @param var the variable to check
+     * @return true if the variable is declared, false otherwise
+     */
     public boolean isDeclared(String var) {
-        return declared.contains(var);
+        return this.declared.contains(var);
     }
-    
+
+    /**
+     * Checks whether a given variable is initialized in this Scope
+     * @param var the variable to check
+     * @return true if the variable is initialized, false otherwise
+     */
     public boolean isInitialized(String var) {
-        return initialized.contains(var) || initializedBySubScopes.contains(var);
+        return this.initialized.contains(var);
     }
-    
-    public boolean isInitializedHere(String var) {
-        return initialized.contains(var);
-    }
-    
-    public void addSubScope(Scope sub) {
-        subScopes.add(sub);
-    }
-    
-    public void closeSubScope(Scope sub) {
-        // gather all variables initialized in subscopes
-        Set<String> initializedVars = new HashSet<String>();
-        Set<String> initializedVars2 = new HashSet<String>();
-        for (Scope s : subScopes) {
-            initializedVars.addAll(s.getInitialized());
-        }
-        initializedVars2.addAll(initializedVars);
-        
-        // now check which of these are initialized in all subscopes
-        for (String str : initializedVars2) {
-            for (Scope s : subScopes) {
-                if (!s.getInitialized().contains(str)) {
-                    initializedVars.remove(str);
-                }
-            }
-        }
-        
-        initializedBySubScopes = initializedVars;
-        debug("now initialized by subscopes: "+initializedBySubScopes.toString());
-    }
-    
-    public Set<String> getInitialized() {
-        Set<String> ret = new HashSet<String>();
-        ret.addAll(initialized);
-        ret.addAll(initializedBySubScopes);
-        return ret;
-    }
-    
-    private void debug(String msg) {
-        //System.out.println("Variable debug (Scope): "+msg);
-    }
-    
-    private Set<String> declared, initialized, initializedBySubScopes;
-    private Set<Scope> subScopes;
+
+    private Set<String> declared, initialized;
 }

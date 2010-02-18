@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLDeterminismChecker.g 2010-01-27 15:04:37
+// $ANTLR 3.1b1 GCLDeterminismChecker.g 2010-02-10 17:50:54
 
 package groove.control.parse;
 import groove.control.*;
@@ -1152,7 +1152,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start expression
-    // GCLDeterminismChecker.g:237:1: expression : ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER );
+    // GCLDeterminismChecker.g:237:1: expression : ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER );
     public final GCLDeterminismChecker.expression_return expression() throws RecognitionException {
         GCLDeterminismChecker.expression_return retval = new GCLDeterminismChecker.expression_return();
         retval.start = input.LT(1);
@@ -1178,7 +1178,9 @@ public class GCLDeterminismChecker extends TreeParser {
 
         GCLDeterminismChecker.expression_return sharpexpr = null;
 
-        GCLDeterminismChecker.rule_return rule11 = null;
+        GCLDeterminismChecker.expression_return expression11 = null;
+
+        GCLDeterminismChecker.rule_return rule12 = null;
 
 
         CommonTree ornode_tree=null;
@@ -1189,7 +1191,7 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree othernode_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:238:2: ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER )
+            // GCLDeterminismChecker.g:238:2: ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER )
             int alt7=7;
             switch ( input.LA(1) ) {
             case OR:
@@ -1280,7 +1282,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLDeterminismChecker.g:243:4: ^(plusnode= PLUS plusexpr= expression )
+                    // GCLDeterminismChecker.g:243:4: ^(plusnode= PLUS plusexpr= expression expression )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1304,7 +1306,14 @@ public class GCLDeterminismChecker extends TreeParser {
                     state._fsp--;
 
                     adaptor.addChild(root_1, plusexpr.getTree());
-                     
+                    _last = (CommonTree)input.LT(1);
+                    pushFollow(FOLLOW_expression_in_expression344);
+                    expression11=expression();
+
+                    state._fsp--;
+
+                    adaptor.addChild(root_1, expression11.getTree());
+                    
                     		it.put(plusnode_tree, it.get((plusexpr!=null?((CommonTree)plusexpr.tree):null)));
                     		addInit(plusnode_tree, getInit((plusexpr!=null?((CommonTree)plusexpr.tree):null)));
                     	
@@ -1325,7 +1334,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-                    starnode=(CommonTree)match(input,STAR,FOLLOW_STAR_in_expression353); 
+                    starnode=(CommonTree)match(input,STAR,FOLLOW_STAR_in_expression355); 
                     starnode_tree = (CommonTree)adaptor.dupNode(starnode);
 
                     root_1 = (CommonTree)adaptor.becomeRoot(starnode_tree, root_1);
@@ -1334,7 +1343,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_expression_in_expression357);
+                    pushFollow(FOLLOW_expression_in_expression359);
                     starexpr=expression();
 
                     state._fsp--;
@@ -1361,7 +1370,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-                    sharpnode=(CommonTree)match(input,SHARP,FOLLOW_SHARP_in_expression368); 
+                    sharpnode=(CommonTree)match(input,SHARP,FOLLOW_SHARP_in_expression370); 
                     sharpnode_tree = (CommonTree)adaptor.dupNode(sharpnode);
 
                     root_1 = (CommonTree)adaptor.becomeRoot(sharpnode_tree, root_1);
@@ -1370,7 +1379,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_expression_in_expression372);
+                    pushFollow(FOLLOW_expression_in_expression374);
                     sharpexpr=expression();
 
                     state._fsp--;
@@ -1393,12 +1402,12 @@ public class GCLDeterminismChecker extends TreeParser {
                     root_0 = (CommonTree)adaptor.nil();
 
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_rule_in_expression380);
-                    rule11=rule();
+                    pushFollow(FOLLOW_rule_in_expression382);
+                    rule12=rule();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, rule11.getTree());
+                    adaptor.addChild(root_0, rule12.getTree());
 
                     }
                     break;
@@ -1408,7 +1417,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     root_0 = (CommonTree)adaptor.nil();
 
                     _last = (CommonTree)input.LT(1);
-                    anynode=(CommonTree)match(input,ANY,FOLLOW_ANY_in_expression387); 
+                    anynode=(CommonTree)match(input,ANY,FOLLOW_ANY_in_expression389); 
                     anynode_tree = (CommonTree)adaptor.dupNode(anynode);
 
                     adaptor.addChild(root_0, anynode_tree);
@@ -1426,7 +1435,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     root_0 = (CommonTree)adaptor.nil();
 
                     _last = (CommonTree)input.LT(1);
-                    othernode=(CommonTree)match(input,OTHER,FOLLOW_OTHER_in_expression396); 
+                    othernode=(CommonTree)match(input,OTHER,FOLLOW_OTHER_in_expression398); 
                     othernode_tree = (CommonTree)adaptor.dupNode(othernode);
 
                     adaptor.addChild(root_0, othernode_tree);
@@ -1474,7 +1483,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
         GCLDeterminismChecker.condition_return orcondition2 = null;
 
-        GCLDeterminismChecker.rule_return rule12 = null;
+        GCLDeterminismChecker.rule_return rule13 = null;
 
 
         CommonTree ornode_tree=null;
@@ -1517,7 +1526,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-                    ornode=(CommonTree)match(input,OR,FOLLOW_OR_in_condition414); 
+                    ornode=(CommonTree)match(input,OR,FOLLOW_OR_in_condition416); 
                     ornode_tree = (CommonTree)adaptor.dupNode(ornode);
 
                     root_1 = (CommonTree)adaptor.becomeRoot(ornode_tree, root_1);
@@ -1526,14 +1535,14 @@ public class GCLDeterminismChecker extends TreeParser {
 
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_condition_in_condition418);
+                    pushFollow(FOLLOW_condition_in_condition420);
                     orcondition1=condition();
 
                     state._fsp--;
 
                     adaptor.addChild(root_1, orcondition1.getTree());
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_condition_in_condition422);
+                    pushFollow(FOLLOW_condition_in_condition424);
                     orcondition2=condition();
 
                     state._fsp--;
@@ -1557,12 +1566,12 @@ public class GCLDeterminismChecker extends TreeParser {
                     root_0 = (CommonTree)adaptor.nil();
 
                     _last = (CommonTree)input.LT(1);
-                    pushFollow(FOLLOW_rule_in_condition431);
-                    rule12=rule();
+                    pushFollow(FOLLOW_rule_in_condition433);
+                    rule13=rule();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, rule12.getTree());
+                    adaptor.addChild(root_0, rule13.getTree());
 
                     }
                     break;
@@ -1572,7 +1581,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     root_0 = (CommonTree)adaptor.nil();
 
                     _last = (CommonTree)input.LT(1);
-                    truenode=(CommonTree)match(input,TRUE,FOLLOW_TRUE_in_condition439); 
+                    truenode=(CommonTree)match(input,TRUE,FOLLOW_TRUE_in_condition441); 
                     truenode_tree = (CommonTree)adaptor.dupNode(truenode);
 
                     adaptor.addChild(root_0, truenode_tree);
@@ -1616,7 +1625,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
         CommonTree callnode=null;
         CommonTree callidentifier=null;
-        GCLDeterminismChecker.param_return param13 = null;
+        GCLDeterminismChecker.param_return param14 = null;
 
 
         CommonTree callnode_tree=null;
@@ -1633,7 +1642,7 @@ public class GCLDeterminismChecker extends TreeParser {
             CommonTree _save_last_1 = _last;
             CommonTree _first_1 = null;
             CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-            callnode=(CommonTree)match(input,CALL,FOLLOW_CALL_in_rule457); 
+            callnode=(CommonTree)match(input,CALL,FOLLOW_CALL_in_rule459); 
             callnode_tree = (CommonTree)adaptor.dupNode(callnode);
 
             root_1 = (CommonTree)adaptor.becomeRoot(callnode_tree, root_1);
@@ -1642,7 +1651,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             match(input, Token.DOWN, null); 
             _last = (CommonTree)input.LT(1);
-            callidentifier=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule461); 
+            callidentifier=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule463); 
             callidentifier_tree = (CommonTree)adaptor.dupNode(callidentifier);
 
             adaptor.addChild(root_1, callidentifier_tree);
@@ -1663,12 +1672,12 @@ public class GCLDeterminismChecker extends TreeParser {
             	    // GCLDeterminismChecker.g:278:47: param
             	    {
             	    _last = (CommonTree)input.LT(1);
-            	    pushFollow(FOLLOW_param_in_rule463);
-            	    param13=param();
+            	    pushFollow(FOLLOW_param_in_rule465);
+            	    param14=param();
 
             	    state._fsp--;
 
-            	    adaptor.addChild(root_1, param13.getTree());
+            	    adaptor.addChild(root_1, param14.getTree());
 
             	    }
             	    break;
@@ -1719,12 +1728,12 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree _last = null;
 
         CommonTree varnode=null;
-        CommonTree IDENTIFIER15=null;
-        GCLDeterminismChecker.var_type_return var_type14 = null;
+        CommonTree IDENTIFIER16=null;
+        GCLDeterminismChecker.var_type_return var_type15 = null;
 
 
         CommonTree varnode_tree=null;
-        CommonTree IDENTIFIER15_tree=null;
+        CommonTree IDENTIFIER16_tree=null;
 
         try {
             // GCLDeterminismChecker.g:285:2: ( ^(varnode= VAR var_type IDENTIFIER ) )
@@ -1737,7 +1746,7 @@ public class GCLDeterminismChecker extends TreeParser {
             CommonTree _save_last_1 = _last;
             CommonTree _first_1 = null;
             CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-            varnode=(CommonTree)match(input,VAR,FOLLOW_VAR_in_var_declaration482); 
+            varnode=(CommonTree)match(input,VAR,FOLLOW_VAR_in_var_declaration484); 
             varnode_tree = (CommonTree)adaptor.dupNode(varnode);
 
             root_1 = (CommonTree)adaptor.becomeRoot(varnode_tree, root_1);
@@ -1746,17 +1755,17 @@ public class GCLDeterminismChecker extends TreeParser {
 
             match(input, Token.DOWN, null); 
             _last = (CommonTree)input.LT(1);
-            pushFollow(FOLLOW_var_type_in_var_declaration484);
-            var_type14=var_type();
+            pushFollow(FOLLOW_var_type_in_var_declaration486);
+            var_type15=var_type();
 
             state._fsp--;
 
-            adaptor.addChild(root_1, var_type14.getTree());
+            adaptor.addChild(root_1, var_type15.getTree());
             _last = (CommonTree)input.LT(1);
-            IDENTIFIER15=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration486); 
-            IDENTIFIER15_tree = (CommonTree)adaptor.dupNode(IDENTIFIER15);
+            IDENTIFIER16=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration488); 
+            IDENTIFIER16_tree = (CommonTree)adaptor.dupNode(IDENTIFIER16);
 
-            adaptor.addChild(root_1, IDENTIFIER15_tree);
+            adaptor.addChild(root_1, IDENTIFIER16_tree);
 
              
             		it.put(varnode_tree, true); 
@@ -1797,9 +1806,9 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree _first_0 = null;
         CommonTree _last = null;
 
-        CommonTree NODE_TYPE16=null;
+        CommonTree NODE_TYPE17=null;
 
-        CommonTree NODE_TYPE16_tree=null;
+        CommonTree NODE_TYPE17_tree=null;
 
         try {
             // GCLDeterminismChecker.g:291:2: ( NODE_TYPE )
@@ -1808,10 +1817,10 @@ public class GCLDeterminismChecker extends TreeParser {
             root_0 = (CommonTree)adaptor.nil();
 
             _last = (CommonTree)input.LT(1);
-            NODE_TYPE16=(CommonTree)match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type500); 
-            NODE_TYPE16_tree = (CommonTree)adaptor.dupNode(NODE_TYPE16);
+            NODE_TYPE17=(CommonTree)match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type502); 
+            NODE_TYPE17_tree = (CommonTree)adaptor.dupNode(NODE_TYPE17);
 
-            adaptor.addChild(root_0, NODE_TYPE16_tree);
+            adaptor.addChild(root_0, NODE_TYPE17_tree);
 
 
             }
@@ -1845,21 +1854,21 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree _first_0 = null;
         CommonTree _last = null;
 
-        CommonTree PARAM17=null;
-        CommonTree IDENTIFIER18=null;
-        CommonTree PARAM19=null;
-        CommonTree OUT20=null;
-        CommonTree IDENTIFIER21=null;
-        CommonTree PARAM22=null;
-        CommonTree DONT_CARE23=null;
+        CommonTree PARAM18=null;
+        CommonTree IDENTIFIER19=null;
+        CommonTree PARAM20=null;
+        CommonTree OUT21=null;
+        CommonTree IDENTIFIER22=null;
+        CommonTree PARAM23=null;
+        CommonTree DONT_CARE24=null;
 
-        CommonTree PARAM17_tree=null;
-        CommonTree IDENTIFIER18_tree=null;
-        CommonTree PARAM19_tree=null;
-        CommonTree OUT20_tree=null;
-        CommonTree IDENTIFIER21_tree=null;
-        CommonTree PARAM22_tree=null;
-        CommonTree DONT_CARE23_tree=null;
+        CommonTree PARAM18_tree=null;
+        CommonTree IDENTIFIER19_tree=null;
+        CommonTree PARAM20_tree=null;
+        CommonTree OUT21_tree=null;
+        CommonTree IDENTIFIER22_tree=null;
+        CommonTree PARAM23_tree=null;
+        CommonTree DONT_CARE24_tree=null;
 
         try {
             // GCLDeterminismChecker.g:295:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) )
@@ -1918,19 +1927,19 @@ public class GCLDeterminismChecker extends TreeParser {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-                    PARAM17=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param512); 
-                    PARAM17_tree = (CommonTree)adaptor.dupNode(PARAM17);
+                    PARAM18=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param514); 
+                    PARAM18_tree = (CommonTree)adaptor.dupNode(PARAM18);
 
-                    root_1 = (CommonTree)adaptor.becomeRoot(PARAM17_tree, root_1);
+                    root_1 = (CommonTree)adaptor.becomeRoot(PARAM18_tree, root_1);
 
 
 
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    IDENTIFIER18=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param514); 
-                    IDENTIFIER18_tree = (CommonTree)adaptor.dupNode(IDENTIFIER18);
+                    IDENTIFIER19=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param516); 
+                    IDENTIFIER19_tree = (CommonTree)adaptor.dupNode(IDENTIFIER19);
 
-                    adaptor.addChild(root_1, IDENTIFIER18_tree);
+                    adaptor.addChild(root_1, IDENTIFIER19_tree);
 
 
                     match(input, Token.UP, null); adaptor.addChild(root_0, root_1);_last = _save_last_1;
@@ -1949,25 +1958,25 @@ public class GCLDeterminismChecker extends TreeParser {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-                    PARAM19=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param521); 
-                    PARAM19_tree = (CommonTree)adaptor.dupNode(PARAM19);
+                    PARAM20=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param523); 
+                    PARAM20_tree = (CommonTree)adaptor.dupNode(PARAM20);
 
-                    root_1 = (CommonTree)adaptor.becomeRoot(PARAM19_tree, root_1);
+                    root_1 = (CommonTree)adaptor.becomeRoot(PARAM20_tree, root_1);
 
 
 
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    OUT20=(CommonTree)match(input,OUT,FOLLOW_OUT_in_param523); 
-                    OUT20_tree = (CommonTree)adaptor.dupNode(OUT20);
+                    OUT21=(CommonTree)match(input,OUT,FOLLOW_OUT_in_param525); 
+                    OUT21_tree = (CommonTree)adaptor.dupNode(OUT21);
 
-                    adaptor.addChild(root_1, OUT20_tree);
+                    adaptor.addChild(root_1, OUT21_tree);
 
                     _last = (CommonTree)input.LT(1);
-                    IDENTIFIER21=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param525); 
-                    IDENTIFIER21_tree = (CommonTree)adaptor.dupNode(IDENTIFIER21);
+                    IDENTIFIER22=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param527); 
+                    IDENTIFIER22_tree = (CommonTree)adaptor.dupNode(IDENTIFIER22);
 
-                    adaptor.addChild(root_1, IDENTIFIER21_tree);
+                    adaptor.addChild(root_1, IDENTIFIER22_tree);
 
 
                     match(input, Token.UP, null); adaptor.addChild(root_0, root_1);_last = _save_last_1;
@@ -1986,19 +1995,19 @@ public class GCLDeterminismChecker extends TreeParser {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     CommonTree root_1 = (CommonTree)adaptor.nil();_last = (CommonTree)input.LT(1);
-                    PARAM22=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param532); 
-                    PARAM22_tree = (CommonTree)adaptor.dupNode(PARAM22);
+                    PARAM23=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param534); 
+                    PARAM23_tree = (CommonTree)adaptor.dupNode(PARAM23);
 
-                    root_1 = (CommonTree)adaptor.becomeRoot(PARAM22_tree, root_1);
+                    root_1 = (CommonTree)adaptor.becomeRoot(PARAM23_tree, root_1);
 
 
 
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    DONT_CARE23=(CommonTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_param534); 
-                    DONT_CARE23_tree = (CommonTree)adaptor.dupNode(DONT_CARE23);
+                    DONT_CARE24=(CommonTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_param536); 
+                    DONT_CARE24_tree = (CommonTree)adaptor.dupNode(DONT_CARE24);
 
-                    adaptor.addChild(root_1, DONT_CARE23_tree);
+                    adaptor.addChild(root_1, DONT_CARE24_tree);
 
 
                     match(input, Token.UP, null); adaptor.addChild(root_0, root_1);_last = _save_last_1;
@@ -2063,32 +2072,33 @@ public class GCLDeterminismChecker extends TreeParser {
     public static final BitSet FOLLOW_expression_in_expression323 = new BitSet(new long[]{0x000000000F802100L});
     public static final BitSet FOLLOW_expression_in_expression327 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PLUS_in_expression338 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression342 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_STAR_in_expression353 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression357 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_SHARP_in_expression368 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_expression_in_expression372 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_rule_in_expression380 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ANY_in_expression387 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OTHER_in_expression396 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_condition414 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_condition_in_condition418 = new BitSet(new long[]{0x0000000000402100L});
-    public static final BitSet FOLLOW_condition_in_condition422 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_rule_in_condition431 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRUE_in_condition439 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CALL_in_rule457 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_rule461 = new BitSet(new long[]{0x0000000000000808L});
-    public static final BitSet FOLLOW_param_in_rule463 = new BitSet(new long[]{0x0000000000000808L});
-    public static final BitSet FOLLOW_VAR_in_var_declaration482 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_var_type_in_var_declaration484 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_var_declaration486 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_NODE_TYPE_in_var_type500 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PARAM_in_param512 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_param514 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_PARAM_in_param521 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_OUT_in_param523 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_param525 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_PARAM_in_param532 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_DONT_CARE_in_param534 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_expression_in_expression342 = new BitSet(new long[]{0x000000000F802100L});
+    public static final BitSet FOLLOW_expression_in_expression344 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_STAR_in_expression355 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression359 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_SHARP_in_expression370 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_expression_in_expression374 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_expression382 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ANY_in_expression389 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OTHER_in_expression398 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_condition416 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_condition_in_condition420 = new BitSet(new long[]{0x0000000000402100L});
+    public static final BitSet FOLLOW_condition_in_condition424 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_condition433 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRUE_in_condition441 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_CALL_in_rule459 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_rule463 = new BitSet(new long[]{0x0000000000000808L});
+    public static final BitSet FOLLOW_param_in_rule465 = new BitSet(new long[]{0x0000000000000808L});
+    public static final BitSet FOLLOW_VAR_in_var_declaration484 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_var_type_in_var_declaration486 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_var_declaration488 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_NODE_TYPE_in_var_type502 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PARAM_in_param514 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param516 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param523 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_OUT_in_param525 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param527 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param534 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_DONT_CARE_in_param536 = new BitSet(new long[]{0x0000000000000008L});
 
 }
