@@ -230,9 +230,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.hiddenPars = hiddenPars;
         initializeParameterTypes();
     }
-    
+
     private void initializeParameterTypes() {
-        for (int param=1; param<=getVisibleParCount(); param++) {
+        for (int param = 1; param <= getVisibleParCount(); param++) {
             int result = PARAMETER_DOES_NOT_EXIST;
 
             // if it's in creatorParameters, it may only be an output node
@@ -282,7 +282,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         return count;
     }
-    
+
     /**
      * Returns whether a numbered parameter can be used as an output parameter
      * @param param the number of the parameter under inquiry

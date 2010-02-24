@@ -19,8 +19,8 @@ package groove.explore.strategy;
 import groove.abs.lts.AbstrGraphState;
 import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
+import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
-import groove.explore.util.LocationCache;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
 import groove.explore.util.MatchesIterator;
@@ -47,7 +47,8 @@ public abstract class AbstractStrategy implements Strategy {
     public void prepare(GTS gts, GraphState state) {
         this.gts = gts;
         this.generator = gts.getRecord().getStateGenerator(gts);
-        this.atState = this.startState = state == null ? gts.startState() : state;
+        this.atState =
+            this.startState = state == null ? gts.startState() : state;
         this.applier = new MatchApplier(gts);
     }
 
@@ -173,7 +174,7 @@ public abstract class AbstractStrategy implements Strategy {
 
         /* An ugly hack to forbid aliasing for cases when it does not work */
         boolean aliasingNotAllowed =
-            cache instanceof LocationCache
+            cache instanceof ControlStateCache
                 || getAtState() instanceof AbstrGraphState;
 
         if (!aliasingNotAllowed) {
@@ -242,7 +243,7 @@ public abstract class AbstractStrategy implements Strategy {
     public boolean closeExit() {
         return this.closeExit;
     }
-    
+
     /**
      * Enable closeExit, to close states when a strategy changes its atState.
      * This can save memory when using linear strategies.

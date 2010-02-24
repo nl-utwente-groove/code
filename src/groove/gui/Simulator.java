@@ -2315,6 +2315,7 @@ public class Simulator {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
+                System.out.println("startsimulationupdate: " + listener);
                 listener.startSimulationUpdate(gts);
             }
             this.updating = false;

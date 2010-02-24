@@ -16,7 +16,6 @@
  */
 package groove.explore.util;
 
-import groove.control.ControlLocation;
 import groove.control.Location;
 import groove.lts.GraphState;
 import groove.trans.Rule;
@@ -36,7 +35,7 @@ public class ControlStateCache implements ExploreCache {
      * @param state the GraphState this ControlStateCache will operate on
      * @param isRandomized
      */
-    public ControlStateCache(ControlLocation location, GraphState state,
+    public ControlStateCache(Location location, GraphState state,
             boolean isRandomized) {
         this.location = location;
         this.state = state;
@@ -44,12 +43,13 @@ public class ControlStateCache implements ExploreCache {
         this.failed = new HashSet<Rule>();
         this.matched = new HashSet<Rule>();
 
-        this.iterator = createIterator(location, isRandomized);
+        this.iterator = createIterator(this.location, isRandomized);
     }
 
     private Iterator<Rule> createIterator(Location location,
             boolean isRandomized) {
-        Set<Rule> enabledRules = location.getEnabledRules(null, this.failed);
+        Set<Rule> enabledRules =
+            location.getEnabledRules(this.matched, this.failed);
         if (isRandomized) {
             return new RandomizedIterator<Rule>(enabledRules);
         } else {
@@ -102,6 +102,7 @@ public class ControlStateCache implements ExploreCache {
     public Rule next() {
         // TODO: FIX THIS for interruptible
         if (this.iterator == null) {
+            System.out.println("null");
             return null;
         }
         if (!this.iterator.hasNext()) {

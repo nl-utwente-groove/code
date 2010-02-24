@@ -1,0 +1,32 @@
+# Layout information for D:\Studie\Afstuderen\varTest.gps\prepass.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n57684 1308 506 15 15 
+n n57682 1229 394 15 15 
+n n57679 1027 395 15 15 
+n n57686 1452 395 15 15 
+n n57677 624 287 15 15 
+n n57681 748 356 15 15 
+n n57692 1088 583 15 15 
+n n57680 463 289 15 15 
+n n57678 1026 472 15 15 
+n n57688 1122 519 15 15 
+n n57690 624 394 15 15 
+n n57685 1311 585 15 15 
+n n57691 745 215 15 15 
+n n57683 1454 471 15 15 
+n n57689 553 214 15 15 
+n n57687 1152 583 15 15 
+n n57693 464 394 15 15 
+e n57689 n57680 "a[x1][]" 546 0 553 229 480 290 11
+e n57689 n57677 "a[x2][]" 605 0 569 231 624 287 11
+e n57689 n57691 "[a[x1],a[x2]]" 520 0 570 223 745 223 11
+e n57682 n57684 "a[x1^!x2]" 489 0 1242 411 1309 530 11
+e n57682 n57688 "a[x1^x2][]" 562 0 1230 411 1137 519 11
+e n57682 n57686 "[a[x1^x2],[a[x1^!x2],a[!x1^x2]]" 495 0 1246 403 1452 403 11
+e n57682 n57679 "a[!x1^x2]" 519 0 1229 403 1044 403 11

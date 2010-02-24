@@ -118,13 +118,14 @@ public class MatchesIterator implements Iterator<RuleEvent> {
             // this means that rulesIter is freshly created and has never been
             // incremented before
             if (!this.rulesIter.hasNext()) { // this iterator is entirely
-                                                // consumed
+                // consumed
                 this.eventIter = null;
                 return;
             }
             this.currentRule = this.rulesIter.next();
         }
         this.eventIter = createEventIter(this.currentRule);
+
     }
 
     /**
@@ -135,12 +136,13 @@ public class MatchesIterator implements Iterator<RuleEvent> {
     protected boolean nextRule() {
         this.rulesIter.updateExplored(this.currentRule);
         if (!this.rulesIter.hasNext()) { // this iterator is entirely
-                                            // consumed
+            // consumed
             this.eventIter = null;
             return false;
         } else {
             this.currentRule = this.rulesIter.next();
             this.eventIter = createEventIter(this.currentRule);
+
             return true;
         }
     }
