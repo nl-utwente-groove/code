@@ -15,6 +15,7 @@ import java.util.Set;
  * 
  * @version $Revision $
  */
+@Deprecated
 public class LocationAutomatonBuilder {
     /** Returns a control location based on a single control state. */
     public ControlLocation getLocation(ControlState startState) {

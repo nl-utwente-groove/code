@@ -15,6 +15,7 @@ import java.util.Set;
  * 
  * @version $Revision $
  */
+@Deprecated
 public class ControlStateAutomatonBuilder {
     /**
      * Returns a location for a set of ControlStates.

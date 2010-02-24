@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.Location;
-import groove.control.LocationAutomatonBuilder;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
@@ -97,10 +96,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     protected GraphState createStartState(Graph startGraph) {
         // initialise the start state with a control location if necessary
         if (this.ruleSystem.getControl() != null) {
-            return new StartGraphState(getRecord(),
-                startGraph,
-                //    this.ruleSystem.getControl().getStart());
-                new LocationAutomatonBuilder().getLocation(this.ruleSystem.getControl().getStart()));
+            return new StartGraphState(getRecord(), startGraph,
+                this.ruleSystem.getControl().getStart());
         } else {
             return new StartGraphState(getRecord(), startGraph);
         }

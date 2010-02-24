@@ -14,6 +14,7 @@ import java.util.Set;
  * @author
  * 
  */
+@Deprecated
 public class LocationCache implements ExploreCache {
     /**
      * Creates a cache for given state with given location.

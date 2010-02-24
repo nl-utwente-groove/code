@@ -98,6 +98,23 @@ public class ControlState implements Node, Location {
     }
 
     /**
+     * Sets this state to be a conditional success state
+     * @param condition a map of Rules to String[], indicating which rules must 
+     * fail with which input parameters in order for this state to be a success
+     * state
+     */
+    public void addSuccess(Map<Rule,String[]> condition) {
+        if (this.successConditions == null) {
+            this.successConditions = new HashSet<Map<Rule,String[]>>();
+        }
+        this.successConditions.add(condition);
+    }
+
+    public Set<Map<Rule,String[]>> getSuccessConditions() {
+        return this.successConditions;
+    }
+
+    /**
      * Returns the Shape this state is owned by.
      */
     public ControlShape getParent() {
@@ -233,7 +250,14 @@ public class ControlState implements Node, Location {
         new HashSet<ControlTransition>();
     private final Set<String> initializedVariables = new HashSet<String>();
 
+    /** Sets of rules which, if all rules in an element of this set fail, mean
+     * this state is a success state.
+     */
+    private Set<Map<Rule,String[]>> successConditions;
+
     private boolean hasMerged = false;
+
+    private String name = "";
 
     @Override
     public Set<Rule> getDependency(Rule rule) {
@@ -253,11 +277,17 @@ public class ControlState implements Node, Location {
     public Set<Rule> getEnabledRules(Set<Rule> matched, Set<Rule> failed) {
         Set<Rule> ret = new HashSet<Rule>();
         // add all the rules that are enabled by default:
-        ret.addAll(this.ruleTargetMap.keySet());
+        for (Rule r : this.ruleTargetMap.keySet()) {
+            if (!matched.contains(r) && !failed.contains(r)) {
+                ret.add(r);
+            }
+        }
 
         // now add the rules for which the failures are satisfied
         for (ControlTransition ct : this.elseTransitions) {
-            if (failed.containsAll(ct.getFailureSet())) {
+            if (!matched.contains(ct.getRule())
+                && !failed.contains(ct.getRule())
+                && failed.containsAll(ct.getFailureSet())) {
                 ret.add(ct.getRule());
             }
         }
@@ -269,25 +299,43 @@ public class ControlState implements Node, Location {
         return this.toString();
     }
 
+    /**
+     * TODO: perhaps failedRules is not needed here anymore, since a state can 
+     * only have one transition for a given rule. Thus, if the rule has already
+     * been reported as "allowed to match", we can find the target and return it.
+     */
     @Override
     public Location getTarget(Rule rule, Set<Rule> failedRules) {
+        Location ret = null;
         if (this.ruleTargetMap.containsKey(rule)) {
-            return this.ruleTargetMap.get(rule).iterator().next();
+            ret = this.ruleTargetMap.get(rule).iterator().next();
         } else {
             for (ControlTransition ct : this.elseTransitions) {
                 if (ct.getRule() == rule) {
-                    if (failedRules.containsAll(ct.getFailureSet())) {
-                        return ct.target();
-                    }
+                    //if (failedRules.containsAll(ct.getFailureSet())) {
+                    ret = ct.target();
+                    break;
+                    //}
                 }
             }
-            return null;
         }
+        return ret;
     }
 
     @Override
     public boolean isSuccess(Set<Rule> rules) {
-        // TODO maybe this is not correct
-        return this.ruleTargetMap.isEmpty() && this.elseTransitions.isEmpty();
+        // TODO: update this to include the parameters
+        if (this.isSuccess()) {
+            return true;
+        } else {
+            if (this.successConditions != null) {
+                for (Map<Rule,String[]> successCondition : this.successConditions) {
+                    if (rules.containsAll(successCondition.keySet())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

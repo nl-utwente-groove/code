@@ -42,6 +42,7 @@ public class AllTests {
         suite.addTest(new TestSuite(TreeSetTest.class));
         suite.addTest(new TestSuite(StrategiesTest.class));
         suite.addTest(new TestSuite(IOTest.class));
+        suite.addTest(new TestSuite(ControlTest.class));
         // $JUnit-END$
         return suite;
     }
