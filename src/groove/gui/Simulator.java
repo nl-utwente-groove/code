@@ -2671,9 +2671,8 @@ public class Simulator {
      *         <code>null</code> if the dialog was cancelled.
      */
     private Pair<Label,Label> askRelabelling(Label oldLabel) {
-        Set<Label> existingLabels =
-            getGrammarView().getLabelStore().getLabels();
-        RelabelDialog dialog = new RelabelDialog(existingLabels, oldLabel);
+        RelabelDialog dialog =
+            new RelabelDialog(getGrammarView().getLabelStore(), oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
             return new Pair<Label,Label>(dialog.getOldLabel(),
                 dialog.getNewLabel());

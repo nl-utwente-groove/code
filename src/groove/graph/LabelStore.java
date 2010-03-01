@@ -260,14 +260,24 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      * @param newLabel the new value for {@code oldLabel}
      * @return a clone of this label store, or the store itself if {@code
      *         oldLabel} did not occur
+     * @throws FormatException if the renaming causes a subtype cycle
      */
-    public LabelStore relabel(Label oldLabel, Label newLabel) {
-        if (getLabels().contains(newLabel)) {
-            throw new IllegalArgumentException(String.format(
-                "New label '%s' is already in label set", getLabels()));
-        }
+    public LabelStore relabel(Label oldLabel, Label newLabel)
+        throws FormatException {
+        //        if (getLabels().contains(newLabel)) {
+        //            throw new IllegalArgumentException(String.format(
+        //                "New label '%s' is already in label set", getLabels()));
+        //        }
         LabelStore result = this;
-        if (this.subtypeMap.containsKey(oldLabel)) {
+        if (!oldLabel.equals(newLabel) && this.subtypeMap.containsKey(oldLabel)) {
+            // check for subtype cycles
+            if (getLabels().contains(newLabel)
+                && (getSubtypes(oldLabel).contains(newLabel) || getSubtypes(
+                    newLabel).contains(oldLabel))) {
+                throw new FormatException(
+                    "Renaming '%s' to '%s' causes a subtype cycle", oldLabel,
+                    newLabel);
+            }
             result = clone();
             result.addLabel(newLabel);
             if (newLabel.isNodeType()) {

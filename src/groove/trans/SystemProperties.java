@@ -398,7 +398,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
             }
         } catch (FormatException exc) {
             assert false : String.format(
-                "Subtype string '%s' gives rise to format error: ",
+                "Subtype string '%s' gives rise to format error: %s",
                 getSubtypes(), exc.getMessage());
         }
 

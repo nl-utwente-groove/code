@@ -18,6 +18,7 @@ package groove.gui.dialog;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.util.Converter;
 import groove.view.FormatException;
 
@@ -27,7 +28,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Set;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -55,7 +55,7 @@ public class RelabelDialog {
      * @param existingLabels the set of existing labels (non-empty)
      * @param oldLabel the label to rename; may be <code>null</code>
      */
-    public RelabelDialog(Set<Label> existingLabels, Label oldLabel) {
+    public RelabelDialog(LabelStore existingLabels, Label oldLabel) {
         this.existingLabels = existingLabels;
         this.suggestedLabel = oldLabel;
     }
@@ -126,12 +126,22 @@ public class RelabelDialog {
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
             result = DefaultLabel.createLabel(text, labelType);
-            //            boolean isNodeType = getNewTypeCheckbox().isSelected();
-            //            if (isNodeType) {
-            //                result = TypeAspect.NODE_TYPE.getLabelParser().parse(text);
-            //            } else {
-            //                result = DefaultLabel.createLabel(text);
-            //            }
+            Label oldLabel = getOldLabel();
+            if (this.existingLabels.getLabels().contains(result)) {
+                if (result.equals(oldLabel)) {
+                    throw new FormatException("Old and new labels coincide");
+                } else if (this.existingLabels.getSubtypes(result).contains(
+                    oldLabel)) {
+                    throw new FormatException(
+                        "New label '%s' is an existing supertype of '%s'",
+                        result, oldLabel);
+                } else if (this.existingLabels.getSubtypes(oldLabel).contains(
+                    result)) {
+                    throw new FormatException(
+                        "New label '%s' is an existing subtype of '%s'",
+                        result, oldLabel);
+                }
+            }
         } else {
             throw new FormatException("Empty replacement label not allowed");
         }
@@ -146,16 +156,9 @@ public class RelabelDialog {
     private void setOkEnabled() {
         boolean enabled;
         try {
-            Label newLabel = getNewLabelWithErrors();
-            enabled = !this.existingLabels.contains(newLabel);
-            if (enabled) {
-                getErrorLabel().setText(" ");
-            } else {
-                getErrorLabel().setText(
-                    String.format("%s '%s' already exists",
-                        newLabel.isNodeType() ? "Node type label" : "Label",
-                        newLabel));
-            }
+            getNewLabelWithErrors();
+            getErrorLabel().setText("");
+            enabled = true;
         } catch (FormatException exc) {
             getErrorLabel().setText(exc.getMessage());
             enabled = false;
@@ -246,7 +249,7 @@ public class RelabelDialog {
                     propagateSelection();
                 }
             });
-            for (Label label : this.existingLabels) {
+            for (Label label : this.existingLabels.getLabels()) {
                 result.addItem(label);
             }
         }
@@ -337,7 +340,7 @@ public class RelabelDialog {
     private JComboBox newTypeChoice;
 
     /** Set of existing rule names. */
-    private final Set<Label> existingLabels;
+    private final LabelStore existingLabels;
 
     /** The old label value suggested at construction time; may be {@code null}. */
     private final Label suggestedLabel;
