@@ -44,14 +44,14 @@ public class GCLTokenMaker extends AbstractTokenMaker {
     protected final String separators = "()[]{}";
 
     protected final String separators2 = ".,;"; // Characters you don't want
-                                                // syntax highlighted but
-                                                // separate identifiers.
+    // syntax highlighted but
+    // separate identifiers.
 
     protected final String hexCharacters = "0123456789ABCDEFabcdef";
 
     protected final String numberEndChars = "FfLl"; // Characters used to
-                                                    // specify literal number
-                                                    // types.
+    // specify literal number
+    // types.
 
     private int currentTokenStart;
     private int currentTokenType;
@@ -139,17 +139,14 @@ public class GCLTokenMaker extends AbstractTokenMaker {
         TokenMap tokenMap = new TokenMap();
 
         int reservedWord = Token.RESERVED_WORD;
-        tokenMap.put("abstract", reservedWord);
         tokenMap.put("alap", reservedWord);
         tokenMap.put("any", reservedWord);
         tokenMap.put("as", reservedWord);
         tokenMap.put("break", reservedWord);
         tokenMap.put("case", reservedWord);
-        tokenMap.put("catch", reservedWord);
+        tokenMap.put("choose", reservedWord);
         tokenMap.put("class", reservedWord);
         tokenMap.put("const", reservedWord);
-        tokenMap.put("continue", reservedWord);
-        tokenMap.put("debugger", reservedWord);
         tokenMap.put("default", reservedWord);
         tokenMap.put("delete", reservedWord);
         tokenMap.put("do", reservedWord);
@@ -168,27 +165,14 @@ public class GCLTokenMaker extends AbstractTokenMaker {
         tokenMap.put("in", reservedWord);
         tokenMap.put("instanceof", reservedWord);
         tokenMap.put("interface", reservedWord);
-        tokenMap.put("item", reservedWord);
-        tokenMap.put("namespace", reservedWord);
-        tokenMap.put("native", reservedWord);
         tokenMap.put("new", reservedWord);
         tokenMap.put("null", reservedWord);
+        tokenMap.put("or", reservedWord);
         tokenMap.put("other", reservedWord);
-        tokenMap.put("package", reservedWord);
-        tokenMap.put("private", reservedWord);
-        tokenMap.put("protected", reservedWord);
-        tokenMap.put("public", reservedWord);
         tokenMap.put("return", reservedWord);
-        tokenMap.put("static", reservedWord);
-        tokenMap.put("super", reservedWord);
         tokenMap.put("switch", reservedWord);
-        tokenMap.put("synchronized", reservedWord);
         tokenMap.put("this", reservedWord);
-        tokenMap.put("throw", reservedWord);
-        tokenMap.put("throws", reservedWord);
-        tokenMap.put("transient", reservedWord);
         tokenMap.put("try", reservedWord);
-        tokenMap.put("typeof", reservedWord);
         tokenMap.put("until", reservedWord);
         tokenMap.put("var", reservedWord);
         tokenMap.put("void", reservedWord);
@@ -267,7 +251,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
 
                 case '"':
                     if (backslash) { // Escaped double quote => call '"' an
-                                     // identifier..
+                        // identifier..
                         addToken(text, this.currentTokenStart, i,
                             Token.IDENTIFIER, newStartOffset
                                 + this.currentTokenStart);
@@ -279,7 +263,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
 
                 case '\'':
                     if (backslash) { // Escaped single quote => call '\'' an
-                                     // identifier.
+                        // identifier.
                         addToken(text, this.currentTokenStart, i,
                             Token.IDENTIFIER, newStartOffset
                                 + this.currentTokenStart);
@@ -350,11 +334,11 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     backslash = true; // Previous char whitespace => this must
-                                      // be first backslash.
+                    // be first backslash.
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is space.
+                    // char is space.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.WHITESPACE, newStartOffset
                             + this.currentTokenStart);
@@ -364,7 +348,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is space.
+                    // char is space.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.WHITESPACE, newStartOffset
                             + this.currentTokenStart);
@@ -430,7 +414,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.IDENTIFIER, newStartOffset
                             + this.currentTokenStart);
@@ -440,7 +424,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.IDENTIFIER, newStartOffset
                             + this.currentTokenStart);
@@ -520,7 +504,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset
                             + this.currentTokenStart);
@@ -530,7 +514,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset
                             + this.currentTokenStart);
@@ -569,7 +553,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     }
                     int indexOf = this.numberEndChars.indexOf(c);
                     if (indexOf > -1) { // Numbers can end in 'f','F','l','L',
-                                        // etc.
+                        // etc.
                         if (numContainsEndCharacter == true) {
                             this.currentTokenType = Token.ERROR_NUMBER_FORMAT;
                         } else {
@@ -628,7 +612,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.LITERAL_NUMBER_FLOAT, newStartOffset
                             + this.currentTokenStart);
@@ -638,7 +622,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.LITERAL_NUMBER_FLOAT, newStartOffset
                             + this.currentTokenStart);
@@ -668,14 +652,14 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                         }
                         break;
                     } else if (c == '.') { // Second decimal point; must catch
-                                           // now because it's a "separator"
-                                           // below.
+                        // now because it's a "separator"
+                        // below.
                         this.currentTokenType = Token.ERROR_NUMBER_FORMAT;
                         break;
                     }
                     int indexOf = this.numberEndChars.indexOf(c);
                     if (indexOf > -1) { // Numbers can end in 'f','F','l','L',
-                                        // etc.
+                        // etc.
                         if (numContainsEndCharacter == true) {
                             this.currentTokenType = Token.ERROR_NUMBER_FORMAT;
                         } else {
@@ -734,7 +718,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.LITERAL_NUMBER_HEXADECIMAL, newStartOffset
                             + this.currentTokenStart);
@@ -744,7 +728,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.LITERAL_NUMBER_HEXADECIMAL, newStartOffset
                             + this.currentTokenStart);
@@ -778,7 +762,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.numberEndChars.indexOf(c);
                     if (indexOf > -1) { // Numbers can end in 'f','F','l','L',
-                                        // etc.
+                        // etc.
                         if (numContainsEndCharacter == true) {
                             this.currentTokenType = Token.ERROR_NUMBER_FORMAT;
                         } else {
@@ -834,7 +818,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                         i = i + 1;
                         this.currentTokenType = Token.NULL;
                         backslash = false; // Backslashes can't accumulate
-                                           // before and after a comment...
+                        // before and after a comment...
                         break;
                     }
                     i++;
@@ -867,7 +851,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     else if (c == '/') {
                         this.currentTokenType = Token.COMMENT_EOL;
                         i = end - 1; // Since we know the rest of the line is in
-                                     // this token.
+                        // this token.
                     }
 
                     else {
@@ -912,7 +896,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.ERROR_IDENTIFIER, newStartOffset
                             + this.currentTokenStart);
@@ -922,7 +906,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.ERROR_IDENTIFIER, newStartOffset
                             + this.currentTokenStart);
@@ -946,7 +930,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     backslash = true; // Must be first backslash in a row since
-                                      // previous character is identifier char.
+                    // previous character is identifier char.
                     break;
 
                 default:
@@ -995,7 +979,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
-                          // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.ERROR_NUMBER_FORMAT, newStartOffset
                             + this.currentTokenStart);
@@ -1005,7 +989,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\'': // Don't need to worry about backslashes as previous
-                           // char is non-backslash.
+                    // char is non-backslash.
                     addToken(text, this.currentTokenStart, i - 1,
                         Token.ERROR_NUMBER_FORMAT, newStartOffset
                             + this.currentTokenStart);
@@ -1029,7 +1013,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     backslash = true; // Must be first backslash in a row since
-                                      // previous char is a number char.
+                    // previous char is a number char.
                     break;
 
                 default:
@@ -1079,7 +1063,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
 
                 if (c == '\\') {
                     backslash = !backslash; // Okay because if we got in here,
-                                            // backslash was initially false.
+                    // backslash was initially false.
                 } else {
 
                     if (c == '\'' && !backslash) {
@@ -1091,7 +1075,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     }
 
                     backslash = false; // Need to set backslash to false here as
-                                       // a character was typed.
+                    // a character was typed.
 
                 }
                 // Otherwise, we're still an unclosed char...
@@ -1102,7 +1086,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
 
                 if (c == '\\') {
                     backslash = !backslash; // Okay because if we got in here,
-                                            // backslash was initially false.
+                    // backslash was initially false.
                 } else {
                     if (c == '"' && !backslash) {
                         addToken(text, this.currentTokenStart, i,
@@ -1113,7 +1097,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
                     }
 
                     backslash = false; // Need to set backslash to false here as
-                                       // a character was typed.
+                    // a character was typed.
 
                 }
                 // Otherwise, we're still an unclosed string...
