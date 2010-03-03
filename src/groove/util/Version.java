@@ -3,8 +3,6 @@
  */
 package groove.util;
 
-import java.util.HashMap;
-
 import javax.swing.JOptionPane;
 
 /**
@@ -78,9 +76,9 @@ public class Version {
      * <li>y = minor version
      * <li>z = bug fix version
      * </ul>
-     * or developer version.
+     * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "Development";
+    public static final String NUMBER = "3.3.1+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.5";
@@ -100,22 +98,17 @@ public class Version {
     static public final String GXL_VERSION = "curly";
 
     /**
-     * Map that relates the current grammar version to the Groove version where
-     * it was introduced.
+     * @return the latest grammar version.
      */
-    public static HashMap<String,String> GRAMMAR_GROOVE_VERSION_MAP;
-
-    static {
-        GRAMMAR_GROOVE_VERSION_MAP = new HashMap<String,String>();
-        GRAMMAR_GROOVE_VERSION_MAP.put("1.0", "0.0.0");
-        GRAMMAR_GROOVE_VERSION_MAP.put("2.0", "3.3.2");
+    public static String getCurrentGrammarVersion() {
+        return "2.0";
     }
 
     /**
-     * @return the latest grammar version.
+     * @return current Groove version.
      */
-    public static String getLastGrammarVersion() {
-        return "2.0";
+    public static String getCurrentGrooveVersion() {
+        return NUMBER;
     }
 
     /**
@@ -127,25 +120,11 @@ public class Version {
     }
 
     /**
-     * @return current Groove version.
-     */
-    public static String getGrooveVersion() {
-        return NUMBER;
-    }
-
-    /**
-     * Returns the minimum groove version that can open the grammar version
-     * given.
-     */
-    public static String getMinGrooveVersionForGrammar(String grammarVersion) {
-        return GRAMMAR_GROOVE_VERSION_MAP.get(grammarVersion);
-    }
-
-    /**
      * @return the Groove version that is to be used when the grammar
      * properties has no entry for the version. 
      */
-    public static String getApproximateGrooveVersion() {
-        return getMinGrooveVersionForGrammar(getInitialGrammarVersion());
+    public static String getInitialGrooveVersion() {
+        return "0.0.0";
     }
+
 }
