@@ -6,6 +6,7 @@ import groove.graph.LabelStore;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
+import groove.util.Version;
 import groove.view.FormatException;
 
 import java.io.IOException;
@@ -27,6 +28,35 @@ import java.util.Map.Entry;
  */
 public class SystemProperties extends java.util.Properties implements Fixable,
         Cloneable {
+
+    /**
+     * Default constructor.
+     */
+    public SystemProperties() {
+        this(false);
+    }
+
+    /**
+     * Constructor that sets the grammar properties.  
+     */
+    public SystemProperties(boolean useCurrentGrooveVersion) {
+        super();
+        if (useCurrentGrooveVersion) {
+            this.setCurrentVersionProperties();
+        } else {
+            this.setGrooveVersion(Version.getInitialGrooveVersion());
+            this.setGrammarVersion(Version.getInitialGrammarVersion());
+        }
+    }
+
+    /**
+     * Set version properties to the latest version.
+     */
+    public void setCurrentVersionProperties() {
+        this.setGrooveVersion(Version.getCurrentGrooveVersion());
+        this.setGrammarVersion(Version.getCurrentGrammarVersion());
+    }
+
     /**
      * Indicates if control is used and that the system will look for a control
      * program. Default value: <code>true</code>
