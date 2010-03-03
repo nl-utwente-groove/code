@@ -457,6 +457,13 @@ public class LTSJModel extends GraphJModel {
         }
 
         /**
+         * @return true if the state is a result state.
+         */
+        public boolean isResult() {
+            return getGraph().isResult(getNode());
+        }
+
+        /**
          * @return true if the state is a start state.
          */
         public boolean isStart() {
