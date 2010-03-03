@@ -1108,7 +1108,9 @@ public final class GraphToTikz {
             styles.add(BASIC_NODE_STYLE);
         }
 
-        if (node.isStart()) {
+        if (node.isResult()) {
+            styles.add(RESULT_NODE_STYLE);
+        } else if (node.isStart()) {
             styles.add(START_NODE_STYLE);
         } else if (node.isFinal()) {
             styles.add(FINAL_NODE_STYLE);
@@ -1308,6 +1310,7 @@ public final class GraphToTikz {
     private static final String INHERITANCE_EDGE_STYLE = "subedge";
     private static final String INHERITANCE_LABEL_STYLE = "none";
     private static final String CONTROL_LABEL_STYLE = "clab";
+    private static final String RESULT_NODE_STYLE = "result";
     private static final String FINAL_NODE_STYLE = "final";
     private static final String START_NODE_STYLE = "start";
     private static final String OPEN_NODE_STYLE = "open";
