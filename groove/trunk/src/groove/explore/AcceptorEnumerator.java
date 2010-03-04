@@ -16,7 +16,12 @@
  */
 package groove.explore;
 
-import groove.explore.Serialized.Materialize;
+import groove.explore.encode.EncodedEnabledRule;
+import groove.explore.encode.EncodedRuleMode;
+import groove.explore.encode.TemplateList;
+import groove.explore.encode.Template.Template0;
+import groove.explore.encode.Template.Template1;
+import groove.explore.encode.Template.Template2;
 import groove.explore.result.Acceptor;
 import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.FinalStateAcceptor;
@@ -28,85 +33,84 @@ import groove.gui.Simulator;
 import groove.trans.Rule;
 
 /**
- * An enumeration of Serialized<Acceptor>.
- * Stores all the acceptors that can be executed within Groove.
- *
+ * <!=========================================================================>
+ * AcceptorEnumerator enumerates all acceptors that are available in GROOVE.
+ * With this enumeration, it is possible to create an editor for acceptors
+ * (inherited method createEditor, stored results as a Serialized) and to
+ * parse an acceptor from a Serialized (inherited method parse).
+ * TODO: Also use this enumerator in the Generator.
+ * <!=========================================================================>
  * @author Maarten de Mol
- * @version $Revision $
- * 
  */
-public class AcceptorEnumerator extends Enumerator<Acceptor> {
-    /**
-     * Extended constructor. Enumerates the available strategies one by one.
-     */
-    public AcceptorEnumerator(Simulator simulator) {
-        super();
+public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
-        addElement("Final", "Final States",
+    private static final String ACCEPTOR_TOOLTIP =
+        "<HTML>"
+            + "An acceptor is a predicate that is applied each time the LTS is "
+            + "updated<I>*</I>.<BR>"
+            + "Information about each acceptor success is added to the result "
+            + "set of the exploration.<BR>"
+            + "This result set can be used to interrupt exploration.<BR>"
+            + "<I>(*)<I>The LTS is updated when a transition is applied, or "
+            + "when a new state is reached." + "</HTML>";
+
+    /**
+     * Enumerates the available acceptors one by one. An acceptor is defined
+     * by means of a Template<Acceptor> instance.
+     */
+    public AcceptorEnumerator() {
+        super("acceptor", ACCEPTOR_TOOLTIP);
+
+        addTemplate(new Template0<Acceptor>("Final", "Final States",
             "This acceptor succeeds when a state is added to the LTS that is "
                 + "<I>final</I>. A state is final when no rule is applicable "
-                + "on it (or rule application results in the same state).",
-            new FinalStateAcceptor());
+                + "on it (or rule application results in the same state).") {
 
-        addElement("Check-Inv", "Check Invariant",
+            @Override
+            public Acceptor create(Simulator simulator) {
+                return new FinalStateAcceptor();
+            }
+        });
+
+        addTemplate(new Template2<Acceptor,Rule,Boolean>("Check-Inv",
+            "Check Invariant",
             "This acceptor succeeds when a state is reached in which the "
                 + "indicated rule is applicable. Note that this is detected "
                 + "<I>before</I> the rule has been applied.<BR> "
-                + "This acceptor ignores rule priorities.",
-            new CheckInvModeArgument(), new RuleArgument(""),
-            new MaterializeCheckInvariantAcceptor());
+                + "This acceptor ignores rule priorities.", "rule",
+            new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
 
-        addElement("Rule-App", "Rule Application",
+            @Override
+            public Acceptor create(Simulator simulator, Rule rule, Boolean mode) {
+                IsRuleApplicableCondition condition =
+                    new IsRuleApplicableCondition(rule, mode);
+                return new InvariantViolatedAcceptor(condition, new Result());
+            }
+        });
+
+        addTemplate(new Template1<Acceptor,Rule>(
+            "Rule-App",
+            "Rule Application",
             "This acceptor succeeds when a transition of the indicated rule is "
                 + "added to the LTS. Note that this is detected <I>after</I> "
-                + "the rule has been applied.", new RuleArgument(""),
-            new MaterializeRuleApplicationAcceptor());
+                + "the rule has been applied (which means that rule priorities "
+                + "are taken into account).", "rule", new EncodedEnabledRule()) {
 
-        addElement("Any", "Any State",
-            "This acceptor succeeds whenever a state is added to the LTS.",
-            new AnyStateAcceptor());
-    }
+            @Override
+            public Acceptor create(Simulator simulator, Rule rule) {
+                IsRuleApplicableCondition condition =
+                    new IsRuleApplicableCondition(rule, false);
+                return new RuleApplicationAcceptor(condition);
+            }
+        });
 
-    private class CheckInvModeArgument extends OptionArgument {
-        static final String MODE_POSITIVE = "Positive";
-        static final String MODE_POSITIVE_ID =
-            "Add to result set when rule matches.";
+        addTemplate(new Template0<Acceptor>("Any", "Any State",
+            "This acceptor succeeds whenever a state is added to the LTS.") {
 
-        static final String MODE_NEGATIVE = "Negative";
-        static final String MODE_NEGATIVE_ID =
-            "Add to result set when rule does not match.";
-
-        public CheckInvModeArgument() {
-            super("Mode");
-            addOption(MODE_POSITIVE, MODE_POSITIVE_ID);
-            addOption(MODE_NEGATIVE, MODE_NEGATIVE_ID);
-            setSerializedValue(MODE_POSITIVE);
-        }
-    }
-
-    private class MaterializeCheckInvariantAcceptor implements
-            Materialize<Acceptor> {
-
-        @Override
-        public Acceptor materialize(Object[] arguments) {
-            boolean modeArg =
-                ((String) arguments[0]).equals(CheckInvModeArgument.MODE_POSITIVE);
-            Rule ruleArg = (Rule) arguments[1];
-            IsRuleApplicableCondition condition =
-                new IsRuleApplicableCondition(ruleArg, modeArg);
-            return new InvariantViolatedAcceptor(condition, new Result());
-        }
-    }
-
-    private class MaterializeRuleApplicationAcceptor implements
-            Materialize<Acceptor> {
-
-        @Override
-        public Acceptor materialize(Object[] arguments) {
-            Rule ruleArg = (Rule) arguments[0];
-            IsRuleApplicableCondition condition =
-                new IsRuleApplicableCondition(ruleArg, false);
-            return new RuleApplicationAcceptor(condition);
-        }
+            @Override
+            public Acceptor create(Simulator simulator) {
+                return new AnyStateAcceptor();
+            }
+        });
     }
 }

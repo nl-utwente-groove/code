@@ -3722,7 +3722,8 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getGrammarView() != null
-                && getGrammarView().getStartGraphView() != null);
+                && getGrammarView().getStartGraphView() != null
+                && getGrammarView().getErrors().isEmpty());
         }
     }
 
@@ -3756,7 +3757,8 @@ public class Simulator {
 
         public void refresh() {
             setEnabled(getGrammarView() != null
-                && getGrammarView().getStartGraphView() != null);
+                && getGrammarView().getStartGraphView() != null
+                && getGrammarView().getErrors().isEmpty());
         }
     }
 
