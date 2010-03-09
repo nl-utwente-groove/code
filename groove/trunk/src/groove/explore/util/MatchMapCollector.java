@@ -36,7 +36,9 @@ import java.util.Set;
  * those rules, matching to a given state.
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated not used anywhere; purpose lost in the mists of time
  */
+@Deprecated
 public class MatchMapCollector {
     /**
      * Constructs a match collector for a given (start) state. The collector
