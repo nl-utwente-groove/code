@@ -140,6 +140,21 @@ public class AlgebraRegister {
         return result;
     }
 
+    /** 
+     * Returns the value for a given constant.
+     * The constant is looked up in the available algebras of this register.
+     * @param constant the string representation of the constant.
+     * @return the value for {@code constant}, or {@code null} if there is no such value.
+     */
+    public Object getValue(String constant) {
+        for (Algebra<?> algebra : this.algebraMap.values()) {
+            if (algebra.isValue(constant)) {
+                return algebra.getValue(constant);
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns a mapping from operation names to operations for a given algebra.
      */
