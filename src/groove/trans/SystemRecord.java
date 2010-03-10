@@ -390,7 +390,7 @@ public class SystemRecord implements NodeFactory {
      *         parent's data structures are still alive.
      */
     public boolean isCopyGraphs() {
-        return this.copyGraphs && !this.randomAccess;
+        return this.copyGraphs || this.randomAccess;
     }
 
     /**
