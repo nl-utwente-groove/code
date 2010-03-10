@@ -148,11 +148,10 @@ public class ExplorationDialog extends JDialog implements ActionListener,
 
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator = new StrategyEnumerator();
-        this.strategyEditor = strategyEnumerator.createEditor(simulator);
         strategyEnumerator.addListener(this);
+        this.strategyEditor = strategyEnumerator.createEditor(simulator);
         Serialized defaultStrategy =
             this.simulator.getDefaultExploration().getStrategy();
-        this.strategyEditor.setCurrentValue(defaultStrategy);
 
         // Create the acceptor editor.
         AcceptorEnumerator acceptorEnumerator = new AcceptorEnumerator();
@@ -160,6 +159,9 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         this.acceptorEditor = acceptorEnumerator.createEditor(simulator);
         Serialized defaultAcceptor =
             this.simulator.getDefaultExploration().getAcceptor();
+
+        // Initialize the editors with the stored default.
+        this.strategyEditor.setCurrentValue(defaultStrategy);
         this.acceptorEditor.setCurrentValue(defaultAcceptor);
 
         // Create the different components and add them to the content panel.
