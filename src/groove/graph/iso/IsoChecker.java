@@ -27,7 +27,7 @@ public interface IsoChecker {
     /**
      * Tests if two graphs are isomorphic. Implementations of this method are
      * allowed to be incomplete, in the sense that a <code>false</code> answer
-     * does not guarantee non-isomorphism, but a <code>true</code> answer goes
+     * does not guarantee non-isomorphism, but a <code>true</code> answer does
      * guarantee isomorphism. Although a complete algorithm is optimal, for the
      * purpose of collapsing states an "almost" complete but faster algorithm is
      * better than a complete, slow one.
@@ -37,7 +37,7 @@ public interface IsoChecker {
      *         <code>cod</code> are isomorphic
      */
     public boolean areIsomorphic(Graph dom, Graph cod);
-    
+
     /** 
      * Indicates if the checker is currently set to strong.
      * If the checker is strong, no false negatives will be returned.

@@ -16,6 +16,8 @@
  */
 package groove.explore.util;
 
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.lts.GraphState;
 import groove.trans.Rule;
@@ -59,7 +61,16 @@ public class ControlStateCache implements ExploreCache {
 
     @Override
     public Location getTarget(Rule rule) {
-        return this.location.getTarget(rule, this.failed);
+        return this.getTransition(rule).target();
+    }
+
+    /**
+     * Gets the transition used to exit this state given a Rule
+     * @param rule the Rule to use on the required transition
+     * @return a ControlTransition which can be traversed by applying rule
+     */
+    public ControlTransition getTransition(Rule rule) {
+        return ((ControlState) this.location).getTransition(rule);
     }
 
     @Override
@@ -102,7 +113,6 @@ public class ControlStateCache implements ExploreCache {
     public Rule next() {
         // TODO: FIX THIS for interruptible
         if (this.iterator == null) {
-            System.out.println("null");
             return null;
         }
         if (!this.iterator.hasNext()) {

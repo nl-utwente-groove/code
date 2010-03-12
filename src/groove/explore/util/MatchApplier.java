@@ -16,6 +16,8 @@
  */
 package groove.explore.util;
 
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -60,6 +62,11 @@ public class MatchApplier {
             Location targetLocation) {
         reporter.start(ADD_TRANSITION);
         GraphTransition transition = null;
+        ControlTransition ct = null;
+        if (source.getLocation() != null) {
+            ct =
+                ((ControlState) source.getLocation()).getTransition(event.getRule());
+        }
         if (source.getLocation() == targetLocation
             && !event.getRule().isModifying()) {
             transition = createTransition(event, source, source, false);
