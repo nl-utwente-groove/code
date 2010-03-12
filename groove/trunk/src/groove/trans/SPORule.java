@@ -269,6 +269,21 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /**
+     * Returns the Node from this rule which is associated with the given
+     * parameter number
+     * @param param the number of the parameter to find
+     * @return the Node from this Rule that corresponds to param
+     */
+    public Node getParameter(int param) {
+        if (getParameterType(param) == PARAMETER_INPUT
+            || getParameterType(param) == PARAMETER_BOTH) {
+            return this.inPars.get(param - 1);
+        } else {
+            return this.outPars.get(param - this.inPars.size() - 1);
+        }
+    }
+
+    /**
      * Gets the number of parameters for a given type (input or output)
      * @param type either PARAMETER_INPUT or PARAMETER_OUTPUT
      * @return the number of parameters for this type

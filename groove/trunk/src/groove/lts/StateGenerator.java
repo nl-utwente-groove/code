@@ -16,7 +16,9 @@
  */
 package groove.lts;
 
+import groove.control.ControlTransition;
 import groove.control.Location;
+import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -101,8 +103,15 @@ public class StateGenerator {
         reporter.start(ADD_TRANSITION);
 
         GraphTransition transition;
+        ControlTransition ct = null;
+        Location targetLocation;
+        if (cache instanceof ControlStateCache) {
+            ct = ((ControlStateCache) cache).getTransition(appl.getRule());
+            targetLocation = ct.target();
+        } else {
+            targetLocation = cache.getTarget(appl.getRule());
+        }
         if (!appl.getRule().isModifying()) {
-            Location targetLocation = cache.getTarget(appl.getRule());
             if (source.getLocation() != targetLocation) {
                 GraphNextState freshTarget = createState(appl, source);
                 freshTarget.setLocation(targetLocation);
@@ -121,7 +130,6 @@ public class StateGenerator {
             }
         } else {
             GraphState confluentTarget = getConfluentTarget(source, appl);
-            Location targetLocation = cache.getTarget(appl.getRule());
 
             if (confluentTarget == null
                 || confluentTarget.getLocation() != targetLocation) {

@@ -18,10 +18,12 @@ package groove.lts;
 
 import groove.control.Location;
 import groove.graph.Graph;
+import groove.graph.Node;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -102,4 +104,11 @@ public interface GraphState extends State {
      * @see #isClosed()
      */
     public boolean setClosed();
+
+    /**
+     * Returns a Map<String,Node> of bound parameters for this GraphState with 
+     * their associated Nodes.
+     * @return a Map of parameters bound to Nodes, may be null
+     */
+    public Map<String,Node> getParameters();
 }

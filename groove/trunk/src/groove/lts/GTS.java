@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.ControlState;
 import groove.control.Location;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
@@ -23,6 +24,7 @@ import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
@@ -40,6 +42,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -483,7 +486,43 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                         && one.edgeSet().equals(two.edgeSet());
                 } else {
                     // check for graph isomorphism
-                    return this.checker.areIsomorphic(one, two);
+                    if (this.checker.areIsomorphic(one, two)) {
+                        // if variables are involved we need to make sure they 
+                        // map to isomorphic nodes
+                        ControlState cs = (ControlState) stateKey.getLocation();
+                        Graph g1 = stateKey.getGraph();
+                        Graph g2 = otherStateKey.getGraph();
+                        if (cs != null) {
+                            Set<String> variables =
+                                ((ControlState) stateKey.getLocation()).getInitializedVariables();
+                            if (variables.size() > 0) {
+                                NodeEdgeMap isomorphism =
+                                    ((DefaultIsoChecker) this.checker).getIsomorphism(
+                                        one, two);
+                                if (isomorphism != null) {
+                                    Map<String,Node> parametersOne =
+                                        stateKey.getParameters();
+                                    Map<String,Node> parametersTwo =
+                                        otherStateKey.getParameters();
+                                    if (parametersOne != null
+                                        && parametersTwo != null) {
+                                        for (String variable : variables) {
+                                            if (isomorphism.nodeMap().get(
+                                                parametersOne.get(variable)) != parametersTwo.get(variable)) {
+                                                return false;
+                                            }
+                                        }
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                            }
+
+                        }
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
         }

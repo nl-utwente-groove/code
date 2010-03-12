@@ -66,12 +66,7 @@ public class ControlState implements Node, Location {
         } else if (transition.hasLabel()) {
             Rule rule = transition.getRule();
             // store targets by rule
-            Set<ControlState> targetSet = this.ruleTargetMap.get(rule);
-            if (targetSet == null) {
-                this.ruleTargetMap.put(rule, targetSet =
-                    new HashSet<ControlState>());
-            }
-            targetSet.add(transition.target());
+            this.ruleTargetMap.put(rule, transition);
         } else {
             // should never be reached
             assert false;
@@ -110,6 +105,13 @@ public class ControlState implements Node, Location {
         this.successConditions.add(condition);
     }
 
+    /**
+     * Returns a set of success conditions for this ControlState, each of which 
+     * is a map of Rules to String arrays, indicating which rules should fail 
+     * with given parameters in order for this ControlState to be considered
+     * a success state.
+     * @return a Set<Map<Rule,String[]>> with success conditions
+     */
     public Set<Map<Rule,String[]>> getSuccessConditions() {
         return this.successConditions;
     }
@@ -140,8 +142,8 @@ public class ControlState implements Node, Location {
      * @return the set of target states; may be <code>null</code> if the rule
      *         is not enabled in this state.
      */
-    public Set<ControlState> targets(Rule rule) {
-        return this.ruleTargetMap.get(rule);
+    public ControlState target(Rule rule) {
+        return this.ruleTargetMap.get(rule).target();
     }
 
     /**
@@ -204,6 +206,14 @@ public class ControlState implements Node, Location {
     }
 
     /**
+     * @param varName the variable to check
+     * @return whether varName is initialized
+     */
+    public boolean isInitialized(String varName) {
+        return this.initializedVariables.contains(varName);
+    }
+
+    /**
      * @param variables
      */
     public void initializeVariables(Set<String> variables) {
@@ -243,8 +253,8 @@ public class ControlState implements Node, Location {
     /** Contains the targets of outgoing lambda-transitions of this state. */
     private final HashSet<ControlState> lambdaTargets;
     /** Map from rules to sets of target states. */
-    private final HashMap<Rule,Set<ControlState>> ruleTargetMap =
-        new HashMap<Rule,Set<ControlState>>();
+    private final HashMap<Rule,ControlTransition> ruleTargetMap =
+        new HashMap<Rule,ControlTransition>();
     /** Set of outgoing failure transitions. */
     private final Set<ControlTransition> elseTransitions =
         new HashSet<ControlTransition>();
@@ -273,6 +283,13 @@ public class ControlState implements Node, Location {
         return ret;
     }
 
+    /**
+     * TODO: return a Map<Rule,Parameter> or something, ensure that the caller
+     * of this method knows that there are input parameters to be processed.
+     * 
+     * Since we know which variables are initialized we can ensure we're only
+     * returning parameters which can actually be used.
+     */
     @Override
     public Set<Rule> getEnabledRules(Set<Rule> matched, Set<Rule> failed) {
         Set<Rule> ret = new HashSet<Rule>();
@@ -305,15 +322,24 @@ public class ControlState implements Node, Location {
      * been reported as "allowed to match", we can find the target and return it.
      */
     @Override
-    public Location getTarget(Rule rule, Set<Rule> failedRules) {
-        Location ret = null;
+    public Location getTarget(Rule rule) {
+        return this.getTransition(rule).target();
+    }
+
+    /**
+     * Returns the transition to be taken given a Rule and a set of Rules that failed
+     * @param rule the Rule to apply
+     * @return the transition to be taken from this state given the inputs
+     */
+    public ControlTransition getTransition(Rule rule) {
+        ControlTransition ret = null;
         if (this.ruleTargetMap.containsKey(rule)) {
-            ret = this.ruleTargetMap.get(rule).iterator().next();
+            ret = this.ruleTargetMap.get(rule);
         } else {
             for (ControlTransition ct : this.elseTransitions) {
                 if (ct.getRule() == rule) {
                     //if (failedRules.containsAll(ct.getFailureSet())) {
-                    ret = ct.target();
+                    ret = ct;
                     break;
                     //}
                 }

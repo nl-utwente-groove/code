@@ -29,7 +29,9 @@ import groove.util.TransformSet;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -282,8 +284,7 @@ abstract public class AbstractGraphState extends
      */
     public int compareTo(Element obj) {
         if (obj instanceof AbstractGraphState) {
-            return getNumber()
-                - ((AbstractGraphState) obj).getNumber();
+            return getNumber() - ((AbstractGraphState) obj).getNumber();
         } else if (obj instanceof DefaultGraphTransition) {
             return getNumber()
                 - ((AbstractGraphState) ((DefaultGraphTransition) obj).source()).getNumber();
@@ -303,7 +304,8 @@ abstract public class AbstractGraphState extends
     @Override
     public String toString() {
         if (hasNumber()) {
-            return "s" + getNumber();
+            return "s" + getNumber()
+                + (this.hasParameters() ? this.parameters : "");
         } else {
             return "s??";
         }
@@ -372,6 +374,34 @@ abstract public class AbstractGraphState extends
         return ((StateReference) getCacheReference()).getRecord();
     }
 
+    /**
+     * Sets a parameter to a Node
+     * @param varName the name of the parameter
+     * @param varNode the node to assign this parameter to
+     */
+    public void setParameter(String varName, Node varNode) {
+        if (this.parameters == null) {
+            this.parameters = new HashMap<String,Node>();
+        }
+        this.parameters.put(varName, varNode);
+    }
+
+    /**
+     * Whether this state has parameters with a value
+     * @return true if this state has parameters, false if not
+     */
+    public boolean hasParameters() {
+        return this.parameters != null && this.parameters.size() > 0;
+    }
+
+    /**
+     * Returns the map of parameters to nodes for this state
+     * @return a Map<String,Node> of parameters
+     */
+    public Map<String,Node> getParameters() {
+        return this.parameters;
+    }
+
     /** The internally stored (optional) control location. */
     private Location location;
 
@@ -407,4 +437,7 @@ abstract public class AbstractGraphState extends
     /** Constant empty array of out transition, shared for memory efficiency. */
     private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
         new GraphTransitionStub[0];
+
+    /** Keeps track of bound variables */
+    private Map<String,Node> parameters;
 }

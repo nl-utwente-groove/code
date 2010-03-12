@@ -16,11 +16,17 @@
  */
 package groove.explore.util;
 
+import groove.control.ControlTransition;
+import groove.graph.DefaultMorphism;
+import groove.graph.Morphism;
+import groove.graph.Node;
+import groove.lts.AbstractGraphState;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.trans.VirtualEvent;
 import groove.util.Reporter;
@@ -130,9 +136,32 @@ public class MatchSetCollector {
         // because the parent state may (regardless enabledRules) have no matches in the parent due to control.
         if (this.enabledRules == null || this.enabledRules.contains(rule)
             || !hasMatched && this.cache instanceof ControlStateCache) {
+            // if this rule used parameters in the control expression, we need
+            // to construct a partial morphism out of them
+            Morphism m = null;
+            if (this.cache instanceof ControlStateCache) {
+                ControlTransition ct =
+                    ((ControlStateCache) this.cache).getTransition(rule);
+                if (ct.hasRelevantParameters()) {
+                    String[] input = ct.getInputParameters();
+                    m =
+                        new DefaultMorphism(rule.getTarget(),
+                            this.state.getGraph());
+                    for (int i = 0; i < input.length; i++) {
+                        if (input[i] != null && !input[i].equals("_")) {
+                            Node src = ((SPORule) rule).getParameter(i + 1);
+                            Node tgt =
+                                ((AbstractGraphState) this.state).getParameters().get(
+                                    input[i]);
+                            m.putNode(src, tgt);
+                        }
+                    }
+                }
+            }
+
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
-            for (RuleMatch match : rule.getMatches(this.state.getGraph(), null)) {
+            for (RuleMatch match : rule.getMatches(this.state.getGraph(), m)) {
                 result.add(this.record.getEvent(match));
                 hasMatched = true;
             }
