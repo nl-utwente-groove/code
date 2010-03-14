@@ -38,6 +38,8 @@ import java.util.HashMap;
         return errors;
     }
     
+    private List<String> syntaxInit = new ArrayList<String>();
+    
     int numParameters = 0;
     String currentRule;
     HashSet<String> currentOutputParameters = new HashSet<String>();
@@ -138,10 +140,11 @@ param
 			numParameters++;
 			
 			if (st.isDeclared($IDENTIFIER.text)) {
-				if (!st.canInitialize($IDENTIFIER.text)) {
+				if (!st.canInitialize($IDENTIFIER.text) || syntaxInit.contains($IDENTIFIER.text)) {
 					errors.add("Variable already initialized: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);
 				} else {
 					st.initializeSymbol($IDENTIFIER.text);
+					syntaxInit.add($IDENTIFIER.text);
 				}
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);

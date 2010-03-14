@@ -78,7 +78,7 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
         }
         return eventAdded;
     }
-    
+
     /**
      * Collects the set of matching events for the state passed in by the
      * constructor into a collection passed in as a parameter.
@@ -103,5 +103,5 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
             currentRule = nextRule();
         }
     }
-    
+
 }

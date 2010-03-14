@@ -16,7 +16,8 @@
  */
 package groove.explore.util;
 
-import groove.control.ControlLocation;
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.lts.GraphState;
 import groove.trans.Rule;
@@ -36,7 +37,7 @@ public class ControlStateCache implements ExploreCache {
      * @param state the GraphState this ControlStateCache will operate on
      * @param isRandomized
      */
-    public ControlStateCache(ControlLocation location, GraphState state,
+    public ControlStateCache(Location location, GraphState state,
             boolean isRandomized) {
         this.location = location;
         this.state = state;
@@ -44,12 +45,13 @@ public class ControlStateCache implements ExploreCache {
         this.failed = new HashSet<Rule>();
         this.matched = new HashSet<Rule>();
 
-        this.iterator = createIterator(location, isRandomized);
+        this.iterator = createIterator(this.location, isRandomized);
     }
 
     private Iterator<Rule> createIterator(Location location,
             boolean isRandomized) {
-        Set<Rule> enabledRules = location.getEnabledRules(null, this.failed);
+        Set<Rule> enabledRules =
+            location.getEnabledRules(this.matched, this.failed);
         if (isRandomized) {
             return new RandomizedIterator<Rule>(enabledRules);
         } else {
@@ -59,7 +61,16 @@ public class ControlStateCache implements ExploreCache {
 
     @Override
     public Location getTarget(Rule rule) {
-        return this.location.getTarget(rule, this.failed);
+        return this.getTransition(rule).target();
+    }
+
+    /**
+     * Gets the transition used to exit this state given a Rule
+     * @param rule the Rule to use on the required transition
+     * @return a ControlTransition which can be traversed by applying rule
+     */
+    public ControlTransition getTransition(Rule rule) {
+        return ((ControlState) this.location).getTransition(rule);
     }
 
     @Override

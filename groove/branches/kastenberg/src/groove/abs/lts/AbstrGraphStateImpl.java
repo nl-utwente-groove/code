@@ -20,15 +20,17 @@ import groove.abs.AbstrGraph;
 import groove.abs.MyHashSet;
 import groove.control.Location;
 import groove.graph.Element;
+import groove.graph.Node;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
 
 /**
  * @author Iovka Boneva
@@ -278,6 +280,12 @@ public class AbstrGraphStateImpl implements AbstrGraphState {
                 && o1.label().equals(o2.label());
         }
 
+    }
+
+    @Override
+    public Map<String,Node> getParameters() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

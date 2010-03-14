@@ -94,7 +94,7 @@ public class LocationCache implements ExploreCache {
     }
 
     public Location getTarget(Rule rule) {
-        return this.location.getTarget(rule, getFailedRules(rule));
+        return this.location.getTarget(rule);
     }
 
     /**

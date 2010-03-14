@@ -14,6 +14,8 @@
  */
 package groove.lts;
 
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.graph.DeltaApplier;
 import groove.graph.Graph;
@@ -24,6 +26,8 @@ import groove.trans.DefaultApplication;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+
+import java.util.Map;
 
 /**
  * 
@@ -42,6 +46,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         this.source = source;
         this.event = event;
         this.addedNodes = addedNodes;
+        if (source.getLocation() != null) {
+            initializeVariables();
+        }
     }
 
     /**
@@ -61,6 +68,45 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     public DefaultGraphNextState(AbstractGraphState source, RuleEvent event,
             Node[] addedNodes) {
         this(source, event, addedNodes, null);
+    }
+
+    /**
+     * Initializes the variables for this state based on the previous state and
+     * the transition taken to get here.
+     */
+    private void initializeVariables() {
+        RuleApplication appl =
+            this.event.newApplication(this.source.getGraph());
+        ControlTransition transition =
+            ((ControlState) this.source.getLocation()).getTransition(appl.getRule());
+
+        AbstractGraphState src = this.source;
+        // if t has parameters, we need to apply the morphism to them
+        if ((src).hasParameters()) {
+            Morphism morphism = appl.getMorphism();
+            Map<String,Node> parameters = src.getParameters();
+            for (String param : parameters.keySet()) {
+                Node targetNode = morphism.nodeMap().get(parameters.get(param));
+                // the node could be deleted by this rule
+                if (targetNode != null
+                    && transition.target().isInitialized(param)) {
+                    this.setParameter(param, targetNode);
+                }
+            }
+        }
+        // if ct has parameters, we need to apply them
+        if (transition.hasParameters()) {
+            RuleMatch match = appl.getMatch();
+            String[] output = transition.getOutputParameters();
+            for (int i = 1; i <= output.length; i++) {
+                if (output[i - 1] != null
+                    && match.getRule().isOutputParameter(i)) {
+                    this.setParameter(output[i - 1],
+                        match.getElementMap().getNode(
+                            match.getRule().getParameter(i)));
+                }
+            }
+        }
     }
 
     public RuleEvent getEvent() {
@@ -84,23 +130,25 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * footprint.
      */
     public Morphism getMorphism() {
-        RuleApplication appl = new DefaultApplication(getEvent(), source().getGraph(), getGraph(), getAddedNodes());
-//        Graph derivedTarget = appl.getTarget();
-//        Graph realTarget = target().getGraph();
-//        if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
-//            && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
+        RuleApplication appl =
+            new DefaultApplication(getEvent(), source().getGraph(), getGraph(),
+                getAddedNodes());
+        //        Graph derivedTarget = appl.getTarget();
+        //        Graph realTarget = target().getGraph();
+        //        if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
+        //            && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
         return appl.getMorphism();
-//        } else {
-//            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
-//            assert iso != null : "Can't reconstruct derivation from graph transition "
-//                + this
-//                + ": \n"
-//                + AbstractGraphShape.toString(derivedTarget)
-//                + " and \n"
-//                + AbstractGraphShape.toString(realTarget)
-//                + " \nnot isomorphic";
-//            return appl.getMorphism().then(iso);
-//        }
+        //        } else {
+        //            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
+        //            assert iso != null : "Can't reconstruct derivation from graph transition "
+        //                + this
+        //                + ": \n"
+        //                + AbstractGraphShape.toString(derivedTarget)
+        //                + " and \n"
+        //                + AbstractGraphShape.toString(realTarget)
+        //                + " \nnot isomorphic";
+        //            return appl.getMorphism().then(iso);
+        //        }
     }
 
     /**
@@ -244,7 +292,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     @Override
     protected void updateClosed() {
-//        clearCache();
+        //        clearCache();
     }
 
     /**
