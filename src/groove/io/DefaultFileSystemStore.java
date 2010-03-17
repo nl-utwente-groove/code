@@ -136,6 +136,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
         DeleteControlEdit deleteEdit = doDeleteControl(name);
         if (deleteEdit != null) {
+            deleteEdit.checkAndSetVersion();
             postEdit(deleteEdit);
             result = deleteEdit.getControl();
         }
@@ -171,6 +172,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         DeleteGraphEdit edit = doDeleteGraph(name);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getGraph();
         }
@@ -197,6 +199,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         DeleteRuleEdit edit = doDeleteRule(name);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getRule();
         }
@@ -225,6 +228,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         DeleteTypeEdit edit = doDeleteType(name);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getType();
         }
@@ -289,6 +293,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         String result = null;
         PutControlEdit edit = doPutControl(name, control);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldControl();
         }
@@ -312,6 +317,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         PutGraphEdit edit = doPutGraph(graph);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldGraph();
         }
@@ -335,6 +341,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     public void putProperties(SystemProperties properties) throws IOException {
         PutPropertiesEdit edit = doPutProperties(properties);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
         }
     }
@@ -348,7 +355,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         testInit();
         SystemProperties oldProperties = this.properties;
         this.properties = properties;
-        this.properties.setCurrentVersionProperties();
         saveProperties();
         return new PutPropertiesEdit(oldProperties, properties);
     }
@@ -358,6 +364,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         PutRuleEdit edit = doPutRule(rule);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldRule();
         }
@@ -381,6 +388,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         PutTypeEdit edit = doPutType(type);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldType();
         }
@@ -405,6 +413,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         RenameGraphEdit edit = doRenameGraph(oldName, newName);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldGraph();
         }
@@ -440,6 +449,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         RenameRuleEdit edit = doRenameRule(oldName, newName);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldRule();
         }
@@ -478,6 +488,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph result = null;
         RenameTypeEdit edit = doRenameType(oldName, newName);
         if (edit != null) {
+            edit.checkAndSetVersion();
             postEdit(edit);
             result = edit.getOldType();
         }
@@ -1090,11 +1101,45 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             return this.change;
         }
 
+        public void checkAndSetVersion() {
+            if (!getProperties().isCurrentVersionProperties()) {
+                this.origProp = getProperties().clone();
+                getProperties().setCurrentVersionProperties();
+                try {
+                    saveProperties();
+                } catch (IOException e) {
+                    // Silently fail..?
+                }
+            }
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            this.checkAndSetVersion();
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            try {
+                if (this.origProp != null) {
+                    DefaultFileSystemStore.this.properties = this.origProp;
+                    saveProperties();
+                    this.origProp = null;
+                }
+            } catch (IOException exc) {
+                throw new CannotUndoException();
+            }
+        }
+
         /**
          * The change information in this edit.
          * @see #getChange()
          */
         private final int change;
+
+        private SystemProperties origProp = null;
     }
 
     /** Edit wrapping a relabelling. */
