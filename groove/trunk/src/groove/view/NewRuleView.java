@@ -278,7 +278,13 @@ public class NewRuleView implements RuleView {
                 LevelIndex index = level.getIndex();
                 if (!index.isTopLevel()) {
                     Level parentLevel = level.getParent();
-                    ruleTree.get(parentLevel).addSubCondition(condition);
+                    // The commented line gives a NPE.
+                    // ruleTree.get(parentLevel).addSubCondition(condition);
+                    Condition parentCond = ruleTree.get(parentLevel);
+                    if (parentCond != null) {
+                        parentCond.addSubCondition(condition);
+                    }
+
                     if (index.isExistential()) {
                         ((SPORule) condition).setParent(
                             (SPORule) ruleTree.get(parentLevel.getParent()),
@@ -289,22 +295,26 @@ public class NewRuleView implements RuleView {
                 errors.addAll(exc.getErrors());
             }
         }
-        rule = (SPORule) ruleTree.get(this.levelTree.getTopLevel());
-        rule.setPriority(getPriority());
-        rule.setConfluent(isConfluent());
-        Parameters parameters = new Parameters();
-        try {
-            rule.setParameters(parameters.getInPars(), parameters.getOutPars(),
-                parameters.getHiddenPars());
-            rule.setFixed();
 
-            if (TO_RULE_DEBUG) {
-                System.out.println("Constructed rule: " + rule);
+        rule = (SPORule) ruleTree.get(this.levelTree.getTopLevel());
+        if (rule != null) {
+            rule.setPriority(getPriority());
+            rule.setConfluent(isConfluent());
+            Parameters parameters = new Parameters();
+            try {
+                rule.setParameters(parameters.getInPars(),
+                    parameters.getOutPars(), parameters.getHiddenPars());
+                rule.setFixed();
+
+                if (TO_RULE_DEBUG) {
+                    System.out.println("Constructed rule: " + rule);
+                }
+            } catch (FormatException e) {
+                rule = null;
+                errors.addAll(e.getErrors());
             }
-        } catch (FormatException e) {
-            rule = null;
-            errors.addAll(e.getErrors());
         }
+
         if (errors.isEmpty()) {
             return rule;
         } else {
