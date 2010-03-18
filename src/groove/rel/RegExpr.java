@@ -646,23 +646,29 @@ abstract public class RegExpr { // implements VarSetSupport {
 
     /** Tests this class. */
     static public void main(String[] args) {
-        test("");
-        test("?");
-        test("a|b");
-        test("|b");
-        test("*");
-        test("((a).(b))*");
-        test("((a)*|b)+");
-        test("?.'b.c'. 'b'. \"c\". (d*)");
-        test("a+*");
-        test("a.?*");
-        test("((a)");
-        test("(<a)");
-        test("(a . b)* .c. d|e*");
-        test("=. b|c*");
-        test("!a*");
-        test("!a.b | !(a.!b)");
-        test("?ab");
+        if (args.length == 0) {
+            test("");
+            test("?");
+            test("a|b");
+            test("|b");
+            test("*");
+            test("((a).(b))*");
+            test("((a)*|b)+");
+            test("?.'b.c'. 'b'. \"c\". (d*)");
+            test("a+*");
+            test("a.?*");
+            test("((a)");
+            test("(<a)");
+            test("(a . b)* .c. d|e*");
+            test("=. b|c*");
+            test("!a*");
+            test("!a.b | !(a.!b)");
+            test("?ab");
+        } else {
+            for (String arg : args) {
+                test(arg);
+            }
+        }
     }
 
     /**
