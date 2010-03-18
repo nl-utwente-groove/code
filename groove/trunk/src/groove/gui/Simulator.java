@@ -2314,9 +2314,10 @@ public class Simulator {
     private synchronized void fireStartSimulation(GTS gts) {
         if (!this.updating) {
             this.updating = true;
-            //            for (SimulationListener listener : this.listeners) {
-            //                System.out.println("startsimulationupdate: " + listener);
-            //            }
+            for (SimulationListener listener : this.listeners) {
+                // System.out.println("startsimulationupdate: " + listener);
+                listener.startSimulationUpdate(gts);
+            }
             this.updating = false;
         }
     }
