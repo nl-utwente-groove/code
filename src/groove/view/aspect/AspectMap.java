@@ -42,6 +42,11 @@ public class AspectMap implements Iterable<AspectValue> {
      */
     public AspectMap(boolean rule) {
         this.rule = rule;
+        if (rule) {
+            this.defaultParser = RegExprLabelParser.getInstance(false);
+        } else {
+            this.defaultParser = FreeLabelParser.getInstance();
+        }
     }
 
     /** Constructs a copy of a given aspect map. */
@@ -50,6 +55,7 @@ public class AspectMap implements Iterable<AspectValue> {
         this.declaredValues.addAll(other.declaredValues);
         this.text = other.getText();
         this.rule = other.rule;
+        this.defaultParser = other.defaultParser;
     }
 
     /**
@@ -274,7 +280,7 @@ public class AspectMap implements Iterable<AspectValue> {
      * property).
      */
     private LabelParser getDefaultLabelParser() {
-        return (this.rule ? TypeAspect.PATH : TypeAspect.EMPTY).getLabelParser();
+        return this.defaultParser;
     }
 
     /**
@@ -389,4 +395,6 @@ public class AspectMap implements Iterable<AspectValue> {
      * {@link FreeLabelParser} for a graph.
      */
     private final boolean rule;
+    /** The default label parser of this aspect map. */
+    private final LabelParser defaultParser;
 }

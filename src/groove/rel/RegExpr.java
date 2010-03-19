@@ -29,7 +29,6 @@ import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Property;
 import groove.view.FormatException;
-import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -490,10 +489,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
             default:
                 // default atoms
-                String prefix = TypeAspect.NODE_TYPE.getPrefix();
-                if (text.startsWith(prefix)) {
-                    text = text.substring(prefix.length());
-                }
+                // skip any node type or flag prefix
+                text = DefaultLabel.createTypedLabel(text).text();
                 boolean correct = true;
                 int i;
                 for (i = 0; correct && i < text.length(); i++) {

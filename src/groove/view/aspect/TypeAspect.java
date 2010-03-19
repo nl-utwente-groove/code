@@ -112,7 +112,7 @@ public class TypeAspect extends AbstractAspect {
             FLAG = instance.addEdgeValue(DefaultLabel.FLAG_PREFIX);
             FLAG.setLabelParser(TypedLabelParser.getInstance(Label.FLAG));
             PATH = instance.addEdgeValue(PATH_NAME);
-            PATH.setLabelParser(RegExprLabelParser.getInstance());
+            PATH.setLabelParser(RegExprLabelParser.getInstance(true));
             SUB = instance.addEdgeValue(SUB_NAME);
             SUB.setLabelParser(EmptyLabelParser.getInstance());
             EMPTY = instance.addEdgeValue(EMPTY_NAME);
