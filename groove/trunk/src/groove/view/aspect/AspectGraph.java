@@ -504,7 +504,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                     }
                     if (GraphInfo.hasRuleRole(this)) {
                         replacement =
-                            RegExprLabelParser.getInstance().unparse(
+                            RegExprLabelParser.getInstance(false).unparse(
                                 replacement);
                     }
                     newData.setText(replacement.text());

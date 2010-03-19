@@ -152,7 +152,11 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      * @throws FormatException if the label contains a format error
      */
     public Label getModelLabel() throws FormatException {
-        return getAspectMap().toModelLabel();
+        try {
+            return getAspectMap().toModelLabel();
+        } catch (FormatException exc) {
+            throw new FormatException(exc.getMessage(), this);
+        }
     }
 
     /**
