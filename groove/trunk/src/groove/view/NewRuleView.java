@@ -248,12 +248,16 @@ public class NewRuleView implements RuleView {
             if (this.viewErrors != null) {
                 this.ruleErrors.addAll(this.viewErrors);
             }
-            this.levelTree = new LevelMap();
-            try {
-                this.levelTree.initialise();
-                this.rule = computeRule();
-            } catch (FormatException exc) {
-                this.ruleErrors.addAll(exc.getErrors());
+            // trying to initialise with view errors, e.g. an
+            // at-edge from a forall:-node, may throw exceptions
+            if (this.ruleErrors.isEmpty()) {
+                this.levelTree = new LevelMap();
+                try {
+                    this.levelTree.initialise();
+                    this.rule = computeRule();
+                } catch (FormatException exc) {
+                    this.ruleErrors.addAll(exc.getErrors());
+                }
             }
         }
     }

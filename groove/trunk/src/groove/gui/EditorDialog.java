@@ -177,9 +177,9 @@ abstract public class EditorDialog {
         if (this.options.isSelected(Options.PREVIEW_ON_CLOSE_OPTION)
             && !this.editor.handlePreview(null)) {
             return;
-        } else if (hasErrors()) {
-            JOptionPane.showMessageDialog(this.parent, String.format(
-                "Cannot use %s with syntax errors", this.editor.getRole(false)));
+            //        } else if (hasErrors()) {
+            //            JOptionPane.showMessageDialog(this.parent, String.format(
+            //                "Cannot use %s with syntax errors", this.editor.getRole(false)));
         } else {
             this.ok = true;
             dispose();
