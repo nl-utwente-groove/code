@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2010-02-25 11:34:10
+// $ANTLR 3.1b1 GCLChecker.g 2010-03-12 16:33:40
 
 package groove.control.parse;
 import groove.control.*;
@@ -1575,7 +1575,13 @@ public class GCLChecker extends TreeParser {
             IDENTIFIER52=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration385); 
              
             if ( _first_1==null ) _first_1 = IDENTIFIER52;
-             namespace.addVariable((IDENTIFIER52!=null?IDENTIFIER52.getText():null)); st.declareSymbol((IDENTIFIER52!=null?IDENTIFIER52.getText():null)); 
+             
+            		if (!namespace.hasVariable((IDENTIFIER52!=null?IDENTIFIER52.getText():null))) {
+            			namespace.addVariable((IDENTIFIER52!=null?IDENTIFIER52.getText():null)); st.declareSymbol((IDENTIFIER52!=null?IDENTIFIER52.getText():null));
+            		} else {
+            			errors.add("Double declaration of variable '"+(IDENTIFIER52!=null?IDENTIFIER52.getText():null)+"' on line "+(IDENTIFIER52!=null?IDENTIFIER52.getLine():0));
+            		}
+            	
 
             match(input, Token.UP, null); _last = _save_last_1;
             }
@@ -1603,7 +1609,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start var_type
-    // GCLChecker.g:121:1: var_type : NODE_TYPE ;
+    // GCLChecker.g:127:1: var_type : NODE_TYPE ;
     public final GCLChecker.var_type_return var_type() throws RecognitionException {
         GCLChecker.var_type_return retval = new GCLChecker.var_type_return();
         retval.start = input.LT(1);
@@ -1618,8 +1624,8 @@ public class GCLChecker extends TreeParser {
         CommonTree NODE_TYPE53_tree=null;
 
         try {
-            // GCLChecker.g:122:2: ( NODE_TYPE )
-            // GCLChecker.g:122:4: NODE_TYPE
+            // GCLChecker.g:128:2: ( NODE_TYPE )
+            // GCLChecker.g:128:4: NODE_TYPE
             {
             _last = (CommonTree)input.LT(1);
             NODE_TYPE53=(CommonTree)match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type400); 
@@ -1648,7 +1654,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start param
-    // GCLChecker.g:125:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) );
+    // GCLChecker.g:131:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) );
     public final GCLChecker.param_return param() throws RecognitionException {
         GCLChecker.param_return retval = new GCLChecker.param_return();
         retval.start = input.LT(1);
@@ -1675,7 +1681,7 @@ public class GCLChecker extends TreeParser {
         CommonTree DONT_CARE60_tree=null;
 
         try {
-            // GCLChecker.g:126:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) )
+            // GCLChecker.g:132:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) )
             int alt10=3;
             int LA10_0 = input.LA(1);
 
@@ -1722,7 +1728,7 @@ public class GCLChecker extends TreeParser {
             }
             switch (alt10) {
                 case 1 :
-                    // GCLChecker.g:126:4: ^( PARAM IDENTIFIER )
+                    // GCLChecker.g:132:4: ^( PARAM IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1762,7 +1768,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:139:4: ^( PARAM OUT IDENTIFIER )
+                    // GCLChecker.g:145:4: ^( PARAM OUT IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1814,7 +1820,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:160:4: ^( PARAM DONT_CARE )
+                    // GCLChecker.g:166:4: ^( PARAM DONT_CARE )
                     {
                     _last = (CommonTree)input.LT(1);
                     {

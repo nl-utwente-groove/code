@@ -301,10 +301,26 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Returns whether a numbered parameter can be used as an output parameter
      * @param param the number of the parameter under inquiry
-     * @return true if this parameter can be used as output parameter
+     * @return true if this parameter can be used as output parameter, false otherwise
      */
     public boolean isOutputParameter(int param) {
         return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
+    }
+
+    /**
+     * Returns whether a numbered parameter is a creator parameter
+     * @param param the number of the parameter under inquiry
+     * @return the index of the parameter in the creatorNodes array if this 
+     * parameter is a creator parameter, -1 otherwise
+     */
+    public int isCreatorParameter(int param) {
+        Node paramNode = this.getParameter(param);
+        for (int i = 0; i < this.creatorNodes.length; i++) {
+            if (this.creatorNodes[i] == paramNode) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -1332,7 +1348,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private Node[] isolatedNodes;
     /**
      * The rhs nodes that are not ruleMorph images
-     * @invariant rhsOnlyNodeSet \subseteq rhs.nodeSet()
+     * @invariant creatorNodes \subseteq rhs.nodeSet()
      */
     private Node[] creatorNodes;
 

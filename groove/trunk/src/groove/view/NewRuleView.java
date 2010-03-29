@@ -1246,6 +1246,14 @@ public class NewRuleView implements RuleView {
         }
 
         /**
+         * Returns the mapping from RHS view elements to rule elements on this level.
+         */
+        public NodeEdgeMap getRhsMap() {
+            testMode(LevelMode.FIXED);
+            return this.rhsMap;
+        }
+
+        /**
          * Returns the mapping from the LHS rule elements at the parent level to
          * the LHS rule elements at this level.
          */
@@ -1743,7 +1751,7 @@ public class NewRuleView implements RuleView {
                                 throw new FormatException(
                                     "Anonymous parameters should only occur on the left hand side");
                             }
-                            Node nodeImage = level.getLhsMap().getNode(node);
+                            Node nodeImage = level.getRhsMap().getNode(node);
                             outParMap.put(nr, nodeImage);
                         } else {
                             throw new FormatException(

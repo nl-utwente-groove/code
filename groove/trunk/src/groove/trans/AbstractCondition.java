@@ -268,7 +268,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             testGround();
             anchorMap = EMPTY_ANCHOR_MAP;
         } else {
-            anchorMap = createAnchorMap(contextMap);
+            if (isGround()) {
+                anchorMap = new VarNodeEdgeHashMap(contextMap);
+            } else {
+                anchorMap = createAnchorMap(contextMap);
+            }
         }
         if (anchorMap == null) {
             // the context map could not be lifted to this condition

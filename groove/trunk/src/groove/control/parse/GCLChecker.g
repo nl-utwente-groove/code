@@ -115,7 +115,13 @@ rule
   ;
 
 var_declaration
-	: ^(VAR var_type IDENTIFIER { namespace.addVariable($IDENTIFIER.text); st.declareSymbol($IDENTIFIER.text); } )
+	: ^(VAR var_type IDENTIFIER { 
+		if (!namespace.hasVariable($IDENTIFIER.text)) {
+			namespace.addVariable($IDENTIFIER.text); st.declareSymbol($IDENTIFIER.text);
+		} else {
+			errors.add("Double declaration of variable '"+$IDENTIFIER.text+"' on line "+$IDENTIFIER.line);
+		}
+	} )
 	;
 
 var_type

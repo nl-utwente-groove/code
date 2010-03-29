@@ -70,4 +70,5 @@ public interface GraphTransition extends Transition {
      * {@link GraphTransitionStub#toTransition(GraphState)}.
      */
     public GraphTransitionStub toStub();
+
 }

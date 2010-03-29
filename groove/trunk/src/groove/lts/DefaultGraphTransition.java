@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Element;
@@ -62,9 +64,9 @@ public class DefaultGraphTransition extends
     }
 
     public GraphTransitionStub toStub() {
-        if (!getEvent().getRule().isModifying()) {
+        /*if (!getEvent().getRule().isModifying()) {
             return getEvent();
-        } else if (isSymmetry()) {
+        } else*/if (isSymmetry()) {
             return new SymmetryTransitionStub(getEvent(), getAddedNodes(),
                 target());
         } else if (target() instanceof DefaultGraphNextState) {
@@ -250,4 +252,31 @@ public class DefaultGraphTransition extends
 
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
+
+    /**
+     * Returns the ControlTransition with which this transition is associated
+     * @return the ControlTransition with which this transition is associated, 
+     * or null if no control is present
+     */
+    public ControlTransition getControlTransition() {
+        if (this.source.getLocation() != null) {
+            return ((ControlState) this.source.getLocation()).getTransition(this.event.getRule());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns whether this transition is a self transition (graph does not change,
+     * ControlLocation does not change)
+     * @return whether this transition is a self transition
+     */
+    public boolean isSelfTransition() {
+        boolean retval = !this.event.getRule().isModifying();
+        if (retval && this.source.getLocation() != null) {
+            retval &=
+                this.source.getLocation() == this.getControlTransition().target();
+        }
+        return retval;
+    }
 }

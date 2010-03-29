@@ -19,7 +19,9 @@ package groove.test;
 import groove.control.ControlAutomaton;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
+import groove.trans.Rule;
 import groove.util.Groove;
+import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
 import java.util.HashMap;
@@ -29,12 +31,20 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+/**
+ * Tests the Control language
+ * @author Olaf Keijsers
+ * @version $Revision $
+ */
+@SuppressWarnings("all")
 public class ControlTest extends TestCase {
     static private final String DIRECTORY = "junit/samples/control2.gps";
     static private final String DEF_CONTROL1 = "testControl1";
     static private final String DEF_CONTROL2 = "testControl2";
     static private final String DEF_CONTROL3 = "testControl3";
     static private final String DEF_CONTROL4 = "testControl4";
+
+    StoredGrammarView sgv;
 
     /**
      * a;
@@ -79,7 +89,7 @@ public class ControlTest extends TestCase {
         Map<String,ControlTransition> failures =
             new HashMap<String,ControlTransition>();
         failures.put("a", ct1);
-        addTransition(ref, q0, s1, "b", failures);
+        ControlTransition ct3 = addTransition(ref, q0, s1, "b", failures);
 
         assertTrue(compareAutomata(ca, ref));
     }
@@ -172,11 +182,19 @@ public class ControlTest extends TestCase {
             ControlState s1, ControlState s2, String label,
             Map<String,ControlTransition> failures) {
         ControlTransition ct;
+        Rule r = null;
+        try {
+            r = this.sgv.toGrammar().getRule(label);
+        } catch (FormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         if (failures == null) {
             ct = new ControlTransition(s1, s2, label);
         } else {
             ct = new ControlTransition(s1, s2, label, failures);
         }
+        ct.setRule(r);
         ca.addTransition(ct);
         return ct;
     }
@@ -184,9 +202,10 @@ public class ControlTest extends TestCase {
     private ControlAutomaton getAutomaton(String controlProgram) {
         ControlAutomaton ret = null;
         try {
-            StoredGrammarView sgv = Groove.loadGrammar(DIRECTORY);
+            this.sgv = Groove.loadGrammar(DIRECTORY);
             ret =
-                sgv.getControlView(controlProgram).toAutomaton(sgv.toGrammar());
+                this.sgv.getControlView(controlProgram).toAutomaton(
+                    this.sgv.toGrammar());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -256,8 +275,9 @@ public class ControlTest extends TestCase {
             Map<ControlState,ControlState> morphism) {
         for (ControlTransition ct2 : transitionsFrom(ca2,
             morphism.get(ct.source()))) {
-            if (ct.label().equals(ct2.label())
-                && ct.getFailures().keySet().equals(ct2.getFailures().keySet())) {
+            Set<String> keySet1 = ct.getFailures().keySet();
+            Set<String> keySet2 = ct2.getFailures().keySet();
+            if (ct.getRule().equals(ct2.getRule()) && keySet1.equals(keySet2)) {
                 return ct2;
             }
         }
