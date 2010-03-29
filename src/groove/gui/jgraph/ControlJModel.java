@@ -30,8 +30,8 @@ import groove.lts.GraphTransition;
 import groove.util.Converter;
 import groove.util.Groove;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
@@ -247,7 +247,7 @@ public class ControlJModel extends GraphJModel {
                 else params.add(param);
                 }
                 retval += params;
-                 */
+                 
                 if ((ct.hasRelevantParameters())) {
                     ArrayList<String> params = new ArrayList<String>();
                     for (String param : ((ControlTransition) edge).getInputParameters()) {
@@ -260,6 +260,7 @@ public class ControlJModel extends GraphJModel {
                     }
                     sb.append(params.toString());
                 }
+                */
                 return sb;
             } else {
                 return super.getLine(edge);
@@ -330,7 +331,7 @@ public class ControlJModel extends GraphJModel {
          */
         @Override
         public java.util.List<StringBuilder> getLines() {
-            Set<String> initializedVariables =
+            List<String> initializedVariables =
                 getNode().getInitializedVariables();
             StringBuilder sb;
             java.util.List<StringBuilder> lines = super.getLines();

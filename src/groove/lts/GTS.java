@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -490,25 +490,22 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                         // if variables are involved we need to make sure they 
                         // map to isomorphic nodes
                         ControlState cs = (ControlState) stateKey.getLocation();
-                        Graph g1 = stateKey.getGraph();
-                        Graph g2 = otherStateKey.getGraph();
                         if (cs != null) {
-                            Set<String> variables =
+                            List<String> variables =
                                 ((ControlState) stateKey.getLocation()).getInitializedVariables();
                             if (variables.size() > 0) {
                                 NodeEdgeMap isomorphism =
                                     ((DefaultIsoChecker) this.checker).getIsomorphism(
                                         one, two);
                                 if (isomorphism != null) {
-                                    Map<String,Node> parametersOne =
+                                    Node[] parametersOne =
                                         stateKey.getParameters();
-                                    Map<String,Node> parametersTwo =
+                                    Node[] parametersTwo =
                                         otherStateKey.getParameters();
                                     if (parametersOne != null
                                         && parametersTwo != null) {
-                                        for (String variable : variables) {
-                                            if (isomorphism.nodeMap().get(
-                                                parametersOne.get(variable)) != parametersTwo.get(variable)) {
+                                        for (int i = 0; i < parametersOne.length; i++) {
+                                            if (parametersOne[i] != parametersTwo[i]) {
                                                 return false;
                                             }
                                         }
@@ -559,8 +556,19 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                     result = certificate.hashCode();
                 }
                 Object control = stateKey.getLocation();
-                result +=
-                    control == null ? 0 : System.identityHashCode(control);
+                result += control == null ? 0 : control.hashCode();
+                if (stateKey.getParameters() != null) {
+                    CertificateStrategy certifier =
+                        stateKey.getGraph().getCertifier(true);
+                    for (Node n : stateKey.getParameters()) {
+                        if (n != null) {
+                            result +=
+                                certifier.getCertificateMap().get(n).hashCode();
+                            // shift left to ensure the parameters' order matters
+                            result = result << 1 | (result < 0 ? 1 : 0);
+                        }
+                    }
+                }
             }
             return result;
         }

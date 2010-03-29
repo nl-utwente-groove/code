@@ -28,6 +28,7 @@ import groove.view.FormatException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -115,7 +116,7 @@ public class AutomatonBuilder extends Namespace {
      */
     public void mergeInitializedVariables(ControlState s1, ControlState s2,
             ControlState tar) {
-        Set<String> variables = s1.getInitializedVariables();
+        List<String> variables = s1.getInitializedVariables();
         variables.retainAll(s2.getInitializedVariables());
         tar.setInitializedVariables(variables);
     }
@@ -425,7 +426,6 @@ public class AutomatonBuilder extends Namespace {
             }
         }
 
-        //consolidateFailures2(this.aut.getStart(), new HashSet<ControlState>());
         consolidateFailures();
 
         // Do actual remove
@@ -458,16 +458,6 @@ public class AutomatonBuilder extends Namespace {
                 rmState(t);
             }
         }
-    }
-
-    private int currentRecursionDepth = -1;
-
-    private void recDebug(String str) {
-        String ret = "";
-        for (int i = 0; i < this.currentRecursionDepth; i++) {
-            ret += "\t";
-        }
-        System.err.println(ret + str);
     }
 
     /**
