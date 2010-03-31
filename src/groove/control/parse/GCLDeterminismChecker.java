@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLDeterminismChecker.g 2010-02-10 17:50:54
+// $ANTLR 3.1b1 GCLDeterminismChecker.g 2010-03-30 15:39:36
 
 package groove.control.parse;
 import groove.control.*;
@@ -105,7 +105,14 @@ public class GCLDeterminismChecker extends TreeParser {
         	}
         }
         
+        /**
+         * marks whether a given CommonTree can instantly terminate
+         */
         private HashMap<CommonTree,Boolean> it = new HashMap<CommonTree,Boolean>();
+        
+        /**
+         * The initial action for a given CommonTree
+         */
         private HashMap<CommonTree,ArrayList<CommonTree>> init = new HashMap<CommonTree,ArrayList<CommonTree>>();
         
         private ArrayList<CommonTree> getInit(CommonTree o) {
@@ -151,7 +158,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start program
-    // GCLDeterminismChecker.g:81:1: program : ^( PROGRAM functions block ) ;
+    // GCLDeterminismChecker.g:88:1: program : ^( PROGRAM functions block ) ;
     public final GCLDeterminismChecker.program_return program() throws RecognitionException {
         GCLDeterminismChecker.program_return retval = new GCLDeterminismChecker.program_return();
         retval.start = input.LT(1);
@@ -170,8 +177,8 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree PROGRAM1_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:82:3: ( ^( PROGRAM functions block ) )
-            // GCLDeterminismChecker.g:82:6: ^( PROGRAM functions block )
+            // GCLDeterminismChecker.g:89:3: ( ^( PROGRAM functions block ) )
+            // GCLDeterminismChecker.g:89:6: ^( PROGRAM functions block )
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -228,7 +235,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start functions
-    // GCLDeterminismChecker.g:85:1: functions : ^( FUNCTIONS ( function )* ) ;
+    // GCLDeterminismChecker.g:92:1: functions : ^( FUNCTIONS ( function )* ) ;
     public final GCLDeterminismChecker.functions_return functions() throws RecognitionException {
         GCLDeterminismChecker.functions_return retval = new GCLDeterminismChecker.functions_return();
         retval.start = input.LT(1);
@@ -245,8 +252,8 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree FUNCTIONS4_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:86:3: ( ^( FUNCTIONS ( function )* ) )
-            // GCLDeterminismChecker.g:86:5: ^( FUNCTIONS ( function )* )
+            // GCLDeterminismChecker.g:93:3: ( ^( FUNCTIONS ( function )* ) )
+            // GCLDeterminismChecker.g:93:5: ^( FUNCTIONS ( function )* )
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -264,7 +271,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLDeterminismChecker.g:86:17: ( function )*
+                // GCLDeterminismChecker.g:93:17: ( function )*
                 loop1:
                 do {
                     int alt1=2;
@@ -277,7 +284,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
                     switch (alt1) {
                 	case 1 :
-                	    // GCLDeterminismChecker.g:86:17: function
+                	    // GCLDeterminismChecker.g:93:17: function
                 	    {
                 	    _last = (CommonTree)input.LT(1);
                 	    pushFollow(FOLLOW_function_in_functions79);
@@ -322,7 +329,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start function
-    // GCLDeterminismChecker.g:88:1: function : ^( FUNCTION IDENTIFIER block ) -> ^( FUNCTION IDENTIFIER ) ;
+    // GCLDeterminismChecker.g:95:1: function : ^( FUNCTION IDENTIFIER block ) -> ^( FUNCTION IDENTIFIER ) ;
     public final GCLDeterminismChecker.function_return function() throws RecognitionException {
         GCLDeterminismChecker.function_return retval = new GCLDeterminismChecker.function_return();
         retval.start = input.LT(1);
@@ -343,8 +350,8 @@ public class GCLDeterminismChecker extends TreeParser {
         RewriteRuleNodeStream stream_IDENTIFIER=new RewriteRuleNodeStream(adaptor,"token IDENTIFIER");
         RewriteRuleSubtreeStream stream_block=new RewriteRuleSubtreeStream(adaptor,"rule block");
         try {
-            // GCLDeterminismChecker.g:89:3: ( ^( FUNCTION IDENTIFIER block ) -> ^( FUNCTION IDENTIFIER ) )
-            // GCLDeterminismChecker.g:90:3: ^( FUNCTION IDENTIFIER block )
+            // GCLDeterminismChecker.g:96:3: ( ^( FUNCTION IDENTIFIER block ) -> ^( FUNCTION IDENTIFIER ) )
+            // GCLDeterminismChecker.g:97:3: ^( FUNCTION IDENTIFIER block )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -383,9 +390,9 @@ public class GCLDeterminismChecker extends TreeParser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 90:32: -> ^( FUNCTION IDENTIFIER )
+            // 97:32: -> ^( FUNCTION IDENTIFIER )
             {
-                // GCLDeterminismChecker.g:90:35: ^( FUNCTION IDENTIFIER )
+                // GCLDeterminismChecker.g:97:35: ^( FUNCTION IDENTIFIER )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot(stream_FUNCTION.nextNode(), root_1);
@@ -419,7 +426,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start block
-    // GCLDeterminismChecker.g:92:1: block : ^(b= BLOCK (s= statement )* ) ;
+    // GCLDeterminismChecker.g:99:1: block : ^(b= BLOCK (s= statement )* ) ;
     public final GCLDeterminismChecker.block_return block() throws RecognitionException {
         GCLDeterminismChecker.block_return retval = new GCLDeterminismChecker.block_return();
         retval.start = input.LT(1);
@@ -436,8 +443,8 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree b_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:93:3: ( ^(b= BLOCK (s= statement )* ) )
-            // GCLDeterminismChecker.g:93:5: ^(b= BLOCK (s= statement )* )
+            // GCLDeterminismChecker.g:100:3: ( ^(b= BLOCK (s= statement )* ) )
+            // GCLDeterminismChecker.g:100:5: ^(b= BLOCK (s= statement )* )
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -456,7 +463,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLDeterminismChecker.g:93:114: (s= statement )*
+                // GCLDeterminismChecker.g:100:114: (s= statement )*
                 loop2:
                 do {
                     int alt2=2;
@@ -469,7 +476,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
                     switch (alt2) {
                 	case 1 :
-                	    // GCLDeterminismChecker.g:93:115: s= statement
+                	    // GCLDeterminismChecker.g:100:115: s= statement
                 	    {
                 	    _last = (CommonTree)input.LT(1);
                 	    pushFollow(FOLLOW_statement_in_block130);
@@ -595,7 +602,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start statement
-    // GCLDeterminismChecker.g:176:1: statement : ( ^(alapnode= ALAP alapblock= block ) | ^(whilenode= WHILE whilecondition= condition whileblock= block ) | ^(untilnode= UNTIL untilcondition= condition untilblock= block ) | ^(donode= DO doblock= block docondition= condition ) | ^(trynode= TRY tryblock1= block (tryblock2= block )? ) | ^(ifnode= IF ifcondition= condition ifblock= block (elseblock= block )? ) | ^(choicenode= CHOICE (choiceblock= block )+ ) | expression | var_declaration );
+    // GCLDeterminismChecker.g:183:1: statement : ( ^(alapnode= ALAP alapblock= block ) | ^(whilenode= WHILE whilecondition= condition whileblock= block ) | ^(untilnode= UNTIL untilcondition= condition untilblock= block ) | ^(donode= DO doblock= block docondition= condition ) | ^(trynode= TRY tryblock1= block (tryblock2= block )? ) | ^(ifnode= IF ifcondition= condition ifblock= block (elseblock= block )? ) | ^(choicenode= CHOICE (choiceblock= block )+ ) | expression | var_declaration );
     public final GCLDeterminismChecker.statement_return statement() throws RecognitionException {
         GCLDeterminismChecker.statement_return retval = new GCLDeterminismChecker.statement_return();
         retval.start = input.LT(1);
@@ -652,7 +659,7 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree choicenode_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:177:3: ( ^(alapnode= ALAP alapblock= block ) | ^(whilenode= WHILE whilecondition= condition whileblock= block ) | ^(untilnode= UNTIL untilcondition= condition untilblock= block ) | ^(donode= DO doblock= block docondition= condition ) | ^(trynode= TRY tryblock1= block (tryblock2= block )? ) | ^(ifnode= IF ifcondition= condition ifblock= block (elseblock= block )? ) | ^(choicenode= CHOICE (choiceblock= block )+ ) | expression | var_declaration )
+            // GCLDeterminismChecker.g:184:3: ( ^(alapnode= ALAP alapblock= block ) | ^(whilenode= WHILE whilecondition= condition whileblock= block ) | ^(untilnode= UNTIL untilcondition= condition untilblock= block ) | ^(donode= DO doblock= block docondition= condition ) | ^(trynode= TRY tryblock1= block (tryblock2= block )? ) | ^(ifnode= IF ifcondition= condition ifblock= block (elseblock= block )? ) | ^(choicenode= CHOICE (choiceblock= block )+ ) | expression | var_declaration )
             int alt6=9;
             switch ( input.LA(1) ) {
             case ALAP:
@@ -715,7 +722,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             switch (alt6) {
                 case 1 :
-                    // GCLDeterminismChecker.g:177:5: ^(alapnode= ALAP alapblock= block )
+                    // GCLDeterminismChecker.g:184:5: ^(alapnode= ALAP alapblock= block )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -751,7 +758,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLDeterminismChecker.g:181:5: ^(whilenode= WHILE whilecondition= condition whileblock= block )
+                    // GCLDeterminismChecker.g:188:5: ^(whilenode= WHILE whilecondition= condition whileblock= block )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -797,7 +804,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLDeterminismChecker.g:188:5: ^(untilnode= UNTIL untilcondition= condition untilblock= block )
+                    // GCLDeterminismChecker.g:195:5: ^(untilnode= UNTIL untilcondition= condition untilblock= block )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -843,7 +850,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLDeterminismChecker.g:195:5: ^(donode= DO doblock= block docondition= condition )
+                    // GCLDeterminismChecker.g:202:5: ^(donode= DO doblock= block docondition= condition )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -889,7 +896,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLDeterminismChecker.g:202:5: ^(trynode= TRY tryblock1= block (tryblock2= block )? )
+                    // GCLDeterminismChecker.g:209:5: ^(trynode= TRY tryblock1= block (tryblock2= block )? )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -913,7 +920,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     state._fsp--;
 
                     adaptor.addChild(root_1, tryblock1.getTree());
-                    // GCLDeterminismChecker.g:202:35: (tryblock2= block )?
+                    // GCLDeterminismChecker.g:209:35: (tryblock2= block )?
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -922,7 +929,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     switch (alt3) {
                         case 1 :
-                            // GCLDeterminismChecker.g:202:36: tryblock2= block
+                            // GCLDeterminismChecker.g:209:36: tryblock2= block
                             {
                             _last = (CommonTree)input.LT(1);
                             pushFollow(FOLLOW_block_in_statement236);
@@ -954,7 +961,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLDeterminismChecker.g:211:5: ^(ifnode= IF ifcondition= condition ifblock= block (elseblock= block )? )
+                    // GCLDeterminismChecker.g:218:5: ^(ifnode= IF ifcondition= condition ifblock= block (elseblock= block )? )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -985,7 +992,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     state._fsp--;
 
                     adaptor.addChild(root_1, ifblock.getTree());
-                    // GCLDeterminismChecker.g:211:53: (elseblock= block )?
+                    // GCLDeterminismChecker.g:218:53: (elseblock= block )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -994,7 +1001,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     switch (alt4) {
                         case 1 :
-                            // GCLDeterminismChecker.g:211:54: elseblock= block
+                            // GCLDeterminismChecker.g:218:54: elseblock= block
                             {
                             _last = (CommonTree)input.LT(1);
                             pushFollow(FOLLOW_block_in_statement263);
@@ -1033,7 +1040,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLDeterminismChecker.g:227:5: ^(choicenode= CHOICE (choiceblock= block )+ )
+                    // GCLDeterminismChecker.g:234:5: ^(choicenode= CHOICE (choiceblock= block )+ )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1051,7 +1058,7 @@ public class GCLDeterminismChecker extends TreeParser {
                      boolean choiceIt = false; 
 
                     match(input, Token.DOWN, null); 
-                    // GCLDeterminismChecker.g:227:55: (choiceblock= block )+
+                    // GCLDeterminismChecker.g:234:55: (choiceblock= block )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -1065,7 +1072,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // GCLDeterminismChecker.g:227:56: choiceblock= block
+                    	    // GCLDeterminismChecker.g:234:56: choiceblock= block
                     	    {
                     	    _last = (CommonTree)input.LT(1);
                     	    pushFollow(FOLLOW_block_in_statement284);
@@ -1102,7 +1109,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLDeterminismChecker.g:233:5: expression
+                    // GCLDeterminismChecker.g:240:5: expression
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1117,7 +1124,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 9 :
-                    // GCLDeterminismChecker.g:234:5: var_declaration
+                    // GCLDeterminismChecker.g:241:5: var_declaration
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1152,7 +1159,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start expression
-    // GCLDeterminismChecker.g:237:1: expression : ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER );
+    // GCLDeterminismChecker.g:244:1: expression : ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER );
     public final GCLDeterminismChecker.expression_return expression() throws RecognitionException {
         GCLDeterminismChecker.expression_return retval = new GCLDeterminismChecker.expression_return();
         retval.start = input.LT(1);
@@ -1191,7 +1198,7 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree othernode_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:238:2: ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER )
+            // GCLDeterminismChecker.g:245:2: ( ^(ornode= OR orexpr1= expression orexpr2= expression ) | ^(plusnode= PLUS plusexpr= expression expression ) | ^(starnode= STAR starexpr= expression ) | ^(sharpnode= SHARP sharpexpr= expression ) | rule | anynode= ANY | othernode= OTHER )
             int alt7=7;
             switch ( input.LA(1) ) {
             case OR:
@@ -1238,7 +1245,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             switch (alt7) {
                 case 1 :
-                    // GCLDeterminismChecker.g:238:4: ^(ornode= OR orexpr1= expression orexpr2= expression )
+                    // GCLDeterminismChecker.g:245:4: ^(ornode= OR orexpr1= expression orexpr2= expression )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1282,7 +1289,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLDeterminismChecker.g:243:4: ^(plusnode= PLUS plusexpr= expression expression )
+                    // GCLDeterminismChecker.g:250:4: ^(plusnode= PLUS plusexpr= expression expression )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1314,7 +1321,9 @@ public class GCLDeterminismChecker extends TreeParser {
 
                     adaptor.addChild(root_1, expression11.getTree());
                     
-                    		it.put(plusnode_tree, it.get((plusexpr!=null?((CommonTree)plusexpr.tree):null)));
+                    		// XXX: done this to make sure "a+; a;" was not allowed
+                    		//it.put(plusnode_tree, it.get((plusexpr!=null?((CommonTree)plusexpr.tree):null)));
+                    		it.put(plusnode_tree, true);
                     		addInit(plusnode_tree, getInit((plusexpr!=null?((CommonTree)plusexpr.tree):null)));
                     	
 
@@ -1325,7 +1334,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLDeterminismChecker.g:247:4: ^(starnode= STAR starexpr= expression )
+                    // GCLDeterminismChecker.g:256:4: ^(starnode= STAR starexpr= expression )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1361,7 +1370,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLDeterminismChecker.g:251:4: ^(sharpnode= SHARP sharpexpr= expression )
+                    // GCLDeterminismChecker.g:260:4: ^(sharpnode= SHARP sharpexpr= expression )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1397,7 +1406,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLDeterminismChecker.g:255:4: rule
+                    // GCLDeterminismChecker.g:264:4: rule
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1412,7 +1421,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLDeterminismChecker.g:256:4: anynode= ANY
+                    // GCLDeterminismChecker.g:265:4: anynode= ANY
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1430,7 +1439,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLDeterminismChecker.g:260:4: othernode= OTHER
+                    // GCLDeterminismChecker.g:269:4: othernode= OTHER
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1467,7 +1476,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start condition
-    // GCLDeterminismChecker.g:265:1: condition : ( ^(ornode= OR orcondition1= condition orcondition2= condition ) | rule | truenode= TRUE );
+    // GCLDeterminismChecker.g:274:1: condition : ( ^(ornode= OR orcondition1= condition orcondition2= condition ) | rule | truenode= TRUE );
     public final GCLDeterminismChecker.condition_return condition() throws RecognitionException {
         GCLDeterminismChecker.condition_return retval = new GCLDeterminismChecker.condition_return();
         retval.start = input.LT(1);
@@ -1490,7 +1499,7 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree truenode_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:266:3: ( ^(ornode= OR orcondition1= condition orcondition2= condition ) | rule | truenode= TRUE )
+            // GCLDeterminismChecker.g:275:3: ( ^(ornode= OR orcondition1= condition orcondition2= condition ) | rule | truenode= TRUE )
             int alt8=3;
             switch ( input.LA(1) ) {
             case OR:
@@ -1517,7 +1526,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             switch (alt8) {
                 case 1 :
-                    // GCLDeterminismChecker.g:266:5: ^(ornode= OR orcondition1= condition orcondition2= condition )
+                    // GCLDeterminismChecker.g:275:5: ^(ornode= OR orcondition1= condition orcondition2= condition )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1561,7 +1570,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLDeterminismChecker.g:271:5: rule
+                    // GCLDeterminismChecker.g:280:5: rule
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1576,7 +1585,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLDeterminismChecker.g:272:5: truenode= TRUE
+                    // GCLDeterminismChecker.g:281:5: truenode= TRUE
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1613,7 +1622,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start rule
-    // GCLDeterminismChecker.g:277:1: rule : ^(callnode= CALL callidentifier= IDENTIFIER ( param )* ) ;
+    // GCLDeterminismChecker.g:286:1: rule : ^(callnode= CALL callidentifier= IDENTIFIER ( param )* ) ;
     public final GCLDeterminismChecker.rule_return rule() throws RecognitionException {
         GCLDeterminismChecker.rule_return retval = new GCLDeterminismChecker.rule_return();
         retval.start = input.LT(1);
@@ -1632,8 +1641,8 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree callidentifier_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:278:3: ( ^(callnode= CALL callidentifier= IDENTIFIER ( param )* ) )
-            // GCLDeterminismChecker.g:278:5: ^(callnode= CALL callidentifier= IDENTIFIER ( param )* )
+            // GCLDeterminismChecker.g:287:3: ( ^(callnode= CALL callidentifier= IDENTIFIER ( param )* ) )
+            // GCLDeterminismChecker.g:287:5: ^(callnode= CALL callidentifier= IDENTIFIER ( param )* )
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -1656,7 +1665,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
             adaptor.addChild(root_1, callidentifier_tree);
 
-            // GCLDeterminismChecker.g:278:47: ( param )*
+            // GCLDeterminismChecker.g:287:47: ( param )*
             loop9:
             do {
                 int alt9=2;
@@ -1669,7 +1678,7 @@ public class GCLDeterminismChecker extends TreeParser {
 
                 switch (alt9) {
             	case 1 :
-            	    // GCLDeterminismChecker.g:278:47: param
+            	    // GCLDeterminismChecker.g:287:47: param
             	    {
             	    _last = (CommonTree)input.LT(1);
             	    pushFollow(FOLLOW_param_in_rule465);
@@ -1717,7 +1726,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start var_declaration
-    // GCLDeterminismChecker.g:284:1: var_declaration : ^(varnode= VAR var_type IDENTIFIER ) ;
+    // GCLDeterminismChecker.g:293:1: var_declaration : ^(varnode= VAR var_type IDENTIFIER ) ;
     public final GCLDeterminismChecker.var_declaration_return var_declaration() throws RecognitionException {
         GCLDeterminismChecker.var_declaration_return retval = new GCLDeterminismChecker.var_declaration_return();
         retval.start = input.LT(1);
@@ -1736,8 +1745,8 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree IDENTIFIER16_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:285:2: ( ^(varnode= VAR var_type IDENTIFIER ) )
-            // GCLDeterminismChecker.g:285:4: ^(varnode= VAR var_type IDENTIFIER )
+            // GCLDeterminismChecker.g:294:2: ( ^(varnode= VAR var_type IDENTIFIER ) )
+            // GCLDeterminismChecker.g:294:4: ^(varnode= VAR var_type IDENTIFIER )
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -1796,7 +1805,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start var_type
-    // GCLDeterminismChecker.g:290:1: var_type : NODE_TYPE ;
+    // GCLDeterminismChecker.g:299:1: var_type : NODE_TYPE ;
     public final GCLDeterminismChecker.var_type_return var_type() throws RecognitionException {
         GCLDeterminismChecker.var_type_return retval = new GCLDeterminismChecker.var_type_return();
         retval.start = input.LT(1);
@@ -1811,8 +1820,8 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree NODE_TYPE17_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:291:2: ( NODE_TYPE )
-            // GCLDeterminismChecker.g:291:4: NODE_TYPE
+            // GCLDeterminismChecker.g:300:2: ( NODE_TYPE )
+            // GCLDeterminismChecker.g:300:4: NODE_TYPE
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -1844,7 +1853,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start param
-    // GCLDeterminismChecker.g:294:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) );
+    // GCLDeterminismChecker.g:303:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) );
     public final GCLDeterminismChecker.param_return param() throws RecognitionException {
         GCLDeterminismChecker.param_return retval = new GCLDeterminismChecker.param_return();
         retval.start = input.LT(1);
@@ -1871,7 +1880,7 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree DONT_CARE24_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:295:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) )
+            // GCLDeterminismChecker.g:304:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) )
             int alt10=3;
             int LA10_0 = input.LA(1);
 
@@ -1918,7 +1927,7 @@ public class GCLDeterminismChecker extends TreeParser {
             }
             switch (alt10) {
                 case 1 :
-                    // GCLDeterminismChecker.g:295:4: ^( PARAM IDENTIFIER )
+                    // GCLDeterminismChecker.g:304:4: ^( PARAM IDENTIFIER )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1949,7 +1958,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLDeterminismChecker.g:296:4: ^( PARAM OUT IDENTIFIER )
+                    // GCLDeterminismChecker.g:305:4: ^( PARAM OUT IDENTIFIER )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1986,7 +1995,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLDeterminismChecker.g:297:4: ^( PARAM DONT_CARE )
+                    // GCLDeterminismChecker.g:306:4: ^( PARAM DONT_CARE )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 

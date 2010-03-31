@@ -268,7 +268,7 @@ public class DefaultGraphTransition extends
 
     /**
      * Returns whether this transition is a self transition (graph does not change,
-     * ControlLocation does not change)
+     * ControlLocation does not change, no output parameters)
      * @return whether this transition is a self transition
      */
     public boolean isSelfTransition() {
@@ -276,6 +276,7 @@ public class DefaultGraphTransition extends
         if (retval && this.source.getLocation() != null) {
             retval &=
                 this.source.getLocation() == this.getControlTransition().target();
+            retval &= this.getControlTransition().hasOutputParameters();
         }
         return retval;
     }

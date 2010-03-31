@@ -196,13 +196,15 @@ public class ControlState implements Node, Location {
      * @param varName the name of the variable
      */
     public void initializeVariable(String varName) {
-        this.initializedVariables.add(varName);
+        if (!this.initializedVariables.contains(varName)) {
+            this.initializedVariables.add(varName);
+        }
     }
 
     /**
      * @return a set of initialized variables
      */
-    public ArrayList<String> getInitializedVariables() {
+    public List<String> getInitializedVariables() {
         return this.initializedVariables;
     }
 
@@ -218,7 +220,9 @@ public class ControlState implements Node, Location {
      * @param variables
      */
     public void initializeVariables(List<String> variables) {
-        this.initializedVariables.addAll(variables);
+        for (String var : variables) {
+            this.initializeVariable(var);
+        }
     }
 
     /**
@@ -279,8 +283,7 @@ public class ControlState implements Node, Location {
     /** Set of outgoing failure transitions. */
     private final Set<ControlTransition> elseTransitions =
         new HashSet<ControlTransition>();
-    private final ArrayList<String> initializedVariables =
-        new ArrayList<String>();
+    private final List<String> initializedVariables = new ArrayList<String>();
 
     /** Sets of rules which, if all rules in an element of this set fail, mean
      * this state is a success state.
