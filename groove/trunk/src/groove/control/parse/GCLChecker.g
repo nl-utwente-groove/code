@@ -103,10 +103,8 @@ rule
 		debug("currentRule: "+currentRule);
 		debug("checking if "+$r.text+" exists");
 		if (!namespace.hasRule($r.text) && !namespace.hasProc($r.text)) {
-			debug("ERROR!");
 			errors.add("No such rule: "+$r.text+" on line "+$r.line);
-		}
-		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {
+		} else if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {
 			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getVisibleParCount()+") on line "+$IDENTIFIER.line);
 		}
 		numParameters = 0;
@@ -138,7 +136,7 @@ param
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text);
 			}
-			if (!namespace.getRule(currentRule).isInputParameter(numParameters)) {
+			if (namespace.getRule(currentRule) != null && !namespace.getRule(currentRule).isInputParameter(numParameters)) {
 				errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule+" on line "+$IDENTIFIER.line);
 			}
 		} )
@@ -155,7 +153,7 @@ param
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);
 			}
-			if (!namespace.getRule(currentRule).isOutputParameter(numParameters)) {
+			if (namespace.getRule(currentRule) != null && !namespace.getRule(currentRule).isOutputParameter(numParameters)) {
 				errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule+" on line "+$IDENTIFIER.line);
 			}
 			if (currentOutputParameters.contains($IDENTIFIER.text)) {

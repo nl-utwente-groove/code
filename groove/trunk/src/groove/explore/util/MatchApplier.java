@@ -68,7 +68,9 @@ public class MatchApplier {
                 ((ControlState) source.getLocation()).getTransition(event.getRule());
         }
         if (source.getLocation() == targetLocation
-            && !event.getRule().isModifying()) {
+            && !event.getRule().isModifying()
+            && (source.getLocation() == null || !((ControlState) source.getLocation()).getTransition(
+                event.getRule()).hasOutputParameters())) {
             transition = createTransition(event, source, source, false);
         } else if (targetLocation == null && event instanceof VirtualEvent<?>) {
             assert source instanceof GraphNextState;
