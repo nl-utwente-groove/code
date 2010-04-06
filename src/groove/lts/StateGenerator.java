@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.explore.util.ControlStateCache;
@@ -112,7 +113,9 @@ public class StateGenerator {
             targetLocation = cache.getTarget(appl.getRule());
         }
         if (!appl.getRule().isModifying()) {
-            if (source.getLocation() != targetLocation) {
+            if (source.getLocation() != targetLocation
+                || (source.getLocation() != null && ((ControlState) source.getLocation()).getTransition(
+                    appl.getRule()).hasOutputParameters())) {
                 GraphNextState freshTarget = createState(appl, source);
                 freshTarget.setLocation(targetLocation);
 
