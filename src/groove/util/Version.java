@@ -102,7 +102,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return "2.0";
+        return GRAMMAR_VERSION_2_0;
     }
 
     /**
@@ -117,7 +117,7 @@ public class Version {
      * properties has no entry for the version. 
      */
     public static String getInitialGrammarVersion() {
-        return "1.0";
+        return GRAMMAR_VERSION_1_0;
     }
 
     /**
@@ -171,20 +171,19 @@ public class Version {
         return compareGrammarVersions(s1, s2) != -1;
     }
 
-    /*
-     * GROOVE versions and grammar versions.
-     * =====================================
-     * 
-     * There is a relation between Grammar versions and the Groove version that
-     * introduced it.
-     * 
-     * Grammar Version          Groove Version
-     * 1.0                      3.3.1 or less
-     * Distinctive characteristics: everything except typing.
-     * 
-     * Grammar Version          Groove Version
-     * 2.0                      4.0.0
-     * Distinctive characteristics: typing.
+    // Grammar Versions
+    // IMPORTANT: Do not forget to create a proper FileFilterAction for the
+    // save grammar as option.
+
+    /**
+     * This is the grammar version associated with Groove version 3.3.1 or less.
+     * This version may contain all functionality except types.
      */
+    public static final String GRAMMAR_VERSION_1_0 = "1.0";
+    /**
+     * This is the grammar version associated with Groove version 4.0.0 or more.
+     * This version introduced typing.
+     */
+    public static final String GRAMMAR_VERSION_2_0 = "2.0";
 
 }

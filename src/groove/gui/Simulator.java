@@ -73,6 +73,8 @@ import groove.io.AspectGxl;
 import groove.io.Aut;
 import groove.io.DefaultFileSystemStore;
 import groove.io.ExtensionFilter;
+import groove.io.FileFilterAction;
+import groove.io.Grammar_1_0_Action;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.SystemStore;
@@ -123,6 +125,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -2298,6 +2301,7 @@ public class Simulator {
         this.grammarExtensions.clear();
         // loader for directories representing grammars
         this.grammarExtensions.add(GPS_FILTER);
+        this.grammarExtensions.add(GPS_1_0_FILTER);
         // loader for archives (jar/zip) containing directories representing
         // grammmars
         this.grammarExtensions.add(JAR_FILTER);
@@ -2781,7 +2785,7 @@ public class Simulator {
     private boolean updating;
 
     /**
-     * A mapping from extension filters (recognising the file formats from the
+     * A mapping from extension filters (recognizing the file formats from the
      * names) to the corresponding grammar loaders.
      */
     private final Set<ExtensionFilter> grammarExtensions =
@@ -4759,6 +4763,18 @@ public class Simulator {
             // now save, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
+                FileFilter filter = getGrammarFileChooser().getFileFilter();
+                FileFilterAction action = getActionFromFilter(filter);
+                if (!action.test(getGrammarView())) {
+                    // The test from the filter failed. Cannot change grammar.
+                    JOptionPane.showMessageDialog(getFrame(), action.text(),
+                        "Save error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else {
+                    // The test from the filter passed. Modify the grammar
+                    // accordingly.
+                    action.modify(getGrammarView());
+                }
                 if (confirmOverwriteGrammar(selectedFile)) {
                     doSaveGrammar(selectedFile);
                 }
@@ -4779,6 +4795,14 @@ public class Simulator {
             this.saveGraphAction = new SaveGraphAction();
         }
         return this.saveGraphAction;
+    }
+
+    /**
+     * @param filter the filter to search.
+     * @return the action associated with the filter.
+     */
+    public FileFilterAction getActionFromFilter(FileFilter filter) {
+        return extensionsToActions.get(filter);
     }
 
     /**
@@ -5253,6 +5277,10 @@ public class Simulator {
     /** Filter for rule system files. */
     static private final ExtensionFilter GPS_FILTER =
         Groove.createRuleSystemFilter();
+    /** Filter for rule system files. Old version. */
+    static private final ExtensionFilter GPS_1_0_FILTER =
+        new ExtensionFilter("Groove production system Version 1.0", ".gps",
+            true);
     /** File filter for jar files. */
     static private final ExtensionFilter JAR_FILTER =
         new ExtensionFilter("Jar-file containing Groove production system",
@@ -5263,7 +5291,7 @@ public class Simulator {
                     && !GPS_FILTER.hasExtension(file.getName());
             }
         };
-    /** File filter for jar files. */
+    /** File filter for zip files. */
     static private final ExtensionFilter ZIP_FILTER =
         new ExtensionFilter("Zip-file containing Groove production system",
             ".gps.zip", false) {
@@ -5274,6 +5302,36 @@ public class Simulator {
             }
 
         };
+
+    /**
+     * Empty FileFilterAction.
+     */
+    private static final FileFilterAction dummyFileFilterAction =
+        new FileFilterAction() {
+            @Override
+            public String text() {
+                return "";
+            }
+        };
+
+    /**
+     * FileFilterAction for saving under grammar version 1.0.
+     */
+    private static final FileFilterAction grammar_1_0_Action =
+        new Grammar_1_0_Action();
+
+    /**
+     * Mapping from extension filters to actions.
+     */
+    private static final Map<ExtensionFilter,FileFilterAction> extensionsToActions =
+        new HashMap<ExtensionFilter,FileFilterAction>();
+
+    static {
+        extensionsToActions.put(GPS_FILTER, dummyFileFilterAction);
+        extensionsToActions.put(JAR_FILTER, dummyFileFilterAction);
+        extensionsToActions.put(ZIP_FILTER, dummyFileFilterAction);
+        extensionsToActions.put(GPS_1_0_FILTER, grammar_1_0_Action);
+    }
 
     /**
      * Minimum width of the rule tree component.
