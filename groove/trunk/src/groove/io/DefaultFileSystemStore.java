@@ -1,5 +1,5 @@
 /*
- * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -272,8 +272,17 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
     @Override
     public SystemProperties getProperties() {
-        testInit();
-        return this.properties;
+        SystemProperties properties = null;
+        if (!this.initialised) {
+            try {
+                properties = this.loadGrammarProperties();
+            } catch (IOException e) {
+                // Should not happen...
+            }
+        } else {
+            properties = this.properties;
+        }
+        return properties;
     }
 
     @Override
@@ -787,7 +796,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * to {@link #properties}.
      */
     private void loadProperties() throws IOException {
-        this.properties = new SystemProperties();
+        this.properties = this.loadGrammarProperties();
+    }
+
+    /**
+     * Loads the properties file from file (if any), and returns them.
+     */
+    public SystemProperties loadGrammarProperties() throws IOException {
+        SystemProperties properties = new SystemProperties();
         File propertiesFile =
             new File(this.file,
                 PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
@@ -801,8 +817,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             InputStream s = new FileInputStream(propertiesFile);
             grammarProperties.load(s);
             s.close();
-            this.properties.putAll(grammarProperties);
+            properties.putAll(grammarProperties);
         }
+        return properties;
     }
 
     /**
