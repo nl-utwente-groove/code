@@ -64,6 +64,7 @@ import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
+import groove.gui.dialog.VersionErrorDialog;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
@@ -90,6 +91,7 @@ import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.GrooveModules;
 import groove.util.Pair;
+import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
@@ -744,6 +746,21 @@ public class Simulator {
         try {
             final SystemStore store =
                 SystemStoreFactory.newStore(grammarFile, false);
+
+            // First we check if the versions are compatible.
+            SystemProperties grammarProperties = store.getProperties();
+            String fileGrammarVersion = grammarProperties.getGrammarVersion();
+            String currentGrammarVersion = Version.getCurrentGrammarVersion();
+            if (!Version.canOpen(currentGrammarVersion, fileGrammarVersion)) {
+                // They are not. Show an error dialog.
+                int buttonPressed =
+                    VersionErrorDialog.show(this.getFrame(), grammarProperties);
+                if (buttonPressed == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            }
+
+            // Load the grammar.
             doLoadGrammar(store, startGraphName);
             // now we know loading succeeded, we can set the current
             // names & files

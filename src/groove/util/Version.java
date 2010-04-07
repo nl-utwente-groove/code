@@ -78,6 +78,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
+    // TODO: Change this to 4.0.0 when making the new release.
     public static final String NUMBER = "3.3.1+";
 
     /** Minimum Java JRE version required. */
@@ -126,5 +127,64 @@ public class Version {
     public static String getInitialGrooveVersion() {
         return "0.0.0";
     }
+
+    /**
+     * Compares two strings with version information and returns an integer
+     * from the comparison. The strings should be well formed version strings: 
+     * numbers separated with dots, with same length.
+     * @param s1 Version string of the form 0.0.0...
+     * @param s2 Version string of the form 0.0.0...
+     * @return 0 if the versions are equal, 1 if s1 > s2, and -1 otherwise.
+     */
+    public static int compareGrammarVersions(String s1, String s2) {
+        int result = -1;
+        if (s1.equals(s2)) {
+            // The strings are equal, no need to look into version numbers.
+            result = 0;
+        } else {
+            String[] as1 = s1.split("\\.");
+            String[] as2 = s2.split("\\.");
+            if (as1.length == as2.length) {
+                for (int i = 0; i < as1.length; i++) {
+                    int n1 = Integer.parseInt(as1[i]);
+                    int n2 = Integer.parseInt(as2[i]);
+                    if (n1 > n2) {
+                        result = 1;
+                        break;
+                    } else if (n1 < n2) {
+                        result = -1;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks whether version s1 can open version s2.
+     * @param s1
+     * @param s2
+     * @return true if s1 can open s2, false otherwise.
+     */
+    public static boolean canOpen(String s1, String s2) {
+        return compareGrammarVersions(s1, s2) != -1;
+    }
+
+    /*
+     * GROOVE versions and grammar versions.
+     * =====================================
+     * 
+     * There is a relation between Grammar versions and the Groove version that
+     * introduced it.
+     * 
+     * Grammar Version          Groove Version
+     * 1.0                      3.3.1 or less
+     * Distinctive characteristics: everything except typing.
+     * 
+     * Grammar Version          Groove Version
+     * 2.0                      4.0.0
+     * Distinctive characteristics: typing.
+     */
 
 }
