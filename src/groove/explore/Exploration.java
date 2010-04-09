@@ -20,14 +20,10 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
-import groove.gui.Simulator;
-import groove.gui.dialog.ErrorDialog;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
 import groove.view.FormatException;
-
-import javax.swing.JDialog;
 
 /**
  * <!=========================================================================>
@@ -129,27 +125,18 @@ public class Exploration {
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.
-     * @param simulator - the Simulator (needed for parsing)
      * @param gts - the GTS on which the exploration will be performed
      * @param state - the state in which exploration will start (may be null)
      */
-    public void play(Simulator simulator, GTS gts, GraphState state) {
+    public void play(GTS gts, GraphState state) throws FormatException {
 
-        Strategy parsedStrategy;
-        Acceptor parsedAcceptor;
+        // parse the strategy
+        Strategy parsedStrategy =
+            new StrategyEnumerator().parse(gts, this.strategy);
 
-        // parse the strategy and the acceptor from the Serialized's
-        try {
-            parsedStrategy =
-                new StrategyEnumerator().parse(simulator, this.strategy);
-            parsedAcceptor =
-                new AcceptorEnumerator().parse(simulator, this.acceptor);
-        } catch (FormatException msg) {
-            JDialog errorDialog =
-                new ErrorDialog(simulator.getFrame(), msg.toString(), null);
-            errorDialog.setVisible(true);
-            return;
-        }
+        // parse the acceptor
+        Acceptor parsedAcceptor =
+            new AcceptorEnumerator().parse(gts, this.acceptor);
 
         // initialize acceptor and GTS
         parsedAcceptor.setResult(new Result(this.nrResults));

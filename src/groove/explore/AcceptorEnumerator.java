@@ -29,7 +29,7 @@ import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.Result;
 import groove.explore.result.RuleApplicationAcceptor;
-import groove.gui.Simulator;
+import groove.lts.GTS;
 import groove.trans.Rule;
 
 /**
@@ -67,7 +67,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
                 + "on it (or rule application results in the same state).") {
 
             @Override
-            public Acceptor create(Simulator simulator) {
+            public Acceptor create(GTS gts) {
                 return new FinalStateAcceptor();
             }
         });
@@ -81,7 +81,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
 
             @Override
-            public Acceptor create(Simulator simulator, Rule rule, Boolean mode) {
+            public Acceptor create(GTS gts, Rule rule, Boolean mode) {
                 IsRuleApplicableCondition condition =
                     new IsRuleApplicableCondition(rule, mode);
                 return new InvariantViolatedAcceptor(condition, new Result());
@@ -97,7 +97,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
                 + "are taken into account).", "rule", new EncodedEnabledRule()) {
 
             @Override
-            public Acceptor create(Simulator simulator, Rule rule) {
+            public Acceptor create(GTS gts, Rule rule) {
                 IsRuleApplicableCondition condition =
                     new IsRuleApplicableCondition(rule, false);
                 return new RuleApplicationAcceptor(condition);
@@ -108,7 +108,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             "This acceptor succeeds whenever a state is added to the LTS.") {
 
             @Override
-            public Acceptor create(Simulator simulator) {
+            public Acceptor create(GTS gts) {
                 return new AnyStateAcceptor();
             }
         });

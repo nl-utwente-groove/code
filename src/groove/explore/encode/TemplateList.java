@@ -19,6 +19,7 @@ package groove.explore.encode;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
+import groove.lts.GTS;
 import groove.view.FormatException;
 
 import java.awt.CardLayout;
@@ -101,15 +102,24 @@ public class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(Simulator simulator, Serialized source)
-        throws FormatException {
+    public A parse(GTS gts, Serialized source) throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {
-                return template.parse(simulator, source);
+                return template.parse(gts, source);
             }
         }
-        throw new FormatException("Unknown keyword '" + source.getKeyword()
-            + "' in type '" + this.typeIdentifier + "'.");
+
+        StringBuffer error = new StringBuffer();
+        error.append("Unknown keyword '" + source.getKeyword() + "' for the "
+            + this.typeIdentifier + ".");
+        error.append("Expected one of the following keywords:");
+        for (Template<A> template : this.templates) {
+            error.append(" '");
+            error.append(template.getKeyword());
+            error.append("'");
+        }
+        error.append(".");
+        throw new FormatException(error.toString());
     }
 
     /**

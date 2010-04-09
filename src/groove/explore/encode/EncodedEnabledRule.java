@@ -17,11 +17,11 @@
 package groove.explore.encode;
 
 import groove.gui.Simulator;
+import groove.lts.GTS;
 import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.view.FormatException;
 import groove.view.GrammarView;
-import groove.view.RuleView;
 
 import java.util.Map;
 import java.util.Set;
@@ -67,17 +67,13 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
      * not exist, or is not enabled, a FormatException is thrown.
      */
     @Override
-    public Rule parse(Simulator simulator, String name) throws FormatException {
-        RuleName ruleName = new RuleName(name);
-        RuleView ruleView = simulator.getGrammarView().getRuleView(ruleName);
-        if (ruleView == null) {
-            throw new FormatException("Error! '" + name
-                + "' is not a valid rulename in the current grammar.");
-        } else if (!ruleView.isEnabled()) {
-            throw new FormatException("Error! The '" + name
-                + "' rule is not enabled in the current grammar.");
+    public Rule parse(GTS gts, String name) throws FormatException {
+        Rule rule = gts.getGrammar().getRuleSystem().getRule(name);
+        if (rule == null) {
+            throw new FormatException("'" + name
+                + "' is not an enabled rule in the loaded grammar.");
         } else {
-            return ruleView.toRule();
+            return rule;
         }
     }
 }

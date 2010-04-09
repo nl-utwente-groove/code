@@ -47,7 +47,7 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
     /**
      * Defines the EnumeratedType by generating a Map of options that are
      * available for selection.
-     * This method must be overridden by the subclass. 
+     * This method must be overridden by the subclass.
      */
     public abstract Map<String,String> generateOptions(Simulator simulator);
 
