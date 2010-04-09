@@ -17,6 +17,7 @@
 package groove.explore.encode;
 
 import groove.gui.Simulator;
+import groove.lts.GTS;
 import groove.view.FormatException;
 
 /**
@@ -42,9 +43,9 @@ public interface EncodedType<A,B> {
      * Create a value of type A out of a value of type B.
      * Throws a FormatException if the parsing fails.
      * 
-     * @param simulator - global environment
+     * @param gts - reference to the GTS
      * @param source - the input value of type B
      */
-    public A parse(Simulator simulator, B source) throws FormatException;
+    public A parse(GTS gts, B source) throws FormatException;
 
 }

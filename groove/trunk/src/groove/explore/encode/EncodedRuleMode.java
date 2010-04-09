@@ -16,9 +16,6 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
-import groove.view.FormatException;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,7 +26,7 @@ import java.util.Map;
  * <!=========================================================================>
  * @author Maarten de Mol
  */
-public class EncodedRuleMode extends EncodedEnumeratedType<Boolean> {
+public class EncodedRuleMode extends EncodedFixedEnumeratedType<Boolean> {
 
     /**
      * Keyword for a 'positive' rule mode, meaning that the corresponding
@@ -49,7 +46,7 @@ public class EncodedRuleMode extends EncodedEnumeratedType<Boolean> {
         "Negative: when the rule does not match.";
 
     @Override
-    public Map<String,String> generateOptions(Simulator simulator) {
+    public Map<String,String> fixedOptions() {
         Map<String,String> result = new LinkedHashMap<String,String>();
         result.put(POSITIVE, POSITIVE_TEXT);
         result.put(NEGATIVE, NEGATIVE_TEXT);
@@ -57,16 +54,10 @@ public class EncodedRuleMode extends EncodedEnumeratedType<Boolean> {
     }
 
     @Override
-    public Boolean parse(Simulator simulator, String source)
-        throws FormatException {
-        if (source.equals(POSITIVE)) {
-            return true;
-        } else if (source.equals(NEGATIVE)) {
-            return false;
-        } else {
-            throw new FormatException("Error! '" + source
-                + "' is not a valid rule mode.");
-        }
+    public Map<String,Boolean> fixedValues() {
+        Map<String,Boolean> result = new LinkedHashMap<String,Boolean>();
+        result.put(POSITIVE, true);
+        result.put(NEGATIVE, false);
+        return result;
     }
-
 }

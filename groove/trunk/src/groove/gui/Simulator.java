@@ -4025,8 +4025,11 @@ public class Simulator {
             if (this.exploration == null) {
                 this.scenario.play();
             } else {
-                this.exploration.play(Simulator.this, getGTS(),
-                    getCurrentState());
+                try {
+                    this.exploration.play(getGTS(), getCurrentState());
+                } catch (FormatException exc) {
+                    showErrorDialog("Error: cannot parse exploration.", exc);
+                }
             }
             gts.removeGraphListener(this.progressListener);
         }
