@@ -112,9 +112,12 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         }
         if (this.directSubtypeMap.get(type).add(subtype)) {
             // transitively close the relation
-            Set<Label> subsubtypes = getSubtypes(subtype);
-            for (Label supertype : getSupertypes(type)) {
-                this.subtypeMap.get(supertype).addAll(subsubtypes);
+            Set<Label> subsubtypes = this.subtypeMap.get(subtype);
+            for (Map.Entry<Label,Set<Label>> typeEntry : this.subtypeMap.entrySet()) {
+                if (!typeEntry.getKey().equals(type)
+                    && typeEntry.getValue().contains(subtype)) {
+                    typeEntry.getValue().addAll(subsubtypes);
+                }
             }
         }
     }
@@ -376,10 +379,14 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         throws FormatException {
         for (Map.Entry<Label,Set<Label>> subtypeEntry : parseDirectSubtypeString(
             directSubtypeString).entrySet()) {
+            Label type = subtypeEntry.getKey();
+            addLabel(type);
             for (Label subtype : subtypeEntry.getValue()) {
-                addSubtype(subtypeEntry.getKey(), subtype);
+                addLabel(subtype);
+                this.subtypeMap.get(type).add(subtype);
             }
         }
+        calculateSubtypes();
     }
 
     @Override
