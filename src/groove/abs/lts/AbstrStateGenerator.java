@@ -66,7 +66,7 @@ public class AbstrStateGenerator extends StateGenerator {
         AbstrGraphState abstrSource = (AbstrGraphState) source;
         Set<GraphTransition> result = new HashSet<GraphTransition>();
         Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
-
+        // TODO this loop can't be right: transfResult is always empty 
         for (AbstrGraph transf : transfResult) {
             GraphTransition trans;
             if (transf != DefaultAbstrGraph.INVALID_AG) {
