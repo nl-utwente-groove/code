@@ -62,7 +62,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.jgraph.graph.DefaultEdge;
-import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 
 /**
@@ -518,24 +517,25 @@ public class ShowHideMenu extends JMenu {
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
          * @param jgraph the underlying j-graph
-         * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
+         * @param showMode one of {@link #ADD_MODE} or
          *        {@link #ONLY_MODE}
          */
         protected ContextAction(JGraph jgraph, int showMode) {
             super(jgraph, showMode, CONTEXT_ACTION_NAME);
+            assert showMode != HIDE_MODE : "Hiding not defined for context";
             putValue(MNEMONIC_KEY, CONTEXT_MNEMONIC);
         }
 
         @Override
         protected boolean isInvolved(JCell cell) {
-            Object[] selectedCellArray = this.jgraph.getSelectionCells();
-            if (getShowMode() != HIDE_MODE && this.jgraph.isEdge(cell)) {
+            boolean result = false;
+            if (this.jgraph.isEdge(cell)) {
                 DefaultEdge edge = (DefaultEdge) cell;
                 JCell sourcePort =
                     (JCell) ((DefaultPort) edge.getSource()).getParent();
                 JCell targetPort =
                     (JCell) ((DefaultPort) edge.getTarget()).getParent();
-                boolean result;
+                Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
                     result = !isHidden(sourcePort) || !isHidden(targetPort);
                 } else {
@@ -545,20 +545,8 @@ public class ShowHideMenu extends JMenu {
                         selectedCells.contains(sourcePort)
                             || selectedCells.contains(targetPort);
                 }
-                return result;
-            } else if (getShowMode() == HIDE_MODE && this.jgraph.isVertex(cell)) {
-                DefaultPort port =
-                    (DefaultPort) ((DefaultGraphCell) cell).getChildAt(0);
-                boolean hasHiddenIncidentEdge = false;
-                Iterator<?> edgeIter = port.edges();
-                while (!hasHiddenIncidentEdge && edgeIter.hasNext()) {
-                    DefaultEdge edge = (DefaultEdge) edgeIter.next();
-                    hasHiddenIncidentEdge = edge == cell;
-                }
-                return hasHiddenIncidentEdge;
-            } else {
-                return false;
             }
+            return result;
         }
     }
 
@@ -634,11 +622,11 @@ public class ShowHideMenu extends JMenu {
                     // (as in the case of LTS graphs)
                     // we have to convert the label map so that it maps label
                     // text instead
-                    this.textEdgeMap = new KeyPartition<Label,Edge>() {
+                    this.textEdgeMap = new KeyPartition<String,Edge>() {
                         @Override
-                        protected Label getKey(Object value) {
+                        protected String getKey(Object value) {
                             if (value instanceof Edge) {
-                                return ((Edge) value).label();
+                                return ((Edge) value).label().text();
                             } else {
                                 return null;
                             }
@@ -647,7 +635,7 @@ public class ShowHideMenu extends JMenu {
                     this.textEdgeMap.values().addAll(getGraph().edgeSet());
                     getGraph().addGraphListener(this.listener);
                 }
-                return this.textEdgeMap.getCell(label);
+                return this.textEdgeMap.getCell(label.text());
             }
 
             /**
@@ -658,12 +646,12 @@ public class ShowHideMenu extends JMenu {
             }
 
             /** Returns a map from the text to the corresponding edges. */
-            KeyPartition<Label,Edge> getTextEdgeMap() {
+            KeyPartition<String,Edge> getTextEdgeMap() {
                 return this.textEdgeMap;
             }
 
             /** Mapping from label text to edges. */
-            private KeyPartition<Label,Edge> textEdgeMap;
+            private KeyPartition<String,Edge> textEdgeMap;
             /** Graph listener to keep the {@link #textEdgeMap} up-to-date. */
             private final GraphListener listener = new GraphAdapter() {
                 @Override
