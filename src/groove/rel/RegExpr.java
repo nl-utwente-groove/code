@@ -1350,6 +1350,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 throw error;
             }
             String prefix = operands[0];
+            // derive the type of labels the wildcard should match
             int labelType = Label.BINARY;
             int separatorPos = prefix.length() - 1;
             if (separatorPos >= 0) {
@@ -1362,8 +1363,11 @@ abstract public class RegExpr { // implements VarSetSupport {
                     throw error;
                 }
             }
+            // parse the identifier and constraint expression
             String text = operands[1];
-            if (text.length() != 0) {
+            if (text.length() == 0) {
+                result = newInstance();
+            } else {
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
                 int subStringCount = operand.second().size();
                 String identifier = operand.first();
