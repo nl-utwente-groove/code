@@ -27,6 +27,7 @@ import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
+import groove.explore.result.NoStateAcceptor;
 import groove.explore.result.Result;
 import groove.explore.result.RuleApplicationAcceptor;
 import groove.lts.GTS;
@@ -110,6 +111,15 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             @Override
             public Acceptor create(GTS gts) {
                 return new AnyStateAcceptor();
+            }
+        });
+
+        addTemplate(new Template0<Acceptor>("No", "No State",
+            "This acceptor always fails whenever a state is added to the LTS.") {
+
+            @Override
+            public Acceptor create(GTS gts) {
+                return new NoStateAcceptor();
             }
         });
     }
