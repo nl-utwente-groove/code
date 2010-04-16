@@ -308,6 +308,7 @@ public class NewRuleView implements RuleView {
             try {
                 rule.setParameters(parameters.getInPars(),
                     parameters.getOutPars(), parameters.getHiddenPars());
+                rule.setSpecifiedParameterTypes(parameters.getSpecifiedParameterTypes());
                 rule.setFixed();
 
                 if (TO_RULE_DEBUG) {
@@ -1714,11 +1715,21 @@ public class NewRuleView implements RuleView {
             return this.hiddenPars;
         }
 
+        /**
+         * Returns a map of the parameter numbers with their specified types
+         * (in, out or both) corresponding to the constants set in Rule.
+         * @return a map of the parameter numbers with their specified types
+         */
+        public Map<Integer,Integer> getSpecifiedParameterTypes() {
+            return this.specifiedParameterTypes;
+        }
+
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
             SortedMap<Integer,Node> inParMap = new TreeMap<Integer,Node>();
             SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
+            this.specifiedParameterTypes = new TreeMap<Integer,Integer>();
             this.hiddenPars = new HashSet<Node>();
             // set of all parameter numbers, to check duplicates
             Set<Integer> parNumbers = new HashSet<Integer>();
@@ -1727,6 +1738,8 @@ public class NewRuleView implements RuleView {
                 // check if the node is a parameter
                 Integer nr = ParameterAspect.getParNumber(node);
                 if (nr != null) {
+                    int parType = ParameterAspect.getParameterType(node);
+                    this.specifiedParameterTypes.put(nr, parType);
                     try {
                         if (!parNumbers.add(nr)) {
                             throw new FormatException(
@@ -1790,5 +1803,7 @@ public class NewRuleView implements RuleView {
         private List<Node> outPars;
         /** Set of all rule parameter nodes */
         private Set<Node> hiddenPars;
+        /** Map of parameters with their specification (in, out or both) */
+        private Map<Integer,Integer> specifiedParameterTypes;
     }
 }

@@ -231,6 +231,17 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         initializeParameterTypes();
     }
 
+    /**
+     * Sets the specified parameter types as defined in the rule editor. Parameters
+     * can be input, output or both, signified by ParameterAspect.PAR_IN_NAME, 
+     * PAR_OUT_NAME and PAR_NAME, respectively.
+     * @param specifiedParameterTypes a map that maps parameter numbers to parameter types
+     */
+    public void setSpecifiedParameterTypes(
+            Map<Integer,Integer> specifiedParameterTypes) {
+        this.specifiedParameterTypes = specifiedParameterTypes;
+    }
+
     private void initializeParameterTypes() {
         for (int param = 1; param <= getVisibleParCount(); param++) {
             int result = PARAMETER_DOES_NOT_EXIST;
@@ -304,7 +315,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return true if this parameter can be used as output parameter, false otherwise
      */
     public boolean isOutputParameter(int param) {
-        return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
+        int parType1 = getParameterType(param);
+        int parType2 = this.specifiedParameterTypes.get(param);
+        return (parType1 == PARAMETER_OUTPUT || parType1 == PARAMETER_BOTH)
+            && (parType2 == PARAMETER_OUTPUT || parType2 == PARAMETER_BOTH);
     }
 
     /**
@@ -329,7 +343,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return true if this parameter can be used as input parameter
      */
     public boolean isInputParameter(int param) {
-        return (getParameterType(param) == PARAMETER_INPUT || getParameterType(param) == PARAMETER_BOTH);
+        int parType1 = getParameterType(param);
+        int parType2 = this.specifiedParameterTypes.get(param);
+        return (parType1 == PARAMETER_INPUT || parType1 == PARAMETER_BOTH)
+            && (parType2 == PARAMETER_INPUT || parType2 == PARAMETER_BOTH);
     }
 
     /**
@@ -1436,6 +1453,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
 
-    private final HashMap<Integer,Integer> parameterTypes =
+    private final Map<Integer,Integer> parameterTypes =
         new HashMap<Integer,Integer>();
+
+    private Map<Integer,Integer> specifiedParameterTypes;
 }

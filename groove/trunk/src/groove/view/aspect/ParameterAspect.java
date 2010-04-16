@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.trans.Rule;
 import groove.view.FormatException;
 
 /**
@@ -33,9 +34,17 @@ public class ParameterAspect extends AbstractAspect {
         super(PARAMETER_ASPECT_NAME);
     }
 
+    /**
+     * Creates a new instance of this aspect with a given name
+     * @param name the name to give to this aspect
+     */
+    public ParameterAspect(String name) {
+        super(name);
+    }
+
     @Override
     protected AspectValue createValue(String name) throws FormatException {
-        return new ParameterAspectValue();
+        return new ParameterAspectValue(name);
     }
 
     /**
@@ -76,11 +85,47 @@ public class ParameterAspect extends AbstractAspect {
         }
     }
 
+    /**
+     * Returns the rule aspect value associated with a given aspect element.
+     * Convenience method for {@link AspectElement#getValue(Aspect)} with
+     * {@link #getInstance()} as parameter.
+     */
+    public static AspectValue getParameterValue(AspectElement elem) {
+        return elem.getValue(getInstance());
+    }
+
+    /**
+     * Gets the type of a given parameter, i.e. whether it may be used as 
+     * input, output or both in the control language.
+     * @param elem the AspectElement to check the type for 
+     * @return Rule.PARAMETER_INPUT || Rule.PARAMETER_OUTPUT || Rule.PARAMETER_BOTH
+     */
+    public static int getParameterType(AspectElement elem) {
+        AspectValue param = getParameterValue(elem);
+        if (param != null) {
+            String paramString = param.toString();
+            if (paramString.startsWith(PAR_IN_NAME)) {
+                return Rule.PARAMETER_INPUT;
+            } else if (paramString.startsWith(PAR_OUT_NAME)) {
+                return Rule.PARAMETER_OUTPUT;
+            } else if (paramString.startsWith(PAR_NAME)) {
+                return Rule.PARAMETER_BOTH;
+            }
+        }
+        return Rule.PARAMETER_DOES_NOT_EXIST;
+    }
+
     /** The name of the aspect. */
     private static final String PARAMETER_ASPECT_NAME = "parameter";
 
-    /** The label for the parameter aspect value * */
+    /** The label for the parameter aspect value */
     public static final String PAR_NAME = "par";
+
+    /** The label for the parameter-in value */
+    public static final String PAR_IN_NAME = "parin";
+
+    /** The label for the parameter-out value */
+    public static final String PAR_OUT_NAME = "parout";
 
     /** The singleton instance of this aspect. */
     private static final ParameterAspect instance = new ParameterAspect();
@@ -88,12 +133,13 @@ public class ParameterAspect extends AbstractAspect {
     static {
         try {
             instance.addValue(PAR_NAME);
+            instance.addValue(PAR_IN_NAME);
+            instance.addValue(PAR_OUT_NAME);
         } catch (FormatException exc) {
             throw new Error("Aspect '" + PARAMETER_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
         }
     }
-    
 
     /**
      * Aspect value encoding wrapping a number value.
@@ -104,13 +150,13 @@ public class ParameterAspect extends AbstractAspect {
         /** 
          * Constructs a new aspect value, for the {@link ParameterAspect}. 
          */
-        public ParameterAspectValue()
-            throws FormatException {
-            super(ParameterAspect.getInstance(), ParameterAspect.PAR_NAME);
+        public ParameterAspectValue(String name) throws FormatException {
+            super(ParameterAspect.getInstance(), name);
         }
 
         /** Creates an instance of a given nesting aspect value, with a given level. */
-        private ParameterAspectValue(ParameterAspectValue original, Integer number) {
+        private ParameterAspectValue(ParameterAspectValue original,
+                Integer number) {
             super(original, number);
         }
 
@@ -134,7 +180,7 @@ public class ParameterAspect extends AbstractAspect {
 
         /** Start character of parameter strings. */
         static private final char PARAMETER_START_CHAR = '$';
-        
+
         /** Content parser which acts as the identity function on strings. */
         private class ParameterParser implements ContentParser<Integer> {
             /** Empty constructor with the correct visibility. */
@@ -147,18 +193,19 @@ public class ParameterAspect extends AbstractAspect {
                     return null;
                 }
                 if (value.charAt(0) != PARAMETER_START_CHAR) {
-                    throw new FormatException("Parameter '%s' should start with '%c'", value, PARAMETER_START_CHAR);
+                    throw new FormatException(
+                        "Parameter '%s' should start with '%c'", value,
+                        PARAMETER_START_CHAR);
                 }
                 try {
                     return Integer.parseInt(value.substring(1));
                 } catch (NumberFormatException exc) {
-                    throw new FormatException(
-                        "Invalid parameter number", value);
+                    throw new FormatException("Invalid parameter number", value);
                 }
             }
 
             public String toString(Integer content) {
-                return PARAMETER_START_CHAR+content.toString();
+                return PARAMETER_START_CHAR + content.toString();
             }
         }
     }
