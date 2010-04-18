@@ -18,7 +18,6 @@ package groove.graph;
 
 import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
-import groove.util.Reporter;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -90,10 +89,8 @@ public abstract class AbstractMorphism extends
      * @require <tt>morph instanceof InternalMorphism</tt>
      */
     public Morphism after(Morphism morph) {
-        reporter.start(AFTER);
         Morphism result = createMorphism(morph.dom(), this.cod);
         constructConcat(this, morph, result);
-        reporter.stop();
         return result;
     }
 
@@ -114,15 +111,12 @@ public abstract class AbstractMorphism extends
      * @ensure <tt>result == null || result: InternalMorphism == this \circ other^{-1}</tt>
      */
     public Morphism afterInverse(Morphism morph) {
-        reporter.start(AFTER_INVERSE);
         try {
             Morphism result = createMorphism(morph.cod(), this.cod);
             constructInvertConcat(morph, this, result);
             return result;
         } catch (FormatException exc) {
             return null;
-        } finally {
-            reporter.stop();
         }
     }
 
@@ -131,15 +125,12 @@ public abstract class AbstractMorphism extends
      * {@link #createMorphism(Graph, Graph)}.
      */
     public Morphism inverseThen(Morphism morph) {
-        reporter.start(AFTER_INVERSE);
         try {
             Morphism result = createMorphism(this.cod, morph.cod());
             constructInvertConcat(this, morph, result);
             return result;
         } catch (FormatException exc) {
             return null;
-        } finally {
-            reporter.stop();
         }
     }
 
@@ -184,8 +175,9 @@ public abstract class AbstractMorphism extends
     @Override
     public boolean equals(Object other) {
         if (other instanceof Morphism) {
-            return dom().equals(((Morphism)other).dom()) && cod().equals(((Morphism)other).cod())
-            && super.equals(other);
+            return dom().equals(((Morphism) other).dom())
+                && cod().equals(((Morphism) other).cod())
+                && super.equals(other);
         } else {
             return false;
         }
@@ -448,15 +440,4 @@ public abstract class AbstractMorphism extends
             }
         }
     }
-
-    // ---------------------------- reporting --------------------------------
-
-    /** Reporter instance for profiling {@link Morphism} methods. */
-    static public final Reporter reporter =
-        Reporter.register(DefaultMorphism.class);
-    /** Handle for profiling {@link #after(Morphism)} */
-    static private final int AFTER = reporter.newMethod("after(Morphism)");
-    /** Handle for profiling {@link #afterInverse(Morphism)} */
-    static private final int AFTER_INVERSE =
-        reporter.newMethod("afterInverse(Morphism)");
 }

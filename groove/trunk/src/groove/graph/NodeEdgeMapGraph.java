@@ -71,26 +71,18 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
 
     @Override
     public boolean containsElement(Element elem) {
-        reporter.start(CONTAINS_ELEMENT);
-        try {
-            if (elem instanceof Node) {
-                return this.sourceEdgeMap.containsKey(elem);
-            } else {
-                assert elem instanceof Edge;
-                Set<Edge> edgeSet =
-                    this.sourceEdgeMap.get(((Edge) elem).source());
-                return edgeSet != null && edgeSet.contains(elem);
-            }
-        } finally {
-            reporter.stop();
+        if (elem instanceof Node) {
+            return this.sourceEdgeMap.containsKey(elem);
+        } else {
+            assert elem instanceof Edge;
+            Set<Edge> edgeSet = this.sourceEdgeMap.get(((Edge) elem).source());
+            return edgeSet != null && edgeSet.contains(elem);
         }
     }
 
     public Set<? extends Edge> edgeSet() {
-        reporter.start(EDGE_SET);
         Set<Edge> result =
             new SetOfDisjointSets<Edge>(this.sourceEdgeMap.values());
-        reporter.stop();
         return result;
     }
 
@@ -100,9 +92,7 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
     }
 
     public Set<? extends Node> nodeSet() {
-        reporter.start(NODE_SET);
         Set<Node> result = this.unmodifiableNodeSet;
-        reporter.stop();
         return result;
     }
 
@@ -110,9 +100,7 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
 
     @Override
     public NodeEdgeMapGraph clone() {
-        reporter.start(CLONE);
         NodeEdgeMapGraph result = new NodeEdgeMapGraph(this);
-        reporter.stop();
         return result;
     }
 
@@ -123,7 +111,6 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
     // ------------------------- COMMANDS ------------------------------
 
     public boolean addNode(Node node) {
-        reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsElement(node);
         if (added) {
@@ -132,13 +119,11 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
             this.sourceEdgeMap.put(node, new HashSet<Edge>());
             fireAddNode(node);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean addEdge(Edge edge) {
         boolean result = false;
-        reporter.start(ADD_EDGE);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         for (int i = 0; i < edge.endCount(); i++) {
             Node end = edge.end(i);
@@ -158,20 +143,16 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
             this.edgeCount++;
             fireAddEdge(edge);
         }
-        reporter.stop();
         return result;
     }
 
     public boolean addEdgeWithoutCheck(Edge edge) {
-        reporter.start(ADD_EDGE);
         boolean result = addEdge(edge);
-        reporter.stop();
         return result;
     }
 
     public boolean removeEdge(Edge edge) {
         boolean result = false;
-        reporter.start(REMOVE_EDGE);
         assert !isFixed() : "Trying to remove " + edge
             + " from unmodifiable graph";
         for (int i = 0; i < edge.endCount(); i++) {
@@ -182,12 +163,10 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
             this.edgeCount--;
             fireRemoveEdge(edge);
         }
-        reporter.stop();
         return result;
     }
 
     public boolean removeNode(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
@@ -203,12 +182,10 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
         if (result) {
             removeNodeWithoutCheck(node);
         }
-        reporter.stop();
         return result;
     }
 
     public boolean removeNodeWithoutCheck(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
@@ -218,7 +195,6 @@ public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
         if (result) {
             fireRemoveNode(node);
         }
-        reporter.stop();
         return result;
     }
 

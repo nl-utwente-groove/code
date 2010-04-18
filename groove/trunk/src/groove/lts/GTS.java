@@ -349,7 +349,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     public void addTransition(GraphTransition transition) {
         if (isStoreTransitions()) {
-            reporter.start(ADD_TRANSITION_STOP);
             // add (possibly isomorphically modified) edge to LTS
             if (transition.source().addTransition(transition)) {
                 this.transitionCount++;
@@ -357,12 +356,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             } else {
                 spuriousTransitionCount++;
             }
-            reporter.stop();
         } else if (transition instanceof GraphNextState) {
-            reporter.start(ADD_TRANSITION_STOP);
             this.transitionCount++;
             fireAddEdge(transition);
-            reporter.stop();
         }
     }
 
@@ -376,14 +372,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      *         then, <tt>state</tt> was added and the listeners notified).
      */
     public GraphState addState(GraphState newState) {
-        reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
         GraphState result = getStateSet().put(newState);
         if (result == null) {
             ((AbstractGraphState) newState).setNumber(nodeCount());
             fireAddNode(newState);
         }
-        reporter.stop();
         return result;
     }
 
@@ -716,11 +710,4 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Number of states for which the state set should have room initially.
      */
     protected final static int INITIAL_STATE_SET_SIZE = 10000;
-
-    /** Profiling aid for adding states. */
-    static public final int ADD_STATE = reporter.newMethod("addState");
-    /** Profiling aid for adding transitions. */
-    static public final int ADD_TRANSITION_STOP =
-        reporter.newMethod("addTransition  - stop");
-
 }

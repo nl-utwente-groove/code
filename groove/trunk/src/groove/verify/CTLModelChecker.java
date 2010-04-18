@@ -30,10 +30,8 @@ import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -151,9 +149,6 @@ public class CTLModelChecker extends CommandLineTool {
             } else {
                 System.out.println("The model satisfies the given property.");
             }
-        }
-        if (REPORT) {
-            report();
         }
     }
 
@@ -405,25 +400,6 @@ public class CTLModelChecker extends CommandLineTool {
     }
 
     /**
-     * Writes results to the files it asks for.
-     */
-    protected void report() {
-        try {
-            BufferedReader systemIn =
-                new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Log file? ");
-            String filename = systemIn.readLine();
-            if (filename.length() != 0) {
-                groove.util.Reporter.report(new PrintWriter(new FileWriter(
-                    filename + ".log", true), true));
-            }
-        } catch (IOException exc) {
-            System.out.println(exc.getMessage());
-        }
-        groove.util.Reporter.report(new PrintWriter(System.out));
-    }
-
-    /**
      * Returns a usage message for the command line tool.
      */
     @Override
@@ -481,9 +457,4 @@ public class CTLModelChecker extends CommandLineTool {
      * The state marker.
      */
     private CTLFormulaMarker marker;
-
-    /**
-     * 
-     */
-    private static final boolean REPORT = false;
 }

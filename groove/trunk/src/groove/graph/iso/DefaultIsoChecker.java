@@ -61,7 +61,7 @@ public class DefaultIsoChecker implements IsoChecker {
         this.strong = strong;
     }
 
-    public boolean areIsomorphic(Graph dom, Graph cod) {
+    public synchronized boolean areIsomorphic(Graph dom, Graph cod) {
         boolean result;
         // pre-calculate the node counts to take the time for
         // constructing the graph out of the isomorphism check time
@@ -164,7 +164,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * Tries to construct an isomorphism between the two given graphs, and
      * reports if this succeeds.
      */
-    public boolean hasIsomorphism(Graph dom, Graph cod) {
+    public synchronized boolean hasIsomorphism(Graph dom, Graph cod) {
         return hasIsomorphism(dom.getCertifier(isStrong()),
             cod.getCertifier(isStrong()));
     }
@@ -183,7 +183,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param dom the first graph to be compared
      * @param cod the second graph to be compared
      */
-    public NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
+    public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
         return getIsomorphism(dom.getCertifier(isStrong()),
             cod.getCertifier(isStrong()));
     }
@@ -779,7 +779,7 @@ public class DefaultIsoChecker implements IsoChecker {
         return true;
     }
 
-    public boolean isStrong() {
+    public synchronized boolean isStrong() {
         return this.strong;
     }
 
@@ -787,7 +787,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * Sets the checker strength.
      * @see #isStrong()
      */
-    public void setStrong(boolean strong) {
+    public synchronized void setStrong(boolean strong) {
         this.strong = strong;
     }
 

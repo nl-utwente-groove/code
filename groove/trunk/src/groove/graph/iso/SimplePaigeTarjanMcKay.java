@@ -23,7 +23,6 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
-import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -83,7 +82,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * values.
      */
     public Map<Element,Certificate<?>> getCertificateMap() {
-        reporter.start(GET_CERTIFICATE_MAP);
         // check if the map has been computed before
         if (this.certificateMap == null) {
             getGraphCertificate();
@@ -97,7 +95,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 this.certificateMap.put(edgeCert.getElement(), edgeCert);
             }
         }
-        reporter.stop();
         return this.certificateMap;
     }
 
@@ -136,13 +133,11 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Node> computeNodePartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
         PartitionMap<Node> result = new PartitionMap<Node>();
         // invert the certificate map
         for (Certificate<Node> cert : this.nodeCerts) {
             result.add(cert);
         }
-        reporter.stop();
         return result;
     }
 
@@ -151,14 +146,12 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Edge> computeEdgePartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
-        reporter.stop();
         return result;
     }
 
@@ -170,7 +163,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         if (TRACE) {
             System.out.printf("Computing graph certificate%n");
         }
-        reporter.start(GET_GRAPH_CERTIFICATE);
         // check if the certificate has been computed before
         if (this.graphCertificate == 0) {
             computeCertificates();
@@ -178,7 +170,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 this.graphCertificate = 1;
             }
         }
-        reporter.stop();
         if (TRACE) {
             System.out.printf("Graph certificate: %d%n", this.graphCertificate);
         }
@@ -228,7 +219,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
                 "First iteration done; %d partitions for %d nodes in %d iterations%n",
                 this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
-        reporter.stop();
     }
 
     /**
@@ -241,8 +231,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         // is likely that this results in the actual graph construction
         int nodeCount = this.graph.nodeCount();
         int edgeCount = this.graph.edgeCount();
-        reporter.start(COMPUTE_CERTIFICATES);
-        reporter.start(INIT_CERTIFICATES);
         this.nodeCerts = new NodeCertificate[nodeCount];
         this.edgeCerts = new Certificate[edgeCount];
         this.otherNodeCertMap = new HashMap<Node,NodeCertificate>();
@@ -277,7 +265,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         if (RECORD) {
             this.partitionRecord = new ArrayList<Queue<Block>>();
         }
-        reporter.stop();
         return result;
     }
 
@@ -286,9 +273,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * into the certificate node map.
      */
     private NodeCertificate initNodeCert(final Node node) {
-        if (TIME) {
-            reporter.start(INIT_CERT_NODE);
-        }
         NodeCertificate nodeCert;
         // if the node is an instance of OperationNode, the certificate
         // of this node also depends on the operation represented by it
@@ -302,9 +286,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
         putNodeCert(nodeCert);
         this.nodeCerts[this.nodeCertCount] = nodeCert;
         this.nodeCertCount++;
-        if (TIME) {
-            reporter.stop();
-        }
         return nodeCert;
     }
 
@@ -313,9 +294,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      * into the certificate edge map.
      */
     private void initEdgeCert(Edge edge) {
-        if (TIME) {
-            reporter.start(INIT_CERT_EDGE);
-        }
         Node source = edge.source();
         NodeCertificate sourceCert = getNodeCert(source);
         assert sourceCert != null : "Edge source of " + edge + " not found in "
@@ -342,9 +320,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
             assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
-        }
-        if (TIME) {
-            reporter.stop();
         }
     }
 
@@ -612,33 +587,6 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
      */
     private static final Block[] EMPTY_BLOCK_ARRAY = new Block[0];
 
-    // --------------------------- reporter definitions ---------------------
-    /** Reporter instance to profile methods of this class. */
-    static public final Reporter reporter = DefaultIsoChecker.reporter;
-    /** Handle to profile {@link #computeCertificates()}. */
-    static public final int COMPUTE_CERTIFICATES =
-        PartitionRefiner.COMPUTE_CERTIFICATES;
-    /** Handle to profile {@link #initCertificates()}. */
-    static protected final int INIT_CERTIFICATES =
-        PartitionRefiner.INIT_CERTIFICATES;
-    /** Handle to profile {@link #initNodeCert(Node)}. */
-    static protected final int INIT_CERT_NODE = PartitionRefiner.INIT_CERT_NODE;
-    /** Handle to profile {@link #initEdgeCert(Edge)}. */
-    static protected final int INIT_CERT_EDGE = PartitionRefiner.INIT_CERT_EDGE;
-    /** Handle to profile iterateCertificates(). */
-    static protected final int ITERATE_CERTIFICATES =
-        PartitionRefiner.ITERATE_CERTIFICATES;
-    /** Handle to profile {@link #getCertificateMap()}. */
-    static protected final int GET_CERTIFICATE_MAP =
-        PartitionRefiner.GET_CERTIFICATE_MAP;
-    /** Handle to profile {@link #getNodePartitionMap()}. */
-    static protected final int GET_PARTITION_MAP =
-        PartitionRefiner.GET_PARTITION_MAP;
-    /** Handle to profile {@link #getGraphCertificate()}. */
-    static protected final int GET_GRAPH_CERTIFICATE =
-        PartitionRefiner.GET_GRAPH_CERTIFICATE;
-    /** Flag to turn on more time profiling. */
-    static private final boolean TIME = false;
     /** Flag to turn on System.out-tracing. */
     static private final boolean TRACE = false;
     /** Flag to turn on partition recording. */

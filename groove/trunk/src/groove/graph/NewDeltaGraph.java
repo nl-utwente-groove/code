@@ -227,7 +227,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      * Initialises all the data structures, if this has not yet been done.
      */
     private void initData() {
-        reporter.start(INIT_DATA);
         if (!isDataInitialised()) {
             assert this.nodeEdgeMap == null;
             assert this.labelEdgeMaps == null;
@@ -259,7 +258,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
                 }
             }
         }
-        reporter.stop();
     }
 
     /** Reports if the data structures of this delta graph have been initialised. */
@@ -274,7 +272,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     private DataTarget getDataTarget(int depth) {
         DataTarget result;
-        reporter.start(TRANSFER_DATA);
         // data should have been initialised
         assert isDataInitialised();
         if ((depth + 1) % MAX_CHAIN_DEPTH == 0) {
@@ -282,7 +279,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         } else {
             result = this.copyData ? new CopyTarget() : new SwingTarget();
         }
-        reporter.stop();
         return result;
     }
 

@@ -206,13 +206,11 @@ abstract class AbstractSearchItem implements SearchItem {
          * to {@link #set()}.
          */
         final public boolean find() {
-            SearchPlanStrategy.reporter.start(SearchPlanStrategy.RECORD_FIND_SINGULAR);
             if (this.found) {
                 reset();
             } else {
                 this.found = set();
             }
-            SearchPlanStrategy.reporter.stop();
             return this.found;
         }
 
@@ -275,7 +273,6 @@ abstract class AbstractSearchItem implements SearchItem {
          * Calls {@link #reset()} if no such image is found.
          */
         final public boolean find() {
-            SearchPlanStrategy.reporter.start(SearchPlanStrategy.RECORD_FIND_MULTIPLE);
             if (this.imageIter == null) {
                 init();
             }
@@ -287,7 +284,6 @@ abstract class AbstractSearchItem implements SearchItem {
             if (!result) {
                 reset();
             }
-            SearchPlanStrategy.reporter.stop();
             return result;
         }
 

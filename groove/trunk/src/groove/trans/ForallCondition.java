@@ -43,7 +43,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     final public Collection<CompositeMatch> getMatches(GraphShape host,
             NodeEdgeMap contextMap) {
         Collection<CompositeMatch> result = null;
-        reporter.start(GET_MATCHING);
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
         final VarNodeEdgeMap anchorMap;
@@ -59,7 +58,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             result =
                 computeMatches(host, getMatcher().getMatchIter(host, anchorMap));
         }
-        reporter.stop();
         return result;
     }
 

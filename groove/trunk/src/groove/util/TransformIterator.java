@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 /**
  * An iterator constructed by transforming the results from another ("inner")
  * iterator. Inner results can also be filtered out. The abstract
- * <tt>transform(Object)</tt> method describes the transformation from the
+ * {@link #toOuter(Object)} method describes the transformation from the
  * inner iterator's returned objects to this one's results.
  * @author Arend Rensink
  * @version $Revision$
@@ -40,7 +40,7 @@ abstract public class TransformIterator<T,U> implements Iterator<U> {
     /**
      * Constructs a transforming iterator from the iterator of a given
      * collection.
-     * @param innerSet the inner iterator will be initialized from here
+     * @param innerSet the inner iterator will be initialised from here
      */
     public TransformIterator(Collection<? extends T> innerSet) {
         this(innerSet.iterator());

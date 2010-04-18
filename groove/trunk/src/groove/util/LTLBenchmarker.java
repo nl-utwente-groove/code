@@ -1065,14 +1065,6 @@ public class LTLBenchmarker extends CommandLineTool {
     /** Prints a report of the run on the standard output. */
     protected void report() {
         startLog();
-        if (getVerbosity() == HIGH_VERBOSITY) {
-            Reporter.report();
-            if (isLogging()) {
-                Reporter.report(getLogWriter());
-            }
-            println();
-            println("-------------------------------------------------------------------");
-        }
         if (getVerbosity() > LOW_VERBOSITY) {
             println("Grammar:\t" + grammarLocation);
             println("Start graph:\t"
@@ -1263,7 +1255,6 @@ public class LTLBenchmarker extends CommandLineTool {
         long overhead = total - running;
         long isoChecking = DefaultIsoChecker.getTotalTime();
         long building = StateGenerator.getGenerateTime() - isoChecking;
-        long measuring = Reporter.getTotalTime();
 
         // this calculation incorporates only transforming RuleMatches into
         // RuleApplications
@@ -1275,9 +1266,7 @@ public class LTLBenchmarker extends CommandLineTool {
         // of matches, isomorphisms, adding to GTS, and reporter-duty: i.e. it's
         // the "overhead" of the scenario
         long transforming =
-            running - matching - isoChecking - building - measuring;
-        // long checktotal =
-        // matching+isoChecking+building+measuring+transforming;
+            running - matching - isoChecking - building;
 
         println("Time (ms):\t" + total);
 
@@ -1307,8 +1296,6 @@ public class LTLBenchmarker extends CommandLineTool {
         }
         println("\tBuilding GTS:\t" + building + "\t"
             + percentage(building / (double) total));
-        println("\tMeasuring:\t" + measuring + "\t"
-            + percentage(measuring / (double) total));
         println("\tInitialization:\t" + overhead + "\t"
             + percentage(overhead / (double) total));
         println("");

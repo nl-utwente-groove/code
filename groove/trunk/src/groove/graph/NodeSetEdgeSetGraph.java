@@ -71,10 +71,8 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
 
     public boolean addNode(Node node) {
         boolean result;
-        reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         result = this.graphNodeSet.add(node);
-        reporter.stop();
         return result;
     }
 
@@ -84,7 +82,6 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * the edge.
      */
     public boolean addEdge(Edge edge) {
-        reporter.start(ADD_EDGE);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !this.graphEdgeSet.contains(edge);
         if (added) {
@@ -94,7 +91,6 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
             }
             addEdgeWithoutCheck(edge);
         }
-        reporter.stop();
         return added;
     }
 
@@ -104,7 +100,6 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * of the node.
      */
     public boolean removeNode(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = this.graphNodeSet.contains(node);
@@ -119,27 +114,18 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
             removeNodeWithoutCheck(node);
             // notifyGraphListenersOfRemove(node);
         }
-        reporter.stop();
         return removed;
     }
 
     public boolean removeEdge(Edge edge) {
-        reporter.start(REMOVE_EDGE);
-        try {
-            assert !isFixed() : "Trying to remove " + edge
-                + " from unmodifiable graph";
-            return this.graphEdgeSet.remove(edge);
-        } finally {
-            // if (removed)
-            // notifyGraphListenersOfRemove(edge);
-            reporter.stop();
-        }
+        assert !isFixed() : "Trying to remove " + edge
+            + " from unmodifiable graph";
+        return this.graphEdgeSet.remove(edge);
     }
 
     @Override
     public boolean removeNodeSet(Collection<Node> nodeSet) {
         boolean result;
-        reporter.start(REMOVE_NODE);
         // first remove edges that depend on a node to be removed
         Iterator<Edge> edgeIter = this.graphEdgeSet.iterator();
         while (edgeIter.hasNext()) {
@@ -155,7 +141,6 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         }
         // now remove the nodes
         result = removeNodeSetWithoutCheck(nodeSet);
-        reporter.stop();
         return result;
     }
 
@@ -163,9 +148,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
 
     public boolean addEdgeWithoutCheck(Edge edge) {
         boolean result;
-        reporter.start(ADD_EDGE);
         result = this.graphEdgeSet.add(edge);
-        reporter.stop();
         return result;
     }
 
@@ -176,9 +159,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
 
     public boolean removeNodeWithoutCheck(Node node) {
         boolean result;
-        reporter.start(REMOVE_NODE);
         result = this.graphNodeSet.remove(node);
-        reporter.stop();
         return result;
     }
 
@@ -191,9 +172,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public Graph clone() {
-        reporter.start(CLONE);
         Graph result = new NodeSetEdgeSetGraph(this);
-        reporter.stop();
         return result;
     }
 

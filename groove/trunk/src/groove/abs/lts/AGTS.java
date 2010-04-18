@@ -59,13 +59,11 @@ public class AGTS extends GTS {
     public GraphState addState(GraphState newState) {
         assert newState instanceof AbstrGraphState : "Type error : " + newState
             + " is not of type AbstrGraphState.";
-        reporter.start(ADD_STATE);
         ((AbstrGraphStateImpl) newState).setStateNumber(nodeCount());
         GraphState result = this.stateSet.getAndAdd((AbstrGraphState) newState);
         if (result == null) {
             fireAddNode(newState);
         }
-        reporter.stop();
         return result;
     }
 

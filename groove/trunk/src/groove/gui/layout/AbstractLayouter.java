@@ -20,7 +20,6 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdgeView;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.util.Reporter;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -217,7 +216,6 @@ abstract public class AbstractLayouter implements Layouter {
      * the layouter.
      */
     protected void prepare() {
-        reporter.start(PREPARE);
         this.jmodel = this.jgraph.getModel();
         // clear the transient information
         this.toLayoutableMap.clear();
@@ -267,7 +265,6 @@ abstract public class AbstractLayouter implements Layouter {
             }
         }
         this.jgraph.setToolTipEnabled(false);
-        reporter.stop();
     }
 
     /**
@@ -275,7 +272,6 @@ abstract public class AbstractLayouter implements Layouter {
      * the node bounds and edge points.
      */
     protected void finish() {
-        reporter.start(FINISH);
         final Map<JCell,AttributeMap> change =
             new HashMap<JCell,AttributeMap>();
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
@@ -308,7 +304,6 @@ abstract public class AbstractLayouter implements Layouter {
                 AbstractLayouter.this.jmodel.setLayedOut(true);
             }
         });
-        reporter.stop();
     }
 
     /**
@@ -346,13 +341,4 @@ abstract public class AbstractLayouter implements Layouter {
      * <tt>prepare()</tt>
      */
     protected final Set<Layoutable> immovableSet = new HashSet<Layoutable>();
-    /** Profiling reporter. */
-    static protected final Reporter reporter =
-        Reporter.register(NoLayouter.class);
-    /** Handle for profiling the start phase of layouting. */
-    static protected final int START = reporter.newMethod("start()");
-    /** Handle for profiling the preparation phase of layouting. */
-    static protected final int PREPARE = reporter.newMethod("prepare()");
-    /** Handle for profiling the finishing phase of layouting. */
-    static protected final int FINISH = reporter.newMethod("finish()");
 }

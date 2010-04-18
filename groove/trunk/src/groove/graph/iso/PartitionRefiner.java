@@ -80,7 +80,6 @@ public class PartitionRefiner implements CertificateStrategy {
      * values.
      */
     public Map<Element,Certificate<?>> getCertificateMap() {
-        reporter.start(GET_CERTIFICATE_MAP);
         // check if the map has been computed before
         if (this.certificateMap == null) {
             getGraphCertificate();
@@ -94,7 +93,6 @@ public class PartitionRefiner implements CertificateStrategy {
                 this.certificateMap.put(edgeCert.getElement(), edgeCert);
             }
         }
-        reporter.stop();
         return this.certificateMap;
     }
 
@@ -167,7 +165,6 @@ public class PartitionRefiner implements CertificateStrategy {
         if (TRACE) {
             System.out.printf("Computing graph certificate%n");
         }
-        reporter.start(GET_GRAPH_CERTIFICATE);
         // check if the certificate has been computed before
         if (this.graphCertificate == 0) {
             computeCertificates();
@@ -175,7 +172,6 @@ public class PartitionRefiner implements CertificateStrategy {
                 this.graphCertificate = 1;
             }
         }
-        reporter.stop();
         if (TRACE) {
             System.out.printf("Graph certificate: %d%n", this.graphCertificate);
         }
@@ -281,7 +277,6 @@ public class PartitionRefiner implements CertificateStrategy {
         int nodeCount = this.graph.nodeCount();
         int edgeCount = this.graph.edgeCount();
         reporter.start(COMPUTE_CERTIFICATES);
-        reporter.start(INIT_CERTIFICATES);
         this.nodeCerts = new NodeCertificate[nodeCount];
         this.edgeCerts = new Certificate[edgeCount];
         this.otherNodeCertMap = new HashMap<Node,NodeCertificate>();
@@ -292,7 +287,6 @@ public class PartitionRefiner implements CertificateStrategy {
         for (Edge edge : this.graph.edgeSet()) {
             initEdgeCert(edge);
         }
-        reporter.stop();
     }
 
     /**
@@ -300,9 +294,6 @@ public class PartitionRefiner implements CertificateStrategy {
      * into the certificate node map.
      */
     private NodeCertificate initNodeCert(final Node node) {
-        if (TIME) {
-            reporter.start(INIT_CERT_NODE);
-        }
         NodeCertificate nodeCert;
         // if the node is an instance of OperationNode, the certificate
         // of this node also depends on the operation represented by it
@@ -316,9 +307,6 @@ public class PartitionRefiner implements CertificateStrategy {
         putNodeCert(nodeCert);
         this.nodeCerts[this.nodeCertCount] = nodeCert;
         this.nodeCertCount++;
-        if (TIME) {
-            reporter.stop();
-        }
         return nodeCert;
     }
 
@@ -327,9 +315,6 @@ public class PartitionRefiner implements CertificateStrategy {
      * into the certificate edge map.
      */
     private void initEdgeCert(Edge edge) {
-        if (TIME) {
-            reporter.start(INIT_CERT_EDGE);
-        }
         Node source = edge.source();
         NodeCertificate sourceCert = getNodeCert(source);
         assert sourceCert != null : "Edge source of " + edge + " not found in "
@@ -356,9 +341,6 @@ public class PartitionRefiner implements CertificateStrategy {
             assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
-        }
-        if (TIME) {
-            reporter.stop();
         }
     }
 
@@ -407,7 +389,6 @@ public class PartitionRefiner implements CertificateStrategy {
         // collect and then count the number of certificates
         boolean goOn;
         do {
-            reporter.start(ITERATE_CERTIFICATES);
             int oldPartitionCount = this.nodePartitionCount;
             // first compute the new edge certificates
             advanceEdgeCerts();
@@ -423,7 +404,6 @@ public class PartitionRefiner implements CertificateStrategy {
                 goOn = this.nodePartitionCount > oldPartitionCount;
             }
             this.iterateCount++;
-            reporter.stop();
         } while (goOn);
         recordIterateCount(this.iterateCount);
     }
@@ -656,29 +636,9 @@ public class PartitionRefiner implements CertificateStrategy {
     /** Handle to profile {@link #computeCertificates()}. */
     static public final int COMPUTE_CERTIFICATES =
         reporter.newMethod("computeCertificates()");
-    /** Handle to profile {@link #initCertificates()}. */
-    static protected final int INIT_CERTIFICATES =
-        reporter.newMethod("initCertificates()");
-    /** Handle to profile {@link #initNodeCert(Node)}. */
-    static protected final int INIT_CERT_NODE =
-        reporter.newMethod("initCertNode()");
-    /** Handle to profile {@link #initEdgeCert(Edge)}. */
-    static protected final int INIT_CERT_EDGE =
-        reporter.newMethod("initCertEdge()");
-    /** Handle to profile {@link #iterateCertificates()}. */
-    static protected final int ITERATE_CERTIFICATES =
-        reporter.newMethod("iterateCertificates()");
-    /** Handle to profile {@link #getCertificateMap()}. */
-    static protected final int GET_CERTIFICATE_MAP =
-        reporter.newMethod("getCertificateMap()");
     /** Handle to profile {@link #getNodePartitionMap()}. */
     static protected final int GET_PARTITION_MAP =
         reporter.newMethod("getPartitionMap()");
-    /** Handle to profile {@link #getGraphCertificate()}. */
-    static protected final int GET_GRAPH_CERTIFICATE =
-        reporter.newMethod("getGraphCertificate()");
-    /** Flag to turn on more time profiling. */
-    static private final boolean TIME = false;
     /** Flag to turn on System.out-tracing. */
     static private final boolean TRACE = false;
 

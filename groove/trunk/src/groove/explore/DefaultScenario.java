@@ -202,7 +202,7 @@ public class DefaultScenario implements Scenario {
     /** One-line description of this scenario. */
     private final String description;
 
-    /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
+    /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(DefaultScenario.class);
     /** Handle for profiling {@link #prepare(GTS)}. */
