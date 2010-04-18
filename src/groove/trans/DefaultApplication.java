@@ -29,7 +29,6 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeMap;
-import groove.util.Reporter;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -210,28 +209,19 @@ public class DefaultApplication implements RuleApplication, Derivation {
     }
 
     public void applyDelta(DeltaTarget target) {
-        reporter.start(APPLY);
         if (this.rule.isModifying()) {
             eraseEdges(target);
             // either merge or erase the LHS nodes
             if (this.rule.hasMergers()) {
-                reporter.start(MERGING);
                 mergeNodes(target);
             } else {
-                reporter.start(ERASING);
                 eraseNodes(target);
             }
-            reporter.stop();
-            reporter.start(CREATING);
             if (this.rule.hasCreators()) {
                 createNodes(target);
                 createEdges(target);
             }
-            reporter.stop();
-            reporter.start(POSTPROCESSING);
-            reporter.stop();
         }
-        reporter.stop();
     }
 
     /**
@@ -683,20 +673,4 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /** Static constant for rules with coanchors. */
     static private final Node[] EMPTY_COANCHOR_IMAGE = new Node[0];
     /** Reporter for profiling the application class. */
-    static public final Reporter reporter =
-        Reporter.register(RuleApplication.class);
-    /** Handle for profiling the actual rule application. */
-    static public final int APPLY = reporter.newMethod("apply(Matching)");
-    /** Handle for profiling the creation phase of the actual rule application. */
-    static public final int CREATING =
-        reporter.newMethod("Application: Creating");
-    /** Handle for profiling the erasure phase of the actual rule application. */
-    static public final int ERASING =
-        reporter.newMethod("Application: Erasing");
-    /** Handle for profiling the merging phase of the actual rule application. */
-    static public final int MERGING =
-        reporter.newMethod("Application: Merging");
-    /** Handle for profiling the postprocessing of the actual rule application. */
-    static public final int POSTPROCESSING =
-        reporter.newMethod("Application: Post-processing");
 }

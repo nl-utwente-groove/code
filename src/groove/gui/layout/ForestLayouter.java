@@ -82,7 +82,6 @@ public class ForestLayouter extends AbstractLayouter {
      * <tt>prepare()</tt>, <tt>layout()</tt> and <tt>finish()</tt>.
      */
     public void start(boolean complete) {
-        reporter.start(START);
         if (complete) {
             reset();
         }
@@ -96,7 +95,6 @@ public class ForestLayouter extends AbstractLayouter {
             shift(this.roots, MIN_NODE_DISTANCE);
             finish();
         }
-        reporter.stop();
     }
 
     /** This implementation does nothing, */

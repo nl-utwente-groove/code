@@ -20,7 +20,6 @@ package groove.graph;
 import groove.rel.RelationEdge;
 import groove.util.AbstractCacheHolder;
 import groove.util.Groove;
-import groove.util.Reporter;
 import groove.util.SetView;
 
 import java.lang.ref.Reference;
@@ -346,11 +345,4 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * purposes: observers of modifiable graphs may cause memory leaks.
      */
     static private int modifiableGraphCount = 0;
-
-    /** Reporter instance for profiling graph methods. */
-    static public final Reporter reporter = Reporter.register(GraphShape.class);
-    /** Handle for profiling the {@link #nodeSet()} method */
-    static final int EDGE_SET = reporter.newMethod("edgeSet()");
-    /** Handle for profiling the {@link #edgeSet()} method */
-    static final int NODE_SET = reporter.newMethod("nodeSet()");
 }

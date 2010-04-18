@@ -241,7 +241,6 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
      * Initialises all the data structures, if this has not yet been done.
      */
     private void initData() {
-        reporter.start(INIT_DATA);
         if (this.edgeSet == null) {
             assert this.edgeSet == null;
             assert this.outEdgeMap == null;
@@ -288,7 +287,6 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
                 target.install(this);
             }
         }
-        reporter.stop();
     }
 
     /**
@@ -296,11 +294,9 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
      * for a child graph.
      */
     private DataTarget getDataTarget() {
-        reporter.start(TRANSFER_DATA);
         // initialise own data, if necessary
         initData();
         DataTarget result = new SwingTarget();
-        reporter.stop();
         return result;
     }
 
@@ -318,10 +314,12 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public CertificateStrategy getCertifier(boolean strong) {
-        if (this.certifier == null || this.certifier.get() == null || this.certifier.get().getStrength() != strong) {
+        if (this.certifier == null || this.certifier.get() == null
+            || this.certifier.get().getStrength() != strong) {
             this.certifier =
                 new WeakReference<CertificateStrategy>(
-                    AbstractGraph.getCertificateFactory().newInstance(this, strong));
+                    AbstractGraph.getCertificateFactory().newInstance(this,
+                        strong));
         }
         return this.certifier.get();
     }

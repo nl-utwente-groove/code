@@ -17,7 +17,6 @@
 package groove.graph;
 
 import groove.util.Groove;
-import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -85,50 +84,42 @@ public class GraphShapeCache implements GraphShapeListener {
      * Keeps the cached sets in sync with changes in the graph.
      */
     public void addUpdate(GraphShape graph, Node node) {
-        reporter.start(ADD_UPDATE);
         if (isNodeEdgeMapSet()) {
             addToNodeEdgeMap(this.nodeEdgeMap, node);
         }
-        reporter.stop();
     }
 
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
     public void addUpdate(GraphShape graph, Edge edge) {
-        reporter.start(ADD_UPDATE);
         if (isLabelEdgeMapsSet()) {
             addToLabelEdgeMaps(this.labelEdgeMaps, edge);
         }
         if (isNodeEdgeMapSet()) {
             addToNodeEdgeMap(this.nodeEdgeMap, edge);
         }
-        reporter.stop();
     }
 
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
     public void removeUpdate(GraphShape graph, Node node) {
-        reporter.start(REMOVE_UPDATE);
         if (isNodeEdgeMapSet()) {
             removeFromNodeEdgeMap(this.nodeEdgeMap, node);
         }
-        reporter.stop();
     }
 
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
     public void removeUpdate(GraphShape graph, Edge elem) {
-        reporter.start(REMOVE_UPDATE);
         if (isLabelEdgeMapsSet()) {
             removeFromLabelEdgeMaps(this.labelEdgeMaps, elem);
         }
         if (isNodeEdgeMapSet()) {
             removeFromNodeEdgeMap(this.nodeEdgeMap, elem);
         }
-        reporter.stop();
     }
 
     /**
@@ -197,12 +188,10 @@ public class GraphShapeCache implements GraphShapeListener {
      * {@link AbstractEdge#getMaxEndCount()}, the array elements are non-<tt>null</tt>
      */
     protected List<Map<Label,Set<Edge>>> computeLabelEdgeMaps() {
-        reporter.start(COMPUTE_LABEL_EDGE_MAP);
         List<Map<Label,Set<Edge>>> result = createLabelEdgeMaps();
         for (Edge edge : this.graph.edgeSet()) {
             addToLabelEdgeMaps(result, edge);
         }
-        reporter.stop();
         return result;
     }
 
@@ -227,7 +216,6 @@ public class GraphShapeCache implements GraphShapeListener {
      * where the array index is the position in the edge that the node occupies.
      */
     protected Map<Node,Set<Edge>> computeNodeEdgeMap() {
-        reporter.start(COMPUTE_NODE_EDGE_MAP);
         Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
         for (Edge edge : this.graph.edgeSet()) {
             addToNodeEdgeMap(result, edge);
@@ -238,7 +226,6 @@ public class GraphShapeCache implements GraphShapeListener {
                 addToNodeEdgeMap(result, node);
             }
         }
-        reporter.stop();
         return result;
     }
 
@@ -401,18 +388,4 @@ public class GraphShapeCache implements GraphShapeListener {
      * A node-to-outgoing-edge mapping.
      */
     private Map<Node,Set<Edge>> nodeEdgeMap;
-
-    /** Reporter instance for prifiling graph caches. */
-    static public final Reporter reporter =
-        Reporter.register(GraphShapeCache.class);
-    /** Handle for profiling add updates. */
-    static final int ADD_UPDATE = reporter.newMethod("addUpdate()");
-    /** Handle for profiling add updates. */
-    static final int REMOVE_UPDATE = reporter.newMethod("removeUpdate()");
-    /** Handle for profiling the computation of the label-edge map. */
-    static final int COMPUTE_LABEL_EDGE_MAP =
-        reporter.newMethod("computeArityLabelEdgeMap()");
-    /** Handle for profiling the computation of the node-edge map. */
-    static final int COMPUTE_NODE_EDGE_MAP =
-        reporter.newMethod("computeNodeEdgeMap()");
 }

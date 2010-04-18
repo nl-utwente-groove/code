@@ -20,7 +20,6 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.util.Reporter;
 
 import java.util.Iterator;
 
@@ -39,14 +38,11 @@ import java.util.Iterator;
 public class CTLTransitionMarker extends CTLMatchingMarker {
     @Override
     public void mark(Marking marking, TemporalFormula expr, GTS gts) {
-        reporter.start(MARK_T);
         super.mark(marking, expr, gts);
-        reporter.stop();
     }
 
     @Override
     public void markAtom(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_ATOM_T);
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
             String name = ((CTLStarFormula.Atom) property).predicateName();
@@ -70,22 +66,5 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                 marking.set(nextState, property, satisfies);
             }
         }
-        reporter.stop();
     }
-
-    /**
-     * Reporter.
-     */
-    static public final Reporter reporter =
-        Reporter.register(CTLTransitionMarker.class);
-    /**
-     * Registration id for mark-method.
-     */
-    static public final int MARK_T =
-        reporter.newMethod("mark(Marking, TemporalFormula, GTS) - transition");
-    /**
-     * Registration id for markAtom-method.
-     */
-    static public final int MARK_ATOM_T =
-        reporter.newMethod("markAtom(Marking, TemporalFormula, GTS) - transition");
 }

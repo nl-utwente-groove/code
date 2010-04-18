@@ -113,13 +113,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -922,21 +918,6 @@ public class Simulator {
         groove.gui.UserSettings.synchSettings(this.frame);
         // Saves the current user settings.
         if (confirmAbandon(false)) {
-            if (REPORT) {
-                try {
-                    BufferedReader systemIn =
-                        new BufferedReader(new InputStreamReader(System.in));
-                    System.out.print("Log file? ");
-                    String filename = systemIn.readLine();
-                    if (filename.length() != 0) {
-                        groove.util.Reporter.report(new PrintWriter(
-                            new FileWriter(filename + ".log", true), true));
-                    }
-                } catch (IOException exc) {
-                    System.out.println(exc.getMessage());
-                }
-                groove.util.Reporter.report(new PrintWriter(System.out));
-            }
             getFrame().dispose();
             // try to persist the user preferences
             try {

@@ -57,7 +57,6 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
     // ------------------------- COMMANDS ------------------------------
 
     public boolean addNode(Node node) {
-        reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = getCachedNodeSet().add(node);
         if (added) {
@@ -65,12 +64,10 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
                 "Overlapping node number for %s in %s", node, nodeSet());
             fireAddNode(node);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean addEdge(Edge edge) {
-        reporter.start(ADD_EDGE);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean isNew = !getCachedEdgeSet().contains(edge);
         if (isNew) {
@@ -84,12 +81,10 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
             getCachedEdgeSet().add(edge);
             fireAddEdge(edge);
         }
-        reporter.stop();
         return isNew;
     }
 
     public boolean removeNode(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = getCachedNodeSet().contains(node);
@@ -98,17 +93,14 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
             getCachedNodeSet().remove(node);
             fireRemoveNode(node);
         }
-        reporter.stop();
         return removed;
     }
 
     public boolean removeEdge(Edge edge) {
-        reporter.start(REMOVE_EDGE);
         boolean removed = getCachedEdgeSet().remove(edge);
         if (removed) {
             fireRemoveEdge(edge);
         }
-        reporter.stop();
         return removed;
     }
 
@@ -137,17 +129,9 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
     @Override
     public void setFixed() {
         if (!isFixed()) {
-            reporter.start(SET_FIXED);
             setDeltaArray(computeFixedDeltaArray());
             super.setFixed();
             getCache().notifySetFixed();
-            // if (Groove.GATHER_STATISTICS) {
-            // totalEdgeCount += this.edgeCount();
-            // totalNodeCount += this.nodeCount();
-            // fixedDeltaGraphCount++;
-            // deltaElementCount += deltaArray.length;
-            // }
-            reporter.stop();
         }
     }
 
@@ -159,11 +143,9 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
      */
     @Override
     public Graph clone() {
-        reporter.start(CLONE);
         Graph result =
             isFixed() ? (Graph) new DeltaGraph(this) : new NodeSetEdgeSetGraph(
                 this);
-        reporter.stop();
         return result;
     }
 
@@ -567,8 +549,6 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
     static public int getCacheReconstructCount() {
         return cacheReconstructCount;
     }
-
-    private static int SET_FIXED = reporter.newMethod("setFixed()");
 
     /** The number of delta caches reconstructed. */
     private static int cacheReconstructCount;

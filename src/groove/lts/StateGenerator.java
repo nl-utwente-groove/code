@@ -118,10 +118,7 @@ public class StateGenerator {
                     appl.getRule()).hasOutputParameters())) {
                 GraphNextState freshTarget = createState(appl, source);
                 freshTarget.setLocation(targetLocation);
-
-                reporter.start(ADD_STATE);
                 GraphState isoTarget = getGTS().addState(freshTarget);
-                reporter.stop();
                 if (isoTarget == null) {
                     transition = freshTarget;
                 } else {
@@ -140,10 +137,7 @@ public class StateGenerator {
                 // matching
                 GraphNextState freshTarget = createState(appl, source);
                 freshTarget.setLocation(targetLocation);
-
-                reporter.start(ADD_STATE);
                 GraphState isoTarget = getGTS().addState(freshTarget);
-                reporter.stop();
                 if (isoTarget == null) {
                     transition = freshTarget;
                 } else {
@@ -299,7 +293,6 @@ public class StateGenerator {
             productTransition =
                 createProductTransition(source, transition, isoTarget);
         }
-
         reporter.stop();
         return getProductGTS().addTransition(productTransition);
     }
@@ -349,18 +342,11 @@ public class StateGenerator {
         return reporter.getTotalTime(ADD_TRANSITION);
     }
 
-    /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
+    /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(StateGenerator.class);
-    /** Profiling aid for adding states. */
-    static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
     static public final int ADD_TRANSITION =
         reporter.newMethod("addTransition");
     /** Profiling aid for adding transitions. */
-    // static public final int ADD_TRANSITION_START =
-    // reporter.newMethod("addTransition - start");
-    /** Profiling aid for adding transitions. */
-    // static private final int SUCC = reporter.newMethod("computing
-    // successors");
 }

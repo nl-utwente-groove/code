@@ -19,6 +19,8 @@ package groove.util;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -292,11 +294,22 @@ public class Reporter {
     private int avgTimeLength;
 
     /** Returns a reporter for a given type. */
-    static public Reporter register(Class<?> type) {
-        Reporter result = reporters.get(type);
+    static public synchronized Reporter register(Class<?> type) {
+        Map<Class<?>,Reporter> myReporters =
+            reporters.get(Thread.currentThread());
+        if (myReporters == null) {
+            myReporters =
+                new TreeMap<Class<?>,Reporter>(new Comparator<Class<?>>() {
+                    public int compare(Class<?> o1, Class<?> o2) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+            reporters.put(Thread.currentThread(), myReporters);
+        }
+        Reporter result = myReporters.get(type);
         if (result == null) {
             result = new Reporter(type);
-            reporters.put(type, result);
+            myReporters.put(type, result);
         }
         return result;
     }
@@ -308,7 +321,7 @@ public class Reporter {
      * measured by the reporters.
      * @param out the output to which the report is to be written.
      */
-    static public void report(PrintWriter out) {
+    static public synchronized void report(PrintWriter out) {
         if (REPORT) {
             // first we compute the required (maximum) field widths for the
             // method reports
@@ -318,7 +331,7 @@ public class Reporter {
             int totTimeLength = 0;
             int avgTimeLength = 0;
             int classNameLength = 0;
-            for (Reporter reporter : reporters.values()) {
+            for (Reporter reporter : getAllReporters()) {
                 reporter.calculateFieldWidths();
                 methodNameLength =
                     Math.max(reporter.methodNameLength, methodNameLength);
@@ -341,14 +354,14 @@ public class Reporter {
             out.println(line);
             out.println();
             // print the method reports from the individual reporters
-            for (Reporter reporter : reporters.values()) {
+            for (Reporter reporter : getAllReporters()) {
                 reporter.myReport(out, methodNameLength, topCountLength,
                     nestedCountLength, totTimeLength, avgTimeLength);
                 out.println();
             }
             // print the total amounts of time measured by the reporters
             out.println("Total measured time spent in");
-            for (Reporter reporter : reporters.values()) {
+            for (Reporter reporter : getAllReporters()) {
                 out.println(INDENT
                     + Groove.pad(reporter.type.toString(), classNameLength,
                         false) + ": " + reporter.totalTime + " ms");
@@ -365,6 +378,25 @@ public class Reporter {
         } else {
             out.println("Method call reporting has been switched off");
         }
+    }
+
+    /** Returns a view on all registered reporters. */
+    private static Iterable<Reporter> getAllReporters() {
+        return new Iterable<Reporter>() {
+            @Override
+            public Iterator<Reporter> iterator() {
+                return new NestedIterator<Reporter>(
+                    new TransformIterator<Map<Class<?>,Reporter>,Iterator<Reporter>>(
+                        reporters.values()) {
+                        @Override
+                        public Iterator<Reporter> toOuter(
+                                Map<Class<?>,Reporter> set) {
+                            return set.values().iterator();
+                        }
+                    });
+            }
+
+        };
     }
 
     /**
@@ -414,12 +446,8 @@ public class Reporter {
     static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
     static private final boolean REPORT = true;
     /** Sorted map of all registered reporters */
-    static private Map<Class<?>,Reporter> reporters =
-        new TreeMap<Class<?>,Reporter>(new Comparator<Class<?>>() {
-            public int compare(Class<?> o1, Class<?> o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+    static private Map<Thread,Map<Class<?>,Reporter>> reporters =
+        new HashMap<Thread,Map<Class<?>,Reporter>>();
     /** System time spent reporting */
     static private long reportTime;
 }
