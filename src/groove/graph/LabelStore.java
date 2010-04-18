@@ -112,15 +112,17 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                 type, SUPERTYPE_SYMBOL, subtype));
         }
         if (this.directSubtypeMap.get(type).add(subtype)) {
+            this.subtypeMap.get(type).add(subtype);
             // transitively close the relation
             Set<Label> subsubtypes = this.subtypeMap.get(subtype);
             for (Map.Entry<Label,Set<Label>> typeEntry : this.subtypeMap.entrySet()) {
-                if (!typeEntry.getKey().equals(type)
-                    && typeEntry.getValue().contains(subtype)) {
+                if (typeEntry.getValue().contains(subtype)) {
                     typeEntry.getValue().addAll(subsubtypes);
                 }
             }
         }
+        System.out.println(this);
+        System.out.println(this.subtypeMap);
     }
 
     /** Removes a direct subtype pair from the subtyping relation. */
