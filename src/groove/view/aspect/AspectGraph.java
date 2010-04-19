@@ -501,6 +501,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                     newData.remove(TypeAspect.getInstance());
                     if (replacement.isNodeType()) {
                         newData.addDeclaredValue(TypeAspect.NODE_TYPE);
+                    } else if (replacement.isFlag()) {
+                        newData.addDeclaredValue(TypeAspect.FLAG);
                     }
                     if (GraphInfo.hasRuleRole(this)) {
                         replacement =
