@@ -16,12 +16,6 @@
  */
 package groove.abs;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -34,9 +28,17 @@ import groove.graph.NodeFactory;
 import groove.match.GraphSearchPlanFactory;
 import groove.match.SearchPlanStrategy;
 import groove.rel.VarNodeEdgeMap;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
+import groove.trans.RuleName;
 import groove.trans.SPORule;
+import groove.view.FormatException;
+import groove.view.RuleView;
+import groove.view.StoredGrammarView;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility methods for abstraction.
@@ -247,14 +249,21 @@ public class Util {
      * @return <code>true</code> if abstract transformation is possible for
      *         this grammar
      */
-    public static boolean isAbstractionPossible(GraphGrammar grammar) {
-        for (Rule rule : grammar.getRules()) {
-            SPORule r = (SPORule) rule;
-            if (!r.getSubConditions().isEmpty()) {
-                return false;
+    public static boolean isAbstractionPossible(StoredGrammarView grammar) {
+        for (RuleName name : grammar.getRuleNames()) {
+            RuleView view = grammar.getRuleView(name);
+            if (view.isEnabled()) {
+                SPORule r;
+                try {
+                    r = (SPORule) view.toRule();
+                    if (!r.getSubConditions().isEmpty()) {
+                        return false;
+                    }
+                } catch (FormatException e) {
+                    // Should not happen...
+                }
             }
         }
         return true;
     }
-
 }

@@ -1242,7 +1242,7 @@ public class Simulator {
      */
     public synchronized void startAbstrSimulation() {
         try {
-            if (!groove.abs.Util.isAbstractionPossible(getGrammarView().toGrammar())) {
+            if (!groove.abs.Util.isAbstractionPossible(getGrammarView())) {
                 JOptionPane.showMessageDialog(
                     getFrame(),
                     "Abstract simulation is not possible for grammars with composite rules.",
@@ -2117,7 +2117,7 @@ public class Simulator {
 
         result.add(new JMenuItem(getStartSimulationAction()));
         // IOVKA change to activate abstract simulation
-        // ZAMBON Commented out...
+        // EDUARDO Commented out...
         // result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
