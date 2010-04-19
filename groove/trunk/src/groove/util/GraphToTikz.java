@@ -835,6 +835,7 @@ public final class GraphToTikz {
     private static StringBuilder convertHtmlToTikz(StringBuilder htmlLine) {
         StringBuilder result = new StringBuilder();
 
+        int color = Converter.removeColorTags(htmlLine);
         StringBuilder line = escapeSpecialChars(htmlLine);
         int i = line.indexOf(Converter.HTML_EXISTS);
         if (i > -1) {
@@ -874,9 +875,14 @@ public final class GraphToTikz {
             case '&': // We have to check if the & is part of a special
                 // HTML char.
                 if (line.charAt(i + 1) == '#') {
-                    // Yes, it is. Keep it.
-                    result.append("&#");
-                    i++;
+                    if (line.substring(i, i + 6).equals(Converter.HTML_TIMES)) {
+                        result.append(TIMES);
+                        i += 5;
+                    } else {
+                        // Yes, it is. Keep it.
+                        result.append("&#");
+                        i++;
+                    }
                 } else { // It's not.
                     result.append(AMP);
                 }
@@ -1335,6 +1341,7 @@ public final class GraphToTikz {
     private static final String VERT_BAR = "$|$";
     private static final String BACKSLASH = "$\\backslash$";
     private static final String PI = "$\\pi$";
+    private static final String TIMES = "$\\times$";
     private static final String NORTH = ".north -| ";
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";

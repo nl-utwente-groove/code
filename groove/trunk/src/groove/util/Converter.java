@@ -281,6 +281,24 @@ public class Converter {
         return text;
     }
 
+    /**
+     * Strips the color tags from the HTML line.
+     * @param htmlLine the line to be striped
+     * @return 1 if the line was blue, 2 if green, 3 if red and 0 otherwise.
+     */
+    public static int removeColorTags(StringBuilder htmlLine) {
+        if (!blue.off(htmlLine).equals(htmlLine.toString())) {
+            return 1;
+        }
+        if (!green.off(htmlLine).equals(htmlLine.toString())) {
+            return 2;
+        }
+        if (!red.off(htmlLine).equals(htmlLine.toString())) {
+            return 3;
+        }
+        return 0;
+    }
+
     /** HTML greater than symbol. */
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
@@ -459,4 +477,5 @@ public class Converter {
         /** End text of this tag. */
         final String tagEnd;
     }
+
 }
