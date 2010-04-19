@@ -45,10 +45,11 @@ public class Exploration {
     private boolean interrupted;
     static private final Reporter reporter =
         Reporter.register(DefaultScenario.class);
-    static private final int RUNNING = reporter.newMethod("playScenario()");
+    static private final Reporter playReporter =
+        reporter.register("playScenario()");
 
     /**
-     * Initialize to a given exploration. 
+     * Initialise to a given exploration. 
      * @param strategy - strategy component of the exploration
      * @param acceptor - acceptor component of the exploration
      * @param nrResults - nrResults component of the exploration
@@ -143,7 +144,7 @@ public class Exploration {
         parsedStrategy.prepare(gts, state);
 
         // initialize profiling and prepare graph listener
-        reporter.start(RUNNING);
+        playReporter.start();
         parsedStrategy.addGTSListener(parsedAcceptor);
         this.interrupted = false;
 
@@ -167,6 +168,6 @@ public class Exploration {
      * @return the long holding the running time in number of seconds 
      */
     public long getRunningTime() {
-        return reporter.getTotalTime(RUNNING);
+        return playReporter.getTotalTime();
     }
 }

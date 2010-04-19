@@ -135,11 +135,13 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Node> computeNodePartitionMap() {
+        PartitionRefiner.getPartitionReporter.start();
         PartitionMap<Node> result = new PartitionMap<Node>();
         // invert the certificate map
         for (Certificate<Node> cert : this.nodeCerts) {
             result.add(cert);
         }
+        PartitionRefiner.getPartitionReporter.stop();
         return result;
     }
 
@@ -148,12 +150,14 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Edge> computeEdgePartitionMap() {
+        PartitionRefiner.getPartitionReporter.start();
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
+        PartitionRefiner.getPartitionReporter.stop();
         return result;
     }
 
@@ -213,6 +217,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     /** Computes the node and edge certificate arrays. */
     synchronized private void computeCertificates() {
         // we compute the certificate map
+        PartitionRefiner.computeCertReporter.start();
         initCertificates();
         this.partition = new NodePartition(this.nodeCerts);
         // initially all blocks are splitters
@@ -274,6 +279,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         if (this.graphCertificate == 0) {
             this.graphCertificate = 1;
         }
+        PartitionRefiner.computeCertReporter.stop();
     }
 
     /**

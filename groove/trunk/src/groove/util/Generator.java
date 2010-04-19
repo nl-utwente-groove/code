@@ -619,7 +619,7 @@ public class Generator extends CommandLineTool {
         long generateTime =
             MatchApplier.getGenerateTime() + StateGenerator.getGenerateTime();
         long building = generateTime - isoChecking;
-        long measuring = Reporter.getTotalTime();
+        long measuring = Reporter.getReportTime();
 
         // this calculation incorporates only transforming RuleMatches into
         // RuleApplications

@@ -131,13 +131,13 @@ public class PartitionRefiner implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Node> computeNodePartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
+        getPartitionReporter.start();
         PartitionMap<Node> result = new PartitionMap<Node>();
         // invert the certificate map
         for (Certificate<Node> cert : this.nodeCerts) {
             result.add(cert);
         }
-        reporter.stop();
+        getPartitionReporter.stop();
         return result;
     }
 
@@ -146,14 +146,14 @@ public class PartitionRefiner implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Edge> computeEdgePartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
+        getPartitionReporter.start();
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
-        reporter.stop();
+        getPartitionReporter.stop();
         return result;
     }
 
@@ -212,6 +212,7 @@ public class PartitionRefiner implements CertificateStrategy {
     /** Computes the node and edge certificate arrays. */
     synchronized private void computeCertificates() {
         // we compute the certificate map
+        computeCertReporter.start();
         initCertificates();
         // first iteration
         iterateCertificates();
@@ -263,7 +264,7 @@ public class PartitionRefiner implements CertificateStrategy {
         for (int i = this.edge2CertCount; i < edgeCount; i++) {
             this.edgeCerts[i].setNewValue();
         }
-        reporter.stop();
+        computeCertReporter.stop();
     }
 
     /**
@@ -276,7 +277,6 @@ public class PartitionRefiner implements CertificateStrategy {
         // is likely that this results in the actual graph construction
         int nodeCount = this.graph.nodeCount();
         int edgeCount = this.graph.edgeCount();
-        reporter.start(COMPUTE_CERTIFICATES);
         this.nodeCerts = new NodeCertificate[nodeCount];
         this.edgeCerts = new Certificate[edgeCount];
         this.otherNodeCertMap = new HashMap<Node,NodeCertificate>();
@@ -634,11 +634,11 @@ public class PartitionRefiner implements CertificateStrategy {
     /** Reporter instance to profile methods of this class. */
     static public final Reporter reporter = DefaultIsoChecker.reporter;
     /** Handle to profile {@link #computeCertificates()}. */
-    static public final int COMPUTE_CERTIFICATES =
-        reporter.newMethod("computeCertificates()");
+    static public final Reporter computeCertReporter =
+        reporter.register("computeCertificates()");
     /** Handle to profile {@link #getNodePartitionMap()}. */
-    static protected final int GET_PARTITION_MAP =
-        reporter.newMethod("getPartitionMap()");
+    static protected final Reporter getPartitionReporter =
+        reporter.register("getPartitionMap()");
     /** Flag to turn on System.out-tracing. */
     static private final boolean TRACE = false;
 

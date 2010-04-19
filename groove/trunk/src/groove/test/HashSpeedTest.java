@@ -16,6 +16,8 @@
  */
 package groove.test;
 
+import groove.util.Reporter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,8 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import groove.util.Reporter;
 
 /**
  * Tests the speed of various alternatives in a {@link HashSet}:
@@ -70,13 +70,13 @@ public class HashSpeedTest {
         Set<Integer> testSet = new HashSet<Integer>();
         for (int i = 0; i < CREATE_TRY_COUNT; i++) {
             if (create) {
-                reporter.start(CREATE);
+                CREATE.start();
                 testSet = new HashSet<Integer>();
-                reporter.stop();
+                CREATE.stop();
             } else {
-                reporter.start(CLEAR);
+                CLEAR.start();
                 testSet.clear();
-                reporter.stop();
+                CLEAR.stop();
             }
             testSet.addAll(elementSet);
         }
@@ -85,21 +85,22 @@ public class HashSpeedTest {
     static public void listVersusSet(int kind) {
         for (int i = 0; i < KIND_TRY_COUNT; i++) {
             Collection<Integer> testSet;
+            Reporter measure;
             switch (kind) {
             case LINKED_KIND:
-                reporter.start(LINKED_FILL);
+                (measure = LINKED_FILL).start();
                 testSet = new LinkedList<Integer>();
                 break;
             case ARRAY_KIND:
-                reporter.start(ARRAY_FILL);
+                (measure = ARRAY_FILL).start();
                 testSet = new ArrayList<Integer>();
                 break;
             case HASH_KIND:
-                reporter.start(HASH_FILL);
+                (measure = HASH_FILL).start();
                 testSet = new HashSet<Integer>();
                 break;
             default:
-                reporter.start(HACK_FILL);
+                (measure = HACK_FILL).start();
                 Integer[] content = new Integer[elementArray.length];
                 System.arraycopy(elementArray, 0, content, 0, content.length);
                 testSet = Arrays.asList(content);
@@ -109,20 +110,20 @@ public class HashSpeedTest {
                     testSet.addAll(elementSet);
                 }
             }
-            reporter.stop();
+            measure.stop();
             Iterator<Integer> testIter;
             switch (kind) {
             case LINKED_KIND:
-                reporter.start(LINKED_ITER);
+                (measure = LINKED_ITER).start();
                 break;
             case ARRAY_KIND:
-                reporter.start(ARRAY_ITER);
+                (measure = ARRAY_ITER).start();
                 break;
             case HASH_KIND:
-                reporter.start(HASH_ITER);
+                (measure = HASH_ITER).start();
                 break;
             default:
-                reporter.start(HACK_ITER);
+                (measure = HACK_ITER).start();
             }
             int sum = 0;
             testIter = testSet.iterator();
@@ -130,24 +131,24 @@ public class HashSpeedTest {
                 Integer elem = testIter.next();
                 sum += elem.intValue();
             }
-            reporter.stop();
+            measure.stop();
             switch (kind) {
             case LINKED_KIND:
-                reporter.start(LINKED_CLEAR);
+                (measure = LINKED_CLEAR).start();
                 break;
             case ARRAY_KIND:
-                reporter.start(ARRAY_CLEAR);
+                (measure = ARRAY_CLEAR).start();
                 break;
             case HASH_KIND:
-                reporter.start(HASH_CLEAR);
+                (measure = HASH_CLEAR).start();
                 break;
             default:
-                reporter.start(HACK_CLEAR);
+                (measure = HACK_CLEAR).start();
             }
             if (kind != HACK_KIND) {
                 testSet.clear();
             }
-            reporter.stop();
+            measure.stop();
         }
     }
 
@@ -165,12 +166,13 @@ public class HashSpeedTest {
             for (int j = 0; j < ELEM_COUNT; j++) {
                 testSet.addAll(elementSet);
             }
+            Reporter measure;
             switch (kind) {
             case LINKED_KIND:
-                reporter.start(LINKED_INDEX);
+                (measure = LINKED_INDEX).start();
                 break;
             default: // case ARRAY_KIND:
-                reporter.start(ARRAY_INDEX);
+                (measure = ARRAY_INDEX).start();
                 break;
             }
             int sum = 0;
@@ -178,7 +180,7 @@ public class HashSpeedTest {
                 Integer elem = testSet.get(j);
                 sum += elem.intValue();
             }
-            reporter.stop();
+            measure.stop();
         }
     }
 
@@ -186,18 +188,19 @@ public class HashSpeedTest {
         Map<Integer,Integer> testMap = new HashMap<Integer,Integer>(elementMap);
         int sum = 0;
         for (int i = 0; i < KEY_TRY_COUNT; i++) {
+            Reporter measure;
             if (key) {
-                reporter.start(KEY);
+                (measure = KEY).start();
                 for (Integer element : testMap.keySet()) {
                     sum += testMap.get(element);
                 }
             } else {
-                reporter.start(ENTRY);
+                (measure = ENTRY).start();
                 for (Map.Entry<Integer,Integer> entry : testMap.entrySet()) {
                     sum += entry.getValue();
                 }
             }
-            reporter.stop();
+            measure.stop();
         }
     }
 
@@ -238,22 +241,22 @@ public class HashSpeedTest {
     }
 
     static final Reporter reporter = Reporter.register(HashSpeedTest.class);
-    static final int CREATE = reporter.newMethod("create");
-    static final int CLEAR = reporter.newMethod("clear");
-    static final int KEY = reporter.newMethod("key");
-    static final int ENTRY = reporter.newMethod("entry");
-    static final int LINKED_FILL = reporter.newMethod("linked fill");
-    static final int ARRAY_FILL = reporter.newMethod("array fill");
-    static final int HASH_FILL = reporter.newMethod("hash fill");
-    static final int HACK_FILL = reporter.newMethod("hack fill");
-    static final int LINKED_ITER = reporter.newMethod("linked iterator");
-    static final int ARRAY_ITER = reporter.newMethod("array iterator");
-    static final int HASH_ITER = reporter.newMethod("hash iterator");
-    static final int HACK_ITER = reporter.newMethod("hack iterator");
-    static final int LINKED_CLEAR = reporter.newMethod("linked clear");
-    static final int ARRAY_CLEAR = reporter.newMethod("array clear");
-    static final int HASH_CLEAR = reporter.newMethod("hash clear");
-    static final int HACK_CLEAR = reporter.newMethod("hack clear");
-    static final int LINKED_INDEX = reporter.newMethod("linked index");
-    static final int ARRAY_INDEX = reporter.newMethod("array index");
+    static final Reporter CREATE = reporter.register("create");
+    static final Reporter CLEAR = reporter.register("clear");
+    static final Reporter KEY = reporter.register("key");
+    static final Reporter ENTRY = reporter.register("entry");
+    static final Reporter LINKED_FILL = reporter.register("linked fill");
+    static final Reporter ARRAY_FILL = reporter.register("array fill");
+    static final Reporter HASH_FILL = reporter.register("hash fill");
+    static final Reporter HACK_FILL = reporter.register("hack fill");
+    static final Reporter LINKED_ITER = reporter.register("linked iterator");
+    static final Reporter ARRAY_ITER = reporter.register("array iterator");
+    static final Reporter HASH_ITER = reporter.register("hash iterator");
+    static final Reporter HACK_ITER = reporter.register("hack iterator");
+    static final Reporter LINKED_CLEAR = reporter.register("linked clear");
+    static final Reporter ARRAY_CLEAR = reporter.register("array clear");
+    static final Reporter HASH_CLEAR = reporter.register("hash clear");
+    static final Reporter HACK_CLEAR = reporter.register("hack clear");
+    static final Reporter LINKED_INDEX = reporter.register("linked index");
+    static final Reporter ARRAY_INDEX = reporter.register("array index");
 }

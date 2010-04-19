@@ -17,11 +17,7 @@
 package groove.util;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -32,96 +28,87 @@ import java.util.TreeMap;
  * @version $Revision$
  */
 public class Reporter {
-    // /** Constructor for a new instance. */
-    private Reporter(Class<?> type) {
-        this.type = type;
+    /**
+     * Constructs a new reporter, for a certain class and event name.
+     * @param parent the parent reporter
+     * @param name the name of the event being reported
+     */
+    private Reporter(Reporter parent, String name) {
+        this.parent = parent;
+        this.type = parent.type;
+        this.name = name;
+        this.subreporters = null;
     }
 
-    /**
-     * Generates some reports on standard output, for the purpose of
-     * optimisation. Reports include:
-     * <ul>
-     * <li> Counts of (top-level and nested) calls of various methods
-     * <li> Total and average time spent executing various methods
-     * </ul>
-     */
-    public void myReport(PrintWriter out) {
-        calculateFieldWidths();
-        myReport(out, this.methodNameLength, this.topCountLength,
-            this.nestedCountLength, this.totTimeLength, this.avgTimeLength);
+    /** Constructs a top-level reporter for a given class. */
+    private Reporter(Class<?> type) {
+        this.parent = null;
+        this.type = type;
+        this.name = null;
+        this.subreporters = new TreeMap<String,Reporter>();
     }
 
     /**
      * Generates a new index in the array of call reports.
      * @return a new index in the array of call report
      */
-    public int newMethod(String methodName) {
-        this.methodNames.add(methodName);
-        this.nrOfMethodsReported++;
-        return this.nrOfMethodsReported - 1;
+    public Reporter register(String name) {
+        Reporter result = this.subreporters.get(name);
+        if (result == null) {
+            this.subreporters.put(name, result = new Reporter(this, name));
+        }
+        return result;
     }
 
     /**
      * Returns the total duration of a given method according to this reporter.
      */
-    public long getTotalTime(int method) {
-        return this.duration[method];
+    public long getTotalTime() {
+        return this.duration;
     }
 
     /**
      * Returns the average duration of a given method according to this
      * reporter.
      */
-    public long getAverageTime(int method) {
-        return this.duration[method] / getCallCount(method);
+    public long getAverageTime() {
+        return this.duration / getCallCount();
     }
 
     /**
      * Returns the average duration of a given method according to this
      * reporter.
      */
-    public int getCallCount(int method) {
-        return this.topCount[method] + this.nestedCount[method];
+    public int getCallCount() {
+        return this.topCount + this.nestedCount;
+    }
+
+    /** Returns the type on which this reporter is based. */
+    public Class<?> getType() {
+        return this.type;
     }
 
     /**
-     * Returns the method name associated with a given index. The index should
-     * be obtained by {@link #newMethod(String)}.
+     * Returns the event name associated this reporter.
      */
-    public String getMethodName(int method) {
-        return this.methodNames.get(method);
+    public String getName() {
+        return this.name;
     }
 
     /**
      * Signals the start of a new method to be reported.
-     * @param methodIndex index of the method to be measured
      * @require currentNesting < MAX_NESTING
      */
-    final public void start(int methodIndex) {
+    final public synchronized void start() {
         if (REPORT) {
             long now = System.currentTimeMillis();
-            // check if we have to extend the stack space
-            if (this.currentNesting >= this.nestedMethodIndex.length) {
-                int[] newNestedMethodIndex = new int[this.currentNesting * 2];
-                long[] newStartTime = new long[this.currentNesting * 2];
-                System.arraycopy(this.nestedMethodIndex, 0,
-                    newNestedMethodIndex, 0, this.currentNesting);
-                System.arraycopy(this.startTime, 0, newStartTime, 0,
-                    this.currentNesting);
-                this.startTime = newStartTime;
-                this.nestedMethodIndex = newNestedMethodIndex;
-            }
-            this.nestedMethodIndex[this.currentNesting] = methodIndex;
-            this.currentDepth[methodIndex]++;
-            this.nestedCount[methodIndex]++;
+            this.nestedCount++;
             if (this.currentNesting == 0) {
-                this.topCount[methodIndex]++;
+                this.topCount++;
                 if (TIME_METHODS) {
-                    this.totalTime -= now;
-                    this.startTime[this.currentNesting] = now;
+                    this.duration -= now;
+                    this.parent.totalTime -= now;
                 }
-            } else if (!TIME_TOP_ONLY) {
-                this.startTime[this.currentNesting] = now;
             }
             this.currentNesting++;
             reportTime += System.currentTimeMillis() - now;
@@ -131,32 +118,13 @@ public class Reporter {
     /**
      * Signals the restart of a method to be reported. A restart means the the
      * invocation is not counted, but the time is measured
-     * @param methodIndex index of the method to be measured
-     * @require currentNesting < MAX_NESTING
      */
-    final public void restart(int methodIndex) {
+    final public synchronized void restart() {
         if (REPORT) {
             long now = System.currentTimeMillis();
-            // check if we have to extend the stack space
-            if (this.currentNesting >= this.nestedMethodIndex.length) {
-                int[] newNestedMethodIndex = new int[this.currentNesting * 2];
-                long[] newStartTime = new long[this.currentNesting * 2];
-                System.arraycopy(this.nestedMethodIndex, 0,
-                    newNestedMethodIndex, 0, this.currentNesting);
-                System.arraycopy(this.startTime, 0, newStartTime, 0,
-                    this.currentNesting);
-                this.startTime = newStartTime;
-                this.nestedMethodIndex = newNestedMethodIndex;
-            }
-            this.nestedMethodIndex[this.currentNesting] = methodIndex;
-            this.currentDepth[methodIndex]++;
             if (this.currentNesting == 0) {
-                if (TIME_METHODS) {
-                    this.totalTime -= now;
-                    this.startTime[this.currentNesting] = now;
-                }
-            } else if (!TIME_TOP_ONLY) {
-                this.startTime[this.currentNesting] = now;
+                this.duration -= now;
+                this.parent.totalTime -= now;
             }
             this.currentNesting++;
             reportTime += System.currentTimeMillis() - now;
@@ -167,24 +135,15 @@ public class Reporter {
      * Reports the end of the most deeply nested method.
      * @require <tt>currentNesting > 0</tt>
      */
-    final public void stop() {
+    final public synchronized void stop() {
         if (REPORT) {
             this.currentNesting--;
             if (TIME_METHODS) {
                 long now = System.currentTimeMillis();
                 reportTime -= now;
-                int methodIndex = this.nestedMethodIndex[this.currentNesting];
                 if (this.currentNesting == 0) {
-                    this.totalTime += now;
-                    if (--this.currentDepth[methodIndex] == 0) {
-                        this.duration[methodIndex] +=
-                            now - this.startTime[this.currentNesting];
-                    }
-                } else if (!TIME_TOP_ONLY) {
-                    if (--this.currentDepth[methodIndex] == 0) {
-                        this.duration[methodIndex] +=
-                            now - this.startTime[this.currentNesting];
-                    }
+                    this.duration += now;
+                    this.parent.totalTime += now;
                 }
             }
             reportTime += System.currentTimeMillis();
@@ -195,19 +154,21 @@ public class Reporter {
         // calculate the width of the required fields
         int maxTopCount = 1, maxNestedCount = 1;
         long maxTotTime = 1, maxAvgTime = 1;
-        for (int i = 0; i < this.nrOfMethodsReported; i++) {
+        for (Reporter subreporter : this.subreporters.values()) {
             this.methodNameLength =
-                Math.max(this.methodNames.get(i).length(),
-                    this.methodNameLength);
-            maxTopCount = Math.max(this.topCount[i], maxTopCount);
+                Math.max(subreporter.getName().length(), this.methodNameLength);
+            maxTopCount = Math.max(subreporter.topCount, maxTopCount);
             maxNestedCount =
-                Math.max(this.nestedCount[i] - this.topCount[i], maxNestedCount);
-            maxTotTime = Math.max(this.duration[i], maxTotTime);
+                Math.max(subreporter.nestedCount - subreporter.topCount,
+                    maxNestedCount);
+            maxTotTime = Math.max(subreporter.duration, maxTotTime);
             long avgDuration = 0;
             if (TIME_TOP_ONLY) {
-                avgDuration = (1000 * this.duration[i]) / this.topCount[i];
-            } else if (this.nestedCount[i] > 0) {
-                avgDuration = (1000 * this.duration[i]) / this.nestedCount[i];
+                avgDuration =
+                    (1000 * subreporter.duration) / subreporter.topCount;
+            } else if (subreporter.nestedCount > 0) {
+                avgDuration =
+                    (1000 * subreporter.duration) / subreporter.nestedCount;
             }
             maxAvgTime = Math.max(avgDuration, maxAvgTime);
         }
@@ -229,29 +190,33 @@ public class Reporter {
             int topCountLength, int nestedCountLength, int totTimeLength,
             int avgTimeLength) {
         out.println("Reporting " + this.type);
-        for (int i = 0; i < this.nrOfMethodsReported; i++) {
+        for (Reporter subreporter : this.subreporters.values()) {
             out.print(INDENT
-                + Groove.pad(this.methodNames.get(i), methodNameLength, false)
+                + Groove.pad(subreporter.getName(), methodNameLength, false)
                 + " ");
             out.print(TOP_COUNT_FIELD + "="
-                + Groove.pad("" + this.topCount[i], topCountLength, false)
+                + Groove.pad("" + subreporter.topCount, topCountLength, false)
                 + " ");
             out.print(NESTED_COUNT_FIELD
                 + "="
-                + Groove.pad("" + (this.nestedCount[i] - this.topCount[i]),
+                + Groove.pad(""
+                    + (subreporter.nestedCount - subreporter.topCount),
                     nestedCountLength, false) + " ");
             if (TIME_METHODS) {
-                out.print(TOT_TIME_FIELD + "="
-                    + Groove.pad("" + this.duration[i], totTimeLength, false)
-                    + " ");
+                out.print(TOT_TIME_FIELD
+                    + "="
+                    + Groove.pad("" + subreporter.duration, totTimeLength,
+                        false) + " ");
                 long avgDuration;
-                if (this.duration[i] > 0) {
+                if (subreporter.duration > 0) {
                     if (TIME_TOP_ONLY) {
                         avgDuration =
-                            (1000 * this.duration[i]) / this.topCount[i];
+                            (1000 * subreporter.duration)
+                                / subreporter.topCount;
                     } else {
                         avgDuration =
-                            (1000 * this.duration[i]) / this.nestedCount[i];
+                            (1000 * subreporter.duration)
+                                / subreporter.nestedCount;
                     }
                 } else {
                     avgDuration = 0;
@@ -263,30 +228,26 @@ public class Reporter {
         }
     }
 
-    /** Number of methods for which a report is requested */
-    private int nrOfMethodsReported = 0;
-    /** Names of the classes of the methods being reported. */
-    private final List<String> methodNames = new ArrayList<String>();
-    /** The crrent recursive call depth. */
-    private final int[] currentDepth = new int[MAX_METHODS];
     /** The top-level (i.e., non-nested) method call count. */
-    private final int[] topCount = new int[MAX_METHODS];
+    private int topCount;
     /** The nested method call count. */
-    private final int[] nestedCount = new int[MAX_METHODS];
+    private int nestedCount;
     /** The method call duration */
-    private final long[] duration = new long[MAX_METHODS];
-    /** The start times in a stack of method calls */
-    private long startTime[] = new long[MAX_NESTING];
-    /** The method indices in a stack of method calls */
-    private int nestedMethodIndex[] = new int[MAX_NESTING];
+    private long duration;
     /** The current nesting depth. */
     private int currentNesting;
     /** Total time spent in the class being reported */
     private long totalTime;
+    /** Parent reporter (if any). */
+    private Reporter parent;
     /** type for which we are reporting */
     private final Class<?> type;
+    /** The name of the event being reported. */
+    private final String name;
+    /** Set of subreporters of this reporter. */
+    private final Map<String,Reporter> subreporters;
 
-    // temporaty variables for report field width
+    // temporary variables for report field width
     private int methodNameLength;
     private int topCountLength;
     private int nestedCountLength;
@@ -295,21 +256,10 @@ public class Reporter {
 
     /** Returns a reporter for a given type. */
     static public synchronized Reporter register(Class<?> type) {
-        Map<Class<?>,Reporter> myReporters =
-            reporters.get(Thread.currentThread());
-        if (myReporters == null) {
-            myReporters =
-                new TreeMap<Class<?>,Reporter>(new Comparator<Class<?>>() {
-                    public int compare(Class<?> o1, Class<?> o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
-            reporters.put(Thread.currentThread(), myReporters);
-        }
-        Reporter result = myReporters.get(type);
+        Reporter result = reporters.get(type);
         if (result == null) {
             result = new Reporter(type);
-            myReporters.put(type, result);
+            reporters.put(type, result);
         }
         return result;
     }
@@ -372,7 +322,7 @@ public class Reporter {
             // reporting
             if (TIME_METHODS) {
                 out.println("Time spent collection information: "
-                    + getTotalTime() + " ms");
+                    + getReportTime() + " ms");
             }
             out.flush();
         } else {
@@ -382,27 +332,13 @@ public class Reporter {
 
     /** Returns a view on all registered reporters. */
     private static Iterable<Reporter> getAllReporters() {
-        return new Iterable<Reporter>() {
-            @Override
-            public Iterator<Reporter> iterator() {
-                return new NestedIterator<Reporter>(
-                    new TransformIterator<Map<Class<?>,Reporter>,Iterator<Reporter>>(
-                        reporters.values()) {
-                        @Override
-                        public Iterator<Reporter> toOuter(
-                                Map<Class<?>,Reporter> set) {
-                            return set.values().iterator();
-                        }
-                    });
-            }
-
-        };
+        return reporters.values();
     }
 
     /**
      * Returns the total time spent in measuring.
      */
-    static public long getTotalTime() {
+    static public long getReportTime() {
         return reportTime;
     }
 
@@ -426,17 +362,12 @@ public class Reporter {
     static public final String METHOD_FIELD = "m";
     /** Field name of the top method count */
     static public final String TOP_COUNT_FIELD = "#top";
-    /** Field name of the nesded method count */
+    /** Field name of the nested method count */
     static public final String NESTED_COUNT_FIELD = "#nest";
     /** Field name of the total duration */
     static public final String TOT_TIME_FIELD = "tot(m)";
     /** Field name of the average duration */
     static public final String AVG_TIME_FIELD = "avg(mu)";
-
-    /** The expected maximal nesting depth. */
-    static private final int MAX_NESTING = 50;
-    /** The expected maximal nesting depth. */
-    static private final int MAX_METHODS = 200;
     /** Flag to control whether execution times are reported. */
     static private final boolean TIME_METHODS = true;
     /**
@@ -446,8 +377,12 @@ public class Reporter {
     static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
     static private final boolean REPORT = true;
     /** Sorted map of all registered reporters */
-    static private Map<Thread,Map<Class<?>,Reporter>> reporters =
-        new HashMap<Thread,Map<Class<?>,Reporter>>();
+    static private Map<Class<?>,Reporter> reporters =
+        new TreeMap<Class<?>,Reporter>(new Comparator<Class<?>>() {
+            public int compare(Class<?> o1, Class<?> o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
     /** System time spent reporting */
     static private long reportTime;
 }

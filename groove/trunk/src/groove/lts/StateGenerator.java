@@ -101,7 +101,7 @@ public class StateGenerator {
      */
     private Set<? extends GraphTransition> addTransition(GraphState source,
             RuleApplication appl, ExploreCache cache) {
-        reporter.start(ADD_TRANSITION);
+        addTransitionReporter.start();
 
         GraphTransition transition;
         ControlTransition ct = null;
@@ -154,7 +154,7 @@ public class StateGenerator {
         // add transition to gts
         getGTS().addTransition(transition);
 
-        reporter.stop();
+        addTransitionReporter.stop();
         Set<GraphTransition> result = new HashSet<GraphTransition>(1);
         result.add(transition);
         return result;
@@ -276,7 +276,7 @@ public class StateGenerator {
      */
     public Set<ProductTransition> addTransition(BuchiGraphState source,
             GraphTransition transition, BuchiLocation targetLocation) {
-        reporter.start(ADD_TRANSITION);
+        addTransitionReporter.start();
         // we assume that we only add transitions for modifying graph
         // transitions
         BuchiGraphState target =
@@ -293,7 +293,7 @@ public class StateGenerator {
             productTransition =
                 createProductTransition(source, transition, isoTarget);
         }
-        reporter.stop();
+        addTransitionReporter.stop();
         return getProductGTS().addTransition(productTransition);
     }
 
@@ -339,14 +339,14 @@ public class StateGenerator {
      * Returns the time spent generating successors.
      */
     public static long getGenerateTime() {
-        return reporter.getTotalTime(ADD_TRANSITION);
+        return addTransitionReporter.getTotalTime();
     }
 
     /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(StateGenerator.class);
     /** Profiling aid for adding transitions. */
-    static public final int ADD_TRANSITION =
-        reporter.newMethod("addTransition");
+    static public final Reporter addTransitionReporter =
+        reporter.register("addTransition");
     /** Profiling aid for adding transitions. */
 }

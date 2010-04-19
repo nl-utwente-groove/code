@@ -129,9 +129,9 @@ public class SetSpeedTest {
     }
 
     @SuppressWarnings("unchecked")
-    private double test(Object[] sample, int repeatFactor, int[] measures) {
-        reporter.start(measures[OVERALL_INDEX]);
-        reporter.start(measures[FIRST_INDEX]);
+    private double test(Object[] sample, int repeatFactor, Reporter[] measures) {
+        measures[OVERALL_INDEX].start();
+        measures[FIRST_INDEX].start();
         for (int repeat = 0; repeat < repeatFactor; repeat++) {
             this.object.clear();
             for (int i = 0; i < sample.length; i++) {
@@ -140,8 +140,8 @@ public class SetSpeedTest {
                 }
             }
         }
-        reporter.stop();
-        reporter.start(measures[SECOND_INDEX]);
+        measures[FIRST_INDEX].stop();
+        measures[SECOND_INDEX].start();
         for (int repeat = 0; repeat < repeatFactor; repeat++) {
             for (Object element : sample) {
                 if (this.object.add(element)) {
@@ -149,8 +149,8 @@ public class SetSpeedTest {
                 }
             }
         }
-        reporter.stop();
-        reporter.start(measures[CONTAINS_YES_INDEX]);
+        measures[SECOND_INDEX].stop();
+        measures[CONTAINS_YES_INDEX].start();
         for (int repeat = 0; repeat < repeatFactor; repeat++) {
             for (int i = 0; i < sample.length; i++) {
                 if (!this.object.contains(sample[i])) {
@@ -158,9 +158,9 @@ public class SetSpeedTest {
                 }
             }
         }
-        reporter.stop();
+        measures[CONTAINS_YES_INDEX].stop();
         Object[] distinct = DISTINCT_SAMPLE;
-        reporter.start(measures[CONTAINS_NO_INDEX]);
+        measures[CONTAINS_NO_INDEX].start();
         for (int repeat = 0; repeat < repeatFactor; repeat++) {
             for (int i = 0; i < sample.length; i++) {
                 Object sampleObject = distinct[i];
@@ -169,31 +169,31 @@ public class SetSpeedTest {
                 }
             }
         }
-        reporter.stop();
-        reporter.start(measures[ITERATOR_INDEX]);
+        measures[CONTAINS_NO_INDEX].stop();
+        measures[ITERATOR_INDEX].start();
         for (int repeat = 0; repeat < repeatFactor; repeat++) {
             Iterator<Object> iter = this.object.iterator();
             while (iter.hasNext()) {
                 iter.next();
             }
         }
-        reporter.stop();
-        reporter.stop();
+        measures[ITERATOR_INDEX].stop();
+        measures[OVERALL_INDEX].stop();
         Object newObject;
         if (this.object instanceof HashSet) {
             newObject = new HashSet<Object>(this.object);
         } else {
             newObject = new TreeHashSet<Object>((TreeHashSet) this.object);
         }
-        reporter.start(OVERALL_INDEX);
-        reporter.start(measures[EQUALS_INDEX]);
+        measures[OVERALL_INDEX].start();
+        measures[EQUALS_INDEX].start();
         for (int repeat = 0; repeat < repeatFactor; repeat++) {
             if (!this.object.equals(newObject)) {
                 throw new IllegalStateException();
             }
         }
-        reporter.stop();
-        reporter.stop();
+        measures[EQUALS_INDEX].stop();
+        measures[OVERALL_INDEX].stop();
         if (this.object instanceof TreeHashSet) {
             return ((TreeHashSet) this.object).getBytesPerElement();
         } else {
@@ -201,10 +201,9 @@ public class SetSpeedTest {
         }
     }
 
-    private void report(int[] measures, double space) {
-        for (int measure : measures) {
-            System.out.println(reporter.getMethodName(measure)
-                + reporter.getTotalTime(measure));
+    private void report(Reporter[] measures, double space) {
+        for (Reporter measure : measures) {
+            System.out.println(measure.getName() + measure.getTotalTime());
         }
         if (space > 0) {
             System.out.println("Bytes per element: " + space);
@@ -215,36 +214,36 @@ public class SetSpeedTest {
 
     static private final Reporter reporter =
         Reporter.register(IntSetSpeedTest.class);
-    private final int[] TEST_RANDOM_SMALL =
-        new int[] {reporter.newMethod("Random, small sample:  "),
-            reporter.newMethod("          Fresh addition: "),
-            reporter.newMethod("           Next addition: "),
-            reporter.newMethod("    Positive containment: "),
-            reporter.newMethod("    Negative containment: "),
-            reporter.newMethod("                Iterator: "),
-            reporter.newMethod("             Equals test: ")};
-    private final int[] TEST_RANDOM_LARGE =
-        new int[] {reporter.newMethod("Random, large sample:  "),
-            reporter.newMethod("          Fresh addition: "),
-            reporter.newMethod("           Next addition: "),
-            reporter.newMethod("    Positive containment: "),
-            reporter.newMethod("    Negative containment: "),
-            reporter.newMethod("                Iterator: "),
-            reporter.newMethod("             Equals test: ")};
-    private final int[] TEST_REGULAR_SMALL =
-        new int[] {reporter.newMethod("Regular, small sample: "),
-            reporter.newMethod("          Fresh addition: "),
-            reporter.newMethod("           Next addition: "),
-            reporter.newMethod("    Positive containment: "),
-            reporter.newMethod("    Negative containment: "),
-            reporter.newMethod("                Iterator: "),
-            reporter.newMethod("             Equals test: ")};
-    private final int[] TEST_REGULAR_LARGE =
-        new int[] {reporter.newMethod("Regular, large sample: "),
-            reporter.newMethod("          Fresh addition: "),
-            reporter.newMethod("           Next addition: "),
-            reporter.newMethod("    Positive containment: "),
-            reporter.newMethod("    Negative containment: "),
-            reporter.newMethod("                Iterator: "),
-            reporter.newMethod("             Equals test: ")};
+    private final Reporter[] TEST_RANDOM_SMALL =
+        new Reporter[] {reporter.register("Random, small sample:  "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
+    private final Reporter[] TEST_RANDOM_LARGE =
+        new Reporter[] {reporter.register("Random, large sample:  "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
+    private final Reporter[] TEST_REGULAR_SMALL =
+        new Reporter[] {reporter.register("Regular, small sample: "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
+    private final Reporter[] TEST_REGULAR_LARGE =
+        new Reporter[] {reporter.register("Regular, large sample: "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
 }
