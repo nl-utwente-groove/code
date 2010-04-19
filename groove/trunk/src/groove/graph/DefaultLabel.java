@@ -223,11 +223,13 @@ public final class DefaultLabel extends AbstractLabel {
     /**
      * Returns a HTML-formatted string for a given label, without the
      * surrounding html-tag. The string is set to bold if the label is a node
-     * type.
+     * type and is set to italic if the label is a flag.
      */
     static public String toHtmlString(Label label) {
         if (label.isNodeType()) {
             return Converter.STRONG_TAG.on(Converter.toHtml(label.text()));
+        } else if (label.isFlag()) {
+            return Converter.ITALIC_TAG.on(Converter.toHtml(label.text()));
         } else {
             return Converter.toHtml(label.text());
         }
