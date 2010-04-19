@@ -2063,8 +2063,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 super.actionPerformed(evt);
                 if (!setRole(TYPE_INDEX)) {
                     // only do a preview if the type was not changed (on the
-                    // second
-                    // click)
+                    // second click)
                     handlePreview(null);
                 }
             }
