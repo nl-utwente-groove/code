@@ -1007,14 +1007,13 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             DefaultFileSystemStore result =
                 new DefaultFileSystemStore(file, true);
             result.reload();
+            // save properties
             result.doPutProperties(store.getProperties());
             // save control programs
             for (Map.Entry<String,String> controlEntry : store.getControls().entrySet()) {
                 result.doPutControl(controlEntry.getKey(),
                     controlEntry.getValue());
             }
-            // save properties
-            result.putProperties(store.getProperties());
             // save graphs
             for (AspectGraph stateGraph : store.getGraphs().values()) {
                 result.doPutGraph(stateGraph);

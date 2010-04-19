@@ -16,10 +16,7 @@
  */
 package groove.io;
 
-import groove.trans.GraphGrammar;
-import groove.trans.SystemProperties;
 import groove.util.Version;
-import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
 /**
@@ -36,15 +33,12 @@ public class Grammar_1_0_Action extends FileFilterAction {
 
     @Override
     public void modify(StoredGrammarView grammarView) {
-        try {
-            // TODO: Throws an Exception. Fix this.
-            GraphGrammar grammar = grammarView.toGrammar();
-            SystemProperties properties = grammar.getProperties();
-            properties.setGrammarVersion(Version.GRAMMAR_VERSION_1_0);
-            grammar.setProperties(properties);
-        } catch (FormatException e) {
-            // Do nothing.
-        }
+        grammarView.getProperties().setGrammarVersion(
+            Version.GRAMMAR_VERSION_1_0);
+        /*GraphGrammar grammar = grammarView.toGrammar();
+        SystemProperties properties = grammar.getProperties();
+        properties.setGrammarVersion(Version.GRAMMAR_VERSION_1_0);
+        grammar.setProperties(properties);*/
     }
 
     @Override
