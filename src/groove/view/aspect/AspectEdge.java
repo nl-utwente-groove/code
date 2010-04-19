@@ -202,6 +202,15 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     }
 
     /**
+     * Checks if the edge can be displayed as a node label.
+     * @return true, if the label is a node type label or a flag;
+     *         false, otherwise.
+     */
+    public boolean isAllowedNodeLabel() {
+        return (this.isNodeType() == 0 || this.isFlag() == 0);
+    }
+
+    /**
      * This implementation makes sure that edges with node type labels are
      * ordered before other edge.
      */
@@ -229,6 +238,11 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
     /** Tests if this aspect edge stands for a node type. */
     private int isNodeType() {
         return TypeAspect.isNodeType(this) ? 0 : 1;
+    }
+
+    /** Tests if this aspect edge stands for a flag. */
+    private int isFlag() {
+        return TypeAspect.isFlag(this) ? 0 : 1;
     }
 
     /**
