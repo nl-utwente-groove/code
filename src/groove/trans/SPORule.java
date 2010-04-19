@@ -1438,7 +1438,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * time spent in certificate calculation.
      */
     static public long getMatchingTime() {
-        return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
+        return SearchPlanStrategy.searchFindReporter.getTotalTime();
     }
 
     private void debug(String msg) {
