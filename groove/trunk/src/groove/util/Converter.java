@@ -48,9 +48,6 @@ import java.util.Set;
 public class Converter {
     /** Main method to test this class. */
     static public void main(String[] args) {
-        HTMLTag blue = createColorTag(Color.blue);
-        HTMLTag green = createColorTag(Color.green);
-        HTMLTag red = createColorTag(Color.red);
         System.out.println(blue.on("Text"));
         System.out.println(red.on("Text"));
         System.out.println(green.on("Text"));
@@ -300,6 +297,8 @@ public class Converter {
     static public final String HTML_TAU = "&#932;"; // &tau;
     /** HTML epsilon symbol. */
     static public final String HTML_EPSILON = "&#949;"; // &epsilon;
+    /** HTML times symbol. */
+    static public final String HTML_TIMES = "&#215;"; // &times;
     /** Name of the HTML tag (<code>html</code>). */
     static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */
@@ -349,6 +348,14 @@ public class Converter {
 
     /** Label used to identify the start state, when reading in from .aut */
     private static final String ROOT_LABEL = "$ROOT$";
+
+    /** Blue color tag. */
+    public static final HTMLTag blue = createColorTag(Colors.findColor("blue"));
+    /** Green color tag. */
+    public static final HTMLTag green =
+        createColorTag(Colors.findColor("green.darker"));
+    /** Red color tag. */
+    public static final HTMLTag red = createColorTag(Colors.findColor("red"));
 
     /**
      * Class that allows some handling of HTML text.

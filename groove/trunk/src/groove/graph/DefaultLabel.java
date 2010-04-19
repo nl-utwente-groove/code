@@ -19,6 +19,8 @@ package groove.graph;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.util.Converter;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -232,6 +234,24 @@ public final class DefaultLabel extends AbstractLabel {
             return Converter.ITALIC_TAG.on(Converter.toHtml(label.text()));
         } else {
             return Converter.toHtml(label.text());
+        }
+    }
+
+    /**
+     * @param edgeLabel
+     * @param edgeRole
+     * @return a HTML string with all the proper formats.
+     */
+    public static String toHtmlString(Label edgeLabel, AspectValue edgeRole) {
+        if (RuleAspect.ERASER.equals(edgeRole)) {
+            return Converter.blue.on("- " + toHtmlString(edgeLabel));
+        } else if (RuleAspect.CREATOR.equals(edgeRole)) {
+            return Converter.green.on("+ " + toHtmlString(edgeLabel));
+        } else if (RuleAspect.EMBARGO.equals(edgeRole)) {
+            return Converter.red.on(Converter.HTML_TIMES + " "
+                + toHtmlString(edgeLabel));
+        } else {
+            return toHtmlString(edgeLabel);
         }
     }
 

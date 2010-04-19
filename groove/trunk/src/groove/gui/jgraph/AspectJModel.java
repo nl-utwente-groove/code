@@ -445,22 +445,24 @@ public class AspectJModel extends GraphJModel {
          * node.
          */
         boolean isAllowedNodeLabel(AspectEdge dataEdge) {
-            boolean result;
-            // test for equal rule roles
-            AspectValue edgeRole = role(dataEdge);
-            AspectValue sourceRole = role(getNode());
-            result =
-                edgeRole == null ? sourceRole == null
-                        : edgeRole.equals(sourceRole);
-            // test for equal nesting level
-            if (result) {
-                AspectValue edgeNesting =
-                    NestingAspect.getNestingValue(dataEdge);
-                AspectValue sourceNesting =
-                    NestingAspect.getNestingValue(getNode());
+            boolean result = dataEdge.isAllowedNodeLabel();
+            if (!result) {
+                // test for equal rule roles
+                AspectValue edgeRole = role(dataEdge);
+                AspectValue sourceRole = role(getNode());
                 result =
-                    edgeNesting == null ? sourceNesting == null
-                            : edgeNesting.equals(sourceNesting);
+                    edgeRole == null ? sourceRole == null
+                            : edgeRole.equals(sourceRole);
+                // test for equal nesting level
+                if (result) {
+                    AspectValue edgeNesting =
+                        NestingAspect.getNestingValue(dataEdge);
+                    AspectValue sourceNesting =
+                        NestingAspect.getNestingValue(getNode());
+                    result =
+                        edgeNesting == null ? sourceNesting == null
+                                : edgeNesting.equals(sourceNesting);
+                }
             }
             return result;
         }
@@ -520,8 +522,7 @@ public class AspectJModel extends GraphJModel {
                 result.add(AspectParser.toString(value));
             }
             // we do not do a super call, for that adds the value of the actual
-            // node
-            // which we have here anyway
+            // node which we have here anyway
             for (Edge edge : getSelfEdges()) {
                 result.add(getPlainLabel(edge));
             }

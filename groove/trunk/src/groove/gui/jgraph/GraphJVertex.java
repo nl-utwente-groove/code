@@ -31,6 +31,8 @@ import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
@@ -193,7 +195,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 DefaultLabel.toHtmlString(DefaultLabel.createDataType(getAlgebra()))));
         }
         for (Edge edge : getSelfEdges()) {
-            if (getLabel(edge).isNodeType()
+            if (getLabel(edge).isNodeType() || getLabel(edge).isFlag()
                 || !this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
@@ -220,7 +222,13 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (edgeLabel instanceof RegExprLabel) {
             result.append(Converter.ITALIC_TAG.on(edgeLabel));
         } else if (!edgeLabel.isBinary()) {
-            result.append(DefaultLabel.toHtmlString(edgeLabel));
+            if (edge instanceof AspectEdge) {
+                AspectEdge aspectEdge = (AspectEdge) edge;
+                AspectValue edgeRole = AspectJModel.role(aspectEdge);
+                result.append(DefaultLabel.toHtmlString(edgeLabel, edgeRole));
+            } else {
+                result.append(DefaultLabel.toHtmlString(edgeLabel));
+            }
         } else {
             result.append(edgeLabel);
             if (edge.opposite() != getNode()) {
