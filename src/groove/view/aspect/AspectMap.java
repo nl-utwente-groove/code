@@ -21,11 +21,13 @@ import groove.graph.MergeLabel;
 import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -359,8 +361,8 @@ public class AspectMap implements Iterable<AspectValue> {
         new LinkedHashMap<Aspect,AspectValue>();
 
     /** Returns the set of declared values in this aspect map. */
-    public final Set<AspectValue> getDeclaredValues() {
-        return Collections.unmodifiableSet(this.declaredValues);
+    public final List<AspectValue> getDeclaredValues() {
+        return Collections.unmodifiableList(this.declaredValues);
     }
 
     /** Returns the set of inferred values in this aspect map. */
@@ -372,7 +374,8 @@ public class AspectMap implements Iterable<AspectValue> {
     }
 
     /** The (sub)set of declared aspect values. */
-    private final Set<AspectValue> declaredValues = new HashSet<AspectValue>();
+    private final List<AspectValue> declaredValues =
+        new ArrayList<AspectValue>();
 
     /** Sets the label text. */
     void setText(String text) {
