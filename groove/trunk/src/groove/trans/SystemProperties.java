@@ -568,9 +568,6 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     static public final String HISTORY_KEY = "open_history";
 
-    /** (User) Property that holds the user settings separated by ',') **/
-    static public final String USER_SETTINGS = "userSettings";
-
     /**
      * Property that determines if transition parameters are included in the LTS
      * transition labels
