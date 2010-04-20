@@ -394,6 +394,42 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         calculateSubtypes();
     }
 
+    /**
+     * @return true is the store has at least one node type.
+     */
+    public boolean hasNodeTypes() {
+        for (Label label : this.getLabels()) {
+            if (label.isNodeType()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return true is the store has at least one flag.
+     */
+    public boolean hasFlags() {
+        for (Label label : this.getLabels()) {
+            if (label.isFlag()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return true is the store has at least one node type or flag.
+     */
+    public boolean hasNodeTypesOrFlags() {
+        for (Label label : this.getLabels()) {
+            if (label.isNodeType() || label.isFlag()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public LabelStore clone() {
         LabelStore result = new LabelStore();

@@ -38,6 +38,7 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.rel.RegExprLabel;
 import groove.util.Groove;
+import groove.view.aspect.AspectEdge;
 
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -379,8 +380,17 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             throw new IllegalArgumentException("Non-binary edge " + edge
                 + " not supported");
         }
-        // see if the edge is appropriate to the node
-        if (isSourceCompatible(edge)) {
+
+        boolean unary = this.isSourceCompatible(edge);
+        if (edge instanceof AspectEdge) {
+            AspectEdge e = (AspectEdge) edge;
+            if (e.isAllowedNodeLabel()) {
+                // Node types and flags are always unary. 
+                unary = true;
+            }
+        }
+
+        if (unary) {
             GraphJVertex jVertex = getJVertex(edge.source());
             if (jVertex.addSelfEdge(edge)) {
                 // yes, the edge could be added here; we're done
@@ -388,6 +398,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
                 return jVertex;
             }
         }
+
+        // Add everything else as a binary edge.
         return addBinaryEdge((BinaryEdge) edge);
     }
 
@@ -435,13 +447,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Tests if a given edge may be added to its source vertex.
      */
     protected boolean isSourceCompatible(Edge edge) {
-        Node source = edge.source();
-        if (edge.endCount() == 1) {
-            return isLayoutCompatible(getJVertex(source), edge);
-        }
-        if (source == edge.opposite() && !isVertexLabelled()) {
-            // see if the edge does not have explicit layout information
-            return isLayoutCompatible(getJVertex(source), edge);
+        if (edge.source() == edge.opposite() && this.isShowVertexLabels()) {
+            return true;
         }
         // in all other cases, the edge is not source compatible
         return false;
@@ -573,7 +580,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @ensure <tt>result.getNode().equals(node)</tt>
      */
     protected GraphJVertex createJVertex(Node node) {
-        return new GraphJVertex(this, node, isVertexLabelled());
+        return new GraphJVertex(this, node, isShowVertexLabels());
     }
 
     /**
@@ -714,11 +721,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
-     * Indicates whether vertices can have their own labels. If false, j-vertex
-     * inscriptions are (possibly empty) sets of self-edge labels.
+     * Indicates whether self-edges should be shown as node labels.
      */
-    private boolean isVertexLabelled() {
-        return getOptionValue(Options.VERTEX_LABEL_OPTION);
+    boolean isShowVertexLabels() {
+        return getOptionValue(Options.SHOW_VERTEX_LABELS_OPTION);
     }
 
     /**

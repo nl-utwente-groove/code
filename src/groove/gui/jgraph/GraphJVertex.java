@@ -56,8 +56,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
      * @param node the underlying graph node for this model node
-     * @param vertexLabelled flag to indicate if the vertex can be labelled. If
-     *        not, then labels can be used to represent self-edges
+     * @param vertexLabelled flag to indicate if the vertex should be labelled.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel jModel, Node node, boolean vertexLabelled) {
@@ -74,7 +73,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel jModel, Node node) {
-        this(jModel, node, false);
+        this(jModel, node, true);
     }
 
     /**
@@ -387,7 +386,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
     public boolean addSelfEdge(Edge edge) {
-        if (!this.vertexLabelled && edge.source() == edge.opposite()) {
+        if (this.vertexLabelled && edge.source() == edge.opposite()) {
             getUserObject().add(edge);
             return true;
         } else {

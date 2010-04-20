@@ -554,8 +554,8 @@ public class Options {
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Vertices are labels options */
-    static public final String VERTEX_LABEL_OPTION =
-        "Show self-edges as node labels";
+    static public final String SHOW_VERTEX_LABELS_OPTION =
+        "Show self edges as node labels";
     /** Show unfiltered edges to filtered nodes. */
     static public final String SHOW_UNFILTERED_EDGES_OPTION =
         "Show all unfiltered edges";
@@ -614,7 +614,7 @@ public class Options {
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
-        boolOptionDefaults.put(VERTEX_LABEL_OPTION, false);
+        boolOptionDefaults.put(SHOW_VERTEX_LABELS_OPTION, true);
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_REMARKS_OPTION, true);
         boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
@@ -645,8 +645,7 @@ public class Options {
             Set<String> keys =
                 new HashSet<String>(Arrays.asList(userPrefs.keys()));
             for (Map.Entry<String,Boolean> defaultsEntry : boolOptionDefaults.entrySet()) {
-                if (defaultsEntry.getKey().equals(VERTEX_LABEL_OPTION)
-                    || !keys.contains(defaultsEntry.getKey())) {
+                if (!keys.contains(defaultsEntry.getKey())) {
                     userPrefs.putBoolean(defaultsEntry.getKey(),
                         defaultsEntry.getValue());
                 }
@@ -740,7 +739,7 @@ public class Options {
         addCheckbox(SHOW_REMARKS_OPTION);
         addCheckbox(SHOW_BACKGROUND_OPTION);
         addCheckbox(SHOW_VALUE_NODES_OPTION);
-        addCheckbox(VERTEX_LABEL_OPTION);
+        addCheckbox(SHOW_VERTEX_LABELS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         // addCheckbox(IS_ATTRIBUTED_OPTION);

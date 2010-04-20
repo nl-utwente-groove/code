@@ -28,17 +28,13 @@ public class Grammar_1_0_Action extends FileFilterAction {
 
     @Override
     public boolean test(StoredGrammarView grammar) {
-        return grammar.getTypeNames().isEmpty();
+        return grammar.getLabelStore().hasNodeTypesOrFlags();
     }
 
     @Override
     public void modify(StoredGrammarView grammarView) {
         grammarView.getProperties().setGrammarVersion(
             Version.GRAMMAR_VERSION_1_0);
-        /*GraphGrammar grammar = grammarView.toGrammar();
-        SystemProperties properties = grammar.getProperties();
-        properties.setGrammarVersion(Version.GRAMMAR_VERSION_1_0);
-        grammar.setProperties(properties);*/
     }
 
     @Override
