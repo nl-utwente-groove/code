@@ -30,6 +30,7 @@ import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
@@ -54,6 +55,7 @@ import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.BoundedModelCheckingDialog;
@@ -238,8 +240,7 @@ public class Simulator {
      */
     public void start() {
         getFrame().pack();
-        groove.gui.UserSettings.applyUserSettings(this.frame); // Applies
-        // previous user settings (mzimakova)
+        groove.gui.UserSettings.applyUserSettings(this.frame);
         getFrame().setVisible(true);
     }
 
@@ -2089,6 +2090,7 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
+        result.add(getOptions().getItem(SHOW_VERTEX_LABELS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
         result.add(getOptions().getItem(Options.DELETE_CONTROL_OPTION));
@@ -4489,7 +4491,20 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            if (getGrammarView() != null) {
+                JMenuItem item =
+                    getOptions().getItem(SHOW_VERTEX_LABELS_OPTION);
+                LabelStore labelStore = getGrammarView().getLabelStore();
+                if (labelStore.hasNodeTypesOrFlags()) {
+                    item.setSelected(false);
+                    item.setEnabled(false);
+                } else {
+                    item.setEnabled(true);
+                }
+                setEnabled(true);
+            } else {
+                setEnabled(false);
+            }
         }
     }
 
@@ -5352,4 +5367,6 @@ public class Simulator {
     private static final boolean USE_TYPES = true;
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
+
+    private static final boolean DEBUG_FLAGS = true;
 }
