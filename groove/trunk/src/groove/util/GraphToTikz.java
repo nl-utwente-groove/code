@@ -837,6 +837,7 @@ public final class GraphToTikz {
 
         int color = Converter.removeColorTags(htmlLine);
         StringBuilder line = escapeSpecialChars(htmlLine);
+        String aux = "";
         int i = line.indexOf(Converter.HTML_EXISTS);
         if (i > -1) {
             result.append(line.substring(0, i));
@@ -848,12 +849,26 @@ public final class GraphToTikz {
                 result.append(FORALL_STR);
             }
         } else if (line.indexOf(Converter.ITALIC_TAG.tagBegin) > -1) {
-            result.append(encloseItalicStyle(Converter.ITALIC_TAG.off(line)));
+            aux = encloseItalicStyle(Converter.ITALIC_TAG.off(line));
         } else if (line.indexOf(Converter.STRONG_TAG.tagBegin) > -1) {
-            result.append(enclose(Converter.STRONG_TAG.off(line), BOLD_STYLE,
-                "}"));
+            aux = enclose(Converter.STRONG_TAG.off(line), BOLD_STYLE, "}");
         } else {
-            result.append(line);
+            aux = line.toString();
+        }
+
+        switch (color) {
+        case 0:
+            result.append(aux);
+            break;
+        case 1:
+            result.append(enclose(aux, BEGIN_COLOR_BLUE, "}"));
+            break;
+        case 2:
+            result.append(enclose(aux, BEGIN_COLOR_GREEN, "}"));
+            break;
+        case 3:
+            result.append(enclose(aux, BEGIN_COLOR_RED, "}"));
+            break;
         }
 
         result.append(CRLF);
@@ -875,14 +890,9 @@ public final class GraphToTikz {
             case '&': // We have to check if the & is part of a special
                 // HTML char.
                 if (line.charAt(i + 1) == '#') {
-                    if (line.substring(i, i + 6).equals(Converter.HTML_TIMES)) {
-                        result.append(TIMES);
-                        i += 5;
-                    } else {
-                        // Yes, it is. Keep it.
-                        result.append("&#");
-                        i++;
-                    }
+                    // Yes, it is. Keep it.
+                    result.append("&#");
+                    i++;
                 } else { // It's not.
                     result.append(AMP);
                 }
@@ -1286,6 +1296,11 @@ public final class GraphToTikz {
     private static final String END_PATH = ";\n";
     private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
+    private static final String TIMES = "$\\times$";
+    private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}$-$ ";
+    private static final String BEGIN_COLOR_GREEN = "{\\color{\\green}$+$ ";
+    private static final String BEGIN_COLOR_RED =
+        "{\\color{\\red}" + TIMES + " ";
     private static final String BASIC_NODE_STYLE = "node";
     private static final String BASIC_EDGE_STYLE = "edge";
     private static final String BASIC_LABEL_STYLE = "lab";
@@ -1341,7 +1356,6 @@ public final class GraphToTikz {
     private static final String VERT_BAR = "$|$";
     private static final String BACKSLASH = "$\\backslash$";
     private static final String PI = "$\\pi$";
-    private static final String TIMES = "$\\times$";
     private static final String NORTH = ".north -| ";
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
