@@ -287,13 +287,17 @@ public class Converter {
      * @return 1 if the line was blue, 2 if green, 3 if red and 0 otherwise.
      */
     public static int removeColorTags(StringBuilder htmlLine) {
-        if (!blue.off(htmlLine).equals(htmlLine.toString())) {
+        String originalLine = htmlLine.toString();
+        if (!blue.off(htmlLine).equals(originalLine)) {
+            htmlLine.delete(0, 2);
             return 1;
         }
-        if (!green.off(htmlLine).equals(htmlLine.toString())) {
+        if (!green.off(htmlLine).equals(originalLine)) {
+            htmlLine.delete(0, 2);
             return 2;
         }
-        if (!red.off(htmlLine).equals(htmlLine.toString())) {
+        if (!red.off(htmlLine).equals(originalLine)) {
+            htmlLine.delete(0, 7);
             return 3;
         }
         return 0;
@@ -460,13 +464,11 @@ public class Converter {
          */
         public String off(StringBuilder text) {
             int tagEndStart = text.indexOf(this.tagEnd);
-            if (tagEndStart > -1) {
+            int tagBeginStart = text.indexOf(this.tagBegin);
+            if (tagEndStart > -1 && tagBeginStart > -1) {
                 int end = tagEndStart + this.tagEnd.length();
                 text.replace(tagEndStart, end, "");
-            }
-            int tagBeginStart = text.indexOf(this.tagBegin);
-            if (tagBeginStart > -1) {
-                int end = tagBeginStart + this.tagBegin.length();
+                end = tagBeginStart + this.tagBegin.length();
                 text.replace(tagBeginStart, end, "");
             }
             return text.toString();
