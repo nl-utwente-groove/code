@@ -445,7 +445,7 @@ public class AspectJModel extends GraphJModel {
          * node.
          */
         boolean isAllowedNodeLabel(AspectEdge dataEdge) {
-            boolean result = dataEdge.isAllowedNodeLabel();
+            boolean result = dataEdge.isUnaryEdge();
             if (!result) {
                 // test for equal rule roles
                 AspectValue edgeRole = role(dataEdge);

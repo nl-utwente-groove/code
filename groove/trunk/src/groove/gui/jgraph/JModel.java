@@ -528,7 +528,8 @@ abstract public class JModel extends DefaultGraphModel {
      * @param option the name of the option
      */
     protected boolean getOptionValue(String option) {
-        return this.options != null && this.options.isSelected(option);
+        return this.options != null && this.options.getItem(option).isEnabled()
+            && this.options.isSelected(option);
     }
 
     /**

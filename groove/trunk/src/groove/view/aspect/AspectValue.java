@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectValue {
+public class AspectValue implements Comparable<AspectValue> {
     /**
      * Creates a new aspect value, for a given aspect and with a given name.
      * Throws an exception if an aspect value with the same name exists already.
@@ -275,6 +275,12 @@ public class AspectValue {
     @Override
     public String toString() {
         return getName();
+    }
+
+    /** Aspect values are compared by name. */
+    @Override
+    public int compareTo(AspectValue o) {
+        return getName().compareTo(o.getName());
     }
 
     /**

@@ -39,6 +39,7 @@ import groove.gui.layout.LayoutMap;
 import groove.rel.RegExprLabel;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
+import groove.view.aspect.RuleAspect;
 
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -375,22 +376,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * be a new j-edge.
      */
     protected JCell addEdge(Edge edge) {
-        // for now we just support binary edges
-        if (edge.endCount() > 2) {
-            throw new IllegalArgumentException("Non-binary edge " + edge
-                + " not supported");
-        }
-
-        boolean unary = this.isSourceCompatible(edge);
-        if (edge instanceof AspectEdge) {
-            AspectEdge e = (AspectEdge) edge;
-            if (e.isAllowedNodeLabel()) {
-                // Node types and flags are always unary. 
-                unary = true;
-            }
-        }
-
-        if (unary) {
+        if (isUnaryEdge(edge)) {
             GraphJVertex jVertex = getJVertex(edge.source());
             if (jVertex.addSelfEdge(edge)) {
                 // yes, the edge could be added here; we're done
@@ -446,23 +432,28 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
      * Tests if a given edge may be added to its source vertex.
      */
-    protected boolean isSourceCompatible(Edge edge) {
-        if (edge.source() == edge.opposite() && this.isShowVertexLabels()) {
-            return true;
+    protected boolean isUnaryEdge(Edge edge) {
+        boolean result;
+        if (isForEditor()) {
+            result = isPotentialUnaryEdge(edge);
+        } else if (edge instanceof AspectEdge) {
+            result =
+                ((AspectEdge) edge).isUnaryEdge()
+                    || RuleAspect.isRemark((AspectEdge) edge);
+        } else {
+            result = !edge.label().isBinary();
         }
-        // in all other cases, the edge is not source compatible
-        return false;
+        return result;
     }
 
-    /**
-     * Tests if a given edge may be added to an existing jvertex, as far as the
-     * available layout information is concerned. The edge is compatible if
-     * there is no layout information for it.
-     * @param jVertex the jvertex to which the edge is about to be added
-     * @param edge the edge that is investigated for compatability
+    /** 
+     * Indicates if, as far as equality of source and target and (the absence 
+     * of) explicit layouting is concerned, a given edge could be displayed as 
+     * node label.
      */
-    protected boolean isLayoutCompatible(JVertex jVertex, Edge edge) {
-        return this.layoutMap.getEdge(edge) == null;
+    protected boolean isPotentialUnaryEdge(Edge edge) {
+        return edge.source() == edge.opposite()
+            && this.layoutMap.getEdge(edge) == null;
     }
 
     /**
@@ -471,7 +462,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * layout information for the edge equals that for the (edges contained in
      * the) jedge, or both are <tt>null</tt>.
      * @param jEdge the jedge to which the edge is about to be added
-     * @param edge the edge that is investigated for compatability
+     * @param edge the edge that is investigated for compatibility
      */
     protected boolean isLayoutCompatible(GraphJEdge jEdge, Edge edge) {
         JCellLayout edgeLayout = this.layoutMap.getEdge(edge);
@@ -580,7 +571,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @ensure <tt>result.getNode().equals(node)</tt>
      */
     protected GraphJVertex createJVertex(Node node) {
-        return new GraphJVertex(this, node, isShowVertexLabels());
+        return new GraphJVertex(this, node, true);
     }
 
     /**
@@ -741,6 +732,22 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         return getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
+    /** Sets the {@link #forEditor} flag to {@code true}. */
+    private final void setForEditor() {
+        this.forEditor = true;
+    }
+
+    /** Returns the value of the {@link #forEditor} flag. */
+    private final boolean isForEditor() {
+        return this.forEditor;
+    }
+
+    /**
+     * Flag indicating that this JModel is only created in an intermediate
+     * step to make an EditorJModel.
+     * This affects the way self-edges are handled.
+     */
+    private boolean forEditor;
     /**
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
@@ -782,6 +789,30 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
      * Creates a new GraphJModel instance on top of a given Graph. Node
      * attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} and edge
+     * attributes by {@link JAttr#DEFAULT_EDGE_ATTR}.
+     * 
+     * @param graph the underlying Graph
+     * @param options display options
+     * @param forEditor flag indicating that the graph model is only used
+     * as an intermediate step to reload an {@link EditorJModel}. If {@code true},
+     * all self-edges without explicit layout information will be treated as node
+     * labels.
+     */
+    static public GraphJModel newInstance(GraphShape graph, Options options,
+            boolean forEditor) {
+        GraphJModel result =
+            new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR,
+                JAttr.DEFAULT_EDGE_ATTR, options);
+        if (forEditor) {
+            result.setForEditor();
+        }
+        result.reload();
+        return result;
+    }
+
+    /**
+     * Creates a new GraphJModel instance on top of a given Graph. Node
+     * attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} and edge
      * attributes by {@link JAttr#DEFAULT_EDGE_ATTR}. Self-edges will be
      * displayed as node labels.
      * 
@@ -789,11 +820,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @param options display options
      */
     static public GraphJModel newInstance(GraphShape graph, Options options) {
-        GraphJModel result =
-            new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR,
-                JAttr.DEFAULT_EDGE_ATTR, options);
-        result.reload();
-        return result;
+        return newInstance(graph, options, false);
     }
 
     /** Dummy (empty) j-model. */

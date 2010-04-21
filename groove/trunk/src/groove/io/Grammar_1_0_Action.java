@@ -28,7 +28,7 @@ public class Grammar_1_0_Action extends FileFilterAction {
 
     @Override
     public boolean test(StoredGrammarView grammar) {
-        return grammar.getLabelStore().hasNodeTypesOrFlags();
+        return grammar.getLabelStore().hasUnaryLabels();
     }
 
     @Override

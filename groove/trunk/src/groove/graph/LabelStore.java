@@ -121,8 +121,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                 }
             }
         }
-        System.out.println(this);
-        System.out.println(this.subtypeMap);
     }
 
     /** Removes a direct subtype pair from the subtyping relation. */
@@ -419,11 +417,11 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     }
 
     /**
-     * @return true is the store has at least one node type or flag.
+     * Indicates if the store has at least one unary label (i.e., node type or flag).
      */
-    public boolean hasNodeTypesOrFlags() {
+    public boolean hasUnaryLabels() {
         for (Label label : this.getLabels()) {
-            if (label.isNodeType() || label.isFlag()) {
+            if (!label.isBinary()) {
                 return true;
             }
         }

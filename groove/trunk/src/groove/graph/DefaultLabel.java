@@ -228,31 +228,32 @@ public final class DefaultLabel extends AbstractLabel {
      * type and is set to italic if the label is a flag.
      */
     static public String toHtmlString(Label label) {
+        String result = Converter.toHtml(label.text());
         if (label.isNodeType()) {
-            return Converter.STRONG_TAG.on(Converter.toHtml(label.text()));
+            result = Converter.STRONG_TAG.on(result);
         } else if (label.isFlag()) {
-            return Converter.ITALIC_TAG.on(Converter.toHtml(label.text()));
-        } else {
-            return Converter.toHtml(label.text());
+            result = Converter.ITALIC_TAG.on(result);
         }
+        return result;
     }
 
     /**
-     * @param edgeLabel
-     * @param edgeRole
-     * @return a HTML string with all the proper formats.
+     * Returns a HTML-formatted string for a given label in combination
+     * with its edge role, without the
+     * surrounding html-tag. The string is set to bold if the label is a node
+     * type and is set to italic if the label is a flag; colours and
+     * prefixes are used to indicate the role.
      */
     public static String toHtmlString(Label edgeLabel, AspectValue edgeRole) {
+        String result = toHtmlString(edgeLabel);
         if (RuleAspect.ERASER.equals(edgeRole)) {
-            return Converter.blue.on("- " + toHtmlString(edgeLabel));
+            result = Converter.blue.on("- " + result);
         } else if (RuleAspect.CREATOR.equals(edgeRole)) {
-            return Converter.green.on("+ " + toHtmlString(edgeLabel));
+            result = Converter.green.on("+ " + result);
         } else if (RuleAspect.EMBARGO.equals(edgeRole)) {
-            return Converter.red.on(Converter.HTML_TIMES + " "
-                + toHtmlString(edgeLabel));
-        } else {
-            return toHtmlString(edgeLabel);
+            result = Converter.red.on("! " + result);
         }
+        return result;
     }
 
     /**

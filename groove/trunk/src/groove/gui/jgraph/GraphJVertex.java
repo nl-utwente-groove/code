@@ -194,8 +194,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 DefaultLabel.toHtmlString(DefaultLabel.createDataType(getAlgebra()))));
         }
         for (Edge edge : getSelfEdges()) {
-            if (getLabel(edge).isNodeType() || getLabel(edge).isFlag()
-                || !this.jModel.isFiltering(getLabel(edge))) {
+            if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
@@ -220,28 +219,31 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         Label edgeLabel = getLabel(edge);
         if (edgeLabel instanceof RegExprLabel) {
             result.append(Converter.ITALIC_TAG.on(edgeLabel));
-        } else if (!edgeLabel.isBinary()) {
-            if (edge instanceof AspectEdge) {
-                AspectEdge aspectEdge = (AspectEdge) edge;
-                AspectValue edgeRole = AspectJModel.role(aspectEdge);
-                result.append(DefaultLabel.toHtmlString(edgeLabel, edgeRole));
-            } else {
+        } else if (edge.opposite() == getNode()) {
+            // use special node label prefixes to indicate edge role
+            if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
+                AspectValue edgeRole = AspectJModel.role((AspectEdge) edge);
+                AspectValue sourceRole =
+                    AspectJModel.role(((AspectEdge) edge).source());
+                if (edgeRole != null && !edgeRole.equals(sourceRole)) {
+                    result.append(DefaultLabel.toHtmlString(edgeLabel, edgeRole));
+                }
+            }
+            if (result.length() == 0) {
                 result.append(DefaultLabel.toHtmlString(edgeLabel));
             }
         } else {
+            // this is a binary edge displayed as a node label
             result.append(edgeLabel);
-            if (edge.opposite() != getNode()) {
-                // this is a binary edge displayed as a node label
-                GraphJVertex oppositeVertex =
-                    this.jModel.getJVertex(edge.opposite());
-                Node actualTarget = oppositeVertex.getActualNode();
-                if (actualTarget instanceof ValueNode) {
-                    result.append(ASSIGN_TEXT);
-                    result.append(((ValueNode) actualTarget).getValue());
-                } else {
-                    result.append(TYPE_TEXT);
-                    result.append(((TypeNode) actualTarget).getType());
-                }
+            GraphJVertex oppositeVertex =
+                this.jModel.getJVertex(edge.opposite());
+            Node actualTarget = oppositeVertex.getActualNode();
+            if (actualTarget instanceof ValueNode) {
+                result.append(ASSIGN_TEXT);
+                result.append(((ValueNode) actualTarget).getValue());
+            } else {
+                result.append(TYPE_TEXT);
+                result.append(((TypeNode) actualTarget).getType());
             }
             result = Converter.toHtml(result);
         }
@@ -369,10 +371,25 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * Returns an unmodifiable view on the underlying edge set.
+     * Returns an unmodifiable view on the self edges.
+     * If {@link GraphJModel#isShowVertexLabels()} is set,
+     * all edges with equal source and target and without explicit
+     * layout information are regarded as self edges.
      */
     public Set<? extends Edge> getSelfEdges() {
-        return Collections.unmodifiableSet(getUserObject());
+        if (this.jModel.isShowVertexLabels()) {
+            // add self-edges without layout info
+            Set<Edge> result = new TreeSet<Edge>(getUserObject());
+            for (Object edgeObject : getPort().getEdges()) {
+                GraphJEdge jEdge = (GraphJEdge) edgeObject;
+                if (this.jModel.isPotentialUnaryEdge(jEdge.getEdge())) {
+                    result.addAll(jEdge.getEdges());
+                }
+            }
+            return result;
+        } else {
+            return Collections.unmodifiableSet(getUserObject());
+        }
     }
 
     /**

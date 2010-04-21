@@ -76,7 +76,7 @@ public class ExportDialog {
     // export final states only
     JRadioButton list2;
 
-    /** Value that indicates no states are exported **/ 
+    /** Value that indicates no states are exported **/
     public static final int STATES_NONE = 0;
     /** Value that indicates only final states are exported **/
     public static final int STATES_FINAL = 1;
@@ -294,10 +294,10 @@ public class ExportDialog {
                 ExportDialog.this.dirField.setText(chooser.getSelectedFile().getAbsolutePath());
             }
             if (result == JFileChooser.CANCEL_OPTION) {
-                System.out.println("Cancelled");
+                // System.out.println("Cancelled");
             }
             if (result == JFileChooser.ERROR_OPTION) {
-                System.out.println("Whooops");
+                // System.out.println("Whooops");
             }
 
         }

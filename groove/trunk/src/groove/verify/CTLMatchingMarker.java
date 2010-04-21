@@ -21,7 +21,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.trans.Condition;
-import groove.util.Reporter;
 import groove.verify.CTLStarFormula.Next;
 import groove.verify.CTLStarFormula.Until;
 
@@ -87,11 +86,11 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 GraphState nextState = stateIter.next();
                 if (condition.getMatchIter(nextState.getGraph(), null).hasNext()) {
                     marking.set(nextState, property, true);
-                    System.out.println("nextState: " + property);
+                    //                    System.out.println("nextState: " + property);
                 } else {
                     marking.set(nextState, property, false);
                     property.getCounterExamples().add(nextState);
-                    System.out.println("nextState: !" + property);
+                    //                    System.out.println("nextState: !" + property);
                 }
             }
         }

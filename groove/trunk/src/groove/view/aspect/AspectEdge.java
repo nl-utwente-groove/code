@@ -206,13 +206,13 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      * @return true, if the label is a node type label or a flag;
      *         false, otherwise.
      */
-    public boolean isAllowedNodeLabel() {
+    public boolean isUnaryEdge() {
         return (this.isNodeType() == 0 || this.isFlag() == 0);
     }
 
     /**
      * This implementation makes sure that edges with node type labels are
-     * ordered before other edge.
+     * ordered before other edges.
      */
     @Override
     protected int compareToEdge(Edge obj) {
@@ -220,11 +220,17 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
             "Can't compare aspect edge '%s' to non-aspect edge '%s'", this, obj);
         AspectEdge other = (AspectEdge) obj;
         int result;
-        // first compare the source, then the node type property, then the
+        // first compare the source, then the aspects,
         // label, then the target
         result = source().compareTo(other.source());
         if (result == 0) {
             result = isNodeType() - other.isNodeType();
+        }
+        if (result == 0) {
+            result = isFlag() - other.isFlag();
+        }
+        if (result == 0) {
+            result = getAspectMap().compareTo(other.getAspectMap());
         }
         if (result == 0) {
             result = label().compareTo(other.label());
