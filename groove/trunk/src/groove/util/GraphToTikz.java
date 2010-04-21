@@ -1296,11 +1296,9 @@ public final class GraphToTikz {
     private static final String END_PATH = ";\n";
     private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
-    private static final String TIMES = "$\\times$";
     private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}$-$ ";
     private static final String BEGIN_COLOR_GREEN = "{\\color{\\green}$+$ ";
-    private static final String BEGIN_COLOR_RED =
-        "{\\color{\\red}" + TIMES + " ";
+    private static final String BEGIN_COLOR_RED = "{\\color{\\red}$!$ ";
     private static final String BASIC_NODE_STYLE = "node";
     private static final String BASIC_EDGE_STYLE = "edge";
     private static final String BASIC_LABEL_STYLE = "lab";

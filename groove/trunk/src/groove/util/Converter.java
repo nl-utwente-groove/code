@@ -288,19 +288,20 @@ public class Converter {
      */
     public static int removeColorTags(StringBuilder htmlLine) {
         String originalLine = htmlLine.toString();
+        int result = 0;
         if (!blue.off(htmlLine).equals(originalLine)) {
-            htmlLine.delete(0, 2);
-            return 1;
+            result = 1;
         }
         if (!green.off(htmlLine).equals(originalLine)) {
-            htmlLine.delete(0, 2);
-            return 2;
+            result = 2;
         }
         if (!red.off(htmlLine).equals(originalLine)) {
-            htmlLine.delete(0, 7);
-            return 3;
+            result = 3;
         }
-        return 0;
+        if (result != 0) {
+            htmlLine.delete(0, 2);
+        }
+        return result;
     }
 
     /** HTML greater than symbol. */
