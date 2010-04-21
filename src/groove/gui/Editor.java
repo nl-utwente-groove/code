@@ -189,7 +189,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         } else {
             // don't set the errors, now as they will be computed again anyway
             // setErrors(GraphInfo.getErrors(graph));
-            getModel().replace(GraphJModel.newInstance(graph, getOptions()));
+            getModel().replace(
+                GraphJModel.newInstance(graph, getOptions(), true));
             // set the model afresh to make sure everything gets updated properly
             setRole(roleIndexMap.get(GraphInfo.getRole(graph)));
             setModel(getModel());
@@ -410,7 +411,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             Graph plainGraph = previewedModel.toPlainGraph();
             setErrors(GraphInfo.getErrors(plainGraph));
             getModel().replace(
-                GraphJModel.newInstance(plainGraph, getOptions()));
+                GraphJModel.newInstance(plainGraph, getOptions(), true));
             // copy the edited properties into the model
             getModel().setProperties(previewedModel.getProperties());
             // setSelectInsertedCells(true);

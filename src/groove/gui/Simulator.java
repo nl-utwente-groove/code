@@ -4495,8 +4495,7 @@ public class Simulator {
                 JMenuItem item =
                     getOptions().getItem(SHOW_VERTEX_LABELS_OPTION);
                 LabelStore labelStore = getGrammarView().getLabelStore();
-                if (labelStore.hasNodeTypesOrFlags()) {
-                    item.setSelected(false);
+                if (labelStore.hasUnaryLabels()) {
                     item.setEnabled(false);
                 } else {
                     item.setEnabled(true);

@@ -30,6 +30,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Mapping from aspects to aspect values, associated with an
@@ -37,7 +39,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectMap implements Iterable<AspectValue> {
+public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap> {
     /**
      * Constructs an empty aspect map.
      * @param rule flag indicating if we are in the context of a rule.
@@ -216,6 +218,30 @@ public class AspectMap implements Iterable<AspectValue> {
             result += this.text.hashCode();
         }
         return result;
+    }
+
+    /** Aspect maps are compared on the basis of an ordered list of their values. */
+    @Override
+    public int compareTo(AspectMap o) {
+        SortedSet<AspectValue> myValues =
+            new TreeSet<AspectValue>(this.aspectMap.values());
+        Iterator<AspectValue> myIter = myValues.iterator();
+        SortedSet<AspectValue> oValues =
+            new TreeSet<AspectValue>(o.aspectMap.values());
+        Iterator<AspectValue> oIter = oValues.iterator();
+        while (myIter.hasNext() && oIter.hasNext()) {
+            int result = myIter.next().compareTo(oIter.next());
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (oIter.hasNext()) {
+            return -1;
+        } else if (myIter.hasNext()) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     /** Indicates if the aspects in this map equal those in another map. */

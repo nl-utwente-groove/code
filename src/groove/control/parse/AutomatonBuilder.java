@@ -420,7 +420,6 @@ public class AutomatonBuilder extends Namespace {
 
         for (ControlTransition ct : this.transitions) {
             if (ct.getFailures().keySet().contains(_DELTA_)) {
-                System.out.println(ct);
                 checkOrphan.add(ct.target());
                 remove.add(ct);
             }
