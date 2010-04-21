@@ -5367,5 +5367,4 @@ public class Simulator {
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
 
-    private static final boolean DEBUG_FLAGS = true;
 }
