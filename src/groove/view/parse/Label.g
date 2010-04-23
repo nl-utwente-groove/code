@@ -1,4 +1,4 @@
-grammar Labels;
+grammar Label;
 
 options {
   language = Java;
@@ -42,11 +42,23 @@ package groove.view.parse;
 package groove.view.parse;
 }
 
+@members {
+    private boolean isGraph;
+    public void setIsGraph(boolean isGraph) {
+        this.isGraph = isGraph;
+    }
+}
+
+label
+   : { isGraph }? => graphLabel
+   | { !isGraph }? => ruleLabel
+   ;
+   
 graphLabel :
   prefix* actualGraphLabel;
  
 prefix
-   : ( forallP | forallxP | existsP ) (EQUALS IDENT)? COLON 
+   : ( forallP! | forallxP | existsP ) (EQUALS IDENT)? COLON 
    | ( newP | delP | notP | useP | cnewP ) (EQUALS IDENT)? COLON 
    | nestedP COLON;
 

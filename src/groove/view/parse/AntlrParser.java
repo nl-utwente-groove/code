@@ -30,19 +30,15 @@ public class AntlrParser {
             switch (Integer.parseInt(args[0])) {
             case 0:
                 System.out.println("Lexer/Parser");
-                org.antlr.Tool.main(new String[] {"labels.g"});
+                org.antlr.Tool.main(new String[] {"Label.g"});
                 break;
             case 1:
                 System.out.println("Checker");
-                org.antlr.Tool.main(new String[] {"labelsChecker.g"});
+                org.antlr.Tool.main(new String[] {"LabelChecker.g"});
                 break;
             case 2:
                 System.out.println("Builder");
-                org.antlr.Tool.main(new String[] {"labelsBuilder.g"});
-                break;
-            case 3:
-                System.out.println("DeterminismChecker");
-                org.antlr.Tool.main(new String[] {"GCLDeterminismChecker.g"});
+                org.antlr.Tool.main(new String[] {"LabelBuilder.g"});
                 break;
             default:
                 printUsageMessage();
