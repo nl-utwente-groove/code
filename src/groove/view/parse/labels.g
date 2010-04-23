@@ -1,44 +1,80 @@
-grammar labels;
+grammar Labels;
 
 options {
   language = Java;
   output = AST;
 }
 
-label :
-  graphLabel | ruleLabel ;
+tokens {
+  NEW;
+  DEL;
+  NOT;
+  USE;
+  CNEW;
+  REM;
+  
+  FORALL;
+  FORALLX;
+  EXISTS;
+  NESTED;
+  
+  INT;
+  REAL;
+  STRING;
+  BOOL;
+  ATTR;
+  PROD;
+  ARG;
+  
+  PAR;
+  
+  TYPE;
+  FLAG;
+  PATH;
+  EMPTY;
+}
+
+@lexer::header {
+package groove.view.parse;
+}
+
+@header {
+package groove.view.parse;
+}
 
 graphLabel :
   prefix* actualGraphLabel;
  
 prefix
- : (char\{COLON,EQUALS})+ [ EQUALS (char\{COLON})* ] COLON ;
+   : ( forallP | forallxP | existsP ) (EQUALS IDENT)? COLON 
+   | ( newP | delP | notP | useP | cnewP ) (EQUALS IDENT)? COLON 
+   | nestedP COLON;
 
 actualGraphLabel
-   : COLON char*
-   | REM COLON Char*
+   : COLON .*
+   | remP COLON .*
    | valueLabel
    | nodeLabel
-   | (Char\{COLON})+ ;
+   | (~COLON)+ ;
    
 valueLabel
-   : INT COLON DIGIT+
-   | REAL COLON (DIGIT+ [DOT DIGIT*] | DOT DIGIT+)
-   | STRING COLON dQuotedText
-   | BOOL COLON (TRUE | FALSE) ;
+   : intP COLON NUMBER -> ^(INT NUMBER)
+   | realP COLON RNUMBER -> ^(REAL RNUMBER)
+   | stringP COLON DQTEXT -> ^(STRING DQTEXT)
+   | boolP COLON (trueP | falseP);
    
 nodeLabel
-   : TYPE COLON Ident
-   | FLAG COLON Ident
+   : typeP COLON IDENT -> ^(TYPE IDENT)
+   | flagP COLON IDENT -> ^(FLAG IDENT);
 
 ruleLabel
    : prefix* actualRuleLabel ;
    
 actualRuleLabel
-   : COLON Char*
-   | REM COLON Char*
-   | PAR COLON
-   | PATH COLON [PLING] RegExpr
+   : COLON .*
+   | remP COLON .*
+   | parP COLON
+   | pathP COLON PLING? regExpr
    | valueLabel
    | nodeLabel
    | attrLabel
@@ -46,13 +82,13 @@ actualRuleLabel
    | posLabel ;
    
 attrLabel
-   : INT COLON [Ident]
-   | REAL COLON [Ident]
-   | STRING COLON [Ident]
-   | BOOL COLON [Ident]
-   | ATTR COLON
-   | PROD COLON
-   | ARG COLON DIGIT+ ;
+   : intP COLON IDENT? -> ^(INT IDENT)
+   | realP COLON IDENT? -> ^(REAL IDENT)
+   | stringP COLON IDENT? -> ^(STRING IDENT)
+   | boolP COLON IDENT? -> ^(BOOL IDENT)
+   | attrP COLON -> ^(ATTR IDENT)
+   | prodP COLON -> ^(PROD IDENT)
+   | argP COLON DIGIT+ -> ^(ARG IDENT);
 
 negLabel
    : PLING posLabel ;
@@ -60,88 +96,68 @@ negLabel
 posLabel
    : wildcard
    | EQUALS
-   | LCURLY regExpr RCURLY
-   | SQUOTE sQuotedText SQUOTE
-   | (Char\{SQUOTE,LCURLY,RCURLY,BSLASH,COLON})* ;
+   | LBRACE regExpr RBRACE
+   | SQTEXT
+   | (~(SQTEXT|LBRACE|RBRACE|QUERY|EQUALS|COLON|PLING))* ;
    
 regExpr
-   : wildcard
-   | EQUALS
-   | atom
-   | sequence
-   | choice
-   | star
-   | plus
-   | inverse
-   | LPAR regExpr RPAR ;
-
-wildcard
-   : QUERY [IDENT] [constraint] ;
-
-constraint
-   : LSQUARE [HAT] atom (COMMA atom)* RSQUARE ;
-
-sequence
-   : regExpr (DOT regExpr)+ ;
+   : choice ;
 
 choice
-   : regExpr (BAR regExpr)+ ;
+   : sequence (BAR! choice)? ;
 
-star
-   : regExpr STAR ;
+sequence
+   : unary (DOT! sequence)? ;
 
-plus
-   : regExpr PLUS ;
-
-inverse
-   : MINUS regExpr ;
+unary
+   : MINUS unary
+   | atom (STAR! | PLUS!)? ;
 
 atom
-   : sQuotedText
-   | identChar* ;
+   : SQTEXT
+   | IDENTCHAR+
+   | EQUALS
+   | LPAR regExpr RPAR
+   | wildcard ;
 
-sQuotedText
-   : SQUOTE (char\{SQUOTE,BSLASH} | BSLASH (BSLASH|SQUOTE))* SQUOTE ;
+wildcard
+   : QUERY IDENT? LSQUARE HAT? atom (COMMA atom)* RSQUARE
+     -> ^(QUERY IDENT HAT atom*);
 
-dQuotedText
-   : DQUOTE (char\{DQUOTE,BSLASH} | BSLASH (BSLASH|DQUOTE))* DQUOTE ;
+SQTEXT
+   : SQUOTE (~(SQUOTE|BSLASH) | BSLASH (BSLASH|SQUOTE))* SQUOTE;
 
-ident
-   : LETTER identChar* ;
+DQTEXT
+   : DQUOTE (~(DQUOTE|BSLASH) | BSLASH (BSLASH|DQUOTE))* DQUOTE;
 
-identChar
-   : LETTER | DIGIT | DOLLAR | UNDER;
+newP    : 'new';
+delP    : 'del';
+cnewP   : 'cnew';
+notP    : 'not';
+useP    : 'use';
+remP    : 'rem';
 
-NEW    : 'new';
-DEL    : 'del';
-CNEW   : 'cnew';
-NOT    : 'not';
-USE    : 'use';
-REM    : 'rem';
+forallP : 'forall';
+forallxP : 'forallx';
+existsP : 'exists';
+nestedP : 'nested';
 
-FORALL : 'forall';
-FORALLX : 'forallx';
-EXISTS : 'exists';
-NESTED : 'nested';
+parP    : 'par';
 
-PAR : 'par';
+attrP   : 'attr';
+prodP   : 'prod';
+argP    : 'arg';
+intP    : 'int';
+realP   : 'real';
+stringP : 'string';
+boolP   : 'bool';
 
-ATTR   : 'attr';
-PROD   : 'prod';
-ARG    : 'arg';
-INT    : 'int';
-REAL   : 'real';
-STRING : 'string';
-BOOL   : 'bool';
+typeP   : 'type';
+flagP   : 'flag';
+pathP   : 'path';
 
-TYPE   : 'type';
-FLAG   : 'flag';
-PATH   : 'path';
-
-TRUE   : 'true';
-FALSE  : 'false';
-
-IDENTIFIER : LETTER (LETTER | DIGIT | DOLLAR | UNDER )* ;
+trueP   : 'true';
+falseP  : 'false';
 
 MINUS  : '-';
 STAR   : '*';
@@ -158,8 +174,6 @@ LSQUARE : '[';
 RSQUARE : ']';
 PLING  : '!';
 QUERY  : '?'; 
-LETTER : 'a'..'z'|'A'..'Z' ;
-DIGIT  : '0'..'9' ;
 COLON  : ':' ;
 COMMA  : ',' ;
 SQUOTE : '\'' ;
@@ -167,3 +181,25 @@ DQUOTE : '"' ;
 DOLLAR : '$';
 UNDER  : '_';
 BSLASH : '\\' ;
+
+IDENT
+   : LETTER IDENTCHAR* 
+   ;
+   
+NUMBER
+   : DIGIT+
+   ;
+
+RNUMBER
+   : (DIGIT+ (DOT DIGIT*)? | DOT DIGIT+)
+   ;
+
+LABEL
+   : IDENTCHAR*
+   ;
+
+fragment IDENTCHAR
+   : LETTER | DIGIT | DOLLAR | UNDER;
+
+fragment LETTER : 'a'..'z'|'A'..'Z' ;
+fragment DIGIT  : '0'..'9' ;
