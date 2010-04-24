@@ -25,31 +25,6 @@ import org.antlr.runtime.CommonTokenStream;
  */
 public class LabelParseTest {
     /**
-     * Parses a given label as graph and rule label and displays the parse trees
-     * @param label the label to be parsed
-     */
-    public LabelParseTest(String label) {
-        try {
-            LabelLexer lexer = new LabelLexer(new ANTLRStringStream(label));
-            LabelParser parser = new LabelParser(new CommonTokenStream(lexer));
-            LabelParser.label_return labelReturn = parser.label();
-            ASTFrame graphFrame =
-                new ASTFrame("parser label result",
-                    (org.antlr.runtime.tree.CommonTree) labelReturn.getTree());
-            graphFrame.setSize(500, 1000);
-            graphFrame.setVisible(true);
-            //
-            //            List<String> errors = parser.getErrors();
-            //            if (errors.size() != 0) {
-            //                errors.add(0, "Encountered parse errors in control program");
-            //                throw new FormatException(errors);
-            //            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Called after closing a window. Reduces the open window count and shuts
      * down if no more windows are open.
      */
@@ -65,7 +40,40 @@ public class LabelParseTest {
      * @param args args[0] should be the label to be parsed
      */
     public static void main(String[] args) {
-        new LabelParseTest(args[0]);
+        if (args.length > 0) {
+            boolean isGraph = Boolean.parseBoolean(args[0]);
+            for (int i = 1; i < args.length; i++) {
+                test(args[i], isGraph);
+            }
+        } else {
+            test("forall=x:label", false);
+            test("pp{'", false);
+            test("pp{'", true);
+        }
+    }
+
+    private static void test(String label, boolean isGraph) {
+        try {
+            LabelLexer lexer = new LabelLexer(new ANTLRStringStream(label));
+            System.out.println(new CommonTokenStream(lexer));
+            lexer = new LabelLexer(new ANTLRStringStream(label));
+            LabelParser parser = new LabelParser(new CommonTokenStream(lexer));
+            parser.setIsGraph(isGraph);
+            LabelParser.label_return labelReturn = parser.label();
+            ASTFrame graphFrame =
+                new ASTFrame("parser label result",
+                    (org.antlr.runtime.tree.CommonTree) labelReturn.getTree());
+            graphFrame.setSize(500, 1000);
+            graphFrame.setVisible(true);
+            //
+            //            List<String> errors = parser.getErrors();
+            //            if (errors.size() != 0) {
+            //                errors.add(0, "Encountered parse errors in control program");
+            //                throw new FormatException(errors);
+            //            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static int openWindows = 0;
