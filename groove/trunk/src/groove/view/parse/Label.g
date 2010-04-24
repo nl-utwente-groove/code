@@ -6,32 +6,36 @@ options {
 }
 
 tokens {
-  NEW;
-  DEL;
-  NOT;
-  USE;
-  CNEW;
-  REM;
+  NEW='new';
+  DEL='del';
+  NOT='not';
+  USE='use';
+  CNEW='cnew';
+  REM='rem';
   
-  FORALL;
-  FORALLX;
-  EXISTS;
-  NESTED;
+  FORALL='forall';
+  FORALLX='forallx';
+  EXISTS='exists';
+  NESTED='nested';
   
-  INT;
-  REAL;
-  STRING;
-  BOOL;
-  ATTR;
-  PROD;
-  ARG;
+  INT='int';
+  REAL='real';
+  STRING='string';
+  BOOL='bool';
+  ATTR='attr';
+  PROD='prod';
+  ARG='arg';
   
-  PAR;
+  PAR='par';
   
-  TYPE;
-  FLAG;
-  PATH;
+  TYPE='type';
+  FLAG='flag';
+  PATH='path';
   EMPTY;
+  ATOM;
+  
+  TRUE='true';
+  FALSE='false';
 }
 
 @lexer::header {
@@ -50,126 +54,94 @@ package groove.view.parse;
 }
 
 label
-   : { isGraph }? => graphLabel
-   | { !isGraph }? => ruleLabel
+   : prefix* actualLabel? EOF!
    ;
-   
-graphLabel :
-  prefix* actualGraphLabel;
- 
-prefix
-   : ( forallP! | forallxP | existsP ) (EQUALS IDENT)? COLON 
-   | ( newP | delP | notP | useP | cnewP ) (EQUALS IDENT)? COLON 
-   | nestedP COLON;
 
-actualGraphLabel
-   : COLON .*
-   | remP COLON .*
-   | valueLabel
+prefix
+   : ( FORALL^ | FORALLX^ | EXISTS^ ) (EQUALS IDENT)? COLON! 
+   | ( NEW^ | DEL^ | NOT^ | USE^ | CNEW^ ) (EQUALS IDENT)? COLON!
+   | NESTED COLON^;
+
+actualLabel
+   : COLON a=(.*) -> ^(ATOM $a)
+   | REM^ COLON! .* 
+   | PAR^ (EQUALS! DOLLAR! NUMBER)? COLON!
+   | PATH^ COLON! PLING? regExpr
+   | attrLabel
    | nodeLabel
-   | (~COLON)+ ;
-   
-valueLabel
-   : intP COLON NUMBER -> ^(INT NUMBER)
-   | realP COLON RNUMBER -> ^(REAL RNUMBER)
-   | stringP COLON DQTEXT -> ^(STRING DQTEXT)
-   | boolP COLON (trueP | falseP);
-   
-nodeLabel
-   : typeP COLON IDENT -> ^(TYPE IDENT)
-   | flagP COLON IDENT -> ^(FLAG IDENT);
+   | (graphDefault EOF) => { isGraph }? => graphDefault -> ^(ATOM graphDefault)
+   | (ruleLabel EOF) => { !isGraph }? => ruleLabel
+   ;
 
 ruleLabel
-   : prefix* actualRuleLabel ;
-   
-actualRuleLabel
-   : COLON .*
-   | remP COLON .*
-   | parP COLON
-   | pathP COLON PLING? regExpr
-   | valueLabel
-   | nodeLabel
-   | attrLabel
-   | negLabel
-   | posLabel ;
-   
-attrLabel
-   : intP COLON IDENT? -> ^(INT IDENT)
-   | realP COLON IDENT? -> ^(REAL IDENT)
-   | stringP COLON IDENT? -> ^(STRING IDENT)
-   | boolP COLON IDENT? -> ^(BOOL IDENT)
-   | attrP COLON -> ^(ATTR IDENT)
-   | prodP COLON -> ^(PROD IDENT)
-   | argP COLON DIGIT+ -> ^(ARG IDENT);
-
-negLabel
-   : PLING posLabel ;
-   
-posLabel
    : wildcard
    | EQUALS
-   | LBRACE regExpr RBRACE
-   | SQTEXT
-   | (~(SQTEXT|LBRACE|RBRACE|QUERY|EQUALS|COLON|PLING))* ;
+   | LBRACE! regExpr RBRACE!
+   | sqText -> ^(ATOM sqText)
+   | PLING^ ruleLabel
+   | ruleDefault -> ^(ATOM ruleDefault)
+   ;
+
+graphDefault
+   : (~COLON)+
+   ;
+
+ruleDefault
+   : ~(EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON) (~(SQUOTE | LBRACE | RBRACE | BSLASH | COLON))*
+   ;
+
+nodeLabel
+   : TYPE^ COLON! IDENT
+   | FLAG^ COLON! IDENT;
    
+attrLabel
+   : INT^ COLON! (NUMBER | IDENT)?
+   | REAL^ COLON! (rnumber | IDENT)?
+   | STRING^ COLON! (DQTEXT | IDENT)?
+   | BOOL^ COLON! (TRUE | FALSE | IDENT)?
+   | ATTR^ COLON!
+   | PROD^ COLON!
+   | ARG^ COLON! NUMBER
+   ;
+
 regExpr
    : choice ;
 
 choice
-   : sequence (BAR! choice)? ;
+   : sequence (BAR^ choice)? ;
 
 sequence
-   : unary (DOT! sequence)? ;
+   : unary (DOT^ sequence)? ;
 
 unary
    : MINUS unary
-   | atom (STAR! | PLUS!)? ;
+   | atom (STAR^ | PLUS^)? ;
 
 atom
-   : SQTEXT
-   | IDENTCHAR+
+   : sqText -> ^(ATOM sqText)
+   | atomLabel -> ^(ATOM atomLabel)
    | EQUALS
    | LPAR regExpr RPAR
-   | wildcard ;
+   | wildcard
+   ;
 
+atomLabel
+   : (NUMBER | IDENT | IDENTCHAR)*
+   ;
+   
 wildcard
-   : QUERY IDENT? LSQUARE HAT? atom (COMMA atom)* RSQUARE
-     -> ^(QUERY IDENT HAT atom*);
+   : QUERY^ IDENT? LSQUARE! HAT? atom (COMMA! atom)* RSQUARE!
+   ;
 
-SQTEXT
-   : SQUOTE (~(SQUOTE|BSLASH) | BSLASH (BSLASH|SQUOTE))* SQUOTE;
+sqText
+   : SQUOTE! (~(SQUOTE|BSLASH) | sqTextSpecial)* SQUOTE!;
 
-DQTEXT
+sqTextSpecial
+   : BSLASH c=(BSLASH|SQUOTE) -> $c
+   ;
+
+fragment DQTEXT
    : DQUOTE (~(DQUOTE|BSLASH) | BSLASH (BSLASH|DQUOTE))* DQUOTE;
-
-newP    : 'new';
-delP    : 'del';
-cnewP   : 'cnew';
-notP    : 'not';
-useP    : 'use';
-remP    : 'rem';
-
-forallP : 'forall';
-forallxP : 'forallx';
-existsP : 'exists';
-nestedP : 'nested';
-
-parP    : 'par';
-
-attrP   : 'attr';
-prodP   : 'prod';
-argP    : 'arg';
-intP    : 'int';
-realP   : 'real';
-stringP : 'string';
-boolP   : 'bool';
-
-typeP   : 'type';
-flagP   : 'flag';
-pathP   : 'path';
-
-trueP   : 'true';
-falseP  : 'false';
 
 MINUS  : '-';
 STAR   : '*';
@@ -202,12 +174,8 @@ NUMBER
    : DIGIT+
    ;
 
-RNUMBER
-   : (DIGIT+ (DOT DIGIT*)? | DOT DIGIT+)
-   ;
-
-LABEL
-   : IDENTCHAR*
+rnumber
+   : (NUMBER (DOT (NUMBER|))? | DOT NUMBER)
    ;
 
 fragment IDENTCHAR
