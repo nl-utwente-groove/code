@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 Label0.g 2010-04-26 09:45:53
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 Label0.g 2010-04-26 17:42:31
 
 package groove.view.parse;
 import java.util.LinkedList;
@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 import org.antlr.runtime.tree.*;
 
-@SuppressWarnings("all")              
 public class Label0Parser extends Parser {
     public static final String[] tokenNames = new String[] {
         "<invalid>", "<EOR>", "<DOWN>", "<UP>", "NEW", "DEL", "NOT", "USE", "CNEW", "REM", "FORALL", "FORALLX", "EXISTS", "NESTED", "INT", "REAL", "STRING", "BOOL", "ATTR", "PROD", "ARG", "PAR", "TYPE", "FLAG", "PATH", "EMPTY", "ATOM", "TRUE", "FALSE", "CONSTRAINT", "EQUALS", "IDENT", "COLON", "LABEL", "NUMBER", "LBRACE", "RBRACE", "PLING", "QUERY", "SQUOTE", "BSLASH", "DOT", "BAR", "MINUS", "STAR", "PLUS", "LPAR", "RPAR", "LSQUARE", "HAT", "COMMA", "RSQUARE", "DQUOTE", "DOLLAR", "UNDER", "LETTER", "IDENTCHAR", "DIGIT", "'\\n'"
@@ -84,6 +83,7 @@ public class Label0Parser extends Parser {
         }
         public Label0Parser(TokenStream input, RecognizerSharedState state) {
             super(input, state);
+             
         }
         
     protected TreeAdaptor adaptor = new CommonTreeAdaptor();
@@ -98,7 +98,7 @@ public class Label0Parser extends Parser {
     public String[] getTokenNames() { return Label0Parser.tokenNames; }
     public String getGrammarFileName() { return "Label0.g"; }
 
-    
+
         private boolean isGraph;
         public void setIsGraph(boolean isGraph) {
             this.isGraph = isGraph;
@@ -121,7 +121,7 @@ public class Label0Parser extends Parser {
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start label
+    // $ANTLR start "label"
     // Label0.g:70:1: label : ( prefixedLabel | specialLabel )? EOF ;
     public final Label0Parser.label_return label() throws RecognitionException {
         Label0Parser.label_return retval = new Label0Parser.label_return();
@@ -196,14 +196,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end label
+    // $ANTLR end "label"
 
     public static class prefixedLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start prefixedLabel
+    // $ANTLR start "prefixedLabel"
     // Label0.g:74:1: prefixedLabel : ( ( FORALL | FORALLX | EXISTS ) ( EQUALS IDENT )? COLON prefixedLabel | ( NEW | DEL | NOT | USE | CNEW ) ( EQUALS IDENT )? COLON prefixedLabel | actualLabel );
     public final Label0Parser.prefixedLabel_return prefixedLabel() throws RecognitionException {
         Label0Parser.prefixedLabel_return retval = new Label0Parser.prefixedLabel_return();
@@ -520,14 +520,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end prefixedLabel
+    // $ANTLR end "prefixedLabel"
 
     public static class specialLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start specialLabel
+    // $ANTLR start "specialLabel"
     // Label0.g:80:1: specialLabel : ( REM COLON text | PAR ( EQUALS LABEL )? COLON | NESTED COLON IDENT | INT COLON ( NUMBER | IDENT )? | REAL COLON ( rnumber | IDENT )? | STRING COLON ( dqText | IDENT )? | BOOL COLON ( TRUE | FALSE | IDENT )? | ATTR COLON | PROD COLON | ARG COLON NUMBER );
     public final Label0Parser.specialLabel_return specialLabel() throws RecognitionException {
         Label0Parser.specialLabel_return retval = new Label0Parser.specialLabel_return();
@@ -993,14 +993,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end specialLabel
+    // $ANTLR end "specialLabel"
 
     public static class actualLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start actualLabel
+    // $ANTLR start "actualLabel"
     // Label0.g:94:1: actualLabel : ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM text ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel );
     public final Label0Parser.actualLabel_return actualLabel() throws RecognitionException {
         Label0Parser.actualLabel_return retval = new Label0Parser.actualLabel_return();
@@ -1065,9 +1065,10 @@ public class Label0Parser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 95:23: -> ^( ATOM ^( TYPE IDENT ) )
@@ -1092,7 +1093,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
@@ -1110,14 +1111,15 @@ public class Label0Parser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: IDENT, FLAG
+                    // elements: FLAG, IDENT
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 96:23: -> ^( ATOM ^( FLAG IDENT ) )
@@ -1142,7 +1144,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 3 :
@@ -1165,9 +1167,10 @@ public class Label0Parser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 97:17: -> ^( ATOM text )
@@ -1184,7 +1187,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 4 :
@@ -1208,7 +1211,7 @@ public class Label0Parser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    if ( !( isGraph ) ) {
+                    if ( !(( isGraph )) ) {
                         if (state.backtracking>0) {state.failed=true; return retval;}
                         throw new FailedPredicateException(input, "actualLabel", " isGraph ");
                     }
@@ -1226,7 +1229,7 @@ public class Label0Parser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    if ( !( !isGraph ) ) {
+                    if ( !(( !isGraph )) ) {
                         if (state.backtracking>0) {state.failed=true; return retval;}
                         throw new FailedPredicateException(input, "actualLabel", " !isGraph ");
                     }
@@ -1259,14 +1262,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end actualLabel
+    // $ANTLR end "actualLabel"
 
     public static class text_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start text
+    // $ANTLR start "text"
     // Label0.g:103:1: text : (~ '\\n' )* ;
     public final Label0Parser.text_return text() throws RecognitionException {
         Label0Parser.text_return retval = new Label0Parser.text_return();
@@ -1341,14 +1344,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end text
+    // $ANTLR end "text"
 
     public static class graphLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start graphLabel
+    // $ANTLR start "graphLabel"
     // Label0.g:107:1: graphLabel : graphDefault -> ^( ATOM graphDefault ) ;
     public final Label0Parser.graphLabel_return graphLabel() throws RecognitionException {
         Label0Parser.graphLabel_return retval = new Label0Parser.graphLabel_return();
@@ -1378,9 +1381,10 @@ public class Label0Parser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 108:19: -> ^( ATOM graphDefault )
@@ -1397,7 +1401,7 @@ public class Label0Parser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -1418,14 +1422,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end graphLabel
+    // $ANTLR end "graphLabel"
 
     public static class graphDefault_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start graphDefault
+    // $ANTLR start "graphDefault"
     // Label0.g:111:1: graphDefault : (~ COLON )+ ;
     public final Label0Parser.graphDefault_return graphDefault() throws RecognitionException {
         Label0Parser.graphDefault_return retval = new Label0Parser.graphDefault_return();
@@ -1506,14 +1510,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end graphDefault
+    // $ANTLR end "graphDefault"
 
     public static class ruleLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start ruleLabel
+    // $ANTLR start "ruleLabel"
     // Label0.g:115:1: ruleLabel : ( wildcard | EQUALS | LBRACE regExpr RBRACE | sqText -> ^( ATOM sqText ) | PLING ruleLabel | ruleDefault -> ^( ATOM ruleDefault ) );
     public final Label0Parser.ruleLabel_return ruleLabel() throws RecognitionException {
         Label0Parser.ruleLabel_return retval = new Label0Parser.ruleLabel_return();
@@ -1691,9 +1695,10 @@ public class Label0Parser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 119:13: -> ^( ATOM sqText )
@@ -1710,7 +1715,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 5 :
@@ -1749,9 +1754,10 @@ public class Label0Parser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 121:18: -> ^( ATOM ruleDefault )
@@ -1768,7 +1774,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -1791,14 +1797,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end ruleLabel
+    // $ANTLR end "ruleLabel"
 
     public static class ruleDefault_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start ruleDefault
+    // $ANTLR start "ruleDefault"
     // Label0.g:124:1: ruleDefault : ~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )* ;
     public final Label0Parser.ruleDefault_return ruleDefault() throws RecognitionException {
         Label0Parser.ruleDefault_return retval = new Label0Parser.ruleDefault_return();
@@ -1887,14 +1893,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end ruleDefault
+    // $ANTLR end "ruleDefault"
 
     public static class nodeLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start nodeLabel
+    // $ANTLR start "nodeLabel"
     // Label0.g:129:1: nodeLabel : ( TYPE COLON IDENT | FLAG COLON IDENT );
     public final Label0Parser.nodeLabel_return nodeLabel() throws RecognitionException {
         Label0Parser.nodeLabel_return retval = new Label0Parser.nodeLabel_return();
@@ -1993,14 +1999,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end nodeLabel
+    // $ANTLR end "nodeLabel"
 
     public static class rnumber_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start rnumber
+    // $ANTLR start "rnumber"
     // Label0.g:133:1: rnumber : ( NUMBER ( DOT ( NUMBER )? )? | DOT NUMBER );
     public final Label0Parser.rnumber_return rnumber() throws RecognitionException {
         Label0Parser.rnumber_return retval = new Label0Parser.rnumber_return();
@@ -2134,14 +2140,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end rnumber
+    // $ANTLR end "rnumber"
 
     public static class regExpr_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start regExpr
+    // $ANTLR start "regExpr"
     // Label0.g:138:1: regExpr : ( choice | PLING regExpr );
     public final Label0Parser.regExpr_return regExpr() throws RecognitionException {
         Label0Parser.regExpr_return retval = new Label0Parser.regExpr_return();
@@ -2229,14 +2235,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end regExpr
+    // $ANTLR end "regExpr"
 
     public static class choice_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start choice
+    // $ANTLR start "choice"
     // Label0.g:141:1: choice : sequence ( BAR choice )? ;
     public final Label0Parser.choice_return choice() throws RecognitionException {
         Label0Parser.choice_return retval = new Label0Parser.choice_return();
@@ -2313,14 +2319,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end choice
+    // $ANTLR end "choice"
 
     public static class sequence_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start sequence
+    // $ANTLR start "sequence"
     // Label0.g:144:1: sequence : unary ( DOT sequence )? ;
     public final Label0Parser.sequence_return sequence() throws RecognitionException {
         Label0Parser.sequence_return retval = new Label0Parser.sequence_return();
@@ -2397,14 +2403,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end sequence
+    // $ANTLR end "sequence"
 
     public static class unary_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start unary
+    // $ANTLR start "unary"
     // Label0.g:147:1: unary : ( MINUS unary | atom ( STAR | PLUS )? | EQUALS | LPAR regExpr RPAR ( STAR | PLUS )? | wildcard ( STAR | PLUS )? );
     public final Label0Parser.unary_return unary() throws RecognitionException {
         Label0Parser.unary_return retval = new Label0Parser.unary_return();
@@ -2687,14 +2693,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end unary
+    // $ANTLR end "unary"
 
     public static class atom_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start atom
+    // $ANTLR start "atom"
     // Label0.g:155:1: atom : ( sqText -> ^( ATOM sqText ) | atomLabel -> ^( ATOM atomLabel ) );
     public final Label0Parser.atom_return atom() throws RecognitionException {
         Label0Parser.atom_return retval = new Label0Parser.atom_return();
@@ -2745,9 +2751,10 @@ public class Label0Parser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 156:13: -> ^( ATOM sqText )
@@ -2764,7 +2771,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
@@ -2784,9 +2791,10 @@ public class Label0Parser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 157:16: -> ^( ATOM atomLabel )
@@ -2803,7 +2811,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -2826,14 +2834,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end atom
+    // $ANTLR end "atom"
 
     public static class atomLabel_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start atomLabel
+    // $ANTLR start "atomLabel"
     // Label0.g:160:1: atomLabel : ( NUMBER | IDENT | LABEL );
     public final Label0Parser.atomLabel_return atomLabel() throws RecognitionException {
         Label0Parser.atomLabel_return retval = new Label0Parser.atomLabel_return();
@@ -2884,14 +2892,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end atomLabel
+    // $ANTLR end "atomLabel"
 
     public static class wildcard_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start wildcard
+    // $ANTLR start "wildcard"
     // Label0.g:164:1: wildcard : QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )? ;
     public final Label0Parser.wildcard_return wildcard() throws RecognitionException {
         Label0Parser.wildcard_return retval = new Label0Parser.wildcard_return();
@@ -3049,14 +3057,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end wildcard
+    // $ANTLR end "wildcard"
 
     public static class sqText_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start sqText
+    // $ANTLR start "sqText"
     // Label0.g:168:1: sqText : SQUOTE (~ ( SQUOTE | BSLASH ) | sqTextSpecial )* SQUOTE ;
     public final Label0Parser.sqText_return sqText() throws RecognitionException {
         Label0Parser.sqText_return retval = new Label0Parser.sqText_return();
@@ -3154,14 +3162,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end sqText
+    // $ANTLR end "sqText"
 
     public static class sqTextSpecial_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start sqTextSpecial
+    // $ANTLR start "sqTextSpecial"
     // Label0.g:171:1: sqTextSpecial : BSLASH ( BSLASH | SQUOTE ) ;
     public final Label0Parser.sqTextSpecial_return sqTextSpecial() throws RecognitionException {
         Label0Parser.sqTextSpecial_return retval = new Label0Parser.sqTextSpecial_return();
@@ -3215,14 +3223,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end sqTextSpecial
+    // $ANTLR end "sqTextSpecial"
 
     public static class dqText_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start dqText
+    // $ANTLR start "dqText"
     // Label0.g:175:1: dqText : DQUOTE (~ ( DQUOTE | BSLASH ) | dqTextSpecial )* DQUOTE ;
     public final Label0Parser.dqText_return dqText() throws RecognitionException {
         Label0Parser.dqText_return retval = new Label0Parser.dqText_return();
@@ -3324,14 +3332,14 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end dqText
+    // $ANTLR end "dqText"
 
     public static class dqTextSpecial_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start dqTextSpecial
+    // $ANTLR start "dqTextSpecial"
     // Label0.g:178:1: dqTextSpecial : BSLASH ( BSLASH | DQUOTE ) ;
     public final Label0Parser.dqTextSpecial_return dqTextSpecial() throws RecognitionException {
         Label0Parser.dqTextSpecial_return retval = new Label0Parser.dqTextSpecial_return();
@@ -3385,7 +3393,7 @@ public class Label0Parser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end dqTextSpecial
+    // $ANTLR end "dqTextSpecial"
 
     // $ANTLR start synpred1_Label0
     public final void synpred1_Label0_fragment() throws RecognitionException {   
@@ -3541,11 +3549,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_12==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_12>=NEW && LA1_12<=IDENT)||(LA1_12>=LABEL && LA1_12<=NUMBER)||(LA1_12>=PLING && LA1_12<=QUERY)||(LA1_12>=DOT && LA1_12<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_12>=NEW && LA1_12<=IDENT)||(LA1_12>=LABEL && LA1_12<=NUMBER)||(LA1_12>=PLING && LA1_12<=QUERY)||(LA1_12>=DOT && LA1_12<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_12==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_12==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_12>=LBRACE && LA1_12<=RBRACE)||(LA1_12>=SQUOTE && LA1_12<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_12>=LBRACE && LA1_12<=RBRACE)||(LA1_12>=SQUOTE && LA1_12<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_12);
@@ -3560,11 +3568,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_11==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_11>=NEW && LA1_11<=IDENT)||(LA1_11>=LABEL && LA1_11<=NUMBER)||(LA1_11>=PLING && LA1_11<=QUERY)||(LA1_11>=DOT && LA1_11<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_11>=NEW && LA1_11<=IDENT)||(LA1_11>=LABEL && LA1_11<=NUMBER)||(LA1_11>=PLING && LA1_11<=QUERY)||(LA1_11>=DOT && LA1_11<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_11==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_11==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_11>=LBRACE && LA1_11<=RBRACE)||(LA1_11>=SQUOTE && LA1_11<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_11>=LBRACE && LA1_11<=RBRACE)||(LA1_11>=SQUOTE && LA1_11<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_11);
@@ -3577,13 +3585,13 @@ public class Label0Parser extends Parser {
                         int index1_24 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA1_24==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        if ( (LA1_24==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_24>=NEW && LA1_24<=IDENT)||(LA1_24>=LABEL && LA1_24<=NUMBER)||(LA1_24>=PLING && LA1_24<=QUERY)||(LA1_24>=DOT && LA1_24<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_24>=NEW && LA1_24<=IDENT)||(LA1_24>=LABEL && LA1_24<=NUMBER)||(LA1_24>=PLING && LA1_24<=QUERY)||(LA1_24>=DOT && LA1_24<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
                         else if ( (LA1_24==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_24>=LBRACE && LA1_24<=RBRACE)||(LA1_24>=SQUOTE && LA1_24<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_24>=LBRACE && LA1_24<=RBRACE)||(LA1_24>=SQUOTE && LA1_24<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_24);
@@ -3598,11 +3606,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_17==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_17>=NEW && LA1_17<=IDENT)||(LA1_17>=LABEL && LA1_17<=NUMBER)||(LA1_17>=PLING && LA1_17<=QUERY)||(LA1_17>=DOT && LA1_17<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_17>=NEW && LA1_17<=IDENT)||(LA1_17>=LABEL && LA1_17<=NUMBER)||(LA1_17>=PLING && LA1_17<=QUERY)||(LA1_17>=DOT && LA1_17<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_17==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_17==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_17>=LBRACE && LA1_17<=RBRACE)||(LA1_17>=SQUOTE && LA1_17<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_17>=LBRACE && LA1_17<=RBRACE)||(LA1_17>=SQUOTE && LA1_17<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_17);
@@ -3617,11 +3625,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_10==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_10>=NEW && LA1_10<=IDENT)||(LA1_10>=LABEL && LA1_10<=NUMBER)||(LA1_10>=PLING && LA1_10<=QUERY)||(LA1_10>=DOT && LA1_10<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_10>=NEW && LA1_10<=IDENT)||(LA1_10>=LABEL && LA1_10<=NUMBER)||(LA1_10>=PLING && LA1_10<=QUERY)||(LA1_10>=DOT && LA1_10<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_10==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_10==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_10>=LBRACE && LA1_10<=RBRACE)||(LA1_10>=SQUOTE && LA1_10<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_10>=LBRACE && LA1_10<=RBRACE)||(LA1_10>=SQUOTE && LA1_10<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_10);
@@ -3636,11 +3644,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_23==LABEL) ) {s = 24;}
 
-                        else if ( (LA1_23==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_23==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_23>=NEW && LA1_23<=IDENT)||LA1_23==NUMBER||(LA1_23>=PLING && LA1_23<=QUERY)||(LA1_23>=DOT && LA1_23<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_23>=NEW && LA1_23<=IDENT)||LA1_23==NUMBER||(LA1_23>=PLING && LA1_23<=QUERY)||(LA1_23>=DOT && LA1_23<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( ((LA1_23>=LBRACE && LA1_23<=RBRACE)||(LA1_23>=SQUOTE && LA1_23<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_23>=LBRACE && LA1_23<=RBRACE)||(LA1_23>=SQUOTE && LA1_23<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_23);
@@ -3655,11 +3663,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_14==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_14>=NEW && LA1_14<=IDENT)||(LA1_14>=LABEL && LA1_14<=NUMBER)||(LA1_14>=PLING && LA1_14<=QUERY)||(LA1_14>=DOT && LA1_14<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_14>=NEW && LA1_14<=IDENT)||(LA1_14>=LABEL && LA1_14<=NUMBER)||(LA1_14>=PLING && LA1_14<=QUERY)||(LA1_14>=DOT && LA1_14<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_14==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_14>=LBRACE && LA1_14<=RBRACE)||(LA1_14>=SQUOTE && LA1_14<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_14>=LBRACE && LA1_14<=RBRACE)||(LA1_14>=SQUOTE && LA1_14<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_14);
@@ -3674,11 +3682,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_7==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_7>=NEW && LA1_7<=IDENT)||(LA1_7>=LABEL && LA1_7<=NUMBER)||(LA1_7>=PLING && LA1_7<=QUERY)||(LA1_7>=DOT && LA1_7<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_7>=NEW && LA1_7<=IDENT)||(LA1_7>=LABEL && LA1_7<=NUMBER)||(LA1_7>=PLING && LA1_7<=QUERY)||(LA1_7>=DOT && LA1_7<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_7==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_7==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_7>=LBRACE && LA1_7<=RBRACE)||(LA1_7>=SQUOTE && LA1_7<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_7>=LBRACE && LA1_7<=RBRACE)||(LA1_7>=SQUOTE && LA1_7<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_7);
@@ -3693,11 +3701,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_15==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_15>=NEW && LA1_15<=IDENT)||(LA1_15>=LABEL && LA1_15<=NUMBER)||(LA1_15>=PLING && LA1_15<=QUERY)||(LA1_15>=DOT && LA1_15<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_15>=NEW && LA1_15<=IDENT)||(LA1_15>=LABEL && LA1_15<=NUMBER)||(LA1_15>=PLING && LA1_15<=QUERY)||(LA1_15>=DOT && LA1_15<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_15==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_15==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_15>=LBRACE && LA1_15<=RBRACE)||(LA1_15>=SQUOTE && LA1_15<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_15>=LBRACE && LA1_15<=RBRACE)||(LA1_15>=SQUOTE && LA1_15<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_15);
@@ -3712,11 +3720,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_16==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_16>=NEW && LA1_16<=IDENT)||(LA1_16>=LABEL && LA1_16<=NUMBER)||(LA1_16>=PLING && LA1_16<=QUERY)||(LA1_16>=DOT && LA1_16<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_16>=NEW && LA1_16<=IDENT)||(LA1_16>=LABEL && LA1_16<=NUMBER)||(LA1_16>=PLING && LA1_16<=QUERY)||(LA1_16>=DOT && LA1_16<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_16==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_16==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_16>=LBRACE && LA1_16<=RBRACE)||(LA1_16>=SQUOTE && LA1_16<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_16>=LBRACE && LA1_16<=RBRACE)||(LA1_16>=SQUOTE && LA1_16<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_16);
@@ -3731,11 +3739,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_13==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_13>=NEW && LA1_13<=IDENT)||(LA1_13>=LABEL && LA1_13<=NUMBER)||(LA1_13>=PLING && LA1_13<=QUERY)||(LA1_13>=DOT && LA1_13<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_13>=NEW && LA1_13<=IDENT)||(LA1_13>=LABEL && LA1_13<=NUMBER)||(LA1_13>=PLING && LA1_13<=QUERY)||(LA1_13>=DOT && LA1_13<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
-                        else if ( (LA1_13==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_13==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_13>=LBRACE && LA1_13<=RBRACE)||(LA1_13>=SQUOTE && LA1_13<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_13>=LBRACE && LA1_13<=RBRACE)||(LA1_13>=SQUOTE && LA1_13<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_13);
@@ -3750,13 +3758,13 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_9==EQUALS) ) {s = 23;}
 
-                        else if ( (LA1_9==EOF) && (( !isGraph || isGraph ))) {s = 22;}
+                        else if ( (LA1_9==EOF) && ((( !isGraph )||( isGraph )))) {s = 22;}
 
-                        else if ( ((LA1_9>=NEW && LA1_9<=CONSTRAINT)||LA1_9==IDENT||(LA1_9>=LABEL && LA1_9<=NUMBER)||(LA1_9>=PLING && LA1_9<=QUERY)||(LA1_9>=DOT && LA1_9<=58)) && (( !isGraph || isGraph ))) {s = 21;}
+                        else if ( ((LA1_9>=NEW && LA1_9<=CONSTRAINT)||LA1_9==IDENT||(LA1_9>=LABEL && LA1_9<=NUMBER)||(LA1_9>=PLING && LA1_9<=QUERY)||(LA1_9>=DOT && LA1_9<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
                         else if ( (LA1_9==COLON) ) {s = 20;}
 
-                        else if ( ((LA1_9>=LBRACE && LA1_9<=RBRACE)||(LA1_9>=SQUOTE && LA1_9<=BSLASH)) && ( isGraph )) {s = 8;}
+                        else if ( ((LA1_9>=LBRACE && LA1_9<=RBRACE)||(LA1_9>=SQUOTE && LA1_9<=BSLASH)) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_9);
@@ -3771,19 +3779,19 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( ((LA1_0>=NEW && LA1_0<=CNEW)||(LA1_0>=FORALL && LA1_0<=EXISTS)||(LA1_0>=TYPE && LA1_0<=PATH)||LA1_0==COLON) ) {s = 1;}
 
-                        else if ( (LA1_0==QUERY) && (( !isGraph || isGraph ))) {s = 2;}
+                        else if ( (LA1_0==QUERY) && ((( !isGraph )||( isGraph )))) {s = 2;}
 
-                        else if ( (LA1_0==EQUALS) && (( !isGraph || isGraph ))) {s = 3;}
+                        else if ( (LA1_0==EQUALS) && ((( !isGraph )||( isGraph )))) {s = 3;}
 
-                        else if ( (LA1_0==LBRACE) && (( !isGraph || isGraph ))) {s = 4;}
+                        else if ( (LA1_0==LBRACE) && ((( !isGraph )||( isGraph )))) {s = 4;}
 
-                        else if ( (LA1_0==SQUOTE) && (( !isGraph || isGraph ))) {s = 5;}
+                        else if ( (LA1_0==SQUOTE) && ((( !isGraph )||( isGraph )))) {s = 5;}
 
-                        else if ( (LA1_0==PLING) && (( !isGraph || isGraph ))) {s = 6;}
+                        else if ( (LA1_0==PLING) && ((( !isGraph )||( isGraph )))) {s = 6;}
 
                         else if ( (LA1_0==REM) ) {s = 7;}
 
-                        else if ( (LA1_0==RBRACE||LA1_0==BSLASH) && ( isGraph )) {s = 8;}
+                        else if ( (LA1_0==RBRACE||LA1_0==BSLASH) && (( isGraph ))) {s = 8;}
 
                         else if ( (LA1_0==PAR) ) {s = 9;}
 
@@ -3803,7 +3811,7 @@ public class Label0Parser extends Parser {
 
                         else if ( (LA1_0==ARG) ) {s = 17;}
 
-                        else if ( ((LA1_0>=EMPTY && LA1_0<=CONSTRAINT)||LA1_0==IDENT||(LA1_0>=LABEL && LA1_0<=NUMBER)||(LA1_0>=DOT && LA1_0<=58)) && (( !isGraph || isGraph ))) {s = 18;}
+                        else if ( ((LA1_0>=EMPTY && LA1_0<=CONSTRAINT)||LA1_0==IDENT||(LA1_0>=LABEL && LA1_0<=NUMBER)||(LA1_0>=DOT && LA1_0<=58)) && ((( !isGraph )||( isGraph )))) {s = 18;}
 
                         else if ( (LA1_0==EOF) ) {s = 19;}
 
@@ -3830,8 +3838,8 @@ public class Label0Parser extends Parser {
     static final String DFA6_acceptS =
         "\11\uffff\11\3\1\uffff\1\3\1\1\1\uffff\1\2\2\uffff";
     static final String DFA6_specialS =
-        "\1\2\1\3\1\14\1\13\1\5\1\4\1\7\1\6\1\11\11\uffff\1\1\2\uffff\1\12"+
-        "\1\uffff\1\10\1\0}>";
+        "\1\2\1\3\1\14\1\13\1\5\1\4\1\7\1\6\1\11\11\uffff\1\1\2\uffff\1"+
+        "\12\1\uffff\1\10\1\0}>";
     static final String[] DFA6_transitionS = {
             "\1\4\1\5\1\6\1\7\1\10\1\17\1\1\1\2\1\3\11\17\3\11\5\17\1\13"+
             "\1\17\1\11\2\17\1\14\1\20\1\16\1\12\1\15\1\20\22\17",
@@ -3906,11 +3914,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA6_24==COLON) ) {s = 22;}
 
-                        else if ( (LA6_24==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        else if ( (LA6_24==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
-                        else if ( ((LA6_24>=NEW && LA6_24<=IDENT)||(LA6_24>=LABEL && LA6_24<=NUMBER)||(LA6_24>=PLING && LA6_24<=QUERY)||(LA6_24>=DOT && LA6_24<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_24>=NEW && LA6_24<=IDENT)||(LA6_24>=LABEL && LA6_24<=NUMBER)||(LA6_24>=PLING && LA6_24<=QUERY)||(LA6_24>=DOT && LA6_24<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
-                        else if ( ((LA6_24>=LBRACE && LA6_24<=RBRACE)||(LA6_24>=SQUOTE && LA6_24<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_24>=LBRACE && LA6_24<=RBRACE)||(LA6_24>=SQUOTE && LA6_24<=BSLASH)) && (( isGraph ))) {s = 16;}
 
                          
                         input.seek(index6_24);
@@ -3925,11 +3933,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA6_18==IDENT) ) {s = 23;}
 
-                        else if ( (LA6_18==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        else if ( (LA6_18==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
-                        else if ( ((LA6_18>=NEW && LA6_18<=EQUALS)||(LA6_18>=LABEL && LA6_18<=NUMBER)||(LA6_18>=PLING && LA6_18<=QUERY)||(LA6_18>=DOT && LA6_18<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_18>=NEW && LA6_18<=EQUALS)||(LA6_18>=LABEL && LA6_18<=NUMBER)||(LA6_18>=PLING && LA6_18<=QUERY)||(LA6_18>=DOT && LA6_18<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
-                        else if ( ((LA6_18>=LBRACE && LA6_18<=RBRACE)||(LA6_18>=SQUOTE && LA6_18<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_18>=LBRACE && LA6_18<=RBRACE)||(LA6_18>=SQUOTE && LA6_18<=BSLASH)) && (( isGraph ))) {s = 16;}
 
                          
                         input.seek(index6_18);
@@ -3960,19 +3968,19 @@ public class Label0Parser extends Parser {
 
                         else if ( ((LA6_0>=TYPE && LA6_0<=PATH)||LA6_0==COLON) ) {s = 9;}
 
-                        else if ( (LA6_0==QUERY) && (( !isGraph || isGraph ))) {s = 10;}
+                        else if ( (LA6_0==QUERY) && ((( !isGraph )||( isGraph )))) {s = 10;}
 
-                        else if ( (LA6_0==EQUALS) && (( !isGraph || isGraph ))) {s = 11;}
+                        else if ( (LA6_0==EQUALS) && ((( !isGraph )||( isGraph )))) {s = 11;}
 
-                        else if ( (LA6_0==LBRACE) && (( !isGraph || isGraph ))) {s = 12;}
+                        else if ( (LA6_0==LBRACE) && ((( !isGraph )||( isGraph )))) {s = 12;}
 
-                        else if ( (LA6_0==SQUOTE) && (( !isGraph || isGraph ))) {s = 13;}
+                        else if ( (LA6_0==SQUOTE) && ((( !isGraph )||( isGraph )))) {s = 13;}
 
-                        else if ( (LA6_0==PLING) && (( !isGraph || isGraph ))) {s = 14;}
+                        else if ( (LA6_0==PLING) && ((( !isGraph )||( isGraph )))) {s = 14;}
 
-                        else if ( (LA6_0==REM||(LA6_0>=NESTED && LA6_0<=PAR)||(LA6_0>=EMPTY && LA6_0<=CONSTRAINT)||LA6_0==IDENT||(LA6_0>=LABEL && LA6_0<=NUMBER)||(LA6_0>=DOT && LA6_0<=58)) && (( !isGraph || isGraph ))) {s = 15;}
+                        else if ( (LA6_0==REM||(LA6_0>=NESTED && LA6_0<=PAR)||(LA6_0>=EMPTY && LA6_0<=CONSTRAINT)||LA6_0==IDENT||(LA6_0>=LABEL && LA6_0<=NUMBER)||(LA6_0>=DOT && LA6_0<=58)) && ((( !isGraph )||( isGraph )))) {s = 15;}
 
-                        else if ( (LA6_0==RBRACE||LA6_0==BSLASH) && ( isGraph )) {s = 16;}
+                        else if ( (LA6_0==RBRACE||LA6_0==BSLASH) && (( isGraph ))) {s = 16;}
 
                          
                         input.seek(index6_0);
@@ -3985,13 +3993,13 @@ public class Label0Parser extends Parser {
                         int index6_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_1==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
                         else if ( (LA6_1==EQUALS) ) {s = 18;}
 
-                        else if ( ((LA6_1>=LBRACE && LA6_1<=RBRACE)||(LA6_1>=SQUOTE && LA6_1<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_1>=LBRACE && LA6_1<=RBRACE)||(LA6_1>=SQUOTE && LA6_1<=BSLASH)) && (( isGraph ))) {s = 16;}
 
-                        else if ( ((LA6_1>=NEW && LA6_1<=CONSTRAINT)||LA6_1==IDENT||(LA6_1>=LABEL && LA6_1<=NUMBER)||(LA6_1>=PLING && LA6_1<=QUERY)||(LA6_1>=DOT && LA6_1<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_1>=NEW && LA6_1<=CONSTRAINT)||LA6_1==IDENT||(LA6_1>=LABEL && LA6_1<=NUMBER)||(LA6_1>=PLING && LA6_1<=QUERY)||(LA6_1>=DOT && LA6_1<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
                         else if ( (LA6_1==COLON) ) {s = 20;}
 
@@ -4010,11 +4018,11 @@ public class Label0Parser extends Parser {
 
                         else if ( (LA6_5==COLON) ) {s = 22;}
 
-                        else if ( (LA6_5==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        else if ( (LA6_5==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
-                        else if ( ((LA6_5>=NEW && LA6_5<=CONSTRAINT)||LA6_5==IDENT||(LA6_5>=LABEL && LA6_5<=NUMBER)||(LA6_5>=PLING && LA6_5<=QUERY)||(LA6_5>=DOT && LA6_5<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_5>=NEW && LA6_5<=CONSTRAINT)||LA6_5==IDENT||(LA6_5>=LABEL && LA6_5<=NUMBER)||(LA6_5>=PLING && LA6_5<=QUERY)||(LA6_5>=DOT && LA6_5<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
-                        else if ( ((LA6_5>=LBRACE && LA6_5<=RBRACE)||(LA6_5>=SQUOTE && LA6_5<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_5>=LBRACE && LA6_5<=RBRACE)||(LA6_5>=SQUOTE && LA6_5<=BSLASH)) && (( isGraph ))) {s = 16;}
 
                          
                         input.seek(index6_5);
@@ -4031,11 +4039,11 @@ public class Label0Parser extends Parser {
 
                         else if ( (LA6_4==COLON) ) {s = 22;}
 
-                        else if ( (LA6_4==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        else if ( (LA6_4==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
-                        else if ( ((LA6_4>=NEW && LA6_4<=CONSTRAINT)||LA6_4==IDENT||(LA6_4>=LABEL && LA6_4<=NUMBER)||(LA6_4>=PLING && LA6_4<=QUERY)||(LA6_4>=DOT && LA6_4<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_4>=NEW && LA6_4<=CONSTRAINT)||LA6_4==IDENT||(LA6_4>=LABEL && LA6_4<=NUMBER)||(LA6_4>=PLING && LA6_4<=QUERY)||(LA6_4>=DOT && LA6_4<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
-                        else if ( ((LA6_4>=LBRACE && LA6_4<=RBRACE)||(LA6_4>=SQUOTE && LA6_4<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_4>=LBRACE && LA6_4<=RBRACE)||(LA6_4>=SQUOTE && LA6_4<=BSLASH)) && (( isGraph ))) {s = 16;}
 
                          
                         input.seek(index6_4);
@@ -4048,13 +4056,13 @@ public class Label0Parser extends Parser {
                         int index6_7 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_7==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_7==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
                         else if ( (LA6_7==EQUALS) ) {s = 21;}
 
-                        else if ( ((LA6_7>=LBRACE && LA6_7<=RBRACE)||(LA6_7>=SQUOTE && LA6_7<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_7>=LBRACE && LA6_7<=RBRACE)||(LA6_7>=SQUOTE && LA6_7<=BSLASH)) && (( isGraph ))) {s = 16;}
 
-                        else if ( ((LA6_7>=NEW && LA6_7<=CONSTRAINT)||LA6_7==IDENT||(LA6_7>=LABEL && LA6_7<=NUMBER)||(LA6_7>=PLING && LA6_7<=QUERY)||(LA6_7>=DOT && LA6_7<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_7>=NEW && LA6_7<=CONSTRAINT)||LA6_7==IDENT||(LA6_7>=LABEL && LA6_7<=NUMBER)||(LA6_7>=PLING && LA6_7<=QUERY)||(LA6_7>=DOT && LA6_7<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
                         else if ( (LA6_7==COLON) ) {s = 22;}
 
@@ -4069,13 +4077,13 @@ public class Label0Parser extends Parser {
                         int index6_6 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_6==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_6==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
                         else if ( (LA6_6==EQUALS) ) {s = 21;}
 
-                        else if ( ((LA6_6>=LBRACE && LA6_6<=RBRACE)||(LA6_6>=SQUOTE && LA6_6<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_6>=LBRACE && LA6_6<=RBRACE)||(LA6_6>=SQUOTE && LA6_6<=BSLASH)) && (( isGraph ))) {s = 16;}
 
-                        else if ( ((LA6_6>=NEW && LA6_6<=CONSTRAINT)||LA6_6==IDENT||(LA6_6>=LABEL && LA6_6<=NUMBER)||(LA6_6>=PLING && LA6_6<=QUERY)||(LA6_6>=DOT && LA6_6<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_6>=NEW && LA6_6<=CONSTRAINT)||LA6_6==IDENT||(LA6_6>=LABEL && LA6_6<=NUMBER)||(LA6_6>=PLING && LA6_6<=QUERY)||(LA6_6>=DOT && LA6_6<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
                         else if ( (LA6_6==COLON) ) {s = 22;}
 
@@ -4090,11 +4098,11 @@ public class Label0Parser extends Parser {
                         int index6_23 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_23==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_23==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
-                        else if ( ((LA6_23>=NEW && LA6_23<=IDENT)||(LA6_23>=LABEL && LA6_23<=NUMBER)||(LA6_23>=PLING && LA6_23<=QUERY)||(LA6_23>=DOT && LA6_23<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_23>=NEW && LA6_23<=IDENT)||(LA6_23>=LABEL && LA6_23<=NUMBER)||(LA6_23>=PLING && LA6_23<=QUERY)||(LA6_23>=DOT && LA6_23<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
-                        else if ( ((LA6_23>=LBRACE && LA6_23<=RBRACE)||(LA6_23>=SQUOTE && LA6_23<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_23>=LBRACE && LA6_23<=RBRACE)||(LA6_23>=SQUOTE && LA6_23<=BSLASH)) && (( isGraph ))) {s = 16;}
 
                         else if ( (LA6_23==COLON) ) {s = 20;}
 
@@ -4109,13 +4117,13 @@ public class Label0Parser extends Parser {
                         int index6_8 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_8==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_8==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
                         else if ( (LA6_8==EQUALS) ) {s = 21;}
 
-                        else if ( ((LA6_8>=LBRACE && LA6_8<=RBRACE)||(LA6_8>=SQUOTE && LA6_8<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_8>=LBRACE && LA6_8<=RBRACE)||(LA6_8>=SQUOTE && LA6_8<=BSLASH)) && (( isGraph ))) {s = 16;}
 
-                        else if ( ((LA6_8>=NEW && LA6_8<=CONSTRAINT)||LA6_8==IDENT||(LA6_8>=LABEL && LA6_8<=NUMBER)||(LA6_8>=PLING && LA6_8<=QUERY)||(LA6_8>=DOT && LA6_8<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_8>=NEW && LA6_8<=CONSTRAINT)||LA6_8==IDENT||(LA6_8>=LABEL && LA6_8<=NUMBER)||(LA6_8>=PLING && LA6_8<=QUERY)||(LA6_8>=DOT && LA6_8<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
                         else if ( (LA6_8==COLON) ) {s = 22;}
 
@@ -4132,11 +4140,11 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA6_21==IDENT) ) {s = 24;}
 
-                        else if ( (LA6_21==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        else if ( (LA6_21==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
-                        else if ( ((LA6_21>=NEW && LA6_21<=EQUALS)||(LA6_21>=LABEL && LA6_21<=NUMBER)||(LA6_21>=PLING && LA6_21<=QUERY)||(LA6_21>=DOT && LA6_21<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_21>=NEW && LA6_21<=EQUALS)||(LA6_21>=LABEL && LA6_21<=NUMBER)||(LA6_21>=PLING && LA6_21<=QUERY)||(LA6_21>=DOT && LA6_21<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
-                        else if ( ((LA6_21>=LBRACE && LA6_21<=RBRACE)||(LA6_21>=SQUOTE && LA6_21<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_21>=LBRACE && LA6_21<=RBRACE)||(LA6_21>=SQUOTE && LA6_21<=BSLASH)) && (( isGraph ))) {s = 16;}
 
                          
                         input.seek(index6_21);
@@ -4149,13 +4157,13 @@ public class Label0Parser extends Parser {
                         int index6_3 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_3==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_3==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
                         else if ( (LA6_3==EQUALS) ) {s = 18;}
 
-                        else if ( ((LA6_3>=LBRACE && LA6_3<=RBRACE)||(LA6_3>=SQUOTE && LA6_3<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_3>=LBRACE && LA6_3<=RBRACE)||(LA6_3>=SQUOTE && LA6_3<=BSLASH)) && (( isGraph ))) {s = 16;}
 
-                        else if ( ((LA6_3>=NEW && LA6_3<=CONSTRAINT)||LA6_3==IDENT||(LA6_3>=LABEL && LA6_3<=NUMBER)||(LA6_3>=PLING && LA6_3<=QUERY)||(LA6_3>=DOT && LA6_3<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_3>=NEW && LA6_3<=CONSTRAINT)||LA6_3==IDENT||(LA6_3>=LABEL && LA6_3<=NUMBER)||(LA6_3>=PLING && LA6_3<=QUERY)||(LA6_3>=DOT && LA6_3<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
                         else if ( (LA6_3==COLON) ) {s = 20;}
 
@@ -4170,13 +4178,13 @@ public class Label0Parser extends Parser {
                         int index6_2 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA6_2==EOF) && (( !isGraph || isGraph ))) {s = 17;}
+                        if ( (LA6_2==EOF) && ((( !isGraph )||( isGraph )))) {s = 17;}
 
                         else if ( (LA6_2==EQUALS) ) {s = 18;}
 
-                        else if ( ((LA6_2>=LBRACE && LA6_2<=RBRACE)||(LA6_2>=SQUOTE && LA6_2<=BSLASH)) && ( isGraph )) {s = 16;}
+                        else if ( ((LA6_2>=LBRACE && LA6_2<=RBRACE)||(LA6_2>=SQUOTE && LA6_2<=BSLASH)) && (( isGraph ))) {s = 16;}
 
-                        else if ( ((LA6_2>=NEW && LA6_2<=CONSTRAINT)||LA6_2==IDENT||(LA6_2>=LABEL && LA6_2<=NUMBER)||(LA6_2>=PLING && LA6_2<=QUERY)||(LA6_2>=DOT && LA6_2<=58)) && (( !isGraph || isGraph ))) {s = 19;}
+                        else if ( ((LA6_2>=NEW && LA6_2<=CONSTRAINT)||LA6_2==IDENT||(LA6_2>=LABEL && LA6_2<=NUMBER)||(LA6_2>=PLING && LA6_2<=QUERY)||(LA6_2>=DOT && LA6_2<=58)) && ((( !isGraph )||( isGraph )))) {s = 19;}
 
                         else if ( (LA6_2==COLON) ) {s = 20;}
 
@@ -4287,7 +4295,7 @@ public class Label0Parser extends Parser {
 
                         else if ( ((LA13_0>=NEW && LA13_0<=PAR)||(LA13_0>=EMPTY && LA13_0<=CONSTRAINT)||LA13_0==IDENT||(LA13_0>=LABEL && LA13_0<=NUMBER)||(LA13_0>=DOT && LA13_0<=58)) ) {s = 10;}
 
-                        else if ( (LA13_0==RBRACE||LA13_0==BSLASH) && ((synpred1_Label0()&& isGraph ))) {s = 11;}
+                        else if ( (LA13_0==RBRACE||LA13_0==BSLASH) && ((synpred1_Label0()&&( isGraph )))) {s = 11;}
 
                          
                         input.seek(index13_0);
@@ -4302,9 +4310,9 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (true) ) {s = 12;}
 
-                        else if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        else if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_1);
@@ -4319,9 +4327,9 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (true) ) {s = 14;}
 
-                        else if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        else if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_2);
@@ -4336,9 +4344,9 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (true) ) {s = 15;}
 
-                        else if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        else if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_4);
@@ -4351,9 +4359,9 @@ public class Label0Parser extends Parser {
                         int index13_5 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_5);
@@ -4366,9 +4374,9 @@ public class Label0Parser extends Parser {
                         int index13_6 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_6);
@@ -4381,9 +4389,9 @@ public class Label0Parser extends Parser {
                         int index13_7 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_7);
@@ -4396,9 +4404,9 @@ public class Label0Parser extends Parser {
                         int index13_8 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_8);
@@ -4411,9 +4419,9 @@ public class Label0Parser extends Parser {
                         int index13_9 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_9);
@@ -4426,9 +4434,9 @@ public class Label0Parser extends Parser {
                         int index13_10 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred1_Label0()&& isGraph )) ) {s = 11;}
+                        if ( ((synpred1_Label0()&&( isGraph ))) ) {s = 11;}
 
-                        else if ( ((synpred2_Label0()&& !isGraph )) ) {s = 13;}
+                        else if ( ((synpred2_Label0()&&( !isGraph ))) ) {s = 13;}
 
                          
                         input.seek(index13_10);
@@ -4562,9 +4570,9 @@ public class Label0Parser extends Parser {
     public static final BitSet FOLLOW_QUERY_in_wildcard1156 = new BitSet(new long[]{0x0001000080000002L});
     public static final BitSet FOLLOW_IDENT_in_wildcard1159 = new BitSet(new long[]{0x0001000000000002L});
     public static final BitSet FOLLOW_LSQUARE_in_wildcard1163 = new BitSet(new long[]{0x0002008680000000L});
-    public static final BitSet FOLLOW_HAT_in_wildcard1166 = new BitSet(new long[]{0x0002008680000000L});
+    public static final BitSet FOLLOW_HAT_in_wildcard1166 = new BitSet(new long[]{0x0000008680000000L});
     public static final BitSet FOLLOW_atom_in_wildcard1169 = new BitSet(new long[]{0x000C000000000000L});
-    public static final BitSet FOLLOW_COMMA_in_wildcard1172 = new BitSet(new long[]{0x0002008680000000L});
+    public static final BitSet FOLLOW_COMMA_in_wildcard1172 = new BitSet(new long[]{0x0000008680000000L});
     public static final BitSet FOLLOW_atom_in_wildcard1175 = new BitSet(new long[]{0x000C000000000000L});
     public static final BitSet FOLLOW_RSQUARE_in_wildcard1179 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_SQUOTE_in_sqText1197 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
