@@ -38,6 +38,29 @@ tokens {
   FALSE='false';
   
   CONSTRAINT;
+  
+  MINUS  = '-';
+  STAR   = '*';
+  PLUS   = '+';
+  DOT    = '.';
+  BAR    = '|';
+  HAT    = '^';
+  EQUALS = '=';
+  LBRACE = '{';
+  RBRACE = '}';
+  LPAR   = '(';
+  RPAR   = ')';
+  LSQUARE = '[';
+  RSQUARE = ']';
+  PLING  = '!';
+  QUERY  = '?'; 
+  COLON  = ':' ;
+  COMMA  = ',' ;
+  SQUOTE = '\'' ;
+  DQUOTE = '"' ;
+  DOLLAR = '$';
+  UNDER  = '_';
+  BSLASH = '\\' ;
 }
 
 @lexer::header {
@@ -68,13 +91,44 @@ import java.util.LinkedList;
 }
 
 label
-   : (prefixedLabel | specialLabel)? EOF!
+   : quantLabel EOF!
+   | specialLabel EOF!
    ;
 
-prefixedLabel
-   : ( FORALL^ | FORALLX^ | EXISTS^ ) (EQUALS! IDENT)? COLON! prefixedLabel
-   | ( NEW^ | DEL^ | NOT^ | USE^ | CNEW^ ) (EQUALS! IDENT)? COLON! prefixedLabel
+quantLabel
+   : quantPrefix
+     ( EQUALS IDENT COLON
+       ( rolePrefix COLON actualLabel
+         -> ^(rolePrefix IDENT actualLabel)
+       | actualLabel
+         -> ^(USE IDENT actualLabel)
+       | -> ^(quantPrefix IDENT)
+       )
+     | COLON
+         -> quantPrefix
+     )
+   | roleLabel
+   ;
+
+quantPrefix
+   : FORALL | FORALLX | EXISTS
+   ;
+
+roleLabel
+   : rolePrefix
+     ( EQUALS IDENT COLON actualLabel
+         -> ^(rolePrefix IDENT actualLabel)
+     | COLON 
+       ( actualLabel
+         -> ^(rolePrefix actualLabel)
+       | -> rolePrefix
+       )
+     )
    | actualLabel
+   ;
+
+rolePrefix
+   : NEW | DEL | NOT | USE | CNEW
    ;
 
 specialLabel
@@ -113,11 +167,22 @@ graphDefault
    ;
 
 ruleLabel
+   : PLING^
+     ( simpleRuleLabel
+     | LBRACE! regExpr RBRACE!
+     )
+   | simpleRuleLabel
+   | LBRACE!
+     ( PLING^ unary
+     | regExpr
+     )
+     RBRACE!
+   ;
+
+simpleRuleLabel
    : wildcard
    | EQUALS
-   | LBRACE! regExpr RBRACE!
    | sqText -> ^(ATOM sqText)
-   | PLING^ ruleLabel
    | ruleDefault -> ^(ATOM ruleDefault)
    ;
 
@@ -126,17 +191,14 @@ ruleDefault
      ~(SQUOTE | LBRACE | RBRACE | BSLASH | COLON)*
    ;
 
-nodeLabel
-   : TYPE^ COLON! IDENT
-   | FLAG^ COLON! IDENT;
-   
 rnumber
    : NUMBER (DOT NUMBER?)?
    | DOT NUMBER
    ;
 
 regExpr
-   : choice | PLING^ regExpr;
+   : choice
+   ;
 
 choice
    : sequence (BAR^ choice)? ;
@@ -178,29 +240,6 @@ dqText
 dqTextSpecial
    : BSLASH! (BSLASH|DQUOTE)
    ;
-
-MINUS  : '-';
-STAR   : '*';
-PLUS   : '+';
-DOT    : '.';
-BAR    : '|';
-HAT    : '^';
-EQUALS : '=';
-LBRACE : '{';
-RBRACE : '}';
-LPAR   : '(';
-RPAR   : ')';
-LSQUARE : '[';
-RSQUARE : ']';
-PLING  : '!';
-QUERY  : '?'; 
-COLON  : ':' ;
-COMMA  : ',' ;
-SQUOTE : '\'' ;
-DQUOTE : '"' ;
-DOLLAR : '$';
-UNDER  : '_';
-BSLASH : '\\' ;
 
 IDENT
    : LETTER IDENTCHAR* 

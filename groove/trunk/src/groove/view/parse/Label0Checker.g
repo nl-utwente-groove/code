@@ -40,44 +40,42 @@ import java.util.LinkedList;
 }
 
 label
-  : prefixedLabel
+  : quantLabel
+  | roleLabel
   | specialLabel
   ;
 
-prefixedLabel
-  : ^(FORALL IDENT? prefixedLabel?)
-  | ^(FORALLX IDENT? prefixedLabel?)
-  | ^(EXISTS IDENT? prefixedLabel?)
-  | ^(NEW IDENT? prefixedLabel?)
-  | ^(DEL IDENT? prefixedLabel?)
-  | ^(NOT IDENT? prefixedLabel?)
-  | ^(USE IDENT? prefixedLabel?)
-  | ^(CNEW IDENT? prefixedLabel?)
+quantLabel
+  : ^(quantPrefix IDENT?)
+  ;
+
+quantPrefix
+  : FORALL | FORALLX | EXISTS
+  ;
+
+roleLabel
+  : ^(rolePrefix (IDENT? actualLabel)?)
   | actualLabel
+  ;
+
+rolePrefix
+  : NEW | DEL | NOT | USE | CNEW
   ;
 
 specialLabel
   : ^(REM text)
   | ^(PAR LABEL?)
-  | ^(INT (number | IDENT)?)
+  | ^(INT (NUMBER | IDENT)?)
   | ^(REAL (rnumber | IDENT)?)
   | ^(STRING (^(DQUOTE text) | IDENT)?)
-  | ^(BOOL (bool | IDENT)?)
+  | ^(BOOL (TRUE | FALSE | IDENT)?)
   | ATTR
   | PROD
   | ^(ARG NUMBER)
   ;
 
-bool
-  : TRUE | FALSE
-  ;
-  
-number
-  : NUMBER 
-  ;
-
 rnumber
-  : NUMBER (DOT NUMER?)?
+  : NUMBER (DOT NUMBER?)?
   | DOT NUMBER
   ;
 
