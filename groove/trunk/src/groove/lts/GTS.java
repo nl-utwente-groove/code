@@ -281,7 +281,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     // ----------------------- OBJECT OVERRIDES ------------------------
 
     public Set<? extends GraphState> nodeSet() {
-        return Collections.unmodifiableSet(this.stateSet);
+        return Collections.unmodifiableSet(getStateSet());
     }
 
     public Set<? extends GraphTransition> edgeSet() {
