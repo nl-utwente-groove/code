@@ -27,18 +27,19 @@ public class AntlrParser {
      */
     public static void main(String[] args) {
         try {
+            String grammarName = "Label" + VERSION;
             switch (Integer.parseInt(args[0])) {
             case 0:
                 System.out.println("Lexer/Parser");
-                org.antlr.Tool.main(new String[] {"Label.g"});
+                org.antlr.Tool.main(new String[] {grammarName + ".g"});
                 break;
             case 1:
                 System.out.println("Checker");
-                org.antlr.Tool.main(new String[] {"LabelChecker.g"});
+                org.antlr.Tool.main(new String[] {grammarName + "Checker.g"});
                 break;
             case 2:
                 System.out.println("Builder");
-                org.antlr.Tool.main(new String[] {"LabelBuilder.g"});
+                org.antlr.Tool.main(new String[] {grammarName + "Builder.g"});
                 break;
             default:
                 printUsageMessage();
@@ -57,4 +58,6 @@ public class AntlrParser {
         System.err.printf("               2 for builder generation%n");
         System.err.printf("               3 for determinism checker generation%n");
     }
+
+    static private final int VERSION = 0;
 }

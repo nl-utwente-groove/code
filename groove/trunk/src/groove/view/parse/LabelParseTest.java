@@ -16,24 +16,82 @@
  */
 package groove.view.parse;
 
+import groove.control.parse.ASTFrame;
+import groove.view.FormatException;
+
+import java.util.List;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.Lexer;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.CommonTreeNodeStream;
 
 /**
  * @author Arend Rensink
  * @version $Revision $
  */
 public class LabelParseTest {
-    /**
-     * Called after closing a window. Reduces the open window count and shuts
-     * down if no more windows are open.
-     */
-    public static void closeWindow() {
-        openWindows--;
-        if (openWindows == 0) {
-            System.exit(0);
+    public LabelParseTest(boolean isGraph) {
+        super();
+        this.isGraph = isGraph;
+    }
+
+    protected void test(String label) {
+        try {
+            Lexer lexer = new Label0Lexer(new ANTLRStringStream(label));
+            System.out.println(new CommonTokenStream(lexer));
+            lexer = new Label0Lexer(new ANTLRStringStream(label));
+            CommonTree parsedLabel = parse(lexer);
+            System.out.println("Parsed label: " + parsedLabel.toStringTree());
+            if (PARSE_DEBUG) {
+                ASTFrame graphFrame =
+                    new ASTFrame("parser label result", parsedLabel);
+                graphFrame.setSize(500, 1000);
+                graphFrame.setVisible(true);
+            }
+            CommonTree checkedLabel = check(parsedLabel);
+            if (CHECK_DEBUG) {
+                ASTFrame frame = new ASTFrame("checker result", checkedLabel);
+                frame.setSize(500, 1000);
+                frame.setVisible(true);
+            }
+            System.out.println("Checked label: " + checkedLabel.toStringTree());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+    protected CommonTree parse(Lexer lexer) throws RecognitionException,
+        FormatException {
+        Label0Parser parser = new Label0Parser(new CommonTokenStream(lexer));
+        parser.setIsGraph(this.isGraph);
+        CommonTree labelReturn = (CommonTree) parser.label().getTree();
+        List<String> errors = parser.getErrors();
+        if (errors.size() != 0) {
+            errors.add(0, "Encountered parse errors in label");
+            throw new FormatException(errors);
+        }
+        return labelReturn;
+    }
+
+    protected CommonTree check(CommonTree labelReturn)
+        throws RecognitionException, FormatException {
+        // fetch the resulting tree
+        CommonTreeNodeStream nodes = new CommonTreeNodeStream(labelReturn);
+        // checker will store and remove functions
+        Label0Checker checker = new Label0Checker(nodes);
+        Label0Checker.label_return c_r = checker.label();
+        List<String> errors = checker.getErrors();
+        if (errors.size() != 0) {
+            errors.add(0, "Encountered checker errors in label");
+            throw new FormatException(errors);
+        }
+        return (CommonTree) c_r.getTree();
+    }
+
+    private final boolean isGraph;
 
     /**
      * Runs the test, displaying a label parse tree
@@ -42,39 +100,34 @@ public class LabelParseTest {
     public static void main(String[] args) {
         if (args.length > 0) {
             boolean isGraph = Boolean.parseBoolean(args[0]);
+            LabelParseTest tester = new LabelParseTest(isGraph);
             for (int i = 1; i < args.length; i++) {
-                test(args[i], isGraph);
+                tester.test(args[i]);
             }
         } else {
-            test("forall=x:label", false);
-            test("pp{'", false);
-            test("pp{'", true);
+            LabelParseTest tester = new LabelParseTest(true);
+            tester.test("int:0");
+            tester.test("real:1.");
+            tester.test("real:.2");
+            tester.test("string:\"te\\\"xt\"");
+            tester.test("bool:true");
+            tester.test("pp{'");
+            tester.test(":\\:pp{'");
+            tester = new LabelParseTest(false);
+            tester.test("forall=x:new=y:label");
+            tester.test("prod:");
+            tester.test("arg:5");
+            tester.test("par=$2:");
+            tester.test("par:");
+            tester.test("!{!label}");
+            tester.test("del:?[a,b,c]");
+            tester.test("not:!((a.b)|-?x[^b])+.=");
+            tester.test("not:{!((a.b)|-?x[^b])+.=}");
         }
     }
 
-    private static void test(String label, boolean isGraph) {
-        try {
-            LabelLexer lexer = new LabelLexer(new ANTLRStringStream(label));
-            System.out.println(new CommonTokenStream(lexer));
-            lexer = new LabelLexer(new ANTLRStringStream(label));
-            LabelParser parser = new LabelParser(new CommonTokenStream(lexer));
-            parser.setIsGraph(isGraph);
-            LabelParser.label_return labelReturn = parser.label();
-            ASTFrame graphFrame =
-                new ASTFrame("parser label result",
-                    (org.antlr.runtime.tree.CommonTree) labelReturn.getTree());
-            graphFrame.setSize(500, 1000);
-            graphFrame.setVisible(true);
-            //
-            //            List<String> errors = parser.getErrors();
-            //            if (errors.size() != 0) {
-            //                errors.add(0, "Encountered parse errors in control program");
-            //                throw new FormatException(errors);
-            //            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private static final boolean PARSE_DEBUG = false;
+    private static final boolean CHECK_DEBUG = false;
 
-    private static int openWindows = 0;
+    private static final int VERSION = 0;
 }
