@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 Label0.g 2010-04-26 17:42:31
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 Label0.g 2010-04-26 22:18:47
 
 package groove.view.parse;
 
@@ -9,61 +9,61 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Label0Lexer extends Lexer {
-    public static final int DOLLAR=53;
-    public static final int STAR=44;
-    public static final int LSQUARE=48;
+    public static final int DOLLAR=49;
+    public static final int STAR=31;
     public static final int FORALLX=11;
+    public static final int LSQUARE=41;
     public static final int LETTER=55;
     public static final int DEL=5;
-    public static final int LBRACE=35;
+    public static final int LBRACE=37;
     public static final int NEW=4;
-    public static final int DQUOTE=52;
+    public static final int DQUOTE=48;
     public static final int IDENTCHAR=56;
-    public static final int EQUALS=30;
+    public static final int EQUALS=36;
     public static final int NOT=6;
     public static final int ATOM=26;
     public static final int EOF=-1;
     public static final int TYPE=22;
-    public static final int HAT=49;
-    public static final int UNDER=54;
+    public static final int HAT=35;
+    public static final int UNDER=50;
     public static final int T__58=58;
-    public static final int PLING=37;
-    public static final int LPAR=46;
+    public static final int PLING=43;
     public static final int ARG=20;
-    public static final int COMMA=50;
+    public static final int LPAR=39;
+    public static final int COMMA=46;
     public static final int PATH=24;
     public static final int PROD=19;
+    public static final int IDENT=52;
     public static final int PAR=21;
-    public static final int IDENT=31;
-    public static final int PLUS=45;
+    public static final int PLUS=32;
     public static final int DIGIT=57;
     public static final int EXISTS=12;
-    public static final int DOT=41;
+    public static final int DOT=33;
     public static final int ATTR=18;
-    public static final int RBRACE=36;
+    public static final int RBRACE=38;
+    public static final int NUMBER=54;
     public static final int BOOL=17;
-    public static final int NUMBER=34;
     public static final int FORALL=10;
     public static final int INT=14;
-    public static final int RSQUARE=51;
-    public static final int MINUS=43;
+    public static final int SQUOTE=47;
     public static final int REM=9;
-    public static final int SQUOTE=39;
+    public static final int MINUS=30;
+    public static final int RSQUARE=42;
     public static final int TRUE=27;
     public static final int CNEW=8;
     public static final int FLAG=23;
     public static final int EMPTY=25;
-    public static final int COLON=32;
     public static final int NESTED=13;
+    public static final int COLON=45;
     public static final int REAL=15;
-    public static final int LABEL=33;
-    public static final int QUERY=38;
-    public static final int RPAR=47;
+    public static final int LABEL=53;
+    public static final int QUERY=44;
+    public static final int RPAR=40;
     public static final int USE=7;
     public static final int FALSE=28;
     public static final int CONSTRAINT=29;
-    public static final int BSLASH=40;
-    public static final int BAR=42;
+    public static final int BSLASH=51;
+    public static final int BAR=34;
     public static final int STRING=16;
 
     // delegates
@@ -562,33 +562,13 @@ public class Label0Lexer extends Lexer {
     }
     // $ANTLR end "FALSE"
 
-    // $ANTLR start "T__58"
-    public final void mT__58() throws RecognitionException {
-        try {
-            int _type = T__58;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:34:7: ( '\\n' )
-            // Label0.g:34:9: '\\n'
-            {
-            match('\n'); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "T__58"
-
     // $ANTLR start "MINUS"
     public final void mMINUS() throws RecognitionException {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:182:8: ( '-' )
-            // Label0.g:182:10: '-'
+            // Label0.g:34:7: ( '-' )
+            // Label0.g:34:9: '-'
             {
             match('-'); 
 
@@ -607,8 +587,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:183:8: ( '*' )
-            // Label0.g:183:10: '*'
+            // Label0.g:35:6: ( '*' )
+            // Label0.g:35:8: '*'
             {
             match('*'); 
 
@@ -627,8 +607,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:184:8: ( '+' )
-            // Label0.g:184:10: '+'
+            // Label0.g:36:6: ( '+' )
+            // Label0.g:36:8: '+'
             {
             match('+'); 
 
@@ -647,8 +627,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:185:8: ( '.' )
-            // Label0.g:185:10: '.'
+            // Label0.g:37:5: ( '.' )
+            // Label0.g:37:7: '.'
             {
             match('.'); 
 
@@ -667,8 +647,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:186:8: ( '|' )
-            // Label0.g:186:10: '|'
+            // Label0.g:38:5: ( '|' )
+            // Label0.g:38:7: '|'
             {
             match('|'); 
 
@@ -687,8 +667,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = HAT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:187:8: ( '^' )
-            // Label0.g:187:10: '^'
+            // Label0.g:39:5: ( '^' )
+            // Label0.g:39:7: '^'
             {
             match('^'); 
 
@@ -707,8 +687,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = EQUALS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:188:8: ( '=' )
-            // Label0.g:188:10: '='
+            // Label0.g:40:8: ( '=' )
+            // Label0.g:40:10: '='
             {
             match('='); 
 
@@ -727,8 +707,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = LBRACE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:189:8: ( '{' )
-            // Label0.g:189:10: '{'
+            // Label0.g:41:8: ( '{' )
+            // Label0.g:41:10: '{'
             {
             match('{'); 
 
@@ -747,8 +727,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = RBRACE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:190:8: ( '}' )
-            // Label0.g:190:10: '}'
+            // Label0.g:42:8: ( '}' )
+            // Label0.g:42:10: '}'
             {
             match('}'); 
 
@@ -767,8 +747,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:191:8: ( '(' )
-            // Label0.g:191:10: '('
+            // Label0.g:43:6: ( '(' )
+            // Label0.g:43:8: '('
             {
             match('('); 
 
@@ -787,8 +767,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:192:8: ( ')' )
-            // Label0.g:192:10: ')'
+            // Label0.g:44:6: ( ')' )
+            // Label0.g:44:8: ')'
             {
             match(')'); 
 
@@ -807,8 +787,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = LSQUARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:193:9: ( '[' )
-            // Label0.g:193:11: '['
+            // Label0.g:45:9: ( '[' )
+            // Label0.g:45:11: '['
             {
             match('['); 
 
@@ -827,8 +807,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = RSQUARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:194:9: ( ']' )
-            // Label0.g:194:11: ']'
+            // Label0.g:46:9: ( ']' )
+            // Label0.g:46:11: ']'
             {
             match(']'); 
 
@@ -847,8 +827,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = PLING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:195:8: ( '!' )
-            // Label0.g:195:10: '!'
+            // Label0.g:47:7: ( '!' )
+            // Label0.g:47:9: '!'
             {
             match('!'); 
 
@@ -867,8 +847,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = QUERY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:196:8: ( '?' )
-            // Label0.g:196:10: '?'
+            // Label0.g:48:7: ( '?' )
+            // Label0.g:48:9: '?'
             {
             match('?'); 
 
@@ -887,8 +867,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:197:8: ( ':' )
-            // Label0.g:197:10: ':'
+            // Label0.g:49:7: ( ':' )
+            // Label0.g:49:9: ':'
             {
             match(':'); 
 
@@ -907,8 +887,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:198:8: ( ',' )
-            // Label0.g:198:10: ','
+            // Label0.g:50:7: ( ',' )
+            // Label0.g:50:9: ','
             {
             match(','); 
 
@@ -927,8 +907,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = SQUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:199:8: ( '\\'' )
-            // Label0.g:199:10: '\\''
+            // Label0.g:51:8: ( '\\'' )
+            // Label0.g:51:10: '\\''
             {
             match('\''); 
 
@@ -947,8 +927,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = DQUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:200:8: ( '\"' )
-            // Label0.g:200:10: '\"'
+            // Label0.g:52:8: ( '\"' )
+            // Label0.g:52:10: '\"'
             {
             match('\"'); 
 
@@ -967,8 +947,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = DOLLAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:201:8: ( '$' )
-            // Label0.g:201:10: '$'
+            // Label0.g:53:8: ( '$' )
+            // Label0.g:53:10: '$'
             {
             match('$'); 
 
@@ -987,8 +967,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = UNDER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:202:8: ( '_' )
-            // Label0.g:202:10: '_'
+            // Label0.g:54:7: ( '_' )
+            // Label0.g:54:9: '_'
             {
             match('_'); 
 
@@ -1007,8 +987,8 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:203:8: ( '\\\\' )
-            // Label0.g:203:10: '\\\\'
+            // Label0.g:55:8: ( '\\\\' )
+            // Label0.g:55:10: '\\\\'
             {
             match('\\'); 
 
@@ -1022,16 +1002,36 @@ public class Label0Lexer extends Lexer {
     }
     // $ANTLR end "BSLASH"
 
+    // $ANTLR start "T__58"
+    public final void mT__58() throws RecognitionException {
+        try {
+            int _type = T__58;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // Label0.g:56:7: ( '\\n' )
+            // Label0.g:56:9: '\\n'
+            {
+            match('\n'); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__58"
+
     // $ANTLR start "IDENT"
     public final void mIDENT() throws RecognitionException {
         try {
             int _type = IDENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:206:4: ( LETTER ( IDENTCHAR )* )
-            // Label0.g:206:6: LETTER ( IDENTCHAR )*
+            // Label0.g:245:4: ( LETTER ( IDENTCHAR )* )
+            // Label0.g:245:6: LETTER ( IDENTCHAR )*
             {
             mLETTER(); 
-            // Label0.g:206:13: ( IDENTCHAR )*
+            // Label0.g:245:13: ( IDENTCHAR )*
             loop1:
             do {
                 int alt1=2;
@@ -1044,7 +1044,7 @@ public class Label0Lexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // Label0.g:206:13: IDENTCHAR
+            	    // Label0.g:245:13: IDENTCHAR
             	    {
             	    mIDENTCHAR(); 
 
@@ -1072,10 +1072,10 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = NUMBER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:210:4: ( ( DIGIT )+ )
-            // Label0.g:210:6: ( DIGIT )+
+            // Label0.g:249:4: ( ( DIGIT )+ )
+            // Label0.g:249:6: ( DIGIT )+
             {
-            // Label0.g:210:6: ( DIGIT )+
+            // Label0.g:249:6: ( DIGIT )+
             int cnt2=0;
             loop2:
             do {
@@ -1089,7 +1089,7 @@ public class Label0Lexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // Label0.g:210:6: DIGIT
+            	    // Label0.g:249:6: DIGIT
             	    {
             	    mDIGIT(); 
 
@@ -1121,10 +1121,10 @@ public class Label0Lexer extends Lexer {
         try {
             int _type = LABEL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // Label0.g:214:4: ( ( IDENTCHAR )+ )
-            // Label0.g:214:6: ( IDENTCHAR )+
+            // Label0.g:253:4: ( ( IDENTCHAR )+ )
+            // Label0.g:253:6: ( IDENTCHAR )+
             {
-            // Label0.g:214:6: ( IDENTCHAR )+
+            // Label0.g:253:6: ( IDENTCHAR )+
             int cnt3=0;
             loop3:
             do {
@@ -1138,7 +1138,7 @@ public class Label0Lexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // Label0.g:214:6: IDENTCHAR
+            	    // Label0.g:253:6: IDENTCHAR
             	    {
             	    mIDENTCHAR(); 
 
@@ -1168,7 +1168,7 @@ public class Label0Lexer extends Lexer {
     // $ANTLR start "IDENTCHAR"
     public final void mIDENTCHAR() throws RecognitionException {
         try {
-            // Label0.g:218:4: ( LETTER | DIGIT | DOLLAR | UNDER )
+            // Label0.g:257:4: ( LETTER | DIGIT | DOLLAR | UNDER )
             // Label0.g:
             {
             if ( input.LA(1)=='$'||(input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
@@ -1192,7 +1192,7 @@ public class Label0Lexer extends Lexer {
     // $ANTLR start "LETTER"
     public final void mLETTER() throws RecognitionException {
         try {
-            // Label0.g:220:17: ( 'a' .. 'z' | 'A' .. 'Z' )
+            // Label0.g:259:17: ( 'a' .. 'z' | 'A' .. 'Z' )
             // Label0.g:
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
@@ -1216,8 +1216,8 @@ public class Label0Lexer extends Lexer {
     // $ANTLR start "DIGIT"
     public final void mDIGIT() throws RecognitionException {
         try {
-            // Label0.g:221:17: ( '0' .. '9' )
-            // Label0.g:221:19: '0' .. '9'
+            // Label0.g:260:17: ( '0' .. '9' )
+            // Label0.g:260:19: '0' .. '9'
             {
             matchRange('0','9'); 
 
@@ -1230,7 +1230,7 @@ public class Label0Lexer extends Lexer {
     // $ANTLR end "DIGIT"
 
     public void mTokens() throws RecognitionException {
-        // Label0.g:1:8: ( NEW | DEL | NOT | USE | CNEW | REM | FORALL | FORALLX | EXISTS | NESTED | INT | REAL | STRING | BOOL | ATTR | PROD | ARG | PAR | TYPE | FLAG | PATH | TRUE | FALSE | T__58 | MINUS | STAR | PLUS | DOT | BAR | HAT | EQUALS | LBRACE | RBRACE | LPAR | RPAR | LSQUARE | RSQUARE | PLING | QUERY | COLON | COMMA | SQUOTE | DQUOTE | DOLLAR | UNDER | BSLASH | IDENT | NUMBER | LABEL )
+        // Label0.g:1:8: ( NEW | DEL | NOT | USE | CNEW | REM | FORALL | FORALLX | EXISTS | NESTED | INT | REAL | STRING | BOOL | ATTR | PROD | ARG | PAR | TYPE | FLAG | PATH | TRUE | FALSE | MINUS | STAR | PLUS | DOT | BAR | HAT | EQUALS | LBRACE | RBRACE | LPAR | RPAR | LSQUARE | RSQUARE | PLING | QUERY | COLON | COMMA | SQUOTE | DQUOTE | DOLLAR | UNDER | BSLASH | T__58 | IDENT | NUMBER | LABEL )
         int alt4=49;
         alt4 = dfa4.predict(input);
         switch (alt4) {
@@ -1396,163 +1396,163 @@ public class Label0Lexer extends Lexer {
                 }
                 break;
             case 24 :
-                // Label0.g:1:129: T__58
-                {
-                mT__58(); 
-
-                }
-                break;
-            case 25 :
-                // Label0.g:1:135: MINUS
+                // Label0.g:1:129: MINUS
                 {
                 mMINUS(); 
 
                 }
                 break;
-            case 26 :
-                // Label0.g:1:141: STAR
+            case 25 :
+                // Label0.g:1:135: STAR
                 {
                 mSTAR(); 
 
                 }
                 break;
-            case 27 :
-                // Label0.g:1:146: PLUS
+            case 26 :
+                // Label0.g:1:140: PLUS
                 {
                 mPLUS(); 
 
                 }
                 break;
-            case 28 :
-                // Label0.g:1:151: DOT
+            case 27 :
+                // Label0.g:1:145: DOT
                 {
                 mDOT(); 
 
                 }
                 break;
-            case 29 :
-                // Label0.g:1:155: BAR
+            case 28 :
+                // Label0.g:1:149: BAR
                 {
                 mBAR(); 
 
                 }
                 break;
-            case 30 :
-                // Label0.g:1:159: HAT
+            case 29 :
+                // Label0.g:1:153: HAT
                 {
                 mHAT(); 
 
                 }
                 break;
-            case 31 :
-                // Label0.g:1:163: EQUALS
+            case 30 :
+                // Label0.g:1:157: EQUALS
                 {
                 mEQUALS(); 
 
                 }
                 break;
-            case 32 :
-                // Label0.g:1:170: LBRACE
+            case 31 :
+                // Label0.g:1:164: LBRACE
                 {
                 mLBRACE(); 
 
                 }
                 break;
-            case 33 :
-                // Label0.g:1:177: RBRACE
+            case 32 :
+                // Label0.g:1:171: RBRACE
                 {
                 mRBRACE(); 
 
                 }
                 break;
-            case 34 :
-                // Label0.g:1:184: LPAR
+            case 33 :
+                // Label0.g:1:178: LPAR
                 {
                 mLPAR(); 
 
                 }
                 break;
-            case 35 :
-                // Label0.g:1:189: RPAR
+            case 34 :
+                // Label0.g:1:183: RPAR
                 {
                 mRPAR(); 
 
                 }
                 break;
-            case 36 :
-                // Label0.g:1:194: LSQUARE
+            case 35 :
+                // Label0.g:1:188: LSQUARE
                 {
                 mLSQUARE(); 
 
                 }
                 break;
-            case 37 :
-                // Label0.g:1:202: RSQUARE
+            case 36 :
+                // Label0.g:1:196: RSQUARE
                 {
                 mRSQUARE(); 
 
                 }
                 break;
-            case 38 :
-                // Label0.g:1:210: PLING
+            case 37 :
+                // Label0.g:1:204: PLING
                 {
                 mPLING(); 
 
                 }
                 break;
-            case 39 :
-                // Label0.g:1:216: QUERY
+            case 38 :
+                // Label0.g:1:210: QUERY
                 {
                 mQUERY(); 
 
                 }
                 break;
-            case 40 :
-                // Label0.g:1:222: COLON
+            case 39 :
+                // Label0.g:1:216: COLON
                 {
                 mCOLON(); 
 
                 }
                 break;
-            case 41 :
-                // Label0.g:1:228: COMMA
+            case 40 :
+                // Label0.g:1:222: COMMA
                 {
                 mCOMMA(); 
 
                 }
                 break;
-            case 42 :
-                // Label0.g:1:234: SQUOTE
+            case 41 :
+                // Label0.g:1:228: SQUOTE
                 {
                 mSQUOTE(); 
 
                 }
                 break;
-            case 43 :
-                // Label0.g:1:241: DQUOTE
+            case 42 :
+                // Label0.g:1:235: DQUOTE
                 {
                 mDQUOTE(); 
 
                 }
                 break;
-            case 44 :
-                // Label0.g:1:248: DOLLAR
+            case 43 :
+                // Label0.g:1:242: DOLLAR
                 {
                 mDOLLAR(); 
 
                 }
                 break;
-            case 45 :
-                // Label0.g:1:255: UNDER
+            case 44 :
+                // Label0.g:1:249: UNDER
                 {
                 mUNDER(); 
 
                 }
                 break;
-            case 46 :
-                // Label0.g:1:261: BSLASH
+            case 45 :
+                // Label0.g:1:255: BSLASH
                 {
                 mBSLASH(); 
+
+                }
+                break;
+            case 46 :
+                // Label0.g:1:262: T__58
+                {
+                mT__58(); 
 
                 }
                 break;
@@ -1585,7 +1585,7 @@ public class Label0Lexer extends Lexer {
 
     protected DFA4 dfa4 = new DFA4(this);
     static final String DFA4_eotS =
-        "\1\uffff\15\51\24\uffff\1\74\1\76\1\uffff\1\51\1\77\2\51\1\uffff"+
+        "\1\uffff\15\51\23\uffff\1\74\1\76\2\uffff\1\51\1\77\2\51\1\uffff"+
         "\22\51\4\uffff\1\126\1\51\1\130\1\131\1\132\1\51\1\134\5\51\1\142"+
         "\3\51\1\146\1\51\1\150\3\51\1\uffff\1\51\3\uffff\1\155\1\uffff\1"+
         "\156\1\51\1\160\2\51\1\uffff\1\51\1\164\1\165\1\uffff\1\166\1\uffff"+
@@ -1594,30 +1594,30 @@ public class Label0Lexer extends Lexer {
     static final String DFA4_eofS =
         "\u0085\uffff";
     static final String DFA4_minS =
-        "\1\12\15\44\24\uffff\2\44\1\uffff\4\44\1\uffff\22\44\4\uffff\26"+
+        "\1\12\15\44\23\uffff\2\44\2\uffff\4\44\1\uffff\22\44\4\uffff\26"+
         "\44\1\uffff\1\44\3\uffff\1\44\1\uffff\5\44\1\uffff\3\44\1\uffff"+
         "\1\44\1\uffff\4\44\2\uffff\1\44\1\uffff\3\44\6\uffff\2\44\1\uffff"+
         "\2\44\1\uffff\1\44\4\uffff";
     static final String DFA4_maxS =
-        "\1\175\15\172\24\uffff\2\172\1\uffff\4\172\1\uffff\22\172\4\uffff"+
+        "\1\175\15\172\23\uffff\2\172\2\uffff\4\172\1\uffff\22\172\4\uffff"+
         "\26\172\1\uffff\1\172\3\uffff\1\172\1\uffff\5\172\1\uffff\3\172"+
         "\1\uffff\1\172\1\uffff\4\172\2\uffff\1\172\1\uffff\3\172\6\uffff"+
         "\2\172\1\uffff\2\172\1\uffff\1\172\4\uffff";
     static final String DFA4_acceptS =
         "\16\uffff\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42"+
-        "\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\2\uffff\1\56\4\uffff"+
-        "\1\57\22\uffff\1\54\1\61\1\55\1\60\26\uffff\1\1\1\uffff\1\3\1\2"+
+        "\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\2\uffff\1\55\1\56\4\uffff"+
+        "\1\57\22\uffff\1\53\1\61\1\54\1\60\26\uffff\1\1\1\uffff\1\3\1\2"+
         "\1\4\1\uffff\1\6\5\uffff\1\13\3\uffff\1\21\1\uffff\1\22\4\uffff"+
         "\1\5\1\14\1\uffff\1\24\3\uffff\1\16\1\17\1\20\1\25\1\23\1\26\2\uffff"+
         "\1\27\2\uffff\1\12\1\uffff\1\7\1\11\1\15\1\10";
     static final String DFA4_specialS =
         "\u0085\uffff}>";
     static final String[] DFA4_transitionS = {
-            "\1\16\26\uffff\1\34\1\41\1\uffff\1\42\2\uffff\1\40\1\30\1\31"+
-            "\1\20\1\21\1\37\1\17\1\22\1\uffff\12\46\1\36\2\uffff\1\25\1"+
-            "\uffff\1\35\1\uffff\32\45\1\32\1\44\1\33\1\24\1\43\1\uffff\1"+
+            "\1\44\26\uffff\1\33\1\40\1\uffff\1\41\2\uffff\1\37\1\27\1\30"+
+            "\1\17\1\20\1\36\1\16\1\21\1\uffff\12\46\1\35\2\uffff\1\24\1"+
+            "\uffff\1\34\1\uffff\32\45\1\31\1\43\1\32\1\23\1\42\1\uffff\1"+
             "\13\1\12\1\4\1\2\1\7\1\6\2\45\1\10\4\45\1\1\1\45\1\14\1\45\1"+
-            "\5\1\11\1\15\1\3\5\45\1\26\1\23\1\27",
+            "\5\1\11\1\15\1\3\5\45\1\25\1\22\1\26",
             "\1\52\13\uffff\12\52\7\uffff\32\52\4\uffff\1\52\1\uffff\4"+
             "\52\1\47\11\52\1\50\13\52",
             "\1\52\13\uffff\12\52\7\uffff\32\52\4\uffff\1\52\1\uffff\4"+
@@ -1663,11 +1663,11 @@ public class Label0Lexer extends Lexer {
             "",
             "",
             "",
+            "\1\75\13\uffff\12\75\7\uffff\32\75\4\uffff\1\75\1\uffff\32"+
+            "\75",
+            "\1\75\13\uffff\12\75\7\uffff\32\75\4\uffff\1\75\1\uffff\32"+
+            "\75",
             "",
-            "\1\75\13\uffff\12\75\7\uffff\32\75\4\uffff\1\75\1\uffff\32"+
-            "\75",
-            "\1\75\13\uffff\12\75\7\uffff\32\75\4\uffff\1\75\1\uffff\32"+
-            "\75",
             "",
             "\1\52\13\uffff\12\52\7\uffff\32\52\4\uffff\1\52\1\uffff\32"+
             "\52",
@@ -1865,7 +1865,7 @@ public class Label0Lexer extends Lexer {
             this.transition = DFA4_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( NEW | DEL | NOT | USE | CNEW | REM | FORALL | FORALLX | EXISTS | NESTED | INT | REAL | STRING | BOOL | ATTR | PROD | ARG | PAR | TYPE | FLAG | PATH | TRUE | FALSE | T__58 | MINUS | STAR | PLUS | DOT | BAR | HAT | EQUALS | LBRACE | RBRACE | LPAR | RPAR | LSQUARE | RSQUARE | PLING | QUERY | COLON | COMMA | SQUOTE | DQUOTE | DOLLAR | UNDER | BSLASH | IDENT | NUMBER | LABEL );";
+            return "1:1: Tokens : ( NEW | DEL | NOT | USE | CNEW | REM | FORALL | FORALLX | EXISTS | NESTED | INT | REAL | STRING | BOOL | ATTR | PROD | ARG | PAR | TYPE | FLAG | PATH | TRUE | FALSE | MINUS | STAR | PLUS | DOT | BAR | HAT | EQUALS | LBRACE | RBRACE | LPAR | RPAR | LSQUARE | RSQUARE | PLING | QUERY | COLON | COMMA | SQUOTE | DQUOTE | DOLLAR | UNDER | BSLASH | T__58 | IDENT | NUMBER | LABEL );";
         }
     }
  
