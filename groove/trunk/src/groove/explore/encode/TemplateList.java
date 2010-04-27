@@ -67,6 +67,13 @@ public class TemplateList<A> implements EncodedType<A,Serialized> {
     }
 
     /**
+     * Getter for the typeIdentifier.
+     */
+    public String getTypeIdentifier() {
+        return this.typeIdentifier;
+    }
+
+    /**
      * Add a template. The keyword of the template is assumed to be unique
      * with respect to the already stored templates.
      */
@@ -111,7 +118,7 @@ public class TemplateList<A> implements EncodedType<A,Serialized> {
 
         StringBuffer error = new StringBuffer();
         error.append("Unknown keyword '" + source.getKeyword() + "' for the "
-            + this.typeIdentifier + ".");
+            + this.typeIdentifier + ".\n");
         error.append("Expected one of the following keywords:");
         for (Template<A> template : this.templates) {
             error.append(" '");
@@ -120,6 +127,37 @@ public class TemplateList<A> implements EncodedType<A,Serialized> {
         }
         error.append(".");
         throw new FormatException(error.toString());
+    }
+
+    /**
+     * Parses a command line argument into a <code>Serialized</code> that
+     * represents one of the templates. Returns <code>null</code> if parsing
+     * fails.
+     */
+    public Serialized parseCommandline(String text) {
+        for (Template<A> template : this.templates) {
+            Serialized result = template.parseCommandline(text);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a description of the grammar that is used to parse this template
+     * list on the command line. The grammar is displayed as a (pretty-printed)
+     * array of regular expressions, one for each available template. 
+     */
+    public String[] describeCommandlineGrammar() {
+        String[] desc = new String[this.templates.size()];
+        int index = 0;
+
+        for (Template<A> template : this.templates) {
+            desc[index] = template.describeCommandlineGrammar();
+            index++;
+        }
+        return desc;
     }
 
     /**

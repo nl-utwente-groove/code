@@ -49,7 +49,7 @@ public class Exploration {
         reporter.register("playScenario()");
 
     /**
-     * Initialise to a given exploration. 
+     * Initialize to a given exploration. 
      * @param strategy - strategy component of the exploration
      * @param acceptor - acceptor component of the exploration
      * @param nrResults - nrResults component of the exploration
@@ -66,7 +66,7 @@ public class Exploration {
      * strategy, the default acceptor and 0 (=infinite) results.  
      */
     public Exploration() {
-        this(new Serialized("Breadth-First"), new Serialized("Final"), 0);
+        this(new Serialized("bfs"), new Serialized("final"), 0);
     }
 
     /**
@@ -116,7 +116,7 @@ public class Exploration {
         buffer.append(this.acceptor.toString());
         buffer.append(" / ");
         if (this.nrResults == 0) {
-            buffer.append("Infinite");
+            buffer.append("infinite");
         } else {
             buffer.append(this.nrResults);
         }

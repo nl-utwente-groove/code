@@ -16,6 +16,8 @@
  */
 package groove.explore.encode;
 
+import groove.explore.prettyparse.SerializedParser;
+import groove.explore.prettyparse.StringConsumer;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
@@ -44,19 +46,22 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     private final String keyword;
     private final String name;
     private final String explanation;
+    private final SerializedParser commandlineParser; // for the arguments only
     private final String[] argumentNames;
     private final Map<String,EncodedType<?,String>> argumentTypes;
 
     /**
-     * Builds the template, which consists of a keyword, a name, an explanation,
+     * Builds the template, which consists of a keyword for the command line, 
+     * a name, an explanation, a parser for the arguments on the command line,
      * and an array of argument names. The types of the arguments have to be
      * set later by calls to setArgumentType().
      */
     public Template(String keyword, String name, String explanation,
-            String... argumentNames) {
+            SerializedParser commandlineParser, String... argumentNames) {
         this.keyword = keyword;
         this.name = name;
         this.explanation = explanation;
+        this.commandlineParser = commandlineParser;
         this.argumentNames = argumentNames;
         this.argumentTypes = new TreeMap<String,EncodedType<?,String>>();
     }
@@ -97,6 +102,45 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     public String argumentError(String argName) {
         return "Unable to parse the " + argName + " argument of "
             + getKeyword() + ".";
+    }
+
+    /**
+     * Parses a command line argument into a <code>Serialized</code> that
+     * represents this template. Returns <code>null</code> if parsing fails.
+     */
+    public Serialized parseCommandline(String text) {
+        StringConsumer stream = new StringConsumer(text);
+        if (!stream.consumeLiteral(this.keyword)) {
+            return null;
+        }
+        Serialized result = new Serialized(this.keyword);
+        if (this.argumentNames.length == 0) {
+            return result;
+        }
+        if (!stream.consumeLiteral(":")) {
+            return null;
+        }
+        if (!this.commandlineParser.parse(stream, result)) {
+            return null;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a description of the grammar that is used to parse this template
+     * on the command line. The grammar is displayed as a (pretty-printed)
+     * regular expression. 
+     */
+    public String describeCommandlineGrammar() {
+        StringBuffer desc = new StringBuffer();
+        desc.append(this.keyword);
+        if (this.argumentNames.length != 0) {
+            desc.append(":");
+            desc.append(this.commandlineParser.describeGrammar());
+        }
+        desc.append(" - ");
+        desc.append(this.name);
+        return desc.toString();
     }
 
     /**
@@ -209,7 +253,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with no arguments).
          */
         public Template0(String keyword, String name, String explanation) {
-            super(keyword, name, explanation);
+            super(keyword, name, explanation, null);
         }
 
         @Override
@@ -245,8 +289,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with 1 argument).
          */
         public Template1(String keyword, String name, String explanation,
-                String arg1Name, EncodedType<P1,String> arg1Type) {
-            super(keyword, name, explanation, arg1Name);
+                SerializedParser commandlineParser, String arg1Name,
+                EncodedType<P1,String> arg1Type) {
+            super(keyword, name, explanation, commandlineParser, arg1Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
             setArgumentType(arg1Name, arg1Type);
@@ -297,9 +342,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with 1 argument).
          */
         public Template2(String keyword, String name, String explanation,
-                String arg1Name, EncodedType<P1,String> arg1Type,
-                String arg2Name, EncodedType<P2,String> arg2Type) {
-            super(keyword, name, explanation, arg1Name, arg2Name);
+                SerializedParser commandlineParser, String arg1Name,
+                EncodedType<P1,String> arg1Type, String arg2Name,
+                EncodedType<P2,String> arg2Type) {
+            super(keyword, name, explanation, commandlineParser, arg1Name,
+                arg2Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
             setArgumentType(arg1Name, arg1Type);

@@ -951,9 +951,9 @@ public class LTLBenchmarker extends CommandLineTool {
                 ((Observable) store).deleteObserver(loadObserver);
             }
         } catch (IOException exc) {
-            printError("Can't load grammar: " + exc.getMessage());
+            printError("Can't load grammar: " + exc.getMessage(), true);
         } catch (FormatException exc) {
-            printError("Grammar format error: " + exc.getMessage());
+            printError("Grammar format error: " + exc.getMessage(), true);
         }
     }
 
@@ -1265,8 +1265,7 @@ public class LTLBenchmarker extends CommandLineTool {
         // the calculation
         // of matches, isomorphisms, adding to GTS, and reporter-duty: i.e. it's
         // the "overhead" of the scenario
-        long transforming =
-            running - matching - isoChecking - building;
+        long transforming = running - matching - isoChecking - building;
 
         println("Time (ms):\t" + total);
 

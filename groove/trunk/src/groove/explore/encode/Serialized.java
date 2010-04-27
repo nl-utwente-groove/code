@@ -70,6 +70,13 @@ public class Serialized {
     }
 
     /**
+     * Appends a text to the argument with the indicated name.
+     */
+    public void appendArgument(String name, String value) {
+        setArgument(name, getArgument(name) + value);
+    }
+
+    /**
      * Compress the serialized into a String representation of the form
      * keyword(arg=value, ..., arg=value). The order of the arguments is
      * always alphabetical.

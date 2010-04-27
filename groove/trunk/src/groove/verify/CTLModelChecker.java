@@ -165,7 +165,7 @@ public class CTLModelChecker extends CommandLineTool {
             this.addProperty(argsList.remove(1));
         }
         if (argsList.size() == 0) {
-            this.printError("No grammar location specified");
+            this.printError("No grammar location specified", true);
         }
     }
 
@@ -356,9 +356,9 @@ public class CTLModelChecker extends CommandLineTool {
                         this.startStateName).toGrammar();
                 this.grammar.setFixed();
             } catch (IOException exc) {
-                printError("Can't load grammar: " + exc.getMessage());
+                printError("Can't load grammar: " + exc.getMessage(), true);
             } catch (FormatException exc) {
-                printError("Grammar format error: " + exc.getMessage());
+                printError("Grammar format error: " + exc.getMessage(), true);
             }
         } else {
             System.err.println("Grammar-location and start-state unspecified.");
