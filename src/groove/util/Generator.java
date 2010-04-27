@@ -138,7 +138,7 @@ public class Generator extends CommandLineTool {
     private final TemplatedOption<Strategy> strategyOption;
     private final TemplatedOption<Acceptor> acceptorOption;
     private final ResultOption resultOption;
-    private final StrategyOptionOld scenarioOption;
+    private StrategyOptionOld scenarioOption;
     private final FinalSaveOption finalSaveOption;
 
     /**
@@ -163,7 +163,7 @@ public class Generator extends CommandLineTool {
             new TemplatedOption<Strategy>("s", "str", new StrategyEnumerator());
         this.acceptorOption =
             new TemplatedOption<Acceptor>("a", "acc", new AcceptorEnumerator());
-        this.scenarioOption = new StrategyOptionOld();
+        // this.scenarioOption = new StrategyOptionOld();
         this.finalSaveOption = new FinalSaveOption();
         this.resultOption = new ResultOption();
 
