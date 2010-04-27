@@ -58,15 +58,15 @@ public class GraphReporter extends CommandLineTool {
             String graphLocation = argsList.remove(0);
             if (argsList.size() > 0) {
                 printError(String.format("Spurious parameters '%s'",
-                    argsList.toString()));
+                    argsList.toString()), true);
             }
             try {
                 report(Groove.loadGraph(graphLocation));
             } catch (IOException e) {
-                printError(e.getMessage());
+                printError(e.getMessage(), true);
             }
         } else {
-            printError("No graph specified");
+            printError("No graph specified", true);
         }
     }
 

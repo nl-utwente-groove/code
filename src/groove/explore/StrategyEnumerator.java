@@ -24,6 +24,12 @@ import groove.explore.encode.TemplateList;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.prettyparse.PIdentifier;
+import groove.explore.prettyparse.PLiteral;
+import groove.explore.prettyparse.PNumber;
+import groove.explore.prettyparse.POptional;
+import groove.explore.prettyparse.PSeparated;
+import groove.explore.prettyparse.PSequence;
 import groove.explore.result.EdgeBoundCondition;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
@@ -67,8 +73,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
     public StrategyEnumerator() {
         super("exploration strategy", STRATEGY_TOOLTIP);
 
-        addTemplate(new Template0<Strategy>("Breadth-First",
-            "Breadth-First Exploration",
+        addTemplate(new Template0<Strategy>("bfs", "Breadth-First Exploration",
             "This strategy first generates all possible transitions from each "
                 + "open state, and then continues in a breadth-first fashion.") {
 
@@ -78,8 +83,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template0<Strategy>("Depth-First",
-            "Depth-First Exploration",
+        addTemplate(new Template0<Strategy>("dfs", "Depth-First Exploration",
             "This strategy first generates all possible transitions from each "
                 + "open state, and then continues in a depth-first fashion.") {
 
@@ -89,7 +93,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template0<Strategy>("Linear", "Linear Exploration",
+        addTemplate(new Template0<Strategy>("linear", "Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition of choice will be the same within one "
                 + "incarnation of Groove.") {
@@ -100,7 +104,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template0<Strategy>("RandomLinear",
+        addTemplate(new Template0<Strategy>("random",
             "Random Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition is chosen randomly.") {
@@ -111,7 +115,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template0<Strategy>("LinearConfluent",
+        addTemplate(new Template0<Strategy>("confluent",
             "Linear Confluent Exploration",
             "This strategy generates all possible transitions from each open "
                 + "state, but only takes one transition of each pair of "
@@ -123,13 +127,15 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template2<Strategy,Rule,Boolean>("ConditionalRule",
+        addTemplate(new Template2<Strategy,Rule,Boolean>("crule",
             "Conditional Exploration (Rule Condition)",
             "This strategy performs a conditional breadth-first exploration. "
                 + "If a given rule is applicable in a newly reached state, it "
                 + " is not explored further. "
-                + "All other states are explored normally.", "rule",
-            new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+                + "All other states are explored normally.", new PSequence(
+                new POptional("!", "mode", EncodedRuleMode.NEGATIVE,
+                    EncodedRuleMode.POSITIVE), new PIdentifier("rule")),
+            "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
 
             @Override
             public Strategy create(GTS gts, Rule rule, Boolean mode) {
@@ -141,13 +147,13 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template1<Strategy,Integer>("ConditionalNodeBound",
+        addTemplate(new Template1<Strategy,Integer>("cnbound",
             "Conditional Exploration (Node Bound)",
             "This strategy performs a conditional breadth-first exploration. "
                 + "If the number of nodes in a newly reached state exceeds a "
                 + "given bound, it is not explored further. "
-                + "All other states are explored normally.", "node-bound",
-            new EncodedInt(0, -1)) {
+                + "All other states are explored normally.", new PNumber(
+                "node-bound"), "node-bound", new EncodedInt(0, -1)) {
 
             @Override
             public Strategy create(GTS gts, Integer bound) {
@@ -159,12 +165,16 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template1<Strategy,Map<Label,Integer>>(
-            "ConditionalEdgeBound", "Conditional Exploration (Edge Bound)",
+        addTemplate(new Template1<Strategy,Map<Label,Integer>>("cebound",
+            "Conditional Exploration (Edge Bound)",
             "This strategy performs a conditional breadth-first exploration. "
                 + "If the number of edges in a newly reached state exceeds a "
                 + "given bound, it is not explored further. "
-                + "All other states are explored normally.", "edge-bound",
+                + "All other states are explored normally.",
+
+            new PSeparated(new PSequence(new PIdentifier("edge-bound"),
+                new PLiteral(">", "edge-bound"), new PNumber("edge-bound")),
+                new PLiteral(",", "edge-bound")), "edge-bound",
             new EncodedEdgeMap()) {
 
             @Override

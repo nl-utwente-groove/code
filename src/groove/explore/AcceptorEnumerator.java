@@ -22,6 +22,9 @@ import groove.explore.encode.TemplateList;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.prettyparse.PIdentifier;
+import groove.explore.prettyparse.POptional;
+import groove.explore.prettyparse.PSequence;
 import groove.explore.result.Acceptor;
 import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.FinalStateAcceptor;
@@ -62,7 +65,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
     public AcceptorEnumerator() {
         super("acceptor", ACCEPTOR_TOOLTIP);
 
-        addTemplate(new Template0<Acceptor>("Final", "Final States",
+        addTemplate(new Template0<Acceptor>("final", "Final States",
             "This acceptor succeeds when a state is added to the LTS that is "
                 + "<I>final</I>. A state is final when no rule is applicable "
                 + "on it (or rule application results in the same state).") {
@@ -73,13 +76,15 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             }
         });
 
-        addTemplate(new Template2<Acceptor,Rule,Boolean>("Check-Inv",
+        addTemplate(new Template2<Acceptor,Rule,Boolean>("inv",
             "Check Invariant",
             "This acceptor succeeds when a state is reached in which the "
                 + "indicated rule is applicable. Note that this is detected "
                 + "<I>before</I> the rule has been applied.<BR> "
-                + "This acceptor ignores rule priorities.", "rule",
-            new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+                + "This acceptor ignores rule priorities.", new PSequence(
+                new POptional("!", "mode", EncodedRuleMode.NEGATIVE,
+                    EncodedRuleMode.POSITIVE), new PIdentifier("rule")),
+            "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
 
             @Override
             public Acceptor create(GTS gts, Rule rule, Boolean mode) {
@@ -90,12 +95,13 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
         });
 
         addTemplate(new Template1<Acceptor,Rule>(
-            "Rule-App",
+            "ruleapp",
             "Rule Application",
             "This acceptor succeeds when a transition of the indicated rule is "
                 + "added to the LTS. Note that this is detected <I>after</I> "
                 + "the rule has been applied (which means that rule priorities "
-                + "are taken into account).", "rule", new EncodedEnabledRule()) {
+                + "are taken into account).", new PIdentifier("rule"), "rule",
+            new EncodedEnabledRule()) {
 
             @Override
             public Acceptor create(GTS gts, Rule rule) {
@@ -105,7 +111,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             }
         });
 
-        addTemplate(new Template0<Acceptor>("Any", "Any State",
+        addTemplate(new Template0<Acceptor>("any", "Any State",
             "This acceptor succeeds whenever a state is added to the LTS.") {
 
             @Override
@@ -114,7 +120,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             }
         });
 
-        addTemplate(new Template0<Acceptor>("No", "No State",
+        addTemplate(new Template0<Acceptor>("none", "No State",
             "This acceptor always fails whenever a state is added to the LTS.") {
 
             @Override

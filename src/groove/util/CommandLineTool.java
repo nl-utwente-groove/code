@@ -38,6 +38,7 @@ import java.util.Map;
  * </ul>
  * Each of these options can be enabled or disabled in subclasses by overwriting
  * the respective <tt>supports...Option</tt> methods.
+ * 
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -77,20 +78,30 @@ public class CommandLineTool {
     /** Symbolic char constant. */
     static protected final char DASH = '-';
 
+    /** Local references to the output, verbosity and log options. **/
+    private final OutputOption outputOption;
+    private final VerbosityOption verbosityOption;
+    private final LogOption logOption;
+
     /**
      * Constructs an instance of the tool, with a given list of command line
      * arguments.
      */
     public CommandLineTool(List<String> args) {
         this.args = args;
+
+        this.outputOption = new OutputOption();
+        this.verbosityOption = new VerbosityOption(this);
+        this.logOption = new LogOption(this);
+
         if (supportsOutputOption()) {
-            addOption(new OutputOption());
+            addOption(this.outputOption);
         }
         if (supportsVerbosityOption()) {
-            addOption(new VerbosityOption(this));
+            addOption(this.verbosityOption);
         }
         if (supportsLogOption()) {
-            addOption(new LogOption(this));
+            addOption(this.logOption);
         }
     }
 
@@ -131,13 +142,13 @@ public class CommandLineTool {
                         option.parse(parameter);
                         validOption = true;
                     } catch (IllegalArgumentException exc) {
-                        printError(exc.getMessage());
+                        printError(exc.getMessage(), true);
                     }
-                    this.activeOptions.put(option.getClass(), option);
+                    this.activeOptions.put(option.getName(), option);
                 }
             }
             if (!validOption) {
-                printError("Unknown option " + optionName);
+                printError("Unknown option " + optionName, true);
             }
         }
     }
@@ -152,7 +163,7 @@ public class CommandLineTool {
                     getLogDirName(), logFileName))));
             } catch (IOException e) {
                 printError("Can't create log file in " + getLogDirName() + ": "
-                    + e.getMessage());
+                    + e.getMessage(), false);
             }
         }
     }
@@ -210,8 +221,11 @@ public class CommandLineTool {
      * @see OutputOption#getOutputFileName()
      */
     protected String getOutputFileName() {
-        OutputOption option = getActiveOption(OutputOption.class);
-        return option == null ? null : option.getOutputFileName();
+        if (isOptionActive(this.outputOption)) {
+            return this.outputOption.getOutputFileName();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -396,8 +410,10 @@ public class CommandLineTool {
     /**
      * Prints an error message, followed by the help message, and exits.
      */
-    protected void printError(String message) {
-        printHelp();
+    protected void printError(String message, boolean showHelp) {
+        if (showHelp) {
+            printHelp();
+        }
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
@@ -444,17 +460,12 @@ public class CommandLineTool {
     }
 
     /**
-     * Returns an <i>active option</i> of a given class type, i.e., those that
-     * were actually invoked from the command line.
-     * @param <X> the type of the option
-     * @param optionClass the class type
-     * @return the option of type <code>X</code>, if it was invoked;
-     *         <code>null</code> otherwise.
+     * Checks whether a given option was actually invoked from the command line
+     * or not. Assumes that an external store of command line options exists
+     * (of which the internal store is a mirror).
      */
-    @SuppressWarnings("unchecked")
-    protected <X extends CommandLineOption> X getActiveOption(
-            Class<X> optionClass) {
-        return (X) this.activeOptions.get(optionClass);
+    protected boolean isOptionActive(CommandLineOption option) {
+        return this.activeOptions.containsValue(option);
     }
 
     /**
@@ -488,8 +499,8 @@ public class CommandLineTool {
      * List of instantiated options. This is initialised in
      * {@link #processArguments()}.
      */
-    protected final Map<Class<? extends CommandLineOption>,CommandLineOption> activeOptions =
-        new HashMap<Class<? extends CommandLineOption>,CommandLineOption>();
+    protected final Map<String,CommandLineOption> activeOptions =
+        new HashMap<String,CommandLineOption>();
 
     /**
      * Command line option to specify an output file.

@@ -16,10 +16,16 @@
  */
 package groove.util;
 
+import groove.explore.AcceptorEnumerator;
 import groove.explore.ConditionalScenario;
 import groove.explore.DefaultScenario;
+import groove.explore.Exploration;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.Scenario;
+import groove.explore.StrategyEnumerator;
+import groove.explore.encode.Serialized;
+import groove.explore.encode.TemplateList;
+import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.EdgeBoundCondition;
 import groove.explore.result.ExploreCondition;
@@ -33,6 +39,7 @@ import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
+import groove.explore.strategy.Strategy;
 import groove.explore.util.MatchApplier;
 import groove.graph.AbstractGraphShape;
 import groove.graph.DefaultLabel;
@@ -127,6 +134,13 @@ public class Generator extends CommandLineTool {
     /** Number of bytes in a kilobyte */
     static private final int BYTES_PER_KB = 1024;
 
+    /** Local references to the command line options. */
+    private final TemplatedOption<Strategy> strategyOption;
+    private final TemplatedOption<Acceptor> acceptorOption;
+    private final ResultOption resultOption;
+    private final StrategyOptionOld scenarioOption;
+    private final FinalSaveOption finalSaveOption;
+
     /**
      * Attempts to load a graph grammar from a given location provided as a
      * paramter with either default start state or a start state provided as a
@@ -144,8 +158,21 @@ public class Generator extends CommandLineTool {
      */
     public Generator(List<String> argsList) {
         super(argsList);
-        addOption(new ExploreOption());
-        addOption(new FinalSaveOption());
+
+        this.strategyOption =
+            new TemplatedOption<Strategy>("s", "str", new StrategyEnumerator());
+        this.acceptorOption =
+            new TemplatedOption<Acceptor>("a", "acc", new AcceptorEnumerator());
+        this.scenarioOption = new StrategyOptionOld();
+        this.finalSaveOption = new FinalSaveOption();
+        this.resultOption = new ResultOption();
+
+        addOption(this.strategyOption);
+        addOption(this.acceptorOption);
+        addOption(this.resultOption);
+        // addOption(this.scenarioOption);
+        addOption(this.finalSaveOption);
+
         // clear the static field gts
         gts = null;
     }
@@ -262,7 +289,7 @@ public class Generator extends CommandLineTool {
                 url = new URL(url.toExternalForm() + "?" + this.startStateName);
             }
         } catch (MalformedURLException e) {
-            printError("Can't load grammar: " + e.getMessage());
+            printError("Can't load grammar: " + e.getMessage(), false);
             return;
         }
         // now we are guaranteed to have a URL
@@ -276,9 +303,9 @@ public class Generator extends CommandLineTool {
             this.grammar = grammarView.toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
-            printError("Can't load grammar: " + exc.getMessage());
+            printError("Can't load grammar: " + exc.getMessage(), false);
         } catch (FormatException exc) {
-            printError("Grammar format error: " + exc.getMessage());
+            printError("Grammar format error: " + exc.getMessage(), false);
         }
 
     }
@@ -300,7 +327,7 @@ public class Generator extends CommandLineTool {
             setStartGraph(argsList.remove(0));
         }
         if (this.grammarLocation == null) {
-            printError("No grammar location specified");
+            printError("No grammar location specified", true);
         }
     }
 
@@ -317,46 +344,92 @@ public class Generator extends CommandLineTool {
     }
 
     /**
+      * Returns the exploration strategy set for the generator. The strategy is
+      * lazily retrieved from the command line options, or set to the default
+      * exploration if nothing was specified.
+      */
+    protected Exploration getExploration() {
+        if (this.exploration == null) {
+            this.exploration = computeExploration();
+        }
+        return this.exploration;
+    }
+
+    /**
      * Callback factory method to construct the exploration strategy. The
      * strategy is computed from the command line options, or set to
      * {@link DFSStrategy} if no strategy was specified.
      */
     @SuppressWarnings("unchecked")
     protected Scenario computeStrategy() {
-        Scenario result;
-        ExploreOption explore = getActiveOption(ExploreOption.class);
-        if (explore == null) {
+        if (!isOptionActive(this.scenarioOption)) {
+            return null;
+            /*
             result =
                 GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(),
                     "Breadth first full exploration.", "full");
-        } else {
-            ExploreStrategyParser exploreParser = explore.getParser();
-            result = exploreParser.getStrategy();
-            if (result instanceof ConditionalScenario) {
-                ConditionalScenario<?> condResult =
-                    (ConditionalScenario<?>) result;
-                String conditionName = exploreParser.getCondition();
-                if (condResult.getConditionType().equals(Rule.class)) {
-                    Rule condition =
-                        getGrammar().getRule(new RuleName(conditionName));
-                    if (condition == null) {
-                        printError("Error in exploration strategy: unknown condition "
-                            + conditionName);
-                    } else {
-                        ExploreCondition<Rule> explCond =
-                            new IsRuleApplicableCondition();
-                        explCond.setCondition(condition);
-                        explCond.setNegated(exploreParser.isNegated());
-                        ((ConditionalScenario<Rule>) result).setCondition(
-                            explCond, conditionName);
-                    }
-                }
-            } else if (result instanceof ControlledScenario) {
-                ((ControlledScenario) result).setProgram(
-                    exploreParser.getProgram().getRules(getGrammar()), true);
-            }
+            */
         }
+
+        Scenario result;
+        ExploreStrategyParser exploreParser = this.scenarioOption.getParser();
+        result = exploreParser.getStrategy();
+        if (result instanceof ConditionalScenario) {
+            ConditionalScenario<?> condResult = (ConditionalScenario<?>) result;
+            String conditionName = exploreParser.getCondition();
+            if (condResult.getConditionType().equals(Rule.class)) {
+                Rule condition =
+                    getGrammar().getRule(new RuleName(conditionName));
+                if (condition == null) {
+                    printError(
+                        "Error in exploration strategy: unknown condition "
+                            + conditionName, true);
+                } else {
+                    ExploreCondition<Rule> explCond =
+                        new IsRuleApplicableCondition();
+                    explCond.setCondition(condition);
+                    explCond.setNegated(exploreParser.isNegated());
+                    ((ConditionalScenario<Rule>) result).setCondition(explCond,
+                        conditionName);
+                }
+            }
+        } else if (result instanceof ControlledScenario) {
+            ((ControlledScenario) result).setProgram(
+                exploreParser.getProgram().getRules(getGrammar()), true);
+        }
+
         return result;
+    }
+
+    /**
+     * Compute the exploration out of the command line options.
+     * Uses the default exploration for components that were not specified.
+     */
+    protected Exploration computeExploration() {
+
+        Serialized strategy, acceptor;
+        int nrResults;
+        Exploration defaultExploration = new Exploration();
+
+        if (isOptionActive(this.strategyOption)) {
+            strategy = this.strategyOption.getResult();
+        } else {
+            strategy = defaultExploration.getStrategy();
+        }
+
+        if (isOptionActive(this.acceptorOption)) {
+            acceptor = this.acceptorOption.getResult();
+        } else {
+            acceptor = defaultExploration.getAcceptor();
+        }
+
+        if (isOptionActive(this.resultOption)) {
+            nrResults = this.resultOption.getNrResults();
+        } else {
+            nrResults = 0;
+        }
+
+        return new Exploration(strategy, acceptor, nrResults);
     }
 
     /**
@@ -365,8 +438,11 @@ public class Generator extends CommandLineTool {
      * @see FinalSaveOption
      */
     protected String getFinalSaveName() {
-        FinalSaveOption option = getActiveOption(FinalSaveOption.class);
-        return option == null ? null : option.getFinalSaveName();
+        if (!isOptionActive(this.finalSaveOption)) {
+            return null;
+        } else {
+            return this.finalSaveOption.getFinalSaveName();
+        }
     }
 
     /**
@@ -392,15 +468,32 @@ public class Generator extends CommandLineTool {
             System.out.println("; start graph: "
                 + (this.startStateName == null ? "default"
                         : this.startStateName));
-            System.out.println("Exploration: " + getStrategy());
+            if (getStrategy() != null) {
+                System.out.println("Strategy: " + getStrategy());
+            } else {
+                System.out.println("Exploration: "
+                    + getExploration().getIdentifier());
+            }
             getGTS().addGraphListener(new GenerateProgressMonitor());
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
             getGTS().addGraphListener(getStatisticsListener());
         }
         this.startTime = System.currentTimeMillis();
-        getStrategy().prepare(getGTS());
-        result = getStrategy().play().getValue();
+
+        if (getStrategy() != null) {
+            getStrategy().prepare(getGTS());
+            result = getStrategy().play().getValue();
+        } else {
+            try {
+                getExploration().play(getGTS(), null);
+            } catch (FormatException e) {
+                printError("The specified exploration is not "
+                    + "valid for the loaded grammar.\n" + e.getMessage(), false);
+            }
+            result = getExploration().getLastResult().getValue();
+        }
+
         this.endTime = System.currentTimeMillis();
         if (getVerbosity() > LOW_VERBOSITY) {
             System.out.println("");
@@ -425,7 +518,11 @@ public class Generator extends CommandLineTool {
             println("Start graph:\t"
                 + (this.startStateName == null ? "default"
                         : this.startStateName));
-            println("Exploration:\t" + getStrategy().toString());
+            if (getStrategy() != null) {
+                println("Strategy:\t" + getStrategy());
+            } else {
+                println("Exploration:\t" + getExploration().getIdentifier());
+            }
             println("Timestamp:\t" + this.invocationTime);
             final Runtime runTime = Runtime.getRuntime();
             // clear all caches to see all available memory
@@ -804,6 +901,11 @@ public class Generator extends CommandLineTool {
      * The strategy to be used for the state space generation.
      */
     private Scenario strategy;
+    /**
+     * The exploration to be used for the state space generation.
+     */
+    private Exploration exploration;
+
     /** String describing the location where the grammar is to be found. */
     private String grammarLocation;
     /** String describing the start graph within the grammar. */
@@ -832,6 +934,7 @@ public class Generator extends CommandLineTool {
      * Option to save all final states generated.
      */
     static protected class FinalSaveOption implements CommandLineOption {
+
         /** Name of the final save option. */
         static public final String NAME = "f";
         /** Parameter name of the final save option. */
@@ -876,9 +979,180 @@ public class Generator extends CommandLineTool {
     }
 
     /**
+     * Option to control the strategy in the generator.
+     */
+    static public class ResultOption implements CommandLineOption {
+
+        /** Identification of the result option on the command line. */
+        static public final String NAME = "r";
+
+        /** Name of the result parameter. */
+        static public final String PARAMETER_NAME = "num";
+
+        /** Local copy of the parsed result parameter. */
+        private int nrResults;
+
+        /**
+         * Getter for the NAME field.
+         */
+        public String getName() {
+            return NAME;
+        }
+
+        /**
+         * Getter for the PARAMATER_NAME field.
+         */
+        public String getParameterName() {
+            return PARAMETER_NAME;
+        }
+
+        /**
+         * Getter for the nrResults field.
+         */
+        public int getNrResults() {
+            return this.nrResults;
+        }
+
+        /**
+         * Indicates that the result option expects an additional parameter.
+         */
+        public boolean hasParameter() {
+            return true;
+        }
+
+        /**
+         * Returns a description of the valid values for the result option.
+         */
+        public String[] getDescription() {
+            String[] desc = new String[2];
+
+            desc[0] = "Set the number of accepted results of the exploration.";
+            desc[1] = "Legal values for 'num' are positive numbers.";
+            return desc;
+        }
+
+        /**
+         * Method to parse the result option as soon as it is encountered
+         * on the command line. The parsing results in an <code>int</code>.
+         */
+        public void parse(String parameter) throws IllegalArgumentException {
+            try {
+                this.nrResults = Integer.parseInt(parameter);
+                if (this.nrResults <= 0) {
+                    throw new IllegalArgumentException("'" + parameter
+                        + "' is not a valid positive number.");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("'" + parameter
+                    + "' is not a valid positive number.");
+            }
+        }
+    }
+
+    /**
+     * A <code>TemplatedOption</code> is a parameter of the generator whose
+     * values are described by means of a <code>TemplateList</code>. The result
+     * of parsing will always be a <code>Serialized</code>.
+     * 
+     * @see TemplateList
+     * @see Serialized
+     */
+    static public class TemplatedOption<A> implements CommandLineOption {
+
+        // Name of the option on the command line.
+        private final String name;
+
+        // Name of the option argument on the command line.
+        private final String parameterName;
+
+        // Enumerator of all allowed options.
+        private final TemplateList<A> enumerator;
+
+        // The parsed result.
+        private Serialized result;
+
+        /**
+         * Constructs a new <code>TemplatedOption</code> out of a name, a
+         * parameter name and an enumerator of all allowed values.
+         */
+        public TemplatedOption(String name, String parameterName,
+                TemplateList<A> enumerator) {
+            this.name = name;
+            this.parameterName = parameterName;
+            this.enumerator = enumerator;
+        }
+
+        /**
+         * Indicates that the option expects an additional parameter.
+         * The parameter is the part that is actually parsed. It must be
+         * supplied after the option on the command line, separated from it by
+         * means of a white space.
+         */
+        public boolean hasParameter() {
+            return true;
+        }
+
+        /**
+         * Returns a description of the valid values for this option. This
+         * description is generated out of the stored enumerator.
+         */
+        public String[] getDescription() {
+            String[] lines = this.enumerator.describeCommandlineGrammar();
+            String[] desc = new String[lines.length + 1];
+
+            desc[0] =
+                "The " + this.enumerator.getTypeIdentifier()
+                    + ". Legal values for '" + this.parameterName + "' are:";
+            for (int i = 0; i < lines.length; i++) {
+                desc[i + 1] = "  " + lines[i];
+            }
+            return desc;
+        }
+
+        /**
+         * Method to parse the argument of the option as soon as it is
+         * encountered on the command line. The parsing results in a
+         * <code>Serialized</code>, which can be retrieved later by means of
+         * the <code>getResult</code> method. 
+         */
+        public void parse(String parameter) throws IllegalArgumentException {
+            this.result = this.enumerator.parseCommandline(parameter);
+            if (this.result == null) {
+                throw new IllegalArgumentException("Unable to parse "
+                    + this.name + " argument '" + parameter + "'.");
+            }
+        }
+
+        /**
+         * Getter for the identification (=letter) that is associated with the
+         * option. This method is called <code>getName</code> in the
+         * <code>CommandLineOption</code> interface. 
+         */
+        @Override
+        public String getName() {
+            return this.name;
+        }
+
+        /**
+         * Getter for the parameter name, which is equal to the abbreviated
+         * name of the option.
+         */
+        public String getParameterName() {
+            return this.parameterName;
+        }
+
+        /**
+         * Getter for the result field.
+         */
+        public Serialized getResult() {
+            return this.result;
+        }
+    }
+
+    /**
      * Option to control the exploration strategy in the generator.
      */
-    static public class ExploreOption implements CommandLineOption {
+    static public class StrategyOptionOld implements CommandLineOption {
         /** Name of the option. */
         static public final String NAME = "x";
         /** Name of the option parameter. */
@@ -886,6 +1160,10 @@ public class Generator extends CommandLineTool {
 
         public String getName() {
             return NAME;
+        }
+
+        public String getParameterName() {
+            return PARAMETER_NAME;
         }
 
         public boolean hasParameter() {
@@ -914,10 +1192,6 @@ public class Generator extends CommandLineTool {
                 result.add(INDENT + description);
             }
             return result.toArray(new String[0]);
-        }
-
-        public String getParameterName() {
-            return PARAMETER_NAME;
         }
 
         /**
