@@ -743,6 +743,7 @@ public class NewRuleView implements RuleView {
         }
 
         private void initData() throws FormatException {
+            this.viewToRuleMap.clear();
             Set<FormatError> errors = new TreeSet<FormatError>();
             // add nodes to nesting data structures
             for (AspectNode node : NewRuleView.this.graph.nodeSet()) {
