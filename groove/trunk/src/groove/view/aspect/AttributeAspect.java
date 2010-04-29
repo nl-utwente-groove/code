@@ -110,16 +110,12 @@ public class AttributeAspect extends AbstractAspect {
 
                     // if edge edge represents a constant or operator,
                     // establish its (result) type
-                    String edgeType = null;
-                    if (isConstant(edge)) {
-                        edgeType = getAttributeValue(edge).getName();
-                    } else {
+                    AspectValue edgeValue = getAttributeValue(edge);
+                    if (edgeValue != null) {
                         Operator operation = getOperation(edge);
-                        if (operation != null) {
-                            edgeType = operation.getResultType();
-                        }
-                    }
-                    if (edgeType != null) {
+                        String edgeType =
+                            operation == null ? edgeValue.getName()
+                                    : operation.getResultType();
                         if (type == null) {
                             type = edgeType;
                         } else if (!type.equals(edgeType)) {
@@ -251,13 +247,14 @@ public class AttributeAspect extends AbstractAspect {
     public static boolean isConstant(AspectEdge edge) {
         boolean result = false;
         AspectValue edgeValue = getAttributeValue(edge);
-        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
-            OperationLabelParser parser =
-                (OperationLabelParser) edgeValue.getLabelParser();
-            // assert parser != null : String.format(
-            // "Can't find parser for edge '%s'", edge.label());
-            result = parser != null && parser.isConstant(edge.label().text());
-        }
+        result = edgeValue != null && edge.source() == edge.opposite();
+        //        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
+        //            OperationLabelParser parser =
+        //                (OperationLabelParser) edgeValue.getLabelParser();
+        //            // assert parser != null : String.format(
+        //            // "Can't find parser for edge '%s'", edge.label());
+        //            result = parser != null && parser.isConstant(edge.label().text());
+        //        }
         return result;
     }
 
