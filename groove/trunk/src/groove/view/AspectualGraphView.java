@@ -239,8 +239,12 @@ public class AspectualGraphView implements GraphView {
         }
         // include the node in the model if it is not virtual
         if (nodeInModel) {
-            Node nodeImage =
-                this.attributeFactory.createAttributeNode(viewNode);
+            Node nodeImage = null;
+            try {
+                nodeImage = this.attributeFactory.createAttributeNode(viewNode);
+            } catch (FormatException exc) {
+                error = new FormatError(exc.getErrors().get(0), viewNode);
+            }
             if (nodeImage == null) {
                 nodeImage = DefaultNode.createNode(viewNode.getNumber());
                 model.addNode(nodeImage);
