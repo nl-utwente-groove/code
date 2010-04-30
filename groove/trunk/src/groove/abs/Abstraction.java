@@ -45,7 +45,7 @@ public class Abstraction {
         SUB,
         /**
          * {@value #EQUAL}(G1,G2) if {@value #SUB}(G1,G2) and {@value #SUPER}(G2,G1).
-         * In other words, EQUL(G1,G2) if there exists an isomorphism between G1
+         * In other words, EQUAL(G1,G2) if there exists an isomorphism between G1
          * and G2 that preserves typing and multiplicities. This is a symmetric
          * relation.
          */
@@ -105,7 +105,7 @@ public class Abstraction {
          * two different but "equivalent" typings of a graph with a graph
          * pattern. For instance, if G = {n1 -a-> n2} is a graph with two nodes
          * and single edge, and P = {n3 -a-> n4, n3 -a-> n5} is a graph pattern
-         * with center n3, then the node n2 of G2 can be typed by the nodes n4
+         * with center n3, then the node n2 of G can be typed by the nodes n4
          * or n5 of P, but the two typings are equivalent, and symmetry
          * reduction will consider only one of these. Symmetry reduction is
          * costly, but may significantly accelerate if there is lots of

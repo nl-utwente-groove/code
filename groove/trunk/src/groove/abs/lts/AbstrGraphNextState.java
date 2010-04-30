@@ -19,7 +19,7 @@ package groove.abs.lts;
 import groove.lts.GraphNextState;
 
 /**
- * Combines fonctionality of a graph state and of a transition.
+ * Combines functionality of a graph state and of a transition.
  * @author Iovka Boneva
  * @version $Revision $
  */

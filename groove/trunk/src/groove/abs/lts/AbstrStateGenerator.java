@@ -17,6 +17,7 @@
 package groove.abs.lts;
 
 import groove.abs.AbstrGraph;
+import groove.abs.AbstrTransformer;
 import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
 import groove.explore.util.ExploreCache;
@@ -25,6 +26,8 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.StateGenerator;
 import groove.trans.RuleEvent;
+import groove.trans.RuleMatch;
+import groove.trans.SPOEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +69,14 @@ public class AbstrStateGenerator extends StateGenerator {
         AbstrGraphState abstrSource = (AbstrGraphState) source;
         Set<GraphTransition> result = new HashSet<GraphTransition>();
         Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
-        // TODO this loop can't be right: transfResult is always empty 
+
+        // EDUARDO: Modified this part such that it actually performs the
+        // transformation.
+        AbstrGraph host = (AbstrGraph) source.getGraph();
+        RuleMatch match = event.getMatch(host);
+        AbstrTransformer.transform(host, match,
+            ((SPOEvent) event).getNodeFactory(), this.options, transfResult);
+
         for (AbstrGraph transf : transfResult) {
             GraphTransition trans;
             if (transf != DefaultAbstrGraph.INVALID_AG) {

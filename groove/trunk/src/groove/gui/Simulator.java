@@ -2120,8 +2120,8 @@ public class Simulator {
 
         result.add(new JMenuItem(getStartSimulationAction()));
         // IOVKA change to activate abstract simulation
-        // EDUARDO Commented out...
-        // result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        // EDUARDO Uncommented to test abstraction.
+        result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
 

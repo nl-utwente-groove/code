@@ -643,7 +643,7 @@ final public class SPOEvent extends
      * Returns the derivation record associated with this event. May be
      * <code>null</code>.
      */
-    private NodeFactory getNodeFactory() {
+    public NodeFactory getNodeFactory() {
         return this.nodeFactory;
     }
 

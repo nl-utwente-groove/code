@@ -644,7 +644,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
             Map<GraphPattern,Node> inverseMap =
                 new HashMap<GraphPattern,Node>(graph.nodeCount());
 
-            // for each node of the graph, comute the corresponding pattern,
+            // for each node of the graph, compute the corresponding pattern,
             // add a new node to the resulting graph if necessary, and update
             // the typeMult map
             for (Node currNode : graph.nodeSet()) {
@@ -684,7 +684,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
     }
 
     /**
-     * This implemention uses the criterion that, for a graph with
+     * This implementation uses the criterion that, for a graph with
      * concretisations, the type of all node should be present in its
      * neighbourhood. That is, returns false if for some <code>node</code> in
      * the graph, there is no morphism from the type of <code>node</code> into

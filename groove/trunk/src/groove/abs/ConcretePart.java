@@ -90,10 +90,8 @@ public class ConcretePart {
     }
 
     /**
-     * The set of nodes in this.graph() that are at a certain distace from
-     * this.center()
      * @param d
-     * @return The set of nodes in this.graph() that are at distace d from
+     * @return The set of nodes in this.graph() that are at distance d from
      *         this.center()
      */
     Set<Node> nodesAtDist(int d) {
@@ -302,8 +300,7 @@ public class ConcretePart {
         // merged with some existing node in baseGraph
         Set<Node> mergeableNodesB = new HashSet<Node>(); // new nodes
         Set<Node> mergeableNodesA = new HashSet<Node>(); // possible
-                                                            // candidates for
-                                                            // merging
+        // candidates for merging
         for (Node n : baseGraph.nodeSet()) {
             if (baseMorphMap.containsKey(n)) {
                 if (!this.graph.containsElement(n)) {
@@ -321,8 +318,8 @@ public class ConcretePart {
         ArrayList<Graph> resGraphs = new ArrayList<Graph>();
         ArrayList<NodeEdgeMap> resMorphisms = new ArrayList<NodeEdgeMap>();
         ArrayList<Set<Node>> unusedNodes = new ArrayList<Set<Node>>(); // usedNodes
-                                                                        // \subseteq
-                                                                        // mergeableNodesA
+        // \subseteq
+        // mergeableNodesA
         // invariant resGraphs[i], resMorphisms[i], usedNodes[i] are such that :
         // resGraphs[i] : a graph obtained by merging in baseGraph
         // resMorphisms[i] : an update of baseMorph wrt to the mergings that
@@ -447,7 +444,7 @@ public class ConcretePart {
     }
 
     // --------------------------------------------------------------------------------------
-    // FIELDS, CONSTRUCTORS, STANDAD METHODS
+    // FIELDS, CONSTRUCTORS, STANDARD METHODS
     // --------------------------------------------------------------------------------------
     /** The graph structure */
     private final Graph graph;
