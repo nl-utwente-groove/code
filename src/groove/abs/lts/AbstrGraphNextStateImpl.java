@@ -150,7 +150,7 @@ public class AbstrGraphNextStateImpl extends AbstrGraphStateImpl implements
     }
 
     public boolean isEquivalent(AbstrGraphTransition other) {
-        // ok, as the targets are note compared
+        // ok, as the targets are not compared
         return this.theTrans.isEquivalent(other);
     }
 

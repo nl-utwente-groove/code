@@ -16,15 +16,6 @@
  */
 package groove.abs;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -36,6 +27,15 @@ import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.RuleApplication;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A set of materialisations is defined by a concrete part, and abstract part
@@ -105,10 +105,10 @@ public class SetMaterialisations {
             for (Map.Entry<Node,Graph> entry : this.concrPart.neigh().entrySet()) {
                 Node n = entry.getKey();
                 if (!this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) { // avoid
-                                                                                // to
-                                                                                // do
-                                                                                // things
-                                                                                // twice
+                    // to
+                    // do
+                    // things
+                    // twice
                     Graph neigh = entry.getValue();
                     GraphPattern type =
                         this.abstrPart.typeOf(originMap.getNode(n));
@@ -683,7 +683,7 @@ public class SetMaterialisations {
     }
 
     // --------------------------------------------------------------------------------------
-    // FIELDS, CONSTRUCTORS, STANDAD METHODS
+    // FIELDS, CONSTRUCTORS, STANDARD METHODS
     // --------------------------------------------------------------------------------------
 
     // FIELDS USED FOR MATERIALISATION
@@ -832,7 +832,7 @@ public class SetMaterialisations {
         }
         for (Node n : this.newConcrPart.nodeSet()) {
             if (!this.morph.nodeMap().values().contains(n)) { // this is a new
-                                                                // node
+                // node
                 assert this.centerType.get(n) != null : "Type missing for new node "
                     + n;
             }

@@ -17,7 +17,7 @@
 package groove.abs;
 
 /**
- * Thrown when trying to remove a node from an abstrat graph whereas this node
+ * Thrown when trying to remove a node from an abstract graph whereas this node
  * has a zero multiplicity.
  * @author Iovka Boneva
  * @version $Revision $

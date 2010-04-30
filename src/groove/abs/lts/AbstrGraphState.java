@@ -16,12 +16,12 @@
  */
 package groove.abs.lts;
 
-import java.util.Iterator;
-import java.util.Set;
-
 import groove.abs.AbstrGraph;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * The abstract version of a {@link GraphState}

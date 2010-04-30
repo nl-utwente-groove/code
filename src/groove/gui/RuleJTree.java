@@ -640,7 +640,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         public void valueChanged(TreeSelectionEvent evt) {
             // only do something if a path was added to the selection
             if (isListenToSelectionChanges() && evt.isAddedPath()) {
-                // mzimakova - Multiple selection
                 TreePath[] paths = getSelectionPaths();
                 for (int i = 0; i < paths.length; i++) {
                     Object selectedNode = paths[i].getLastPathComponent();
@@ -661,14 +660,10 @@ public class RuleJTree extends JTree implements SimulationListener {
                             RuleJTree.this.matchTransitionMap.get(event);
                         if (trans == null) {
                             // possibly there is a transition associated with
-                            // this
-                            // event
-                            // that has not yet made it to the
-                            // matchTransitionMap
-                            // because the refresh is only occurring after
-                            // setting
-                            // the event; so look it up among the outgoing
-                            // transitions
+                            // this event that has not yet made it to the
+                            // matchTransitionMap because the refresh is only
+                            // occurring after setting the event; so look it
+                            // up among the outgoing transitions
                             Iterator<GraphTransition> outTransitions =
                                 getCurrentState().getTransitionIter();
                             while (outTransitions.hasNext()) {
@@ -713,7 +708,6 @@ public class RuleJTree extends JTree implements SimulationListener {
             if (evt.getButton() == MouseEvent.BUTTON3) {
                 TreePath selectedPath =
                     getPathForLocation(evt.getX(), evt.getY());
-                // mzimakova - Multiple selection
                 if (selectedPath != null) {
                     TreePath[] paths = getSelectionPaths();
                     boolean pathIsSelected = false;

@@ -885,6 +885,6 @@ public class Options {
      * Start abstract simulation action name
      */
     public static final String START_ABSTR_SIMULATION_ACTION_NAME =
-        "Run Abstract Simulation";
+        "Run Abstract Exploration";
 
 }
