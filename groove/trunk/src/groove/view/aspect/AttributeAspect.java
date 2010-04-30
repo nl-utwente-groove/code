@@ -111,7 +111,7 @@ public class AttributeAspect extends AbstractAspect {
                     // if edge edge represents a constant or operator,
                     // establish its (result) type
                     AspectValue edgeValue = getAttributeValue(edge);
-                    if (edgeValue != null) {
+                    if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
                         Operator operation = getOperation(edge);
                         String edgeType =
                             operation == null ? edgeValue.getName()
