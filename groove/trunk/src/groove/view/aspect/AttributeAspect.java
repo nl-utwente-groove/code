@@ -149,6 +149,16 @@ public class AttributeAspect extends AbstractAspect {
         }
     }
 
+    /** Creates a {@link ConstantAspectValue} for algebra aspects. */
+    @Override
+    protected AspectValue createValue(String name) throws FormatException {
+        if (AlgebraRegister.getSignatureNames().contains(name)) {
+            return new ConstantAspectValue(name);
+        } else {
+            return super.createValue(name);
+        }
+    }
+
     /**
      * Returns the singleton instance of this aspect.
      */
@@ -180,6 +190,12 @@ public class AttributeAspect extends AbstractAspect {
      */
     static public boolean isDataElement(AspectElement elem) {
         return isDataValue(getAttributeValue(elem));
+    }
+
+    /** Tests if an aspect map contains a data type aspect. */
+    public static boolean hasDataValue(AspectMap aspectMap) {
+        AspectValue value = aspectMap.get(getInstance());
+        return value == null ? false : isDataValue(value);
     }
 
     /**
@@ -245,9 +261,9 @@ public class AttributeAspect extends AbstractAspect {
      * Tests if an edge encodes an algebra constant.
      */
     public static boolean isConstant(AspectEdge edge) {
-        boolean result = false;
-        AspectValue edgeValue = getAttributeValue(edge);
-        result = edgeValue != null && edge.source() == edge.opposite();
+        boolean result =
+            hasDataValue(edge.getAspectMap())
+                && edge.source() == edge.opposite();
         //        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
         //            OperationLabelParser parser =
         //                (OperationLabelParser) edgeValue.getLabelParser();
@@ -441,5 +457,42 @@ public class AttributeAspect extends AbstractAspect {
 
         /** The algebra that should understand the operation. */
         private final String signature;
+    }
+
+    /**
+     * Aspect value encoding a data constant
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    public class ConstantAspectValue extends ContentAspectValue<String> {
+        /**
+         * Constructs a new constant-containing aspect value.
+         * @param name the aspect value name
+         */
+        public ConstantAspectValue(String name) throws FormatException {
+            super(getInstance(), name);
+        }
+
+        /** Creates an instance of a given nesting aspect value, with a given level. */
+        ConstantAspectValue(ConstantAspectValue original, String value) {
+            super(original, value);
+        }
+
+        @Override
+        public ConstantAspectValue newValue(String value)
+            throws FormatException {
+            try {
+                if (AlgebraRegister.isConstant(getName(), value)) {
+                    return new ConstantAspectValue(this, value);
+                } else {
+                    throw new FormatException(
+                        "Signature '%s' has no constant %s", getName(), value);
+                }
+            } catch (UnknownSymbolException e) {
+                assert false : String.format(
+                    "Method called for unknown signature '%s'", getName());
+                return null;
+            }
+        }
     }
 }

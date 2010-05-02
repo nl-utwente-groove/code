@@ -18,13 +18,18 @@ package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
+import groove.algebra.AlgebraRegister;
+import groove.algebra.UnknownSymbolException;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.rel.RegExpr;
 import groove.util.ExprParser;
 import groove.view.FormatException;
+import groove.view.aspect.AttributeAspect.ConstantAspectValue;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
@@ -51,7 +56,7 @@ public class AspectParser {
      *         {@link AspectValue#getValue(String)}.
      */
     public AspectMap parse(String text) throws FormatException {
-        AspectMap result = new AspectMap(this.rule);
+        Set<AspectValue> aspectValues = new HashSet<AspectValue>();
         boolean end = false;
         boolean edgeOnly = false;
         int nextIndex = text.indexOf(VALUE_SEPARATOR);
@@ -70,7 +75,7 @@ public class AspectParser {
                     valueText = valueText.substring(0, assignIndex);
                 }
                 AspectValue value = parseValue(valueText, contentText);
-                result.addDeclaredValue(value);
+                aspectValues.add(value);
                 end = value.isLast();
                 edgeOnly |= !value.isNodeValue();
             } catch (FormatException exc) {
@@ -83,8 +88,33 @@ public class AspectParser {
             if (this.convertToCurly) {
                 text = toCurly(text);
             }
+        } else if (aspectValues.isEmpty()) {
+            throw new FormatException(
+                "Empty label not allowed (prefix with ':')");
         } else {
             text = null;
+        }
+        AspectMap result = new AspectMap(this.rule);
+        for (AspectValue value : aspectValues) {
+            // test if this should be a data constant
+            if (AttributeAspect.isDataValue(value) && text != null) {
+                String signature = value.getName();
+                try {
+                    if (AlgebraRegister.isConstant(signature, text)) {
+                        value = ((ConstantAspectValue) value).newValue(text);
+                        text = null;
+                    } else if (!ExprParser.isIdentifier(text)) {
+                        throw new FormatException(
+                            "Signature '%s' does not have constant %s",
+                            signature, text);
+                    }
+                } catch (UnknownSymbolException e) {
+                    assert false : String.format(
+                        "Method called for unknown signature '%s'", signature);
+                    // do nothing
+                }
+            }
+            result.addDeclaredValue(value);
         }
         result.setText(text);
         return result;
@@ -135,14 +165,14 @@ public class AspectParser {
                 String.format(
                     "Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)",
                     valueText));
-        } else if (value instanceof ContentAspectValue<?>) {
-            // use the value as a factory to get a correct instance
-            value =
-                ((ContentAspectValue<?>) value).newValue(contentText == null
-                        ? "" : contentText);
         } else if (contentText != null) {
-            throw new FormatException(String.format(
-                "Aspect value '%s' cannot have content", valueText));
+            if (value instanceof ContentAspectValue<?>) {
+                // use the value as a factory to get a correct instance
+                value = ((ContentAspectValue<?>) value).newValue(contentText);
+            } else {
+                throw new FormatException(String.format(
+                    "Aspect value '%s' cannot have content", valueText));
+            }
         }
         return value;
     }
@@ -159,7 +189,12 @@ public class AspectParser {
      * {@link #parse(String)}.
      */
     static public String toString(AspectValue value) {
-        return value.toString() + VALUE_SEPARATOR;
+        if (value instanceof ConstantAspectValue) {
+            return value.getName() + VALUE_SEPARATOR
+                + ((ConstantAspectValue) value).getContent();
+        } else {
+            return value.toString() + VALUE_SEPARATOR;
+        }
     }
 
     /**
@@ -172,10 +207,10 @@ public class AspectParser {
         for (AspectValue value : values) {
             result.append(AspectParser.toString(value));
         }
-        if (labelText.length() == 0
-            || labelText.indexOf("" + VALUE_SEPARATOR) >= 0) {
-            result.append(VALUE_SEPARATOR);
-        }
+        //        if (labelText.length() == 0
+        //            || labelText.indexOf("" + VALUE_SEPARATOR) >= 0) {
+        //            result.append(VALUE_SEPARATOR);
+        //        }
         result.append(labelText);
         return result;
     }

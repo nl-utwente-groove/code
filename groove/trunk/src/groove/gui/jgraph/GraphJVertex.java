@@ -100,7 +100,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (isFiltered()) {
             result =
                 this.jModel.isShowUnfilteredEdges() && hasVisibleIncidentEdge();
-        } else if (isDataNode() || isDataTypeNode()) {
+        } else if (isDataNode() && !this.jModel.isShowValueNodes()
+            || isDataTypeNode()) {
             result = hasVisibleIncidentEdge();
         } else {
             result = true;
@@ -416,7 +417,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * attribute-related.
      */
     boolean isDataNode() {
-        return getActualNode() instanceof ProductNode;
+        return getActualNode() instanceof ValueNode;
     }
 
     /**

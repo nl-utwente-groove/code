@@ -81,7 +81,7 @@ public class ParameterAspect extends AbstractAspect {
         if (value == null) {
             return null;
         } else {
-            return value.getContentString();
+            return value.toString();
         }
     }
 
@@ -163,50 +163,28 @@ public class ParameterAspect extends AbstractAspect {
         @Override
         public ContentAspectValue<Integer> newValue(String value)
             throws FormatException {
-            return new ParameterAspectValue(this, this.parser.toContent(value));
+            if (value.length() == 0) {
+                return null;
+            }
+            if (value.charAt(0) != PARAMETER_START_CHAR) {
+                throw new FormatException(
+                    "Parameter '%s' should start with '%c'", value,
+                    PARAMETER_START_CHAR);
+            }
+            try {
+                int intValue = Integer.parseInt(value.substring(1));
+                return new ParameterAspectValue(this, intValue);
+            } catch (NumberFormatException exc) {
+                throw new FormatException("Invalid parameter number", value);
+            }
         }
 
-        /**
-         * This implementation returns a parser that attempts to parse the value as a
-         * parameter, consisting of {@value #PARAMETER_START_CHAR} followed by a number.
-         */
         @Override
-        ContentParser<Integer> createParser() {
-            return new ParameterParser();
+        public String getContentString() {
+            return PARAMETER_START_CHAR + super.getContentString();
         }
-
-        /** ContentParser used for this AspectValue */
-        private final ContentParser<Integer> parser = new ParameterParser();
 
         /** Start character of parameter strings. */
         static private final char PARAMETER_START_CHAR = '$';
-
-        /** Content parser which acts as the identity function on strings. */
-        private class ParameterParser implements ContentParser<Integer> {
-            /** Empty constructor with the correct visibility. */
-            ParameterParser() {
-                // empty
-            }
-
-            public Integer toContent(String value) throws FormatException {
-                if (value.length() == 0) {
-                    return null;
-                }
-                if (value.charAt(0) != PARAMETER_START_CHAR) {
-                    throw new FormatException(
-                        "Parameter '%s' should start with '%c'", value,
-                        PARAMETER_START_CHAR);
-                }
-                try {
-                    return Integer.parseInt(value.substring(1));
-                } catch (NumberFormatException exc) {
-                    throw new FormatException("Invalid parameter number", value);
-                }
-            }
-
-            public String toString(Integer content) {
-                return PARAMETER_START_CHAR + content.toString();
-            }
-        }
     }
 }

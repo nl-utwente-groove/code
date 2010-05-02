@@ -16,7 +16,6 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
@@ -126,9 +125,6 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            if (!(key instanceof JCell) || this.jmodel.isMoveable((JCell) key)) {
-                this.branchMap.put(cellLayoutable, branchSet);
-            }
             if (key instanceof JVertex && ((JVertex) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
@@ -198,9 +194,6 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            if (!(key instanceof JCell) || this.jmodel.isMoveable((JCell) key)) {
-                this.branchMap.put(cellLayoutable, branchSet);
-            }
             if (key instanceof JVertex && ((JVertex) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;

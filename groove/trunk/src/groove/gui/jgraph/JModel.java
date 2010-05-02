@@ -165,14 +165,6 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Callback method to determine whether a cell should in principle be
-     * moveable.
-     */
-    public boolean isMoveable(JCell jCell) {
-        return true;
-    }
-
-    /**
      * Adds a j-cell to the layoutable cells of this j-model. The j-cell is
      * required to be in the model already.
      * @param jCell the cell to be made layoutable
