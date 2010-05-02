@@ -362,14 +362,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     private AspectValue getNodeValue(Edge edge, AspectParser parser)
         throws FormatException {
-        AspectValue result;
+        AspectValue result = null;
         String labelText = edge.label().text();
         AspectMap aspectMap = parser.parse(labelText);
         if (aspectMap.getText() == null) {
             // this edge is empty or indicates a node aspect
-            if (aspectMap.isEmpty() || edge.opposite() != edge.source()) {
-                throw new FormatException(
-                    "Empty label part not allowed in '%s' (prefix with ':')",
+            if (edge.opposite() != edge.source()) {
+                throw new FormatException("Label '%s' only allowed on nodes",
                     labelText);
             } else if (aspectMap.size() > 1) {
                 // Only one aspect value per node self-edge
@@ -383,8 +382,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                         "Aspect value '%s' is for edges only", result);
                 }
             }
-        } else {
-            result = null;
         }
         return result;
     }

@@ -22,9 +22,7 @@ import groove.graph.MergeLabel;
 import groove.graph.Node;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
-import groove.trans.RuleName;
 import groove.util.Groove;
-import groove.util.Pair;
 import groove.view.FormatException;
 
 /**
@@ -152,8 +150,7 @@ public class RuleAspect extends AbstractAspect {
      */
     @Override
     protected AspectValue createValue(String name) throws FormatException {
-        if (name.equals(READER_NAME) || name.equals(RULE_NAME)
-            || name.equals(REMARK_NAME)) {
+        if (name.equals(REMARK_NAME)) {
             return super.createValue(name);
         } else {
             return new NamedAspectValue(getInstance(), name);
@@ -319,26 +316,6 @@ public class RuleAspect extends AbstractAspect {
     }
 
     /**
-     * Convenience method to retrieve the content of a rule aspect value of a
-     * given node.
-     * @return the content of the rule aspect value of <code>node</code>, or
-     *         <code>null</code> if <code>node</code> does not have this aspect
-     *         value.
-     */
-    public static Pair<RuleName,Integer> getRuleContent(AspectNode node) {
-        AspectValue ruleValue = getRuleValue(node);
-        if (ruleValue instanceof RuleAspectValue) {
-            return ((RuleAspectValue) ruleValue).getContent();
-        } else {
-            return null;
-        }
-    }
-
-    /** Static fixed parser for rule content. */
-    static final ContentParser<Pair<RuleName,Integer>> parser =
-        new RuleContentParser();
-
-    /**
      * The name of the rule aspect.
      */
     public static final String RULE_ASPECT_NAME = "role";
@@ -374,11 +351,6 @@ public class RuleAspect extends AbstractAspect {
         Groove.getXMLProperty("label.remark.prefix");
     /** The remark aspect value. */
     public static final AspectValue REMARK;
-    /** Name of the rule aspect value. */
-    public static final String RULE_NAME =
-        Groove.getXMLProperty("label.rule.prefix");
-    // /** The remark aspect value. */
-    // public static final RuleAspectValue RULE;
     /**
      * The singleton instance of this class.
      */
@@ -419,109 +391,6 @@ public class RuleAspect extends AbstractAspect {
         } catch (FormatException exc) {
             throw new Error("Aspect '" + RULE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
-        }
-    }
-
-    /** Type for the content of a rule aspect value. */
-    public static class RuleAspectValue extends
-            ContentAspectValue<Pair<RuleName,Integer>> {
-        /** Constructs a factory instance. */
-        public RuleAspectValue() throws FormatException {
-            super(getInstance(), RULE_NAME);
-        }
-
-        /** Creates an instance with actual content. */
-        public RuleAspectValue(RuleAspectValue original,
-                Pair<RuleName,Integer> content) {
-            super(original, content);
-        }
-
-        @Override
-        ContentParser<Pair<RuleName,Integer>> createParser() {
-            return parser;
-        }
-
-        @Override
-        public RuleAspectValue newValue(String value) throws FormatException {
-            return new RuleAspectValue(this, getParser().toContent(value));
-        }
-    }
-
-    /**
-     * Creates a parser that converts to an from a pair consisting of a
-     * structured rule name and an optional priority indicator. The string
-     * should be formatted according to <code>name</code> or
-     * <code>name + SEPARATOR + priority</code>.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    private static class RuleContentParser implements
-            ContentParser<Pair<RuleName,Integer>> {
-        /** Empty constructor with the correct visibility. */
-        RuleContentParser() {
-            // empty
-        }
-
-        /**
-         * Value used to signal that the priority is not explicitly given
-         * (meaning that the rule has default priority).
-         */
-        public final static int IMPLICIT_PRIORITY = -1;
-
-        /**
-         * Creates a pair of a rule name and priority indicator from a given
-         * string. The string is assumed to be formatted
-         * <code>name + SEPARATOR + priority</code> or just <code>name</code>.
-         * In the latter case the value returned for the priority is
-         * {@link #IMPLICIT_PRIORITY}.
-         */
-        public Pair<RuleName,Integer> toContent(String value)
-            throws FormatException {
-            String name;
-            int priority;
-            int separatorIndex = value.indexOf(CONTENT_SEPARATOR);
-            if (separatorIndex < 0) {
-                name = value;
-                priority = IMPLICIT_PRIORITY;
-            } else {
-                name = value.substring(0, separatorIndex);
-                try {
-                    priority =
-                        Integer.parseInt(value.substring(separatorIndex
-                            + CONTENT_SEPARATOR.length()));
-                } catch (NumberFormatException exc) {
-                    throw new FormatException(
-                        "Priority value in %s cannot be parsed as a number",
-                        value);
-                }
-                if (priority < 0) {
-                    throw new FormatException(
-                        "Priority value %s should be non-negative", value);
-                }
-            }
-            if (name.length() == 0) {
-                throw new FormatException("Rule name should be non-empty");
-            }
-            return new Pair<RuleName,Integer>(createName(name), priority);
-        }
-
-        /**
-         * Returns a string of the form
-         * <code>content.first() + SEPARATOR + content.second()</code> if the
-         * second component is not {@link #IMPLICIT_PRIORITY}, or just
-         * <code>content.first()</code> otherwise.
-         */
-        public String toString(Pair<RuleName,Integer> content) {
-            String name = content.first().text();
-            int priority = content.second();
-            return name
-                + (priority == IMPLICIT_PRIORITY ? "" : CONTENT_SEPARATOR
-                    + priority);
-        }
-
-        /** Callback factory method to create a rule name from a given string. */
-        protected RuleName createName(String text) {
-            return new RuleName(text);
         }
     }
 }

@@ -66,25 +66,10 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * Returns a string description of this aspect value's content.
      * Returns <code>null</code> is the value has no content. 
      */
-    public final String getContentString() {
+    public String getContentString() {
         C content = getContent();
-        return content == null ? null : getParser().toString(content);
+        return content == null ? null : content.toString();
     }
-    
-    /**
-     * Returns the parser for content values.
-     * @return the parser passed in at construction time, if this instance acts
-     *         as a factory; <code>null</code> otherwise.
-     */
-    public final ContentParser<C> getParser() {
-        if (this.parser == null) {
-            this.parser = createParser();
-        }
-        return this.parser;
-    }
-
-    /** Callback method to create a parser for this value. */
-    abstract ContentParser<C> createParser();
 
     /**
      * Creates a new, specialised instance of this value with content parsed
@@ -111,8 +96,6 @@ abstract public class ContentAspectValue<C> extends AspectValue {
         return result.toString();
     }
 
-    /** Flag indicating that content is optional for actual values. */
-    private ContentParser<C> parser;
     /** The (further) content of this value. */
     private final C content;
 }

@@ -33,9 +33,9 @@ import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
+import groove.view.aspect.AttributeAspect.ConstantAspectValue;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -110,49 +110,24 @@ public class AttributeElementFactory {
     private VariableNode createValueNode(AspectNode node)
         throws FormatException {
         VariableNode result;
-        // check if there is a single constant edge on this node
-        Collection<AspectEdge> outEdges = this.graph.outEdgeSet(node);
-        Set<AspectEdge> attributeEdges = new HashSet<AspectEdge>();
-        for (AspectEdge outEdge : outEdges) {
-            if (getAttributeValue(outEdge) != null) {
-                attributeEdges.add(outEdge);
-            }
-        }
-        if (attributeEdges.isEmpty()) {
-            AspectValue attributeValue =
-                AttributeAspect.getAttributeValue(node);
-            Algebra<?> nodeAlgebra =
-                attributeValue == null
-                    || AttributeAspect.VALUE.equals(attributeValue)
-                        ? null
-                        : this.register.getImplementation(attributeValue.getName());
-            assert attributeValue == null
-                || AttributeAspect.VALUE.equals(attributeValue)
-                || nodeAlgebra != null;
+        AspectValue attributeValue = AttributeAspect.getAttributeValue(node);
+        Algebra<?> nodeAlgebra =
+            attributeValue == null
+                || AttributeAspect.VALUE.equals(attributeValue) ? null
+                    : this.register.getImplementation(attributeValue.getName());
+        assert attributeValue == null
+            || AttributeAspect.VALUE.equals(attributeValue)
+            || nodeAlgebra != null;
+        String constant =
+            nodeAlgebra == null ? null
+                    : ((ConstantAspectValue) attributeValue).getContent();
+        if (constant == null) {
             result =
                 VariableNode.createVariableNode(node.getNumber(), nodeAlgebra);
-        } else if (attributeEdges.size() > 1) {
-            throw new FormatException("Too many edges on constant node: %s",
-                attributeEdges);
         } else {
-            AspectEdge attributeEdge = attributeEdges.iterator().next();
-            AspectValue algebraValue = getAttributeValue(attributeEdge);
-            if (algebraValue == null) {
-                throw new FormatException(
-                    "Label %s on value node should be a constant",
-                    attributeEdge.getLabelText());
-            }
-            try {
-                String signature = algebraValue.getName();
-                Object nodeValue =
-                    this.register.getConstant(signature,
-                        attributeEdge.label().text());
-                result =
-                    ValueNode.createValueNode(
-                        this.register.getImplementation(signature), nodeValue);
-            } catch (UnknownSymbolException exc) {
-                throw new FormatException(exc.getMessage());
-            }
+            result =
+                ValueNode.createValueNode(nodeAlgebra,
+                    nodeAlgebra.getValue(constant));
         }
         return result;
     }

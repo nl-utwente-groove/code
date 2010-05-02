@@ -278,8 +278,7 @@ abstract public class AbstractLayouter implements Layouter {
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
                 JCell cell = (JCell) view.getCell();
-                GraphConstants.setMoveable(cell.getAttributes(),
-                    this.jmodel.isMoveable(cell));
+                GraphConstants.setMoveable(cell.getAttributes(), true);
                 AttributeMap modelAttr = new AttributeMap();
                 if (view instanceof VertexView) {
                     // store the bounds back into the model

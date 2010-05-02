@@ -60,7 +60,6 @@ import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
 import java.awt.Font;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -189,24 +188,6 @@ public class AspectJModel extends GraphJModel {
     }
 
     /**
-     * This implementation returns <code>false</code> if the node represented by
-     * the cell has a {@link RuleAspect#RULE_ASPECT_NAME} role.
-     */
-    @Override
-    public boolean isMoveable(JCell jCell) {
-        return jCell instanceof JEdge
-            || isMoveable(((AspectJVertex) jCell).getNode());
-    }
-
-    /**
-     * Callback method to determine whether a certain node is moveable in the
-     * GUI. Rule-identifying nodes are not moveable.
-     */
-    protected boolean isMoveable(AspectNode node) {
-        return !(role(node) instanceof RuleAspect.RuleAspectValue);
-    }
-
-    /**
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
     public final boolean isShowRemarks() {
@@ -225,10 +206,6 @@ public class AspectJModel extends GraphJModel {
             if (getAttributeValue(aspectNode) != null) {
                 result.applyMap(getJVertexDataAttr());
             }
-        }
-        if (!isMoveable(aspectNode)) {
-            GraphConstants.setMoveable(result, false);
-            GraphConstants.setBounds(result, new Rectangle(0, 0));
         }
         return result;
     }
@@ -557,6 +534,8 @@ public class AspectJModel extends GraphJModel {
         public boolean isVisible() {
             if (RuleAspect.isRemark(getNode())) {
                 return isShowRemarks();
+            } else if (ParameterAspect.getParameterValue(getNode()) != null) {
+                return true;
             } else {
                 return super.isVisible();
             }

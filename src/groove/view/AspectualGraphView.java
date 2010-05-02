@@ -190,7 +190,7 @@ public class AspectualGraphView implements GraphView {
                 && model.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
                 model.removeNode(modelNode);
-                viewToModelIter.remove();
+                //                viewToModelIter.remove();
             }
         }
         // test against the type graph, if any
