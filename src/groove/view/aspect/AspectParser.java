@@ -189,12 +189,17 @@ public class AspectParser {
      * {@link #parse(String)}.
      */
     static public String toString(AspectValue value) {
+        String result;
         if (value instanceof ConstantAspectValue) {
-            return value.getName() + VALUE_SEPARATOR
-                + ((ConstantAspectValue) value).getContent();
+            result = value.getName() + VALUE_SEPARATOR;
+            String content = ((ConstantAspectValue) value).getContent();
+            if (content != null) {
+                result += content;
+            }
         } else {
-            return value.toString() + VALUE_SEPARATOR;
+            result = value.toString() + VALUE_SEPARATOR;
         }
+        return result;
     }
 
     /**
