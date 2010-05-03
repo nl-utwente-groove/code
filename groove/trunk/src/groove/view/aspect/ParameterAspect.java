@@ -81,7 +81,7 @@ public class ParameterAspect extends AbstractAspect {
         if (value == null) {
             return null;
         } else {
-            return value.toString();
+            return value.getContentString();
         }
     }
 

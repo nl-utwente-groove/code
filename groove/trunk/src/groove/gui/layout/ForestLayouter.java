@@ -133,7 +133,13 @@ public class ForestLayouter extends AbstractLayouter {
                 Iterator<?> edgeIter = ((JVertex) key).getPort().edges();
                 while (edgeIter.hasNext()) {
                     JEdge edge = (JEdge) edgeIter.next();
-                    if (edge.isVisible() && !this.jmodel.isGrayedOut(edge)) {
+                    // it's possible that the edge is displayed as node label
+                    // even though it has an explicit layout
+                    EdgeView edgeView =
+                        (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
+                            edge, false);
+                    if (edgeView != null && edge.isVisible()
+                        && !this.jmodel.isGrayedOut(edge)) {
                         // the edge source is a node for sure
                         JVertex sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
@@ -142,9 +148,7 @@ public class ForestLayouter extends AbstractLayouter {
                             // the
                             // source node
                             // as well as its end node (if any)
-                            List<?> points =
-                                ((EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
-                                    edge, false)).getPoints();
+                            List<?> points = edgeView.getPoints();
                             JVertex targetVertex = edge.getTargetVertex();
                             Iterator<?> pointsIter = points.iterator();
                             // the first point is the (port of the) source node

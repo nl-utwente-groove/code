@@ -726,7 +726,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
-     * Indicates whether anchors should be shown in the rule and lts views.
+     * Indicates whether data nodes should be shown in the rule and lts views.
      */
     boolean isShowValueNodes() {
         return getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
