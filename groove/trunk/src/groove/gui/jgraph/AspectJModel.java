@@ -468,7 +468,7 @@ public class AspectJModel extends GraphJModel {
                 result.append(Converter.HTML_EXISTS);
             }
             String level = nesting.getContent();
-            if (level.length() != 0) {
+            if (level != null && level.length() != 0) {
                 result.insert(0, level + LEVEL_NAME_SEPARATOR);
             }
             return result;

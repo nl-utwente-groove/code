@@ -89,7 +89,7 @@ public class NestingAspect extends AbstractAspect {
             }
             AspectValue value = getNestingValue(edge);
             if (!(value instanceof NamedAspectValue)
-                || ((NamedAspectValue) value).getContent().length() == 0) {
+                || ((NamedAspectValue) value).getContent() == null) {
                 throw new FormatException(
                     "Quantified edge '%s' has empty level name", edge);
             }
@@ -241,10 +241,7 @@ public class NestingAspect extends AbstractAspect {
         String result = null;
         AspectValue value = getNestingValue(element);
         if (value instanceof NamedAspectValue) {
-            String content = ((NamedAspectValue) value).getContent();
-            if (!content.isEmpty()) {
-                result = content;
-            }
+            result = ((NamedAspectValue) value).getContent();
         }
         return result;
     }
