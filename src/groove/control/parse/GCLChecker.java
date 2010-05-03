@@ -1,8 +1,9 @@
-// $ANTLR 3.1b1 GCLChecker.g 2010-04-06 13:46:28
+// $ANTLR 3.1b1 GCLChecker.g 2010-04-23 13:04:16
 
 package groove.control.parse;
 import groove.control.*;
 import groove.trans.Rule;
+import groove.trans.SPORule;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -18,48 +19,57 @@ import java.util.ArrayList;
 @SuppressWarnings("all")              
 public class GCLChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "NODE_TYPE", "COMMA", "OUT", "DONT_CARE", "AND", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "NODE_TYPE", "BOOL_TYPE", "STRING_TYPE", "INT_TYPE", "REAL_TYPE", "COMMA", "OUT", "DONT_CARE", "FALSE", "STRING", "INT", "REAL", "QUOTE", "AND", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
     public static final int FUNCTION=7;
-    public static final int T__42=42;
-    public static final int T__40=40;
-    public static final int T__41=41;
     public static final int STAR=24;
-    public static final int OTHER=27;
-    public static final int SHARP=25;
-    public static final int WHILE=15;
     public static final int FUNCTIONS=6;
+    public static final int WHILE=15;
+    public static final int BOOL_TYPE=29;
     public static final int NODE_TYPE=28;
-    public static final int ELSE=20;
     public static final int DO=9;
     public static final int PARAM=11;
-    public static final int NOT=34;
+    public static final int NOT=43;
     public static final int ALAP=14;
-    public static final int AND=32;
+    public static final int AND=41;
     public static final int EOF=-1;
-    public static final int TRUE=22;
-    public static final int TRY=21;
     public static final int IF=19;
-    public static final int DONT_CARE=31;
-    public static final int ML_COMMENT=35;
-    public static final int ANY=26;
-    public static final int WS=37;
-    public static final int OUT=30;
-    public static final int T__38=38;
-    public static final int COMMA=29;
-    public static final int T__39=39;
-    public static final int UNTIL=16;
+    public static final int ML_COMMENT=44;
+    public static final int QUOTE=40;
+    public static final int T__51=51;
+    public static final int COMMA=33;
     public static final int IDENTIFIER=12;
-    public static final int BLOCK=5;
-    public static final int OR=13;
-    public static final int SL_COMMENT=36;
     public static final int CH_OR=18;
-    public static final int PROGRAM=4;
     public static final int PLUS=23;
     public static final int VAR=10;
-    public static final int CALL=8;
-    public static final int DOT=33;
+    public static final int DOT=42;
+    public static final int T__50=50;
     public static final int CHOICE=17;
+    public static final int T__47=47;
+    public static final int SHARP=25;
+    public static final int OTHER=27;
+    public static final int T__48=48;
+    public static final int T__49=49;
+    public static final int ELSE=20;
+    public static final int INT=38;
+    public static final int INT_TYPE=31;
+    public static final int TRUE=22;
+    public static final int TRY=21;
+    public static final int REAL=39;
+    public static final int REAL_TYPE=32;
+    public static final int DONT_CARE=35;
+    public static final int WS=46;
+    public static final int ANY=26;
+    public static final int OUT=34;
+    public static final int UNTIL=16;
+    public static final int STRING_TYPE=30;
+    public static final int BLOCK=5;
+    public static final int OR=13;
+    public static final int SL_COMMENT=45;
+    public static final int PROGRAM=4;
+    public static final int CALL=8;
+    public static final int FALSE=36;
+    public static final int STRING=37;
 
     // delegates
     // delegators
@@ -108,7 +118,7 @@ public class GCLChecker extends TreeParser {
         private List<String> syntaxInit = new ArrayList<String>();
         
         int numParameters = 0;
-        String currentRule;
+        SPORule currentRule;
         HashSet<String> currentOutputParameters = new HashSet<String>();
         
         private void debug(String msg) {
@@ -124,7 +134,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start program
-    // GCLChecker.g:54:1: program : ^( PROGRAM functions block ) ;
+    // GCLChecker.g:55:1: program : ^( PROGRAM functions block ) ;
     public final GCLChecker.program_return program() throws RecognitionException {
         GCLChecker.program_return retval = new GCLChecker.program_return();
         retval.start = input.LT(1);
@@ -143,8 +153,8 @@ public class GCLChecker extends TreeParser {
         CommonTree PROGRAM1_tree=null;
 
         try {
-            // GCLChecker.g:55:3: ( ^( PROGRAM functions block ) )
-            // GCLChecker.g:55:6: ^( PROGRAM functions block )
+            // GCLChecker.g:56:3: ( ^( PROGRAM functions block ) )
+            // GCLChecker.g:56:6: ^( PROGRAM functions block )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -199,7 +209,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start functions
-    // GCLChecker.g:58:1: functions : ^(f= FUNCTIONS ( function )* ) ;
+    // GCLChecker.g:59:1: functions : ^(f= FUNCTIONS ( function )* ) ;
     public final GCLChecker.functions_return functions() throws RecognitionException {
         GCLChecker.functions_return retval = new GCLChecker.functions_return();
         retval.start = input.LT(1);
@@ -216,8 +226,8 @@ public class GCLChecker extends TreeParser {
         CommonTree f_tree=null;
 
         try {
-            // GCLChecker.g:59:3: ( ^(f= FUNCTIONS ( function )* ) )
-            // GCLChecker.g:59:5: ^(f= FUNCTIONS ( function )* )
+            // GCLChecker.g:60:3: ( ^(f= FUNCTIONS ( function )* ) )
+            // GCLChecker.g:60:5: ^(f= FUNCTIONS ( function )* )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -231,7 +241,7 @@ public class GCLChecker extends TreeParser {
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLChecker.g:59:48: ( function )*
+                // GCLChecker.g:60:48: ( function )*
                 loop1:
                 do {
                     int alt1=2;
@@ -244,7 +254,7 @@ public class GCLChecker extends TreeParser {
 
                     switch (alt1) {
                 	case 1 :
-                	    // GCLChecker.g:59:48: function
+                	    // GCLChecker.g:60:48: function
                 	    {
                 	    _last = (CommonTree)input.LT(1);
                 	    pushFollow(FOLLOW_function_in_functions83);
@@ -294,7 +304,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start function
-    // GCLChecker.g:61:1: function : ^( FUNCTION IDENTIFIER block ) ;
+    // GCLChecker.g:62:1: function : ^( FUNCTION IDENTIFIER block ) ;
     public final GCLChecker.function_return function() throws RecognitionException {
         GCLChecker.function_return retval = new GCLChecker.function_return();
         retval.start = input.LT(1);
@@ -313,8 +323,8 @@ public class GCLChecker extends TreeParser {
         CommonTree IDENTIFIER6_tree=null;
 
         try {
-            // GCLChecker.g:62:3: ( ^( FUNCTION IDENTIFIER block ) )
-            // GCLChecker.g:62:5: ^( FUNCTION IDENTIFIER block )
+            // GCLChecker.g:63:3: ( ^( FUNCTION IDENTIFIER block ) )
+            // GCLChecker.g:63:5: ^( FUNCTION IDENTIFIER block )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -371,7 +381,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start block
-    // GCLChecker.g:69:1: block : ^( BLOCK ( statement )* ) ;
+    // GCLChecker.g:70:1: block : ^( BLOCK ( statement )* ) ;
     public final GCLChecker.block_return block() throws RecognitionException {
         GCLChecker.block_return retval = new GCLChecker.block_return();
         retval.start = input.LT(1);
@@ -388,8 +398,8 @@ public class GCLChecker extends TreeParser {
         CommonTree BLOCK8_tree=null;
 
         try {
-            // GCLChecker.g:70:3: ( ^( BLOCK ( statement )* ) )
-            // GCLChecker.g:70:5: ^( BLOCK ( statement )* )
+            // GCLChecker.g:71:3: ( ^( BLOCK ( statement )* ) )
+            // GCLChecker.g:71:5: ^( BLOCK ( statement )* )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -403,7 +413,7 @@ public class GCLChecker extends TreeParser {
 
             if ( input.LA(1)==Token.DOWN ) {
                 match(input, Token.DOWN, null); 
-                // GCLChecker.g:70:33: ( statement )*
+                // GCLChecker.g:71:33: ( statement )*
                 loop2:
                 do {
                     int alt2=2;
@@ -416,7 +426,7 @@ public class GCLChecker extends TreeParser {
 
                     switch (alt2) {
                 	case 1 :
-                	    // GCLChecker.g:70:34: statement
+                	    // GCLChecker.g:71:34: statement
                 	    {
                 	    _last = (CommonTree)input.LT(1);
                 	    pushFollow(FOLLOW_statement_in_block122);
@@ -467,7 +477,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start statement
-    // GCLChecker.g:73:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration );
+    // GCLChecker.g:74:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration );
     public final GCLChecker.statement_return statement() throws RecognitionException {
         GCLChecker.statement_return retval = new GCLChecker.statement_return();
         retval.start = input.LT(1);
@@ -524,7 +534,7 @@ public class GCLChecker extends TreeParser {
         CommonTree CHOICE28_tree=null;
 
         try {
-            // GCLChecker.g:74:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration )
+            // GCLChecker.g:75:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration )
             int alt6=9;
             switch ( input.LA(1) ) {
             case ALAP:
@@ -587,7 +597,7 @@ public class GCLChecker extends TreeParser {
 
             switch (alt6) {
                 case 1 :
-                    // GCLChecker.g:74:5: ^( ALAP block )
+                    // GCLChecker.g:75:5: ^( ALAP block )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -618,7 +628,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:75:5: ^( WHILE condition block )
+                    // GCLChecker.g:76:5: ^( WHILE condition block )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -657,7 +667,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:76:5: ^( UNTIL condition block )
+                    // GCLChecker.g:77:5: ^( UNTIL condition block )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -696,7 +706,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLChecker.g:77:5: ^( DO block condition )
+                    // GCLChecker.g:78:5: ^( DO block condition )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -735,7 +745,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLChecker.g:78:5: ^( TRY block ( block )? )
+                    // GCLChecker.g:79:5: ^( TRY block ( block )? )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -755,7 +765,7 @@ public class GCLChecker extends TreeParser {
 
                      
                     if ( _first_1==null ) _first_1 = block22.tree;
-                    // GCLChecker.g:78:17: ( block )?
+                    // GCLChecker.g:79:17: ( block )?
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -764,7 +774,7 @@ public class GCLChecker extends TreeParser {
                     }
                     switch (alt3) {
                         case 1 :
-                            // GCLChecker.g:78:18: block
+                            // GCLChecker.g:79:18: block
                             {
                             _last = (CommonTree)input.LT(1);
                             pushFollow(FOLLOW_block_in_statement192);
@@ -794,7 +804,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLChecker.g:79:5: ^( IF condition block ( block )? )
+                    // GCLChecker.g:80:5: ^( IF condition block ( block )? )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -822,7 +832,7 @@ public class GCLChecker extends TreeParser {
 
                      
                     if ( _first_1==null ) _first_1 = block26.tree;
-                    // GCLChecker.g:79:26: ( block )?
+                    // GCLChecker.g:80:26: ( block )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -831,7 +841,7 @@ public class GCLChecker extends TreeParser {
                     }
                     switch (alt4) {
                         case 1 :
-                            // GCLChecker.g:79:27: block
+                            // GCLChecker.g:80:27: block
                             {
                             _last = (CommonTree)input.LT(1);
                             pushFollow(FOLLOW_block_in_statement209);
@@ -861,7 +871,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLChecker.g:80:5: ^( CHOICE ( block )+ )
+                    // GCLChecker.g:81:5: ^( CHOICE ( block )+ )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -873,7 +883,7 @@ public class GCLChecker extends TreeParser {
 
                     if ( _first_0==null ) _first_0 = CHOICE28;
                     match(input, Token.DOWN, null); 
-                    // GCLChecker.g:80:14: ( block )+
+                    // GCLChecker.g:81:14: ( block )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -887,7 +897,7 @@ public class GCLChecker extends TreeParser {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // GCLChecker.g:80:14: block
+                    	    // GCLChecker.g:81:14: block
                     	    {
                     	    _last = (CommonTree)input.LT(1);
                     	    pushFollow(FOLLOW_block_in_statement221);
@@ -924,7 +934,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLChecker.g:81:5: expression
+                    // GCLChecker.g:82:5: expression
                     {
                     _last = (CommonTree)input.LT(1);
                     pushFollow(FOLLOW_expression_in_statement229);
@@ -941,7 +951,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 9 :
-                    // GCLChecker.g:82:5: var_declaration
+                    // GCLChecker.g:83:5: var_declaration
                     {
                     _last = (CommonTree)input.LT(1);
                     pushFollow(FOLLOW_var_declaration_in_statement235);
@@ -976,7 +986,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start expression
-    // GCLChecker.g:85:1: expression : ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | rule | ANY | OTHER );
+    // GCLChecker.g:86:1: expression : ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | rule | ANY | OTHER );
     public final GCLChecker.expression_return expression() throws RecognitionException {
         GCLChecker.expression_return retval = new GCLChecker.expression_return();
         retval.start = input.LT(1);
@@ -1014,7 +1024,7 @@ public class GCLChecker extends TreeParser {
         RewriteRuleNodeStream stream_PLUS=new RewriteRuleNodeStream(adaptor,"token PLUS");
         RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
         try {
-            // GCLChecker.g:86:2: ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | rule | ANY | OTHER )
+            // GCLChecker.g:87:2: ( ^( OR expression expression ) | ^( PLUS e1= expression ) -> ^( PLUS $e1 $e1) | ^( STAR expression ) | ^( SHARP expression ) | rule | ANY | OTHER )
             int alt7=7;
             switch ( input.LA(1) ) {
             case OR:
@@ -1061,7 +1071,7 @@ public class GCLChecker extends TreeParser {
 
             switch (alt7) {
                 case 1 :
-                    // GCLChecker.g:86:4: ^( OR expression expression )
+                    // GCLChecker.g:87:4: ^( OR expression expression )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1100,7 +1110,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:87:4: ^( PLUS e1= expression )
+                    // GCLChecker.g:88:4: ^( PLUS e1= expression )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1136,9 +1146,9 @@ public class GCLChecker extends TreeParser {
                     RewriteRuleSubtreeStream stream_e1=new RewriteRuleSubtreeStream(adaptor,"token e1",e1!=null?e1.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 87:26: -> ^( PLUS $e1 $e1)
+                    // 88:26: -> ^( PLUS $e1 $e1)
                     {
-                        // GCLChecker.g:87:29: ^( PLUS $e1 $e1)
+                        // GCLChecker.g:88:29: ^( PLUS $e1 $e1)
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot(stream_PLUS.nextNode(), root_1);
@@ -1159,7 +1169,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:88:4: ^( STAR expression )
+                    // GCLChecker.g:89:4: ^( STAR expression )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1190,7 +1200,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLChecker.g:89:4: ^( SHARP expression )
+                    // GCLChecker.g:90:4: ^( SHARP expression )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1221,7 +1231,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLChecker.g:90:4: rule
+                    // GCLChecker.g:91:4: rule
                     {
                     _last = (CommonTree)input.LT(1);
                     pushFollow(FOLLOW_rule_in_expression300);
@@ -1238,7 +1248,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLChecker.g:91:4: ANY
+                    // GCLChecker.g:92:4: ANY
                     {
                     _last = (CommonTree)input.LT(1);
                     ANY41=(CommonTree)match(input,ANY,FOLLOW_ANY_in_expression305); 
@@ -1251,7 +1261,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLChecker.g:92:4: OTHER
+                    // GCLChecker.g:93:4: OTHER
                     {
                     _last = (CommonTree)input.LT(1);
                     OTHER42=(CommonTree)match(input,OTHER,FOLLOW_OTHER_in_expression310); 
@@ -1282,7 +1292,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start condition
-    // GCLChecker.g:95:1: condition : ( ^( OR condition condition ) | rule | TRUE );
+    // GCLChecker.g:96:1: condition : ( ^( OR condition condition ) | rule | TRUE );
     public final GCLChecker.condition_return condition() throws RecognitionException {
         GCLChecker.condition_return retval = new GCLChecker.condition_return();
         retval.start = input.LT(1);
@@ -1305,7 +1315,7 @@ public class GCLChecker extends TreeParser {
         CommonTree TRUE47_tree=null;
 
         try {
-            // GCLChecker.g:96:3: ( ^( OR condition condition ) | rule | TRUE )
+            // GCLChecker.g:97:3: ( ^( OR condition condition ) | rule | TRUE )
             int alt8=3;
             switch ( input.LA(1) ) {
             case OR:
@@ -1332,7 +1342,7 @@ public class GCLChecker extends TreeParser {
 
             switch (alt8) {
                 case 1 :
-                    // GCLChecker.g:96:5: ^( OR condition condition )
+                    // GCLChecker.g:97:5: ^( OR condition condition )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1371,7 +1381,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:97:5: rule
+                    // GCLChecker.g:98:5: rule
                     {
                     _last = (CommonTree)input.LT(1);
                     pushFollow(FOLLOW_rule_in_condition335);
@@ -1388,7 +1398,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:98:5: TRUE
+                    // GCLChecker.g:99:5: TRUE
                     {
                     _last = (CommonTree)input.LT(1);
                     TRUE47=(CommonTree)match(input,TRUE,FOLLOW_TRUE_in_condition341); 
@@ -1419,7 +1429,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start rule
-    // GCLChecker.g:101:1: rule : ^( CALL r= IDENTIFIER ( param )* ) ;
+    // GCLChecker.g:102:1: rule : ^( CALL r= IDENTIFIER ( param )* ) ;
     public final GCLChecker.rule_return rule() throws RecognitionException {
         GCLChecker.rule_return retval = new GCLChecker.rule_return();
         retval.start = input.LT(1);
@@ -1438,8 +1448,8 @@ public class GCLChecker extends TreeParser {
         CommonTree CALL48_tree=null;
 
         try {
-            // GCLChecker.g:102:3: ( ^( CALL r= IDENTIFIER ( param )* ) )
-            // GCLChecker.g:102:5: ^( CALL r= IDENTIFIER ( param )* )
+            // GCLChecker.g:103:3: ( ^( CALL r= IDENTIFIER ( param )* ) )
+            // GCLChecker.g:103:5: ^( CALL r= IDENTIFIER ( param )* )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -1455,8 +1465,8 @@ public class GCLChecker extends TreeParser {
             r=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_rule359); 
              
             if ( _first_1==null ) _first_1 = r;
-             currentRule = r.getText(); 
-            // GCLChecker.g:102:56: ( param )*
+             currentRule = namespace.getRule(r.getText()); 
+            // GCLChecker.g:103:75: ( param )*
             loop9:
             do {
                 int alt9=2;
@@ -1469,7 +1479,7 @@ public class GCLChecker extends TreeParser {
 
                 switch (alt9) {
             	case 1 :
-            	    // GCLChecker.g:102:56: param
+            	    // GCLChecker.g:103:75: param
             	    {
             	    _last = (CommonTree)input.LT(1);
             	    pushFollow(FOLLOW_param_in_rule363);
@@ -1492,12 +1502,15 @@ public class GCLChecker extends TreeParser {
             } while (true);
 
             
-            		debug("currentRule: "+currentRule);
+            		//debug("currentRule: "+currentRule.getName().toString());
             		debug("checking if "+(r!=null?r.getText():null)+" exists");
             		if (!namespace.hasRule((r!=null?r.getText():null)) && !namespace.hasProc((r!=null?r.getText():null))) {
             			errors.add("No such rule: "+(r!=null?r.getText():null)+" on line "+(r!=null?r.getLine():0));
-            		} else if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {
-            			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getVisibleParCount()+") on line "+(r!=null?r.getLine():0));
+            		} else if (numParameters != 0 && numParameters != currentRule.getVisibleParCount()) {
+            			errors.add("The number of parameters used in this call of "+currentRule.getName().toString()+" ("+numParameters+") does not match the number of parameters defined in the rule ("+currentRule.getVisibleParCount()+") on line "+(r!=null?r.getLine():0));
+            		}
+            		if (numParameters == 0 && currentRule != null && currentRule.hasRequiredInputs()) {
+            			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+r.getLine());
             		}
             		numParameters = 0;
             		currentOutputParameters.clear();
@@ -1529,7 +1542,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start var_declaration
-    // GCLChecker.g:115:1: var_declaration : ^( VAR var_type IDENTIFIER ) ;
+    // GCLChecker.g:119:1: var_declaration : ^( VAR t= ( NODE_TYPE | BOOL_TYPE | STRING_TYPE | INT_TYPE | REAL_TYPE ) IDENTIFIER ) ;
     public final GCLChecker.var_declaration_return var_declaration() throws RecognitionException {
         GCLChecker.var_declaration_return retval = new GCLChecker.var_declaration_return();
         retval.start = input.LT(1);
@@ -1539,17 +1552,17 @@ public class GCLChecker extends TreeParser {
         CommonTree _first_0 = null;
         CommonTree _last = null;
 
+        CommonTree t=null;
         CommonTree VAR50=null;
-        CommonTree IDENTIFIER52=null;
-        GCLChecker.var_type_return var_type51 = null;
+        CommonTree IDENTIFIER51=null;
 
-
+        CommonTree t_tree=null;
         CommonTree VAR50_tree=null;
-        CommonTree IDENTIFIER52_tree=null;
+        CommonTree IDENTIFIER51_tree=null;
 
         try {
-            // GCLChecker.g:116:2: ( ^( VAR var_type IDENTIFIER ) )
-            // GCLChecker.g:116:4: ^( VAR var_type IDENTIFIER )
+            // GCLChecker.g:120:2: ( ^( VAR t= ( NODE_TYPE | BOOL_TYPE | STRING_TYPE | INT_TYPE | REAL_TYPE ) IDENTIFIER ) )
+            // GCLChecker.g:120:4: ^( VAR t= ( NODE_TYPE | BOOL_TYPE | STRING_TYPE | INT_TYPE | REAL_TYPE ) IDENTIFIER )
             {
             _last = (CommonTree)input.LT(1);
             {
@@ -1562,22 +1575,28 @@ public class GCLChecker extends TreeParser {
             if ( _first_0==null ) _first_0 = VAR50;
             match(input, Token.DOWN, null); 
             _last = (CommonTree)input.LT(1);
-            pushFollow(FOLLOW_var_type_in_var_declaration383);
-            var_type51=var_type();
+            t=(CommonTree)input.LT(1);
+            if ( (input.LA(1)>=NODE_TYPE && input.LA(1)<=REAL_TYPE) ) {
+                input.consume();
 
-            state._fsp--;
 
-             
-            if ( _first_1==null ) _first_1 = var_type51.tree;
+                state.errorRecovery=false;
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                throw mse;
+            }
+
             _last = (CommonTree)input.LT(1);
-            IDENTIFIER52=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration385); 
+            IDENTIFIER51=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_var_declaration405); 
              
-            if ( _first_1==null ) _first_1 = IDENTIFIER52;
+            if ( _first_1==null ) _first_1 = IDENTIFIER51;
              
-            		if (!namespace.hasVariable((IDENTIFIER52!=null?IDENTIFIER52.getText():null))) {
-            			namespace.addVariable((IDENTIFIER52!=null?IDENTIFIER52.getText():null)); st.declareSymbol((IDENTIFIER52!=null?IDENTIFIER52.getText():null));
+            		if (!namespace.hasVariable((IDENTIFIER51!=null?IDENTIFIER51.getText():null))) {
+            			namespace.addVariable((IDENTIFIER51!=null?IDENTIFIER51.getText():null)); 
+            			st.declareSymbol((IDENTIFIER51!=null?IDENTIFIER51.getText():null), t.getText());
             		} else {
-            			errors.add("Double declaration of variable '"+(IDENTIFIER52!=null?IDENTIFIER52.getText():null)+"' on line "+(IDENTIFIER52!=null?IDENTIFIER52.getLine():0));
+            			errors.add("Double declaration of variable '"+(IDENTIFIER51!=null?IDENTIFIER51.getText():null)+"' on line "+(IDENTIFIER51!=null?IDENTIFIER51.getLine():0));
             		}
             	
 
@@ -1601,58 +1620,13 @@ public class GCLChecker extends TreeParser {
     }
     // $ANTLR end var_declaration
 
-    public static class var_type_return extends TreeRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start var_type
-    // GCLChecker.g:125:1: var_type : NODE_TYPE ;
-    public final GCLChecker.var_type_return var_type() throws RecognitionException {
-        GCLChecker.var_type_return retval = new GCLChecker.var_type_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        CommonTree _first_0 = null;
-        CommonTree _last = null;
-
-        CommonTree NODE_TYPE53=null;
-
-        CommonTree NODE_TYPE53_tree=null;
-
-        try {
-            // GCLChecker.g:126:2: ( NODE_TYPE )
-            // GCLChecker.g:126:4: NODE_TYPE
-            {
-            _last = (CommonTree)input.LT(1);
-            NODE_TYPE53=(CommonTree)match(input,NODE_TYPE,FOLLOW_NODE_TYPE_in_var_type400); 
-             
-            if ( _first_0==null ) _first_0 = NODE_TYPE53;
-
-            retval.tree = (CommonTree)_first_0;
-            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
-                retval.tree = (CommonTree)adaptor.getParent(retval.tree);
-            }
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end var_type
-
     public static class param_return extends TreeRuleReturnScope {
         CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start param
-    // GCLChecker.g:129:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) );
+    // GCLChecker.g:130:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= STRING ) | ^( PARAM INT_TYPE in= INT ) | ^( PARAM REAL_TYPE r= REAL ) );
     public final GCLChecker.param_return param() throws RecognitionException {
         GCLChecker.param_return retval = new GCLChecker.param_return();
         retval.start = input.LT(1);
@@ -1662,97 +1636,82 @@ public class GCLChecker extends TreeParser {
         CommonTree _first_0 = null;
         CommonTree _last = null;
 
+        CommonTree bool=null;
+        CommonTree str=null;
+        CommonTree in=null;
+        CommonTree r=null;
+        CommonTree PARAM52=null;
+        CommonTree IDENTIFIER53=null;
         CommonTree PARAM54=null;
-        CommonTree IDENTIFIER55=null;
-        CommonTree PARAM56=null;
-        CommonTree OUT57=null;
-        CommonTree IDENTIFIER58=null;
+        CommonTree OUT55=null;
+        CommonTree IDENTIFIER56=null;
+        CommonTree PARAM57=null;
+        CommonTree DONT_CARE58=null;
         CommonTree PARAM59=null;
-        CommonTree DONT_CARE60=null;
+        CommonTree BOOL_TYPE60=null;
+        CommonTree PARAM61=null;
+        CommonTree STRING_TYPE62=null;
+        CommonTree PARAM63=null;
+        CommonTree INT_TYPE64=null;
+        CommonTree PARAM65=null;
+        CommonTree REAL_TYPE66=null;
 
+        CommonTree bool_tree=null;
+        CommonTree str_tree=null;
+        CommonTree in_tree=null;
+        CommonTree r_tree=null;
+        CommonTree PARAM52_tree=null;
+        CommonTree IDENTIFIER53_tree=null;
         CommonTree PARAM54_tree=null;
-        CommonTree IDENTIFIER55_tree=null;
-        CommonTree PARAM56_tree=null;
-        CommonTree OUT57_tree=null;
-        CommonTree IDENTIFIER58_tree=null;
+        CommonTree OUT55_tree=null;
+        CommonTree IDENTIFIER56_tree=null;
+        CommonTree PARAM57_tree=null;
+        CommonTree DONT_CARE58_tree=null;
         CommonTree PARAM59_tree=null;
-        CommonTree DONT_CARE60_tree=null;
+        CommonTree BOOL_TYPE60_tree=null;
+        CommonTree PARAM61_tree=null;
+        CommonTree STRING_TYPE62_tree=null;
+        CommonTree PARAM63_tree=null;
+        CommonTree INT_TYPE64_tree=null;
+        CommonTree PARAM65_tree=null;
+        CommonTree REAL_TYPE66_tree=null;
 
         try {
-            // GCLChecker.g:130:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) )
-            int alt10=3;
-            int LA10_0 = input.LA(1);
-
-            if ( (LA10_0==PARAM) ) {
-                int LA10_1 = input.LA(2);
-
-                if ( (LA10_1==DOWN) ) {
-                    switch ( input.LA(3) ) {
-                    case IDENTIFIER:
-                        {
-                        alt10=1;
-                        }
-                        break;
-                    case OUT:
-                        {
-                        alt10=2;
-                        }
-                        break;
-                    case DONT_CARE:
-                        {
-                        alt10=3;
-                        }
-                        break;
-                    default:
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 10, 2, input);
-
-                        throw nvae;
-                    }
-
-                }
-                else {
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 10, 1, input);
-
-                    throw nvae;
-                }
-            }
-            else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 10, 0, input);
-
-                throw nvae;
-            }
+            // GCLChecker.g:131:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= STRING ) | ^( PARAM INT_TYPE in= INT ) | ^( PARAM REAL_TYPE r= REAL ) )
+            int alt10=7;
+            alt10 = dfa10.predict(input);
             switch (alt10) {
                 case 1 :
-                    // GCLChecker.g:130:4: ^( PARAM IDENTIFIER )
+                    // GCLChecker.g:131:4: ^( PARAM IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     _last = (CommonTree)input.LT(1);
-                    PARAM54=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param412); 
+                    PARAM52=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param421); 
 
 
-                    if ( _first_0==null ) _first_0 = PARAM54;
+                    if ( _first_0==null ) _first_0 = PARAM52;
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    IDENTIFIER55=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param414); 
+                    IDENTIFIER53=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param423); 
                      
-                    if ( _first_1==null ) _first_1 = IDENTIFIER55;
+                    if ( _first_1==null ) _first_1 = IDENTIFIER53;
                     
                     			numParameters++;
-                    			if (st.isDeclared((IDENTIFIER55!=null?IDENTIFIER55.getText():null))) {
-                    				if (!st.isInitialized((IDENTIFIER55!=null?IDENTIFIER55.getText():null))) {
-                    					errors.add("The variable "+(IDENTIFIER55!=null?IDENTIFIER55.getText():null)+" might not have been initialized on line "+(IDENTIFIER55!=null?IDENTIFIER55.getLine():0));
+                    			if (st.isDeclared((IDENTIFIER53!=null?IDENTIFIER53.getText():null))) {
+                    				if (!st.isInitialized((IDENTIFIER53!=null?IDENTIFIER53.getText():null))) {
+                    					errors.add("The variable "+(IDENTIFIER53!=null?IDENTIFIER53.getText():null)+" might not have been initialized on line "+(IDENTIFIER53!=null?IDENTIFIER53.getLine():0));
                     				}
                     			} else {
-                    				errors.add("No such variable: "+(IDENTIFIER55!=null?IDENTIFIER55.getText():null));
+                    				errors.add("No such variable: "+(IDENTIFIER53!=null?IDENTIFIER53.getText():null));
                     			}
-                    			if (namespace.getRule(currentRule) != null && !namespace.getRule(currentRule).isInputParameter(numParameters)) {
-                    				errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule+" on line "+(IDENTIFIER55!=null?IDENTIFIER55.getLine():0));
+                    			if (currentRule != null && !currentRule.isInputParameter(numParameters)) {
+                    				errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule.getName().toString()+" on line "+(IDENTIFIER53!=null?IDENTIFIER53.getLine():0));
+                    			}
+                    			if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType((IDENTIFIER53!=null?IDENTIFIER53.getText():null)))) {
+                    				errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+(IDENTIFIER53!=null?IDENTIFIER53.getText():null)+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType((IDENTIFIER53!=null?IDENTIFIER53.getText():null))+")");
                     			}
                     		
 
@@ -1766,46 +1725,52 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:143:4: ^( PARAM OUT IDENTIFIER )
+                    // GCLChecker.g:147:4: ^( PARAM OUT IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     _last = (CommonTree)input.LT(1);
-                    PARAM56=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param424); 
+                    PARAM54=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param433); 
 
 
-                    if ( _first_0==null ) _first_0 = PARAM56;
+                    if ( _first_0==null ) _first_0 = PARAM54;
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    OUT57=(CommonTree)match(input,OUT,FOLLOW_OUT_in_param426); 
+                    OUT55=(CommonTree)match(input,OUT,FOLLOW_OUT_in_param435); 
                      
-                    if ( _first_1==null ) _first_1 = OUT57;
+                    if ( _first_1==null ) _first_1 = OUT55;
                     _last = (CommonTree)input.LT(1);
-                    IDENTIFIER58=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param428); 
+                    IDENTIFIER56=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param437); 
                      
-                    if ( _first_1==null ) _first_1 = IDENTIFIER58;
+                    if ( _first_1==null ) _first_1 = IDENTIFIER56;
                     
                     			numParameters++;
                     			
-                    			if (st.isDeclared((IDENTIFIER58!=null?IDENTIFIER58.getText():null))) {
-                    				if (!st.canInitialize((IDENTIFIER58!=null?IDENTIFIER58.getText():null)) || syntaxInit.contains((IDENTIFIER58!=null?IDENTIFIER58.getText():null))) {
-                    					errors.add("Variable already initialized: "+(IDENTIFIER58!=null?IDENTIFIER58.getText():null)+" on line "+(IDENTIFIER58!=null?IDENTIFIER58.getLine():0));
+                    			if (st.isDeclared((IDENTIFIER56!=null?IDENTIFIER56.getText():null))) {
+                    				if (!st.canInitialize((IDENTIFIER56!=null?IDENTIFIER56.getText():null)) || syntaxInit.contains((IDENTIFIER56!=null?IDENTIFIER56.getText():null))) {
+                    					errors.add("Variable already initialized: "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));
                     				} else {
-                    					st.initializeSymbol((IDENTIFIER58!=null?IDENTIFIER58.getText():null));
-                    					syntaxInit.add((IDENTIFIER58!=null?IDENTIFIER58.getText():null));
+                    					st.initializeSymbol((IDENTIFIER56!=null?IDENTIFIER56.getText():null));
+                    					syntaxInit.add((IDENTIFIER56!=null?IDENTIFIER56.getText():null));
                     				}
                     			} else {
-                    				errors.add("No such variable: "+(IDENTIFIER58!=null?IDENTIFIER58.getText():null)+" on line "+(IDENTIFIER58!=null?IDENTIFIER58.getLine():0));
+                    				errors.add("No such variable: "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));
                     			}
-                    			if (namespace.getRule(currentRule) != null && !namespace.getRule(currentRule).isOutputParameter(numParameters)) {
-                    				errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule+" on line "+(IDENTIFIER58!=null?IDENTIFIER58.getLine():0));
+                    			if (currentRule != null && !currentRule.isOutputParameter(numParameters)) {
+                    				errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule.getName().toString()+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));
                     			}
-                    			if (currentOutputParameters.contains((IDENTIFIER58!=null?IDENTIFIER58.getText():null))) {
-                    				errors.add("You can not use the same parameter as output more than once per call: "+(IDENTIFIER58!=null?IDENTIFIER58.getText():null)+" on line "+(IDENTIFIER58!=null?IDENTIFIER58.getLine():0));			
+                    			if (currentOutputParameters.contains((IDENTIFIER56!=null?IDENTIFIER56.getText():null))) {
+                    				errors.add("You can not use the same parameter as output more than once per call: "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));			
                     			}
-                    			currentOutputParameters.add((IDENTIFIER58!=null?IDENTIFIER58.getText():null));
+                    			if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType((IDENTIFIER56!=null?IDENTIFIER56.getText():null)))) {
+                    				errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType((IDENTIFIER56!=null?IDENTIFIER56.getText():null))+")");
+                    			}
+                    			if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
+                    				errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+                    			} 
+                    			currentOutputParameters.add((IDENTIFIER56!=null?IDENTIFIER56.getText():null));
                     		
 
                     match(input, Token.UP, null); _last = _save_last_1;
@@ -1818,23 +1783,185 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:164:4: ^( PARAM DONT_CARE )
+                    // GCLChecker.g:174:4: ^( PARAM DONT_CARE )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
                     CommonTree _save_last_1 = _last;
                     CommonTree _first_1 = null;
                     _last = (CommonTree)input.LT(1);
-                    PARAM59=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param438); 
+                    PARAM57=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param447); 
+
+
+                    if ( _first_0==null ) _first_0 = PARAM57;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    DONT_CARE58=(CommonTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_param449); 
+                     
+                    if ( _first_1==null ) _first_1 = DONT_CARE58;
+                     
+                    		numParameters++;
+                    		if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
+                    			errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+                    		} 
+                    	
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 4 :
+                    // GCLChecker.g:180:4: ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    PARAM59=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param458); 
 
 
                     if ( _first_0==null ) _first_0 = PARAM59;
                     match(input, Token.DOWN, null); 
                     _last = (CommonTree)input.LT(1);
-                    DONT_CARE60=(CommonTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_param440); 
+                    BOOL_TYPE60=(CommonTree)match(input,BOOL_TYPE,FOLLOW_BOOL_TYPE_in_param460); 
                      
-                    if ( _first_1==null ) _first_1 = DONT_CARE60;
-                     numParameters++; 
+                    if ( _first_1==null ) _first_1 = BOOL_TYPE60;
+                    _last = (CommonTree)input.LT(1);
+                    bool=(CommonTree)input.LT(1);
+                    if ( input.LA(1)==TRUE||input.LA(1)==FALSE ) {
+                        input.consume();
+
+
+                        state.errorRecovery=false;
+                    }
+                    else {
+                        MismatchedSetException mse = new MismatchedSetException(null,input);
+                        throw mse;
+                    }
+
+                    
+                    		numParameters++;
+                    		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("bool")) {
+                    			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+bool.getText()+"' on line "+bool.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not bool)");
+                    		}
+                    	
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 5 :
+                    // GCLChecker.g:186:4: ^( PARAM STRING_TYPE str= STRING )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    PARAM61=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param477); 
+
+
+                    if ( _first_0==null ) _first_0 = PARAM61;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    STRING_TYPE62=(CommonTree)match(input,STRING_TYPE,FOLLOW_STRING_TYPE_in_param479); 
+                     
+                    if ( _first_1==null ) _first_1 = STRING_TYPE62;
+                    _last = (CommonTree)input.LT(1);
+                    str=(CommonTree)match(input,STRING,FOLLOW_STRING_in_param483); 
+                     
+                    if ( _first_1==null ) _first_1 = str;
+                    
+                    		numParameters++;
+                    		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("string")) {
+                    			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and "+str.getText()+" on line "+str.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not string)");
+                    		}
+                    	
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 6 :
+                    // GCLChecker.g:192:4: ^( PARAM INT_TYPE in= INT )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    PARAM63=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param492); 
+
+
+                    if ( _first_0==null ) _first_0 = PARAM63;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    INT_TYPE64=(CommonTree)match(input,INT_TYPE,FOLLOW_INT_TYPE_in_param494); 
+                     
+                    if ( _first_1==null ) _first_1 = INT_TYPE64;
+                    _last = (CommonTree)input.LT(1);
+                    in=(CommonTree)match(input,INT,FOLLOW_INT_in_param498); 
+                     
+                    if ( _first_1==null ) _first_1 = in;
+                    
+                    		numParameters++;
+                    		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("int")) {
+                    			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+in.getText()+"' on line "+in.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not int)");
+                    		}
+                    	
+
+                    match(input, Token.UP, null); _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CommonTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CommonTree)adaptor.getParent(retval.tree);
+                    }
+                    break;
+                case 7 :
+                    // GCLChecker.g:198:4: ^( PARAM REAL_TYPE r= REAL )
+                    {
+                    _last = (CommonTree)input.LT(1);
+                    {
+                    CommonTree _save_last_1 = _last;
+                    CommonTree _first_1 = null;
+                    _last = (CommonTree)input.LT(1);
+                    PARAM65=(CommonTree)match(input,PARAM,FOLLOW_PARAM_in_param507); 
+
+
+                    if ( _first_0==null ) _first_0 = PARAM65;
+                    match(input, Token.DOWN, null); 
+                    _last = (CommonTree)input.LT(1);
+                    REAL_TYPE66=(CommonTree)match(input,REAL_TYPE,FOLLOW_REAL_TYPE_in_param509); 
+                     
+                    if ( _first_1==null ) _first_1 = REAL_TYPE66;
+                    _last = (CommonTree)input.LT(1);
+                    r=(CommonTree)match(input,REAL,FOLLOW_REAL_in_param513); 
+                     
+                    if ( _first_1==null ) _first_1 = r;
+                    
+                    		numParameters++;
+                    		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("real")) {
+                    			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+r.getText()+"' on line "+r.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not real)");
+                    		}
+                    	
 
                     match(input, Token.UP, null); _last = _save_last_1;
                     }
@@ -1861,6 +1988,65 @@ public class GCLChecker extends TreeParser {
     // Delegated rules
 
 
+    protected DFA10 dfa10 = new DFA10(this);
+    static final String DFA10_eotS =
+        "\12\uffff";
+    static final String DFA10_eofS =
+        "\12\uffff";
+    static final String DFA10_minS =
+        "\1\13\1\2\1\14\7\uffff";
+    static final String DFA10_maxS =
+        "\1\13\1\2\1\43\7\uffff";
+    static final String DFA10_acceptS =
+        "\3\uffff\1\1\1\2\1\3\1\4\1\5\1\6\1\7";
+    static final String DFA10_specialS =
+        "\12\uffff}>";
+    static final String[] DFA10_transitionS = {
+            "\1\1",
+            "\1\2",
+            "\1\3\20\uffff\1\6\1\7\1\10\1\11\1\uffff\1\4\1\5",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+    };
+
+    static final short[] DFA10_eot = DFA.unpackEncodedString(DFA10_eotS);
+    static final short[] DFA10_eof = DFA.unpackEncodedString(DFA10_eofS);
+    static final char[] DFA10_min = DFA.unpackEncodedStringToUnsignedChars(DFA10_minS);
+    static final char[] DFA10_max = DFA.unpackEncodedStringToUnsignedChars(DFA10_maxS);
+    static final short[] DFA10_accept = DFA.unpackEncodedString(DFA10_acceptS);
+    static final short[] DFA10_special = DFA.unpackEncodedString(DFA10_specialS);
+    static final short[][] DFA10_transition;
+
+    static {
+        int numStates = DFA10_transitionS.length;
+        DFA10_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA10_transition[i] = DFA.unpackEncodedString(DFA10_transitionS[i]);
+        }
+    }
+
+    class DFA10 extends DFA {
+
+        public DFA10(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 10;
+            this.eot = DFA10_eot;
+            this.eof = DFA10_eof;
+            this.min = DFA10_min;
+            this.max = DFA10_max;
+            this.accept = DFA10_accept;
+            this.special = DFA10_special;
+            this.transition = DFA10_transition;
+        }
+        public String getDescription() {
+            return "130:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= STRING ) | ^( PARAM INT_TYPE in= INT ) | ^( PARAM REAL_TYPE r= REAL ) );";
+        }
+    }
  
 
     public static final BitSet FOLLOW_PROGRAM_in_program57 = new BitSet(new long[]{0x0000000000000004L});
@@ -1916,15 +2102,26 @@ public class GCLChecker extends TreeParser {
     public static final BitSet FOLLOW_IDENTIFIER_in_rule359 = new BitSet(new long[]{0x0000000000000808L});
     public static final BitSet FOLLOW_param_in_rule363 = new BitSet(new long[]{0x0000000000000808L});
     public static final BitSet FOLLOW_VAR_in_var_declaration381 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_var_type_in_var_declaration383 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_var_declaration385 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_NODE_TYPE_in_var_type400 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PARAM_in_param412 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_param414 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_PARAM_in_param424 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_OUT_in_param426 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_IDENTIFIER_in_param428 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_PARAM_in_param438 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_DONT_CARE_in_param440 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_set_in_var_declaration385 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_var_declaration405 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param421 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param423 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param433 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_OUT_in_param435 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param437 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param447 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_DONT_CARE_in_param449 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param458 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_BOOL_TYPE_in_param460 = new BitSet(new long[]{0x0000001000400000L});
+    public static final BitSet FOLLOW_set_in_param464 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param477 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_STRING_TYPE_in_param479 = new BitSet(new long[]{0x0000002000000000L});
+    public static final BitSet FOLLOW_STRING_in_param483 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param492 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_INT_TYPE_in_param494 = new BitSet(new long[]{0x0000004000000000L});
+    public static final BitSet FOLLOW_INT_in_param498 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PARAM_in_param507 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_REAL_TYPE_in_param509 = new BitSet(new long[]{0x0000008000000000L});
+    public static final BitSet FOLLOW_REAL_in_param513 = new BitSet(new long[]{0x0000000000000008L});
 
 }

@@ -242,6 +242,24 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.specifiedParameterTypes = specifiedParameterTypes;
     }
 
+    /**
+     * Sets the types for attribute parameters as defined in the rule editor.
+     * @param attributeParameterTypes maps Integers (parameter numbers) to Strings (parameter names)
+     */
+    public void setAttributeParameterTypes(
+            Map<Integer,String> attributeParameterTypes) {
+        this.attributeParameterTypes = attributeParameterTypes;
+    }
+
+    /**
+     * Gets the type of the parameter specified
+     * @param parameter the parameter number
+     * @return a String describing the type
+     */
+    public String getAttributeParameterType(int parameter) {
+        return this.attributeParameterTypes.get(parameter);
+    }
+
     private void initializeParameterTypes() {
         for (int param = 1; param <= getVisibleParCount(); param++) {
             int result = PARAMETER_DOES_NOT_EXIST;
@@ -347,6 +365,27 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         int parType2 = this.specifiedParameterTypes.get(param);
         return (parType1 == PARAMETER_INPUT || parType1 == PARAMETER_BOTH)
             && (parType2 == PARAMETER_INPUT || parType2 == PARAMETER_BOTH);
+    }
+
+    /**
+     * Returns whether the given parameter number is a required input parameter.
+     * Parameters are required if they are on an isolated attribute node.
+     * @param param the number of the parameter under inquiry
+     * @return true if this is a required input parameter, false otherwise
+     */
+    public boolean isRequiredInput(int param) {
+        return this.requiredInputParameters != null
+            && this.requiredInputParameters.contains(getParameter(param));
+    }
+
+    /**
+     * Returns whether this rule has required input parameters. Parameters are 
+     * required if they are on an isolated attribute node.
+     * @return true if this rule has required input parameters, false otherwise
+     */
+    public boolean hasRequiredInputs() {
+        return this.requiredInputParameters != null
+            && this.requiredInputParameters.size() > 0;
     }
 
     /**
@@ -1457,4 +1496,5 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         new HashMap<Integer,Integer>();
 
     private Map<Integer,Integer> specifiedParameterTypes;
+    private Map<Integer,String> attributeParameterTypes;
 }

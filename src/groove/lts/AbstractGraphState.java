@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraRegister;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.Location;
@@ -24,6 +26,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.trans.RuleEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
@@ -426,8 +429,23 @@ abstract public class AbstractGraphState extends
             for (int i = 0; i < input.length; i++) {
                 if (input[i] != null && !input[i].equals("_")) {
                     Node src = (rule).getParameter(i + 1);
-                    Node tgt =
-                        this.parameters[((ControlState) this.location).getVariablePosition(input[i])];
+                    Node tgt;
+                    if (rule.getAttributeParameterType(i + 1).equals("node")) {
+                        tgt =
+                            this.parameters[((ControlState) this.location).getVariablePosition(input[i])];
+                    } else {
+                        int idx =
+                            ((ControlState) this.location).getVariablePosition(input[i]);
+                        if (idx != -1) {
+                            tgt = this.parameters[idx];
+                        } else {
+                            Algebra<?> alg =
+                                AlgebraRegister.getInstance().getValue(input[i]);
+                            tgt =
+                                ValueNode.createValueNode(alg,
+                                    alg.getValue(input[i]));
+                        }
+                    }
                     if (tgt == null) {
                         // we're trying to match a node that has been deleted!
                         return null;

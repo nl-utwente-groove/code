@@ -70,7 +70,7 @@ public interface Rule extends Comparable<Rule>, Condition {
      * condition.
      */
     public boolean isModifying();
-    
+
     /**
      * Indicates if this rule has a confluency property. If this method returns
      * <code>true</code>, this means the rule can be applied only once, to an
@@ -134,13 +134,15 @@ public interface Rule extends Comparable<Rule>, Condition {
         };
 
     /** Different flags parameters can have */
-        
+
     /** Input flag */
     public static final int PARAMETER_INPUT = 1;
     /** Output flag */
     public static final int PARAMETER_OUTPUT = 2;
     /** Both Input/Output flag */
     public static final int PARAMETER_BOTH = 3;
+    /** Literal attribute input flag */
+    public static final int PARAMETER_ATTR_INPUT = 4;
     /** Don't_care parameter flag */
     public static final int PARAMETER_DONT_CARE = 0;
     /** Non-existent flag */
