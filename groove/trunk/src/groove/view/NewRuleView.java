@@ -54,6 +54,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.NestingAspect;
@@ -309,6 +310,7 @@ public class NewRuleView implements RuleView {
                 rule.setParameters(parameters.getInPars(),
                     parameters.getOutPars(), parameters.getHiddenPars());
                 rule.setSpecifiedParameterTypes(parameters.getSpecifiedParameterTypes());
+                rule.setAttributeParameterTypes(parameters.getAttributeParameterTypes());
                 rule.setFixed();
 
                 if (TO_RULE_DEBUG) {
@@ -1732,12 +1734,21 @@ public class NewRuleView implements RuleView {
             return this.specifiedParameterTypes;
         }
 
+        /**
+         * Returns a map of the parameter numbers with their attribute types.
+         * @return a map of the parameter numbers with their attribute types
+         */
+        public Map<Integer,String> getAttributeParameterTypes() {
+            return this.attributeParameterTypes;
+        }
+
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
             SortedMap<Integer,Node> inParMap = new TreeMap<Integer,Node>();
             SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
             this.specifiedParameterTypes = new TreeMap<Integer,Integer>();
+            this.attributeParameterTypes = new TreeMap<Integer,String>();
             this.hiddenPars = new HashSet<Node>();
             // set of all parameter numbers, to check duplicates
             Set<Integer> parNumbers = new HashSet<Integer>();
@@ -1746,8 +1757,21 @@ public class NewRuleView implements RuleView {
                 // check if the node is a parameter
                 Integer nr = ParameterAspect.getParNumber(node);
                 if (nr != null) {
+                    // check if the user specified a parameter type in the rule editor
                     int parType = ParameterAspect.getParameterType(node);
                     this.specifiedParameterTypes.put(nr, parType);
+                    AspectValue av = AttributeAspect.getAttributeValue(node);
+                    if (av != null) {
+                        if (av.toString().equals("attr")) {
+                            throw new FormatException(
+                                "If you wish to use an attribute for parameter number '%d', it must be typed",
+                                nr);
+                        } else {
+                            this.attributeParameterTypes.put(nr, av.toString());
+                        }
+                    } else {
+                        this.attributeParameterTypes.put(nr, "node");
+                    }
                     try {
                         if (!parNumbers.add(nr)) {
                             throw new FormatException(
@@ -1813,5 +1837,7 @@ public class NewRuleView implements RuleView {
         private Set<Node> hiddenPars;
         /** Map of parameters with their specification (in, out or both) */
         private Map<Integer,Integer> specifiedParameterTypes;
+        /** Map of parameters to attribute types (-1 if no attribute) */
+        private Map<Integer,String> attributeParameterTypes;
     }
 }

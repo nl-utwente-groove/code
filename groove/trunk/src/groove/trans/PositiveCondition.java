@@ -36,6 +36,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -139,8 +140,19 @@ abstract public class PositiveCondition<M extends Match> extends
             }
         }
         for (Node node : unresolvedVariableNodes) {
-            errors.add(new FormatError(
-                "Cannot resolve attribute value node '%s'", node));
+            setRequiredInput(node);
+            boolean addError = true;
+            SPORule rule = (SPORule) this;
+            for (int i = 1; i <= rule.getVisibleParCount(); i++) {
+                if (rule.getParameter(i) == node && !rule.isOutputParameter(i)) {
+                    addError = false;
+                }
+            }
+            if (addError) {
+                errors.add(new FormatError(
+                    "Isolated attribute node '%s' must be an input parameter",
+                    node));
+            }
         }
         if (!unresolvedProductNodes.isEmpty()) {
             Map.Entry<ProductNode,BitSet> productEntry =
@@ -192,6 +204,17 @@ abstract public class PositiveCondition<M extends Match> extends
     }
 
     /**
+     * Sets a node to be a required input parameter
+     * @param param the node to set as required input
+     */
+    private void setRequiredInput(Node n) {
+        if (this.requiredInputParameters == null) {
+            this.requiredInputParameters = new ArrayList<Node>();
+        }
+        this.requiredInputParameters.add(n);
+    }
+
+    /**
      * Callback factory method to create a match on the basis of a mapping of
      * this condition's target.
      * @param matchMap the mapping, presumably from the elements of
@@ -205,4 +228,5 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private Collection<AbstractCondition<?>> complexSubConditions;
 
+    protected List<Node> requiredInputParameters;
 }

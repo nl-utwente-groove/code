@@ -99,7 +99,8 @@ expression_atom
 call
 	: IDENTIFIER '(' var_list? ')' -> ^(CALL IDENTIFIER var_list?);
 
-rule 	: IDENTIFIER -> ^(CALL IDENTIFIER);
+rule 	
+	: IDENTIFIER -> ^(CALL IDENTIFIER);
 
 var_declaration
 	: var_type IDENTIFIER (',' IDENTIFIER)* -> ^(VAR var_type IDENTIFIER)+
@@ -107,6 +108,10 @@ var_declaration
 
 var_type
 	: NODE_TYPE
+	| BOOL_TYPE
+	| STRING_TYPE
+	| INT_TYPE
+	| REAL_TYPE
 	;
 	
 var_list
@@ -117,6 +122,15 @@ variable
 	: OUT IDENTIFIER -> ^(PARAM OUT IDENTIFIER)
 	| IDENTIFIER -> ^(PARAM IDENTIFIER)
 	| DONT_CARE -> ^(PARAM DONT_CARE)
+	| literal -> ^(PARAM literal)
+	;
+	
+literal
+	: TRUE -> BOOL_TYPE TRUE
+	| FALSE -> BOOL_TYPE FALSE
+	| STRING -> STRING_TYPE STRING
+	| INT -> INT_TYPE INT
+	| REAL -> REAL_TYPE REAL
 	;
 
 // LEXER rules
@@ -132,13 +146,22 @@ CH_OR 	:	'or';
 TRY		:	'try';
 FUNCTION:	'function';
 TRUE	:	'true';
+FALSE	:	'false';
 OTHER	:	'other';
 ANY		:	'any';
 NODE_TYPE : 'node';
+BOOL_TYPE : 'bool';
+STRING_TYPE : 'string';
+INT_TYPE : 'int';
+REAL_TYPE : 'real';
 OUT		:	'out';
 
 
 IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_'|'.')*;
+STRING : QUOTE (options {greedy=false;} : .)* QUOTE ;
+//{ setText(getText().substring(1, getText().length()-1)); };
+INT : ('0'..'9')+;
+REAL : ('0'..'9')+ ('.' ('0'..'9')+);
 
 AND 	:	 '&';
 COMMA 	:	 ',' ;
@@ -149,6 +172,7 @@ SHARP 	:	 '#' ;
 PLUS 	:	 '+' ;
 STAR 	:	 '*' ;
 DONT_CARE	: '_';
+QUOTE   : '"';
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };
