@@ -422,8 +422,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /** This implementation sets the anchor graph elements to relevant. */
     @Override
     MatchStrategy<VarNodeEdgeMap> createMatcher() {
-        return getMatcherFactory().createMatcher(this, null, null,
-            getMatchRelevantNodes());
+        Set<Node> anchorNodes = new HashSet<Node>();
+        Set<Edge> anchorEdges = new HashSet<Edge>();
+        if (getRootMap() != null) {
+            anchorNodes.addAll(getRootMap().nodeMap().values());
+            anchorEdges.addAll(getRootMap().edgeMap().values());
+        }
+        anchorNodes.addAll(getRequiredInputs());
+        return getMatcherFactory().createMatcher(this, anchorNodes,
+            anchorEdges, getMatchRelevantNodes());
     }
 
     @Override

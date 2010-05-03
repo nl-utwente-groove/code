@@ -36,7 +36,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -205,13 +204,17 @@ abstract public class PositiveCondition<M extends Match> extends
 
     /**
      * Sets a node to be a required input parameter
-     * @param param the node to set as required input
+     * @param n the node to set as required input
      */
     private void setRequiredInput(Node n) {
+        getRequiredInputs().add(n);
+    }
+
+    Set<Node> getRequiredInputs() {
         if (this.requiredInputParameters == null) {
-            this.requiredInputParameters = new ArrayList<Node>();
+            this.requiredInputParameters = new HashSet<Node>();
         }
-        this.requiredInputParameters.add(n);
+        return this.requiredInputParameters;
     }
 
     /**
@@ -228,5 +231,5 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private Collection<AbstractCondition<?>> complexSubConditions;
 
-    protected List<Node> requiredInputParameters;
+    protected Set<Node> requiredInputParameters;
 }
