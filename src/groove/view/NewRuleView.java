@@ -316,7 +316,7 @@ public class NewRuleView implements RuleView {
                 }
             } catch (FormatException e) {
                 rule = null;
-                errors.addAll(e.getErrors());
+                this.levelTree.transferErrors(e.getErrors(), errors);
             }
         }
 
@@ -778,18 +778,7 @@ public class NewRuleView implements RuleView {
                 Collection<FormatError> typeErrors =
                     NewRuleView.this.type.checkTyping(graph);
                 if (!typeErrors.isEmpty()) {
-                    // compute inverse element map
-                    Map<Element,Element> inverseMap =
-                        new HashMap<Element,Element>();
-                    for (Map.Entry<Node,Node> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
-                        inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
-                    }
-                    for (Map.Entry<Edge,Edge> edgeEntry : this.viewToRuleMap.edgeMap().entrySet()) {
-                        inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
-                    }
-                    for (FormatError error : typeErrors) {
-                        errors.add(error.transfer(inverseMap));
-                    }
+                    transferErrors(typeErrors, errors);
                 }
             }
             if (!errors.isEmpty()) {
@@ -798,6 +787,24 @@ public class NewRuleView implements RuleView {
             // fix the level data
             for (Level level : this.indexLevelMap.values()) {
                 level.setMode(LevelMode.FIXED);
+            }
+        }
+
+        /**
+         * Transfers errors from the model to the view level.
+         */
+        private void transferErrors(Collection<FormatError> modelErrors,
+                Set<FormatError> viewErrors) {
+            // compute inverse element map
+            Map<Element,Element> inverseMap = new HashMap<Element,Element>();
+            for (Map.Entry<Node,Node> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
+                inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
+            }
+            for (Map.Entry<Edge,Edge> edgeEntry : this.viewToRuleMap.edgeMap().entrySet()) {
+                inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
+            }
+            for (FormatError error : modelErrors) {
+                viewErrors.add(error.transfer(inverseMap));
             }
         }
 
