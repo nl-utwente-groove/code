@@ -27,9 +27,9 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 import groove.view.aspect.AttributeAspect.ConstantAspectValue;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
@@ -56,7 +56,7 @@ public class AspectParser {
      *         {@link AspectValue#getValue(String)}.
      */
     public AspectMap parse(String text) throws FormatException {
-        Set<AspectValue> aspectValues = new HashSet<AspectValue>();
+        List<AspectValue> aspectValues = new ArrayList<AspectValue>();
         boolean end = false;
         boolean edgeOnly = false;
         int nextIndex = text.indexOf(VALUE_SEPARATOR);
