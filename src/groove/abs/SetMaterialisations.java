@@ -104,11 +104,8 @@ public class SetMaterialisations {
             // compute the corresponding type if it was not yet computed
             for (Map.Entry<Node,Graph> entry : this.concrPart.neigh().entrySet()) {
                 Node n = entry.getKey();
-                if (!this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) { // avoid
-                    // to
-                    // do
-                    // things
-                    // twice
+                if (!this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) {
+                    // avoid to do things twice
                     Graph neigh = entry.getValue();
                     GraphPattern type =
                         this.abstrPart.typeOf(originMap.getNode(n));
@@ -636,7 +633,7 @@ public class SetMaterialisations {
      * Constructs the possible links given an embedding of the concrete part
      * into the abstract part, a typing of the the nodes in the concrete part.
      * @param origin Embedding of the concrete part into the abstract part.
-     * @param typing Associates a typing moprphism with nodes from the concrete
+     * @param typing Associates a typing morphism with nodes from the concrete
      *        part. Only the map components are used.
      * @param srcLinks Out parameter. After return, contains the set of links
      *        which source node is in the concrete part.

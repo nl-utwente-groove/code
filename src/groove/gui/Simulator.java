@@ -4747,7 +4747,7 @@ public class Simulator {
     private SaveGrammarAction saveGrammarAction;
 
     /**
-     * Action for saving a rule system. Currently not enabled.
+     * Action for saving a rule system.
      */
     private class SaveGrammarAction extends RefreshableAction {
         /** Constructs an instance of the action. */
