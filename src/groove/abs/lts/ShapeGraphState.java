@@ -167,8 +167,6 @@ public class ShapeGraphState extends AbstractGraphState {
     /** The outgoing transitions from this state */
     protected final MyHashSet<GraphTransition> transitions =
         new MyHashSet<GraphTransition>(new TransitionHasher());
-    /** The number of the actual state. */
-    protected int nr;
 
     @Override
     public String toString() {

@@ -43,8 +43,11 @@ import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
+import groove.explore.ScenarioFactory;
+import groove.explore.result.Acceptor;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
+import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -1063,6 +1066,44 @@ public class Simulator {
             ltsJGraph.getLayouter().start(false);
         }
         setDefaultExploration(exploration);
+    }
+
+    /**
+     * Run a abstract exploration.
+     */
+    public void doRunAbstrExploration() {
+        GraphJModel ltsJModel = getLtsPanel().getJModel();
+        synchronized (ltsJModel) {
+            // unhook the lts' jmodel from the lts, for efficiency's sake
+            getGTS().removeGraphListener(ltsJModel);
+            // disable rule application for the time being
+            boolean applyEnabled = getApplyTransitionAction().isEnabled();
+            getApplyTransitionAction().setEnabled(false);
+            // EDUARDO: Quick hack to get abstract exploration working.
+            // This should be merged with the current way of doing exploration,
+            // i.e., by using the Exploration class...
+            Scenario scenario =
+                ScenarioFactory.getScenario(new BranchingStrategy(),
+                    new Acceptor(), "Explores the full state space.",
+                    "Full exploration (branching, aliasing)");
+            scenario.prepare(getGTS());
+            // create a thread to do the work in the background
+            Thread generateThread = new LaunchThread(scenario);
+            // go!
+            generateThread.start();
+            // collect the result states
+            getGTS().setResult(scenario.getResult());
+            // get the lts' jmodel back on line and re-synchronize its state
+            ltsJModel.reload();
+            // re-enable rule application
+            getApplyTransitionAction().setEnabled(applyEnabled);
+            // reset lts display visibility
+            setGraphPanel(getLtsPanel());
+        }
+        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
+        if (ltsJGraph.getLayouter() != null) {
+            ltsJGraph.getLayouter().start(false);
+        }
     }
 
     /**
@@ -2133,6 +2174,7 @@ public class Simulator {
         // IOVKA change to activate abstract simulation
         // EDUARDO Uncommented to test abstraction.
         result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        result.add(new JMenuItem(getAbstrExplorationAction()));
 
         return result;
     }
@@ -4944,8 +4986,21 @@ public class Simulator {
         return this.startAbstrSimulationAction;
     }
 
+    /**
+     * A variant of {@link #getDefaultExplorationAction()} for abstract exploration.
+     */
+    public Action getAbstrExplorationAction() {
+        // lazily create the action
+        if (this.abstrExplorationAction == null) {
+            this.abstrExplorationAction = new AbstrExplorationAction();
+        }
+        return this.abstrExplorationAction;
+    }
+
     /** The action to start a new abstract simulation. */
     private StartAbstrSimulationAction startAbstrSimulationAction;
+    /** The action to start a new abstract exploration. */
+    private AbstrExplorationAction abstrExplorationAction;
 
     /**
      * A variant of {@link Simulator.StartSimulationAction} for abstract
@@ -4960,6 +5015,29 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
                 startAbstrSimulation();
+            }
+        }
+
+        public void refresh() {
+            boolean enabled =
+                getGrammarView() != null
+                    && getGrammarView().getErrors().isEmpty();
+            setEnabled(enabled);
+        }
+    }
+
+    /**
+     * A variant of ExplorationAction for abstract simulation.
+     */
+    private class AbstrExplorationAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        AbstrExplorationAction() {
+            super("Run Abstract Exploration", null);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(false)) {
+                doRunAbstrExploration();
             }
         }
 

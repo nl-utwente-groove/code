@@ -473,7 +473,7 @@ abstract public class AbstractGraphState extends
      * 
      * @invariant nr < nrNodes
      */
-    private int nr = -1;
+    protected int nr = -1;
 
     /** Returns the total number of fixed delta graphs. */
     static public int getFrozenGraphCount() {
