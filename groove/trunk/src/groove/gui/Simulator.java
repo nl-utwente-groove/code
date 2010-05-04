@@ -5367,7 +5367,5 @@ public class Simulator {
 
     /** Flag controlling if types should be used. */
     private static final boolean USE_TYPES = true;
-    /** Flag controlling if a report should be printed after quitting. */
-    private static final boolean REPORT = false;
 
 }

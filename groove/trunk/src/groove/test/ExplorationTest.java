@@ -268,8 +268,7 @@ public class ExplorationTest extends TestCase {
      * <li>Name of the production system, to be found in the same package as the
      * text file
      * <li>Name of the start state, to be found in the production system
-     * <li>Exploration strategy, in the input format of
-     * {@link groove.util.Generator.ExploreOption}
+     * <li>Exploration strategy
      * <li>Expected number of states
      * <li>Expected number of transitions; not tested if < 0
      * <li>(Optional) expected number of open states after exploration; not
@@ -297,8 +296,7 @@ public class ExplorationTest extends TestCase {
     /**
      * Tests exploration of a given grammar, saving the GTS if required.
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used,
-     *        in the format of {@link groove.util.Generator.ExploreOption}
+     * @param strategyDescr description of the exploration strategy to be used
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -361,8 +359,7 @@ public class ExplorationTest extends TestCase {
      * Tests exploration of a given grammar.
      * 
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used,
-     *        in the format of {@link groove.util.Generator.ExploreOption}
+     * @param strategyDescr description of the exploration strategy to be used
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -379,8 +376,7 @@ public class ExplorationTest extends TestCase {
      * and using a given exploration strategy.
      * @param grammarName name of the rule system to be tested
      * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used,
-     *        in the format of {@link Generator.ExploreOption}
+     * @param strategyDescr description of the exploration strategy to be used
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -398,8 +394,7 @@ public class ExplorationTest extends TestCase {
      * and using a given exploration strategy.
      * @param grammarName name of the rule system to be tested
      * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used,
-     *        in the format of {@link groove.util.Generator.ExploreOption}
+     * @param strategyDescr description of the exploration strategy to be used
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS

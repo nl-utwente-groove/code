@@ -231,5 +231,8 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private Collection<AbstractCondition<?>> complexSubConditions;
 
+    /**
+     * The set of nodes required as input parameters.
+     */
     protected Set<Node> requiredInputParameters;
 }
