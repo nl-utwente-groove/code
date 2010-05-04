@@ -3,6 +3,7 @@ grammar Label0;
 options {
   language = Java;
   output = AST;
+  ASTLabelType = CommonTree;
 }
 
 tokens {
@@ -60,7 +61,7 @@ tokens {
   DQUOTE = '"' ;
   DOLLAR = '$';
   UNDER  = '_';
-  BSLASH = '\\' ;
+  BSLASH = '\\';
 }
 
 @lexer::header {
@@ -87,6 +88,21 @@ import java.util.LinkedList;
     }
     public List<String> getErrors() {
         return errors;
+    }
+    
+    CommonTree concat(CommonTree seq) {
+        String result;
+        List children = seq.getChildren();
+        if (children == null) {
+            result = seq.getText();
+        } else {
+            StringBuilder builder = new StringBuilder();
+            for (Object token: seq.getChildren()) {
+                builder.append(((CommonTree) token).getText());
+            }
+            result = builder.toString();
+        }
+        return new CommonTree(new CommonToken(IDENT, result));
     }
 }
 
@@ -148,7 +164,7 @@ specialLabel
 actualLabel
    : TYPE COLON IDENT -> ^(ATOM ^(TYPE IDENT))
    | FLAG COLON IDENT -> ^(ATOM ^(FLAG IDENT))
-   | COLON text -> ^(ATOM text)
+   | COLON text -> ^(ATOM { concat($text.tree) })
    | PATH! COLON! regExpr
    | (graphDefault EOF) => { isGraph }? => graphLabel
    | (ruleLabel EOF) => { !isGraph }? => ruleLabel
@@ -159,7 +175,7 @@ text
    ;
 
 graphLabel
-   : graphDefault -> ^(ATOM graphDefault)
+   : graphDefault -> ^(ATOM { concat($graphDefault.tree) })
    ;
 
 graphDefault
@@ -173,7 +189,7 @@ ruleLabel
      )
    | simpleRuleLabel
    | LBRACE!
-     ( PLING^ unary
+     ( PLING^ regExpr
      | regExpr
      )
      RBRACE!
@@ -183,7 +199,7 @@ simpleRuleLabel
    : wildcard
    | EQUALS
    | sqText -> ^(ATOM sqText)
-   | ruleDefault -> ^(ATOM ruleDefault)
+   | ruleDefault -> ^(ATOM { concat($ruleDefault.tree) } )
    ;
 
 ruleDefault
@@ -228,17 +244,29 @@ wildcard
    ;
 
 sqText
-   : SQUOTE! (~(SQUOTE|BSLASH) | sqTextSpecial)* SQUOTE!;
+   : SQUOTE sqContent SQUOTE -> { concat($sqContent.tree) }
+   ;
 
-sqTextSpecial
-   : BSLASH! (BSLASH|SQUOTE)
+sqContent
+   : sqChar*
+   ;
+
+sqChar
+   : ~(SQUOTE|BSLASH) 
+   | BSLASH! (BSLASH|SQUOTE)
    ;
 
 dqText
-   : DQUOTE^ (~(DQUOTE|BSLASH) | dqTextSpecial)* DQUOTE!;
+   : DQUOTE dqContent DQUOTE -> ^(DQUOTE { concat($dqContent.tree) })
+   ;
 
-dqTextSpecial
-   : BSLASH! (BSLASH|DQUOTE)
+dqContent
+   : dqTextChar*
+   ;
+
+dqTextChar
+   : ~(DQUOTE|BSLASH)
+   | BSLASH! (BSLASH|DQUOTE)
    ;
 
 IDENT

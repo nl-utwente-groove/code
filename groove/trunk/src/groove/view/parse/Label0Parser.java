@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 Label0.g 2010-04-26 22:18:46
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 Label0.g 2010-05-04 09:28:18
 
 package groove.view.parse;
 import java.util.LinkedList;
@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 import org.antlr.runtime.tree.*;
 
-@SuppressWarnings("all")
 public class Label0Parser extends Parser {
     public static final String[] tokenNames = new String[] {
         "<invalid>", "<EOR>", "<DOWN>", "<UP>", "NEW", "DEL", "NOT", "USE", "CNEW", "REM", "FORALL", "FORALLX", "EXISTS", "NESTED", "INT", "REAL", "STRING", "BOOL", "ATTR", "PROD", "ARG", "PAR", "TYPE", "FLAG", "PATH", "EMPTY", "ATOM", "TRUE", "FALSE", "CONSTRAINT", "MINUS", "STAR", "PLUS", "DOT", "BAR", "HAT", "EQUALS", "LBRACE", "RBRACE", "LPAR", "RPAR", "LSQUARE", "RSQUARE", "PLING", "QUERY", "COLON", "COMMA", "SQUOTE", "DQUOTE", "DOLLAR", "UNDER", "BSLASH", "IDENT", "LABEL", "NUMBER", "LETTER", "IDENTCHAR", "DIGIT", "'\\n'"
@@ -115,20 +114,35 @@ public class Label0Parser extends Parser {
         public List<String> getErrors() {
             return errors;
         }
+        
+        CommonTree concat(CommonTree seq) {
+            String result;
+            List children = seq.getChildren();
+            if (children == null) {
+                result = seq.getText();
+            } else {
+                StringBuilder builder = new StringBuilder();
+                for (Object token: seq.getChildren()) {
+                    builder.append(((CommonTree) token).getText());
+                }
+                result = builder.toString();
+            }
+            return new CommonTree(new CommonToken(IDENT, result));
+        }
 
 
     public static class label_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "label"
-    // Label0.g:93:1: label : ( quantLabel EOF | specialLabel EOF );
+    // Label0.g:109:1: label : ( quantLabel EOF | specialLabel EOF );
     public final Label0Parser.label_return label() throws RecognitionException {
         Label0Parser.label_return retval = new Label0Parser.label_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token EOF2=null;
         Token EOF4=null;
@@ -137,41 +151,41 @@ public class Label0Parser extends Parser {
         Label0Parser.specialLabel_return specialLabel3 = null;
 
 
-        Object EOF2_tree=null;
-        Object EOF4_tree=null;
+        CommonTree EOF2_tree=null;
+        CommonTree EOF4_tree=null;
 
         try {
-            // Label0.g:94:4: ( quantLabel EOF | specialLabel EOF )
+            // Label0.g:110:4: ( quantLabel EOF | specialLabel EOF )
             int alt1=2;
             alt1 = dfa1.predict(input);
             switch (alt1) {
                 case 1 :
-                    // Label0.g:94:6: quantLabel EOF
+                    // Label0.g:110:6: quantLabel EOF
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_quantLabel_in_label486);
+                    pushFollow(FOLLOW_quantLabel_in_label494);
                     quantLabel1=quantLabel();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, quantLabel1.getTree());
-                    EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_label488); if (state.failed) return retval;
+                    EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_label496); if (state.failed) return retval;
 
                     }
                     break;
                 case 2 :
-                    // Label0.g:95:6: specialLabel EOF
+                    // Label0.g:111:6: specialLabel EOF
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_specialLabel_in_label496);
+                    pushFollow(FOLLOW_specialLabel_in_label504);
                     specialLabel3=specialLabel();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, specialLabel3.getTree());
-                    EOF4=(Token)match(input,EOF,FOLLOW_EOF_in_label498); if (state.failed) return retval;
+                    EOF4=(Token)match(input,EOF,FOLLOW_EOF_in_label506); if (state.failed) return retval;
 
                     }
                     break;
@@ -181,14 +195,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -198,17 +212,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "label"
 
     public static class quantLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "quantLabel"
-    // Label0.g:98:1: quantLabel : ( quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix ) | roleLabel );
+    // Label0.g:114:1: quantLabel : ( quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix ) | roleLabel );
     public final Label0Parser.quantLabel_return quantLabel() throws RecognitionException {
         Label0Parser.quantLabel_return retval = new Label0Parser.quantLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token EQUALS6=null;
         Token IDENT7=null;
@@ -226,11 +240,11 @@ public class Label0Parser extends Parser {
         Label0Parser.roleLabel_return roleLabel14 = null;
 
 
-        Object EQUALS6_tree=null;
-        Object IDENT7_tree=null;
-        Object COLON8_tree=null;
-        Object COLON10_tree=null;
-        Object COLON13_tree=null;
+        CommonTree EQUALS6_tree=null;
+        CommonTree IDENT7_tree=null;
+        CommonTree COLON8_tree=null;
+        CommonTree COLON10_tree=null;
+        CommonTree COLON13_tree=null;
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
         RewriteRuleTokenStream stream_IDENT=new RewriteRuleTokenStream(adaptor,"token IDENT");
         RewriteRuleTokenStream stream_EQUALS=new RewriteRuleTokenStream(adaptor,"token EQUALS");
@@ -238,20 +252,20 @@ public class Label0Parser extends Parser {
         RewriteRuleSubtreeStream stream_rolePrefix=new RewriteRuleSubtreeStream(adaptor,"rule rolePrefix");
         RewriteRuleSubtreeStream stream_quantPrefix=new RewriteRuleSubtreeStream(adaptor,"rule quantPrefix");
         try {
-            // Label0.g:99:4: ( quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix ) | roleLabel )
+            // Label0.g:115:4: ( quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix ) | roleLabel )
             int alt4=2;
             alt4 = dfa4.predict(input);
             switch (alt4) {
                 case 1 :
-                    // Label0.g:99:6: quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix )
+                    // Label0.g:115:6: quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix )
                     {
-                    pushFollow(FOLLOW_quantPrefix_in_quantLabel514);
+                    pushFollow(FOLLOW_quantPrefix_in_quantLabel522);
                     quantPrefix5=quantPrefix();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_quantPrefix.add(quantPrefix5.getTree());
-                    // Label0.g:100:6: ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix )
+                    // Label0.g:116:6: ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix )
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -270,34 +284,34 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt3) {
                         case 1 :
-                            // Label0.g:100:8: EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) )
+                            // Label0.g:116:8: EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) )
                             {
-                            EQUALS6=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_quantLabel523); if (state.failed) return retval; 
+                            EQUALS6=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_quantLabel531); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_EQUALS.add(EQUALS6);
 
-                            IDENT7=(Token)match(input,IDENT,FOLLOW_IDENT_in_quantLabel525); if (state.failed) return retval; 
+                            IDENT7=(Token)match(input,IDENT,FOLLOW_IDENT_in_quantLabel533); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_IDENT.add(IDENT7);
 
-                            COLON8=(Token)match(input,COLON,FOLLOW_COLON_in_quantLabel527); if (state.failed) return retval; 
+                            COLON8=(Token)match(input,COLON,FOLLOW_COLON_in_quantLabel535); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_COLON.add(COLON8);
 
-                            // Label0.g:101:8: ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) )
+                            // Label0.g:117:8: ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) )
                             int alt2=3;
                             alt2 = dfa2.predict(input);
                             switch (alt2) {
                                 case 1 :
-                                    // Label0.g:101:10: rolePrefix COLON actualLabel
+                                    // Label0.g:117:10: rolePrefix COLON actualLabel
                                     {
-                                    pushFollow(FOLLOW_rolePrefix_in_quantLabel538);
+                                    pushFollow(FOLLOW_rolePrefix_in_quantLabel546);
                                     rolePrefix9=rolePrefix();
 
                                     state._fsp--;
                                     if (state.failed) return retval;
                                     if ( state.backtracking==0 ) stream_rolePrefix.add(rolePrefix9.getTree());
-                                    COLON10=(Token)match(input,COLON,FOLLOW_COLON_in_quantLabel540); if (state.failed) return retval; 
+                                    COLON10=(Token)match(input,COLON,FOLLOW_COLON_in_quantLabel548); if (state.failed) return retval; 
                                     if ( state.backtracking==0 ) stream_COLON.add(COLON10);
 
-                                    pushFollow(FOLLOW_actualLabel_in_quantLabel542);
+                                    pushFollow(FOLLOW_actualLabel_in_quantLabel550);
                                     actualLabel11=actualLabel();
 
                                     state._fsp--;
@@ -316,13 +330,13 @@ public class Label0Parser extends Parser {
                                     retval.tree = root_0;
                                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                                    root_0 = (Object)adaptor.nil();
-                                    // 102:10: -> ^( rolePrefix IDENT actualLabel )
+                                    root_0 = (CommonTree)adaptor.nil();
+                                    // 118:10: -> ^( rolePrefix IDENT actualLabel )
                                     {
-                                        // Label0.g:102:13: ^( rolePrefix IDENT actualLabel )
+                                        // Label0.g:118:13: ^( rolePrefix IDENT actualLabel )
                                         {
-                                        Object root_1 = (Object)adaptor.nil();
-                                        root_1 = (Object)adaptor.becomeRoot(stream_rolePrefix.nextNode(), root_1);
+                                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                                        root_1 = (CommonTree)adaptor.becomeRoot(stream_rolePrefix.nextNode(), root_1);
 
                                         adaptor.addChild(root_1, stream_IDENT.nextNode());
                                         adaptor.addChild(root_1, stream_actualLabel.nextTree());
@@ -336,9 +350,9 @@ public class Label0Parser extends Parser {
                                     }
                                     break;
                                 case 2 :
-                                    // Label0.g:103:10: actualLabel
+                                    // Label0.g:119:10: actualLabel
                                     {
-                                    pushFollow(FOLLOW_actualLabel_in_quantLabel572);
+                                    pushFollow(FOLLOW_actualLabel_in_quantLabel580);
                                     actualLabel12=actualLabel();
 
                                     state._fsp--;
@@ -347,7 +361,7 @@ public class Label0Parser extends Parser {
 
 
                                     // AST REWRITE
-                                    // elements: actualLabel, IDENT
+                                    // elements: IDENT, actualLabel
                                     // token labels: 
                                     // rule labels: retval
                                     // token list labels: 
@@ -357,13 +371,13 @@ public class Label0Parser extends Parser {
                                     retval.tree = root_0;
                                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                                    root_0 = (Object)adaptor.nil();
-                                    // 104:10: -> ^( USE IDENT actualLabel )
+                                    root_0 = (CommonTree)adaptor.nil();
+                                    // 120:10: -> ^( USE IDENT actualLabel )
                                     {
-                                        // Label0.g:104:13: ^( USE IDENT actualLabel )
+                                        // Label0.g:120:13: ^( USE IDENT actualLabel )
                                         {
-                                        Object root_1 = (Object)adaptor.nil();
-                                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(USE, "USE"), root_1);
+                                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(USE, "USE"), root_1);
 
                                         adaptor.addChild(root_1, stream_IDENT.nextNode());
                                         adaptor.addChild(root_1, stream_actualLabel.nextTree());
@@ -377,11 +391,11 @@ public class Label0Parser extends Parser {
                                     }
                                     break;
                                 case 3 :
-                                    // Label0.g:105:10: 
+                                    // Label0.g:121:10: 
                                     {
 
                                     // AST REWRITE
-                                    // elements: quantPrefix, IDENT
+                                    // elements: IDENT, quantPrefix
                                     // token labels: 
                                     // rule labels: retval
                                     // token list labels: 
@@ -391,13 +405,13 @@ public class Label0Parser extends Parser {
                                     retval.tree = root_0;
                                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                                    root_0 = (Object)adaptor.nil();
-                                    // 105:10: -> ^( quantPrefix IDENT )
+                                    root_0 = (CommonTree)adaptor.nil();
+                                    // 121:10: -> ^( quantPrefix IDENT )
                                     {
-                                        // Label0.g:105:13: ^( quantPrefix IDENT )
+                                        // Label0.g:121:13: ^( quantPrefix IDENT )
                                         {
-                                        Object root_1 = (Object)adaptor.nil();
-                                        root_1 = (Object)adaptor.becomeRoot(stream_quantPrefix.nextNode(), root_1);
+                                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                                        root_1 = (CommonTree)adaptor.becomeRoot(stream_quantPrefix.nextNode(), root_1);
 
                                         adaptor.addChild(root_1, stream_IDENT.nextNode());
 
@@ -416,9 +430,9 @@ public class Label0Parser extends Parser {
                             }
                             break;
                         case 2 :
-                            // Label0.g:107:8: COLON
+                            // Label0.g:123:8: COLON
                             {
-                            COLON13=(Token)match(input,COLON,FOLLOW_COLON_in_quantLabel626); if (state.failed) return retval; 
+                            COLON13=(Token)match(input,COLON,FOLLOW_COLON_in_quantLabel634); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_COLON.add(COLON13);
 
 
@@ -434,8 +448,8 @@ public class Label0Parser extends Parser {
                             retval.tree = root_0;
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                            root_0 = (Object)adaptor.nil();
-                            // 108:10: -> quantPrefix
+                            root_0 = (CommonTree)adaptor.nil();
+                            // 124:10: -> quantPrefix
                             {
                                 adaptor.addChild(root_0, stream_quantPrefix.nextTree());
 
@@ -451,11 +465,11 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:110:6: roleLabel
+                    // Label0.g:126:6: roleLabel
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_roleLabel_in_quantLabel653);
+                    pushFollow(FOLLOW_roleLabel_in_quantLabel661);
                     roleLabel14=roleLabel();
 
                     state._fsp--;
@@ -470,14 +484,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -487,32 +501,32 @@ public class Label0Parser extends Parser {
     // $ANTLR end "quantLabel"
 
     public static class quantPrefix_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "quantPrefix"
-    // Label0.g:113:1: quantPrefix : ( FORALL | FORALLX | EXISTS );
+    // Label0.g:129:1: quantPrefix : ( FORALL | FORALLX | EXISTS );
     public final Label0Parser.quantPrefix_return quantPrefix() throws RecognitionException {
         Label0Parser.quantPrefix_return retval = new Label0Parser.quantPrefix_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token set15=null;
 
-        Object set15_tree=null;
+        CommonTree set15_tree=null;
 
         try {
-            // Label0.g:114:4: ( FORALL | FORALLX | EXISTS )
+            // Label0.g:130:4: ( FORALL | FORALLX | EXISTS )
             // Label0.g:
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
             set15=(Token)input.LT(1);
             if ( (input.LA(1)>=FORALL && input.LA(1)<=EXISTS) ) {
                 input.consume();
-                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set15));
+                if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set15));
                 state.errorRecovery=false;state.failed=false;
             }
             else {
@@ -528,14 +542,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -545,17 +559,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "quantPrefix"
 
     public static class roleLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "roleLabel"
-    // Label0.g:117:1: roleLabel : ( rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) ) | actualLabel );
+    // Label0.g:133:1: roleLabel : ( rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) ) | actualLabel );
     public final Label0Parser.roleLabel_return roleLabel() throws RecognitionException {
         Label0Parser.roleLabel_return retval = new Label0Parser.roleLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token EQUALS17=null;
         Token IDENT18=null;
@@ -570,30 +584,30 @@ public class Label0Parser extends Parser {
         Label0Parser.actualLabel_return actualLabel23 = null;
 
 
-        Object EQUALS17_tree=null;
-        Object IDENT18_tree=null;
-        Object COLON19_tree=null;
-        Object COLON21_tree=null;
+        CommonTree EQUALS17_tree=null;
+        CommonTree IDENT18_tree=null;
+        CommonTree COLON19_tree=null;
+        CommonTree COLON21_tree=null;
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
         RewriteRuleTokenStream stream_IDENT=new RewriteRuleTokenStream(adaptor,"token IDENT");
         RewriteRuleTokenStream stream_EQUALS=new RewriteRuleTokenStream(adaptor,"token EQUALS");
         RewriteRuleSubtreeStream stream_actualLabel=new RewriteRuleSubtreeStream(adaptor,"rule actualLabel");
         RewriteRuleSubtreeStream stream_rolePrefix=new RewriteRuleSubtreeStream(adaptor,"rule rolePrefix");
         try {
-            // Label0.g:118:4: ( rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) ) | actualLabel )
+            // Label0.g:134:4: ( rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) ) | actualLabel )
             int alt7=2;
             alt7 = dfa7.predict(input);
             switch (alt7) {
                 case 1 :
-                    // Label0.g:118:6: rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) )
+                    // Label0.g:134:6: rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) )
                     {
-                    pushFollow(FOLLOW_rolePrefix_in_roleLabel691);
+                    pushFollow(FOLLOW_rolePrefix_in_roleLabel699);
                     rolePrefix16=rolePrefix();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_rolePrefix.add(rolePrefix16.getTree());
-                    // Label0.g:119:6: ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) )
+                    // Label0.g:135:6: ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) )
                     int alt6=2;
                     int LA6_0 = input.LA(1);
 
@@ -612,18 +626,18 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt6) {
                         case 1 :
-                            // Label0.g:119:8: EQUALS IDENT COLON actualLabel
+                            // Label0.g:135:8: EQUALS IDENT COLON actualLabel
                             {
-                            EQUALS17=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_roleLabel700); if (state.failed) return retval; 
+                            EQUALS17=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_roleLabel708); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_EQUALS.add(EQUALS17);
 
-                            IDENT18=(Token)match(input,IDENT,FOLLOW_IDENT_in_roleLabel702); if (state.failed) return retval; 
+                            IDENT18=(Token)match(input,IDENT,FOLLOW_IDENT_in_roleLabel710); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_IDENT.add(IDENT18);
 
-                            COLON19=(Token)match(input,COLON,FOLLOW_COLON_in_roleLabel704); if (state.failed) return retval; 
+                            COLON19=(Token)match(input,COLON,FOLLOW_COLON_in_roleLabel712); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_COLON.add(COLON19);
 
-                            pushFollow(FOLLOW_actualLabel_in_roleLabel706);
+                            pushFollow(FOLLOW_actualLabel_in_roleLabel714);
                             actualLabel20=actualLabel();
 
                             state._fsp--;
@@ -632,7 +646,7 @@ public class Label0Parser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: rolePrefix, IDENT, actualLabel
+                            // elements: actualLabel, IDENT, rolePrefix
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -642,13 +656,13 @@ public class Label0Parser extends Parser {
                             retval.tree = root_0;
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                            root_0 = (Object)adaptor.nil();
-                            // 120:10: -> ^( rolePrefix IDENT actualLabel )
+                            root_0 = (CommonTree)adaptor.nil();
+                            // 136:10: -> ^( rolePrefix IDENT actualLabel )
                             {
-                                // Label0.g:120:13: ^( rolePrefix IDENT actualLabel )
+                                // Label0.g:136:13: ^( rolePrefix IDENT actualLabel )
                                 {
-                                Object root_1 = (Object)adaptor.nil();
-                                root_1 = (Object)adaptor.becomeRoot(stream_rolePrefix.nextNode(), root_1);
+                                CommonTree root_1 = (CommonTree)adaptor.nil();
+                                root_1 = (CommonTree)adaptor.becomeRoot(stream_rolePrefix.nextNode(), root_1);
 
                                 adaptor.addChild(root_1, stream_IDENT.nextNode());
                                 adaptor.addChild(root_1, stream_actualLabel.nextTree());
@@ -662,19 +676,19 @@ public class Label0Parser extends Parser {
                             }
                             break;
                         case 2 :
-                            // Label0.g:121:8: COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix )
+                            // Label0.g:137:8: COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix )
                             {
-                            COLON21=(Token)match(input,COLON,FOLLOW_COLON_in_roleLabel734); if (state.failed) return retval; 
+                            COLON21=(Token)match(input,COLON,FOLLOW_COLON_in_roleLabel742); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_COLON.add(COLON21);
 
-                            // Label0.g:122:8: ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix )
+                            // Label0.g:138:8: ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix )
                             int alt5=2;
                             alt5 = dfa5.predict(input);
                             switch (alt5) {
                                 case 1 :
-                                    // Label0.g:122:10: actualLabel
+                                    // Label0.g:138:10: actualLabel
                                     {
-                                    pushFollow(FOLLOW_actualLabel_in_roleLabel746);
+                                    pushFollow(FOLLOW_actualLabel_in_roleLabel754);
                                     actualLabel22=actualLabel();
 
                                     state._fsp--;
@@ -683,7 +697,7 @@ public class Label0Parser extends Parser {
 
 
                                     // AST REWRITE
-                                    // elements: rolePrefix, actualLabel
+                                    // elements: actualLabel, rolePrefix
                                     // token labels: 
                                     // rule labels: retval
                                     // token list labels: 
@@ -693,13 +707,13 @@ public class Label0Parser extends Parser {
                                     retval.tree = root_0;
                                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                                    root_0 = (Object)adaptor.nil();
-                                    // 123:10: -> ^( rolePrefix actualLabel )
+                                    root_0 = (CommonTree)adaptor.nil();
+                                    // 139:10: -> ^( rolePrefix actualLabel )
                                     {
-                                        // Label0.g:123:13: ^( rolePrefix actualLabel )
+                                        // Label0.g:139:13: ^( rolePrefix actualLabel )
                                         {
-                                        Object root_1 = (Object)adaptor.nil();
-                                        root_1 = (Object)adaptor.becomeRoot(stream_rolePrefix.nextNode(), root_1);
+                                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                                        root_1 = (CommonTree)adaptor.becomeRoot(stream_rolePrefix.nextNode(), root_1);
 
                                         adaptor.addChild(root_1, stream_actualLabel.nextTree());
 
@@ -712,7 +726,7 @@ public class Label0Parser extends Parser {
                                     }
                                     break;
                                 case 2 :
-                                    // Label0.g:124:10: 
+                                    // Label0.g:140:10: 
                                     {
 
                                     // AST REWRITE
@@ -726,8 +740,8 @@ public class Label0Parser extends Parser {
                                     retval.tree = root_0;
                                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                                    root_0 = (Object)adaptor.nil();
-                                    // 124:10: -> rolePrefix
+                                    root_0 = (CommonTree)adaptor.nil();
+                                    // 140:10: -> rolePrefix
                                     {
                                         adaptor.addChild(root_0, stream_rolePrefix.nextTree());
 
@@ -749,11 +763,11 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:127:6: actualLabel
+                    // Label0.g:143:6: actualLabel
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_actualLabel_in_roleLabel799);
+                    pushFollow(FOLLOW_actualLabel_in_roleLabel807);
                     actualLabel23=actualLabel();
 
                     state._fsp--;
@@ -768,14 +782,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -785,32 +799,32 @@ public class Label0Parser extends Parser {
     // $ANTLR end "roleLabel"
 
     public static class rolePrefix_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "rolePrefix"
-    // Label0.g:130:1: rolePrefix : ( NEW | DEL | NOT | USE | CNEW );
+    // Label0.g:146:1: rolePrefix : ( NEW | DEL | NOT | USE | CNEW );
     public final Label0Parser.rolePrefix_return rolePrefix() throws RecognitionException {
         Label0Parser.rolePrefix_return retval = new Label0Parser.rolePrefix_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token set24=null;
 
-        Object set24_tree=null;
+        CommonTree set24_tree=null;
 
         try {
-            // Label0.g:131:4: ( NEW | DEL | NOT | USE | CNEW )
+            // Label0.g:147:4: ( NEW | DEL | NOT | USE | CNEW )
             // Label0.g:
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
             set24=(Token)input.LT(1);
             if ( (input.LA(1)>=NEW && input.LA(1)<=CNEW) ) {
                 input.consume();
-                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set24));
+                if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set24));
                 state.errorRecovery=false;state.failed=false;
             }
             else {
@@ -826,14 +840,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -843,17 +857,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "rolePrefix"
 
     public static class specialLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "specialLabel"
-    // Label0.g:134:1: specialLabel : ( REM COLON text | PAR ( EQUALS LABEL )? COLON | NESTED COLON IDENT | INT COLON ( NUMBER | IDENT )? | REAL COLON ( rnumber | IDENT )? | STRING COLON ( dqText | IDENT )? | BOOL COLON ( TRUE | FALSE | IDENT )? | ATTR COLON | PROD COLON | ARG COLON NUMBER );
+    // Label0.g:150:1: specialLabel : ( REM COLON text | PAR ( EQUALS LABEL )? COLON | NESTED COLON IDENT | INT COLON ( NUMBER | IDENT )? | REAL COLON ( rnumber | IDENT )? | STRING COLON ( dqText | IDENT )? | BOOL COLON ( TRUE | FALSE | IDENT )? | ATTR COLON | PROD COLON | ARG COLON NUMBER );
     public final Label0Parser.specialLabel_return specialLabel() throws RecognitionException {
         Label0Parser.specialLabel_return retval = new Label0Parser.specialLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token REM25=null;
         Token COLON26=null;
@@ -890,37 +904,37 @@ public class Label0Parser extends Parser {
         Label0Parser.dqText_return dqText44 = null;
 
 
-        Object REM25_tree=null;
-        Object COLON26_tree=null;
-        Object PAR28_tree=null;
-        Object EQUALS29_tree=null;
-        Object LABEL30_tree=null;
-        Object COLON31_tree=null;
-        Object NESTED32_tree=null;
-        Object COLON33_tree=null;
-        Object IDENT34_tree=null;
-        Object INT35_tree=null;
-        Object COLON36_tree=null;
-        Object set37_tree=null;
-        Object REAL38_tree=null;
-        Object COLON39_tree=null;
-        Object IDENT41_tree=null;
-        Object STRING42_tree=null;
-        Object COLON43_tree=null;
-        Object IDENT45_tree=null;
-        Object BOOL46_tree=null;
-        Object COLON47_tree=null;
-        Object set48_tree=null;
-        Object ATTR49_tree=null;
-        Object COLON50_tree=null;
-        Object PROD51_tree=null;
-        Object COLON52_tree=null;
-        Object ARG53_tree=null;
-        Object COLON54_tree=null;
-        Object NUMBER55_tree=null;
+        CommonTree REM25_tree=null;
+        CommonTree COLON26_tree=null;
+        CommonTree PAR28_tree=null;
+        CommonTree EQUALS29_tree=null;
+        CommonTree LABEL30_tree=null;
+        CommonTree COLON31_tree=null;
+        CommonTree NESTED32_tree=null;
+        CommonTree COLON33_tree=null;
+        CommonTree IDENT34_tree=null;
+        CommonTree INT35_tree=null;
+        CommonTree COLON36_tree=null;
+        CommonTree set37_tree=null;
+        CommonTree REAL38_tree=null;
+        CommonTree COLON39_tree=null;
+        CommonTree IDENT41_tree=null;
+        CommonTree STRING42_tree=null;
+        CommonTree COLON43_tree=null;
+        CommonTree IDENT45_tree=null;
+        CommonTree BOOL46_tree=null;
+        CommonTree COLON47_tree=null;
+        CommonTree set48_tree=null;
+        CommonTree ATTR49_tree=null;
+        CommonTree COLON50_tree=null;
+        CommonTree PROD51_tree=null;
+        CommonTree COLON52_tree=null;
+        CommonTree ARG53_tree=null;
+        CommonTree COLON54_tree=null;
+        CommonTree NUMBER55_tree=null;
 
         try {
-            // Label0.g:135:4: ( REM COLON text | PAR ( EQUALS LABEL )? COLON | NESTED COLON IDENT | INT COLON ( NUMBER | IDENT )? | REAL COLON ( rnumber | IDENT )? | STRING COLON ( dqText | IDENT )? | BOOL COLON ( TRUE | FALSE | IDENT )? | ATTR COLON | PROD COLON | ARG COLON NUMBER )
+            // Label0.g:151:4: ( REM COLON text | PAR ( EQUALS LABEL )? COLON | NESTED COLON IDENT | INT COLON ( NUMBER | IDENT )? | REAL COLON ( rnumber | IDENT )? | STRING COLON ( dqText | IDENT )? | BOOL COLON ( TRUE | FALSE | IDENT )? | ATTR COLON | PROD COLON | ARG COLON NUMBER )
             int alt13=10;
             switch ( input.LA(1) ) {
             case REM:
@@ -983,17 +997,17 @@ public class Label0Parser extends Parser {
 
             switch (alt13) {
                 case 1 :
-                    // Label0.g:135:6: REM COLON text
+                    // Label0.g:151:6: REM COLON text
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    REM25=(Token)match(input,REM,FOLLOW_REM_in_specialLabel845); if (state.failed) return retval;
+                    REM25=(Token)match(input,REM,FOLLOW_REM_in_specialLabel853); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    REM25_tree = (Object)adaptor.create(REM25);
-                    root_0 = (Object)adaptor.becomeRoot(REM25_tree, root_0);
+                    REM25_tree = (CommonTree)adaptor.create(REM25);
+                    root_0 = (CommonTree)adaptor.becomeRoot(REM25_tree, root_0);
                     }
-                    COLON26=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel848); if (state.failed) return retval;
-                    pushFollow(FOLLOW_text_in_specialLabel851);
+                    COLON26=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel856); if (state.failed) return retval;
+                    pushFollow(FOLLOW_text_in_specialLabel859);
                     text27=text();
 
                     state._fsp--;
@@ -1003,16 +1017,16 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:136:6: PAR ( EQUALS LABEL )? COLON
+                    // Label0.g:152:6: PAR ( EQUALS LABEL )? COLON
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    PAR28=(Token)match(input,PAR,FOLLOW_PAR_in_specialLabel858); if (state.failed) return retval;
+                    PAR28=(Token)match(input,PAR,FOLLOW_PAR_in_specialLabel866); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    PAR28_tree = (Object)adaptor.create(PAR28);
-                    root_0 = (Object)adaptor.becomeRoot(PAR28_tree, root_0);
+                    PAR28_tree = (CommonTree)adaptor.create(PAR28);
+                    root_0 = (CommonTree)adaptor.becomeRoot(PAR28_tree, root_0);
                     }
-                    // Label0.g:136:11: ( EQUALS LABEL )?
+                    // Label0.g:152:11: ( EQUALS LABEL )?
                     int alt8=2;
                     int LA8_0 = input.LA(1);
 
@@ -1021,12 +1035,12 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt8) {
                         case 1 :
-                            // Label0.g:136:12: EQUALS LABEL
+                            // Label0.g:152:12: EQUALS LABEL
                             {
-                            EQUALS29=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_specialLabel862); if (state.failed) return retval;
-                            LABEL30=(Token)match(input,LABEL,FOLLOW_LABEL_in_specialLabel865); if (state.failed) return retval;
+                            EQUALS29=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_specialLabel870); if (state.failed) return retval;
+                            LABEL30=(Token)match(input,LABEL,FOLLOW_LABEL_in_specialLabel873); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            LABEL30_tree = (Object)adaptor.create(LABEL30);
+                            LABEL30_tree = (CommonTree)adaptor.create(LABEL30);
                             adaptor.addChild(root_0, LABEL30_tree);
                             }
 
@@ -1035,41 +1049,41 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    COLON31=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel869); if (state.failed) return retval;
+                    COLON31=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel877); if (state.failed) return retval;
 
                     }
                     break;
                 case 3 :
-                    // Label0.g:137:6: NESTED COLON IDENT
+                    // Label0.g:153:6: NESTED COLON IDENT
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    NESTED32=(Token)match(input,NESTED,FOLLOW_NESTED_in_specialLabel877); if (state.failed) return retval;
+                    NESTED32=(Token)match(input,NESTED,FOLLOW_NESTED_in_specialLabel885); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    NESTED32_tree = (Object)adaptor.create(NESTED32);
-                    root_0 = (Object)adaptor.becomeRoot(NESTED32_tree, root_0);
+                    NESTED32_tree = (CommonTree)adaptor.create(NESTED32);
+                    root_0 = (CommonTree)adaptor.becomeRoot(NESTED32_tree, root_0);
                     }
-                    COLON33=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel880); if (state.failed) return retval;
-                    IDENT34=(Token)match(input,IDENT,FOLLOW_IDENT_in_specialLabel883); if (state.failed) return retval;
+                    COLON33=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel888); if (state.failed) return retval;
+                    IDENT34=(Token)match(input,IDENT,FOLLOW_IDENT_in_specialLabel891); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    IDENT34_tree = (Object)adaptor.create(IDENT34);
+                    IDENT34_tree = (CommonTree)adaptor.create(IDENT34);
                     adaptor.addChild(root_0, IDENT34_tree);
                     }
 
                     }
                     break;
                 case 4 :
-                    // Label0.g:139:6: INT COLON ( NUMBER | IDENT )?
+                    // Label0.g:155:6: INT COLON ( NUMBER | IDENT )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    INT35=(Token)match(input,INT,FOLLOW_INT_in_specialLabel894); if (state.failed) return retval;
+                    INT35=(Token)match(input,INT,FOLLOW_INT_in_specialLabel902); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    INT35_tree = (Object)adaptor.create(INT35);
-                    root_0 = (Object)adaptor.becomeRoot(INT35_tree, root_0);
+                    INT35_tree = (CommonTree)adaptor.create(INT35);
+                    root_0 = (CommonTree)adaptor.becomeRoot(INT35_tree, root_0);
                     }
-                    COLON36=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel897); if (state.failed) return retval;
-                    // Label0.g:139:18: ( NUMBER | IDENT )?
+                    COLON36=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel905); if (state.failed) return retval;
+                    // Label0.g:155:18: ( NUMBER | IDENT )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -1083,7 +1097,7 @@ public class Label0Parser extends Parser {
                             set37=(Token)input.LT(1);
                             if ( input.LA(1)==IDENT||input.LA(1)==NUMBER ) {
                                 input.consume();
-                                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set37));
+                                if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set37));
                                 state.errorRecovery=false;state.failed=false;
                             }
                             else {
@@ -1102,17 +1116,17 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 5 :
-                    // Label0.g:140:6: REAL COLON ( rnumber | IDENT )?
+                    // Label0.g:156:6: REAL COLON ( rnumber | IDENT )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    REAL38=(Token)match(input,REAL,FOLLOW_REAL_in_specialLabel914); if (state.failed) return retval;
+                    REAL38=(Token)match(input,REAL,FOLLOW_REAL_in_specialLabel922); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    REAL38_tree = (Object)adaptor.create(REAL38);
-                    root_0 = (Object)adaptor.becomeRoot(REAL38_tree, root_0);
+                    REAL38_tree = (CommonTree)adaptor.create(REAL38);
+                    root_0 = (CommonTree)adaptor.becomeRoot(REAL38_tree, root_0);
                     }
-                    COLON39=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel917); if (state.failed) return retval;
-                    // Label0.g:140:19: ( rnumber | IDENT )?
+                    COLON39=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel925); if (state.failed) return retval;
+                    // Label0.g:156:19: ( rnumber | IDENT )?
                     int alt10=3;
                     int LA10_0 = input.LA(1);
 
@@ -1124,9 +1138,9 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt10) {
                         case 1 :
-                            // Label0.g:140:20: rnumber
+                            // Label0.g:156:20: rnumber
                             {
-                            pushFollow(FOLLOW_rnumber_in_specialLabel921);
+                            pushFollow(FOLLOW_rnumber_in_specialLabel929);
                             rnumber40=rnumber();
 
                             state._fsp--;
@@ -1136,11 +1150,11 @@ public class Label0Parser extends Parser {
                             }
                             break;
                         case 2 :
-                            // Label0.g:140:30: IDENT
+                            // Label0.g:156:30: IDENT
                             {
-                            IDENT41=(Token)match(input,IDENT,FOLLOW_IDENT_in_specialLabel925); if (state.failed) return retval;
+                            IDENT41=(Token)match(input,IDENT,FOLLOW_IDENT_in_specialLabel933); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            IDENT41_tree = (Object)adaptor.create(IDENT41);
+                            IDENT41_tree = (CommonTree)adaptor.create(IDENT41);
                             adaptor.addChild(root_0, IDENT41_tree);
                             }
 
@@ -1153,17 +1167,17 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 6 :
-                    // Label0.g:141:6: STRING COLON ( dqText | IDENT )?
+                    // Label0.g:157:6: STRING COLON ( dqText | IDENT )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    STRING42=(Token)match(input,STRING,FOLLOW_STRING_in_specialLabel934); if (state.failed) return retval;
+                    STRING42=(Token)match(input,STRING,FOLLOW_STRING_in_specialLabel942); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    STRING42_tree = (Object)adaptor.create(STRING42);
-                    root_0 = (Object)adaptor.becomeRoot(STRING42_tree, root_0);
+                    STRING42_tree = (CommonTree)adaptor.create(STRING42);
+                    root_0 = (CommonTree)adaptor.becomeRoot(STRING42_tree, root_0);
                     }
-                    COLON43=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel937); if (state.failed) return retval;
-                    // Label0.g:141:21: ( dqText | IDENT )?
+                    COLON43=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel945); if (state.failed) return retval;
+                    // Label0.g:157:21: ( dqText | IDENT )?
                     int alt11=3;
                     int LA11_0 = input.LA(1);
 
@@ -1175,9 +1189,9 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt11) {
                         case 1 :
-                            // Label0.g:141:22: dqText
+                            // Label0.g:157:22: dqText
                             {
-                            pushFollow(FOLLOW_dqText_in_specialLabel941);
+                            pushFollow(FOLLOW_dqText_in_specialLabel949);
                             dqText44=dqText();
 
                             state._fsp--;
@@ -1187,11 +1201,11 @@ public class Label0Parser extends Parser {
                             }
                             break;
                         case 2 :
-                            // Label0.g:141:31: IDENT
+                            // Label0.g:157:31: IDENT
                             {
-                            IDENT45=(Token)match(input,IDENT,FOLLOW_IDENT_in_specialLabel945); if (state.failed) return retval;
+                            IDENT45=(Token)match(input,IDENT,FOLLOW_IDENT_in_specialLabel953); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            IDENT45_tree = (Object)adaptor.create(IDENT45);
+                            IDENT45_tree = (CommonTree)adaptor.create(IDENT45);
                             adaptor.addChild(root_0, IDENT45_tree);
                             }
 
@@ -1204,17 +1218,17 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 7 :
-                    // Label0.g:142:6: BOOL COLON ( TRUE | FALSE | IDENT )?
+                    // Label0.g:158:6: BOOL COLON ( TRUE | FALSE | IDENT )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    BOOL46=(Token)match(input,BOOL,FOLLOW_BOOL_in_specialLabel954); if (state.failed) return retval;
+                    BOOL46=(Token)match(input,BOOL,FOLLOW_BOOL_in_specialLabel962); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    BOOL46_tree = (Object)adaptor.create(BOOL46);
-                    root_0 = (Object)adaptor.becomeRoot(BOOL46_tree, root_0);
+                    BOOL46_tree = (CommonTree)adaptor.create(BOOL46);
+                    root_0 = (CommonTree)adaptor.becomeRoot(BOOL46_tree, root_0);
                     }
-                    COLON47=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel957); if (state.failed) return retval;
-                    // Label0.g:142:19: ( TRUE | FALSE | IDENT )?
+                    COLON47=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel965); if (state.failed) return retval;
+                    // Label0.g:158:19: ( TRUE | FALSE | IDENT )?
                     int alt12=2;
                     int LA12_0 = input.LA(1);
 
@@ -1228,7 +1242,7 @@ public class Label0Parser extends Parser {
                             set48=(Token)input.LT(1);
                             if ( (input.LA(1)>=TRUE && input.LA(1)<=FALSE)||input.LA(1)==IDENT ) {
                                 input.consume();
-                                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set48));
+                                if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set48));
                                 state.errorRecovery=false;state.failed=false;
                             }
                             else {
@@ -1247,47 +1261,47 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 8 :
-                    // Label0.g:143:6: ATTR COLON
+                    // Label0.g:159:6: ATTR COLON
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    ATTR49=(Token)match(input,ATTR,FOLLOW_ATTR_in_specialLabel978); if (state.failed) return retval;
+                    ATTR49=(Token)match(input,ATTR,FOLLOW_ATTR_in_specialLabel986); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    ATTR49_tree = (Object)adaptor.create(ATTR49);
-                    root_0 = (Object)adaptor.becomeRoot(ATTR49_tree, root_0);
+                    ATTR49_tree = (CommonTree)adaptor.create(ATTR49);
+                    root_0 = (CommonTree)adaptor.becomeRoot(ATTR49_tree, root_0);
                     }
-                    COLON50=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel981); if (state.failed) return retval;
+                    COLON50=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel989); if (state.failed) return retval;
 
                     }
                     break;
                 case 9 :
-                    // Label0.g:144:6: PROD COLON
+                    // Label0.g:160:6: PROD COLON
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    PROD51=(Token)match(input,PROD,FOLLOW_PROD_in_specialLabel989); if (state.failed) return retval;
+                    PROD51=(Token)match(input,PROD,FOLLOW_PROD_in_specialLabel997); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    PROD51_tree = (Object)adaptor.create(PROD51);
-                    root_0 = (Object)adaptor.becomeRoot(PROD51_tree, root_0);
+                    PROD51_tree = (CommonTree)adaptor.create(PROD51);
+                    root_0 = (CommonTree)adaptor.becomeRoot(PROD51_tree, root_0);
                     }
-                    COLON52=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel992); if (state.failed) return retval;
+                    COLON52=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel1000); if (state.failed) return retval;
 
                     }
                     break;
                 case 10 :
-                    // Label0.g:145:6: ARG COLON NUMBER
+                    // Label0.g:161:6: ARG COLON NUMBER
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    ARG53=(Token)match(input,ARG,FOLLOW_ARG_in_specialLabel1000); if (state.failed) return retval;
+                    ARG53=(Token)match(input,ARG,FOLLOW_ARG_in_specialLabel1008); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    ARG53_tree = (Object)adaptor.create(ARG53);
-                    root_0 = (Object)adaptor.becomeRoot(ARG53_tree, root_0);
+                    ARG53_tree = (CommonTree)adaptor.create(ARG53);
+                    root_0 = (CommonTree)adaptor.becomeRoot(ARG53_tree, root_0);
                     }
-                    COLON54=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel1003); if (state.failed) return retval;
-                    NUMBER55=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_specialLabel1006); if (state.failed) return retval;
+                    COLON54=(Token)match(input,COLON,FOLLOW_COLON_in_specialLabel1011); if (state.failed) return retval;
+                    NUMBER55=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_specialLabel1014); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    NUMBER55_tree = (Object)adaptor.create(NUMBER55);
+                    NUMBER55_tree = (CommonTree)adaptor.create(NUMBER55);
                     adaptor.addChild(root_0, NUMBER55_tree);
                     }
 
@@ -1299,14 +1313,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -1316,17 +1330,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "specialLabel"
 
     public static class actualLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "actualLabel"
-    // Label0.g:148:1: actualLabel : ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM text ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel );
+    // Label0.g:164:1: actualLabel : ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel );
     public final Label0Parser.actualLabel_return actualLabel() throws RecognitionException {
         Label0Parser.actualLabel_return retval = new Label0Parser.actualLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token TYPE56=null;
         Token COLON57=null;
@@ -1346,35 +1360,35 @@ public class Label0Parser extends Parser {
         Label0Parser.ruleLabel_return ruleLabel68 = null;
 
 
-        Object TYPE56_tree=null;
-        Object COLON57_tree=null;
-        Object IDENT58_tree=null;
-        Object FLAG59_tree=null;
-        Object COLON60_tree=null;
-        Object IDENT61_tree=null;
-        Object COLON62_tree=null;
-        Object PATH64_tree=null;
-        Object COLON65_tree=null;
+        CommonTree TYPE56_tree=null;
+        CommonTree COLON57_tree=null;
+        CommonTree IDENT58_tree=null;
+        CommonTree FLAG59_tree=null;
+        CommonTree COLON60_tree=null;
+        CommonTree IDENT61_tree=null;
+        CommonTree COLON62_tree=null;
+        CommonTree PATH64_tree=null;
+        CommonTree COLON65_tree=null;
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
         RewriteRuleTokenStream stream_IDENT=new RewriteRuleTokenStream(adaptor,"token IDENT");
         RewriteRuleTokenStream stream_FLAG=new RewriteRuleTokenStream(adaptor,"token FLAG");
         RewriteRuleTokenStream stream_TYPE=new RewriteRuleTokenStream(adaptor,"token TYPE");
         RewriteRuleSubtreeStream stream_text=new RewriteRuleSubtreeStream(adaptor,"rule text");
         try {
-            // Label0.g:149:4: ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM text ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel )
+            // Label0.g:165:4: ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel )
             int alt14=6;
             alt14 = dfa14.predict(input);
             switch (alt14) {
                 case 1 :
-                    // Label0.g:149:6: TYPE COLON IDENT
+                    // Label0.g:165:6: TYPE COLON IDENT
                     {
-                    TYPE56=(Token)match(input,TYPE,FOLLOW_TYPE_in_actualLabel1021); if (state.failed) return retval; 
+                    TYPE56=(Token)match(input,TYPE,FOLLOW_TYPE_in_actualLabel1029); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_TYPE.add(TYPE56);
 
-                    COLON57=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1023); if (state.failed) return retval; 
+                    COLON57=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1031); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COLON.add(COLON57);
 
-                    IDENT58=(Token)match(input,IDENT,FOLLOW_IDENT_in_actualLabel1025); if (state.failed) return retval; 
+                    IDENT58=(Token)match(input,IDENT,FOLLOW_IDENT_in_actualLabel1033); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_IDENT.add(IDENT58);
 
 
@@ -1390,18 +1404,18 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 149:23: -> ^( ATOM ^( TYPE IDENT ) )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 165:23: -> ^( ATOM ^( TYPE IDENT ) )
                     {
-                        // Label0.g:149:26: ^( ATOM ^( TYPE IDENT ) )
+                        // Label0.g:165:26: ^( ATOM ^( TYPE IDENT ) )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
-                        // Label0.g:149:33: ^( TYPE IDENT )
+                        // Label0.g:165:33: ^( TYPE IDENT )
                         {
-                        Object root_2 = (Object)adaptor.nil();
-                        root_2 = (Object)adaptor.becomeRoot(stream_TYPE.nextNode(), root_2);
+                        CommonTree root_2 = (CommonTree)adaptor.nil();
+                        root_2 = (CommonTree)adaptor.becomeRoot(stream_TYPE.nextNode(), root_2);
 
                         adaptor.addChild(root_2, stream_IDENT.nextNode());
 
@@ -1417,21 +1431,21 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:150:6: FLAG COLON IDENT
+                    // Label0.g:166:6: FLAG COLON IDENT
                     {
-                    FLAG59=(Token)match(input,FLAG,FOLLOW_FLAG_in_actualLabel1044); if (state.failed) return retval; 
+                    FLAG59=(Token)match(input,FLAG,FOLLOW_FLAG_in_actualLabel1052); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_FLAG.add(FLAG59);
 
-                    COLON60=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1046); if (state.failed) return retval; 
+                    COLON60=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1054); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COLON.add(COLON60);
 
-                    IDENT61=(Token)match(input,IDENT,FOLLOW_IDENT_in_actualLabel1048); if (state.failed) return retval; 
+                    IDENT61=(Token)match(input,IDENT,FOLLOW_IDENT_in_actualLabel1056); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_IDENT.add(IDENT61);
 
 
 
                     // AST REWRITE
-                    // elements: FLAG, IDENT
+                    // elements: IDENT, FLAG
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1441,18 +1455,18 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 150:23: -> ^( ATOM ^( FLAG IDENT ) )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 166:23: -> ^( ATOM ^( FLAG IDENT ) )
                     {
-                        // Label0.g:150:26: ^( ATOM ^( FLAG IDENT ) )
+                        // Label0.g:166:26: ^( ATOM ^( FLAG IDENT ) )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
-                        // Label0.g:150:33: ^( FLAG IDENT )
+                        // Label0.g:166:33: ^( FLAG IDENT )
                         {
-                        Object root_2 = (Object)adaptor.nil();
-                        root_2 = (Object)adaptor.becomeRoot(stream_FLAG.nextNode(), root_2);
+                        CommonTree root_2 = (CommonTree)adaptor.nil();
+                        root_2 = (CommonTree)adaptor.becomeRoot(stream_FLAG.nextNode(), root_2);
 
                         adaptor.addChild(root_2, stream_IDENT.nextNode());
 
@@ -1468,12 +1482,12 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 3 :
-                    // Label0.g:151:6: COLON text
+                    // Label0.g:167:6: COLON text
                     {
-                    COLON62=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1067); if (state.failed) return retval; 
+                    COLON62=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1075); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COLON.add(COLON62);
 
-                    pushFollow(FOLLOW_text_in_actualLabel1069);
+                    pushFollow(FOLLOW_text_in_actualLabel1077);
                     text63=text();
 
                     state._fsp--;
@@ -1482,7 +1496,7 @@ public class Label0Parser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: text
+                    // elements: 
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1492,15 +1506,15 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 151:17: -> ^( ATOM text )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 167:17: -> ^( ATOM )
                     {
-                        // Label0.g:151:20: ^( ATOM text )
+                        // Label0.g:167:20: ^( ATOM )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
-                        adaptor.addChild(root_1, stream_text.nextTree());
+                        adaptor.addChild(root_1,  concat((text63!=null?((CommonTree)text63.tree):null)) );
 
                         adaptor.addChild(root_0, root_1);
                         }
@@ -1511,13 +1525,13 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 4 :
-                    // Label0.g:152:6: PATH COLON regExpr
+                    // Label0.g:168:6: PATH COLON regExpr
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    PATH64=(Token)match(input,PATH,FOLLOW_PATH_in_actualLabel1084); if (state.failed) return retval;
-                    COLON65=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1087); if (state.failed) return retval;
-                    pushFollow(FOLLOW_regExpr_in_actualLabel1090);
+                    PATH64=(Token)match(input,PATH,FOLLOW_PATH_in_actualLabel1092); if (state.failed) return retval;
+                    COLON65=(Token)match(input,COLON,FOLLOW_COLON_in_actualLabel1095); if (state.failed) return retval;
+                    pushFollow(FOLLOW_regExpr_in_actualLabel1098);
                     regExpr66=regExpr();
 
                     state._fsp--;
@@ -1527,15 +1541,15 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 5 :
-                    // Label0.g:153:6: ( graphDefault EOF )=>{...}? => graphLabel
+                    // Label0.g:169:6: ( graphDefault EOF )=>{...}? => graphLabel
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
                     if ( !(( isGraph )) ) {
                         if (state.backtracking>0) {state.failed=true; return retval;}
                         throw new FailedPredicateException(input, "actualLabel", " isGraph ");
                     }
-                    pushFollow(FOLLOW_graphLabel_in_actualLabel1109);
+                    pushFollow(FOLLOW_graphLabel_in_actualLabel1117);
                     graphLabel67=graphLabel();
 
                     state._fsp--;
@@ -1545,15 +1559,15 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 6 :
-                    // Label0.g:154:6: ( ruleLabel EOF )=>{...}? => ruleLabel
+                    // Label0.g:170:6: ( ruleLabel EOF )=>{...}? => ruleLabel
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
                     if ( !(( !isGraph )) ) {
                         if (state.backtracking>0) {state.failed=true; return retval;}
                         throw new FailedPredicateException(input, "actualLabel", " !isGraph ");
                     }
-                    pushFollow(FOLLOW_ruleLabel_in_actualLabel1128);
+                    pushFollow(FOLLOW_ruleLabel_in_actualLabel1136);
                     ruleLabel68=ruleLabel();
 
                     state._fsp--;
@@ -1568,14 +1582,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -1585,29 +1599,29 @@ public class Label0Parser extends Parser {
     // $ANTLR end "actualLabel"
 
     public static class text_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "text"
-    // Label0.g:157:1: text : (~ '\\n' )* ;
+    // Label0.g:173:1: text : (~ '\\n' )* ;
     public final Label0Parser.text_return text() throws RecognitionException {
         Label0Parser.text_return retval = new Label0Parser.text_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token set69=null;
 
-        Object set69_tree=null;
+        CommonTree set69_tree=null;
 
         try {
-            // Label0.g:158:4: ( (~ '\\n' )* )
-            // Label0.g:158:6: (~ '\\n' )*
+            // Label0.g:174:4: ( (~ '\\n' )* )
+            // Label0.g:174:6: (~ '\\n' )*
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            // Label0.g:158:6: (~ '\\n' )*
+            // Label0.g:174:6: (~ '\\n' )*
             loop15:
             do {
                 int alt15=2;
@@ -1620,12 +1634,12 @@ public class Label0Parser extends Parser {
 
                 switch (alt15) {
             	case 1 :
-            	    // Label0.g:158:7: ~ '\\n'
+            	    // Label0.g:174:7: ~ '\\n'
             	    {
             	    set69=(Token)input.LT(1);
             	    if ( (input.LA(1)>=NEW && input.LA(1)<=DIGIT) ) {
             	        input.consume();
-            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set69));
+            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set69));
             	        state.errorRecovery=false;state.failed=false;
             	    }
             	    else {
@@ -1650,14 +1664,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -1667,27 +1681,27 @@ public class Label0Parser extends Parser {
     // $ANTLR end "text"
 
     public static class graphLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "graphLabel"
-    // Label0.g:161:1: graphLabel : graphDefault -> ^( ATOM graphDefault ) ;
+    // Label0.g:177:1: graphLabel : graphDefault -> ^( ATOM ) ;
     public final Label0Parser.graphLabel_return graphLabel() throws RecognitionException {
         Label0Parser.graphLabel_return retval = new Label0Parser.graphLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Label0Parser.graphDefault_return graphDefault70 = null;
 
 
         RewriteRuleSubtreeStream stream_graphDefault=new RewriteRuleSubtreeStream(adaptor,"rule graphDefault");
         try {
-            // Label0.g:162:4: ( graphDefault -> ^( ATOM graphDefault ) )
-            // Label0.g:162:6: graphDefault
+            // Label0.g:178:4: ( graphDefault -> ^( ATOM ) )
+            // Label0.g:178:6: graphDefault
             {
-            pushFollow(FOLLOW_graphDefault_in_graphLabel1162);
+            pushFollow(FOLLOW_graphDefault_in_graphLabel1170);
             graphDefault70=graphDefault();
 
             state._fsp--;
@@ -1696,7 +1710,7 @@ public class Label0Parser extends Parser {
 
 
             // AST REWRITE
-            // elements: graphDefault
+            // elements: 
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1706,15 +1720,15 @@ public class Label0Parser extends Parser {
             retval.tree = root_0;
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-            root_0 = (Object)adaptor.nil();
-            // 162:19: -> ^( ATOM graphDefault )
+            root_0 = (CommonTree)adaptor.nil();
+            // 178:19: -> ^( ATOM )
             {
-                // Label0.g:162:22: ^( ATOM graphDefault )
+                // Label0.g:178:22: ^( ATOM )
                 {
-                Object root_1 = (Object)adaptor.nil();
-                root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                CommonTree root_1 = (CommonTree)adaptor.nil();
+                root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
-                adaptor.addChild(root_1, stream_graphDefault.nextTree());
+                adaptor.addChild(root_1,  concat((graphDefault70!=null?((CommonTree)graphDefault70.tree):null)) );
 
                 adaptor.addChild(root_0, root_1);
                 }
@@ -1728,14 +1742,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -1745,29 +1759,29 @@ public class Label0Parser extends Parser {
     // $ANTLR end "graphLabel"
 
     public static class graphDefault_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "graphDefault"
-    // Label0.g:165:1: graphDefault : (~ COLON )+ ;
+    // Label0.g:181:1: graphDefault : (~ COLON )+ ;
     public final Label0Parser.graphDefault_return graphDefault() throws RecognitionException {
         Label0Parser.graphDefault_return retval = new Label0Parser.graphDefault_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token set71=null;
 
-        Object set71_tree=null;
+        CommonTree set71_tree=null;
 
         try {
-            // Label0.g:166:4: ( (~ COLON )+ )
-            // Label0.g:166:6: (~ COLON )+
+            // Label0.g:182:4: ( (~ COLON )+ )
+            // Label0.g:182:6: (~ COLON )+
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            // Label0.g:166:6: (~ COLON )+
+            // Label0.g:182:6: (~ COLON )+
             int cnt16=0;
             loop16:
             do {
@@ -1781,12 +1795,12 @@ public class Label0Parser extends Parser {
 
                 switch (alt16) {
             	case 1 :
-            	    // Label0.g:166:7: ~ COLON
+            	    // Label0.g:182:7: ~ COLON
             	    {
             	    set71=(Token)input.LT(1);
             	    if ( (input.LA(1)>=NEW && input.LA(1)<=QUERY)||(input.LA(1)>=COMMA && input.LA(1)<=58) ) {
             	        input.consume();
-            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set71));
+            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set71));
             	        state.errorRecovery=false;state.failed=false;
             	    }
             	    else {
@@ -1816,14 +1830,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -1833,17 +1847,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "graphDefault"
 
     public static class ruleLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "ruleLabel"
-    // Label0.g:169:1: ruleLabel : ( PLING ( simpleRuleLabel | LBRACE regExpr RBRACE ) | simpleRuleLabel | LBRACE ( PLING regExpr | regExpr ) RBRACE );
+    // Label0.g:185:1: ruleLabel : ( PLING ( simpleRuleLabel | LBRACE regExpr RBRACE ) | simpleRuleLabel | LBRACE ( PLING regExpr | regExpr ) RBRACE );
     public final Label0Parser.ruleLabel_return ruleLabel() throws RecognitionException {
         Label0Parser.ruleLabel_return retval = new Label0Parser.ruleLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token PLING72=null;
         Token LBRACE74=null;
@@ -1862,15 +1876,15 @@ public class Label0Parser extends Parser {
         Label0Parser.regExpr_return regExpr81 = null;
 
 
-        Object PLING72_tree=null;
-        Object LBRACE74_tree=null;
-        Object RBRACE76_tree=null;
-        Object LBRACE78_tree=null;
-        Object PLING79_tree=null;
-        Object RBRACE82_tree=null;
+        CommonTree PLING72_tree=null;
+        CommonTree LBRACE74_tree=null;
+        CommonTree RBRACE76_tree=null;
+        CommonTree LBRACE78_tree=null;
+        CommonTree PLING79_tree=null;
+        CommonTree RBRACE82_tree=null;
 
         try {
-            // Label0.g:170:4: ( PLING ( simpleRuleLabel | LBRACE regExpr RBRACE ) | simpleRuleLabel | LBRACE ( PLING regExpr | regExpr ) RBRACE )
+            // Label0.g:186:4: ( PLING ( simpleRuleLabel | LBRACE regExpr RBRACE ) | simpleRuleLabel | LBRACE ( PLING regExpr | regExpr ) RBRACE )
             int alt19=3;
             switch ( input.LA(1) ) {
             case PLING:
@@ -1947,16 +1961,16 @@ public class Label0Parser extends Parser {
 
             switch (alt19) {
                 case 1 :
-                    // Label0.g:170:6: PLING ( simpleRuleLabel | LBRACE regExpr RBRACE )
+                    // Label0.g:186:6: PLING ( simpleRuleLabel | LBRACE regExpr RBRACE )
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    PLING72=(Token)match(input,PLING,FOLLOW_PLING_in_ruleLabel1204); if (state.failed) return retval;
+                    PLING72=(Token)match(input,PLING,FOLLOW_PLING_in_ruleLabel1212); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    PLING72_tree = (Object)adaptor.create(PLING72);
-                    root_0 = (Object)adaptor.becomeRoot(PLING72_tree, root_0);
+                    PLING72_tree = (CommonTree)adaptor.create(PLING72);
+                    root_0 = (CommonTree)adaptor.becomeRoot(PLING72_tree, root_0);
                     }
-                    // Label0.g:171:6: ( simpleRuleLabel | LBRACE regExpr RBRACE )
+                    // Label0.g:187:6: ( simpleRuleLabel | LBRACE regExpr RBRACE )
                     int alt17=2;
                     int LA17_0 = input.LA(1);
 
@@ -1975,9 +1989,9 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt17) {
                         case 1 :
-                            // Label0.g:171:8: simpleRuleLabel
+                            // Label0.g:187:8: simpleRuleLabel
                             {
-                            pushFollow(FOLLOW_simpleRuleLabel_in_ruleLabel1214);
+                            pushFollow(FOLLOW_simpleRuleLabel_in_ruleLabel1222);
                             simpleRuleLabel73=simpleRuleLabel();
 
                             state._fsp--;
@@ -1987,16 +2001,16 @@ public class Label0Parser extends Parser {
                             }
                             break;
                         case 2 :
-                            // Label0.g:172:8: LBRACE regExpr RBRACE
+                            // Label0.g:188:8: LBRACE regExpr RBRACE
                             {
-                            LBRACE74=(Token)match(input,LBRACE,FOLLOW_LBRACE_in_ruleLabel1223); if (state.failed) return retval;
-                            pushFollow(FOLLOW_regExpr_in_ruleLabel1226);
+                            LBRACE74=(Token)match(input,LBRACE,FOLLOW_LBRACE_in_ruleLabel1231); if (state.failed) return retval;
+                            pushFollow(FOLLOW_regExpr_in_ruleLabel1234);
                             regExpr75=regExpr();
 
                             state._fsp--;
                             if (state.failed) return retval;
                             if ( state.backtracking==0 ) adaptor.addChild(root_0, regExpr75.getTree());
-                            RBRACE76=(Token)match(input,RBRACE,FOLLOW_RBRACE_in_ruleLabel1228); if (state.failed) return retval;
+                            RBRACE76=(Token)match(input,RBRACE,FOLLOW_RBRACE_in_ruleLabel1236); if (state.failed) return retval;
 
                             }
                             break;
@@ -2007,11 +2021,11 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:174:6: simpleRuleLabel
+                    // Label0.g:190:6: simpleRuleLabel
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_simpleRuleLabel_in_ruleLabel1243);
+                    pushFollow(FOLLOW_simpleRuleLabel_in_ruleLabel1251);
                     simpleRuleLabel77=simpleRuleLabel();
 
                     state._fsp--;
@@ -2021,12 +2035,12 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 3 :
-                    // Label0.g:175:6: LBRACE ( PLING regExpr | regExpr ) RBRACE
+                    // Label0.g:191:6: LBRACE ( PLING regExpr | regExpr ) RBRACE
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    LBRACE78=(Token)match(input,LBRACE,FOLLOW_LBRACE_in_ruleLabel1250); if (state.failed) return retval;
-                    // Label0.g:176:6: ( PLING regExpr | regExpr )
+                    LBRACE78=(Token)match(input,LBRACE,FOLLOW_LBRACE_in_ruleLabel1258); if (state.failed) return retval;
+                    // Label0.g:192:6: ( PLING regExpr | regExpr )
                     int alt18=2;
                     int LA18_0 = input.LA(1);
 
@@ -2045,14 +2059,14 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt18) {
                         case 1 :
-                            // Label0.g:176:8: PLING regExpr
+                            // Label0.g:192:8: PLING regExpr
                             {
-                            PLING79=(Token)match(input,PLING,FOLLOW_PLING_in_ruleLabel1260); if (state.failed) return retval;
+                            PLING79=(Token)match(input,PLING,FOLLOW_PLING_in_ruleLabel1268); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            PLING79_tree = (Object)adaptor.create(PLING79);
-                            root_0 = (Object)adaptor.becomeRoot(PLING79_tree, root_0);
+                            PLING79_tree = (CommonTree)adaptor.create(PLING79);
+                            root_0 = (CommonTree)adaptor.becomeRoot(PLING79_tree, root_0);
                             }
-                            pushFollow(FOLLOW_regExpr_in_ruleLabel1263);
+                            pushFollow(FOLLOW_regExpr_in_ruleLabel1271);
                             regExpr80=regExpr();
 
                             state._fsp--;
@@ -2062,9 +2076,9 @@ public class Label0Parser extends Parser {
                             }
                             break;
                         case 2 :
-                            // Label0.g:177:8: regExpr
+                            // Label0.g:193:8: regExpr
                             {
-                            pushFollow(FOLLOW_regExpr_in_ruleLabel1272);
+                            pushFollow(FOLLOW_regExpr_in_ruleLabel1280);
                             regExpr81=regExpr();
 
                             state._fsp--;
@@ -2076,7 +2090,7 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    RBRACE82=(Token)match(input,RBRACE,FOLLOW_RBRACE_in_ruleLabel1286); if (state.failed) return retval;
+                    RBRACE82=(Token)match(input,RBRACE,FOLLOW_RBRACE_in_ruleLabel1294); if (state.failed) return retval;
 
                     }
                     break;
@@ -2086,14 +2100,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2103,17 +2117,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "ruleLabel"
 
     public static class simpleRuleLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "simpleRuleLabel"
-    // Label0.g:182:1: simpleRuleLabel : ( wildcard | EQUALS | sqText -> ^( ATOM sqText ) | ruleDefault -> ^( ATOM ruleDefault ) );
+    // Label0.g:198:1: simpleRuleLabel : ( wildcard | EQUALS | sqText -> ^( ATOM sqText ) | ruleDefault -> ^( ATOM ) );
     public final Label0Parser.simpleRuleLabel_return simpleRuleLabel() throws RecognitionException {
         Label0Parser.simpleRuleLabel_return retval = new Label0Parser.simpleRuleLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token EQUALS84=null;
         Label0Parser.wildcard_return wildcard83 = null;
@@ -2123,11 +2137,11 @@ public class Label0Parser extends Parser {
         Label0Parser.ruleDefault_return ruleDefault86 = null;
 
 
-        Object EQUALS84_tree=null;
+        CommonTree EQUALS84_tree=null;
         RewriteRuleSubtreeStream stream_ruleDefault=new RewriteRuleSubtreeStream(adaptor,"rule ruleDefault");
         RewriteRuleSubtreeStream stream_sqText=new RewriteRuleSubtreeStream(adaptor,"rule sqText");
         try {
-            // Label0.g:183:4: ( wildcard | EQUALS | sqText -> ^( ATOM sqText ) | ruleDefault -> ^( ATOM ruleDefault ) )
+            // Label0.g:199:4: ( wildcard | EQUALS | sqText -> ^( ATOM sqText ) | ruleDefault -> ^( ATOM ) )
             int alt20=4;
             switch ( input.LA(1) ) {
             case QUERY:
@@ -2206,11 +2220,11 @@ public class Label0Parser extends Parser {
 
             switch (alt20) {
                 case 1 :
-                    // Label0.g:183:6: wildcard
+                    // Label0.g:199:6: wildcard
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_wildcard_in_simpleRuleLabel1302);
+                    pushFollow(FOLLOW_wildcard_in_simpleRuleLabel1310);
                     wildcard83=wildcard();
 
                     state._fsp--;
@@ -2220,22 +2234,22 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:184:6: EQUALS
+                    // Label0.g:200:6: EQUALS
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    EQUALS84=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_simpleRuleLabel1309); if (state.failed) return retval;
+                    EQUALS84=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_simpleRuleLabel1317); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    EQUALS84_tree = (Object)adaptor.create(EQUALS84);
+                    EQUALS84_tree = (CommonTree)adaptor.create(EQUALS84);
                     adaptor.addChild(root_0, EQUALS84_tree);
                     }
 
                     }
                     break;
                 case 3 :
-                    // Label0.g:185:6: sqText
+                    // Label0.g:201:6: sqText
                     {
-                    pushFollow(FOLLOW_sqText_in_simpleRuleLabel1316);
+                    pushFollow(FOLLOW_sqText_in_simpleRuleLabel1324);
                     sqText85=sqText();
 
                     state._fsp--;
@@ -2254,13 +2268,13 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 185:13: -> ^( ATOM sqText )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 201:13: -> ^( ATOM sqText )
                     {
-                        // Label0.g:185:16: ^( ATOM sqText )
+                        // Label0.g:201:16: ^( ATOM sqText )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
                         adaptor.addChild(root_1, stream_sqText.nextTree());
 
@@ -2273,9 +2287,9 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 4 :
-                    // Label0.g:186:6: ruleDefault
+                    // Label0.g:202:6: ruleDefault
                     {
-                    pushFollow(FOLLOW_ruleDefault_in_simpleRuleLabel1331);
+                    pushFollow(FOLLOW_ruleDefault_in_simpleRuleLabel1339);
                     ruleDefault86=ruleDefault();
 
                     state._fsp--;
@@ -2284,7 +2298,7 @@ public class Label0Parser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ruleDefault
+                    // elements: 
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2294,15 +2308,15 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 186:18: -> ^( ATOM ruleDefault )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 202:18: -> ^( ATOM )
                     {
-                        // Label0.g:186:21: ^( ATOM ruleDefault )
+                        // Label0.g:202:21: ^( ATOM )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
-                        adaptor.addChild(root_1, stream_ruleDefault.nextTree());
+                        adaptor.addChild(root_1,  concat((ruleDefault86!=null?((CommonTree)ruleDefault86.tree):null)) );
 
                         adaptor.addChild(root_0, root_1);
                         }
@@ -2318,14 +2332,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2335,34 +2349,34 @@ public class Label0Parser extends Parser {
     // $ANTLR end "simpleRuleLabel"
 
     public static class ruleDefault_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "ruleDefault"
-    // Label0.g:189:1: ruleDefault : ~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )* ;
+    // Label0.g:205:1: ruleDefault : ~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )* ;
     public final Label0Parser.ruleDefault_return ruleDefault() throws RecognitionException {
         Label0Parser.ruleDefault_return retval = new Label0Parser.ruleDefault_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token set87=null;
         Token set88=null;
 
-        Object set87_tree=null;
-        Object set88_tree=null;
+        CommonTree set87_tree=null;
+        CommonTree set88_tree=null;
 
         try {
-            // Label0.g:190:4: (~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )* )
-            // Label0.g:190:6: ~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )*
+            // Label0.g:206:4: (~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )* )
+            // Label0.g:206:6: ~ ( EQUALS | QUERY | PLING | SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )*
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
             set87=(Token)input.LT(1);
             if ( (input.LA(1)>=NEW && input.LA(1)<=HAT)||(input.LA(1)>=LPAR && input.LA(1)<=RSQUARE)||input.LA(1)==COMMA||(input.LA(1)>=DQUOTE && input.LA(1)<=UNDER)||(input.LA(1)>=IDENT && input.LA(1)<=58) ) {
                 input.consume();
-                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set87));
+                if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set87));
                 state.errorRecovery=false;state.failed=false;
             }
             else {
@@ -2371,7 +2385,7 @@ public class Label0Parser extends Parser {
                 throw mse;
             }
 
-            // Label0.g:191:6: (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )*
+            // Label0.g:207:6: (~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON ) )*
             loop21:
             do {
                 int alt21=2;
@@ -2384,12 +2398,12 @@ public class Label0Parser extends Parser {
 
                 switch (alt21) {
             	case 1 :
-            	    // Label0.g:191:6: ~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON )
+            	    // Label0.g:207:6: ~ ( SQUOTE | LBRACE | RBRACE | BSLASH | COLON )
             	    {
             	    set88=(Token)input.LT(1);
             	    if ( (input.LA(1)>=NEW && input.LA(1)<=EQUALS)||(input.LA(1)>=LPAR && input.LA(1)<=QUERY)||input.LA(1)==COMMA||(input.LA(1)>=DQUOTE && input.LA(1)<=UNDER)||(input.LA(1)>=IDENT && input.LA(1)<=58) ) {
             	        input.consume();
-            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set88));
+            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set88));
             	        state.errorRecovery=false;state.failed=false;
             	    }
             	    else {
@@ -2414,14 +2428,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2431,17 +2445,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "ruleDefault"
 
     public static class rnumber_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "rnumber"
-    // Label0.g:194:1: rnumber : ( NUMBER ( DOT ( NUMBER )? )? | DOT NUMBER );
+    // Label0.g:210:1: rnumber : ( NUMBER ( DOT ( NUMBER )? )? | DOT NUMBER );
     public final Label0Parser.rnumber_return rnumber() throws RecognitionException {
         Label0Parser.rnumber_return retval = new Label0Parser.rnumber_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token NUMBER89=null;
         Token DOT90=null;
@@ -2449,14 +2463,14 @@ public class Label0Parser extends Parser {
         Token DOT92=null;
         Token NUMBER93=null;
 
-        Object NUMBER89_tree=null;
-        Object DOT90_tree=null;
-        Object NUMBER91_tree=null;
-        Object DOT92_tree=null;
-        Object NUMBER93_tree=null;
+        CommonTree NUMBER89_tree=null;
+        CommonTree DOT90_tree=null;
+        CommonTree NUMBER91_tree=null;
+        CommonTree DOT92_tree=null;
+        CommonTree NUMBER93_tree=null;
 
         try {
-            // Label0.g:195:4: ( NUMBER ( DOT ( NUMBER )? )? | DOT NUMBER )
+            // Label0.g:211:4: ( NUMBER ( DOT ( NUMBER )? )? | DOT NUMBER )
             int alt24=2;
             int LA24_0 = input.LA(1);
 
@@ -2475,16 +2489,16 @@ public class Label0Parser extends Parser {
             }
             switch (alt24) {
                 case 1 :
-                    // Label0.g:195:6: NUMBER ( DOT ( NUMBER )? )?
+                    // Label0.g:211:6: NUMBER ( DOT ( NUMBER )? )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    NUMBER89=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_rnumber1430); if (state.failed) return retval;
+                    NUMBER89=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_rnumber1437); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    NUMBER89_tree = (Object)adaptor.create(NUMBER89);
+                    NUMBER89_tree = (CommonTree)adaptor.create(NUMBER89);
                     adaptor.addChild(root_0, NUMBER89_tree);
                     }
-                    // Label0.g:195:13: ( DOT ( NUMBER )? )?
+                    // Label0.g:211:13: ( DOT ( NUMBER )? )?
                     int alt23=2;
                     int LA23_0 = input.LA(1);
 
@@ -2493,14 +2507,14 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt23) {
                         case 1 :
-                            // Label0.g:195:14: DOT ( NUMBER )?
+                            // Label0.g:211:14: DOT ( NUMBER )?
                             {
-                            DOT90=(Token)match(input,DOT,FOLLOW_DOT_in_rnumber1433); if (state.failed) return retval;
+                            DOT90=(Token)match(input,DOT,FOLLOW_DOT_in_rnumber1440); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            DOT90_tree = (Object)adaptor.create(DOT90);
+                            DOT90_tree = (CommonTree)adaptor.create(DOT90);
                             adaptor.addChild(root_0, DOT90_tree);
                             }
-                            // Label0.g:195:18: ( NUMBER )?
+                            // Label0.g:211:18: ( NUMBER )?
                             int alt22=2;
                             int LA22_0 = input.LA(1);
 
@@ -2509,11 +2523,11 @@ public class Label0Parser extends Parser {
                             }
                             switch (alt22) {
                                 case 1 :
-                                    // Label0.g:195:18: NUMBER
+                                    // Label0.g:211:18: NUMBER
                                     {
-                                    NUMBER91=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_rnumber1435); if (state.failed) return retval;
+                                    NUMBER91=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_rnumber1442); if (state.failed) return retval;
                                     if ( state.backtracking==0 ) {
-                                    NUMBER91_tree = (Object)adaptor.create(NUMBER91);
+                                    NUMBER91_tree = (CommonTree)adaptor.create(NUMBER91);
                                     adaptor.addChild(root_0, NUMBER91_tree);
                                     }
 
@@ -2532,18 +2546,18 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:196:6: DOT NUMBER
+                    // Label0.g:212:6: DOT NUMBER
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    DOT92=(Token)match(input,DOT,FOLLOW_DOT_in_rnumber1445); if (state.failed) return retval;
+                    DOT92=(Token)match(input,DOT,FOLLOW_DOT_in_rnumber1452); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    DOT92_tree = (Object)adaptor.create(DOT92);
+                    DOT92_tree = (CommonTree)adaptor.create(DOT92);
                     adaptor.addChild(root_0, DOT92_tree);
                     }
-                    NUMBER93=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_rnumber1447); if (state.failed) return retval;
+                    NUMBER93=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_rnumber1454); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    NUMBER93_tree = (Object)adaptor.create(NUMBER93);
+                    NUMBER93_tree = (CommonTree)adaptor.create(NUMBER93);
                     adaptor.addChild(root_0, NUMBER93_tree);
                     }
 
@@ -2555,14 +2569,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2572,29 +2586,29 @@ public class Label0Parser extends Parser {
     // $ANTLR end "rnumber"
 
     public static class regExpr_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "regExpr"
-    // Label0.g:199:1: regExpr : choice ;
+    // Label0.g:215:1: regExpr : choice ;
     public final Label0Parser.regExpr_return regExpr() throws RecognitionException {
         Label0Parser.regExpr_return retval = new Label0Parser.regExpr_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Label0Parser.choice_return choice94 = null;
 
 
 
         try {
-            // Label0.g:200:4: ( choice )
-            // Label0.g:200:6: choice
+            // Label0.g:216:4: ( choice )
+            // Label0.g:216:6: choice
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            pushFollow(FOLLOW_choice_in_regExpr1462);
+            pushFollow(FOLLOW_choice_in_regExpr1469);
             choice94=choice();
 
             state._fsp--;
@@ -2607,14 +2621,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2624,17 +2638,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "regExpr"
 
     public static class choice_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "choice"
-    // Label0.g:203:1: choice : sequence ( BAR choice )? ;
+    // Label0.g:219:1: choice : sequence ( BAR choice )? ;
     public final Label0Parser.choice_return choice() throws RecognitionException {
         Label0Parser.choice_return retval = new Label0Parser.choice_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token BAR96=null;
         Label0Parser.sequence_return sequence95 = null;
@@ -2642,21 +2656,21 @@ public class Label0Parser extends Parser {
         Label0Parser.choice_return choice97 = null;
 
 
-        Object BAR96_tree=null;
+        CommonTree BAR96_tree=null;
 
         try {
-            // Label0.g:204:4: ( sequence ( BAR choice )? )
-            // Label0.g:204:6: sequence ( BAR choice )?
+            // Label0.g:220:4: ( sequence ( BAR choice )? )
+            // Label0.g:220:6: sequence ( BAR choice )?
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            pushFollow(FOLLOW_sequence_in_choice1477);
+            pushFollow(FOLLOW_sequence_in_choice1484);
             sequence95=sequence();
 
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) adaptor.addChild(root_0, sequence95.getTree());
-            // Label0.g:204:15: ( BAR choice )?
+            // Label0.g:220:15: ( BAR choice )?
             int alt25=2;
             int LA25_0 = input.LA(1);
 
@@ -2665,14 +2679,14 @@ public class Label0Parser extends Parser {
             }
             switch (alt25) {
                 case 1 :
-                    // Label0.g:204:16: BAR choice
+                    // Label0.g:220:16: BAR choice
                     {
-                    BAR96=(Token)match(input,BAR,FOLLOW_BAR_in_choice1480); if (state.failed) return retval;
+                    BAR96=(Token)match(input,BAR,FOLLOW_BAR_in_choice1487); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    BAR96_tree = (Object)adaptor.create(BAR96);
-                    root_0 = (Object)adaptor.becomeRoot(BAR96_tree, root_0);
+                    BAR96_tree = (CommonTree)adaptor.create(BAR96);
+                    root_0 = (CommonTree)adaptor.becomeRoot(BAR96_tree, root_0);
                     }
-                    pushFollow(FOLLOW_choice_in_choice1483);
+                    pushFollow(FOLLOW_choice_in_choice1490);
                     choice97=choice();
 
                     state._fsp--;
@@ -2691,14 +2705,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2708,17 +2722,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "choice"
 
     public static class sequence_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "sequence"
-    // Label0.g:206:1: sequence : unary ( DOT sequence )? ;
+    // Label0.g:222:1: sequence : unary ( DOT sequence )? ;
     public final Label0Parser.sequence_return sequence() throws RecognitionException {
         Label0Parser.sequence_return retval = new Label0Parser.sequence_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token DOT99=null;
         Label0Parser.unary_return unary98 = null;
@@ -2726,21 +2740,21 @@ public class Label0Parser extends Parser {
         Label0Parser.sequence_return sequence100 = null;
 
 
-        Object DOT99_tree=null;
+        CommonTree DOT99_tree=null;
 
         try {
-            // Label0.g:207:4: ( unary ( DOT sequence )? )
-            // Label0.g:207:6: unary ( DOT sequence )?
+            // Label0.g:223:4: ( unary ( DOT sequence )? )
+            // Label0.g:223:6: unary ( DOT sequence )?
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            pushFollow(FOLLOW_unary_in_sequence1497);
+            pushFollow(FOLLOW_unary_in_sequence1504);
             unary98=unary();
 
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) adaptor.addChild(root_0, unary98.getTree());
-            // Label0.g:207:12: ( DOT sequence )?
+            // Label0.g:223:12: ( DOT sequence )?
             int alt26=2;
             int LA26_0 = input.LA(1);
 
@@ -2749,14 +2763,14 @@ public class Label0Parser extends Parser {
             }
             switch (alt26) {
                 case 1 :
-                    // Label0.g:207:13: DOT sequence
+                    // Label0.g:223:13: DOT sequence
                     {
-                    DOT99=(Token)match(input,DOT,FOLLOW_DOT_in_sequence1500); if (state.failed) return retval;
+                    DOT99=(Token)match(input,DOT,FOLLOW_DOT_in_sequence1507); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    DOT99_tree = (Object)adaptor.create(DOT99);
-                    root_0 = (Object)adaptor.becomeRoot(DOT99_tree, root_0);
+                    DOT99_tree = (CommonTree)adaptor.create(DOT99);
+                    root_0 = (CommonTree)adaptor.becomeRoot(DOT99_tree, root_0);
                     }
-                    pushFollow(FOLLOW_sequence_in_sequence1503);
+                    pushFollow(FOLLOW_sequence_in_sequence1510);
                     sequence100=sequence();
 
                     state._fsp--;
@@ -2775,14 +2789,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -2792,17 +2806,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "sequence"
 
     public static class unary_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "unary"
-    // Label0.g:209:1: unary : ( MINUS unary | atom ( STAR | PLUS )? | EQUALS | LPAR regExpr RPAR ( STAR | PLUS )? | wildcard ( STAR | PLUS )? );
+    // Label0.g:225:1: unary : ( MINUS unary | atom ( STAR | PLUS )? | EQUALS | LPAR regExpr RPAR ( STAR | PLUS )? | wildcard ( STAR | PLUS )? );
     public final Label0Parser.unary_return unary() throws RecognitionException {
         Label0Parser.unary_return retval = new Label0Parser.unary_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token MINUS101=null;
         Token STAR104=null;
@@ -2823,19 +2837,19 @@ public class Label0Parser extends Parser {
         Label0Parser.wildcard_return wildcard112 = null;
 
 
-        Object MINUS101_tree=null;
-        Object STAR104_tree=null;
-        Object PLUS105_tree=null;
-        Object EQUALS106_tree=null;
-        Object LPAR107_tree=null;
-        Object RPAR109_tree=null;
-        Object STAR110_tree=null;
-        Object PLUS111_tree=null;
-        Object STAR113_tree=null;
-        Object PLUS114_tree=null;
+        CommonTree MINUS101_tree=null;
+        CommonTree STAR104_tree=null;
+        CommonTree PLUS105_tree=null;
+        CommonTree EQUALS106_tree=null;
+        CommonTree LPAR107_tree=null;
+        CommonTree RPAR109_tree=null;
+        CommonTree STAR110_tree=null;
+        CommonTree PLUS111_tree=null;
+        CommonTree STAR113_tree=null;
+        CommonTree PLUS114_tree=null;
 
         try {
-            // Label0.g:210:4: ( MINUS unary | atom ( STAR | PLUS )? | EQUALS | LPAR regExpr RPAR ( STAR | PLUS )? | wildcard ( STAR | PLUS )? )
+            // Label0.g:226:4: ( MINUS unary | atom ( STAR | PLUS )? | EQUALS | LPAR regExpr RPAR ( STAR | PLUS )? | wildcard ( STAR | PLUS )? )
             int alt30=5;
             switch ( input.LA(1) ) {
             case MINUS:
@@ -2876,16 +2890,16 @@ public class Label0Parser extends Parser {
 
             switch (alt30) {
                 case 1 :
-                    // Label0.g:210:6: MINUS unary
+                    // Label0.g:226:6: MINUS unary
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    MINUS101=(Token)match(input,MINUS,FOLLOW_MINUS_in_unary1517); if (state.failed) return retval;
+                    MINUS101=(Token)match(input,MINUS,FOLLOW_MINUS_in_unary1524); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    MINUS101_tree = (Object)adaptor.create(MINUS101);
-                    root_0 = (Object)adaptor.becomeRoot(MINUS101_tree, root_0);
+                    MINUS101_tree = (CommonTree)adaptor.create(MINUS101);
+                    root_0 = (CommonTree)adaptor.becomeRoot(MINUS101_tree, root_0);
                     }
-                    pushFollow(FOLLOW_unary_in_unary1520);
+                    pushFollow(FOLLOW_unary_in_unary1527);
                     unary102=unary();
 
                     state._fsp--;
@@ -2895,17 +2909,17 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:211:6: atom ( STAR | PLUS )?
+                    // Label0.g:227:6: atom ( STAR | PLUS )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_atom_in_unary1527);
+                    pushFollow(FOLLOW_atom_in_unary1534);
                     atom103=atom();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, atom103.getTree());
-                    // Label0.g:211:11: ( STAR | PLUS )?
+                    // Label0.g:227:11: ( STAR | PLUS )?
                     int alt27=3;
                     int LA27_0 = input.LA(1);
 
@@ -2917,23 +2931,23 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt27) {
                         case 1 :
-                            // Label0.g:211:12: STAR
+                            // Label0.g:227:12: STAR
                             {
-                            STAR104=(Token)match(input,STAR,FOLLOW_STAR_in_unary1530); if (state.failed) return retval;
+                            STAR104=(Token)match(input,STAR,FOLLOW_STAR_in_unary1537); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            STAR104_tree = (Object)adaptor.create(STAR104);
-                            root_0 = (Object)adaptor.becomeRoot(STAR104_tree, root_0);
+                            STAR104_tree = (CommonTree)adaptor.create(STAR104);
+                            root_0 = (CommonTree)adaptor.becomeRoot(STAR104_tree, root_0);
                             }
 
                             }
                             break;
                         case 2 :
-                            // Label0.g:211:20: PLUS
+                            // Label0.g:227:20: PLUS
                             {
-                            PLUS105=(Token)match(input,PLUS,FOLLOW_PLUS_in_unary1535); if (state.failed) return retval;
+                            PLUS105=(Token)match(input,PLUS,FOLLOW_PLUS_in_unary1542); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            PLUS105_tree = (Object)adaptor.create(PLUS105);
-                            root_0 = (Object)adaptor.becomeRoot(PLUS105_tree, root_0);
+                            PLUS105_tree = (CommonTree)adaptor.create(PLUS105);
+                            root_0 = (CommonTree)adaptor.becomeRoot(PLUS105_tree, root_0);
                             }
 
                             }
@@ -2945,32 +2959,32 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 3 :
-                    // Label0.g:212:6: EQUALS
+                    // Label0.g:228:6: EQUALS
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    EQUALS106=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_unary1545); if (state.failed) return retval;
+                    EQUALS106=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_unary1552); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    EQUALS106_tree = (Object)adaptor.create(EQUALS106);
+                    EQUALS106_tree = (CommonTree)adaptor.create(EQUALS106);
                     adaptor.addChild(root_0, EQUALS106_tree);
                     }
 
                     }
                     break;
                 case 4 :
-                    // Label0.g:213:6: LPAR regExpr RPAR ( STAR | PLUS )?
+                    // Label0.g:229:6: LPAR regExpr RPAR ( STAR | PLUS )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    LPAR107=(Token)match(input,LPAR,FOLLOW_LPAR_in_unary1552); if (state.failed) return retval;
-                    pushFollow(FOLLOW_regExpr_in_unary1555);
+                    LPAR107=(Token)match(input,LPAR,FOLLOW_LPAR_in_unary1559); if (state.failed) return retval;
+                    pushFollow(FOLLOW_regExpr_in_unary1562);
                     regExpr108=regExpr();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, regExpr108.getTree());
-                    RPAR109=(Token)match(input,RPAR,FOLLOW_RPAR_in_unary1557); if (state.failed) return retval;
-                    // Label0.g:213:26: ( STAR | PLUS )?
+                    RPAR109=(Token)match(input,RPAR,FOLLOW_RPAR_in_unary1564); if (state.failed) return retval;
+                    // Label0.g:229:26: ( STAR | PLUS )?
                     int alt28=3;
                     int LA28_0 = input.LA(1);
 
@@ -2982,23 +2996,23 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt28) {
                         case 1 :
-                            // Label0.g:213:27: STAR
+                            // Label0.g:229:27: STAR
                             {
-                            STAR110=(Token)match(input,STAR,FOLLOW_STAR_in_unary1561); if (state.failed) return retval;
+                            STAR110=(Token)match(input,STAR,FOLLOW_STAR_in_unary1568); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            STAR110_tree = (Object)adaptor.create(STAR110);
-                            root_0 = (Object)adaptor.becomeRoot(STAR110_tree, root_0);
+                            STAR110_tree = (CommonTree)adaptor.create(STAR110);
+                            root_0 = (CommonTree)adaptor.becomeRoot(STAR110_tree, root_0);
                             }
 
                             }
                             break;
                         case 2 :
-                            // Label0.g:213:35: PLUS
+                            // Label0.g:229:35: PLUS
                             {
-                            PLUS111=(Token)match(input,PLUS,FOLLOW_PLUS_in_unary1566); if (state.failed) return retval;
+                            PLUS111=(Token)match(input,PLUS,FOLLOW_PLUS_in_unary1573); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            PLUS111_tree = (Object)adaptor.create(PLUS111);
-                            root_0 = (Object)adaptor.becomeRoot(PLUS111_tree, root_0);
+                            PLUS111_tree = (CommonTree)adaptor.create(PLUS111);
+                            root_0 = (CommonTree)adaptor.becomeRoot(PLUS111_tree, root_0);
                             }
 
                             }
@@ -3010,17 +3024,17 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 5 :
-                    // Label0.g:214:6: wildcard ( STAR | PLUS )?
+                    // Label0.g:230:6: wildcard ( STAR | PLUS )?
                     {
-                    root_0 = (Object)adaptor.nil();
+                    root_0 = (CommonTree)adaptor.nil();
 
-                    pushFollow(FOLLOW_wildcard_in_unary1576);
+                    pushFollow(FOLLOW_wildcard_in_unary1583);
                     wildcard112=wildcard();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, wildcard112.getTree());
-                    // Label0.g:214:15: ( STAR | PLUS )?
+                    // Label0.g:230:15: ( STAR | PLUS )?
                     int alt29=3;
                     int LA29_0 = input.LA(1);
 
@@ -3032,23 +3046,23 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt29) {
                         case 1 :
-                            // Label0.g:214:16: STAR
+                            // Label0.g:230:16: STAR
                             {
-                            STAR113=(Token)match(input,STAR,FOLLOW_STAR_in_unary1579); if (state.failed) return retval;
+                            STAR113=(Token)match(input,STAR,FOLLOW_STAR_in_unary1586); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            STAR113_tree = (Object)adaptor.create(STAR113);
-                            root_0 = (Object)adaptor.becomeRoot(STAR113_tree, root_0);
+                            STAR113_tree = (CommonTree)adaptor.create(STAR113);
+                            root_0 = (CommonTree)adaptor.becomeRoot(STAR113_tree, root_0);
                             }
 
                             }
                             break;
                         case 2 :
-                            // Label0.g:214:24: PLUS
+                            // Label0.g:230:24: PLUS
                             {
-                            PLUS114=(Token)match(input,PLUS,FOLLOW_PLUS_in_unary1584); if (state.failed) return retval;
+                            PLUS114=(Token)match(input,PLUS,FOLLOW_PLUS_in_unary1591); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            PLUS114_tree = (Object)adaptor.create(PLUS114);
-                            root_0 = (Object)adaptor.becomeRoot(PLUS114_tree, root_0);
+                            PLUS114_tree = (CommonTree)adaptor.create(PLUS114);
+                            root_0 = (CommonTree)adaptor.becomeRoot(PLUS114_tree, root_0);
                             }
 
                             }
@@ -3065,14 +3079,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -3082,17 +3096,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "unary"
 
     public static class atom_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "atom"
-    // Label0.g:217:1: atom : ( sqText -> ^( ATOM sqText ) | atomLabel -> ^( ATOM atomLabel ) );
+    // Label0.g:233:1: atom : ( sqText -> ^( ATOM sqText ) | atomLabel -> ^( ATOM atomLabel ) );
     public final Label0Parser.atom_return atom() throws RecognitionException {
         Label0Parser.atom_return retval = new Label0Parser.atom_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Label0Parser.sqText_return sqText115 = null;
 
@@ -3102,7 +3116,7 @@ public class Label0Parser extends Parser {
         RewriteRuleSubtreeStream stream_sqText=new RewriteRuleSubtreeStream(adaptor,"rule sqText");
         RewriteRuleSubtreeStream stream_atomLabel=new RewriteRuleSubtreeStream(adaptor,"rule atomLabel");
         try {
-            // Label0.g:218:4: ( sqText -> ^( ATOM sqText ) | atomLabel -> ^( ATOM atomLabel ) )
+            // Label0.g:234:4: ( sqText -> ^( ATOM sqText ) | atomLabel -> ^( ATOM atomLabel ) )
             int alt31=2;
             int LA31_0 = input.LA(1);
 
@@ -3121,9 +3135,9 @@ public class Label0Parser extends Parser {
             }
             switch (alt31) {
                 case 1 :
-                    // Label0.g:218:6: sqText
+                    // Label0.g:234:6: sqText
                     {
-                    pushFollow(FOLLOW_sqText_in_atom1602);
+                    pushFollow(FOLLOW_sqText_in_atom1609);
                     sqText115=sqText();
 
                     state._fsp--;
@@ -3142,13 +3156,13 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 218:13: -> ^( ATOM sqText )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 234:13: -> ^( ATOM sqText )
                     {
-                        // Label0.g:218:16: ^( ATOM sqText )
+                        // Label0.g:234:16: ^( ATOM sqText )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
                         adaptor.addChild(root_1, stream_sqText.nextTree());
 
@@ -3161,9 +3175,9 @@ public class Label0Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // Label0.g:219:6: atomLabel
+                    // Label0.g:235:6: atomLabel
                     {
-                    pushFollow(FOLLOW_atomLabel_in_atom1617);
+                    pushFollow(FOLLOW_atomLabel_in_atom1624);
                     atomLabel116=atomLabel();
 
                     state._fsp--;
@@ -3182,13 +3196,13 @@ public class Label0Parser extends Parser {
                     retval.tree = root_0;
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
-                    root_0 = (Object)adaptor.nil();
-                    // 219:16: -> ^( ATOM atomLabel )
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 235:16: -> ^( ATOM atomLabel )
                     {
-                        // Label0.g:219:19: ^( ATOM atomLabel )
+                        // Label0.g:235:19: ^( ATOM atomLabel )
                         {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ATOM, "ATOM"), root_1);
+                        CommonTree root_1 = (CommonTree)adaptor.nil();
+                        root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ATOM, "ATOM"), root_1);
 
                         adaptor.addChild(root_1, stream_atomLabel.nextTree());
 
@@ -3206,14 +3220,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -3223,32 +3237,32 @@ public class Label0Parser extends Parser {
     // $ANTLR end "atom"
 
     public static class atomLabel_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "atomLabel"
-    // Label0.g:222:1: atomLabel : ( NUMBER | IDENT | LABEL );
+    // Label0.g:238:1: atomLabel : ( NUMBER | IDENT | LABEL );
     public final Label0Parser.atomLabel_return atomLabel() throws RecognitionException {
         Label0Parser.atomLabel_return retval = new Label0Parser.atomLabel_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token set117=null;
 
-        Object set117_tree=null;
+        CommonTree set117_tree=null;
 
         try {
-            // Label0.g:223:4: ( NUMBER | IDENT | LABEL )
+            // Label0.g:239:4: ( NUMBER | IDENT | LABEL )
             // Label0.g:
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
             set117=(Token)input.LT(1);
             if ( (input.LA(1)>=IDENT && input.LA(1)<=NUMBER) ) {
                 input.consume();
-                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set117));
+                if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set117));
                 state.errorRecovery=false;state.failed=false;
             }
             else {
@@ -3264,14 +3278,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -3281,17 +3295,17 @@ public class Label0Parser extends Parser {
     // $ANTLR end "atomLabel"
 
     public static class wildcard_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "wildcard"
-    // Label0.g:226:1: wildcard : QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )? ;
+    // Label0.g:242:1: wildcard : QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )? ;
     public final Label0Parser.wildcard_return wildcard() throws RecognitionException {
         Label0Parser.wildcard_return retval = new Label0Parser.wildcard_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token QUERY118=null;
         Token IDENT119=null;
@@ -3304,25 +3318,25 @@ public class Label0Parser extends Parser {
         Label0Parser.atom_return atom124 = null;
 
 
-        Object QUERY118_tree=null;
-        Object IDENT119_tree=null;
-        Object LSQUARE120_tree=null;
-        Object HAT121_tree=null;
-        Object COMMA123_tree=null;
-        Object RSQUARE125_tree=null;
+        CommonTree QUERY118_tree=null;
+        CommonTree IDENT119_tree=null;
+        CommonTree LSQUARE120_tree=null;
+        CommonTree HAT121_tree=null;
+        CommonTree COMMA123_tree=null;
+        CommonTree RSQUARE125_tree=null;
 
         try {
-            // Label0.g:227:4: ( QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )? )
-            // Label0.g:227:6: QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )?
+            // Label0.g:243:4: ( QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )? )
+            // Label0.g:243:6: QUERY ( IDENT )? ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )?
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            QUERY118=(Token)match(input,QUERY,FOLLOW_QUERY_in_wildcard1666); if (state.failed) return retval;
+            QUERY118=(Token)match(input,QUERY,FOLLOW_QUERY_in_wildcard1673); if (state.failed) return retval;
             if ( state.backtracking==0 ) {
-            QUERY118_tree = (Object)adaptor.create(QUERY118);
-            root_0 = (Object)adaptor.becomeRoot(QUERY118_tree, root_0);
+            QUERY118_tree = (CommonTree)adaptor.create(QUERY118);
+            root_0 = (CommonTree)adaptor.becomeRoot(QUERY118_tree, root_0);
             }
-            // Label0.g:227:13: ( IDENT )?
+            // Label0.g:243:13: ( IDENT )?
             int alt32=2;
             int LA32_0 = input.LA(1);
 
@@ -3331,11 +3345,11 @@ public class Label0Parser extends Parser {
             }
             switch (alt32) {
                 case 1 :
-                    // Label0.g:227:13: IDENT
+                    // Label0.g:243:13: IDENT
                     {
-                    IDENT119=(Token)match(input,IDENT,FOLLOW_IDENT_in_wildcard1669); if (state.failed) return retval;
+                    IDENT119=(Token)match(input,IDENT,FOLLOW_IDENT_in_wildcard1676); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    IDENT119_tree = (Object)adaptor.create(IDENT119);
+                    IDENT119_tree = (CommonTree)adaptor.create(IDENT119);
                     adaptor.addChild(root_0, IDENT119_tree);
                     }
 
@@ -3344,7 +3358,7 @@ public class Label0Parser extends Parser {
 
             }
 
-            // Label0.g:227:20: ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )?
+            // Label0.g:243:20: ( LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE )?
             int alt35=2;
             int LA35_0 = input.LA(1);
 
@@ -3353,10 +3367,10 @@ public class Label0Parser extends Parser {
             }
             switch (alt35) {
                 case 1 :
-                    // Label0.g:227:21: LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE
+                    // Label0.g:243:21: LSQUARE ( HAT )? atom ( COMMA atom )* RSQUARE
                     {
-                    LSQUARE120=(Token)match(input,LSQUARE,FOLLOW_LSQUARE_in_wildcard1673); if (state.failed) return retval;
-                    // Label0.g:227:30: ( HAT )?
+                    LSQUARE120=(Token)match(input,LSQUARE,FOLLOW_LSQUARE_in_wildcard1680); if (state.failed) return retval;
+                    // Label0.g:243:30: ( HAT )?
                     int alt33=2;
                     int LA33_0 = input.LA(1);
 
@@ -3365,11 +3379,11 @@ public class Label0Parser extends Parser {
                     }
                     switch (alt33) {
                         case 1 :
-                            // Label0.g:227:30: HAT
+                            // Label0.g:243:30: HAT
                             {
-                            HAT121=(Token)match(input,HAT,FOLLOW_HAT_in_wildcard1676); if (state.failed) return retval;
+                            HAT121=(Token)match(input,HAT,FOLLOW_HAT_in_wildcard1683); if (state.failed) return retval;
                             if ( state.backtracking==0 ) {
-                            HAT121_tree = (Object)adaptor.create(HAT121);
+                            HAT121_tree = (CommonTree)adaptor.create(HAT121);
                             adaptor.addChild(root_0, HAT121_tree);
                             }
 
@@ -3378,13 +3392,13 @@ public class Label0Parser extends Parser {
 
                     }
 
-                    pushFollow(FOLLOW_atom_in_wildcard1679);
+                    pushFollow(FOLLOW_atom_in_wildcard1686);
                     atom122=atom();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, atom122.getTree());
-                    // Label0.g:227:40: ( COMMA atom )*
+                    // Label0.g:243:40: ( COMMA atom )*
                     loop34:
                     do {
                         int alt34=2;
@@ -3397,10 +3411,10 @@ public class Label0Parser extends Parser {
 
                         switch (alt34) {
                     	case 1 :
-                    	    // Label0.g:227:41: COMMA atom
+                    	    // Label0.g:243:41: COMMA atom
                     	    {
-                    	    COMMA123=(Token)match(input,COMMA,FOLLOW_COMMA_in_wildcard1682); if (state.failed) return retval;
-                    	    pushFollow(FOLLOW_atom_in_wildcard1685);
+                    	    COMMA123=(Token)match(input,COMMA,FOLLOW_COMMA_in_wildcard1689); if (state.failed) return retval;
+                    	    pushFollow(FOLLOW_atom_in_wildcard1692);
                     	    atom124=atom();
 
                     	    state._fsp--;
@@ -3415,7 +3429,7 @@ public class Label0Parser extends Parser {
                         }
                     } while (true);
 
-                    RSQUARE125=(Token)match(input,RSQUARE,FOLLOW_RSQUARE_in_wildcard1689); if (state.failed) return retval;
+                    RSQUARE125=(Token)match(input,RSQUARE,FOLLOW_RSQUARE_in_wildcard1696); if (state.failed) return retval;
 
                     }
                     break;
@@ -3429,14 +3443,14 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -3446,77 +3460,130 @@ public class Label0Parser extends Parser {
     // $ANTLR end "wildcard"
 
     public static class sqText_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "sqText"
-    // Label0.g:230:1: sqText : SQUOTE (~ ( SQUOTE | BSLASH ) | sqTextSpecial )* SQUOTE ;
+    // Label0.g:246:1: sqText : SQUOTE sqContent SQUOTE ->;
     public final Label0Parser.sqText_return sqText() throws RecognitionException {
         Label0Parser.sqText_return retval = new Label0Parser.sqText_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
         Token SQUOTE126=null;
-        Token set127=null;
-        Token SQUOTE129=null;
-        Label0Parser.sqTextSpecial_return sqTextSpecial128 = null;
+        Token SQUOTE128=null;
+        Label0Parser.sqContent_return sqContent127 = null;
 
 
-        Object SQUOTE126_tree=null;
-        Object set127_tree=null;
-        Object SQUOTE129_tree=null;
+        CommonTree SQUOTE126_tree=null;
+        CommonTree SQUOTE128_tree=null;
+        RewriteRuleTokenStream stream_SQUOTE=new RewriteRuleTokenStream(adaptor,"token SQUOTE");
+        RewriteRuleSubtreeStream stream_sqContent=new RewriteRuleSubtreeStream(adaptor,"rule sqContent");
+        try {
+            // Label0.g:247:4: ( SQUOTE sqContent SQUOTE ->)
+            // Label0.g:247:6: SQUOTE sqContent SQUOTE
+            {
+            SQUOTE126=(Token)match(input,SQUOTE,FOLLOW_SQUOTE_in_sqText1714); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_SQUOTE.add(SQUOTE126);
+
+            pushFollow(FOLLOW_sqContent_in_sqText1716);
+            sqContent127=sqContent();
+
+            state._fsp--;
+            if (state.failed) return retval;
+            if ( state.backtracking==0 ) stream_sqContent.add(sqContent127.getTree());
+            SQUOTE128=(Token)match(input,SQUOTE,FOLLOW_SQUOTE_in_sqText1718); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_SQUOTE.add(SQUOTE128);
+
+
+
+            // AST REWRITE
+            // elements: 
+            // token labels: 
+            // rule labels: retval
+            // token list labels: 
+            // rule list labels: 
+            // wildcard labels: 
+            if ( state.backtracking==0 ) {
+            retval.tree = root_0;
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+            root_0 = (CommonTree)adaptor.nil();
+            // 247:30: ->
+            {
+                adaptor.addChild(root_0,  concat((sqContent127!=null?((CommonTree)sqContent127.tree):null)) );
+
+            }
+
+            retval.tree = root_0;}
+            }
+
+            retval.stop = input.LT(-1);
+
+            if ( state.backtracking==0 ) {
+
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end "sqText"
+
+    public static class sqContent_return extends ParserRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start "sqContent"
+    // Label0.g:250:1: sqContent : ( sqChar )* ;
+    public final Label0Parser.sqContent_return sqContent() throws RecognitionException {
+        Label0Parser.sqContent_return retval = new Label0Parser.sqContent_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        Label0Parser.sqChar_return sqChar129 = null;
+
+
 
         try {
-            // Label0.g:231:4: ( SQUOTE (~ ( SQUOTE | BSLASH ) | sqTextSpecial )* SQUOTE )
-            // Label0.g:231:6: SQUOTE (~ ( SQUOTE | BSLASH ) | sqTextSpecial )* SQUOTE
+            // Label0.g:251:4: ( ( sqChar )* )
+            // Label0.g:251:6: ( sqChar )*
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            SQUOTE126=(Token)match(input,SQUOTE,FOLLOW_SQUOTE_in_sqText1707); if (state.failed) return retval;
-            // Label0.g:231:14: (~ ( SQUOTE | BSLASH ) | sqTextSpecial )*
+            // Label0.g:251:6: ( sqChar )*
             loop36:
             do {
-                int alt36=3;
+                int alt36=2;
                 int LA36_0 = input.LA(1);
 
-                if ( ((LA36_0>=NEW && LA36_0<=COMMA)||(LA36_0>=DQUOTE && LA36_0<=UNDER)||(LA36_0>=IDENT && LA36_0<=58)) ) {
+                if ( ((LA36_0>=NEW && LA36_0<=COMMA)||(LA36_0>=DQUOTE && LA36_0<=58)) ) {
                     alt36=1;
-                }
-                else if ( (LA36_0==BSLASH) ) {
-                    alt36=2;
                 }
 
 
                 switch (alt36) {
             	case 1 :
-            	    // Label0.g:231:15: ~ ( SQUOTE | BSLASH )
+            	    // Label0.g:251:6: sqChar
             	    {
-            	    set127=(Token)input.LT(1);
-            	    if ( (input.LA(1)>=NEW && input.LA(1)<=COMMA)||(input.LA(1)>=DQUOTE && input.LA(1)<=UNDER)||(input.LA(1)>=IDENT && input.LA(1)<=58) ) {
-            	        input.consume();
-            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set127));
-            	        state.errorRecovery=false;state.failed=false;
-            	    }
-            	    else {
-            	        if (state.backtracking>0) {state.failed=true; return retval;}
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        throw mse;
-            	    }
-
-
-            	    }
-            	    break;
-            	case 2 :
-            	    // Label0.g:231:34: sqTextSpecial
-            	    {
-            	    pushFollow(FOLLOW_sqTextSpecial_in_sqText1720);
-            	    sqTextSpecial128=sqTextSpecial();
+            	    pushFollow(FOLLOW_sqChar_in_sqContent1737);
+            	    sqChar129=sqChar();
 
             	    state._fsp--;
             	    if (state.failed) return retval;
-            	    if ( state.backtracking==0 ) adaptor.addChild(root_0, sqTextSpecial128.getTree());
+            	    if ( state.backtracking==0 ) adaptor.addChild(root_0, sqChar129.getTree());
 
             	    }
             	    break;
@@ -3526,7 +3593,6 @@ public class Label0Parser extends Parser {
                 }
             } while (true);
 
-            SQUOTE129=(Token)match(input,SQUOTE,FOLLOW_SQUOTE_in_sqText1724); if (state.failed) return retval;
 
             }
 
@@ -3534,184 +3600,206 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
         }
         return retval;
     }
-    // $ANTLR end "sqText"
+    // $ANTLR end "sqContent"
 
-    public static class sqTextSpecial_return extends ParserRuleReturnScope {
-        Object tree;
+    public static class sqChar_return extends ParserRuleReturnScope {
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start "sqTextSpecial"
-    // Label0.g:233:1: sqTextSpecial : BSLASH ( BSLASH | SQUOTE ) ;
-    public final Label0Parser.sqTextSpecial_return sqTextSpecial() throws RecognitionException {
-        Label0Parser.sqTextSpecial_return retval = new Label0Parser.sqTextSpecial_return();
+    // $ANTLR start "sqChar"
+    // Label0.g:254:1: sqChar : (~ ( SQUOTE | BSLASH ) | BSLASH ( BSLASH | SQUOTE ) );
+    public final Label0Parser.sqChar_return sqChar() throws RecognitionException {
+        Label0Parser.sqChar_return retval = new Label0Parser.sqChar_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
-        Token BSLASH130=null;
-        Token set131=null;
+        Token set130=null;
+        Token BSLASH131=null;
+        Token set132=null;
 
-        Object BSLASH130_tree=null;
-        Object set131_tree=null;
+        CommonTree set130_tree=null;
+        CommonTree BSLASH131_tree=null;
+        CommonTree set132_tree=null;
 
         try {
-            // Label0.g:234:4: ( BSLASH ( BSLASH | SQUOTE ) )
-            // Label0.g:234:6: BSLASH ( BSLASH | SQUOTE )
-            {
-            root_0 = (Object)adaptor.nil();
+            // Label0.g:255:4: (~ ( SQUOTE | BSLASH ) | BSLASH ( BSLASH | SQUOTE ) )
+            int alt37=2;
+            int LA37_0 = input.LA(1);
 
-            BSLASH130=(Token)match(input,BSLASH,FOLLOW_BSLASH_in_sqTextSpecial1736); if (state.failed) return retval;
-            set131=(Token)input.LT(1);
-            if ( input.LA(1)==SQUOTE||input.LA(1)==BSLASH ) {
-                input.consume();
-                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set131));
-                state.errorRecovery=false;state.failed=false;
+            if ( ((LA37_0>=NEW && LA37_0<=COMMA)||(LA37_0>=DQUOTE && LA37_0<=UNDER)||(LA37_0>=IDENT && LA37_0<=58)) ) {
+                alt37=1;
+            }
+            else if ( (LA37_0==BSLASH) ) {
+                alt37=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return retval;}
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                throw mse;
+                NoViableAltException nvae =
+                    new NoViableAltException("", 37, 0, input);
+
+                throw nvae;
             }
+            switch (alt37) {
+                case 1 :
+                    // Label0.g:255:6: ~ ( SQUOTE | BSLASH )
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
 
+                    set130=(Token)input.LT(1);
+                    if ( (input.LA(1)>=NEW && input.LA(1)<=COMMA)||(input.LA(1)>=DQUOTE && input.LA(1)<=UNDER)||(input.LA(1)>=IDENT && input.LA(1)<=58) ) {
+                        input.consume();
+                        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set130));
+                        state.errorRecovery=false;state.failed=false;
+                    }
+                    else {
+                        if (state.backtracking>0) {state.failed=true; return retval;}
+                        MismatchedSetException mse = new MismatchedSetException(null,input);
+                        throw mse;
+                    }
+
+
+                    }
+                    break;
+                case 2 :
+                    // Label0.g:256:6: BSLASH ( BSLASH | SQUOTE )
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
+
+                    BSLASH131=(Token)match(input,BSLASH,FOLLOW_BSLASH_in_sqChar1766); if (state.failed) return retval;
+                    set132=(Token)input.LT(1);
+                    if ( input.LA(1)==SQUOTE||input.LA(1)==BSLASH ) {
+                        input.consume();
+                        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set132));
+                        state.errorRecovery=false;state.failed=false;
+                    }
+                    else {
+                        if (state.backtracking>0) {state.failed=true; return retval;}
+                        MismatchedSetException mse = new MismatchedSetException(null,input);
+                        throw mse;
+                    }
+
+
+                    }
+                    break;
 
             }
-
             retval.stop = input.LT(-1);
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
         }
         return retval;
     }
-    // $ANTLR end "sqTextSpecial"
+    // $ANTLR end "sqChar"
 
     public static class dqText_return extends ParserRuleReturnScope {
-        Object tree;
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "dqText"
-    // Label0.g:237:1: dqText : DQUOTE (~ ( DQUOTE | BSLASH ) | dqTextSpecial )* DQUOTE ;
+    // Label0.g:259:1: dqText : DQUOTE dqContent DQUOTE -> ^( DQUOTE ) ;
     public final Label0Parser.dqText_return dqText() throws RecognitionException {
         Label0Parser.dqText_return retval = new Label0Parser.dqText_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
-        Token DQUOTE132=null;
-        Token set133=null;
+        Token DQUOTE133=null;
         Token DQUOTE135=null;
-        Label0Parser.dqTextSpecial_return dqTextSpecial134 = null;
+        Label0Parser.dqContent_return dqContent134 = null;
 
 
-        Object DQUOTE132_tree=null;
-        Object set133_tree=null;
-        Object DQUOTE135_tree=null;
-
+        CommonTree DQUOTE133_tree=null;
+        CommonTree DQUOTE135_tree=null;
+        RewriteRuleTokenStream stream_DQUOTE=new RewriteRuleTokenStream(adaptor,"token DQUOTE");
+        RewriteRuleSubtreeStream stream_dqContent=new RewriteRuleSubtreeStream(adaptor,"rule dqContent");
         try {
-            // Label0.g:238:4: ( DQUOTE (~ ( DQUOTE | BSLASH ) | dqTextSpecial )* DQUOTE )
-            // Label0.g:238:6: DQUOTE (~ ( DQUOTE | BSLASH ) | dqTextSpecial )* DQUOTE
+            // Label0.g:260:4: ( DQUOTE dqContent DQUOTE -> ^( DQUOTE ) )
+            // Label0.g:260:6: DQUOTE dqContent DQUOTE
             {
-            root_0 = (Object)adaptor.nil();
+            DQUOTE133=(Token)match(input,DQUOTE,FOLLOW_DQUOTE_in_dqText1788); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_DQUOTE.add(DQUOTE133);
 
-            DQUOTE132=(Token)match(input,DQUOTE,FOLLOW_DQUOTE_in_dqText1758); if (state.failed) return retval;
+            pushFollow(FOLLOW_dqContent_in_dqText1790);
+            dqContent134=dqContent();
+
+            state._fsp--;
+            if (state.failed) return retval;
+            if ( state.backtracking==0 ) stream_dqContent.add(dqContent134.getTree());
+            DQUOTE135=(Token)match(input,DQUOTE,FOLLOW_DQUOTE_in_dqText1792); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_DQUOTE.add(DQUOTE135);
+
+
+
+            // AST REWRITE
+            // elements: DQUOTE
+            // token labels: 
+            // rule labels: retval
+            // token list labels: 
+            // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
-            DQUOTE132_tree = (Object)adaptor.create(DQUOTE132);
-            root_0 = (Object)adaptor.becomeRoot(DQUOTE132_tree, root_0);
+            retval.tree = root_0;
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+            root_0 = (CommonTree)adaptor.nil();
+            // 260:30: -> ^( DQUOTE )
+            {
+                // Label0.g:260:33: ^( DQUOTE )
+                {
+                CommonTree root_1 = (CommonTree)adaptor.nil();
+                root_1 = (CommonTree)adaptor.becomeRoot(stream_DQUOTE.nextNode(), root_1);
+
+                adaptor.addChild(root_1,  concat((dqContent134!=null?((CommonTree)dqContent134.tree):null)) );
+
+                adaptor.addChild(root_0, root_1);
+                }
+
             }
-            // Label0.g:238:14: (~ ( DQUOTE | BSLASH ) | dqTextSpecial )*
-            loop37:
-            do {
-                int alt37=3;
-                int LA37_0 = input.LA(1);
 
-                if ( ((LA37_0>=NEW && LA37_0<=SQUOTE)||(LA37_0>=DOLLAR && LA37_0<=UNDER)||(LA37_0>=IDENT && LA37_0<=58)) ) {
-                    alt37=1;
-                }
-                else if ( (LA37_0==BSLASH) ) {
-                    alt37=2;
-                }
-
-
-                switch (alt37) {
-            	case 1 :
-            	    // Label0.g:238:15: ~ ( DQUOTE | BSLASH )
-            	    {
-            	    set133=(Token)input.LT(1);
-            	    if ( (input.LA(1)>=NEW && input.LA(1)<=SQUOTE)||(input.LA(1)>=DOLLAR && input.LA(1)<=UNDER)||(input.LA(1)>=IDENT && input.LA(1)<=58) ) {
-            	        input.consume();
-            	        if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set133));
-            	        state.errorRecovery=false;state.failed=false;
-            	    }
-            	    else {
-            	        if (state.backtracking>0) {state.failed=true; return retval;}
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        throw mse;
-            	    }
-
-
-            	    }
-            	    break;
-            	case 2 :
-            	    // Label0.g:238:34: dqTextSpecial
-            	    {
-            	    pushFollow(FOLLOW_dqTextSpecial_in_dqText1771);
-            	    dqTextSpecial134=dqTextSpecial();
-
-            	    state._fsp--;
-            	    if (state.failed) return retval;
-            	    if ( state.backtracking==0 ) adaptor.addChild(root_0, dqTextSpecial134.getTree());
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop37;
-                }
-            } while (true);
-
-            DQUOTE135=(Token)match(input,DQUOTE,FOLLOW_DQUOTE_in_dqText1775); if (state.failed) return retval;
-
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
@@ -3720,43 +3808,58 @@ public class Label0Parser extends Parser {
     }
     // $ANTLR end "dqText"
 
-    public static class dqTextSpecial_return extends ParserRuleReturnScope {
-        Object tree;
+    public static class dqContent_return extends ParserRuleReturnScope {
+        CommonTree tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start "dqTextSpecial"
-    // Label0.g:240:1: dqTextSpecial : BSLASH ( BSLASH | DQUOTE ) ;
-    public final Label0Parser.dqTextSpecial_return dqTextSpecial() throws RecognitionException {
-        Label0Parser.dqTextSpecial_return retval = new Label0Parser.dqTextSpecial_return();
+    // $ANTLR start "dqContent"
+    // Label0.g:263:1: dqContent : ( dqTextChar )* ;
+    public final Label0Parser.dqContent_return dqContent() throws RecognitionException {
+        Label0Parser.dqContent_return retval = new Label0Parser.dqContent_return();
         retval.start = input.LT(1);
 
-        Object root_0 = null;
+        CommonTree root_0 = null;
 
-        Token BSLASH136=null;
-        Token set137=null;
+        Label0Parser.dqTextChar_return dqTextChar136 = null;
 
-        Object BSLASH136_tree=null;
-        Object set137_tree=null;
+
 
         try {
-            // Label0.g:241:4: ( BSLASH ( BSLASH | DQUOTE ) )
-            // Label0.g:241:6: BSLASH ( BSLASH | DQUOTE )
+            // Label0.g:264:4: ( ( dqTextChar )* )
+            // Label0.g:264:6: ( dqTextChar )*
             {
-            root_0 = (Object)adaptor.nil();
+            root_0 = (CommonTree)adaptor.nil();
 
-            BSLASH136=(Token)match(input,BSLASH,FOLLOW_BSLASH_in_dqTextSpecial1787); if (state.failed) return retval;
-            set137=(Token)input.LT(1);
-            if ( input.LA(1)==DQUOTE||input.LA(1)==BSLASH ) {
-                input.consume();
-                if ( state.backtracking==0 ) adaptor.addChild(root_0, (Object)adaptor.create(set137));
-                state.errorRecovery=false;state.failed=false;
-            }
-            else {
-                if (state.backtracking>0) {state.failed=true; return retval;}
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                throw mse;
-            }
+            // Label0.g:264:6: ( dqTextChar )*
+            loop38:
+            do {
+                int alt38=2;
+                int LA38_0 = input.LA(1);
+
+                if ( ((LA38_0>=NEW && LA38_0<=SQUOTE)||(LA38_0>=DOLLAR && LA38_0<=58)) ) {
+                    alt38=1;
+                }
+
+
+                switch (alt38) {
+            	case 1 :
+            	    // Label0.g:264:6: dqTextChar
+            	    {
+            	    pushFollow(FOLLOW_dqTextChar_in_dqContent1815);
+            	    dqTextChar136=dqTextChar();
+
+            	    state._fsp--;
+            	    if (state.failed) return retval;
+            	    if ( state.backtracking==0 ) adaptor.addChild(root_0, dqTextChar136.getTree());
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop38;
+                }
+            } while (true);
 
 
             }
@@ -3765,33 +3868,136 @@ public class Label0Parser extends Parser {
 
             if ( state.backtracking==0 ) {
 
-            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
         }
         catch (RecognitionException re) {
             reportError(re);
             recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
         }
         finally {
         }
         return retval;
     }
-    // $ANTLR end "dqTextSpecial"
+    // $ANTLR end "dqContent"
+
+    public static class dqTextChar_return extends ParserRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start "dqTextChar"
+    // Label0.g:267:1: dqTextChar : (~ ( DQUOTE | BSLASH ) | BSLASH ( BSLASH | DQUOTE ) );
+    public final Label0Parser.dqTextChar_return dqTextChar() throws RecognitionException {
+        Label0Parser.dqTextChar_return retval = new Label0Parser.dqTextChar_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        Token set137=null;
+        Token BSLASH138=null;
+        Token set139=null;
+
+        CommonTree set137_tree=null;
+        CommonTree BSLASH138_tree=null;
+        CommonTree set139_tree=null;
+
+        try {
+            // Label0.g:268:4: (~ ( DQUOTE | BSLASH ) | BSLASH ( BSLASH | DQUOTE ) )
+            int alt39=2;
+            int LA39_0 = input.LA(1);
+
+            if ( ((LA39_0>=NEW && LA39_0<=SQUOTE)||(LA39_0>=DOLLAR && LA39_0<=UNDER)||(LA39_0>=IDENT && LA39_0<=58)) ) {
+                alt39=1;
+            }
+            else if ( (LA39_0==BSLASH) ) {
+                alt39=2;
+            }
+            else {
+                if (state.backtracking>0) {state.failed=true; return retval;}
+                NoViableAltException nvae =
+                    new NoViableAltException("", 39, 0, input);
+
+                throw nvae;
+            }
+            switch (alt39) {
+                case 1 :
+                    // Label0.g:268:6: ~ ( DQUOTE | BSLASH )
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
+
+                    set137=(Token)input.LT(1);
+                    if ( (input.LA(1)>=NEW && input.LA(1)<=SQUOTE)||(input.LA(1)>=DOLLAR && input.LA(1)<=UNDER)||(input.LA(1)>=IDENT && input.LA(1)<=58) ) {
+                        input.consume();
+                        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set137));
+                        state.errorRecovery=false;state.failed=false;
+                    }
+                    else {
+                        if (state.backtracking>0) {state.failed=true; return retval;}
+                        MismatchedSetException mse = new MismatchedSetException(null,input);
+                        throw mse;
+                    }
+
+
+                    }
+                    break;
+                case 2 :
+                    // Label0.g:269:6: BSLASH ( BSLASH | DQUOTE )
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
+
+                    BSLASH138=(Token)match(input,BSLASH,FOLLOW_BSLASH_in_dqTextChar1843); if (state.failed) return retval;
+                    set139=(Token)input.LT(1);
+                    if ( input.LA(1)==DQUOTE||input.LA(1)==BSLASH ) {
+                        input.consume();
+                        if ( state.backtracking==0 ) adaptor.addChild(root_0, (CommonTree)adaptor.create(set139));
+                        state.errorRecovery=false;state.failed=false;
+                    }
+                    else {
+                        if (state.backtracking>0) {state.failed=true; return retval;}
+                        MismatchedSetException mse = new MismatchedSetException(null,input);
+                        throw mse;
+                    }
+
+
+                    }
+                    break;
+
+            }
+            retval.stop = input.LT(-1);
+
+            if ( state.backtracking==0 ) {
+
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end "dqTextChar"
 
     // $ANTLR start synpred1_Label0
     public final void synpred1_Label0_fragment() throws RecognitionException {   
-        // Label0.g:153:6: ( graphDefault EOF )
-        // Label0.g:153:7: graphDefault EOF
+        // Label0.g:169:6: ( graphDefault EOF )
+        // Label0.g:169:7: graphDefault EOF
         {
-        pushFollow(FOLLOW_graphDefault_in_synpred1_Label01098);
+        pushFollow(FOLLOW_graphDefault_in_synpred1_Label01106);
         graphDefault();
 
         state._fsp--;
         if (state.failed) return ;
-        match(input,EOF,FOLLOW_EOF_in_synpred1_Label01100); if (state.failed) return ;
+        match(input,EOF,FOLLOW_EOF_in_synpred1_Label01108); if (state.failed) return ;
 
         }
     }
@@ -3799,15 +4005,15 @@ public class Label0Parser extends Parser {
 
     // $ANTLR start synpred2_Label0
     public final void synpred2_Label0_fragment() throws RecognitionException {   
-        // Label0.g:154:6: ( ruleLabel EOF )
-        // Label0.g:154:7: ruleLabel EOF
+        // Label0.g:170:6: ( ruleLabel EOF )
+        // Label0.g:170:7: ruleLabel EOF
         {
-        pushFollow(FOLLOW_ruleLabel_in_synpred2_Label01117);
+        pushFollow(FOLLOW_ruleLabel_in_synpred2_Label01125);
         ruleLabel();
 
         state._fsp--;
         if (state.failed) return ;
-        match(input,EOF,FOLLOW_EOF_in_synpred2_Label01119); if (state.failed) return ;
+        match(input,EOF,FOLLOW_EOF_in_synpred2_Label01127); if (state.failed) return ;
 
         }
     }
@@ -3854,7 +4060,7 @@ public class Label0Parser extends Parser {
     static final String DFA1_eotS =
         "\30\uffff";
     static final String DFA1_eofS =
-        "\6\uffff\1\25\2\uffff\11\25\4\uffff\2\25";
+        "\6\uffff\1\24\2\uffff\11\24\4\uffff\2\24";
     static final String DFA1_minS =
         "\1\4\5\uffff\1\4\2\uffff\11\4\4\uffff\2\4";
     static final String DFA1_maxS =
@@ -3862,8 +4068,8 @@ public class Label0Parser extends Parser {
     static final String DFA1_acceptS =
         "\1\uffff\5\1\1\uffff\2\1\11\uffff\1\1\1\2\2\1\2\uffff";
     static final String DFA1_specialS =
-        "\1\4\5\uffff\1\7\2\uffff\1\1\1\12\1\11\1\14\1\13\1\0\1\5\1\6\1"+
-        "\3\4\uffff\1\2\1\10}>";
+        "\1\0\5\uffff\1\11\2\uffff\1\6\1\4\1\5\1\3\1\1\1\14\1\12\1\10\1"+
+        "\7\4\uffff\1\13\1\2}>";
     static final String[] DFA1_transitionS = {
             "\5\1\1\6\3\1\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\11\3"+
             "\1\13\22\1\4\1\7\1\10\4\22\1\2\1\3\1\1\1\22\1\5\3\22\1\10\7"+
@@ -3873,24 +4079,24 @@ public class Label0Parser extends Parser {
             "",
             "",
             "",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
             "",
             "",
-            "\40\24\1\26\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24",
+            "\40\25\1\26\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25",
             "",
             "",
             "",
             "",
-            "\41\24\2\10\6\24\1\uffff\1\24\1\10\3\24\1\10\1\24\1\27\5\24",
-            "\41\24\2\10\6\24\1\23\1\24\1\10\3\24\1\10\7\24"
+            "\41\25\2\10\6\25\1\uffff\1\25\1\10\3\25\1\10\1\25\1\27\5\25",
+            "\41\25\2\10\6\25\1\23\1\25\1\10\3\25\1\10\7\25"
     };
 
     static final short[] DFA1_eot = DFA.unpackEncodedString(DFA1_eotS);
@@ -3923,91 +4129,13 @@ public class Label0Parser extends Parser {
             this.transition = DFA1_transition;
         }
         public String getDescription() {
-            return "93:1: label : ( quantLabel EOF | specialLabel EOF );";
+            return "109:1: label : ( quantLabel EOF | specialLabel EOF );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA1_14 = input.LA(1);
-
-                         
-                        int index1_14 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_14==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_14>=NEW && LA1_14<=EQUALS)||(LA1_14>=LPAR && LA1_14<=QUERY)||LA1_14==COMMA||(LA1_14>=DQUOTE && LA1_14<=UNDER)||(LA1_14>=IDENT && LA1_14<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_14>=LBRACE && LA1_14<=RBRACE)||LA1_14==SQUOTE||LA1_14==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_14);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA1_9 = input.LA(1);
-
-                         
-                        int index1_9 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_9==EQUALS) ) {s = 22;}
-
-                        else if ( (LA1_9==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_9>=NEW && LA1_9<=HAT)||(LA1_9>=LPAR && LA1_9<=QUERY)||LA1_9==COMMA||(LA1_9>=DQUOTE && LA1_9<=UNDER)||(LA1_9>=IDENT && LA1_9<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_9==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_9>=LBRACE && LA1_9<=RBRACE)||LA1_9==SQUOTE||LA1_9==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_9);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA1_22 = input.LA(1);
-
-                         
-                        int index1_22 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_22==LABEL) ) {s = 23;}
-
-                        else if ( (LA1_22==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_22>=NEW && LA1_22<=EQUALS)||(LA1_22>=LPAR && LA1_22<=QUERY)||LA1_22==COMMA||(LA1_22>=DQUOTE && LA1_22<=UNDER)||LA1_22==IDENT||(LA1_22>=NUMBER && LA1_22<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( ((LA1_22>=LBRACE && LA1_22<=RBRACE)||LA1_22==SQUOTE||LA1_22==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_22);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 3 : 
-                        int LA1_17 = input.LA(1);
-
-                         
-                        int index1_17 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_17==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_17>=NEW && LA1_17<=EQUALS)||(LA1_17>=LPAR && LA1_17<=QUERY)||LA1_17==COMMA||(LA1_17>=DQUOTE && LA1_17<=UNDER)||(LA1_17>=IDENT && LA1_17<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_17==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_17>=LBRACE && LA1_17<=RBRACE)||LA1_17==SQUOTE||LA1_17==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_17);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 4 : 
                         int LA1_0 = input.LA(1);
 
                          
@@ -4054,121 +4182,7 @@ public class Label0Parser extends Parser {
                         input.seek(index1_0);
                         if ( s>=0 ) return s;
                         break;
-                    case 5 : 
-                        int LA1_15 = input.LA(1);
-
-                         
-                        int index1_15 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_15==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_15>=NEW && LA1_15<=EQUALS)||(LA1_15>=LPAR && LA1_15<=QUERY)||LA1_15==COMMA||(LA1_15>=DQUOTE && LA1_15<=UNDER)||(LA1_15>=IDENT && LA1_15<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_15==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_15>=LBRACE && LA1_15<=RBRACE)||LA1_15==SQUOTE||LA1_15==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_15);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 6 : 
-                        int LA1_16 = input.LA(1);
-
-                         
-                        int index1_16 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_16==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_16>=NEW && LA1_16<=EQUALS)||(LA1_16>=LPAR && LA1_16<=QUERY)||LA1_16==COMMA||(LA1_16>=DQUOTE && LA1_16<=UNDER)||(LA1_16>=IDENT && LA1_16<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_16==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_16>=LBRACE && LA1_16<=RBRACE)||LA1_16==SQUOTE||LA1_16==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_16);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 7 : 
-                        int LA1_6 = input.LA(1);
-
-                         
-                        int index1_6 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_6==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_6>=NEW && LA1_6<=EQUALS)||(LA1_6>=LPAR && LA1_6<=QUERY)||LA1_6==COMMA||(LA1_6>=DQUOTE && LA1_6<=UNDER)||(LA1_6>=IDENT && LA1_6<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_6==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_6>=LBRACE && LA1_6<=RBRACE)||LA1_6==SQUOTE||LA1_6==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_6);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 8 : 
-                        int LA1_23 = input.LA(1);
-
-                         
-                        int index1_23 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_23==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_23>=NEW && LA1_23<=EQUALS)||(LA1_23>=LPAR && LA1_23<=QUERY)||LA1_23==COMMA||(LA1_23>=DQUOTE && LA1_23<=UNDER)||(LA1_23>=IDENT && LA1_23<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_23==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_23>=LBRACE && LA1_23<=RBRACE)||LA1_23==SQUOTE||LA1_23==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_23);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 9 : 
-                        int LA1_11 = input.LA(1);
-
-                         
-                        int index1_11 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_11==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_11>=NEW && LA1_11<=EQUALS)||(LA1_11>=LPAR && LA1_11<=QUERY)||LA1_11==COMMA||(LA1_11>=DQUOTE && LA1_11<=UNDER)||(LA1_11>=IDENT && LA1_11<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_11==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_11>=LBRACE && LA1_11<=RBRACE)||LA1_11==SQUOTE||LA1_11==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_11);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 10 : 
-                        int LA1_10 = input.LA(1);
-
-                         
-                        int index1_10 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_10==COLON) ) {s = 19;}
-
-                        else if ( ((LA1_10>=NEW && LA1_10<=EQUALS)||(LA1_10>=LPAR && LA1_10<=QUERY)||LA1_10==COMMA||(LA1_10>=DQUOTE && LA1_10<=UNDER)||(LA1_10>=IDENT && LA1_10<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
-
-                        else if ( (LA1_10==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
-
-                        else if ( ((LA1_10>=LBRACE && LA1_10<=RBRACE)||LA1_10==SQUOTE||LA1_10==BSLASH) && (( isGraph ))) {s = 8;}
-
-                         
-                        input.seek(index1_10);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 11 : 
+                    case 1 : 
                         int LA1_13 = input.LA(1);
 
                          
@@ -4177,9 +4191,9 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_13==COLON) ) {s = 19;}
 
-                        else if ( ((LA1_13>=NEW && LA1_13<=EQUALS)||(LA1_13>=LPAR && LA1_13<=QUERY)||LA1_13==COMMA||(LA1_13>=DQUOTE && LA1_13<=UNDER)||(LA1_13>=IDENT && LA1_13<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
+                        else if ( (LA1_13==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
 
-                        else if ( (LA1_13==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
+                        else if ( ((LA1_13>=NEW && LA1_13<=EQUALS)||(LA1_13>=LPAR && LA1_13<=QUERY)||LA1_13==COMMA||(LA1_13>=DQUOTE && LA1_13<=UNDER)||(LA1_13>=IDENT && LA1_13<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
                         else if ( ((LA1_13>=LBRACE && LA1_13<=RBRACE)||LA1_13==SQUOTE||LA1_13==BSLASH) && (( isGraph ))) {s = 8;}
 
@@ -4187,7 +4201,26 @@ public class Label0Parser extends Parser {
                         input.seek(index1_13);
                         if ( s>=0 ) return s;
                         break;
-                    case 12 : 
+                    case 2 : 
+                        int LA1_23 = input.LA(1);
+
+                         
+                        int index1_23 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_23==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_23>=NEW && LA1_23<=EQUALS)||(LA1_23>=LPAR && LA1_23<=QUERY)||LA1_23==COMMA||(LA1_23>=DQUOTE && LA1_23<=UNDER)||(LA1_23>=IDENT && LA1_23<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_23>=LBRACE && LA1_23<=RBRACE)||LA1_23==SQUOTE||LA1_23==BSLASH) && (( isGraph ))) {s = 8;}
+
+                        else if ( (LA1_23==COLON) ) {s = 19;}
+
+                         
+                        input.seek(index1_23);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 3 : 
                         int LA1_12 = input.LA(1);
 
                          
@@ -4196,14 +4229,187 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA1_12==COLON) ) {s = 19;}
 
-                        else if ( ((LA1_12>=NEW && LA1_12<=EQUALS)||(LA1_12>=LPAR && LA1_12<=QUERY)||LA1_12==COMMA||(LA1_12>=DQUOTE && LA1_12<=UNDER)||(LA1_12>=IDENT && LA1_12<=58)) && ((( !isGraph )||( isGraph )))) {s = 20;}
+                        else if ( (LA1_12==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
 
-                        else if ( (LA1_12==EOF) && ((( !isGraph )||( isGraph )))) {s = 21;}
+                        else if ( ((LA1_12>=NEW && LA1_12<=EQUALS)||(LA1_12>=LPAR && LA1_12<=QUERY)||LA1_12==COMMA||(LA1_12>=DQUOTE && LA1_12<=UNDER)||(LA1_12>=IDENT && LA1_12<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
 
                         else if ( ((LA1_12>=LBRACE && LA1_12<=RBRACE)||LA1_12==SQUOTE||LA1_12==BSLASH) && (( isGraph ))) {s = 8;}
 
                          
                         input.seek(index1_12);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 4 : 
+                        int LA1_10 = input.LA(1);
+
+                         
+                        int index1_10 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_10==COLON) ) {s = 19;}
+
+                        else if ( (LA1_10==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_10>=NEW && LA1_10<=EQUALS)||(LA1_10>=LPAR && LA1_10<=QUERY)||LA1_10==COMMA||(LA1_10>=DQUOTE && LA1_10<=UNDER)||(LA1_10>=IDENT && LA1_10<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_10>=LBRACE && LA1_10<=RBRACE)||LA1_10==SQUOTE||LA1_10==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_10);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 5 : 
+                        int LA1_11 = input.LA(1);
+
+                         
+                        int index1_11 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_11==COLON) ) {s = 19;}
+
+                        else if ( (LA1_11==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_11>=NEW && LA1_11<=EQUALS)||(LA1_11>=LPAR && LA1_11<=QUERY)||LA1_11==COMMA||(LA1_11>=DQUOTE && LA1_11<=UNDER)||(LA1_11>=IDENT && LA1_11<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_11>=LBRACE && LA1_11<=RBRACE)||LA1_11==SQUOTE||LA1_11==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_11);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 6 : 
+                        int LA1_9 = input.LA(1);
+
+                         
+                        int index1_9 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_9==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( (LA1_9==EQUALS) ) {s = 22;}
+
+                        else if ( ((LA1_9>=LBRACE && LA1_9<=RBRACE)||LA1_9==SQUOTE||LA1_9==BSLASH) && (( isGraph ))) {s = 8;}
+
+                        else if ( ((LA1_9>=NEW && LA1_9<=HAT)||(LA1_9>=LPAR && LA1_9<=QUERY)||LA1_9==COMMA||(LA1_9>=DQUOTE && LA1_9<=UNDER)||(LA1_9>=IDENT && LA1_9<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( (LA1_9==COLON) ) {s = 19;}
+
+                         
+                        input.seek(index1_9);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 7 : 
+                        int LA1_17 = input.LA(1);
+
+                         
+                        int index1_17 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_17==COLON) ) {s = 19;}
+
+                        else if ( (LA1_17==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_17>=NEW && LA1_17<=EQUALS)||(LA1_17>=LPAR && LA1_17<=QUERY)||LA1_17==COMMA||(LA1_17>=DQUOTE && LA1_17<=UNDER)||(LA1_17>=IDENT && LA1_17<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_17>=LBRACE && LA1_17<=RBRACE)||LA1_17==SQUOTE||LA1_17==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_17);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 8 : 
+                        int LA1_16 = input.LA(1);
+
+                         
+                        int index1_16 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_16==COLON) ) {s = 19;}
+
+                        else if ( (LA1_16==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_16>=NEW && LA1_16<=EQUALS)||(LA1_16>=LPAR && LA1_16<=QUERY)||LA1_16==COMMA||(LA1_16>=DQUOTE && LA1_16<=UNDER)||(LA1_16>=IDENT && LA1_16<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_16>=LBRACE && LA1_16<=RBRACE)||LA1_16==SQUOTE||LA1_16==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_16);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 9 : 
+                        int LA1_6 = input.LA(1);
+
+                         
+                        int index1_6 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_6==COLON) ) {s = 19;}
+
+                        else if ( (LA1_6==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_6>=NEW && LA1_6<=EQUALS)||(LA1_6>=LPAR && LA1_6<=QUERY)||LA1_6==COMMA||(LA1_6>=DQUOTE && LA1_6<=UNDER)||(LA1_6>=IDENT && LA1_6<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_6>=LBRACE && LA1_6<=RBRACE)||LA1_6==SQUOTE||LA1_6==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_6);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 10 : 
+                        int LA1_15 = input.LA(1);
+
+                         
+                        int index1_15 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_15==COLON) ) {s = 19;}
+
+                        else if ( (LA1_15==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_15>=NEW && LA1_15<=EQUALS)||(LA1_15>=LPAR && LA1_15<=QUERY)||LA1_15==COMMA||(LA1_15>=DQUOTE && LA1_15<=UNDER)||(LA1_15>=IDENT && LA1_15<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_15>=LBRACE && LA1_15<=RBRACE)||LA1_15==SQUOTE||LA1_15==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_15);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 11 : 
+                        int LA1_22 = input.LA(1);
+
+                         
+                        int index1_22 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_22==LABEL) ) {s = 23;}
+
+                        else if ( (LA1_22==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_22>=NEW && LA1_22<=EQUALS)||(LA1_22>=LPAR && LA1_22<=QUERY)||LA1_22==COMMA||(LA1_22>=DQUOTE && LA1_22<=UNDER)||LA1_22==IDENT||(LA1_22>=NUMBER && LA1_22<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_22>=LBRACE && LA1_22<=RBRACE)||LA1_22==SQUOTE||LA1_22==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_22);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 12 : 
+                        int LA1_14 = input.LA(1);
+
+                         
+                        int index1_14 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_14==COLON) ) {s = 19;}
+
+                        else if ( (LA1_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 20;}
+
+                        else if ( ((LA1_14>=NEW && LA1_14<=EQUALS)||(LA1_14>=LPAR && LA1_14<=QUERY)||LA1_14==COMMA||(LA1_14>=DQUOTE && LA1_14<=UNDER)||(LA1_14>=IDENT && LA1_14<=58)) && ((( !isGraph )||( isGraph )))) {s = 21;}
+
+                        else if ( ((LA1_14>=LBRACE && LA1_14<=RBRACE)||LA1_14==SQUOTE||LA1_14==BSLASH) && (( isGraph ))) {s = 8;}
+
+                         
+                        input.seek(index1_14);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -4217,20 +4423,19 @@ public class Label0Parser extends Parser {
     static final String DFA4_eotS =
         "\17\uffff";
     static final String DFA4_eofS =
-        "\1\uffff\1\12\11\uffff\1\12\2\uffff\1\12";
+        "\1\uffff\1\13\10\uffff\1\13\3\uffff\1\13";
     static final String DFA4_minS =
-        "\2\4\11\uffff\1\4\2\uffff\1\4";
+        "\2\4\10\uffff\1\4\3\uffff\1\4";
     static final String DFA4_maxS =
-        "\2\72\11\uffff\1\72\2\uffff\1\72";
+        "\2\72\10\uffff\1\72\3\uffff\1\72";
     static final String DFA4_acceptS =
-        "\2\uffff\11\2\1\uffff\1\2\1\1\1\uffff";
+        "\2\uffff\10\2\1\uffff\2\2\1\1\1\uffff";
     static final String DFA4_specialS =
-        "\1\0\1\3\11\uffff\1\1\2\uffff\1\2}>";
+        "\1\0\1\3\10\uffff\1\1\3\uffff\1\2}>";
     static final String[] DFA4_transitionS = {
             "\5\2\1\7\3\1\11\7\3\2\13\7\1\5\1\10\1\11\4\7\1\3\1\4\1\2\1"+
             "\7\1\6\3\7\1\11\7\7",
-            "\40\14\1\13\2\11\6\14\1\15\1\14\1\11\3\14\1\11\7\14",
-            "",
+            "\40\14\1\12\2\11\6\14\1\15\1\14\1\11\3\14\1\11\7\14",
             "",
             "",
             "",
@@ -4240,6 +4445,7 @@ public class Label0Parser extends Parser {
             "",
             "",
             "\41\14\2\11\6\14\1\uffff\1\14\1\11\3\14\1\11\1\16\6\14",
+            "",
             "",
             "",
             "\41\14\2\11\6\14\1\15\1\14\1\11\3\14\1\11\7\14"
@@ -4275,7 +4481,7 @@ public class Label0Parser extends Parser {
             this.transition = DFA4_transition;
         }
         public String getDescription() {
-            return "98:1: quantLabel : ( quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix ) | roleLabel );";
+            return "114:1: quantLabel : ( quantPrefix ( EQUALS IDENT COLON ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) ) | COLON -> quantPrefix ) | roleLabel );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -4311,22 +4517,22 @@ public class Label0Parser extends Parser {
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA4_11 = input.LA(1);
+                        int LA4_10 = input.LA(1);
 
                          
-                        int index4_11 = input.index();
+                        int index4_10 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA4_11==IDENT) ) {s = 14;}
+                        if ( (LA4_10==IDENT) ) {s = 14;}
 
-                        else if ( (LA4_11==EOF) && ((( !isGraph )||( isGraph )))) {s = 10;}
+                        else if ( (LA4_10==EOF) && ((( !isGraph )||( isGraph )))) {s = 11;}
 
-                        else if ( ((LA4_11>=NEW && LA4_11<=EQUALS)||(LA4_11>=LPAR && LA4_11<=QUERY)||LA4_11==COMMA||(LA4_11>=DQUOTE && LA4_11<=UNDER)||(LA4_11>=LABEL && LA4_11<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
+                        else if ( ((LA4_10>=NEW && LA4_10<=EQUALS)||(LA4_10>=LPAR && LA4_10<=QUERY)||LA4_10==COMMA||(LA4_10>=DQUOTE && LA4_10<=UNDER)||(LA4_10>=LABEL && LA4_10<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
 
-                        else if ( ((LA4_11>=LBRACE && LA4_11<=RBRACE)||LA4_11==SQUOTE||LA4_11==BSLASH) && (( isGraph ))) {s = 9;}
+                        else if ( ((LA4_10>=LBRACE && LA4_10<=RBRACE)||LA4_10==SQUOTE||LA4_10==BSLASH) && (( isGraph ))) {s = 9;}
 
                          
-                        input.seek(index4_11);
+                        input.seek(index4_10);
                         if ( s>=0 ) return s;
                         break;
                     case 2 : 
@@ -4338,7 +4544,7 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA4_14==COLON) ) {s = 13;}
 
-                        else if ( (LA4_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 10;}
+                        else if ( (LA4_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 11;}
 
                         else if ( ((LA4_14>=NEW && LA4_14<=EQUALS)||(LA4_14>=LPAR && LA4_14<=QUERY)||LA4_14==COMMA||(LA4_14>=DQUOTE && LA4_14<=UNDER)||(LA4_14>=IDENT && LA4_14<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
 
@@ -4355,15 +4561,15 @@ public class Label0Parser extends Parser {
                         int index4_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA4_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 10;}
+                        if ( (LA4_1==EQUALS) ) {s = 10;}
 
-                        else if ( (LA4_1==EQUALS) ) {s = 11;}
-
-                        else if ( ((LA4_1>=LBRACE && LA4_1<=RBRACE)||LA4_1==SQUOTE||LA4_1==BSLASH) && (( isGraph ))) {s = 9;}
+                        else if ( (LA4_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 11;}
 
                         else if ( ((LA4_1>=NEW && LA4_1<=HAT)||(LA4_1>=LPAR && LA4_1<=QUERY)||LA4_1==COMMA||(LA4_1>=DQUOTE && LA4_1<=UNDER)||(LA4_1>=IDENT && LA4_1<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
 
                         else if ( (LA4_1==COLON) ) {s = 13;}
+
+                        else if ( ((LA4_1>=LBRACE && LA4_1<=RBRACE)||LA4_1==SQUOTE||LA4_1==BSLASH) && (( isGraph ))) {s = 9;}
 
                          
                         input.seek(index4_1);
@@ -4380,19 +4586,19 @@ public class Label0Parser extends Parser {
     static final String DFA2_eotS =
         "\16\uffff";
     static final String DFA2_eofS =
-        "\1\12\1\15\14\uffff";
+        "\1\12\1\14\14\uffff";
     static final String DFA2_minS =
         "\2\4\14\uffff";
     static final String DFA2_maxS =
         "\2\72\14\uffff";
     static final String DFA2_acceptS =
-        "\2\uffff\10\2\1\3\1\1\2\2";
+        "\2\uffff\10\2\1\3\2\2\1\1";
     static final String DFA2_specialS =
         "\1\0\1\1\14\uffff}>";
     static final String[] DFA2_transitionS = {
             "\5\1\15\7\3\2\13\7\1\5\1\10\1\11\4\7\1\3\1\4\1\2\1\7\1\6\3"+
             "\7\1\11\7\7",
-            "\41\14\2\11\6\14\1\13\1\14\1\11\3\14\1\11\7\14",
+            "\41\13\2\11\6\13\1\15\1\13\1\11\3\13\1\11\7\13",
             "",
             "",
             "",
@@ -4437,7 +4643,7 @@ public class Label0Parser extends Parser {
             this.transition = DFA2_transition;
         }
         public String getDescription() {
-            return "101:8: ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) )";
+            return "117:8: ( rolePrefix COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | actualLabel -> ^( USE IDENT actualLabel ) | -> ^( quantPrefix IDENT ) )";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -4481,13 +4687,13 @@ public class Label0Parser extends Parser {
                         int index2_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA2_1==COLON) ) {s = 11;}
+                        if ( ((LA2_1>=NEW && LA2_1<=EQUALS)||(LA2_1>=LPAR && LA2_1<=QUERY)||LA2_1==COMMA||(LA2_1>=DQUOTE && LA2_1<=UNDER)||(LA2_1>=IDENT && LA2_1<=58)) && ((( !isGraph )||( isGraph )))) {s = 11;}
 
-                        else if ( ((LA2_1>=NEW && LA2_1<=EQUALS)||(LA2_1>=LPAR && LA2_1<=QUERY)||LA2_1==COMMA||(LA2_1>=DQUOTE && LA2_1<=UNDER)||(LA2_1>=IDENT && LA2_1<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
-
-                        else if ( (LA2_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 13;}
+                        else if ( (LA2_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 12;}
 
                         else if ( ((LA2_1>=LBRACE && LA2_1<=RBRACE)||LA2_1==SQUOTE||LA2_1==BSLASH) && (( isGraph ))) {s = 9;}
+
+                        else if ( (LA2_1==COLON) ) {s = 13;}
 
                          
                         input.seek(index2_1);
@@ -4504,19 +4710,19 @@ public class Label0Parser extends Parser {
     static final String DFA7_eotS =
         "\17\uffff";
     static final String DFA7_eofS =
-        "\1\uffff\1\15\10\uffff\1\15\3\uffff\1\15";
+        "\1\uffff\1\13\10\uffff\1\13\3\uffff\1\13";
     static final String DFA7_minS =
         "\2\4\10\uffff\1\4\3\uffff\1\4";
     static final String DFA7_maxS =
         "\2\72\10\uffff\1\72\3\uffff\1\72";
     static final String DFA7_acceptS =
-        "\2\uffff\10\2\1\uffff\1\1\2\2\1\uffff";
+        "\2\uffff\10\2\1\uffff\2\2\1\1\1\uffff";
     static final String DFA7_specialS =
-        "\1\2\1\3\10\uffff\1\1\3\uffff\1\0}>";
+        "\1\0\1\1\10\uffff\1\3\3\uffff\1\2}>";
     static final String[] DFA7_transitionS = {
             "\5\1\15\7\3\2\13\7\1\5\1\10\1\11\4\7\1\3\1\4\1\2\1\7\1\6\3"+
             "\7\1\11\7\7",
-            "\40\14\1\12\2\11\6\14\1\13\1\14\1\11\3\14\1\11\7\14",
+            "\40\14\1\12\2\11\6\14\1\15\1\14\1\11\3\14\1\11\7\14",
             "",
             "",
             "",
@@ -4529,7 +4735,7 @@ public class Label0Parser extends Parser {
             "",
             "",
             "",
-            "\41\14\2\11\6\14\1\13\1\14\1\11\3\14\1\11\7\14"
+            "\41\14\2\11\6\14\1\15\1\14\1\11\3\14\1\11\7\14"
     };
 
     static final short[] DFA7_eot = DFA.unpackEncodedString(DFA7_eotS);
@@ -4562,51 +4768,13 @@ public class Label0Parser extends Parser {
             this.transition = DFA7_transition;
         }
         public String getDescription() {
-            return "117:1: roleLabel : ( rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) ) | actualLabel );";
+            return "133:1: roleLabel : ( rolePrefix ( EQUALS IDENT COLON actualLabel -> ^( rolePrefix IDENT actualLabel ) | COLON ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix ) ) | actualLabel );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA7_14 = input.LA(1);
-
-                         
-                        int index7_14 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA7_14==COLON) ) {s = 11;}
-
-                        else if ( (LA7_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 13;}
-
-                        else if ( ((LA7_14>=NEW && LA7_14<=EQUALS)||(LA7_14>=LPAR && LA7_14<=QUERY)||LA7_14==COMMA||(LA7_14>=DQUOTE && LA7_14<=UNDER)||(LA7_14>=IDENT && LA7_14<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
-
-                        else if ( ((LA7_14>=LBRACE && LA7_14<=RBRACE)||LA7_14==SQUOTE||LA7_14==BSLASH) && (( isGraph ))) {s = 9;}
-
-                         
-                        input.seek(index7_14);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA7_10 = input.LA(1);
-
-                         
-                        int index7_10 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA7_10==IDENT) ) {s = 14;}
-
-                        else if ( (LA7_10==EOF) && ((( !isGraph )||( isGraph )))) {s = 13;}
-
-                        else if ( ((LA7_10>=NEW && LA7_10<=EQUALS)||(LA7_10>=LPAR && LA7_10<=QUERY)||LA7_10==COMMA||(LA7_10>=DQUOTE && LA7_10<=UNDER)||(LA7_10>=LABEL && LA7_10<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
-
-                        else if ( ((LA7_10>=LBRACE && LA7_10<=RBRACE)||LA7_10==SQUOTE||LA7_10==BSLASH) && (( isGraph ))) {s = 9;}
-
-                         
-                        input.seek(index7_10);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
                         int LA7_0 = input.LA(1);
 
                          
@@ -4635,7 +4803,7 @@ public class Label0Parser extends Parser {
                         input.seek(index7_0);
                         if ( s>=0 ) return s;
                         break;
-                    case 3 : 
+                    case 1 : 
                         int LA7_1 = input.LA(1);
 
                          
@@ -4644,16 +4812,54 @@ public class Label0Parser extends Parser {
                         s = -1;
                         if ( (LA7_1==EQUALS) ) {s = 10;}
 
-                        else if ( (LA7_1==COLON) ) {s = 11;}
+                        else if ( (LA7_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 11;}
 
                         else if ( ((LA7_1>=NEW && LA7_1<=HAT)||(LA7_1>=LPAR && LA7_1<=QUERY)||LA7_1==COMMA||(LA7_1>=DQUOTE && LA7_1<=UNDER)||(LA7_1>=IDENT && LA7_1<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
 
-                        else if ( (LA7_1==EOF) && ((( !isGraph )||( isGraph )))) {s = 13;}
+                        else if ( (LA7_1==COLON) ) {s = 13;}
 
                         else if ( ((LA7_1>=LBRACE && LA7_1<=RBRACE)||LA7_1==SQUOTE||LA7_1==BSLASH) && (( isGraph ))) {s = 9;}
 
                          
                         input.seek(index7_1);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 2 : 
+                        int LA7_14 = input.LA(1);
+
+                         
+                        int index7_14 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA7_14==COLON) ) {s = 13;}
+
+                        else if ( (LA7_14==EOF) && ((( !isGraph )||( isGraph )))) {s = 11;}
+
+                        else if ( ((LA7_14>=NEW && LA7_14<=EQUALS)||(LA7_14>=LPAR && LA7_14<=QUERY)||LA7_14==COMMA||(LA7_14>=DQUOTE && LA7_14<=UNDER)||(LA7_14>=IDENT && LA7_14<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
+
+                        else if ( ((LA7_14>=LBRACE && LA7_14<=RBRACE)||LA7_14==SQUOTE||LA7_14==BSLASH) && (( isGraph ))) {s = 9;}
+
+                         
+                        input.seek(index7_14);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 3 : 
+                        int LA7_10 = input.LA(1);
+
+                         
+                        int index7_10 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA7_10==IDENT) ) {s = 14;}
+
+                        else if ( (LA7_10==EOF) && ((( !isGraph )||( isGraph )))) {s = 11;}
+
+                        else if ( ((LA7_10>=NEW && LA7_10<=EQUALS)||(LA7_10>=LPAR && LA7_10<=QUERY)||LA7_10==COMMA||(LA7_10>=DQUOTE && LA7_10<=UNDER)||(LA7_10>=LABEL && LA7_10<=58)) && ((( !isGraph )||( isGraph )))) {s = 12;}
+
+                        else if ( ((LA7_10>=LBRACE && LA7_10<=RBRACE)||LA7_10==SQUOTE||LA7_10==BSLASH) && (( isGraph ))) {s = 9;}
+
+                         
+                        input.seek(index7_10);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -4720,7 +4926,7 @@ public class Label0Parser extends Parser {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "122:8: ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix )";
+            return "138:8: ( actualLabel -> ^( rolePrefix actualLabel ) | -> rolePrefix )";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -4825,7 +5031,7 @@ public class Label0Parser extends Parser {
             this.transition = DFA14_transition;
         }
         public String getDescription() {
-            return "148:1: actualLabel : ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM text ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel );";
+            return "164:1: actualLabel : ( TYPE COLON IDENT -> ^( ATOM ^( TYPE IDENT ) ) | FLAG COLON IDENT -> ^( ATOM ^( FLAG IDENT ) ) | COLON text -> ^( ATOM ) | PATH COLON regExpr | ( graphDefault EOF )=>{...}? => graphLabel | ( ruleLabel EOF )=>{...}? => ruleLabel );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -5015,146 +5221,148 @@ public class Label0Parser extends Parser {
     }
  
 
-    public static final BitSet FOLLOW_quantLabel_in_label486 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_label488 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_specialLabel_in_label496 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_label498 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_quantPrefix_in_quantLabel514 = new BitSet(new long[]{0x0000201000000000L});
-    public static final BitSet FOLLOW_EQUALS_in_quantLabel523 = new BitSet(new long[]{0x0010000000000000L});
-    public static final BitSet FOLLOW_IDENT_in_quantLabel525 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_quantLabel527 = new BitSet(new long[]{0x07FFFFFFFFFFFFF2L});
-    public static final BitSet FOLLOW_rolePrefix_in_quantLabel538 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_quantLabel540 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_actualLabel_in_quantLabel542 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_actualLabel_in_quantLabel572 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_COLON_in_quantLabel626 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_roleLabel_in_quantLabel653 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_quantLabel_in_label494 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_label496 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_specialLabel_in_label504 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_label506 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_quantPrefix_in_quantLabel522 = new BitSet(new long[]{0x0000201000000000L});
+    public static final BitSet FOLLOW_EQUALS_in_quantLabel531 = new BitSet(new long[]{0x0010000000000000L});
+    public static final BitSet FOLLOW_IDENT_in_quantLabel533 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_quantLabel535 = new BitSet(new long[]{0x07FFFFFFFFFFFFF2L});
+    public static final BitSet FOLLOW_rolePrefix_in_quantLabel546 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_quantLabel548 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
+    public static final BitSet FOLLOW_actualLabel_in_quantLabel550 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_actualLabel_in_quantLabel580 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_COLON_in_quantLabel634 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_roleLabel_in_quantLabel661 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_quantPrefix0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_rolePrefix_in_roleLabel691 = new BitSet(new long[]{0x0000201000000000L});
-    public static final BitSet FOLLOW_EQUALS_in_roleLabel700 = new BitSet(new long[]{0x0010000000000000L});
-    public static final BitSet FOLLOW_IDENT_in_roleLabel702 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_roleLabel704 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_actualLabel_in_roleLabel706 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_COLON_in_roleLabel734 = new BitSet(new long[]{0x07FFFFFFFFFFFFF2L});
-    public static final BitSet FOLLOW_actualLabel_in_roleLabel746 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_actualLabel_in_roleLabel799 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_rolePrefix_in_roleLabel699 = new BitSet(new long[]{0x0000201000000000L});
+    public static final BitSet FOLLOW_EQUALS_in_roleLabel708 = new BitSet(new long[]{0x0010000000000000L});
+    public static final BitSet FOLLOW_IDENT_in_roleLabel710 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_roleLabel712 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
+    public static final BitSet FOLLOW_actualLabel_in_roleLabel714 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_COLON_in_roleLabel742 = new BitSet(new long[]{0x07FFFFFFFFFFFFF2L});
+    public static final BitSet FOLLOW_actualLabel_in_roleLabel754 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_actualLabel_in_roleLabel807 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_rolePrefix0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_REM_in_specialLabel845 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel848 = new BitSet(new long[]{0x03FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_text_in_specialLabel851 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PAR_in_specialLabel858 = new BitSet(new long[]{0x0000201000000000L});
-    public static final BitSet FOLLOW_EQUALS_in_specialLabel862 = new BitSet(new long[]{0x0020000000000000L});
-    public static final BitSet FOLLOW_LABEL_in_specialLabel865 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel869 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NESTED_in_specialLabel877 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel880 = new BitSet(new long[]{0x0010000000000000L});
-    public static final BitSet FOLLOW_IDENT_in_specialLabel883 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_INT_in_specialLabel894 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel897 = new BitSet(new long[]{0x0050000000000002L});
-    public static final BitSet FOLLOW_set_in_specialLabel900 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_REAL_in_specialLabel914 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel917 = new BitSet(new long[]{0x0050000200000002L});
-    public static final BitSet FOLLOW_rnumber_in_specialLabel921 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENT_in_specialLabel925 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STRING_in_specialLabel934 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel937 = new BitSet(new long[]{0x0011000000000002L});
-    public static final BitSet FOLLOW_dqText_in_specialLabel941 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENT_in_specialLabel945 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BOOL_in_specialLabel954 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel957 = new BitSet(new long[]{0x0010000018000002L});
-    public static final BitSet FOLLOW_set_in_specialLabel960 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ATTR_in_specialLabel978 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel981 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROD_in_specialLabel989 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel992 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ARG_in_specialLabel1000 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_specialLabel1003 = new BitSet(new long[]{0x0040000000000000L});
-    public static final BitSet FOLLOW_NUMBER_in_specialLabel1006 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TYPE_in_actualLabel1021 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_actualLabel1023 = new BitSet(new long[]{0x0010000000000000L});
-    public static final BitSet FOLLOW_IDENT_in_actualLabel1025 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FLAG_in_actualLabel1044 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_actualLabel1046 = new BitSet(new long[]{0x0010000000000000L});
-    public static final BitSet FOLLOW_IDENT_in_actualLabel1048 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_COLON_in_actualLabel1067 = new BitSet(new long[]{0x03FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_text_in_actualLabel1069 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PATH_in_actualLabel1084 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_COLON_in_actualLabel1087 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_regExpr_in_actualLabel1090 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_graphLabel_in_actualLabel1109 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleLabel_in_actualLabel1128 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_text1144 = new BitSet(new long[]{0x03FFFFFFFFFFFFF2L});
-    public static final BitSet FOLLOW_graphDefault_in_graphLabel1162 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_graphDefault1186 = new BitSet(new long[]{0x07FFDFFFFFFFFFF2L});
-    public static final BitSet FOLLOW_PLING_in_ruleLabel1204 = new BitSet(new long[]{0x07F7D7BFFFFFFFF0L});
-    public static final BitSet FOLLOW_simpleRuleLabel_in_ruleLabel1214 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LBRACE_in_ruleLabel1223 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_regExpr_in_ruleLabel1226 = new BitSet(new long[]{0x0000004000000000L});
-    public static final BitSet FOLLOW_RBRACE_in_ruleLabel1228 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_simpleRuleLabel_in_ruleLabel1243 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LBRACE_in_ruleLabel1250 = new BitSet(new long[]{0x0070989040000000L});
-    public static final BitSet FOLLOW_PLING_in_ruleLabel1260 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_regExpr_in_ruleLabel1263 = new BitSet(new long[]{0x0000004000000000L});
-    public static final BitSet FOLLOW_regExpr_in_ruleLabel1272 = new BitSet(new long[]{0x0000004000000000L});
-    public static final BitSet FOLLOW_RBRACE_in_ruleLabel1286 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_wildcard_in_simpleRuleLabel1302 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_EQUALS_in_simpleRuleLabel1309 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_sqText_in_simpleRuleLabel1316 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleDefault_in_simpleRuleLabel1331 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_ruleDefault1354 = new BitSet(new long[]{0x07F75F9FFFFFFFF2L});
-    public static final BitSet FOLLOW_set_in_ruleDefault1393 = new BitSet(new long[]{0x07F75F9FFFFFFFF2L});
-    public static final BitSet FOLLOW_NUMBER_in_rnumber1430 = new BitSet(new long[]{0x0000000200000002L});
-    public static final BitSet FOLLOW_DOT_in_rnumber1433 = new BitSet(new long[]{0x0040000000000002L});
-    public static final BitSet FOLLOW_NUMBER_in_rnumber1435 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DOT_in_rnumber1445 = new BitSet(new long[]{0x0040000000000000L});
-    public static final BitSet FOLLOW_NUMBER_in_rnumber1447 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_choice_in_regExpr1462 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_sequence_in_choice1477 = new BitSet(new long[]{0x0000000400000002L});
-    public static final BitSet FOLLOW_BAR_in_choice1480 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_choice_in_choice1483 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_unary_in_sequence1497 = new BitSet(new long[]{0x0000000200000002L});
-    public static final BitSet FOLLOW_DOT_in_sequence1500 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_sequence_in_sequence1503 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_MINUS_in_unary1517 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_unary_in_unary1520 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_atom_in_unary1527 = new BitSet(new long[]{0x0000000180000002L});
-    public static final BitSet FOLLOW_STAR_in_unary1530 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PLUS_in_unary1535 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_EQUALS_in_unary1545 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAR_in_unary1552 = new BitSet(new long[]{0x0070909040000000L});
-    public static final BitSet FOLLOW_regExpr_in_unary1555 = new BitSet(new long[]{0x0000010000000000L});
-    public static final BitSet FOLLOW_RPAR_in_unary1557 = new BitSet(new long[]{0x0000000180000002L});
-    public static final BitSet FOLLOW_STAR_in_unary1561 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PLUS_in_unary1566 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_wildcard_in_unary1576 = new BitSet(new long[]{0x0000000180000002L});
-    public static final BitSet FOLLOW_STAR_in_unary1579 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PLUS_in_unary1584 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_sqText_in_atom1602 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_atomLabel_in_atom1617 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_REM_in_specialLabel853 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel856 = new BitSet(new long[]{0x03FFFFFFFFFFFFF0L});
+    public static final BitSet FOLLOW_text_in_specialLabel859 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PAR_in_specialLabel866 = new BitSet(new long[]{0x0000201000000000L});
+    public static final BitSet FOLLOW_EQUALS_in_specialLabel870 = new BitSet(new long[]{0x0020000000000000L});
+    public static final BitSet FOLLOW_LABEL_in_specialLabel873 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel877 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NESTED_in_specialLabel885 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel888 = new BitSet(new long[]{0x0010000000000000L});
+    public static final BitSet FOLLOW_IDENT_in_specialLabel891 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_INT_in_specialLabel902 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel905 = new BitSet(new long[]{0x0050000000000002L});
+    public static final BitSet FOLLOW_set_in_specialLabel908 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_REAL_in_specialLabel922 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel925 = new BitSet(new long[]{0x0050000200000002L});
+    public static final BitSet FOLLOW_rnumber_in_specialLabel929 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENT_in_specialLabel933 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_specialLabel942 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel945 = new BitSet(new long[]{0x0011000000000002L});
+    public static final BitSet FOLLOW_dqText_in_specialLabel949 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENT_in_specialLabel953 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_BOOL_in_specialLabel962 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel965 = new BitSet(new long[]{0x0010000018000002L});
+    public static final BitSet FOLLOW_set_in_specialLabel968 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ATTR_in_specialLabel986 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel989 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROD_in_specialLabel997 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel1000 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ARG_in_specialLabel1008 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_specialLabel1011 = new BitSet(new long[]{0x0040000000000000L});
+    public static final BitSet FOLLOW_NUMBER_in_specialLabel1014 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TYPE_in_actualLabel1029 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_actualLabel1031 = new BitSet(new long[]{0x0010000000000000L});
+    public static final BitSet FOLLOW_IDENT_in_actualLabel1033 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FLAG_in_actualLabel1052 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_actualLabel1054 = new BitSet(new long[]{0x0010000000000000L});
+    public static final BitSet FOLLOW_IDENT_in_actualLabel1056 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_COLON_in_actualLabel1075 = new BitSet(new long[]{0x03FFFFFFFFFFFFF0L});
+    public static final BitSet FOLLOW_text_in_actualLabel1077 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PATH_in_actualLabel1092 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_COLON_in_actualLabel1095 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_regExpr_in_actualLabel1098 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_graphLabel_in_actualLabel1117 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleLabel_in_actualLabel1136 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_text1152 = new BitSet(new long[]{0x03FFFFFFFFFFFFF2L});
+    public static final BitSet FOLLOW_graphDefault_in_graphLabel1170 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_graphDefault1194 = new BitSet(new long[]{0x07FFDFFFFFFFFFF2L});
+    public static final BitSet FOLLOW_PLING_in_ruleLabel1212 = new BitSet(new long[]{0x07F7D7BFFFFFFFF0L});
+    public static final BitSet FOLLOW_simpleRuleLabel_in_ruleLabel1222 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LBRACE_in_ruleLabel1231 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_regExpr_in_ruleLabel1234 = new BitSet(new long[]{0x0000004000000000L});
+    public static final BitSet FOLLOW_RBRACE_in_ruleLabel1236 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_simpleRuleLabel_in_ruleLabel1251 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LBRACE_in_ruleLabel1258 = new BitSet(new long[]{0x0070989040000000L});
+    public static final BitSet FOLLOW_PLING_in_ruleLabel1268 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_regExpr_in_ruleLabel1271 = new BitSet(new long[]{0x0000004000000000L});
+    public static final BitSet FOLLOW_regExpr_in_ruleLabel1280 = new BitSet(new long[]{0x0000004000000000L});
+    public static final BitSet FOLLOW_RBRACE_in_ruleLabel1294 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_wildcard_in_simpleRuleLabel1310 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_EQUALS_in_simpleRuleLabel1317 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_sqText_in_simpleRuleLabel1324 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleDefault_in_simpleRuleLabel1339 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_ruleDefault1363 = new BitSet(new long[]{0x07F75F9FFFFFFFF2L});
+    public static final BitSet FOLLOW_set_in_ruleDefault1402 = new BitSet(new long[]{0x07F75F9FFFFFFFF2L});
+    public static final BitSet FOLLOW_NUMBER_in_rnumber1437 = new BitSet(new long[]{0x0000000200000002L});
+    public static final BitSet FOLLOW_DOT_in_rnumber1440 = new BitSet(new long[]{0x0040000000000002L});
+    public static final BitSet FOLLOW_NUMBER_in_rnumber1442 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DOT_in_rnumber1452 = new BitSet(new long[]{0x0040000000000000L});
+    public static final BitSet FOLLOW_NUMBER_in_rnumber1454 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_choice_in_regExpr1469 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_sequence_in_choice1484 = new BitSet(new long[]{0x0000000400000002L});
+    public static final BitSet FOLLOW_BAR_in_choice1487 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_choice_in_choice1490 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_unary_in_sequence1504 = new BitSet(new long[]{0x0000000200000002L});
+    public static final BitSet FOLLOW_DOT_in_sequence1507 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_sequence_in_sequence1510 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_MINUS_in_unary1524 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_unary_in_unary1527 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_atom_in_unary1534 = new BitSet(new long[]{0x0000000180000002L});
+    public static final BitSet FOLLOW_STAR_in_unary1537 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PLUS_in_unary1542 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_EQUALS_in_unary1552 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAR_in_unary1559 = new BitSet(new long[]{0x0070909040000000L});
+    public static final BitSet FOLLOW_regExpr_in_unary1562 = new BitSet(new long[]{0x0000010000000000L});
+    public static final BitSet FOLLOW_RPAR_in_unary1564 = new BitSet(new long[]{0x0000000180000002L});
+    public static final BitSet FOLLOW_STAR_in_unary1568 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PLUS_in_unary1573 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_wildcard_in_unary1583 = new BitSet(new long[]{0x0000000180000002L});
+    public static final BitSet FOLLOW_STAR_in_unary1586 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PLUS_in_unary1591 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_sqText_in_atom1609 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_atomLabel_in_atom1624 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_atomLabel0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUERY_in_wildcard1666 = new BitSet(new long[]{0x0010020000000002L});
-    public static final BitSet FOLLOW_IDENT_in_wildcard1669 = new BitSet(new long[]{0x0000020000000002L});
-    public static final BitSet FOLLOW_LSQUARE_in_wildcard1673 = new BitSet(new long[]{0x0070800800000000L});
-    public static final BitSet FOLLOW_HAT_in_wildcard1676 = new BitSet(new long[]{0x0070800000000000L});
-    public static final BitSet FOLLOW_atom_in_wildcard1679 = new BitSet(new long[]{0x0000440000000000L});
-    public static final BitSet FOLLOW_COMMA_in_wildcard1682 = new BitSet(new long[]{0x0070800000000000L});
-    public static final BitSet FOLLOW_atom_in_wildcard1685 = new BitSet(new long[]{0x0000440000000000L});
-    public static final BitSet FOLLOW_RSQUARE_in_wildcard1689 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SQUOTE_in_sqText1707 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_set_in_sqText1711 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_sqTextSpecial_in_sqText1720 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_SQUOTE_in_sqText1724 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BSLASH_in_sqTextSpecial1736 = new BitSet(new long[]{0x0008800000000000L});
-    public static final BitSet FOLLOW_set_in_sqTextSpecial1739 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DQUOTE_in_dqText1758 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_set_in_dqText1762 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_dqTextSpecial_in_dqText1771 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
-    public static final BitSet FOLLOW_DQUOTE_in_dqText1775 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BSLASH_in_dqTextSpecial1787 = new BitSet(new long[]{0x0009000000000000L});
-    public static final BitSet FOLLOW_set_in_dqTextSpecial1790 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_graphDefault_in_synpred1_Label01098 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_synpred1_Label01100 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleLabel_in_synpred2_Label01117 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_synpred2_Label01119 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUERY_in_wildcard1673 = new BitSet(new long[]{0x0010020000000002L});
+    public static final BitSet FOLLOW_IDENT_in_wildcard1676 = new BitSet(new long[]{0x0000020000000002L});
+    public static final BitSet FOLLOW_LSQUARE_in_wildcard1680 = new BitSet(new long[]{0x0070800800000000L});
+    public static final BitSet FOLLOW_HAT_in_wildcard1683 = new BitSet(new long[]{0x0070800000000000L});
+    public static final BitSet FOLLOW_atom_in_wildcard1686 = new BitSet(new long[]{0x0000440000000000L});
+    public static final BitSet FOLLOW_COMMA_in_wildcard1689 = new BitSet(new long[]{0x0070800000000000L});
+    public static final BitSet FOLLOW_atom_in_wildcard1692 = new BitSet(new long[]{0x0000440000000000L});
+    public static final BitSet FOLLOW_RSQUARE_in_wildcard1696 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SQUOTE_in_sqText1714 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
+    public static final BitSet FOLLOW_sqContent_in_sqText1716 = new BitSet(new long[]{0x0000800000000000L});
+    public static final BitSet FOLLOW_SQUOTE_in_sqText1718 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_sqChar_in_sqContent1737 = new BitSet(new long[]{0x07FF7FFFFFFFFFF2L});
+    public static final BitSet FOLLOW_set_in_sqChar1753 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_BSLASH_in_sqChar1766 = new BitSet(new long[]{0x0008800000000000L});
+    public static final BitSet FOLLOW_set_in_sqChar1769 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DQUOTE_in_dqText1788 = new BitSet(new long[]{0x07FFFFFFFFFFFFF0L});
+    public static final BitSet FOLLOW_dqContent_in_dqText1790 = new BitSet(new long[]{0x0001000000000000L});
+    public static final BitSet FOLLOW_DQUOTE_in_dqText1792 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_dqTextChar_in_dqContent1815 = new BitSet(new long[]{0x07FEFFFFFFFFFFF2L});
+    public static final BitSet FOLLOW_set_in_dqTextChar1831 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_BSLASH_in_dqTextChar1843 = new BitSet(new long[]{0x0009000000000000L});
+    public static final BitSet FOLLOW_set_in_dqTextChar1846 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_graphDefault_in_synpred1_Label01106 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_synpred1_Label01108 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleLabel_in_synpred2_Label01125 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_synpred2_Label01127 = new BitSet(new long[]{0x0000000000000002L});
 
 }
