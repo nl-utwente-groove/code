@@ -125,6 +125,7 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
+            this.branchMap.put(cellLayoutable, branchSet);
             if (key instanceof JVertex && ((JVertex) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
@@ -266,7 +267,7 @@ public class ForestLayouter extends AbstractLayouter {
             new CollectionOfCollections<Layoutable>(this.inDegreeMap.values()).iterator();
         // Transfer the suggested roots (if any) from j-cells to layoutables
         Collection<?> suggestedRoots = getSuggestedRoots();
-        if (suggestedRoots != null) {
+        if (suggestedRoots != null && !suggestedRoots.isEmpty()) {
             Iterator<Layoutable> suggestedRootIter =
                 new TransformIterator<Object,Layoutable>(
                     suggestedRoots.iterator()) {
