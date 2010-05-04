@@ -183,20 +183,23 @@ param
 			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+bool.getText()+"' on line "+bool.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not bool)");
 		}
 	})
-	| ^(PARAM STRING_TYPE str=STRING {
+	| ^(PARAM STRING_TYPE str=IDENTIFIER {
 		numParameters++;
 		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("string")) {
 			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and "+str.getText()+" on line "+str.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not string)");
 		}
 	})
-	| ^(PARAM INT_TYPE in=INT {
+	| ^(PARAM INT_TYPE in=IDENTIFIER {
 		numParameters++;
 		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("int")) {
 			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+in.getText()+"' on line "+in.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not int)");
 		}
 	})
-	| ^(PARAM REAL_TYPE r=REAL {
+	| ^(PARAM REAL_TYPE r=IDENTIFIER {
 		numParameters++;
+		if (r.getText().equals(".")) {
+			errors.add("'.' is not a valid real value on line "+r.getLine());
+		}
 		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("real")) {
 			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+r.getText()+"' on line "+r.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not real)");
 		}

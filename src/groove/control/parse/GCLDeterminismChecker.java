@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLDeterminismChecker.g 2010-04-23 13:03:05
+// $ANTLR 3.1b1 GCLDeterminismChecker.g 2010-05-04 16:27:34
 
 package groove.control.parse;
 import groove.control.*;
@@ -16,30 +16,30 @@ import java.util.ArrayList;
 @SuppressWarnings("all")              
 public class GCLDeterminismChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "NODE_TYPE", "BOOL_TYPE", "STRING_TYPE", "INT_TYPE", "REAL_TYPE", "COMMA", "OUT", "DONT_CARE", "FALSE", "STRING", "INT", "REAL", "QUOTE", "AND", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "DOT", "NODE_TYPE", "BOOL_TYPE", "STRING_TYPE", "INT_TYPE", "REAL_TYPE", "COMMA", "OUT", "DONT_CARE", "FALSE", "QUOTE", "BSLASH", "MINUS", "NUMBER", "AND", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
     public static final int FUNCTION=7;
     public static final int STAR=24;
     public static final int FUNCTIONS=6;
     public static final int WHILE=15;
-    public static final int BOOL_TYPE=29;
-    public static final int NODE_TYPE=28;
+    public static final int BOOL_TYPE=30;
+    public static final int NODE_TYPE=29;
     public static final int DO=9;
     public static final int PARAM=11;
     public static final int NOT=43;
     public static final int ALAP=14;
-    public static final int AND=41;
+    public static final int AND=42;
     public static final int EOF=-1;
     public static final int IF=19;
     public static final int ML_COMMENT=44;
-    public static final int QUOTE=40;
+    public static final int QUOTE=38;
     public static final int T__51=51;
-    public static final int COMMA=33;
+    public static final int COMMA=34;
     public static final int IDENTIFIER=12;
     public static final int CH_OR=18;
     public static final int PLUS=23;
     public static final int VAR=10;
-    public static final int DOT=42;
+    public static final int DOT=28;
     public static final int T__50=50;
     public static final int CHOICE=17;
     public static final int T__47=47;
@@ -48,25 +48,25 @@ public class GCLDeterminismChecker extends TreeParser {
     public static final int T__48=48;
     public static final int T__49=49;
     public static final int ELSE=20;
-    public static final int INT=38;
-    public static final int INT_TYPE=31;
+    public static final int NUMBER=41;
+    public static final int MINUS=40;
+    public static final int INT_TYPE=32;
     public static final int TRUE=22;
     public static final int TRY=21;
-    public static final int REAL=39;
-    public static final int REAL_TYPE=32;
-    public static final int DONT_CARE=35;
+    public static final int REAL_TYPE=33;
+    public static final int DONT_CARE=36;
     public static final int WS=46;
     public static final int ANY=26;
-    public static final int OUT=34;
+    public static final int OUT=35;
     public static final int UNTIL=16;
-    public static final int STRING_TYPE=30;
+    public static final int STRING_TYPE=31;
     public static final int BLOCK=5;
     public static final int OR=13;
     public static final int SL_COMMENT=45;
     public static final int PROGRAM=4;
     public static final int CALL=8;
-    public static final int FALSE=36;
-    public static final int STRING=37;
+    public static final int FALSE=37;
+    public static final int BSLASH=39;
 
     // delegates
     // delegators
@@ -1873,7 +1873,7 @@ public class GCLDeterminismChecker extends TreeParser {
     };
 
     // $ANTLR start param
-    // GCLDeterminismChecker.g:307:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE TRUE ) | ^( PARAM BOOL_TYPE FALSE ) | ^( PARAM STRING_TYPE STRING ) | ^( PARAM INT_TYPE INT ) | ^( PARAM REAL_TYPE REAL ) );
+    // GCLDeterminismChecker.g:307:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE TRUE ) | ^( PARAM BOOL_TYPE FALSE ) | ^( PARAM STRING_TYPE IDENTIFIER ) | ^( PARAM INT_TYPE IDENTIFIER ) | ^( PARAM REAL_TYPE IDENTIFIER ) );
     public final GCLDeterminismChecker.param_return param() throws RecognitionException {
         GCLDeterminismChecker.param_return retval = new GCLDeterminismChecker.param_return();
         retval.start = input.LT(1);
@@ -1898,13 +1898,13 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree FALSE30=null;
         CommonTree PARAM31=null;
         CommonTree STRING_TYPE32=null;
-        CommonTree STRING33=null;
+        CommonTree IDENTIFIER33=null;
         CommonTree PARAM34=null;
         CommonTree INT_TYPE35=null;
-        CommonTree INT36=null;
+        CommonTree IDENTIFIER36=null;
         CommonTree PARAM37=null;
         CommonTree REAL_TYPE38=null;
-        CommonTree REAL39=null;
+        CommonTree IDENTIFIER39=null;
 
         CommonTree PARAM18_tree=null;
         CommonTree IDENTIFIER19_tree=null;
@@ -1921,16 +1921,16 @@ public class GCLDeterminismChecker extends TreeParser {
         CommonTree FALSE30_tree=null;
         CommonTree PARAM31_tree=null;
         CommonTree STRING_TYPE32_tree=null;
-        CommonTree STRING33_tree=null;
+        CommonTree IDENTIFIER33_tree=null;
         CommonTree PARAM34_tree=null;
         CommonTree INT_TYPE35_tree=null;
-        CommonTree INT36_tree=null;
+        CommonTree IDENTIFIER36_tree=null;
         CommonTree PARAM37_tree=null;
         CommonTree REAL_TYPE38_tree=null;
-        CommonTree REAL39_tree=null;
+        CommonTree IDENTIFIER39_tree=null;
 
         try {
-            // GCLDeterminismChecker.g:308:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE TRUE ) | ^( PARAM BOOL_TYPE FALSE ) | ^( PARAM STRING_TYPE STRING ) | ^( PARAM INT_TYPE INT ) | ^( PARAM REAL_TYPE REAL ) )
+            // GCLDeterminismChecker.g:308:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE TRUE ) | ^( PARAM BOOL_TYPE FALSE ) | ^( PARAM STRING_TYPE IDENTIFIER ) | ^( PARAM INT_TYPE IDENTIFIER ) | ^( PARAM REAL_TYPE IDENTIFIER ) )
             int alt10=8;
             alt10 = dfa10.predict(input);
             switch (alt10) {
@@ -2108,7 +2108,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLDeterminismChecker.g:313:4: ^( PARAM STRING_TYPE STRING )
+                    // GCLDeterminismChecker.g:313:4: ^( PARAM STRING_TYPE IDENTIFIER )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -2132,10 +2132,10 @@ public class GCLDeterminismChecker extends TreeParser {
                     adaptor.addChild(root_1, STRING_TYPE32_tree);
 
                     _last = (CommonTree)input.LT(1);
-                    STRING33=(CommonTree)match(input,STRING,FOLLOW_STRING_in_param589); 
-                    STRING33_tree = (CommonTree)adaptor.dupNode(STRING33);
+                    IDENTIFIER33=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param589); 
+                    IDENTIFIER33_tree = (CommonTree)adaptor.dupNode(IDENTIFIER33);
 
-                    adaptor.addChild(root_1, STRING33_tree);
+                    adaptor.addChild(root_1, IDENTIFIER33_tree);
 
 
                     match(input, Token.UP, null); adaptor.addChild(root_0, root_1);_last = _save_last_1;
@@ -2145,7 +2145,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLDeterminismChecker.g:314:4: ^( PARAM INT_TYPE INT )
+                    // GCLDeterminismChecker.g:314:4: ^( PARAM INT_TYPE IDENTIFIER )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -2169,10 +2169,10 @@ public class GCLDeterminismChecker extends TreeParser {
                     adaptor.addChild(root_1, INT_TYPE35_tree);
 
                     _last = (CommonTree)input.LT(1);
-                    INT36=(CommonTree)match(input,INT,FOLLOW_INT_in_param600); 
-                    INT36_tree = (CommonTree)adaptor.dupNode(INT36);
+                    IDENTIFIER36=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param600); 
+                    IDENTIFIER36_tree = (CommonTree)adaptor.dupNode(IDENTIFIER36);
 
-                    adaptor.addChild(root_1, INT36_tree);
+                    adaptor.addChild(root_1, IDENTIFIER36_tree);
 
 
                     match(input, Token.UP, null); adaptor.addChild(root_0, root_1);_last = _save_last_1;
@@ -2182,7 +2182,7 @@ public class GCLDeterminismChecker extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // GCLDeterminismChecker.g:315:4: ^( PARAM REAL_TYPE REAL )
+                    // GCLDeterminismChecker.g:315:4: ^( PARAM REAL_TYPE IDENTIFIER )
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -2206,10 +2206,10 @@ public class GCLDeterminismChecker extends TreeParser {
                     adaptor.addChild(root_1, REAL_TYPE38_tree);
 
                     _last = (CommonTree)input.LT(1);
-                    REAL39=(CommonTree)match(input,REAL,FOLLOW_REAL_in_param611); 
-                    REAL39_tree = (CommonTree)adaptor.dupNode(REAL39);
+                    IDENTIFIER39=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param611); 
+                    IDENTIFIER39_tree = (CommonTree)adaptor.dupNode(IDENTIFIER39);
 
-                    adaptor.addChild(root_1, REAL39_tree);
+                    adaptor.addChild(root_1, IDENTIFIER39_tree);
 
 
                     match(input, Token.UP, null); adaptor.addChild(root_0, root_1);_last = _save_last_1;
@@ -2244,7 +2244,7 @@ public class GCLDeterminismChecker extends TreeParser {
     static final String DFA10_minS =
         "\1\13\1\2\1\14\3\uffff\1\26\5\uffff";
     static final String DFA10_maxS =
-        "\1\13\1\2\1\43\3\uffff\1\44\5\uffff";
+        "\1\13\1\2\1\44\3\uffff\1\45\5\uffff";
     static final String DFA10_acceptS =
         "\3\uffff\1\1\1\2\1\3\1\uffff\1\6\1\7\1\10\1\4\1\5";
     static final String DFA10_specialS =
@@ -2252,11 +2252,11 @@ public class GCLDeterminismChecker extends TreeParser {
     static final String[] DFA10_transitionS = {
             "\1\1",
             "\1\2",
-            "\1\3\20\uffff\1\6\1\7\1\10\1\11\1\uffff\1\4\1\5",
+            "\1\3\21\uffff\1\6\1\7\1\10\1\11\1\uffff\1\4\1\5",
             "",
             "",
             "",
-            "\1\12\15\uffff\1\13",
+            "\1\12\16\uffff\1\13",
             "",
             "",
             "",
@@ -2294,7 +2294,7 @@ public class GCLDeterminismChecker extends TreeParser {
             this.transition = DFA10_transition;
         }
         public String getDescription() {
-            return "307:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE TRUE ) | ^( PARAM BOOL_TYPE FALSE ) | ^( PARAM STRING_TYPE STRING ) | ^( PARAM INT_TYPE INT ) | ^( PARAM REAL_TYPE REAL ) );";
+            return "307:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE TRUE ) | ^( PARAM BOOL_TYPE FALSE ) | ^( PARAM STRING_TYPE IDENTIFIER ) | ^( PARAM INT_TYPE IDENTIFIER ) | ^( PARAM REAL_TYPE IDENTIFIER ) );";
         }
     }
  
@@ -2367,16 +2367,16 @@ public class GCLDeterminismChecker extends TreeParser {
     public static final BitSet FOLLOW_BOOL_TYPE_in_param565 = new BitSet(new long[]{0x0000000000400000L});
     public static final BitSet FOLLOW_TRUE_in_param567 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param574 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_BOOL_TYPE_in_param576 = new BitSet(new long[]{0x0000001000000000L});
+    public static final BitSet FOLLOW_BOOL_TYPE_in_param576 = new BitSet(new long[]{0x0000002000000000L});
     public static final BitSet FOLLOW_FALSE_in_param578 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param585 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_STRING_TYPE_in_param587 = new BitSet(new long[]{0x0000002000000000L});
-    public static final BitSet FOLLOW_STRING_in_param589 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_STRING_TYPE_in_param587 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param589 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param596 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_INT_TYPE_in_param598 = new BitSet(new long[]{0x0000004000000000L});
-    public static final BitSet FOLLOW_INT_in_param600 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_INT_TYPE_in_param598 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param600 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param607 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_REAL_TYPE_in_param609 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_REAL_in_param611 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_REAL_TYPE_in_param609 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param611 = new BitSet(new long[]{0x0000000000000008L});
 
 }

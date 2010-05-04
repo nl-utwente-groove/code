@@ -2,7 +2,8 @@ grammar GCL;
 
 options {
 	output=AST;
-	k=2;
+	k=4;
+	ASTLabelType = CommonTree;
 }
 
 tokens {
@@ -41,6 +42,21 @@ import java.util.LinkedList;
     public List<String> getErrors() {
         return errors;
     }
+
+	CommonTree concat(CommonTree seq) {
+        String result;
+        List children = seq.getChildren();
+        if (children == null) {
+            result = seq.getText();
+        } else {
+            StringBuilder builder = new StringBuilder();
+            for (Object token: seq.getChildren()) {
+                builder.append(((CommonTree) token).getText());
+            }
+            result = builder.toString();
+        }
+        return new CommonTree(new CommonToken(IDENTIFIER, result));
+    }
 }
 
 // PARSER rules
@@ -77,7 +93,7 @@ elseblock
     ;
      
 conditionliteral
-	: TRUE | call | rule ;
+	: TRUE | call ;
 
 expression	
 	: expression2 (OR^ expression)?
@@ -91,16 +107,14 @@ expression2
 expression_atom
 	: ANY
 	| OTHER
-	| rule
 	| '('! expression ')'!
 	| call
 	; 
 
 call
-	: IDENTIFIER '(' var_list? ')' -> ^(CALL IDENTIFIER var_list?);
+	: ruleName ('(' var_list? ')')? -> ^(CALL { concat($ruleName.tree) } var_list?);
 
-rule 	
-	: IDENTIFIER -> ^(CALL IDENTIFIER);
+ruleName : IDENTIFIER (DOT IDENTIFIER)*;
 
 var_declaration
 	: var_type IDENTIFIER (',' IDENTIFIER)* -> ^(VAR var_type IDENTIFIER)+
@@ -128,10 +142,29 @@ variable
 literal
 	: TRUE -> BOOL_TYPE TRUE
 	| FALSE -> BOOL_TYPE FALSE
-	| STRING -> STRING_TYPE STRING
-	| INT -> INT_TYPE INT
-	| REAL -> REAL_TYPE REAL
+	| dqText -> STRING_TYPE dqText
+	| integer -> INT_TYPE { concat($integer.tree) }
+	| real -> REAL_TYPE { concat($real.tree) }
 	;
+
+dqText
+   : QUOTE dqContent QUOTE -> { concat($dqContent.tree) }
+   ;
+
+dqContent
+   : dqTextChar*
+   ;
+
+dqTextChar
+   : ~(QUOTE|BSLASH)
+   | BSLASH (BSLASH|QUOTE)
+   ;
+
+real
+	: MINUS? n1=NUMBER? DOT n2=NUMBER?;
+	
+integer
+	: MINUS? NUMBER;
 
 // LEXER rules
 
@@ -157,12 +190,6 @@ REAL_TYPE : 'real';
 OUT		:	'out';
 
 
-IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-'|'_'|'.')*;
-STRING : QUOTE (options {greedy=false;} : .)* QUOTE ;
-//{ setText(getText().substring(1, getText().length()-1)); };
-INT : ('0'..'9')+;
-REAL : ('0'..'9')+ ('.' ('0'..'9')+);
-
 AND 	:	 '&';
 COMMA 	:	 ',' ;
 DOT 	:	 '.' ;
@@ -172,7 +199,15 @@ SHARP 	:	 '#' ;
 PLUS 	:	 '+' ;
 STAR 	:	 '*' ;
 DONT_CARE	: '_';
+MINUS : '-';
 QUOTE   : '"';
+BSLASH : '\\';
+
+IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
+//STRING : QUOTE (options {greedy=false;} : .)* QUOTE ;
+//{ setText(getText().substring(1, getText().length()-1)); };
+NUMBER : ('0'..'9')+;
+
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };
