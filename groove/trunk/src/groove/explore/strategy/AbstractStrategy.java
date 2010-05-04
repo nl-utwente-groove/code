@@ -16,7 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.abs.lts.AbstrGraphState;
+import groove.abs.lts.ShapeGraphState;
 import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ControlStateCache;
@@ -175,7 +175,7 @@ public abstract class AbstractStrategy implements Strategy {
         /* An ugly hack to forbid aliasing for cases when it does not work */
         boolean aliasingNotAllowed =
             cache instanceof ControlStateCache
-                || getAtState() instanceof AbstrGraphState;
+                || getAtState() instanceof ShapeGraphState;
 
         if (!aliasingNotAllowed) {
 

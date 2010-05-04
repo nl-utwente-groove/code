@@ -371,7 +371,7 @@ abstract public class AbstractGraphState extends
      * @throws IllegalArgumentException if <code>nr</code> is illegal (i.e.,
      *         negative)
      */
-    protected void setNumber(int nr) {
+    public void setNumber(int nr) {
         if (hasNumber()) {
             throw new IllegalStateException(String.format(
                 "State number already set to %s", this.nr));

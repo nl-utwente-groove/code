@@ -46,23 +46,24 @@ import java.util.Set;
  * @author Iovka Boneva
  * @version $Revision $
  * @invariant (TypeInv) States of the system are always of type
- *            {@link AbstrGraphState}
+ *            {@link ShapeGraphState}
  * @invariant (TypeInv) Transitions of the system are always of type
- *            {@link AbstrGraphTransition}
+ *            {@link ShapeGraphTransition}
  */
 public class AGTS extends GTS {
 
     @Override
     // IOVKA this is almost a copy of the super method, because of the different
-    // implementation of the AbstrGraphState
-    /** @require newState is of type AbstrGraphState */
+    // implementation of the ShapeGraphState
+    /** @require newState is of type ShapeGraphState */
     public GraphState addState(GraphState newState) {
-        assert newState instanceof AbstrGraphState : "Type error : " + newState
-            + " is not of type AbstrGraphState.";
-        ((AbstrGraphStateImpl) newState).setStateNumber(nodeCount());
-        GraphState result = this.stateSet.getAndAdd((AbstrGraphState) newState);
+        assert newState instanceof ShapeGraphState : "Type error : " + newState
+            + " is not of type ShapeGraphState.";
+        ShapeGraphState state = (ShapeGraphState) newState;
+        state.setNumber(nodeCount());
+        ShapeGraphState result = this.stateSet.getAndAdd(state);
         if (result == null) {
-            fireAddNode(newState);
+            fireAddNode(state);
         }
         return result;
     }
@@ -70,10 +71,10 @@ public class AGTS extends GTS {
     @Override
     /** @require transition is of type AbstrGraphTransition */
     public void addTransition(GraphTransition transition) {
-        assert (transition instanceof AbstrGraphTransition)
-            || (transition instanceof AbstrGraphNextState) : "Type error : "
+        assert (transition instanceof ShapeGraphTransition)
+            || (transition instanceof ShapeGraphNextState) : "Type error : "
             + transition
-            + " is not of type AbstrGraphTransition neigther AbstrGraphNextState.";
+            + " is not of type ShapeGraphTransition neither ShapeGraphNextState.";
         super.addTransition(transition);
         if (transition.target().equals(INVALID_STATE)) {
             this.invalidTransitionsCount++;
@@ -81,18 +82,9 @@ public class AGTS extends GTS {
     }
 
     @Override
-    // IOVKA to remove after debug
-    /** @require state is an instance of AbstrGraphState */
-    public void setClosed(State state) {
-        assert state instanceof AbstrGraphState : "Type error : " + state
-            + " is not of type AbstrGraphState.";
-        super.setClosed(state);
-    }
-
-    @Override
     /** Specialises return type. */
-    public AbstrGraphState startState() {
-        return (AbstrGraphState) super.startState();
+    public ShapeGraphState startState() {
+        return (ShapeGraphState) super.startState();
     }
 
     /**
@@ -101,11 +93,11 @@ public class AGTS extends GTS {
      * @return The set of transitions with same source and same event
      */
     public Collection<Transition> getEquivalentTransitions(
-            AbstrGraphTransition trans) {
+            ShapeGraphTransition trans) {
         Collection<Transition> result = new ArrayList<Transition>();
         Iterator<? extends Edge> transIt = trans.source().getTransitionIter();
         while (transIt.hasNext()) {
-            AbstrGraphTransition other = (AbstrGraphTransition) transIt.next();
+            ShapeGraphTransition other = (ShapeGraphTransition) transIt.next();
             if (other.getEvent().equals(trans.getEvent())) {
                 result.add(other);
             }
@@ -187,8 +179,8 @@ public class AGTS extends GTS {
 
     private final PatternFamily family;
     // initialised with an hasher checking for isomorphism of graphs
-    private final MyHashSet<AbstrGraphState> stateSet =
-        new MyHashSet<AbstrGraphState>(new IsoCheckHasher());
+    private final MyHashSet<ShapeGraphState> stateSet =
+        new MyHashSet<ShapeGraphState>(new IsoCheckHasher());
 
     private final Abstraction.Parameters options;
 
@@ -196,13 +188,13 @@ public class AGTS extends GTS {
      * This is a unique state that represents all states which could not be
      * constructed because the maximal incidence constraint failed.
      */
-    public final static AbstrGraphState INVALID_STATE = new InvalidState();
+    public final static ShapeGraphState INVALID_STATE = new InvalidState();
 
     /** Used for counting the number of invalid transitions. */
     private int invalidTransitionsCount = 0;
 
     /** Used for a singleton invalid state. */
-    static class InvalidState extends AbstrGraphStateImpl {
+    static class InvalidState extends ShapeGraphState {
 
         InvalidState() {
             super(DefaultAbstrGraph.INVALID_AG);
@@ -234,7 +226,7 @@ public class AGTS extends GTS {
 
     @Override
     /** For now, control is not possible with abstract transformation. */
-    protected AbstrGraphState createStartState(Graph startGraph) {
+    protected ShapeGraphState createStartState(Graph startGraph) {
         AbstrGraph ag = null;
         try {
             ag =
@@ -243,7 +235,7 @@ public class AGTS extends GTS {
         } catch (ExceptionIncompatibleWithMaxIncidence e) {
             return INVALID_STATE;
         }
-        AbstrGraphState result = new AbstrGraphStateImpl(ag);
+        ShapeGraphState result = new ShapeGraphState(ag);
         return result;
     }
 
@@ -257,13 +249,13 @@ public class AGTS extends GTS {
         super.notifyLTSListenersOfClose(closed);
     }
 
-    class IsoCheckHasher implements MyHashSet.Hasher<AbstrGraphState> {
+    class IsoCheckHasher implements MyHashSet.Hasher<ShapeGraphState> {
 
-        public int getHashCode(AbstrGraphState o) {
+        public int getHashCode(ShapeGraphState o) {
             return o.getGraph().hashCode();
         }
 
-        public boolean areEqual(AbstrGraphState o1, AbstrGraphState o2) {
+        public boolean areEqual(ShapeGraphState o1, ShapeGraphState o2) {
             return o1.getGraph().equals(o2.getGraph());
         }
 
@@ -285,8 +277,8 @@ public class AGTS extends GTS {
             return;
         }
         for (GraphState s : this.stateSet) {
-            assert s instanceof AbstrGraphState : "Type error : " + s
-                + " is not of type AbstrGraphState.";
+            assert s instanceof ShapeGraphState : "Type error : " + s
+                + " is not of type ShapeGraphState.";
         }
     }
 
