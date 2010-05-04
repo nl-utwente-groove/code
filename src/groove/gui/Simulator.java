@@ -2119,9 +2119,6 @@ public class Simulator {
         result.addSeparator();
 
         result.add(new JMenuItem(getStartSimulationAction()));
-        // IOVKA change to activate abstract simulation
-        // EDUARDO Uncommented to test abstraction.
-        result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
 
@@ -2130,6 +2127,12 @@ public class Simulator {
         this.defaultExplorationMenuItem =
             result.add(getDefaultExplorationAction());
         result.add(getExplorationDialogAction());
+
+        result.addSeparator();
+
+        // IOVKA change to activate abstract simulation
+        // EDUARDO Uncommented to test abstraction.
+        result.add(new JMenuItem(getStartAbstrSimulationAction()));
 
         return result;
     }

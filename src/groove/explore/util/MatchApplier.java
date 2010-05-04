@@ -114,6 +114,7 @@ public class MatchApplier {
         } else {
             addedNodes = getCreatedNodes(event, source.getGraph());
         }
+
         return new DefaultGraphNextState((AbstractGraphState) source, event,
             addedNodes, target);
     }
