@@ -46,7 +46,7 @@ public class ShapeGraphNextState extends ShapeGraphState implements
     public ShapeGraphNextState(AbstrGraph graph, ShapeGraphState source,
             RuleEvent event) {
         super(graph);
-        this.transition = new ShapeGraphTransition(source, event, null);
+        this.transition = new ShapeGraphTransition(source, event, this);
     }
 
     @Override
