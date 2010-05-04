@@ -44,7 +44,7 @@ import groove.graph.GraphInfo;
     
     private void debug(String msg) {
     	if (builder.usesVariables()) {
-    		System.err.println("Variables debug (GCLBuilder): "+msg);
+    		//System.err.println("Variables debug (GCLBuilder): "+msg);
     	}
     }
     

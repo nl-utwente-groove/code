@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLBuilder.g 2010-05-04 16:27:35
+// $ANTLR 3.1b1 GCLBuilder.g 2010-05-04 18:29:58
 
 package groove.control.parse;
 import groove.control.*;
@@ -109,7 +109,7 @@ public class GCLBuilder extends TreeParser {
         
         private void debug(String msg) {
         	if (builder.usesVariables()) {
-        		System.err.println("Variables debug (GCLBuilder): "+msg);
+        		//System.err.println("Variables debug (GCLBuilder): "+msg);
         	}
         }
         
