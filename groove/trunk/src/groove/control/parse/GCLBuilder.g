@@ -301,15 +301,24 @@ parameter
   | ^(PARAM DONT_CARE {
   		parameters.add(new Pair<String,Integer>("", Rule.PARAMETER_DONT_CARE));
   	})
-  | ^(PARAM BOOL_TYPE TRUE)
-  | ^(PARAM BOOL_TYPE FALSE)
-  | ^(PARAM STRING_TYPE str=STRING {
-  		debug("Adding integer parameter: "+str.getText());
-  		parameters.add(new Pair<String,Integer>(str.getText(), Rule.PARAMETER_INPUT));
+  | ^(PARAM BOOL_TYPE TRUE {
+  		debug("Adding boolean parameter: true");
+  		parameters.add(new Pair<String,Integer>("true", Rule.PARAMETER_INPUT));
+  })
+  | ^(PARAM BOOL_TYPE FALSE {
+  		debug("Adding boolean parameter: false");
+  		parameters.add(new Pair<String,Integer>("false", Rule.PARAMETER_INPUT));
+  })
+  | ^(PARAM STRING_TYPE str=IDENTIFIER {
+  		debug("Adding string parameter: "+str.getText());
+  		parameters.add(new Pair<String,Integer>("\""+str.getText()+"\"", Rule.PARAMETER_INPUT));
   	})
-  | ^(PARAM INT_TYPE in=INT {
+  | ^(PARAM INT_TYPE in=IDENTIFIER {
   		debug("Adding integer parameter: "+in.getText());
   		parameters.add(new Pair<String,Integer>(in.getText(), Rule.PARAMETER_INPUT));
   })
-  | ^(PARAM REAL_TYPE REAL)
+  | ^(PARAM REAL_TYPE r=IDENTIFIER {
+  		debug("Adding real parameter: "+r.getText());
+  		parameters.add(new Pair<String,Integer>(r.getText(), Rule.PARAMETER_INPUT));
+  })
   ;

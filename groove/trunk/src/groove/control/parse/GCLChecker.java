@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2010-04-23 13:04:16
+// $ANTLR 3.1b1 GCLChecker.g 2010-05-04 16:27:32
 
 package groove.control.parse;
 import groove.control.*;
@@ -19,30 +19,30 @@ import java.util.ArrayList;
 @SuppressWarnings("all")              
 public class GCLChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "NODE_TYPE", "BOOL_TYPE", "STRING_TYPE", "INT_TYPE", "REAL_TYPE", "COMMA", "OUT", "DONT_CARE", "FALSE", "STRING", "INT", "REAL", "QUOTE", "AND", "DOT", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO", "VAR", "PARAM", "IDENTIFIER", "OR", "ALAP", "WHILE", "UNTIL", "CHOICE", "CH_OR", "IF", "ELSE", "TRY", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "DOT", "NODE_TYPE", "BOOL_TYPE", "STRING_TYPE", "INT_TYPE", "REAL_TYPE", "COMMA", "OUT", "DONT_CARE", "FALSE", "QUOTE", "BSLASH", "MINUS", "NUMBER", "AND", "NOT", "ML_COMMENT", "SL_COMMENT", "WS", "'{'", "'}'", "'('", "')'", "';'"
     };
     public static final int FUNCTION=7;
     public static final int STAR=24;
     public static final int FUNCTIONS=6;
     public static final int WHILE=15;
-    public static final int BOOL_TYPE=29;
-    public static final int NODE_TYPE=28;
+    public static final int BOOL_TYPE=30;
+    public static final int NODE_TYPE=29;
     public static final int DO=9;
     public static final int PARAM=11;
     public static final int NOT=43;
     public static final int ALAP=14;
-    public static final int AND=41;
+    public static final int AND=42;
     public static final int EOF=-1;
     public static final int IF=19;
     public static final int ML_COMMENT=44;
-    public static final int QUOTE=40;
+    public static final int QUOTE=38;
     public static final int T__51=51;
-    public static final int COMMA=33;
+    public static final int COMMA=34;
     public static final int IDENTIFIER=12;
     public static final int CH_OR=18;
     public static final int PLUS=23;
     public static final int VAR=10;
-    public static final int DOT=42;
+    public static final int DOT=28;
     public static final int T__50=50;
     public static final int CHOICE=17;
     public static final int T__47=47;
@@ -51,25 +51,25 @@ public class GCLChecker extends TreeParser {
     public static final int T__48=48;
     public static final int T__49=49;
     public static final int ELSE=20;
-    public static final int INT=38;
-    public static final int INT_TYPE=31;
+    public static final int NUMBER=41;
+    public static final int MINUS=40;
+    public static final int INT_TYPE=32;
     public static final int TRUE=22;
     public static final int TRY=21;
-    public static final int REAL=39;
-    public static final int REAL_TYPE=32;
-    public static final int DONT_CARE=35;
+    public static final int REAL_TYPE=33;
+    public static final int DONT_CARE=36;
     public static final int WS=46;
     public static final int ANY=26;
-    public static final int OUT=34;
+    public static final int OUT=35;
     public static final int UNTIL=16;
-    public static final int STRING_TYPE=30;
+    public static final int STRING_TYPE=31;
     public static final int BLOCK=5;
     public static final int OR=13;
     public static final int SL_COMMENT=45;
     public static final int PROGRAM=4;
     public static final int CALL=8;
-    public static final int FALSE=36;
-    public static final int STRING=37;
+    public static final int FALSE=37;
+    public static final int BSLASH=39;
 
     // delegates
     // delegators
@@ -1626,7 +1626,7 @@ public class GCLChecker extends TreeParser {
     };
 
     // $ANTLR start param
-    // GCLChecker.g:130:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= STRING ) | ^( PARAM INT_TYPE in= INT ) | ^( PARAM REAL_TYPE r= REAL ) );
+    // GCLChecker.g:130:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= IDENTIFIER ) | ^( PARAM INT_TYPE in= IDENTIFIER ) | ^( PARAM REAL_TYPE r= IDENTIFIER ) );
     public final GCLChecker.param_return param() throws RecognitionException {
         GCLChecker.param_return retval = new GCLChecker.param_return();
         retval.start = input.LT(1);
@@ -1677,7 +1677,7 @@ public class GCLChecker extends TreeParser {
         CommonTree REAL_TYPE66_tree=null;
 
         try {
-            // GCLChecker.g:131:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= STRING ) | ^( PARAM INT_TYPE in= INT ) | ^( PARAM REAL_TYPE r= REAL ) )
+            // GCLChecker.g:131:2: ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= IDENTIFIER ) | ^( PARAM INT_TYPE in= IDENTIFIER ) | ^( PARAM REAL_TYPE r= IDENTIFIER ) )
             int alt10=7;
             alt10 = dfa10.predict(input);
             switch (alt10) {
@@ -1862,7 +1862,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLChecker.g:186:4: ^( PARAM STRING_TYPE str= STRING )
+                    // GCLChecker.g:186:4: ^( PARAM STRING_TYPE str= IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1879,7 +1879,7 @@ public class GCLChecker extends TreeParser {
                      
                     if ( _first_1==null ) _first_1 = STRING_TYPE62;
                     _last = (CommonTree)input.LT(1);
-                    str=(CommonTree)match(input,STRING,FOLLOW_STRING_in_param483); 
+                    str=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param483); 
                      
                     if ( _first_1==null ) _first_1 = str;
                     
@@ -1899,7 +1899,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLChecker.g:192:4: ^( PARAM INT_TYPE in= INT )
+                    // GCLChecker.g:192:4: ^( PARAM INT_TYPE in= IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1916,7 +1916,7 @@ public class GCLChecker extends TreeParser {
                      
                     if ( _first_1==null ) _first_1 = INT_TYPE64;
                     _last = (CommonTree)input.LT(1);
-                    in=(CommonTree)match(input,INT,FOLLOW_INT_in_param498); 
+                    in=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param498); 
                      
                     if ( _first_1==null ) _first_1 = in;
                     
@@ -1936,7 +1936,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLChecker.g:198:4: ^( PARAM REAL_TYPE r= REAL )
+                    // GCLChecker.g:198:4: ^( PARAM REAL_TYPE r= IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1953,11 +1953,14 @@ public class GCLChecker extends TreeParser {
                      
                     if ( _first_1==null ) _first_1 = REAL_TYPE66;
                     _last = (CommonTree)input.LT(1);
-                    r=(CommonTree)match(input,REAL,FOLLOW_REAL_in_param513); 
+                    r=(CommonTree)match(input,IDENTIFIER,FOLLOW_IDENTIFIER_in_param513); 
                      
                     if ( _first_1==null ) _first_1 = r;
                     
                     		numParameters++;
+                    		if (r.getText().equals(".")) {
+                    			errors.add("'.' is not a valid real value on line "+r.getLine());
+                    		}
                     		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("real")) {
                     			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+r.getText()+"' on line "+r.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not real)");
                     		}
@@ -1996,7 +1999,7 @@ public class GCLChecker extends TreeParser {
     static final String DFA10_minS =
         "\1\13\1\2\1\14\7\uffff";
     static final String DFA10_maxS =
-        "\1\13\1\2\1\43\7\uffff";
+        "\1\13\1\2\1\44\7\uffff";
     static final String DFA10_acceptS =
         "\3\uffff\1\1\1\2\1\3\1\4\1\5\1\6\1\7";
     static final String DFA10_specialS =
@@ -2004,7 +2007,7 @@ public class GCLChecker extends TreeParser {
     static final String[] DFA10_transitionS = {
             "\1\1",
             "\1\2",
-            "\1\3\20\uffff\1\6\1\7\1\10\1\11\1\uffff\1\4\1\5",
+            "\1\3\21\uffff\1\6\1\7\1\10\1\11\1\uffff\1\4\1\5",
             "",
             "",
             "",
@@ -2044,7 +2047,7 @@ public class GCLChecker extends TreeParser {
             this.transition = DFA10_transition;
         }
         public String getDescription() {
-            return "130:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= STRING ) | ^( PARAM INT_TYPE in= INT ) | ^( PARAM REAL_TYPE r= REAL ) );";
+            return "130:1: param : ( ^( PARAM IDENTIFIER ) | ^( PARAM OUT IDENTIFIER ) | ^( PARAM DONT_CARE ) | ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) ) | ^( PARAM STRING_TYPE str= IDENTIFIER ) | ^( PARAM INT_TYPE in= IDENTIFIER ) | ^( PARAM REAL_TYPE r= IDENTIFIER ) );";
         }
     }
  
@@ -2112,16 +2115,16 @@ public class GCLChecker extends TreeParser {
     public static final BitSet FOLLOW_PARAM_in_param447 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_DONT_CARE_in_param449 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param458 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_BOOL_TYPE_in_param460 = new BitSet(new long[]{0x0000001000400000L});
+    public static final BitSet FOLLOW_BOOL_TYPE_in_param460 = new BitSet(new long[]{0x0000002000400000L});
     public static final BitSet FOLLOW_set_in_param464 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param477 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_STRING_TYPE_in_param479 = new BitSet(new long[]{0x0000002000000000L});
-    public static final BitSet FOLLOW_STRING_in_param483 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_STRING_TYPE_in_param479 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param483 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param492 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_INT_TYPE_in_param494 = new BitSet(new long[]{0x0000004000000000L});
-    public static final BitSet FOLLOW_INT_in_param498 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_INT_TYPE_in_param494 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param498 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PARAM_in_param507 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_REAL_TYPE_in_param509 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_REAL_in_param513 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_REAL_TYPE_in_param509 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_IDENTIFIER_in_param513 = new BitSet(new long[]{0x0000000000000008L});
 
 }
