@@ -25,6 +25,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.RegExprLabel;
@@ -374,8 +375,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return true if this is a required input parameter, false otherwise
      */
     public boolean isRequiredInput(int param) {
-        return this.requiredInputParameters != null
-            && this.requiredInputParameters.contains(getParameter(param));
+        return this.requiredInputs != null
+            && this.requiredInputs.contains(getParameter(param));
     }
 
     /**
@@ -384,8 +385,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return true if this rule has required input parameters, false otherwise
      */
     public boolean hasRequiredInputs() {
-        return this.requiredInputParameters != null
-            && this.requiredInputParameters.size() > 0;
+        return this.requiredInputs != null && this.requiredInputs.size() > 0;
     }
 
     /**
@@ -1287,6 +1287,40 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
+    @Override
+    protected void computeUnresolvedNodes() {
+        super.computeUnresolvedNodes();
+        Iterator<VariableNode> it = this.unresolvedVariableNodes.iterator();
+        while (it.hasNext()) {
+            Node node = it.next();
+            boolean resolved = false;
+            for (int i = 1; i <= getVisibleParCount(); i++) {
+                if (getParameter(i) == node && !isOutputParameter(i)) {
+                    resolved = true;
+                }
+            }
+            if (resolved) {
+                it.remove();
+            }
+        }
+    }
+
+    Set<Node> getRequiredInputs() {
+        if (this.requiredInputs == null) {
+            this.requiredInputs = new HashSet<Node>();
+        }
+        return this.requiredInputs;
+    }
+
+    /**
+     * Sets the requiredInputs to the given value.
+     * @param requiredInputs a {@code Set<Node>} that describes which Nodes must
+     * be given by a control program as input 
+     */
+    public void setRequiredInputs(Set<Node> requiredInputs) {
+        this.requiredInputs = requiredInputs;
+    }
+
     //
     // /**
     // * Initialises the parameter map.
@@ -1504,4 +1538,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     private Map<Integer,Integer> specifiedParameterTypes;
     private Map<Integer,String> attributeParameterTypes;
+
+    /**
+     * The set of nodes required as input parameters from a control program.
+     */
+    protected Set<Node> requiredInputs;
+
 }

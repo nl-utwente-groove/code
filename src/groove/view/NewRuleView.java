@@ -311,6 +311,7 @@ public class NewRuleView implements RuleView {
                     parameters.getOutPars(), parameters.getHiddenPars());
                 rule.setSpecifiedParameterTypes(parameters.getSpecifiedParameterTypes());
                 rule.setAttributeParameterTypes(parameters.getAttributeParameterTypes());
+                rule.setRequiredInputs(parameters.getRequiredInputs());
                 rule.setFixed();
 
                 if (TO_RULE_DEBUG) {
@@ -1742,6 +1743,16 @@ public class NewRuleView implements RuleView {
             return this.attributeParameterTypes;
         }
 
+        /**
+         * Returns the set of nodes that are required as input parameters from 
+         * the control program.
+         * @return the set of nodes that are required as input parameters from 
+         * the control program
+         */
+        public Set<Node> getRequiredInputs() {
+            return this.requiredInputs;
+        }
+
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
@@ -1749,6 +1760,7 @@ public class NewRuleView implements RuleView {
             SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
             this.specifiedParameterTypes = new TreeMap<Integer,Integer>();
             this.attributeParameterTypes = new TreeMap<Integer,String>();
+            this.requiredInputs = new HashSet<Node>();
             this.hiddenPars = new HashSet<Node>();
             // set of all parameter numbers, to check duplicates
             Set<Integer> parNumbers = new HashSet<Integer>();
@@ -1760,6 +1772,9 @@ public class NewRuleView implements RuleView {
                     // check if the user specified a parameter type in the rule editor
                     int parType = ParameterAspect.getParameterType(node);
                     this.specifiedParameterTypes.put(nr, parType);
+                    if (parType == Rule.PARAMETER_INPUT) {
+                        this.requiredInputs.add(node);
+                    }
                     AspectValue av = AttributeAspect.getAttributeValue(node);
                     if (av != null) {
                         if (av.toString().equals("attr")) {
@@ -1839,5 +1854,6 @@ public class NewRuleView implements RuleView {
         private Map<Integer,Integer> specifiedParameterTypes;
         /** Map of parameters to attribute types (-1 if no attribute) */
         private Map<Integer,String> attributeParameterTypes;
+        private Set<Node> requiredInputs;
     }
 }

@@ -82,80 +82,15 @@ abstract public class PositiveCondition<M extends Match> extends
      */
     private void testAlgebra() throws FormatException {
         Set<FormatError> errors = new TreeSet<FormatError>();
-        // collect value and product nodes
-        Set<VariableNode> unresolvedVariableNodes = new HashSet<VariableNode>();
-        Map<ProductNode,BitSet> unresolvedProductNodes =
-            new HashMap<ProductNode,BitSet>();
-        // test if product nodes have the required arguments
-        for (Node node : getTarget().nodeSet()) {
-            if (node instanceof VariableNode && !(node instanceof ValueNode)) {
-                boolean hasIncomingNonAttributeEdge = false;
-                for (Edge edge : getTarget().edgeSet(node, Edge.TARGET_INDEX)) {
-                    if (edge instanceof DefaultEdge) {
-                        hasIncomingNonAttributeEdge = true;
-                    }
-                }
-                if (!hasIncomingNonAttributeEdge) {
-                    unresolvedVariableNodes.add((VariableNode) node);
-                }
-            } else if (node instanceof ProductNode) {
-                ProductNode product = (ProductNode) node;
-                unresolvedProductNodes.put(product, new BitSet(product.arity()));
-            }
+        computeUnresolvedNodes();
+        stabilizeUnresolvedNodes();
+        for (Node node : this.unresolvedVariableNodes) {
+            errors.add(new FormatError(
+                "Cannot resolve attribute value node '%s'", node));
         }
-        unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
-        for (Node node : getRootMap().nodeMap().values()) {
-            unresolvedProductNodes.remove(node);
-        }
-        // now resolve nodes until stable
-        boolean stable = false;
-        while (!stable) {
-            stable = true;
-            java.util.Iterator<Map.Entry<ProductNode,BitSet>> productIter =
-                unresolvedProductNodes.entrySet().iterator();
-            while (productIter.hasNext()) {
-                Map.Entry<ProductNode,BitSet> productEntry = productIter.next();
-                ProductNode product = productEntry.getKey();
-                BitSet arguments = productEntry.getValue();
-                for (Edge edge : getTarget().outEdgeSet(product)) {
-                    if (edge instanceof ArgumentEdge
-                        && !unresolvedVariableNodes.contains(edge.opposite())) {
-                        int argumentNumber = ((ArgumentEdge) edge).getNumber();
-                        arguments.set(argumentNumber);
-                    }
-                }
-                if (arguments.cardinality() == product.arity()) {
-                    // the product node is resolved, so resolve the targets of
-                    // the outgoing operations
-                    for (Edge edge : getTarget().outEdgeSet(product)) {
-                        if (edge instanceof OperatorEdge) {
-                            if (unresolvedVariableNodes.remove(((OperatorEdge) edge).target())) {
-                                stable = false;
-                            }
-                        }
-                    }
-                    productIter.remove();
-                }
-            }
-        }
-        for (Node node : unresolvedVariableNodes) {
-            setRequiredInput(node);
-            boolean addError = true;
-            SPORule rule = (SPORule) this;
-            for (int i = 1; i <= rule.getVisibleParCount(); i++) {
-                if (rule.getParameter(i) == node && !rule.isOutputParameter(i)) {
-                    addError = false;
-                }
-            }
-            if (addError) {
-                errors.add(new FormatError(
-                    "Isolated attribute node '%s' must be an input parameter",
-                    node));
-            }
-        }
-        if (!unresolvedProductNodes.isEmpty()) {
+        if (!this.unresolvedProductNodes.isEmpty()) {
             Map.Entry<ProductNode,BitSet> productEntry =
-                unresolvedProductNodes.entrySet().iterator().next();
+                this.unresolvedProductNodes.entrySet().iterator().next();
             ProductNode product = productEntry.getKey();
             BitSet arguments = productEntry.getValue();
             if (arguments.cardinality() != product.arity()) {
@@ -167,6 +102,78 @@ abstract public class PositiveCondition<M extends Match> extends
         }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
+        }
+    }
+
+    /**
+     * Calculates whether any VariableNode or ProductNode is unresolved and places
+     * these in the appropriate Set or Map.
+     */
+    protected void computeUnresolvedNodes() {
+        this.unresolvedVariableNodes = new HashSet<VariableNode>();
+        this.unresolvedProductNodes = new HashMap<ProductNode,BitSet>();
+        // test if product nodes have the required arguments
+        for (Node node : getTarget().nodeSet()) {
+            if (node instanceof VariableNode && !(node instanceof ValueNode)) {
+                boolean hasIncomingNonAttributeEdge = false;
+                for (Edge edge : getTarget().edgeSet(node, Edge.TARGET_INDEX)) {
+                    if (edge instanceof DefaultEdge) {
+                        hasIncomingNonAttributeEdge = true;
+                    }
+                }
+                if (!hasIncomingNonAttributeEdge) {
+                    this.unresolvedVariableNodes.add((VariableNode) node);
+                }
+            } else if (node instanceof ProductNode) {
+                ProductNode product = (ProductNode) node;
+                this.unresolvedProductNodes.put(product, new BitSet(
+                    product.arity()));
+            }
+        }
+        this.unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
+        for (Node node : getRootMap().nodeMap().values()) {
+            this.unresolvedProductNodes.remove(node);
+        }
+    }
+
+    /**
+     * Iterates over unresolved nodes and removes them as necessary. This will 
+     * look at each node in unresolvedProductNodes; if all of its arguments have
+     * been resolved it will remove all of the product "targets" from the
+     * {@code unresolvedVariableNodes} Set. It will keep doing this until both
+     * collections are stable. 
+     */
+    private void stabilizeUnresolvedNodes() {
+        // now resolve nodes until stable
+        boolean stable = false;
+        while (!stable) {
+            stable = true;
+            java.util.Iterator<Map.Entry<ProductNode,BitSet>> productIter =
+                this.unresolvedProductNodes.entrySet().iterator();
+            while (productIter.hasNext()) {
+                Map.Entry<ProductNode,BitSet> productEntry = productIter.next();
+                ProductNode product = productEntry.getKey();
+                BitSet arguments = productEntry.getValue();
+                for (Edge edge : getTarget().outEdgeSet(product)) {
+                    if (edge instanceof ArgumentEdge
+                        && !this.unresolvedVariableNodes.contains(edge.opposite())) {
+                        int argumentNumber = ((ArgumentEdge) edge).getNumber();
+                        arguments.set(argumentNumber);
+                    }
+                }
+                if (arguments.cardinality() == product.arity()) {
+                    // the product node is resolved, so resolve the targets of
+                    // the outgoing operations
+                    for (Edge edge : getTarget().outEdgeSet(product)) {
+                        if (edge instanceof OperatorEdge) {
+                            if (this.unresolvedVariableNodes.remove(((OperatorEdge) edge).target())) {
+                                stable = false;
+                            }
+                        }
+                    }
+                    productIter.remove();
+                }
+            }
         }
     }
 
@@ -203,27 +210,12 @@ abstract public class PositiveCondition<M extends Match> extends
     }
 
     /**
-     * Sets a node to be a required input parameter
-     * @param n the node to set as required input
-     */
-    private void setRequiredInput(Node n) {
-        getRequiredInputs().add(n);
-    }
-
-    Set<Node> getRequiredInputs() {
-        if (this.requiredInputParameters == null) {
-            this.requiredInputParameters = new HashSet<Node>();
-        }
-        return this.requiredInputParameters;
-    }
-
-    /**
-     * Callback factory method to create a match on the basis of a mapping of
-     * this condition's target.
-     * @param matchMap the mapping, presumably from the elements of
-     *        {@link #getTarget()} into some host graph
-     * @return a match constructed on the basis of <code>map</code>
-     */
+      * Callback factory method to create a match on the basis of a mapping of
+      * this condition's target.
+      * @param matchMap the mapping, presumably from the elements of
+      *        {@link #getTarget()} into some host graph
+      * @return a match constructed on the basis of <code>map</code>
+      */
     abstract M createMatch(VarNodeEdgeMap matchMap);
 
     /**
@@ -232,7 +224,14 @@ abstract public class PositiveCondition<M extends Match> extends
     private Collection<AbstractCondition<?>> complexSubConditions;
 
     /**
-     * The set of nodes required as input parameters.
+     * Set of VariableNodes that have not been resolved, i.e. variable nodes
+     * that have no incoming match-edges.
      */
-    protected Set<Node> requiredInputParameters;
+    protected Set<VariableNode> unresolvedVariableNodes;
+
+    /**
+     * A map of unresolved product nodes, i.e. product nodes which have 
+     * unresolved arguments.
+     */
+    protected Map<ProductNode,BitSet> unresolvedProductNodes;
 }
