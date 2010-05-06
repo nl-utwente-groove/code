@@ -291,11 +291,9 @@ public class Converter {
         int result = 0;
         if (!blue.off(htmlLine).equals(originalLine)) {
             result = 1;
-        }
-        if (!green.off(htmlLine).equals(originalLine)) {
+        } else if (!green.off(htmlLine).equals(originalLine)) {
             result = 2;
-        }
-        if (!red.off(htmlLine).equals(originalLine)) {
+        } else if (!red.off(htmlLine).equals(originalLine)) {
             result = 3;
         }
         if (result != 0) {
