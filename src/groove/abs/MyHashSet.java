@@ -121,7 +121,7 @@ public class MyHashSet<T> implements Iterable<T>, Set<T> {
     }
 
     /**
-     * Returns an iterator over whe values contained in this set.
+     * Returns an iterator over the values contained in this set.
      * @return an iterator over the values in the set
      */
     public Iterator<T> iterator() {
