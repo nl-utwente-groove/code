@@ -65,7 +65,7 @@ class VariableNodeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Value %s", this.node);
+        return String.format("Variable %s", this.node);
     }
 
     /** Returns the value node we are looking up. */
@@ -81,8 +81,6 @@ class VariableNodeSearchItem extends AbstractSearchItem {
     private final Collection<Node> boundNodes;
     /** The (constant) variable node to be matched. */
     final VariableNode node;
-//    /** The value node that represents the value of the constant. */
-//    final ValueNode nodeImage;
     /** The index of the value node (in the result. */
     int nodeIx;
 
