@@ -677,6 +677,7 @@ public class GraphSearchPlanFactory {
          * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
+         * <li> {@link VariableNodeSearchItem}s
          * <li> {@link AnchorSearchItem}s
          * </ul>
          */
@@ -730,6 +731,10 @@ public class GraphSearchPlanFactory {
             }
             result++;
             if (itemClass == ValueNodeSearchItem.class) {
+                return result;
+            }
+            result++;
+            if (itemClass == VariableNodeSearchItem.class) {
                 return result;
             }
             result++;
