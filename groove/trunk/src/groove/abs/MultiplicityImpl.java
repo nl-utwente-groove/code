@@ -127,9 +127,11 @@ public class MultiplicityImpl implements Multiplicity {
         private final MultiplicityInformation[] pValues;
 
         /**
-         * The imprecise values. iValues.length = precision + 2 iValues[i] is
-         * the set omega - i Thus, iValues[0] is the omega value (which is
-         * precise in the sense of isPrecise())
+         * The imprecise values.
+         * iValues.length = precision + 2
+         * iValues[i] is the set omega - i
+         * Thus, iValues[0] is the omega value (which is precise in the sense
+         * of isPrecise())
          */
         private final MultiplicityInformation[] iValues;
 

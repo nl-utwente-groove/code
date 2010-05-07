@@ -104,7 +104,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
      * node <code>n</code>. If this pattern is already in the family, then
      * returns the pattern in the family.
      * @param graph The graph from which a pattern is to be extracted.
-     * @param cnode The cenral node of the pattern
+     * @param cnode The central node of the pattern
      * @return the pattern of graph defined by cnode
      * @throws ExceptionIncompatibleWithMaxIncidence if the pattern violates the
      *         maximum incidence constraint

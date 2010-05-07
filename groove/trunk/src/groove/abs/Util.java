@@ -186,10 +186,10 @@ public class Util {
      * Computes all injective matchings between two graphs that extend an
      * existing match.
      * @param dom The domain of the matchings
-     * @param cod Tho codomain of the matchings.
+     * @param cod The codomain of the matchings.
      * @param toExtend The matching to be extended. Should be a matching from
      *        <code>dom</code> into <code>cod</code>.
-     * @return In iterator ovec all injective matchings from <code>dom</code>
+     * @return An iterator over all injective matchings from <code>dom</code>
      *         into <code>cod</code> that extend the matching
      *         <code>toExtend</code>.
      * @see #getMatchSet(Graph, Graph, NodeEdgeMap)
@@ -206,7 +206,7 @@ public class Util {
      * Computes all matchings between two graphs and that extend an existing
      * match.
      * @param dom The domain of the matchings
-     * @param cod Tho codomain of the matchings.
+     * @param cod The codomain of the matchings.
      * @param toExtend The matching to be extended. Should be a matching from
      *        <code>dom</code> into <code>cod</code>.
      * @return All injective matchings from <code>dom</code> into
@@ -225,7 +225,7 @@ public class Util {
      * Computes all matchings between two graphs and that extend an existing
      * match.
      * @param dom The domain of the matchings
-     * @param cod Tho codomain of the matchings.
+     * @param cod The codomain of the matchings.
      * @param toExtend The matching to be extended. Should be a matching from
      *        <code>dom</code> into <code>cod</code>.
      * @return An iterator ovec all injective matchings from <code>dom</code>

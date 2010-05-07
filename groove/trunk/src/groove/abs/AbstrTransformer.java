@@ -21,8 +21,8 @@ import groove.graph.NodeFactory;
 import groove.trans.DefaultApplication;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
-import groove.trans.SPOEvent;
 import groove.trans.RuleMatch;
+import groove.trans.SPOEvent;
 
 import java.util.Collection;
 
@@ -65,7 +65,7 @@ public class AbstrTransformer {
                 new SetMaterialisations(cp, (DefaultAbstrGraph) host,
                     match.getElementMap(), options);
 
-            // A second rule events is needed for the actual transformation
+            // A second rule event is needed for the actual transformation
             // (with matching into the concrete part)
             RuleEvent transfEvent =
                 new SPOEvent(match.getRule(),

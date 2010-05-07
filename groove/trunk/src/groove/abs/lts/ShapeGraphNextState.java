@@ -28,7 +28,7 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
 /**
- * Combines an {@link ShapeGraphState} and an {@link ShapeGraphTransition}.
+ * Combines a {@link ShapeGraphState} and a {@link ShapeGraphTransition}.
  * @author Eduardo Zambon
  * @version $Revision $
  */
@@ -47,6 +47,26 @@ public class ShapeGraphNextState extends ShapeGraphState implements
             RuleEvent event) {
         super(graph);
         this.transition = new ShapeGraphTransition(source, event, this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ShapeGraphNextState)) {
+            return false;
+        }
+        ShapeGraphNextState other = (ShapeGraphNextState) o;
+        boolean result =
+            getGraph().equals(((ShapeGraphNextState) o).getGraph());
+        result = result && super.equals(other);
+        // the targets of this.transition and other.transition cannot be compared
+        // with equals, as they are both null
+        result =
+            result
+                && this.transition.source().equals(other.transition.source());
+        result =
+            result && this.transition.label().equals(other.transition.label());
+        assert (!result || other.hashCode() == hashCode()) : "The equals method does not comply with the hash code method !!!";
+        return result;
     }
 
     @Override
@@ -159,6 +179,15 @@ public class ShapeGraphNextState extends ShapeGraphState implements
     @Override
     public GraphTransition toTransition(GraphState source) {
         return this.transition;
+    }
+
+    /**
+     * @param other
+     * @return true is the transitions are equivalent.
+     */
+    public boolean isEquivalent(ShapeGraphTransition other) {
+        // OK, as the targets are note compared
+        return this.transition.isEquivalent(other);
     }
 
 }

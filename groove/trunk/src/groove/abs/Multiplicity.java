@@ -112,9 +112,10 @@ public interface Multiplicity {
      * Check for inclusion of two multiplicity information elements.
      * @param one
      * @param other
-     * @return EQUAL if one and other are the same multiplicity INCLUDED if the
-     *         precise elements of one are included into the precise elements of
-     *         other CONTAINS if compare(other, one) == INCLUDED NOT_EQ if none
+     * @return EQUAL if one and other are the same multiplicity
+     *         INCLUDED if the precise elements of one are included into the
+     *         precise elements of other
+     *         CONTAINS if compare(other, one) == INCLUDED NOT_EQ if none
      *         of the three previous holds
      */
     public Abstraction.MultInfoRelation compare(MultiplicityInformation one,

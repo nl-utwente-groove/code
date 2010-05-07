@@ -117,14 +117,16 @@ public interface AbstrGraph extends Graph {
      * @param other
      * @param belongsIsSub see {@link Abstraction.Parameters}
      * @return EQUAL if the two graphs are equal in the sense of the
-     *         {@link #equals(Object)} method NOT_EQ if there is no isomorphism
-     *         preserving typing between the two graphs QUASI if there is an
-     *         isomorphism between the two graphs that preserves typing, but not
-     *         multiplicity, and none of INCLUDED or INCLUDES holds INCLUDED if
-     *         there is a type preserving isomorphism between the two graphs,
-     *         and all multiplicities of this graph are included into the
-     *         multiplicities of other CONTAINS if other.quasiEquals(this) ==
-     *         INCLUDED
+     *         {@link #equals(Object)} method;
+     *         NOT_EQ if there is no isomorphism preserving typing between the
+     *         two graphs;
+     *         QUASI if there is an isomorphism between the two graphs that
+     *         preserves typing, but not multiplicity, and none of INCLUDED
+     *         or INCLUDES holds;
+     *         INCLUDED if there is a type preserving isomorphism between the
+     *         two graphs, and all multiplicities of this graph are included
+     *         into the multiplicities of other; or
+     *         CONTAINS if other.quasiEquals(this) == INCLUDED
      */
     public Abstraction.AbstrGraphsRelation compare(AbstrGraph other,
             boolean belongsIsSub);

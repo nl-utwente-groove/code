@@ -53,7 +53,7 @@ public class ConcretePart {
         GraphPattern typeOf(Node n);
     }
 
-    /** Associates a types (graph patterns) and typing morphisms with nodes. */
+    /** Associates types (graph patterns) and typing morphisms with nodes. */
     interface SubTyping extends Typing {
         /**
          * The typing morphism for the neighbourhood of a node.
@@ -236,7 +236,7 @@ public class ConcretePart {
         ArrayList<ConcretePart> result = new ArrayList<ConcretePart>();
 
         // find all morphisms from the neighbourhood of node into its type
-        // end enlarge the concrete part according to each morphism
+        // and enlarge the concrete part according to each morphism
         Graph neighN = null;
         try {
             neighN = family.getNeighInGraph(this.graph, n);
@@ -317,9 +317,8 @@ public class ConcretePart {
 
         ArrayList<Graph> resGraphs = new ArrayList<Graph>();
         ArrayList<NodeEdgeMap> resMorphisms = new ArrayList<NodeEdgeMap>();
-        ArrayList<Set<Node>> unusedNodes = new ArrayList<Set<Node>>(); // usedNodes
-        // \subseteq
-        // mergeableNodesA
+        ArrayList<Set<Node>> unusedNodes = new ArrayList<Set<Node>>();
+        // usedNodes \subseteq mergeableNodesA
         // invariant resGraphs[i], resMorphisms[i], usedNodes[i] are such that :
         // resGraphs[i] : a graph obtained by merging in baseGraph
         // resMorphisms[i] : an update of baseMorph wrt to the mergings that
@@ -327,7 +326,7 @@ public class ConcretePart {
         // usedNodes[i] contains exactly the nodes in mergeableNodesA that have
         // not been used for merging in resGraphs[i]
 
-        // temporal variables for updating the previous ones
+        // temporary variables for updating the previous ones
         ArrayList<Graph> tempGraphs = new ArrayList<Graph>();
         ArrayList<NodeEdgeMap> tempMorphisms = new ArrayList<NodeEdgeMap>();
         ArrayList<Set<Node>> tempUnusedNodes = new ArrayList<Set<Node>>();
@@ -488,7 +487,7 @@ public class ConcretePart {
     /**
      * The neighbourhood mapping, associating with each node the subgraph that
      * is its neighbourhood. This operation is not available if the
-     * neighbourhood mapping was not explicitely computed.
+     * neighbourhood mapping was not explicitly computed.
      * @see #initNeigh
      * @return The neighbourhood mapping, associating with each node the
      *         subgraph that is its neighbourhood.
