@@ -37,7 +37,7 @@ public interface Strategy {
     /**
      * Sets the GTS to be explored. Also sets the exploration start state to the
      * GTS start state. Convenience method for
-     * <code>prepare(gts, gts.startState())</code>.
+     * <code>prepare(gts, null)</code>.
      * @see #prepare(GTS, GraphState)
      */
     public void prepare(GTS gts);
@@ -45,6 +45,7 @@ public interface Strategy {
     /**
      * Sets the GTS and start state to be explored. This is done in preparation
      * to a call of {@link #next()}.
+     * It is assumed that the state (if not {@code null} is already in the GTS.
      * @param gts the GTS to be explored
      * @param state the start state for the exploration; if <code>null</code>,
      * the GTS start state is used
