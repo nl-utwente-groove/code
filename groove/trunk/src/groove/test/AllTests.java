@@ -44,6 +44,7 @@ public class AllTests {
         suite.addTest(new TestSuite(IOTest.class));
         suite.addTest(new TestSuite(ControlTest.class));
         suite.addTest(new TestSuite(ControlVariablesTest.class));
+        suite.addTest(new TestSuite(ControlAttributeParametersTest.class));
         // $JUnit-END$
         return suite;
     }
