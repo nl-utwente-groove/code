@@ -440,7 +440,7 @@ abstract public class AbstractGraphState extends
                             tgt = this.parameters[idx];
                         } else {
                             Algebra<?> alg =
-                                AlgebraRegister.getInstance().getValue(input[i]);
+                                AlgebraRegister.getInstance().getAlgebra(input[i]);
                             tgt =
                                 ValueNode.createValueNode(alg,
                                     alg.getValue(input[i]));

@@ -146,7 +146,7 @@ public class AlgebraRegister {
      * @param constant the string representation of the constant.
      * @return the algebra containing {@code constant}, or {@code null} if there is no such algebra.
      */
-    public Algebra<?> getValue(String constant) {
+    public Algebra<?> getAlgebra(String constant) {
         for (Algebra<?> algebra : this.algebraMap.values()) {
             if (algebra.isValue(constant)) {
                 return algebra;
