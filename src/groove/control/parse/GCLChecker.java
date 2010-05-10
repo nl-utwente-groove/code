@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2010-05-04 16:27:32
+// $ANTLR 3.1b1 GCLChecker.g 2010-05-10 12:10:55
 
 package groove.control.parse;
 import groove.control.*;
@@ -1510,7 +1510,7 @@ public class GCLChecker extends TreeParser {
             			errors.add("The number of parameters used in this call of "+currentRule.getName().toString()+" ("+numParameters+") does not match the number of parameters defined in the rule ("+currentRule.getVisibleParCount()+") on line "+(r!=null?r.getLine():0));
             		}
             		if (numParameters == 0 && currentRule != null && currentRule.hasRequiredInputs()) {
-            			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+r.getLine());
+            			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+(r!=null?r.getLine():0));
             		}
             		numParameters = 0;
             		currentOutputParameters.clear();
