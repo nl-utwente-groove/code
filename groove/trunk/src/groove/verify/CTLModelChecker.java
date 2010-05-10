@@ -139,17 +139,28 @@ public class CTLModelChecker extends CommandLineTool {
          * { System.out.println("The model satisfies the given property."); } }
          * }
          */
+
+        long startTime = System.currentTimeMillis();
+
         while (this.properties.size() > 0) {
             this.setProperty(this.properties.remove(0));
             System.out.println("Checking CTL formula: " + this.property);
             this.marker.mark(this.marking, getProperty(), this.gts, this);
             if (this.property.getCounterExamples().contains(
                 this.gts.startState())) {
-                System.err.println("The model violates the given property.");
+                System.out.println("The model violates the given property.");
             } else {
                 System.out.println("The model satisfies the given property.");
             }
         }
+
+        long endTime = System.currentTimeMillis();
+        long mcTime = endTime - startTime;
+
+        println("** Model Checking Time (ms):\t" + mcTime);
+        println("** Total Running Time (ms):\t"
+            + (this.generator.getRunningTime() + mcTime));
+
     }
 
     /**

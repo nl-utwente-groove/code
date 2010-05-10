@@ -190,10 +190,6 @@ public class Generator extends CommandLineTool {
             Collection<? extends Object> result = generate();
             report();
             exit(result);
-        } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
-            // be removed
-            e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getGTS().nodeCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -701,6 +697,13 @@ public class Generator extends CommandLineTool {
             }
         }
         return Groove.toString(sizes.toArray());
+    }
+
+    /**
+     * @return the total running time of the generator.
+     */
+    public long getRunningTime() {
+        return this.endTime - this.startTime;
     }
 
     /**
