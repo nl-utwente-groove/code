@@ -43,8 +43,6 @@ public class Exploration {
     private Result lastResult;
 
     private boolean interrupted;
-    static private final Reporter reporter =
-        Reporter.register(DefaultScenario.class);
     static private final Reporter playReporter = DefaultScenario.playReporter;
 
     /**

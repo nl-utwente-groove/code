@@ -36,7 +36,7 @@ import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
-import groove.explore.strategy.ExploreRuleDFStrategy;
+import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
@@ -89,7 +89,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
 
             @Override
             public Strategy create(GTS gts) {
-                return new ExploreRuleDFStrategy();
+                return new DFSStrategy();
             }
         });
 
