@@ -1,0 +1,12 @@
+int score1;
+
+set_gravity(9.81);
+set_name("attributes test");
+
+add_score(_,100);
+add_score(_,100);
+get_score(_,out score1);
+set_score(_,score1);
+set_score(_,1000);
+
+set_finished(true);

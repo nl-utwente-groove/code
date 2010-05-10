@@ -1775,6 +1775,12 @@ public class NewRuleView implements RuleView {
                     this.specifiedParameterTypes.put(nr, parType);
                     if (parType == Rule.PARAMETER_INPUT) {
                         this.requiredInputs.add(level.getLhsMap().getNode(node));
+                        if (getProperties() != null
+                            && !getProperties().isUseControl()) {
+                            throw new FormatException(
+                                "Parameter '%d' is a required input, but no control is in use",
+                                nr);
+                        }
                     }
                     AspectValue av = AttributeAspect.getAttributeValue(node);
                     if (av != null) {

@@ -109,7 +109,7 @@ rule
 			errors.add("The number of parameters used in this call of "+currentRule.getName().toString()+" ("+numParameters+") does not match the number of parameters defined in the rule ("+currentRule.getVisibleParCount()+") on line "+$IDENTIFIER.line);
 		}
 		if (numParameters == 0 && currentRule != null && currentRule.hasRequiredInputs()) {
-			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+r.getLine());
+			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+$IDENTIFIER.line);
 		}
 		numParameters = 0;
 		currentOutputParameters.clear();
