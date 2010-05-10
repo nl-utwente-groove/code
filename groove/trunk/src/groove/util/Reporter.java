@@ -123,8 +123,10 @@ public class Reporter {
         if (REPORT) {
             long now = System.currentTimeMillis();
             if (this.currentNesting == 0) {
-                this.duration -= now;
-                this.parent.totalTime -= now;
+                if (TIME_METHODS) {
+                    this.duration -= now;
+                    this.parent.totalTime -= now;
+                }
             }
             this.currentNesting++;
             reportTime += System.currentTimeMillis() - now;
@@ -138,15 +140,14 @@ public class Reporter {
     final public synchronized void stop() {
         if (REPORT) {
             this.currentNesting--;
+            long now = System.currentTimeMillis();
             if (TIME_METHODS) {
-                long now = System.currentTimeMillis();
-                reportTime -= now;
                 if (this.currentNesting == 0) {
                     this.duration += now;
                     this.parent.totalTime += now;
                 }
             }
-            reportTime += System.currentTimeMillis();
+            reportTime += System.currentTimeMillis() - now;
         }
     }
 
