@@ -199,8 +199,7 @@ public class DefaultScenario implements Scenario {
     static private final Reporter reporter =
         Reporter.register(DefaultScenario.class);
     /** Handle for profiling {@link #prepare(GTS)}. */
-    static private final Reporter playReporter =
-        reporter.register("playScenario()");
+    static final Reporter playReporter = reporter.register("playScenario()");
 
     /** Returns the total running time of {@link #prepare(GTS)}. */
     public static long getRunningTime() {

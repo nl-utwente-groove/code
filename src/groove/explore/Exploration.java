@@ -45,8 +45,7 @@ public class Exploration {
     private boolean interrupted;
     static private final Reporter reporter =
         Reporter.register(DefaultScenario.class);
-    static private final Reporter playReporter =
-        reporter.register("playScenario()");
+    static private final Reporter playReporter = DefaultScenario.playReporter;
 
     /**
      * Initialize to a given exploration. 
@@ -156,7 +155,7 @@ public class Exploration {
 
         // remove graph listener and stop profiling       
         parsedStrategy.removeGTSListener(parsedAcceptor);
-        reporter.stop();
+        playReporter.stop();
 
         // store result
         this.lastResult = parsedAcceptor.getResult();
