@@ -199,7 +199,7 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
-     * Tests if a given aspect element corresponds to a product node.
+     * Tests if a given aspect element is an attribute-related node.
      */
     static public boolean isAttributeNode(AspectElement elem) {
         return elem instanceof AspectNode && getAttributeValue(elem) != null;

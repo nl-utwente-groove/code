@@ -1769,35 +1769,36 @@ public class NewRuleView implements RuleView {
                 // check if the node is a parameter
                 Integer nr = ParameterAspect.getParNumber(node);
                 if (nr != null) {
+                    Level level = NewRuleView.this.levelTree.getLevel(node);
                     // check if the user specified a parameter type in the rule editor
                     int parType = ParameterAspect.getParameterType(node);
                     this.specifiedParameterTypes.put(nr, parType);
                     if (parType == Rule.PARAMETER_INPUT) {
-                        this.requiredInputs.add(node);
+                        this.requiredInputs.add(level.getLhsMap().getNode(node));
                     }
                     AspectValue av = AttributeAspect.getAttributeValue(node);
                     if (av != null) {
-                        if (av.toString().equals("attr")) {
+                        if (AttributeAspect.VALUE.equals(av)
+                            && getProperties().isUseControl()
+                            && getProperties().getControlName() != null) {
                             throw new FormatException(
-                                "If you wish to use an attribute for parameter number '%d', it must be typed",
-                                nr);
-                        } else {
-                            this.attributeParameterTypes.put(nr, av.toString());
+                                "Attribute parameter '%d' must be typed", nr,
+                                node);
                         }
+                        this.attributeParameterTypes.put(nr, av.toString());
                     } else {
                         this.attributeParameterTypes.put(nr, "node");
                     }
                     try {
-                        if (!parNumbers.add(nr)) {
+                        if (nr != 0 && !parNumbers.add(nr)) {
                             throw new FormatException(
-                                "Parameter number '%d' occurs more than once",
-                                nr);
+                                "Parameter '%d' occurs more than once", nr,
+                                node);
                         }
-                        Level level = NewRuleView.this.levelTree.getLevel(node);
                         if (!level.getIndex().isTopLevel()) {
                             throw new FormatException(
                                 "Rule parameter '%d' only allowed on top existential level",
-                                nr);
+                                nr, node);
                         }
                         if (RuleAspect.inLHS(node)) {
                             Node nodeImage = level.getLhsMap().getNode(node);
@@ -1809,13 +1810,14 @@ public class NewRuleView implements RuleView {
                         } else if (RuleAspect.inRHS(node)) {
                             if (nr.equals(0)) {
                                 throw new FormatException(
-                                    "Anonymous parameters should only occur on the left hand side");
+                                    "Anonymous parameters should only occur on the left hand side",
+                                    node);
                             }
                             Node nodeImage = level.getRhsMap().getNode(node);
                             outParMap.put(nr, nodeImage);
                         } else {
                             throw new FormatException(
-                                "Parameter '%d' may not occur in NAC", nr);
+                                "Parameter '%d' may not occur in NAC", nr, node);
                         }
                     } catch (FormatException exc) {
                         errors.addAll(exc.getErrors());
