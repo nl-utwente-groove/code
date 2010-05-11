@@ -397,7 +397,8 @@ public class SystemRecord implements NodeFactory {
      * {@link ConcurrentModificationException}s if iterators over the parent's
      * data structures are still alive.
      */
-    private boolean copyGraphs = true;
+    // EDUARDO: Switched to false to see if the performance is improved...
+    private boolean copyGraphs = false;
 
     /**
      * Changes the state of the storeTransitions property.
