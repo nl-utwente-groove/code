@@ -616,6 +616,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     static private final Color TREE_ENABLED_COLOR;
+    /** The background colour of a selected cell if the list does not have focus. */
+    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
 
     static {
         JLabel label = new JLabel();
@@ -957,5 +959,24 @@ public class RuleJTree extends JTree implements SimulationListener {
             setOpaque(!sel);
             return this;
         }
+
+        @Override
+        public Color getBackgroundSelectionColor() {
+            if (RuleJTree.this.isFocusOwner()) {
+                return super.getBackgroundSelectionColor();
+            } else {
+                return SELECTION_NON_FOCUS_COLOR;
+            }
+        }
+
+        @Override
+        public Color getTextSelectionColor() {
+            if (RuleJTree.this.isFocusOwner()) {
+                return super.getTextSelectionColor();
+            } else {
+                return Color.BLACK;
+            }
+        }
+
     }
 }
