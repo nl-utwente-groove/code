@@ -137,11 +137,15 @@ param
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text);
 			}
-			if (currentRule != null && !currentRule.isInputParameter(numParameters)) {
-				errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule.getName().toString()+" on line "+$IDENTIFIER.line);
-			}
-			if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType($IDENTIFIER.text))) {
-				errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
+			if (currentRule != null && currentRule.getNumberOfParameters() < numParameters) {
+				errors.add("Rule "+currentRule.getName().toString()+" does not have this many parameters on line "+$IDENTIFIER.line); 
+			} else {
+				if (currentRule != null && !currentRule.isInputParameter(numParameters)) {
+					errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule.getName().toString()+" on line "+$IDENTIFIER.line);
+				}
+				if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType($IDENTIFIER.text))) {
+					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
+				}
 			}
 		} )
 	| ^(PARAM OUT IDENTIFIER {
@@ -157,17 +161,21 @@ param
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);
 			}
-			if (currentRule != null && !currentRule.isOutputParameter(numParameters)) {
-				errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule.getName().toString()+" on line "+$IDENTIFIER.line);
-			}
-			if (currentOutputParameters.contains($IDENTIFIER.text)) {
-				errors.add("You can not use the same parameter as output more than once per call: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);			
-			}
-			if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType($IDENTIFIER.text))) {
-				errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
-			}
-			if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
-				errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+			if (currentRule != null && currentRule.getNumberOfParameters() < numParameters) {
+				errors.add("Rule "+currentRule.getName().toString()+" does not have this many parameters on line "+$IDENTIFIER.line); 
+			} else {
+				if (currentRule != null && !currentRule.isOutputParameter(numParameters)) {
+					errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule.getName().toString()+" on line "+$IDENTIFIER.line);
+				}
+				if (currentOutputParameters.contains($IDENTIFIER.text)) {
+					errors.add("You can not use the same parameter as output more than once per call: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);			
+				}
+				if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType($IDENTIFIER.text))) {
+					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
+				}
+				if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
+					errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+				}
 			} 
 			currentOutputParameters.add($IDENTIFIER.text);
 		} )

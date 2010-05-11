@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 GCLChecker.g 2010-05-10 12:10:55
+// $ANTLR 3.1b1 GCLChecker.g 2010-05-11 22:41:24
 
 package groove.control.parse;
 import groove.control.*;
@@ -1707,11 +1707,15 @@ public class GCLChecker extends TreeParser {
                     			} else {
                     				errors.add("No such variable: "+(IDENTIFIER53!=null?IDENTIFIER53.getText():null));
                     			}
-                    			if (currentRule != null && !currentRule.isInputParameter(numParameters)) {
-                    				errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule.getName().toString()+" on line "+(IDENTIFIER53!=null?IDENTIFIER53.getLine():0));
-                    			}
-                    			if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType((IDENTIFIER53!=null?IDENTIFIER53.getText():null)))) {
-                    				errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+(IDENTIFIER53!=null?IDENTIFIER53.getText():null)+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType((IDENTIFIER53!=null?IDENTIFIER53.getText():null))+")");
+                    			if (currentRule != null && currentRule.getNumberOfParameters() < numParameters) {
+                    				errors.add("Rule "+currentRule.getName().toString()+" does not have this many parameters on line "+(IDENTIFIER53!=null?IDENTIFIER53.getLine():0)); 
+                    			} else {
+                    				if (currentRule != null && !currentRule.isInputParameter(numParameters)) {
+                    					errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule.getName().toString()+" on line "+(IDENTIFIER53!=null?IDENTIFIER53.getLine():0));
+                    				}
+                    				if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType((IDENTIFIER53!=null?IDENTIFIER53.getText():null)))) {
+                    					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+(IDENTIFIER53!=null?IDENTIFIER53.getText():null)+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType((IDENTIFIER53!=null?IDENTIFIER53.getText():null))+")");
+                    				}
                     			}
                     		
 
@@ -1725,7 +1729,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // GCLChecker.g:147:4: ^( PARAM OUT IDENTIFIER )
+                    // GCLChecker.g:151:4: ^( PARAM OUT IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1758,17 +1762,21 @@ public class GCLChecker extends TreeParser {
                     			} else {
                     				errors.add("No such variable: "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));
                     			}
-                    			if (currentRule != null && !currentRule.isOutputParameter(numParameters)) {
-                    				errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule.getName().toString()+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));
-                    			}
-                    			if (currentOutputParameters.contains((IDENTIFIER56!=null?IDENTIFIER56.getText():null))) {
-                    				errors.add("You can not use the same parameter as output more than once per call: "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));			
-                    			}
-                    			if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType((IDENTIFIER56!=null?IDENTIFIER56.getText():null)))) {
-                    				errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType((IDENTIFIER56!=null?IDENTIFIER56.getText():null))+")");
-                    			}
-                    			if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
-                    				errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+                    			if (currentRule != null && currentRule.getNumberOfParameters() < numParameters) {
+                    				errors.add("Rule "+currentRule.getName().toString()+" does not have this many parameters on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0)); 
+                    			} else {
+                    				if (currentRule != null && !currentRule.isOutputParameter(numParameters)) {
+                    					errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule.getName().toString()+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));
+                    				}
+                    				if (currentOutputParameters.contains((IDENTIFIER56!=null?IDENTIFIER56.getText():null))) {
+                    					errors.add("You can not use the same parameter as output more than once per call: "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" on line "+(IDENTIFIER56!=null?IDENTIFIER56.getLine():0));			
+                    				}
+                    				if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType((IDENTIFIER56!=null?IDENTIFIER56.getText():null)))) {
+                    					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+(IDENTIFIER56!=null?IDENTIFIER56.getText():null)+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType((IDENTIFIER56!=null?IDENTIFIER56.getText():null))+")");
+                    				}
+                    				if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
+                    					errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+                    				}
                     			} 
                     			currentOutputParameters.add((IDENTIFIER56!=null?IDENTIFIER56.getText():null));
                     		
@@ -1783,7 +1791,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // GCLChecker.g:174:4: ^( PARAM DONT_CARE )
+                    // GCLChecker.g:182:4: ^( PARAM DONT_CARE )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1816,7 +1824,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // GCLChecker.g:180:4: ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) )
+                    // GCLChecker.g:188:4: ^( PARAM BOOL_TYPE bool= ( TRUE | FALSE ) )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1862,7 +1870,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // GCLChecker.g:186:4: ^( PARAM STRING_TYPE str= IDENTIFIER )
+                    // GCLChecker.g:194:4: ^( PARAM STRING_TYPE str= IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1899,7 +1907,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // GCLChecker.g:192:4: ^( PARAM INT_TYPE in= IDENTIFIER )
+                    // GCLChecker.g:200:4: ^( PARAM INT_TYPE in= IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
@@ -1936,7 +1944,7 @@ public class GCLChecker extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // GCLChecker.g:198:4: ^( PARAM REAL_TYPE r= IDENTIFIER )
+                    // GCLChecker.g:206:4: ^( PARAM REAL_TYPE r= IDENTIFIER )
                     {
                     _last = (CommonTree)input.LT(1);
                     {
