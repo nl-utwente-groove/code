@@ -329,6 +329,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /**
+     * Returns the total number of parameters for this rule.
+     * @return the total number of parameters for this rule
+     */
+    public int getNumberOfParameters() {
+        return this.specifiedParameterTypes.size();
+    }
+
+    /**
      * Returns whether a numbered parameter can be used as an output parameter
      * @param param the number of the parameter under inquiry
      * @return true if this parameter can be used as output parameter, false otherwise
