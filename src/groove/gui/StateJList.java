@@ -28,6 +28,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -37,11 +39,15 @@ import java.util.Set;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -66,6 +72,17 @@ public class StateJList extends JList implements SimulationListener {
         this.setCellRenderer(new MyCellRenderer());
         this.addMouseListener(new MyMouseListener());
         addListSelectionListener(new MySelectionListener());
+        addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                StateJList.this.repaint();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                StateJList.this.repaint();
+            }
+        });
     }
 
     /**
@@ -305,6 +322,15 @@ public class StateJList extends JList implements SimulationListener {
      */
     private Color enabledBackground;
 
+    /** The background colour of a selected cell if the list does not have focus. */
+    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
+    /** The background colour of the start graph. */
+    static private final Color START_GRAPH_BACKGROUND_COLOR =
+        new JLabel().getBackground();
+    static private final Border START_GRAPH_BORDER =
+        new CompoundBorder(LineBorder.createBlackLineBorder(), new EmptyBorder(
+            0, 2, 0, 2));
+
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
 
@@ -363,16 +389,21 @@ public class StateJList extends JList implements SimulationListener {
         {
             Component result =
                 super.getListCellRendererComponent(list, value, index,
-                    isSelected, hasFocus());
+                    isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
+            if (isSelected && !StateJList.this.isFocusOwner()) {
+                result.setBackground(SELECTION_NON_FOCUS_COLOR);
+                result.setForeground(Color.BLACK);
+            }
             // set tool tips and special formats
             if (index == 0) {
                 // set the first item (the current state indicator) to special
                 // format
                 if (!isSelected) {
                     // distinguish the current start graph name
-                    result.setBackground(Color.LIGHT_GRAY);
+                    result.setBackground(START_GRAPH_BACKGROUND_COLOR);
+                    ((JComponent) result).setBorder(START_GRAPH_BORDER);
                 }
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setToolTipText("Currently selected state of the simulation");
