@@ -772,8 +772,8 @@ abstract public class RegExpr { // implements VarSetSupport {
      * before the {@link Atom}.
      */
     static private final RegExpr[] prototypes =
-        new RegExpr[] {new Atom(), new Choice(), new Seq(), new Neg(),
-            new Star(), new Plus(), new Wildcard(), new Empty(), new Inv()};
+        new RegExpr[] {new Atom(), new Neg(), new Choice(), new Seq(),
+            new Inv(), new Star(), new Plus(), new Wildcard(), new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
