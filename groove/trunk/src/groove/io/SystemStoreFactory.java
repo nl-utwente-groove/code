@@ -48,7 +48,6 @@ public final class SystemStoreFactory {
                 throw new IOException(exc1.getMessage());
             }
         }
-        store.reload();
         return store;
     }
 

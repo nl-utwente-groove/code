@@ -750,6 +750,7 @@ public class Simulator {
         try {
             final SystemStore store =
                 SystemStoreFactory.newStore(grammarFile, false);
+            store.reload();
 
             // First we check if the versions are compatible.
             SystemProperties grammarProperties = store.getProperties();
