@@ -1773,10 +1773,13 @@ public class NewRuleView implements RuleView {
                     // check if the user specified a parameter type in the rule editor
                     int parType = ParameterAspect.getParameterType(node);
                     this.specifiedParameterTypes.put(nr, parType);
+                    boolean hasControl =
+                        getProperties() != null
+                            && getProperties().isUseControl()
+                            && getProperties().getControlName() != null;
                     if (parType == Rule.PARAMETER_INPUT) {
                         this.requiredInputs.add(level.getLhsMap().getNode(node));
-                        if (getProperties() != null
-                            && !getProperties().isUseControl()) {
+                        if (hasControl) {
                             throw new FormatException(
                                 "Parameter '%d' is a required input, but no control is in use",
                                 nr);
@@ -1784,9 +1787,7 @@ public class NewRuleView implements RuleView {
                     }
                     AspectValue av = AttributeAspect.getAttributeValue(node);
                     if (av != null) {
-                        if (AttributeAspect.VALUE.equals(av)
-                            && getProperties().isUseControl()
-                            && getProperties().getControlName() != null) {
+                        if (AttributeAspect.VALUE.equals(av) && hasControl) {
                             throw new FormatException(
                                 "Attribute parameter '%d' must be typed", nr,
                                 node);
