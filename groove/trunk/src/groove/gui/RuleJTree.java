@@ -117,7 +117,13 @@ public class RuleJTree extends JTree implements SimulationListener {
             @Override
             public void focusGained(FocusEvent e) {
                 RuleJTree.this.repaint();
-                switchSimulatorToRulePanel();
+                TreePath[] paths = getSelectionPaths();
+                if (paths.length == 1) {
+                    Object selectedNode = paths[0].getLastPathComponent();
+                    if (selectedNode instanceof RuleTreeNode) {
+                        switchSimulatorToRulePanel();
+                    }
+                }
             }
         });
     }
