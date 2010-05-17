@@ -433,7 +433,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         AspectGraph result = this;
         // renumber the nodes in their original order
         SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(nodeSet());
-        if (nodes.last().getNumber() != nodeCount() - 1) {
+        if (!nodes.isEmpty() && nodes.last().getNumber() != nodeCount() - 1) {
             try {
                 result = new AspectGraph();
                 NodeEdgeMap elementMap = new NodeEdgeHashMap();
