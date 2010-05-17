@@ -118,7 +118,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             public void focusGained(FocusEvent e) {
                 RuleJTree.this.repaint();
                 TreePath[] paths = getSelectionPaths();
-                if (paths.length == 1) {
+                if (paths != null && paths.length == 1) {
                     Object selectedNode = paths[0].getLastPathComponent();
                     if (selectedNode instanceof RuleTreeNode) {
                         switchSimulatorToRulePanel();
