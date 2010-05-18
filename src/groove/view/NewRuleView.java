@@ -1779,7 +1779,7 @@ public class NewRuleView implements RuleView {
                             && getProperties().getControlName() != null;
                     if (parType == Rule.PARAMETER_INPUT) {
                         this.requiredInputs.add(level.getLhsMap().getNode(node));
-                        if (hasControl) {
+                        if (!hasControl) {
                             throw new FormatException(
                                 "Parameter '%d' is a required input, but no control is in use",
                                 nr);
