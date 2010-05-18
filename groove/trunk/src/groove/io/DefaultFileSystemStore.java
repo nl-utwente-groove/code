@@ -118,10 +118,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         SystemProperties prop = new SystemProperties();
         prop.setCurrentVersionProperties();
         try {
-            this.reload();
-            this.putProperties(prop);
+            this.saveProperties(prop);
         } catch (IOException e) {
-            // Should not happen...
+            throw new IllegalArgumentException(
+                "Could not create properties file.");
         }
     }
 
@@ -843,6 +843,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
         Writer propertiesWriter = new FileWriter(propertiesFile);
         this.properties.store(propertiesWriter, null);
+        propertiesWriter.close();
+    }
+
+    private void saveProperties(SystemProperties properties) throws IOException {
+        File propertiesFile =
+            new File(this.file,
+                PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
+        Writer propertiesWriter = new FileWriter(propertiesFile);
+        properties.store(propertiesWriter, null);
         propertiesWriter.close();
     }
 
