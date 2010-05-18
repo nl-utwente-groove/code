@@ -60,7 +60,7 @@ public class ControlAttributeParametersTest extends TestCase {
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
     }
 }
