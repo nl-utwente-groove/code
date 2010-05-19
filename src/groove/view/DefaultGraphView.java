@@ -57,12 +57,12 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectualGraphView implements GraphView {
+public class DefaultGraphView implements GraphView {
     /**
      * Constructs an instance from a given aspect graph view.
      * @see GraphInfo#getName(groove.graph.GraphShape)
      */
-    public AspectualGraphView(AspectGraph view, SystemProperties properties) {
+    public DefaultGraphView(AspectGraph view, SystemProperties properties) {
         this.view = view;
         this.attributeFactory = createAttributeFactory(properties);
         // we fix the view; is it conceptually right to do that here?
