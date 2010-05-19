@@ -30,12 +30,12 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.rel.RegExprLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.AspectualGraphView;
+import groove.view.DefaultGraphView;
 import groove.view.DefaultTypeView;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
-import groove.view.NewRuleView;
+import groove.view.DefaultRuleView;
 import groove.view.RuleView;
 import groove.view.TypeView;
 import groove.view.View;
@@ -560,7 +560,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.graphView = new AspectualGraphView(this, properties);
+            this.graphView = new DefaultGraphView(this, properties);
         } else {
             this.graphView.setProperties(properties);
         }
@@ -621,7 +621,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.ruleView = new NewRuleView(this, properties);
+            this.ruleView = new DefaultRuleView(this, properties);
         } else {
             this.ruleView.setProperties(properties);
         }
@@ -648,7 +648,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     private TypeView typeView;
 
     /** Auxiliary object for converting this aspect graph to a state graph. */
-    private AspectualGraphView graphView;
+    private DefaultGraphView graphView;
 
     /** Auxiliary object for converting this aspect graph to a rule. */
     private RuleView ruleView;
