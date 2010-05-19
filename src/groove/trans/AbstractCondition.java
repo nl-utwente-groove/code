@@ -64,7 +64,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             SystemProperties properties) {
         this.rootMap = rootMap == null ? new NodeEdgeHashMap() : rootMap;
         this.target = target;
-        this.properties = properties;
+        this.systemProperties = properties;
         if (labelStore == null && properties != null) {
             try {
                 this.labelStore =
@@ -84,8 +84,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Returns the properties set at construction time.
      */
-    public SystemProperties getProperties() {
-        return this.properties;
+    public SystemProperties getSystemProperties() {
+        return this.systemProperties;
     }
 
     @Override
@@ -393,7 +393,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     /** Returns a matcher factory, tuned to the injectivity of this condition. */
     ConditionSearchPlanFactory getMatcherFactory() {
-        return groove.match.ConditionSearchPlanFactory.getInstance(getProperties().isInjective());
+        return groove.match.ConditionSearchPlanFactory.getInstance(getSystemProperties().isInjective());
     }
 
     /**
@@ -481,7 +481,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Factory instance for creating the correct simulation.
      */
-    private final SystemProperties properties;
+    protected final SystemProperties systemProperties;
     /** Subtyping relation, derived from the SystemProperties. */
     private final LabelStore labelStore;
     /** Constant empty anchor map. */

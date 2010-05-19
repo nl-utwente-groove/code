@@ -140,7 +140,7 @@ final public class SPOEvent extends
     public String toString() {
         StringBuffer result = new StringBuffer(getRule().getName().text());
         // result.append(getAnchorImageString());
-        if (getRule().getProperties().isUseParameters()) {
+        if (getRule().getSystemProperties().isUseParameters()) {
             result.append(getParameterString());
         }
         return result.toString();

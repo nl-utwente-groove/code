@@ -623,7 +623,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         if (refreshView) {
             this.ruleView = new DefaultRuleView(this, properties);
         } else {
-            this.ruleView.setProperties(properties);
+            this.ruleView.setSystemProperties(properties);
         }
         return this.ruleView;
     }

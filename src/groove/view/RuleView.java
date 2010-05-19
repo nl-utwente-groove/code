@@ -31,7 +31,7 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * Sets new properties for the rule view. This will typically require the
      * rule to be rebuilt.
      */
-    public void setProperties(SystemProperties properties);
+    public void setSystemProperties(SystemProperties properties);
 
     /** Changes the type graph under against which the model should be tested. */
     public void setType(TypeGraph type);

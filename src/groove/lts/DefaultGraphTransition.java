@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.abs.lts.ShapeGraphState;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.graph.AbstractBinaryEdge;
@@ -53,13 +52,12 @@ public class DefaultGraphTransition extends
     }
 
     /**
-     * Constructor used for shape graphs.
      * @param source the source state
      * @param label the label of the transition
      * @param target the target state
      */
-    public DefaultGraphTransition(ShapeGraphState source, Label label,
-            ShapeGraphState target) {
+    public DefaultGraphTransition(GraphState source, Label label,
+            GraphState target) {
         super(source, label, target);
         this.symmetry = false;
         this.addedNodes = null;

@@ -18,6 +18,7 @@
 package groove.trans;
 
 import groove.graph.Graph;
+import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
@@ -39,11 +40,21 @@ public interface Rule extends Comparable<Rule>, Condition {
     /** Returns the name of this rule. */
     public RuleName getName();
 
+    /** Returns the label to be used in the LTS when this rule is applied.
+     *  Defaults to the rule name, if the property is undefined.  
+     */
+    public String getTransitionLabel();
+
     /**
      * Returns the priority of this object. A higher number means higher
      * priority, with {@link #DEFAULT_PRIORITY} the lowest.
      */
     public int getPriority();
+
+    /**
+     * @return the properties of the rule.
+     */
+    public GraphProperties getRuleProperties();
 
     /**
      * Returns the left hand side of this Rule.

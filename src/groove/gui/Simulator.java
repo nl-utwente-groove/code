@@ -3478,90 +3478,19 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection
+            // EDUARDO: Properly implement multiple selection again.
             RuleView rule = getCurrentRule();
             AspectGraph ruleGraph = rule.getView();
             GraphProperties ruleProperties =
                 GraphInfo.getProperties(ruleGraph, true);
-            String currentPriority = null;
-            String currentEnabled = null;
-            String currentConfluent = null;
-            String currentRemark = null;
-            // save current rule properties
-            if (getCurrentRuleSet().size() > 1) {
-                currentPriority =
-                    Integer.toString(ruleProperties.getPriority());
-                currentEnabled = Boolean.toString(ruleProperties.isEnabled());
-                currentConfluent =
-                    Boolean.toString(ruleProperties.isConfluent());
-                currentRemark = ruleProperties.getRemark();
-                if (currentRemark == null) {
-                    currentRemark = "";
-                }
-                ruleProperties.clear();
-            }
             PropertiesDialog dialog =
                 new PropertiesDialog(ruleProperties,
                     GraphProperties.DEFAULT_USER_KEYS, true);
-
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
-                // Get properties from the dialog frame
-                Map<String,String> editedProperties =
-                    dialog.getEditedProperties();
-                String editedPriority =
-                    editedProperties.get(GraphProperties.PRIORITY_KEY);
-                String editedEnabled =
-                    editedProperties.get(GraphProperties.ENABLED_KEY);
-                String editedConfluent =
-                    editedProperties.get(GraphProperties.CONFLUENT_KEY);
-                String editedRemark =
-                    editedProperties.get(GraphProperties.REMARK_KEY);
-                // copy the selected rules to avoid concurrent modifications
-                List<RuleView> rules =
-                    new ArrayList<RuleView>(getCurrentRuleSet());
-                for (int i = 0; i < rules.size(); i++) {
-                    rule = rules.get(i);
-                    ruleGraph = rule.getView();
-                    ruleProperties =
-                        GraphInfo.getProperties(ruleGraph, true).clone();
-
-                    if (rules.size() > 1) {
-
-                        // restore current rule properties
-                        if (i == 0) {
-                            ruleProperties.put(GraphProperties.PRIORITY_KEY,
-                                currentPriority);
-                            ruleProperties.put(GraphProperties.ENABLED_KEY,
-                                currentEnabled);
-                            ruleProperties.put(GraphProperties.CONFLUENT_KEY,
-                                currentConfluent);
-                            ruleProperties.put(GraphProperties.REMARK_KEY,
-                                currentRemark);
-                        }
-
-                        // Check that properties in the dialog frame were
-                        // changed
-                        editedProperties.put(GraphProperties.PRIORITY_KEY,
-                            editedPriority == null ? currentPriority
-                                    : editedPriority);
-                        editedProperties.put(GraphProperties.ENABLED_KEY,
-                            editedEnabled == null ? currentEnabled
-                                    : editedEnabled);
-                        editedProperties.put(GraphProperties.CONFLUENT_KEY,
-                            editedConfluent == null ? currentConfluent
-                                    : editedConfluent);
-                        editedProperties.put(GraphProperties.REMARK_KEY,
-                            editedRemark == null ? currentRemark : editedRemark);
-
-                    }
-
-                    // Set new properties
-                    ruleProperties.clear();
-                    ruleProperties.putAll(editedProperties);
-                    AspectGraph newRuleGraph = ruleGraph.clone();
-                    GraphInfo.setProperties(newRuleGraph, ruleProperties);
-                    doAddRule(rule.getRuleName(), newRuleGraph);
-                }
+                ruleProperties.clear();
+                ruleProperties.putAll(dialog.getEditedProperties());
+                doDeleteRule(rule.getRuleName());
+                doAddRule(rule.getRuleName(), ruleGraph);
             }
         }
     }

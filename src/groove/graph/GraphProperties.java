@@ -223,9 +223,33 @@ public class GraphProperties extends Properties {
      */
     public String setRemark(String remark) {
         if (remark == null) {
-            return (String) remove(remark);
+            return (String) remove(TRANSITION_LABEL_KEY);
         } else {
-            return (String) setProperty(REMARK_KEY, remark);
+            return (String) setProperty(TRANSITION_LABEL_KEY, remark);
+        }
+    }
+
+    /**
+     * Retrieves the {@link #TRANSITION_LABEL_KEY} value in this properties
+     * object.
+     * @return the current value for {@link #TRANSITION_LABEL_KEY}; may be
+     *         <code>null</code>
+     */
+    public String getTransitionLabel() {
+        return getProperty(TRANSITION_LABEL_KEY);
+    }
+
+    /**
+     * Sets the {@link #TRANSITION_LABEL_KEY} property to a given value.
+     * @param label the new transition label; may be <code>null</code>
+     * @return the previous value for {@link #TRANSITION_LABEL_KEY}; may be
+     *         <code>null</code>
+     */
+    public String setTransitionLabel(String label) {
+        if (label == null) {
+            return (String) remove(TRANSITION_LABEL_KEY);
+        } else {
+            return (String) setProperty(TRANSITION_LABEL_KEY, label);
         }
     }
 
@@ -317,6 +341,21 @@ public class GraphProperties extends Properties {
     }
 
     /**
+     * Returns the transition label from a given graph. The property is stored
+     * under {@link #TRANSITION_LABEL_KEY}. Yields <code>null</code> if the
+     * graph has no properties, or the properties contain no label value.
+     * @see #getTransitionLabel()
+     */
+    static public String getTransitionLabel(GraphShape graph) {
+        GraphProperties properties = GraphInfo.getProperties(graph, false);
+        if (properties == null) {
+            return null;
+        } else {
+            return properties.getTransitionLabel();
+        }
+    }
+
+    /**
      * Tests if a given object is a valid user-defined property key. This
      * returns <code>true</code> if the key starts with
      * {@link #SYSTEM_KEY_START}.
@@ -363,6 +402,13 @@ public class GraphProperties extends Properties {
      * Rule confluency key. The corresponding value should be a boolean.
      */
     static public final String CONFLUENT_KEY = "confluent";
+
+    /**
+     * Transition label for the rule application.
+     * The corresponding value should be a string.
+     */
+    static public final String TRANSITION_LABEL_KEY = "transitionLabel";
+
     /**
      * Start character that distinguishes user-defined property keys from system
      * keys. Any string starting with this character is a system key.
@@ -449,6 +495,24 @@ public class GraphProperties extends Properties {
             public String getComment() {
                 return "Confluent rules have the same effect, regardless of "
                     + "their matching";
+            }
+        });
+        defaultKeys.put(TRANSITION_LABEL_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return true;
+            }
+
+            @Override
+            public String getDescription() {
+                return "A string to be used as the transition label in the "
+                    + "LTS. If empty, defaults to the rule name.";
+            }
+
+            @Override
+            public String getComment() {
+                return "A string to be used as the transition label in the "
+                    + "LTS. If empty, defaults to the rule name.";
             }
         });
         DEFAULT_USER_KEYS = Collections.unmodifiableMap(defaultKeys);
