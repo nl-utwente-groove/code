@@ -117,8 +117,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
             }
         }
         SearchPlanStrategy result =
-            new SearchPlanStrategy(condition.getTarget(), plan,
-                isInjective());
+            new SearchPlanStrategy(condition.getTarget(), plan, isInjective());
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
@@ -198,7 +197,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         Collection<Comparator<SearchItem>> computeComparators() {
             Collection<Comparator<SearchItem>> result =
                 super.computeComparators();
-            SystemProperties properties = this.condition.getProperties();
+            SystemProperties properties = this.condition.getSystemProperties();
             if (properties != null) {
                 List<String> controlLabels = properties.getControlLabels();
                 List<String> commonLabels = properties.getCommonLabels();

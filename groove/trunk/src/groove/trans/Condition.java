@@ -68,7 +68,7 @@ public interface Condition extends Fixable {
     public Graph getTarget();
 
     /** Returns the secondary properties of this graph condition. */
-    public SystemProperties getProperties();
+    public SystemProperties getSystemProperties();
 
     /**
      * Returns the subtyping relation of this graph condition, or
@@ -79,7 +79,7 @@ public interface Condition extends Fixable {
     /**
      * Tests if this graph condition is internally consistent. Inconsistencies
      * may arise for instance due to incompatibility of the actual condition and
-     * the secondary properties, as returned by {@link #getProperties()}. The
+     * the secondary properties, as returned by {@link #getSystemProperties()}. The
      * method does nothing if this graph condition is consistent, and throws an
      * exception if it is not.
      * @throws FormatException if this graph condition is inconsistent. The

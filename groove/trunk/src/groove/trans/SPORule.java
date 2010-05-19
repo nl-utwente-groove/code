@@ -19,6 +19,7 @@ package groove.trans;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.LabelStore;
 import groove.graph.Morphism;
@@ -58,16 +59,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * @param morph the morphism on which this production is to be based
      * @param name the name of the new rule
-     * @param priority the priority of this rule; should be non-negative
-     * @param properties the factory this rule used to instantiate related
-     *        classes
+     * @param ruleProperties the rule properties
+     * @param systemProperties the global grammar properties
      */
-    public SPORule(Morphism morph, RuleName name, int priority,
-            boolean confluent, SystemProperties properties) {
-        super(name, morph.dom(), null, null, properties);
+    public SPORule(Morphism morph, RuleName name,
+            GraphProperties ruleProperties, SystemProperties systemProperties) {
+        super(name, morph.dom(), null, null, systemProperties);
         this.morphism = morph;
-        this.priority = priority;
-        this.confluent = confluent;
+        this.ruleProperties = ruleProperties;
         this.coRootMap = new NodeEdgeHashMap();
     }
 
@@ -81,16 +80,16 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param coRootMap map of creator nodes in the parent rule to creator nodes
      *        of this rule
      * @param labelStore label store specifying the subtype relation
-     * @param properties the factory this rule used to instantiate related
-     *        classes
+     * @param ruleProperties the rule properties
+     * @param systemProperties the global grammar properties
      */
     public SPORule(RuleName name, Morphism morph, NodeEdgeMap rootMap,
             NodeEdgeMap coRootMap, LabelStore labelStore,
-            SystemProperties properties) {
-        super(name, morph.dom(), rootMap, labelStore, properties);
+            GraphProperties ruleProperties, SystemProperties systemProperties) {
+        super(name, morph.dom(), rootMap, labelStore, systemProperties);
         this.coRootMap = coRootMap == null ? new NodeEdgeHashMap() : coRootMap;
         this.morphism = morph;
-        this.priority = DEFAULT_PRIORITY;
+        this.ruleProperties = ruleProperties;
         assert coRootMap == null
             || rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format(
             "RHS nodes %s do not contain all co-root values %s",
@@ -100,13 +99,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /** Sets the priority of this rule. */
     public void setPriority(int priority) {
         testFixed(false);
-        this.priority = priority;
+        this.ruleProperties.setPriority(priority);
     }
 
     /** Sets the confluence of this rule. */
     public void setConfluent(boolean confluent) {
         testFixed(false);
-        this.confluent = confluent;
+        this.ruleProperties.setConfluent(confluent);
     }
 
     /**
@@ -127,6 +126,22 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             this.coRootMap.nodeMap().keySet());
         this.parent = parent;
         this.level = level;
+    }
+
+    @Override
+    public String getTransitionLabel() {
+        String result = this.ruleProperties.getTransitionLabel();
+        if (result == null) {
+            result = this.getName().toString();
+        }
+        return result;
+    }
+
+    /**
+     * @param label the label to be set.
+     */
+    public void setTransitionLabel(String label) {
+        this.ruleProperties.setTransitionLabel(label);
     }
 
     /**
@@ -504,7 +519,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     boolean isValidMatchMap(GraphShape host, VarNodeEdgeMap matchMap) {
         boolean result = true;
-        if (SystemProperties.isCheckDangling(getProperties())) {
+        if (SystemProperties.isCheckDangling(getSystemProperties())) {
             result = satisfiesDangling(host, matchMap);
         }
         return result;
@@ -577,35 +592,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private void setAnchor(Collection<Element> parentAnchor) {
         Collection<Element> myAnchor =
             new TreeSet<Element>(Arrays.asList(computeNestedAnchor()));
-        // for (SPORule subRule : getSubRules(false)) {
-        // subRule.setAnchor(myAnchor);
-        // }
-        // if (parentAnchor != null) {
-        // for (Map.Entry<Node,Node> rootNodeEntry :
-        // getRootMap().nodeMap().entrySet()) {
-        // // TODO the following selects a node in the universal condition,
-        // // not the parent rule!
-        // // This goes right because node identities are actually the
-        // // same, but...
-        // Node myNode = rootNodeEntry.getValue();
-        // Node parentNode = rootNodeEntry.getKey();
-        // if (myAnchor.contains(myNode)
-        // && getParent().lhs().containsElement(parentNode)
-        // && isAnchorable(myNode)) {
-        // parentAnchor.add(parentNode);
-        // }
-        // }
-        // for (Map.Entry<Edge,Edge> rootEdgeEntry :
-        // getRootMap().edgeMap().entrySet()) {
-        // Edge myEdge = rootEdgeEntry.getValue();
-        // Edge parentEdge = rootEdgeEntry.getKey();
-        // if (myAnchor.contains(myEdge)
-        // && getParent().lhs().containsElement(parentEdge)
-        // && isAnchorable(myEdge)) {
-        // parentAnchor.add(parentEdge);
-        // }
-        // }
-        // }
         this.anchor = myAnchor.toArray(new Element[0]);
     }
 
@@ -687,11 +673,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     // ------------------- commands --------------------------
 
     public int getPriority() {
-        return this.priority;
+        return this.ruleProperties.getPriority();
     }
 
     public boolean isConfluent() {
-        return this.confluent;
+        return this.ruleProperties.isConfluent();
     }
 
     /**
@@ -702,18 +688,18 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     @Override
     public void setFixed() throws FormatException {
         if (!isFixed()) {
-            if (getProperties() != null) {
-                if (getProperties().isCheckCreatorEdges()) {
+            if (getSystemProperties() != null) {
+                if (getSystemProperties().isCheckCreatorEdges()) {
                     for (Edge edge : getSimpleCreatorEdges()) {
                         addSubCondition(new EdgeEmbargo(lhs(),
-                            getCreatorMap().mapEdge(edge), getProperties(),
-                            getLabelStore()));
+                            getCreatorMap().mapEdge(edge),
+                            getSystemProperties(), getLabelStore()));
                     }
                 }
-                if (getProperties().isRhsAsNac() && hasCreators()) {
+                if (getSystemProperties().isRhsAsNac() && hasCreators()) {
                     Condition rhsNac =
                         new NotCondition(rhs(), getMorphism().elementMap(),
-                            getLabelStore(), getProperties());
+                            getLabelStore(), getSystemProperties());
                     rhsNac.setFixed();
                     addSubCondition(rhsNac);
                 }
@@ -1479,14 +1465,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * merged and which nodes are deleted.
      */
     private Map<Node,Node> mergeMap;
-    /**
-     * The priority of this rule.
-     */
-    private int priority;
-    /**
-     * The confluence property of this rule.
-     */
-    private boolean confluent;
+
+    private GraphProperties ruleProperties;
+
     /**
      * List of numbered parameters.
      */
@@ -1552,4 +1533,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     protected Set<Node> requiredInputs;
 
+    @Override
+    public GraphProperties getRuleProperties() {
+        return this.ruleProperties;
+    }
 }

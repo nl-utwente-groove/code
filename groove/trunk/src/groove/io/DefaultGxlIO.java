@@ -174,24 +174,14 @@ public class DefaultGxlIO {
             if (info.hasRole()) {
                 gxlGraph.setRole(info.getRole());
             }
-            // for (Map.Entry<String,Object> infoEntry:
-            // info.getData().entrySet()) {
-            // if (!GraphInfo.KNOWN_KEYS.contains(infoEntry.getKey())) {
-            // String attrName = GraphInfo.INFO_KEY_START + infoEntry.getKey();
-            // String value = (String) infoEntry.getValue();
-            // groove.gxl.Value gxlValue = new groove.gxl.Value();
-            // gxlValue.setString(value);
-            // groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
-            // gxlLabelAttr.setName(attrName);
-            // gxlLabelAttr.setValue(gxlValue);
-            // gxlGraph.addAttr(gxlLabelAttr);
-            // }
-            // }
             // add the graph attributes, if any
             GraphProperties properties = info.getProperties(false);
             if (properties != null) {
                 for (Map.Entry<Object,Object> entry : properties.entrySet()) {
-                    String attrName = ((String) entry.getKey()).toLowerCase();
+                    // EZ: Removed this conversion because it causes problems
+                    // with rule properties keys.
+                    // String attrName = ((String) entry.getKey()).toLowerCase();
+                    String attrName = (String) entry.getKey();
                     String value = (String) entry.getValue();
                     groove.gxl.Value gxlValue = new groove.gxl.Value();
                     gxlValue.setString(value);
@@ -274,7 +264,10 @@ public class DefaultGxlIO {
         GraphProperties properties = new GraphProperties();
         while (attrEnum.hasMoreElements()) {
             groove.gxl.Attr attr = (groove.gxl.Attr) attrEnum.nextElement();
-            String attrName = attr.getName().toLowerCase();
+            // EZ: Removed this conversion because it causes problems
+            // with rule properties keys.
+            // String attrName = attr.getName().toLowerCase();
+            String attrName = attr.getName();
             groove.gxl.Value attrValue = attr.getValue();
             Object dataValue;
             if (attrValue.hasBool()) {

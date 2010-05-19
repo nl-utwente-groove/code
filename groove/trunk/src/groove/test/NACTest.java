@@ -23,6 +23,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.GraphProperties;
 import groove.graph.Morphism;
 import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
@@ -96,8 +97,11 @@ public class NACTest extends TestCase {
         ruleMorphism.dom().addNode(this.n[0][0]);
         ruleMorphism.cod().addNode(this.n[1][0]);
         ruleMorphism.putNode(this.n[0][0], this.n[1][0]);
+        GraphProperties ruleProperties = new GraphProperties();
+        ruleProperties.setPriority(0);
+        ruleProperties.setConfluent(false);
         this.rule =
-            new SPORule(ruleMorphism, new RuleName("test"), 0, false,
+            new SPORule(ruleMorphism, new RuleName("test"), ruleProperties,
                 SystemProperties.DEFAULT_PROPERTIES);
 
         this.NACs[0] =

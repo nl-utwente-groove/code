@@ -102,7 +102,7 @@ public class DefaultRuleView implements RuleView {
     public DefaultRuleView(AspectGraph graph, SystemProperties properties) {
         String name = GraphInfo.getName(graph);
         this.name = name == null ? null : new RuleName(name);
-        this.properties = properties;
+        this.systemProperties = properties;
         this.graph = graph;
         this.viewErrors =
             graph.getErrors().isEmpty() ? null : graph.getErrors();
@@ -123,6 +123,11 @@ public class DefaultRuleView implements RuleView {
 
     public int getPriority() {
         return GraphProperties.getPriority(this.graph);
+    }
+
+    /** Convenience method */
+    public String getTransitionLabel() {
+        return GraphProperties.getTransitionLabel(this.graph);
     }
 
     public boolean isEnabled() {
@@ -188,10 +193,10 @@ public class DefaultRuleView implements RuleView {
      * Sets the properties of this view. This means that the previously
      * constructed model (if any) becomes invalid.
      */
-    public final void setProperties(SystemProperties properties) {
-        if (properties == null ? this.properties != null
-                : !properties.equals(this.properties)) {
-            this.properties = properties;
+    public final void setSystemProperties(SystemProperties properties) {
+        if (properties == null ? this.systemProperties != null
+                : !properties.equals(this.systemProperties)) {
+            this.systemProperties = properties;
             invalidate();
         }
     }
@@ -213,8 +218,8 @@ public class DefaultRuleView implements RuleView {
     /**
      * @return Returns the properties.
      */
-    private final SystemProperties getProperties() {
-        return this.properties;
+    private final SystemProperties getSystemProperties() {
+        return this.systemProperties;
     }
 
     /**
@@ -224,7 +229,8 @@ public class DefaultRuleView implements RuleView {
      * @return <code>true</code> if the rule is to be matched injectively.
      */
     private final boolean isInjective() {
-        return getProperties() != null && getProperties().isInjective();
+        return getSystemProperties() != null
+            && getSystemProperties().isInjective();
     }
 
     /**
@@ -244,7 +250,7 @@ public class DefaultRuleView implements RuleView {
         // only do something if there is something to be done
         if (this.attributeFactory == null) {
             this.attributeFactory =
-                new AttributeElementFactory(this.graph, getProperties());
+                new AttributeElementFactory(this.graph, getSystemProperties());
             this.ruleErrors = new ArrayList<FormatError>();
             if (this.viewErrors != null) {
                 this.ruleErrors.addAll(this.viewErrors);
@@ -305,6 +311,7 @@ public class DefaultRuleView implements RuleView {
         if (rule != null) {
             rule.setPriority(getPriority());
             rule.setConfluent(isConfluent());
+            rule.setTransitionLabel(getTransitionLabel());
             Parameters parameters = new Parameters();
             try {
                 rule.setParameters(parameters.getInPars(),
@@ -373,8 +380,8 @@ public class DefaultRuleView implements RuleView {
         if (getAttributeValue(edge) == null) {
             return createEdge(ends, edge.getModelLabel());
         } else {
-            return DefaultRuleView.this.attributeFactory.createAttributeEdge(edge,
-                ends);
+            return DefaultRuleView.this.attributeFactory.createAttributeEdge(
+                edge, ends);
         }
     }
 
@@ -423,7 +430,7 @@ public class DefaultRuleView implements RuleView {
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
     /** Rule properties set for this rule. */
-    private SystemProperties properties;
+    private SystemProperties systemProperties;
 
     /** Label for merges (merger edges and merge embargoes) */
     static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
@@ -1542,7 +1549,7 @@ public class DefaultRuleView implements RuleView {
         private MergeEmbargo createMergeEmbargo(Graph context,
                 Node embargoSource, Node embargoTarget) {
             return new MergeEmbargo(context, embargoSource, embargoTarget,
-                getLabelStore(), getProperties());
+                getLabelStore(), getSystemProperties());
         }
 
         /**
@@ -1553,7 +1560,7 @@ public class DefaultRuleView implements RuleView {
          * @see #toRule()
          */
         private EdgeEmbargo createEdgeEmbargo(Graph context, Edge embargoEdge) {
-            return new EdgeEmbargo(context, embargoEdge, getProperties(),
+            return new EdgeEmbargo(context, embargoEdge, getSystemProperties(),
                 getLabelStore());
         }
 
@@ -1564,7 +1571,7 @@ public class DefaultRuleView implements RuleView {
          * @see #toRule()
          */
         private NotCondition createNAC(Graph context) {
-            return new NotCondition(context.newGraph(), getProperties(),
+            return new NotCondition(context.newGraph(), getSystemProperties(),
                 getLabelStore());
         }
 
@@ -1580,7 +1587,8 @@ public class DefaultRuleView implements RuleView {
         private SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap,
                 NodeEdgeMap coRootMap, String name) {
             return new SPORule(new RuleName(name), ruleMorphism, rootMap,
-                coRootMap, getLabelStore(), getProperties());
+                coRootMap, getLabelStore(), new GraphProperties(),
+                getSystemProperties());
         }
 
         /**
@@ -1596,7 +1604,7 @@ public class DefaultRuleView implements RuleView {
                 String name, boolean positive) {
             ForallCondition result =
                 new ForallCondition(new RuleName(name), target, rootMap,
-                    getLabelStore(), getProperties());
+                    getLabelStore(), getSystemProperties());
             if (positive) {
                 result.setPositive();
             }
@@ -1774,9 +1782,9 @@ public class DefaultRuleView implements RuleView {
                     int parType = ParameterAspect.getParameterType(node);
                     this.specifiedParameterTypes.put(nr, parType);
                     boolean hasControl =
-                        getProperties() != null
-                            && getProperties().isUseControl()
-                            && getProperties().getControlName() != null;
+                        getSystemProperties() != null
+                            && getSystemProperties().isUseControl()
+                            && getSystemProperties().getControlName() != null;
                     if (parType == Rule.PARAMETER_INPUT) {
                         this.requiredInputs.add(level.getLhsMap().getNode(node));
                         if (!hasControl) {
