@@ -31,7 +31,7 @@ public class ObjectWrapSpeedTest {
     public ObjectWrapSpeedTest(String version, Action storeAction,
             Action getAction) {
         this.version = version;
-        this.measure = reporter.newMethod(version);
+        this.measure = reporter.register(version);
         this.storeAction = storeAction;
         this.getAction = getAction;
     }
@@ -40,19 +40,19 @@ public class ObjectWrapSpeedTest {
     public void start() {
         test();
         System.out.printf("Results for %s: %s ms%n", this.version,
-            reporter.getTotalTime(this.measure));
+            this.measure.getTotalTime());
     }
 
     private void test() {
-        reporter.start(this.measure);
+        this.measure.start();
         for (int i = 0; i < BOUND; i++) {
             this.getAction.start(this.storeAction.start(new Object()));
         }
-        reporter.stop();
+        this.measure.stop();
     }
 
     private final String version;
-    private final int measure;
+    private final Reporter measure;
     private final Action storeAction;
     private final Action getAction;
 

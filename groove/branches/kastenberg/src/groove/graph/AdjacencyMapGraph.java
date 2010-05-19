@@ -64,44 +64,33 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
 
     @Override
     public boolean containsElement(Element elem) {
-        reporter.start(CONTAINS_ELEMENT);
-        try {
-            if (elem instanceof Node) {
-                return this.edgeMap.containsKey(elem);
-            } else {
-                assert elem instanceof Edge;
-                Set<Edge> edgeSet = this.edgeMap.get(((Edge) elem).source());
-                return edgeSet != null && edgeSet.contains(elem);
-            }
-        } finally {
-            reporter.stop();
+        if (elem instanceof Node) {
+            return this.edgeMap.containsKey(elem);
+        } else {
+            assert elem instanceof Edge;
+            Set<Edge> edgeSet = this.edgeMap.get(((Edge) elem).source());
+            return edgeSet != null && edgeSet.contains(elem);
         }
     }
 
     public Set<? extends Node> nodeSet() {
-        reporter.start(NODE_SET);
         Set<Node> result = this.unmodifiableNodeSet;
-        reporter.stop();
         return result;
     }
 
     // ------------------------ OBJECT OVERRIDES -----------------------
 
     public Set<? extends Edge> edgeSet() {
-        reporter.start(EDGE_SET);
         Set<Edge> result = new HashSet<Edge>();
         for (Map.Entry<Node,Set<Edge>> edgeEntry : this.edgeMap.entrySet()) {
             result.addAll(edgeEntry.getValue());
         }
-        reporter.stop();
         return Collections.unmodifiableSet(result);
     }
 
     @Override
     public Graph clone() {
-        reporter.start(CLONE);
         Graph result = new AdjacencyMapGraph(this);
-        reporter.stop();
         return result;
     }
 
@@ -112,7 +101,6 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
     // ------------------------- COMMANDS ------------------------------
 
     public boolean addNode(Node node) {
-        reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsElement(node);
         if (added) {
@@ -121,12 +109,10 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
             this.edgeMap.put(node, new HashSet<Edge>());
             fireAddNode(node);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean addEdge(Edge edge) {
-        reporter.start(ADD_EDGE);
         boolean added = false;
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         Node[] parts = edge.ends();
@@ -136,7 +122,6 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
         if (added) {
             fireAddEdge(edge);
         }
-        reporter.stop();
         return added;
     }
 
@@ -145,7 +130,6 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
     }
 
     public boolean removeEdge(Edge edge) {
-        reporter.start(REMOVE_EDGE);
         assert !isFixed() : "Trying to remove " + edge
             + " from unmodifiable graph";
         boolean removed = false;
@@ -157,12 +141,10 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
         if (removed) {
             fireRemoveEdge(edge);
         }
-        reporter.stop();
         return removed;
     }
 
     public boolean removeNode(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = false;
@@ -174,7 +156,6 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
             }
             fireRemoveNode(node);
         }
-        reporter.stop();
         return removed;
     }
 

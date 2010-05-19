@@ -61,13 +61,13 @@ public class DefaultIsoChecker implements IsoChecker {
         this.strong = strong;
     }
 
-    public boolean areIsomorphic(Graph dom, Graph cod) {
+    public synchronized boolean areIsomorphic(Graph dom, Graph cod) {
         boolean result;
         // pre-calculate the node counts to take the time for
         // constructing the graph out of the isomorphism check time
         int domNodeCount = dom.nodeCount();
         int codNodeCount = cod.nodeCount();
-        reporter.start(ISO_CHECK);
+        areIsoReporter.start();
         if (domNodeCount != codNodeCount || dom.edgeCount() != cod.edgeCount()) {
             distinctSizeCount++;
             result = false;
@@ -107,7 +107,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 }
             }
         }
-        reporter.stop();
+        areIsoReporter.stop();
         totalCheckCount++;
         return result;
     }
@@ -123,7 +123,7 @@ public class DefaultIsoChecker implements IsoChecker {
             intCertOverlap++;
             result = false;
         } else if (hasDiscreteCerts(codCertifier)) {
-            reporter.start(ISO_CERT_CHECK);
+            isoCertCheckReporter.start();
             if (hasDiscreteCerts(domCertifier)) {
                 result = areCertEqual(domCertifier, codCertifier);
             } else {
@@ -133,14 +133,14 @@ public class DefaultIsoChecker implements IsoChecker {
                 distinctCertsCount++;
                 result = false;
             }
-            reporter.stop();
+            isoCertCheckReporter.stop();
             if (result) {
                 equalCertsCount++;
             } else {
                 distinctCertsCount++;
             }
         } else {
-            reporter.start(ISO_SIM_CHECK);
+            isoSimCheckReporter.start();
             if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
                 result = hasIsomorphism(domCertifier, codCertifier);
             } else {
@@ -150,7 +150,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 distinctCertsCount++;
                 result = false;
             }
-            reporter.stop();
+            isoSimCheckReporter.stop();
             if (result) {
                 equalSimCount++;
             } else {
@@ -164,7 +164,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * Tries to construct an isomorphism between the two given graphs, and
      * reports if this succeeds.
      */
-    public boolean hasIsomorphism(Graph dom, Graph cod) {
+    public synchronized boolean hasIsomorphism(Graph dom, Graph cod) {
         return hasIsomorphism(dom.getCertifier(isStrong()),
             cod.getCertifier(isStrong()));
     }
@@ -183,7 +183,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param dom the first graph to be compared
      * @param cod the second graph to be compared
      */
-    public NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
+    public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
         return getIsomorphism(dom.getCertifier(isStrong()),
             cod.getCertifier(isStrong()));
     }
@@ -632,16 +632,16 @@ public class DefaultIsoChecker implements IsoChecker {
     private boolean areCertEqual(CertificateStrategy dom,
             CertificateStrategy cod) {
         boolean result;
-        reporter.stop();
-        reporter.stop();
+        areIsoReporter.stop();
+        isoCertCheckReporter.stop();
         // the certificates uniquely identify the dom elements;
         // it suffices to test if this gives rise to a consistent one-to-one
         // node map
         // Certificate<Node>[] nodeCerts = dom.getNodeCertificates();
         Certificate<Edge>[] edgeCerts = dom.getEdgeCertificates();
         PartitionMap<Edge> codPartitionMap = cod.getEdgePartitionMap();
-        reporter.restart(ISO_CHECK);
-        reporter.restart(ISO_CERT_CHECK);
+        areIsoReporter.restart();
+        isoCertCheckReporter.restart();
         result = true;
         // map to store dom-to-cod node mapping
         Map<Node,Node> nodeMap = new HashMap<Node,Node>();
@@ -689,7 +689,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * coincide.
      */
     private boolean areGraphEqual(Graph dom, Graph cod) {
-        reporter.start(EQUALS_TEST);
+        equalsTestReporter.start();
         // boolean result = ((DeltaGraph)
         // dom).equalNodeEdgeSets((DeltaGraph)cod);
         Set<?> domEdgeSet = dom.edgeSet();
@@ -699,7 +699,7 @@ public class DefaultIsoChecker implements IsoChecker {
         // cod.nodeCount()) || dom.nodeEdgeMap().equals(cod.nodeEdgeMap()):
         // "TreeStoreSet.equals wrongly gives "+result+"
         // on\n"+dom.nodeSet()+"\n"+cod.nodeSet()+"\n"+dom.edgeSet()+"\n"+cod.edgeSet();
-        reporter.stop();
+        equalsTestReporter.stop();
         return result;
     }
 
@@ -779,7 +779,7 @@ public class DefaultIsoChecker implements IsoChecker {
         return true;
     }
 
-    public boolean isStrong() {
+    public synchronized boolean isStrong() {
         return this.strong;
     }
 
@@ -787,7 +787,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * Sets the checker strength.
      * @see #isStrong()
      */
-    public void setStrong(boolean strong) {
+    public synchronized void setStrong(boolean strong) {
         this.strong = strong;
     }
 
@@ -827,8 +827,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * partition maps in {@link PartitionRefiner}.
      */
     static public long getCertifyingTime() {
-        return PartitionRefiner.reporter.getTotalTime(PartitionRefiner.COMPUTE_CERTIFICATES)
-            + PartitionRefiner.reporter.getTotalTime(PartitionRefiner.GET_PARTITION_MAP);
+        return PartitionRefiner.computeCertReporter.getTotalTime()
+            + PartitionRefiner.getPartitionReporter.getTotalTime();
     }
 
     /**
@@ -837,28 +837,28 @@ public class DefaultIsoChecker implements IsoChecker {
      * instead by {@link #getCertifyingTime()}.
      */
     static public long getIsoCheckTime() {
-        return reporter.getTotalTime(ISO_CHECK);
+        return areIsoReporter.getTotalTime();
     }
 
     /**
      * Returns the time spent establishing isomorphism by direct equality.
      */
     static public long getEqualCheckTime() {
-        return reporter.getTotalTime(EQUALS_TEST);
+        return equalsTestReporter.getTotalTime();
     }
 
     /**
      * Returns the time spent establishing isomorphism by certificate equality.
      */
     static public long getCertCheckTime() {
-        return reporter.getTotalTime(ISO_CERT_CHECK);
+        return isoCertCheckReporter.getTotalTime();
     }
 
     /**
      * Returns the time spent establishing isomorphism by explicit simulation.
      */
     static public long getSimCheckTime() {
-        return reporter.getTotalTime(ISO_SIM_CHECK);
+        return isoSimCheckReporter.getTotalTime();
     }
 
     /**
@@ -1029,19 +1029,20 @@ public class DefaultIsoChecker implements IsoChecker {
     /** Reporter instance for profiling IsoChecker methods. */
     static public final Reporter reporter = Reporter.register(IsoChecker.class);
     /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */
-    static public final int ISO_CHECK =
-        reporter.newMethod("areIsomorphic(Graph,Graph)");
+    static public final Reporter areIsoReporter =
+        reporter.register("areIsomorphic(Graph,Graph)");
     /**
      * Handle for profiling
      * {@link #areCertEqual(CertificateStrategy, CertificateStrategy)}.
      */
-    static final int ISO_CERT_CHECK =
-        reporter.newMethod("Isomorphism by certificates");
+    static final Reporter isoCertCheckReporter =
+        reporter.register("Isomorphism by certificates");
     /** Handle for profiling isomorphism by simulation. */
-    static final int ISO_SIM_CHECK =
-        reporter.newMethod("Isomorphism by simulation");
+    static final Reporter isoSimCheckReporter =
+        reporter.register("Isomorphism by simulation");
     /** Handle for profiling {@link #areGraphEqual(Graph, Graph)}. */
-    static final int EQUALS_TEST = reporter.newMethod("Equality test");
+    static final Reporter equalsTestReporter =
+        reporter.register("Equality test");
 
     // the following has to be defined here in order to avoid
     // circularities in class initialisation

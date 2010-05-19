@@ -18,7 +18,6 @@ package groove.match;
 
 import groove.algebra.Algebra;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -63,7 +62,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     public Iterator<VarNodeEdgeMap> getMatchIter(GraphShape host,
             NodeEdgeMap anchorMap) {
         Iterator<VarNodeEdgeMap> result;
-        reporter.start(GET_MATCH_ITER);
+        getMatchIterReporter.start();
         final Search search = createSearch(host, anchorMap);
         result = new Iterator<VarNodeEdgeMap>() {
             public boolean hasNext() {
@@ -102,7 +101,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
              */
             private boolean atEnd = false;
         };
-        reporter.stop();
+        getMatchIterReporter.stop();
         return result;
     }
 
@@ -283,18 +282,14 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     private boolean fixed;
 
     /** Reporter instance to profile matcher methods. */
-    static public final Reporter reporter =
+    static private final Reporter reporter =
         Reporter.register(SearchPlanStrategy.class);
-    /** Handle for profiling {@link #getMatchSet(Graph, NodeEdgeMap)} */
-    static final int GET_MATCH_SET = reporter.newMethod("getMatchSet()");
     /** Handle for profiling {@link #getMatchIter(GraphShape, NodeEdgeMap)} */
-    static final int GET_MATCH_ITER = reporter.newMethod("getMatchIter()");
+    static final Reporter getMatchIterReporter =
+        reporter.register("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
-    static public final int SEARCH_FIND = reporter.newMethod("Search.find()");
-    /** Handle for profiling {@link AbstractSearchItem.SingularRecord#find()} */
-    static final int RECORD_FIND_SINGULAR = reporter.newMethod("Record.find()");
-    /** Handle for profiling {@link AbstractSearchItem.MultipleRecord#find()} */
-    static final int RECORD_FIND_MULTIPLE = reporter.newMethod("Record.find()");
+    static public Reporter searchFindReporter =
+        reporter.register("Search.find()");
 
     /**
      * Class implementing an instantiation of the search plan algorithm for a
@@ -362,7 +357,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
          * @return <code>true</code> if there is a next result.
          */
         public boolean find() {
-            reporter.start(SEARCH_FIND);
+            searchFindReporter.start();
             if (this.noMatches) {
                 return false;
             }
@@ -401,7 +396,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 }
             } while (!found && !exhausted);
             this.found = found;
-            reporter.stop();
+            searchFindReporter.stop();
             return found;
         }
 

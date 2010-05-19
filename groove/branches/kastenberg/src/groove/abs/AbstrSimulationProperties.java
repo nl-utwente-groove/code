@@ -106,7 +106,7 @@ public class AbstrSimulationProperties extends Properties {
         defaultKeys.put(MAXINCIDENCE_KEY, new Property.IsPositiveInteger(
             "Should be a natural number."));
         defaultKeys.put(SYMRED_KEY, new Property.IsBoolean(
-            "Should be \"true\" or \"false\".", false));
+            "Should be \"true\" or \"false\".", true));
         defaultKeys.put(LINKPRECISION_KEY,
             new Property.IsEnumValue<Abstraction.LinkPrecision>(
                 Abstraction.LinkPrecision.class, false));

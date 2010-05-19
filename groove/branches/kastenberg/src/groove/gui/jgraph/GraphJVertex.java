@@ -31,6 +31,8 @@ import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
 import groove.rel.RegExprLabel;
 import groove.util.Converter;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
@@ -54,8 +56,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
      * @param node the underlying graph node for this model node
-     * @param vertexLabelled flag to indicate if the vertex can be labelled. If
-     *        not, then labels can be used to represent self-edges
+     * @param vertexLabelled flag to indicate if the vertex should be labelled.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel jModel, Node node, boolean vertexLabelled) {
@@ -72,7 +73,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel jModel, Node node) {
-        this(jModel, node, false);
+        this(jModel, node, true);
     }
 
     /**
@@ -99,7 +100,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (isFiltered()) {
             result =
                 this.jModel.isShowUnfilteredEdges() && hasVisibleIncidentEdge();
-        } else if (isDataNode() || isDataTypeNode()) {
+        } else if (isDataNode() && !this.jModel.isShowValueNodes()
+            || isDataTypeNode()) {
             result = hasVisibleIncidentEdge();
         } else {
             result = true;
@@ -193,8 +195,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 DefaultLabel.toHtmlString(DefaultLabel.createDataType(getAlgebra()))));
         }
         for (Edge edge : getSelfEdges()) {
-            if (getLabel(edge).isNodeType()
-                || !this.jModel.isFiltering(getLabel(edge))) {
+            if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
@@ -219,22 +220,31 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         Label edgeLabel = getLabel(edge);
         if (edgeLabel instanceof RegExprLabel) {
             result.append(Converter.ITALIC_TAG.on(edgeLabel));
-        } else if (!edgeLabel.isBinary()) {
-            result.append(DefaultLabel.toHtmlString(edgeLabel));
-        } else {
-            result.append(edgeLabel);
-            if (edge.opposite() != getNode()) {
-                // this is a binary edge displayed as a node label
-                GraphJVertex oppositeVertex =
-                    this.jModel.getJVertex(edge.opposite());
-                Node actualTarget = oppositeVertex.getActualNode();
-                if (actualTarget instanceof ValueNode) {
-                    result.append(ASSIGN_TEXT);
-                    result.append(((ValueNode) actualTarget).getValue());
-                } else {
-                    result.append(TYPE_TEXT);
-                    result.append(((TypeNode) actualTarget).getType());
+        } else if (edge.opposite() == getNode()) {
+            // use special node label prefixes to indicate edge role
+            if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
+                AspectValue edgeRole = AspectJModel.role((AspectEdge) edge);
+                AspectValue sourceRole =
+                    AspectJModel.role(((AspectEdge) edge).source());
+                if (edgeRole != null && !edgeRole.equals(sourceRole)) {
+                    result.append(DefaultLabel.toHtmlString(edgeLabel, edgeRole));
                 }
+            }
+            if (result.length() == 0) {
+                result.append(DefaultLabel.toHtmlString(edgeLabel));
+            }
+        } else {
+            // this is a binary edge displayed as a node label
+            result.append(edgeLabel);
+            GraphJVertex oppositeVertex =
+                this.jModel.getJVertex(edge.opposite());
+            Node actualTarget = oppositeVertex.getActualNode();
+            if (actualTarget instanceof ValueNode) {
+                result.append(ASSIGN_TEXT);
+                result.append(((ValueNode) actualTarget).getValue());
+            } else {
+                result.append(TYPE_TEXT);
+                result.append(((TypeNode) actualTarget).getType());
             }
             result = Converter.toHtml(result);
         }
@@ -362,10 +372,25 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * Returns an unmodifiable view on the underlying edge set.
+     * Returns an unmodifiable view on the self edges.
+     * If {@link GraphJModel#isShowVertexLabels()} is set,
+     * all edges with equal source and target and without explicit
+     * layout information are regarded as self edges.
      */
     public Set<? extends Edge> getSelfEdges() {
-        return Collections.unmodifiableSet(getUserObject());
+        if (this.jModel.isShowVertexLabels()) {
+            // add self-edges without layout info
+            Set<Edge> result = new TreeSet<Edge>(getUserObject());
+            for (Object edgeObject : getPort().getEdges()) {
+                GraphJEdge jEdge = (GraphJEdge) edgeObject;
+                if (this.jModel.isPotentialUnaryEdge(jEdge.getEdge())) {
+                    result.addAll(jEdge.getEdges());
+                }
+            }
+            return result;
+        } else {
+            return Collections.unmodifiableSet(getUserObject());
+        }
     }
 
     /**
@@ -379,7 +404,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
     public boolean addSelfEdge(Edge edge) {
-        if (!this.vertexLabelled && edge.source() == edge.opposite()) {
+        if (this.vertexLabelled && edge.source() == edge.opposite()) {
             getUserObject().add(edge);
             return true;
         } else {
@@ -392,7 +417,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * attribute-related.
      */
     boolean isDataNode() {
-        return getActualNode() instanceof ProductNode;
+        return getActualNode() instanceof ValueNode;
     }
 
     /**

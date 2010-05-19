@@ -48,9 +48,6 @@ import java.util.Set;
 public class Converter {
     /** Main method to test this class. */
     static public void main(String[] args) {
-        HTMLTag blue = createColorTag(Color.blue);
-        HTMLTag green = createColorTag(Color.green);
-        HTMLTag red = createColorTag(Color.red);
         System.out.println(blue.on("Text"));
         System.out.println(red.on("Text"));
         System.out.println(green.on("Text"));
@@ -284,6 +281,27 @@ public class Converter {
         return text;
     }
 
+    /**
+     * Strips the color tags from the HTML line.
+     * @param htmlLine the line to be striped
+     * @return 1 if the line was blue, 2 if green, 3 if red and 0 otherwise.
+     */
+    public static int removeColorTags(StringBuilder htmlLine) {
+        String originalLine = htmlLine.toString();
+        int result = 0;
+        if (!blue.off(htmlLine).equals(originalLine)) {
+            result = 1;
+        } else if (!green.off(htmlLine).equals(originalLine)) {
+            result = 2;
+        } else if (!red.off(htmlLine).equals(originalLine)) {
+            result = 3;
+        }
+        if (result != 0) {
+            htmlLine.delete(0, 2);
+        }
+        return result;
+    }
+
     /** HTML greater than symbol. */
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
@@ -300,6 +318,8 @@ public class Converter {
     static public final String HTML_TAU = "&#932;"; // &tau;
     /** HTML epsilon symbol. */
     static public final String HTML_EPSILON = "&#949;"; // &epsilon;
+    /** HTML times symbol. */
+    static public final String HTML_TIMES = "&#215;"; // &times;
     /** Name of the HTML tag (<code>html</code>). */
     static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */
@@ -349,6 +369,14 @@ public class Converter {
 
     /** Label used to identify the start state, when reading in from .aut */
     private static final String ROOT_LABEL = "$ROOT$";
+
+    /** Blue color tag. */
+    public static final HTMLTag blue = createColorTag(Colors.findColor("blue"));
+    /** Green color tag. */
+    public static final HTMLTag green =
+        createColorTag(Colors.findColor("green.darker"));
+    /** Red color tag. */
+    public static final HTMLTag red = createColorTag(Colors.findColor("red"));
 
     /**
      * Class that allows some handling of HTML text.
@@ -435,13 +463,11 @@ public class Converter {
          */
         public String off(StringBuilder text) {
             int tagEndStart = text.indexOf(this.tagEnd);
-            if (tagEndStart > -1) {
+            int tagBeginStart = text.indexOf(this.tagBegin);
+            if (tagEndStart > -1 && tagBeginStart > -1) {
                 int end = tagEndStart + this.tagEnd.length();
                 text.replace(tagEndStart, end, "");
-            }
-            int tagBeginStart = text.indexOf(this.tagBegin);
-            if (tagBeginStart > -1) {
-                int end = tagBeginStart + this.tagBegin.length();
+                end = tagBeginStart + this.tagBegin.length();
                 text.replace(tagBeginStart, end, "");
             }
             return text.toString();
@@ -452,4 +478,5 @@ public class Converter {
         /** End text of this tag. */
         final String tagEnd;
     }
+
 }

@@ -21,7 +21,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.trans.Condition;
-import groove.util.Reporter;
 import groove.verify.CTLStarFormula.Next;
 import groove.verify.CTLStarFormula.Until;
 
@@ -60,44 +59,24 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markTrue(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markTrue(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_TRUE);
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
             marking.set(nextState, property, true);
         }
-        reporter.stop();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markFalse(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markFalse(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_FALSE);
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
             marking.set(nextState, property, false);
             property.getCounterExamples().add(nextState);
         }
-        reporter.stop();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markAtom(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markAtom(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_ATOM);
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
             Condition condition =
@@ -107,19 +86,17 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 GraphState nextState = stateIter.next();
                 if (condition.getMatchIter(nextState.getGraph(), null).hasNext()) {
                     marking.set(nextState, property, true);
-                    System.out.println("nextState: " + property);
+                    //                    System.out.println("nextState: " + property);
                 } else {
                     marking.set(nextState, property, false);
                     property.getCounterExamples().add(nextState);
-                    System.out.println("nextState: !" + property);
+                    //                    System.out.println("nextState: !" + property);
                 }
             }
         }
-        reporter.stop();
     }
 
     public void markNeg(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_NEG);
         TemporalFormula operand = property.getOperands().get(0);
         // first mark all states for its operand
         operand.mark(this, marking, gts);
@@ -138,16 +115,9 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 marking.set(nextState, property, true);
             }
         }
-        reporter.stop();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markOr(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markOr(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_OR);
         List<TemporalFormula> operands = property.getOperands();
 
         // perform the marking for each operand
@@ -173,7 +143,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 property.getCounterExamples().add(nextState);
             }
         }
-        reporter.stop();
     }
 
     /**
@@ -184,7 +153,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param gts the state space as a graph transition system.
      */
     public void markAnd(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_AND);
         List<TemporalFormula> operands = property.getOperands();
 
         // perform the marking for each operand
@@ -210,14 +178,8 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 property.getCounterExamples().add(nextState);
             }
         }
-        reporter.stop();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markExists(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markExists(Marking marking, TemporalFormula property, GTS gts) {
         List<TemporalFormula> operandList = property.getOperands();
         TemporalFormula firstOperand = operandList.get(0);
@@ -301,7 +263,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      */
     public void markExistsNext(Marking marking, TemporalFormula property,
             GTS gts) {
-        reporter.start(MARK_EXISTS_NEXT);
         TemporalFormula next = property.getOperands().get(0);
         assert (next instanceof Next) : "This method can only be called if the Exists-operator has an Next-formula as its operand.";
         TemporalFormula operand = next.getOperands().get(0);
@@ -331,7 +292,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 property.getCounterExamples().add(nextState);
             }
         }
-        reporter.stop();
     }
 
     /**
@@ -344,7 +304,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      */
     public void markExistsUntil(Marking marking, TemporalFormula property,
             GTS gts) {
-        reporter.start(MARK_EXISTS_UNTIL);
         TemporalFormula until = property.getOperands().get(0);
         assert (until instanceof Until) : "This method can only be called if the Exists-operator has an Until-formula as its operand.";
         TemporalFormula firstOperand = until.getOperands().get(0);
@@ -392,8 +351,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 property.getCounterExamples().add(nextState);
             }
         }
-
-        reporter.stop();
     }
 
     /**
@@ -463,7 +420,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param gts the state space as a graph transition system.
      */
     public void markAllUntil(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK_ALL_UNTIL);
         TemporalFormula until = property.getOperands().get(0);
         assert (until instanceof Until) : "This method can only be called if the All-operator has an Until-formula as its operand.";
         TemporalFormula firstOperand = until.getOperands().get(0);
@@ -510,8 +466,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 property.getCounterExamples().add(nextState);
             }
         }
-
-        reporter.stop();
     }
 
     /**
@@ -562,21 +516,13 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      *        transitions
      */
     public void mark(Marking marking, TemporalFormula property, GTS gts) {
-        reporter.start(MARK);
         try {
             property.mark(this, marking, gts);
         } catch (UnsupportedOperationException uoe) {
             System.err.println(uoe.getMessage());
         }
-        reporter.stop();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.TemporalFormulaMarker#mark(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS,
-     *      groove.verify.CTLModelChecker)
-     */
     public void mark(Marking marking, TemporalFormula property, GTS gts,
             CTLModelChecker modelChecker) {
         this.modelChecker = modelChecker;
@@ -628,59 +574,4 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * 
      */
     protected CTLModelChecker modelChecker;
-    /**
-     * Reporter.
-     */
-    static public final Reporter reporter =
-        Reporter.register(CTLMatchingMarker.class);
-    /**
-     * Registration id for mark-method.
-     */
-    static public final int MARK =
-        reporter.newMethod("mark(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markTrue-method.
-     */
-    static public final int MARK_TRUE =
-        reporter.newMethod("markTrue(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markFalse-method.
-     */
-    static public final int MARK_FALSE =
-        reporter.newMethod("markFalse(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markAtom-method.
-     */
-    static public final int MARK_ATOM =
-        reporter.newMethod("markAtom(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markNeg-method.
-     */
-    static public final int MARK_NEG =
-        reporter.newMethod("markNeg(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markOr-method.
-     */
-    static public final int MARK_AND =
-        reporter.newMethod("markAnd(Marking, TemporalFormula, GTS)");
-    /**
-     * Registration id for markOr-method.
-     */
-    static public final int MARK_OR =
-        reporter.newMethod("markOr(Marking, TemporalFormula, GTS)");
-    /**
-     * Registration id for markExistsNext-method.
-     */
-    static public final int MARK_EXISTS_NEXT =
-        reporter.newMethod("markExistsNext(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markExistsUntil-method.
-     */
-    static public final int MARK_EXISTS_UNTIL =
-        reporter.newMethod("markExistsUntil(Marking, TemporalFormula, GTS) - matching");
-    /**
-     * Registration id for markAllUntil-method.
-     */
-    static public final int MARK_ALL_UNTIL =
-        reporter.newMethod("markAllUntil(Marking, TemporalFormula, GTS) - matching");
 }

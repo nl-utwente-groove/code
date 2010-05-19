@@ -17,6 +17,7 @@
 package groove.abs.lts;
 
 import groove.abs.AbstrGraph;
+import groove.abs.AbstrTransformer;
 import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
 import groove.explore.util.ExploreCache;
@@ -25,6 +26,8 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.StateGenerator;
 import groove.trans.RuleEvent;
+import groove.trans.RuleMatch;
+import groove.trans.SPOEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,21 +66,28 @@ public class AbstrStateGenerator extends StateGenerator {
      */
     public Set<? extends GraphTransition> applyMatch(GraphState source,
             RuleEvent event, ExploreCache cache) {
-        AbstrGraphState abstrSource = (AbstrGraphState) source;
+        ShapeGraphState abstrSource = (ShapeGraphState) source;
         Set<GraphTransition> result = new HashSet<GraphTransition>();
         Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
+
+        // EDUARDO: Modified this part such that it actually performs the
+        // transformation.
+        AbstrGraph host = (AbstrGraph) source.getGraph();
+        RuleMatch match = event.getMatch(host);
+        AbstrTransformer.transform(host, match,
+            ((SPOEvent) event).getNodeFactory(), this.options, transfResult);
 
         for (AbstrGraph transf : transfResult) {
             GraphTransition trans;
             if (transf != DefaultAbstrGraph.INVALID_AG) {
-                AbstrGraphNextState newState =
-                    new AbstrGraphNextStateImpl(transf, abstrSource, event);
-                AbstrGraphState oldState =
-                    (AbstrGraphState) getGTS().addState(newState);
+                ShapeGraphNextState newState =
+                    new ShapeGraphNextState(transf, abstrSource, event);
+                ShapeGraphState oldState =
+                    (ShapeGraphState) getGTS().addState(newState);
                 if (oldState != null) {
                     // the state was not added as an equivalent state existed
                     trans =
-                        new AbstrGraphTransitionImpl(abstrSource, event,
+                        new ShapeGraphTransition(abstrSource, event,
                             oldState);
                 } else {
                     // the state was added as a next-state
@@ -85,7 +95,7 @@ public class AbstrStateGenerator extends StateGenerator {
                 }
             } else {
                 trans =
-                    new AbstrGraphTransitionImpl(abstrSource, event,
+                    new ShapeGraphTransition(abstrSource, event,
                         AGTS.INVALID_STATE);
             }
             getGTS().addTransition(trans);

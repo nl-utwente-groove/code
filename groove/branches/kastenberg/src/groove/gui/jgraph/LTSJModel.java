@@ -237,8 +237,14 @@ public class LTSJModel extends GraphJModel {
      * not added to the jmodel and its source jcell is returned instead.
      */
     @Override
-    protected boolean isSourceCompatible(Edge edge) {
-        return isSpecialEdge(edge) || super.isSourceCompatible(edge);
+    protected boolean isUnaryEdge(Edge edge) {
+        return isSpecialEdge(edge) || isUnmodifyingRule(edge)
+            || super.isUnaryEdge(edge);
+    }
+
+    /** Tests if the underlying rule of a graph transition edges is unmodifying. */
+    protected boolean isUnmodifyingRule(Edge edge) {
+        return !((GraphTransition) edge).getEvent().getRule().isModifying();
     }
 
     /**
@@ -394,7 +400,7 @@ public class LTSJModel extends GraphJModel {
          * {@link GraphState}) in an LTS model.
          */
         StateJVertex(LTSJModel jModel, Node node) {
-            super(jModel, node, false);
+            super(jModel, node, true);
         }
 
         /** A state is also visible if it is open, final, or the start state. */

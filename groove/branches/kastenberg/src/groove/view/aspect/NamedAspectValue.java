@@ -43,7 +43,21 @@ public class NamedAspectValue extends ContentAspectValue<String> {
     @Override
     public ContentAspectValue<String> newValue(String value)
         throws FormatException {
-        return new NamedAspectValue(this, this.parser.toContent(value));
+        if (value.length() != 0) {
+            if (!isValidFirstChar(value.charAt(0))) {
+                throw new FormatException(
+                    "Invalid start character '%c' in name '%s'",
+                    value.charAt(0), value);
+            }
+            for (int i = 1; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (!isValidNextChar(c)) {
+                    throw new FormatException(
+                        "Invalid character '%c' in name '%s'", c, value);
+                }
+            }
+        }
+        return new NamedAspectValue(this, value);
     }
 
     /**
@@ -62,49 +76,5 @@ public class NamedAspectValue extends ContentAspectValue<String> {
      */
     public boolean isValidNextChar(char c) {
         return Character.isJavaIdentifierPart(c);
-    }
-
-    /**
-     * This implementation returns a parser which insists that the content value
-     * starts with a character satisfying {@link #isValidNextChar(char)} and
-     * with all next characters satisfying {@link #isValidNextChar(char)}.
-     */
-    @Override
-    ContentParser<String> createParser() {
-        return new NameParser();
-    }
-
-    /** ContentParser used for this AspectValue */
-    private final ContentParser<String> parser = new NameParser();
-
-    /** Content parser which acts as the identity function on strings. */
-    private class NameParser implements ContentParser<String> {
-        /** Empty constructor with the correct visibility. */
-        NameParser() {
-            // empty
-        }
-
-        public String toContent(String value) throws FormatException {
-            if (value.length() == 0) {
-                return value;
-            }
-            if (!isValidFirstChar(value.charAt(0))) {
-                throw new FormatException(
-                    "Invalid start character '%c' in name '%s'",
-                    value.charAt(0), value);
-            }
-            for (int i = 1; i < value.length(); i++) {
-                char c = value.charAt(i);
-                if (!isValidNextChar(c)) {
-                    throw new FormatException(
-                        "Invalid character '%c' in name '%s'", c, value);
-                }
-            }
-            return value;
-        }
-
-        public String toString(String content) {
-            return content;
-        }
     }
 }

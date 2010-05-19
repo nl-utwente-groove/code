@@ -30,12 +30,12 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.rel.RegExprLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.AspectualGraphView;
+import groove.view.DefaultGraphView;
 import groove.view.DefaultTypeView;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
-import groove.view.NewRuleView;
+import groove.view.DefaultRuleView;
 import groove.view.RuleView;
 import groove.view.TypeView;
 import groove.view.View;
@@ -362,14 +362,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      */
     private AspectValue getNodeValue(Edge edge, AspectParser parser)
         throws FormatException {
-        AspectValue result;
+        AspectValue result = null;
         String labelText = edge.label().text();
         AspectMap aspectMap = parser.parse(labelText);
         if (aspectMap.getText() == null) {
             // this edge is empty or indicates a node aspect
-            if (aspectMap.isEmpty() || edge.opposite() != edge.source()) {
-                throw new FormatException(
-                    "Empty label part not allowed in '%s' (prefix with ':')",
+            if (edge.opposite() != edge.source()) {
+                throw new FormatException("Label '%s' only allowed on nodes",
                     labelText);
             } else if (aspectMap.size() > 1) {
                 // Only one aspect value per node self-edge
@@ -383,8 +382,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                         "Aspect value '%s' is for edges only", result);
                 }
             }
-        } else {
-            result = null;
         }
         return result;
     }
@@ -436,7 +433,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         AspectGraph result = this;
         // renumber the nodes in their original order
         SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(nodeSet());
-        if (nodes.last().getNumber() != nodeCount() - 1) {
+        if (!nodes.isEmpty() && nodes.last().getNumber() != nodeCount() - 1) {
             try {
                 result = new AspectGraph();
                 NodeEdgeMap elementMap = new NodeEdgeHashMap();
@@ -501,10 +498,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                     newData.remove(TypeAspect.getInstance());
                     if (replacement.isNodeType()) {
                         newData.addDeclaredValue(TypeAspect.NODE_TYPE);
+                    } else if (replacement.isFlag()) {
+                        newData.addDeclaredValue(TypeAspect.FLAG);
                     }
                     if (GraphInfo.hasRuleRole(this)) {
                         replacement =
-                            RegExprLabelParser.getInstance().unparse(
+                            RegExprLabelParser.getInstance(false).unparse(
                                 replacement);
                     }
                     newData.setText(replacement.text());
@@ -561,7 +560,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.graphView = new AspectualGraphView(this, properties);
+            this.graphView = new DefaultGraphView(this, properties);
         } else {
             this.graphView.setProperties(properties);
         }
@@ -622,7 +621,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 myName == null ? viewName != null : !myName.equals(viewName);
         }
         if (refreshView) {
-            this.ruleView = new NewRuleView(this, properties);
+            this.ruleView = new DefaultRuleView(this, properties);
         } else {
             this.ruleView.setProperties(properties);
         }
@@ -649,7 +648,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     private TypeView typeView;
 
     /** Auxiliary object for converting this aspect graph to a state graph. */
-    private AspectualGraphView graphView;
+    private DefaultGraphView graphView;
 
     /** Auxiliary object for converting this aspect graph to a rule. */
     private RuleView ruleView;

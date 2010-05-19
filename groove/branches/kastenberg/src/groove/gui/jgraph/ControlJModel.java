@@ -30,8 +30,8 @@ import groove.lts.GraphTransition;
 import groove.util.Converter;
 import groove.util.Groove;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
@@ -231,34 +231,36 @@ public class ControlJModel extends GraphJModel {
                 && ((ControlTransition) edge).isLambda()) {
                 return new StringBuilder("\u03BB");
             } else if (edge instanceof ControlTransition) {
+                ControlTransition ct = (ControlTransition) edge;
                 StringBuilder sb = super.getLine(edge);
                 /*
                  * 
-            ArrayList<String> params = new ArrayList<String>();
-            for(String param : this.inputParameters) {
+                ArrayList<String> params = new ArrayList<String>();
+                for(String param : this.inputParameters) {
                 if (param == null) params.add("_");
                 else params.add(param);
-            }
-            retval += params;
-            params.clear();
-            for(String param : this.outputParameters) {
+                }
+                retval += params;
+                params.clear();
+                for(String param : this.outputParameters) {
                 if (param == null) params.add("_");
                 else params.add(param);
-            }
-            retval += params;
-                 */
-                if (((ControlTransition) edge).hasParameters()) {
+                }
+                retval += params;
+                 
+                if ((ct.hasRelevantParameters())) {
                     ArrayList<String> params = new ArrayList<String>();
-                    for (String param : ((ControlTransition)edge).getInputParameters()) {
+                    for (String param : ((ControlTransition) edge).getInputParameters()) {
                         params.add((param == null) ? "_" : param);
                     }
                     sb.append(params.toString());
                     params.clear();
-                    for (String param : ((ControlTransition)edge).getOutputParameters()) {
+                    for (String param : ((ControlTransition) edge).getOutputParameters()) {
                         params.add((param == null) ? "_" : param);
                     }
                     sb.append(params.toString());
                 }
+                */
                 return sb;
             } else {
                 return super.getLine(edge);
@@ -286,7 +288,7 @@ public class ControlJModel extends GraphJModel {
             }
             return result.toString();
         }
-        
+
         /**
          * @return The first underlying transition.
          */
@@ -316,20 +318,21 @@ public class ControlJModel extends GraphJModel {
         public ControlState getNode() {
             return (ControlState) super.getNode();
         }
-        
+
         /**
          * @return True is this is a start node in the automaton.
          */
         public boolean isStart() {
             return getNode().equals(getGraph().getStart());
         }
-        
+
         /**
          * Appends a list of initialized variables to the lines, only if this list is not empty
          */
         @Override
         public java.util.List<StringBuilder> getLines() {
-            Set<String> initializedVariables = getNode().getInitializedVariables();
+            List<String> initializedVariables =
+                getNode().getInitializedVariables();
             StringBuilder sb;
             java.util.List<StringBuilder> lines = super.getLines();
             if (initializedVariables.size() > 0) {

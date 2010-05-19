@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -75,6 +76,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         add(createToolbar(), BorderLayout.NORTH);
         simulator.addSimulationListener(this);
         setEnabled(false);
+        addRefreshListener(SHOW_NODE_IDS_OPTION);
     }
 
     private JToolBar createToolbar() {

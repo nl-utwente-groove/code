@@ -16,12 +16,6 @@
  */
 package groove.abs;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -34,9 +28,17 @@ import groove.graph.NodeFactory;
 import groove.match.GraphSearchPlanFactory;
 import groove.match.SearchPlanStrategy;
 import groove.rel.VarNodeEdgeMap;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
+import groove.trans.RuleName;
 import groove.trans.SPORule;
+import groove.view.FormatException;
+import groove.view.RuleView;
+import groove.view.StoredGrammarView;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility methods for abstraction.
@@ -184,10 +186,10 @@ public class Util {
      * Computes all injective matchings between two graphs that extend an
      * existing match.
      * @param dom The domain of the matchings
-     * @param cod Tho codomain of the matchings.
+     * @param cod The codomain of the matchings.
      * @param toExtend The matching to be extended. Should be a matching from
      *        <code>dom</code> into <code>cod</code>.
-     * @return In iterator ovec all injective matchings from <code>dom</code>
+     * @return An iterator over all injective matchings from <code>dom</code>
      *         into <code>cod</code> that extend the matching
      *         <code>toExtend</code>.
      * @see #getMatchSet(Graph, Graph, NodeEdgeMap)
@@ -204,7 +206,7 @@ public class Util {
      * Computes all matchings between two graphs and that extend an existing
      * match.
      * @param dom The domain of the matchings
-     * @param cod Tho codomain of the matchings.
+     * @param cod The codomain of the matchings.
      * @param toExtend The matching to be extended. Should be a matching from
      *        <code>dom</code> into <code>cod</code>.
      * @return All injective matchings from <code>dom</code> into
@@ -223,7 +225,7 @@ public class Util {
      * Computes all matchings between two graphs and that extend an existing
      * match.
      * @param dom The domain of the matchings
-     * @param cod Tho codomain of the matchings.
+     * @param cod The codomain of the matchings.
      * @param toExtend The matching to be extended. Should be a matching from
      *        <code>dom</code> into <code>cod</code>.
      * @return An iterator ovec all injective matchings from <code>dom</code>
@@ -247,14 +249,21 @@ public class Util {
      * @return <code>true</code> if abstract transformation is possible for
      *         this grammar
      */
-    public static boolean isAbstractionPossible(GraphGrammar grammar) {
-        for (Rule rule : grammar.getRules()) {
-            SPORule r = (SPORule) rule;
-            if (!r.getSubConditions().isEmpty()) {
-                return false;
+    public static boolean isAbstractionPossible(StoredGrammarView grammar) {
+        for (RuleName name : grammar.getRuleNames()) {
+            RuleView view = grammar.getRuleView(name);
+            if (view.isEnabled()) {
+                SPORule r;
+                try {
+                    r = (SPORule) view.toRule();
+                    if (!r.getSubConditions().isEmpty()) {
+                        return false;
+                    }
+                } catch (FormatException e) {
+                    // Should not happen...
+                }
             }
         }
         return true;
     }
-
 }

@@ -28,7 +28,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
-import groove.util.Reporter;
 
 import java.util.Set;
 
@@ -113,9 +112,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         } else if (obj instanceof VirtualEvent<?>) {
             result = equals(((VirtualEvent<?>) obj).getInnerEvent());
         } else if (obj instanceof RuleEvent) {
-            reporter.start(EQUALS);
             result = !this.reuse && equalsEvent((RuleEvent) obj);
-            reporter.stop();
         } else {
             result = false;
         }
@@ -262,8 +259,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     private static final char BEGIN_CHAR = '<';
     /** The obligatory last character of a rule name. */
     private static final char END_CHAR = '>';
-    static Reporter reporter = Reporter.register(RuleEvent.class);
-    static private int EQUALS = reporter.newMethod("equals()");
 
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {

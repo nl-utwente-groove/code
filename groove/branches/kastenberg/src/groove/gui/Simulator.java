@@ -19,6 +19,7 @@ package groove.gui;
 import static groove.gui.Options.DELETE_RULE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
+import static groove.gui.Options.PREVIEW_ON_CLOSE_OPTION;
 import static groove.gui.Options.REPLACE_RULE_OPTION;
 import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
@@ -29,6 +30,7 @@ import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
@@ -41,8 +43,11 @@ import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
+import groove.explore.ScenarioFactory;
+import groove.explore.result.Acceptor;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
+import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -53,6 +58,7 @@ import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.BoundedModelCheckingDialog;
@@ -64,6 +70,7 @@ import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
+import groove.gui.dialog.VersionErrorDialog;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
@@ -72,6 +79,8 @@ import groove.io.AspectGxl;
 import groove.io.Aut;
 import groove.io.DefaultFileSystemStore;
 import groove.io.ExtensionFilter;
+import groove.io.FileFilterAction;
+import groove.io.Grammar_1_0_Action;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.SystemStore;
@@ -90,6 +99,7 @@ import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.GrooveModules;
 import groove.util.Pair;
+import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
@@ -109,18 +119,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -236,8 +243,7 @@ public class Simulator {
      */
     public void start() {
         getFrame().pack();
-        groove.gui.UserSettings.applyUserSettings(this.frame); // Applies
-        // previous user settings (mzimakova)
+        groove.gui.UserSettings.applyUserSettings(this.frame);
         getFrame().setVisible(true);
     }
 
@@ -746,6 +752,22 @@ public class Simulator {
         try {
             final SystemStore store =
                 SystemStoreFactory.newStore(grammarFile, false);
+            store.reload();
+
+            // First we check if the versions are compatible.
+            SystemProperties grammarProperties = store.getProperties();
+            String fileGrammarVersion = grammarProperties.getGrammarVersion();
+            String currentGrammarVersion = Version.getCurrentGrammarVersion();
+            if (!Version.canOpen(currentGrammarVersion, fileGrammarVersion)) {
+                // They are not. Show an error dialog.
+                int buttonPressed =
+                    VersionErrorDialog.show(this.getFrame(), grammarProperties);
+                if (buttonPressed == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            }
+
+            // Load the grammar.
             doLoadGrammar(store, startGraphName);
             // now we know loading succeeded, we can set the current
             // names & files
@@ -904,21 +926,6 @@ public class Simulator {
         groove.gui.UserSettings.synchSettings(this.frame);
         // Saves the current user settings.
         if (confirmAbandon(false)) {
-            if (REPORT) {
-                try {
-                    BufferedReader systemIn =
-                        new BufferedReader(new InputStreamReader(System.in));
-                    System.out.print("Log file? ");
-                    String filename = systemIn.readLine();
-                    if (filename.length() != 0) {
-                        groove.util.Reporter.report(new PrintWriter(
-                            new FileWriter(filename + ".log", true), true));
-                    }
-                } catch (IOException exc) {
-                    System.out.println(exc.getMessage());
-                }
-                groove.util.Reporter.report(new PrintWriter(System.out));
-            }
             getFrame().dispose();
             // try to persist the user preferences
             try {
@@ -1062,6 +1069,44 @@ public class Simulator {
             ltsJGraph.getLayouter().start(false);
         }
         setDefaultExploration(exploration);
+    }
+
+    /**
+     * Run a abstract exploration.
+     */
+    public void doRunAbstrExploration() {
+        GraphJModel ltsJModel = getLtsPanel().getJModel();
+        synchronized (ltsJModel) {
+            // unhook the lts' jmodel from the lts, for efficiency's sake
+            getGTS().removeGraphListener(ltsJModel);
+            // disable rule application for the time being
+            boolean applyEnabled = getApplyTransitionAction().isEnabled();
+            getApplyTransitionAction().setEnabled(false);
+            // EDUARDO: Quick hack to get abstract exploration working.
+            // This should be merged with the current way of doing exploration,
+            // i.e., by using the Exploration class...
+            Scenario scenario =
+                ScenarioFactory.getScenario(new BranchingStrategy(),
+                    new Acceptor(), "Explores the full state space.",
+                    "Full exploration (branching, aliasing)");
+            scenario.prepare(getGTS());
+            // create a thread to do the work in the background
+            Thread generateThread = new LaunchThread(scenario);
+            // go!
+            generateThread.start();
+            // collect the result states
+            getGTS().setResult(scenario.getResult());
+            // get the lts' jmodel back on line and re-synchronize its state
+            ltsJModel.reload();
+            // re-enable rule application
+            getApplyTransitionAction().setEnabled(applyEnabled);
+            // reset lts display visibility
+            setGraphPanel(getLtsPanel());
+        }
+        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
+        if (ltsJGraph.getLayouter() != null) {
+            ltsJGraph.getLayouter().start(false);
+        }
     }
 
     /**
@@ -1243,7 +1288,7 @@ public class Simulator {
      */
     public synchronized void startAbstrSimulation() {
         try {
-            if (!groove.abs.Util.isAbstractionPossible(getGrammarView().toGrammar())) {
+            if (!groove.abs.Util.isAbstractionPossible(getGrammarView())) {
                 JOptionPane.showMessageDialog(
                     getFrame(),
                     "Abstract simulation is not possible for grammars with composite rules.",
@@ -2089,6 +2134,7 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
+        result.add(getOptions().getItem(SHOW_VERTEX_LABELS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
         result.add(getOptions().getItem(Options.DELETE_CONTROL_OPTION));
@@ -2117,9 +2163,6 @@ public class Simulator {
         result.addSeparator();
 
         result.add(new JMenuItem(getStartSimulationAction()));
-        // IOVKA change to activate abstract simulation
-        // ZAMBON Commented out...
-        // result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
 
@@ -2128,6 +2171,13 @@ public class Simulator {
         this.defaultExplorationMenuItem =
             result.add(getDefaultExplorationAction());
         result.add(getExplorationDialogAction());
+
+        result.addSeparator();
+
+        // IOVKA change to activate abstract simulation
+        // EDUARDO Uncommented to test abstraction.
+        result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        result.add(new JMenuItem(getAbstrExplorationAction()));
 
         return result;
     }
@@ -2283,6 +2333,7 @@ public class Simulator {
         this.grammarExtensions.clear();
         // loader for directories representing grammars
         this.grammarExtensions.add(GPS_FILTER);
+        this.grammarExtensions.add(GPS_1_0_FILTER);
         // loader for archives (jar/zip) containing directories representing
         // grammmars
         this.grammarExtensions.add(JAR_FILTER);
@@ -2317,6 +2368,7 @@ public class Simulator {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
+                // System.out.println("startsimulationupdate: " + listener);
                 listener.startSimulationUpdate(gts);
             }
             this.updating = false;
@@ -2693,8 +2745,7 @@ public class Simulator {
             this.options.getItem(SHOW_REMARKS_OPTION).setSelected(true);
             this.options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
             this.options.getItem(SHOW_BACKGROUND_OPTION).setSelected(true);
-            this.options.getItem(Options.PREVIEW_ON_CLOSE_OPTION).setSelected(
-                true);
+            this.options.getItem(PREVIEW_ON_CLOSE_OPTION).setSelected(true);
         }
         return this.options;
     }
@@ -2766,7 +2817,7 @@ public class Simulator {
     private boolean updating;
 
     /**
-     * A mapping from extension filters (recognising the file formats from the
+     * A mapping from extension filters (recognizing the file formats from the
      * names) to the corresponding grammar loaders.
      */
     private final Set<ExtensionFilter> grammarExtensions =
@@ -4004,8 +4055,11 @@ public class Simulator {
             if (this.exploration == null) {
                 this.scenario.play();
             } else {
-                this.exploration.play(Simulator.this, getGTS(),
-                    getCurrentState());
+                try {
+                    this.exploration.play(getGTS(), getCurrentState());
+                } catch (FormatException exc) {
+                    showErrorDialog("Error: cannot parse exploration.", exc);
+                }
             }
             gts.removeGraphListener(this.progressListener);
         }
@@ -4484,7 +4538,19 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            if (getGrammarView() != null) {
+                JMenuItem item =
+                    getOptions().getItem(SHOW_VERTEX_LABELS_OPTION);
+                LabelStore labelStore = getGrammarView().getLabelStore();
+                if (labelStore.hasFlags()) {
+                    item.setEnabled(false);
+                } else {
+                    item.setEnabled(true);
+                }
+                setEnabled(true);
+            } else {
+                setEnabled(false);
+            }
         }
     }
 
@@ -4728,7 +4794,7 @@ public class Simulator {
     private SaveGrammarAction saveGrammarAction;
 
     /**
-     * Action for saving a rule system. Currently not enabled.
+     * Action for saving a rule system.
      */
     private class SaveGrammarAction extends RefreshableAction {
         /** Constructs an instance of the action. */
@@ -4742,6 +4808,18 @@ public class Simulator {
             // now save, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
+                FileFilter filter = getGrammarFileChooser().getFileFilter();
+                FileFilterAction action = getActionFromFilter(filter);
+                if (!action.test(getGrammarView())) {
+                    // The test from the filter failed. Cannot change grammar.
+                    JOptionPane.showMessageDialog(getFrame(), action.text(),
+                        "Save error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else {
+                    // The test from the filter passed. Modify the grammar
+                    // accordingly.
+                    action.modify(getGrammarView());
+                }
                 if (confirmOverwriteGrammar(selectedFile)) {
                     doSaveGrammar(selectedFile);
                 }
@@ -4762,6 +4840,14 @@ public class Simulator {
             this.saveGraphAction = new SaveGraphAction();
         }
         return this.saveGraphAction;
+    }
+
+    /**
+     * @param filter the filter to search.
+     * @return the action associated with the filter.
+     */
+    public FileFilterAction getActionFromFilter(FileFilter filter) {
+        return extensionsToActions.get(filter);
     }
 
     /**
@@ -4902,8 +4988,21 @@ public class Simulator {
         return this.startAbstrSimulationAction;
     }
 
+    /**
+     * A variant of {@link #getDefaultExplorationAction()} for abstract exploration.
+     */
+    public Action getAbstrExplorationAction() {
+        // lazily create the action
+        if (this.abstrExplorationAction == null) {
+            this.abstrExplorationAction = new AbstrExplorationAction();
+        }
+        return this.abstrExplorationAction;
+    }
+
     /** The action to start a new abstract simulation. */
     private StartAbstrSimulationAction startAbstrSimulationAction;
+    /** The action to start a new abstract exploration. */
+    private AbstrExplorationAction abstrExplorationAction;
 
     /**
      * A variant of {@link Simulator.StartSimulationAction} for abstract
@@ -4918,6 +5017,29 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
                 startAbstrSimulation();
+            }
+        }
+
+        public void refresh() {
+            boolean enabled =
+                getGrammarView() != null
+                    && getGrammarView().getErrors().isEmpty();
+            setEnabled(enabled);
+        }
+    }
+
+    /**
+     * A variant of ExplorationAction for abstract simulation.
+     */
+    private class AbstrExplorationAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        AbstrExplorationAction() {
+            super("Run Abstract Exploration", null);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(false)) {
+                doRunAbstrExploration();
             }
         }
 
@@ -5236,6 +5358,10 @@ public class Simulator {
     /** Filter for rule system files. */
     static private final ExtensionFilter GPS_FILTER =
         Groove.createRuleSystemFilter();
+    /** Filter for rule system files. Old version. */
+    static private final ExtensionFilter GPS_1_0_FILTER =
+        new ExtensionFilter("Groove production system Version 1.0", ".gps",
+            true);
     /** File filter for jar files. */
     static private final ExtensionFilter JAR_FILTER =
         new ExtensionFilter("Jar-file containing Groove production system",
@@ -5246,7 +5372,7 @@ public class Simulator {
                     && !GPS_FILTER.hasExtension(file.getName());
             }
         };
-    /** File filter for jar files. */
+    /** File filter for zip files. */
     static private final ExtensionFilter ZIP_FILTER =
         new ExtensionFilter("Zip-file containing Groove production system",
             ".gps.zip", false) {
@@ -5257,6 +5383,36 @@ public class Simulator {
             }
 
         };
+
+    /**
+     * Empty FileFilterAction.
+     */
+    private static final FileFilterAction dummyFileFilterAction =
+        new FileFilterAction() {
+            @Override
+            public String text() {
+                return "";
+            }
+        };
+
+    /**
+     * FileFilterAction for saving under grammar version 1.0.
+     */
+    private static final FileFilterAction grammar_1_0_Action =
+        new Grammar_1_0_Action();
+
+    /**
+     * Mapping from extension filters to actions.
+     */
+    private static final Map<ExtensionFilter,FileFilterAction> extensionsToActions =
+        new HashMap<ExtensionFilter,FileFilterAction>();
+
+    static {
+        extensionsToActions.put(GPS_FILTER, dummyFileFilterAction);
+        extensionsToActions.put(JAR_FILTER, dummyFileFilterAction);
+        extensionsToActions.put(ZIP_FILTER, dummyFileFilterAction);
+        extensionsToActions.put(GPS_1_0_FILTER, grammar_1_0_Action);
+    }
 
     /**
      * Minimum width of the rule tree component.
@@ -5291,6 +5447,5 @@ public class Simulator {
 
     /** Flag controlling if types should be used. */
     private static final boolean USE_TYPES = true;
-    /** Flag controlling if a report should be printed after quitting. */
-    private static final boolean REPORT = false;
+
 }

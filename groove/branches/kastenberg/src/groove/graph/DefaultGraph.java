@@ -64,27 +64,20 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
 
     @Override
     public boolean containsElement(Element elem) {
-        reporter.start(CONTAINS_ELEMENT);
-        try {
-            if (elem instanceof Node) {
-                return this.edgeMap.containsKey(elem);
-            } else {
-                assert elem instanceof Edge;
-                Set<Edge> edgeSet = this.edgeMap.get(((Edge) elem).source());
-                return edgeSet != null && edgeSet.contains(elem);
-            }
-        } finally {
-            reporter.stop();
+        if (elem instanceof Node) {
+            return this.edgeMap.containsKey(elem);
+        } else {
+            assert elem instanceof Edge;
+            Set<Edge> edgeSet = this.edgeMap.get(((Edge) elem).source());
+            return edgeSet != null && edgeSet.contains(elem);
         }
     }
 
     public Set<? extends Edge> edgeSet() {
-        reporter.start(EDGE_SET);
         Set<Edge> result = new HashSet<Edge>();
         for (Map.Entry<Node,Set<Edge>> edgeEntry : this.edgeMap.entrySet()) {
             result.addAll(edgeEntry.getValue());
         }
-        reporter.stop();
         return Collections.unmodifiableSet(result);
     }
 
@@ -94,17 +87,13 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
     }
 
     public Set<? extends Node> nodeSet() {
-        reporter.start(NODE_SET);
         Set<Node> result = this.unmodifiableNodeSet;
-        reporter.stop();
         return result;
     }
 
     @Override
     public Graph clone() {
-        reporter.start(CLONE);
         Graph result = new DefaultGraph(this);
-        reporter.stop();
         return result;
     }
 
@@ -115,7 +104,6 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
     // ------------------------- COMMANDS ------------------------------
 
     public boolean addNode(Node node) {
-        reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsElement(node);
         assert added == !new HashSet<Node>(nodeSet()).contains(node) : String.format(
@@ -124,12 +112,10 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
             this.edgeMap.put(node, new HashSet<Edge>());
             fireAddNode(node);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean addEdge(Edge edge) {
-        reporter.start(ADD_EDGE);
         // assert edge instanceof BinaryEdge : "This graph implementation only
         // supports binary edges";
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
@@ -148,24 +134,20 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
         if (added) {
             fireAddEdge(edge);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean addEdgeWithoutCheck(Edge edge) {
-        reporter.start(ADD_EDGE);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         Set<Edge> sourceOutEdges = this.edgeMap.get(edge.source());
         boolean added = sourceOutEdges.add(edge);
         if (added) {
             fireAddEdge(edge);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean removeEdge(Edge edge) {
-        reporter.start(REMOVE_EDGE);
         assert !isFixed() : "Trying to remove " + edge
             + " from unmodifiable graph";
         Set<Edge> outEdgeSet = this.edgeMap.get(edge.source());
@@ -173,12 +155,10 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
         if (removed) {
             fireRemoveEdge(edge);
         }
-        reporter.stop();
         return removed;
     }
 
     public boolean removeNode(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
@@ -205,12 +185,10 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
             }
             fireRemoveNode(node);
         }
-        reporter.stop();
         return result;
     }
 
     public boolean removeNodeWithoutCheck(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
@@ -219,7 +197,6 @@ public class DefaultGraph extends AbstractGraph<GraphCache> {
             result = true;
             fireRemoveNode(node);
         }
-        reporter.stop();
         return result;
     }
 

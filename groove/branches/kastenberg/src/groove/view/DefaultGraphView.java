@@ -57,12 +57,12 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectualGraphView implements GraphView {
+public class DefaultGraphView implements GraphView {
     /**
      * Constructs an instance from a given aspect graph view.
      * @see GraphInfo#getName(groove.graph.GraphShape)
      */
-    public AspectualGraphView(AspectGraph view, SystemProperties properties) {
+    public DefaultGraphView(AspectGraph view, SystemProperties properties) {
         this.view = view;
         this.attributeFactory = createAttributeFactory(properties);
         // we fix the view; is it conceptually right to do that here?
@@ -190,7 +190,7 @@ public class AspectualGraphView implements GraphView {
                 && model.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
                 model.removeNode(modelNode);
-                viewToModelIter.remove();
+                //                viewToModelIter.remove();
             }
         }
         // test against the type graph, if any
@@ -239,8 +239,12 @@ public class AspectualGraphView implements GraphView {
         }
         // include the node in the model if it is not virtual
         if (nodeInModel) {
-            Node nodeImage =
-                this.attributeFactory.createAttributeNode(viewNode);
+            Node nodeImage = null;
+            try {
+                nodeImage = this.attributeFactory.createAttributeNode(viewNode);
+            } catch (FormatException exc) {
+                error = new FormatError(exc.getErrors().get(0), viewNode);
+            }
             if (nodeImage == null) {
                 nodeImage = DefaultNode.createNode(viewNode.getNumber());
                 model.addNode(nodeImage);

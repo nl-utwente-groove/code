@@ -26,8 +26,7 @@ import groove.trans.DefaultApplication;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-
-import java.util.Map;
+import groove.trans.SPORule;
 
 /**
  * 
@@ -77,33 +76,54 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     private void initializeVariables() {
         RuleApplication appl =
             this.event.newApplication(this.source.getGraph());
-        ControlTransition transition =
-            ((ControlState) this.source.getLocation()).getTransition(appl.getRule());
+        ControlTransition transition = this.getControlTransition();
+
+        if (this.getLocation() == null) {
+            this.setLocation(transition.target());
+        }
 
         AbstractGraphState src = this.source;
-        // if t has parameters, we need to apply the morphism to them
-        if ((src).hasParameters()) {
+        // if src has parameters, we need to apply the morphism to them
+        if (src.hasParameters()) {
             Morphism morphism = appl.getMorphism();
-            Map<String,Node> parameters = src.getParameters();
-            for (String param : parameters.keySet()) {
-                Node targetNode = morphism.nodeMap().get(parameters.get(param));
+            Node[] parameters = src.getParameters();
+            for (int i = 0; i < parameters.length; i++) {
+                Node targetNode = morphism.nodeMap().get(parameters[i]);
                 // the node could be deleted by this rule
                 if (targetNode != null
-                    && transition.target().isInitialized(param)) {
-                    this.setParameter(param, targetNode);
+                    && transition.target().isInitialized(
+                        transition.source().getVariableName(i))) {
+                    // we need to find the position this variable has in the current state
+                    String name =
+                        ((ControlState) src.getLocation()).getVariableName(i);
+                    int newPosition =
+                        ((ControlState) this.getLocation()).getVariablePosition(name);
+                    this.setParameter(newPosition, targetNode);
                 }
             }
         }
-        // if ct has parameters, we need to apply them
-        if (transition.hasParameters()) {
+
+        // if transition has output parameters, we need to apply them
+        if (transition.hasOutputParameters()) {
             RuleMatch match = appl.getMatch();
             String[] output = transition.getOutputParameters();
-            for (int i = 1; i <= output.length; i++) {
-                if (output[i - 1] != null
-                    && match.getRule().isOutputParameter(i)) {
-                    this.setParameter(output[i - 1],
-                        match.getElementMap().getNode(
-                            match.getRule().getParameter(i)));
+
+            SPORule rule = (SPORule) appl.getRule();
+
+            for (int i = 0; i < output.length; i++) {
+                if (output[i] != null && !output[i].equals("_")) {
+                    int creator = -1;
+                    int position =
+                        ((ControlState) this.getLocation()).getVariablePosition(output[i]);
+                    Node value = null;
+                    if ((creator = rule.isCreatorParameter(i + 1)) != -1) {
+                        value = this.addedNodes[creator];
+                    } else {
+                        value =
+                            match.getElementMap().getNode(
+                                match.getRule().getParameter(i + 1));
+                    }
+                    this.setParameter(position, value);
                 }
             }
         }
@@ -381,4 +401,32 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * The identities of the nodes added with respect to the source state.
      */
     private final Node[] addedNodes;
+
+    /**
+     * Returns the ControlTransition with which this transition is associated
+     * @return the ControlTransition with which this transition is associated, 
+     * or null if no control is present
+     */
+    public ControlTransition getControlTransition() {
+        if (this.source.getLocation() != null) {
+            return ((ControlState) this.source.getLocation()).getTransition(this.event.getRule());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns whether this transition is a self transition (graph does not change,
+     * ControlLocation does not change, no output parameters)
+     * @return whether this transition is a self transition
+     */
+    public boolean isSelfTransition() {
+        boolean retval = !this.event.getRule().isModifying();
+        if (retval && this.source.getLocation() != null) {
+            retval &=
+                this.source.getLocation() == this.getControlTransition().target();
+            retval &= this.getControlTransition().hasOutputParameters();
+        }
+        return retval;
+    }
 }

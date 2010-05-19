@@ -16,72 +16,77 @@
  */
 package groove.abs.lts;
 
-import groove.graph.AbstractBinaryEdge;
-import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
 
 /**
- * @author Iovka Boneva
+ * @author Eduardo Zambon
  * @version $Revision $
  */
-public class AbstrGraphTransitionImpl extends
-        AbstractBinaryEdge<AbstrGraphState,Label,AbstrGraphState> implements
-        AbstrGraphTransition {
+public class ShapeGraphTransition extends DefaultGraphTransition {
 
-    public RuleMatch getMatch() {
-        // This is needed for displaying matches
-        return getEvent().getMatch(source().getGraph());
-    }
+    // ------------------------------------------------------------------------
+    // NOT IMPLEMENTED. This does not make sense for abstract transformation.
+    // ------------------------------------------------------------------------
 
-    /**
-     * Not implemented This does not make sense for abstract transformation.
-     */
+    @Override
     public Morphism getMorphism() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isSymmetry() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public GraphTransitionStub toStub() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Node[] getAddedNodes() {
         throw new UnsupportedOperationException();
     }
 
     // ------------------------------------------------------------
     // FIELDS, CONSTRUCTORS, STANDARD METHODS
     // ------------------------------------------------------------
-    private final RuleEvent event;
 
     /**
-     * @param source
-     * @param event
-     * @param target
+     * Constructor used for shape graphs.
+     * @param source the source state
+     * @param event the rule event of the transition
+     * @param target the target state
      */
-    public AbstrGraphTransitionImpl(AbstrGraphState source, RuleEvent event,
-            AbstrGraphState target) {
+    public ShapeGraphTransition(ShapeGraphState source, RuleEvent event,
+            ShapeGraphState target) {
         super(source, event.getLabel(), target);
         this.event = event;
     }
 
+    @Override
     public final RuleEvent getEvent() {
         return this.event;
     }
 
-    public boolean isEquivalent(AbstrGraphTransition other) {
+    /**
+     * @param other the other transition to be compared.
+     * @return true if both transitions are equivalent.
+     */
+    public boolean isEquivalent(ShapeGraphTransition other) {
         return source() == other.source() && getEvent() == other.getEvent();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AbstrGraphTransitionImpl)) {
+        if (!(o instanceof ShapeGraphTransition)) {
             return false;
         }
-        AbstrGraphTransitionImpl t = (AbstrGraphTransitionImpl) o;
+        ShapeGraphTransition t = (ShapeGraphTransition) o;
         boolean result =
             source().equals(t.source()) && target().equals(t.target())
                 && getEvent().equals(t.getEvent());
@@ -89,13 +94,4 @@ public class AbstrGraphTransitionImpl extends
         return result;
     }
 
-    // The hashCode() method is implemented as final and only depends on the
-    // hash code of the end points
-
-    /**
-     * No implementation.
-     */
-    public Node[] getAddedNodes() {
-        throw new UnsupportedOperationException();
-    }
 }

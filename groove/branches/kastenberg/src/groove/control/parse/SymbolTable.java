@@ -53,9 +53,9 @@ public class SymbolTable {
      * @require this.scopes.peek().get(symbolName) == null
      * @return true if the declaration succeeded, false if not
      */
-    public boolean declareSymbol(String symbolName) {
+    public boolean declareSymbol(String symbolName, String symbolType) {
         if (!this.scopes.peek().isDeclared(symbolName)) {
-            this.scopes.peek().declare(symbolName);
+            this.scopes.peek().declare(symbolName, symbolType);
             return true;
         } else {
             return false;
@@ -120,6 +120,22 @@ public class SymbolTable {
             }
         }
         return false;
+    }
+
+    /**
+     * Gets the type of a given symbol
+     * @param symbolName the name of the symbol to look up
+     * @require isDeclared(symbolName) == true
+     * @return the type of symbolName
+     */
+    public String getType(String symbolName) {
+        String type = null;
+        for (Scope s : this.scopes) {
+            if (s.isDeclared(symbolName)) {
+                type = s.getType(symbolName);
+            }
+        }
+        return type;
     }
 
     private ArrayDeque<Scope> scopes;

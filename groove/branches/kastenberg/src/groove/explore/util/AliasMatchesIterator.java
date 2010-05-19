@@ -33,13 +33,11 @@ public class AliasMatchesIterator extends MatchesIterator {
     public AliasMatchesIterator(GraphNextState state, ExploreCache rules,
             SystemRecord record) {
         super(state, rules, true, record);
-        reporter.start(CONSTRUCT);
         Rule lastRule = state.getEvent().getRule();
         this.enabledRules = record.getEnabledRules(lastRule);
         this.disabledRules = record.getDisabledRules(lastRule);
         firstRule();
         goToNext();
-        reporter.stop();
     }
 
     @Override
@@ -100,7 +98,6 @@ public class AliasMatchesIterator extends MatchesIterator {
      * in the current state.
      */
     private Map<Rule,Collection<RuleEvent>> computeAliasedMatches() {
-        reporter.start(COMPUTE_ALIAS_MAP);
         Map<Rule,Collection<RuleEvent>> result =
             new TreeMap<Rule,Collection<RuleEvent>>();
         for (GraphTransitionStub stub : ((AbstractGraphState) ((GraphNextState) this.state).source()).getStoredTransitionStubs()) {
@@ -124,7 +121,6 @@ public class AliasMatchesIterator extends MatchesIterator {
                 matches.add(new VirtualEvent<GraphTransitionStub>(event, stub));
             }
         }
-        reporter.stop();
         return result;
     }
 

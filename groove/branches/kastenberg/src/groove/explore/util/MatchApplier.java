@@ -60,7 +60,7 @@ public class MatchApplier {
      */
     public GraphTransition addTransition(GraphState source, RuleEvent event,
             Location targetLocation) {
-        reporter.start(ADD_TRANSITION);
+        addTransitionReporter.start();
         GraphTransition transition = null;
         ControlTransition ct = null;
         if (source.getLocation() != null) {
@@ -68,7 +68,9 @@ public class MatchApplier {
                 ((ControlState) source.getLocation()).getTransition(event.getRule());
         }
         if (source.getLocation() == targetLocation
-            && !event.getRule().isModifying()) {
+            && !event.getRule().isModifying()
+            && (source.getLocation() == null || !((ControlState) source.getLocation()).getTransition(
+                event.getRule()).hasOutputParameters())) {
             transition = createTransition(event, source, source, false);
         } else if (targetLocation == null && event instanceof VirtualEvent<?>) {
             assert source instanceof GraphNextState;
@@ -83,9 +85,9 @@ public class MatchApplier {
         if (transition == null) {
             GraphNextState freshTarget =
                 createState(event, source, targetLocation);
-            reporter.start(ADD_STATE);
+            addStateReporter.start();
             GraphState isoTarget = getGTS().addState(freshTarget);
-            reporter.stop();
+            addStateReporter.stop();
             if (isoTarget == null) {
                 transition = freshTarget;
             } else {
@@ -94,7 +96,7 @@ public class MatchApplier {
         }
         // add transition to gts
         getGTS().addTransition(transition);
-        reporter.stop();
+        addTransitionReporter.stop();
         return transition;
     }
 
@@ -112,6 +114,7 @@ public class MatchApplier {
         } else {
             addedNodes = getCreatedNodes(event, source.getGraph());
         }
+
         return new DefaultGraphNextState((AbstractGraphState) source, event,
             addedNodes, target);
     }
@@ -188,7 +191,7 @@ public class MatchApplier {
      * Returns the time spent generating successors.
      */
     public static long getGenerateTime() {
-        return reporter.getTotalTime(ADD_TRANSITION);
+        return addTransitionReporter.getTotalTime();
     }
 
     /**
@@ -197,12 +200,13 @@ public class MatchApplier {
      */
     private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
 
-    /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
+    /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(MatchApplier.class);
     /** Profiling aid for adding states. */
-    static public final int ADD_STATE = reporter.newMethod("addState");
+    static public final Reporter addStateReporter =
+        reporter.register("addState");
     /** Profiling aid for adding transitions. */
-    static public final int ADD_TRANSITION =
-        reporter.newMethod("addTransition");
+    static public final Reporter addTransitionReporter =
+        reporter.register("addTransition");
 }

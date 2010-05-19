@@ -39,7 +39,6 @@ import java.util.Set;
 public abstract class AbstractGraph<C extends GraphCache> extends
         AbstractGraphShape<C> implements InternalGraph {
     public Morphism getIsomorphismTo(final Graph to) {
-        reporter.start(GET_ISOMORPHISM_TO);
         // Morphism isoMorphism = new DefaultMorphism(this, to) {
         // @Override
         // protected MatchStrategy createMatchStrategy() {
@@ -60,7 +59,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         } else {
             result = null;
         }
-        reporter.stop();
         return result;
     }
 
@@ -430,37 +428,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     static public CertificateStrategy getCertificateFactory() {
         return certificateFactory;
     }
-
-    /**
-     * This implementation checks if the other is also an <tt>AbstractGraph</tt>;
-     * if so, it first compares the graph certificates at increasing precision
-     * to ensure that it is actually worth trying to compute an isomorphism.
-     */
-
-    /** Handle for profiling the {@link #getIsomorphismTo(Graph)} method */
-    static final int GET_ISOMORPHISM_TO =
-        reporter.newMethod("getIsomorphismTo(Graph)");
-    /** Handle for profiling the {@link #clone()} method */
-    static final int CLONE = reporter.newMethod("clone()");
-    /** Handle for profiling the {@link #containsElement(Element)} method */
-    static final int CONTAINS_ELEMENT =
-        reporter.newMethod("containsElement(Element)");
-    /** Handle for profiling the {@link #addNode(Node)} method */
-    static final int ADD_NODE = reporter.newMethod("addNode(Node)");
-    /** Handle for profiling the {@link #addEdge(Edge)} method */
-    static final int ADD_EDGE = reporter.newMethod("addEdge(Edge)");
-    /** Handle for profiling the {@link #removeNode(Node)} method */
-    static final int REMOVE_NODE = reporter.newMethod("removeNode(Node)");
-    /** Handle for profiling the {@link #removeEdge(Edge)} method */
-    static final int REMOVE_EDGE = reporter.newMethod("removeEdge(Edge)");
-    /** Handle for profiling the initDelta method of the delta implementations */
-    static protected final int INIT_DATA = reporter.newMethod("initDelta()");
-    /**
-     * Handle for profiling the transferDelta method of the delta
-     * implementations
-     */
-    static protected final int TRANSFER_DATA =
-        reporter.newMethod("transferDelta()");
 
     /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
     private static class EmptyGraph<C extends GraphCache> extends

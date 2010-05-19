@@ -30,10 +30,8 @@ import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -141,20 +139,28 @@ public class CTLModelChecker extends CommandLineTool {
          * { System.out.println("The model satisfies the given property."); } }
          * }
          */
+
+        long startTime = System.currentTimeMillis();
+
         while (this.properties.size() > 0) {
             this.setProperty(this.properties.remove(0));
             System.out.println("Checking CTL formula: " + this.property);
             this.marker.mark(this.marking, getProperty(), this.gts, this);
             if (this.property.getCounterExamples().contains(
                 this.gts.startState())) {
-                System.err.println("The model violates the given property.");
+                System.out.println("The model violates the given property.");
             } else {
                 System.out.println("The model satisfies the given property.");
             }
         }
-        if (REPORT) {
-            report();
-        }
+
+        long endTime = System.currentTimeMillis();
+        long mcTime = endTime - startTime;
+
+        println("** Model Checking Time (ms):\t" + mcTime);
+        println("** Total Running Time (ms):\t"
+            + (this.generator.getRunningTime() + mcTime));
+
     }
 
     /**
@@ -170,7 +176,7 @@ public class CTLModelChecker extends CommandLineTool {
             this.addProperty(argsList.remove(1));
         }
         if (argsList.size() == 0) {
-            this.printError("No grammar location specified");
+            this.printError("No grammar location specified", true);
         }
     }
 
@@ -361,9 +367,9 @@ public class CTLModelChecker extends CommandLineTool {
                         this.startStateName).toGrammar();
                 this.grammar.setFixed();
             } catch (IOException exc) {
-                printError("Can't load grammar: " + exc.getMessage());
+                printError("Can't load grammar: " + exc.getMessage(), true);
             } catch (FormatException exc) {
-                printError("Grammar format error: " + exc.getMessage());
+                printError("Grammar format error: " + exc.getMessage(), true);
             }
         } else {
             System.err.println("Grammar-location and start-state unspecified.");
@@ -402,25 +408,6 @@ public class CTLModelChecker extends CommandLineTool {
             result.add(nextRule.getName().text());
         }
         return result;
-    }
-
-    /**
-     * Writes results to the files it asks for.
-     */
-    protected void report() {
-        try {
-            BufferedReader systemIn =
-                new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Log file? ");
-            String filename = systemIn.readLine();
-            if (filename.length() != 0) {
-                groove.util.Reporter.report(new PrintWriter(new FileWriter(
-                    filename + ".log", true), true));
-            }
-        } catch (IOException exc) {
-            System.out.println(exc.getMessage());
-        }
-        groove.util.Reporter.report(new PrintWriter(System.out));
     }
 
     /**
@@ -481,9 +468,4 @@ public class CTLModelChecker extends CommandLineTool {
      * The state marker.
      */
     private CTLFormulaMarker marker;
-
-    /**
-     * 
-     */
-    private static final boolean REPORT = false;
 }

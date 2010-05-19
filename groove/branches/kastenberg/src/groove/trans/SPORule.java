@@ -25,6 +25,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.RegExprLabel;
@@ -231,6 +232,35 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         initializeParameterTypes();
     }
     
+    /**
+     * Sets the specified parameter types as defined in the rule editor. Parameters
+     * can be input, output or both, signified by ParameterAspect.PAR_IN_NAME, 
+     * PAR_OUT_NAME and PAR_NAME, respectively.
+     * @param specifiedParameterTypes a map that maps parameter numbers to parameter types
+     */
+    public void setSpecifiedParameterTypes(
+            Map<Integer,Integer> specifiedParameterTypes) {
+        this.specifiedParameterTypes = specifiedParameterTypes;
+    }
+
+    /**
+     * Sets the types for attribute parameters as defined in the rule editor.
+     * @param attributeParameterTypes maps Integers (parameter numbers) to Strings (parameter names)
+     */
+    public void setAttributeParameterTypes(
+            Map<Integer,String> attributeParameterTypes) {
+        this.attributeParameterTypes = attributeParameterTypes;
+    }
+
+    /**
+     * Gets the type of the parameter specified
+     * @param parameter the parameter number
+     * @return a String describing the type
+     */
+    public String getAttributeParameterType(int parameter) {
+        return this.attributeParameterTypes.get(parameter);
+    }
+
     private void initializeParameterTypes() {
         for (int param=1; param<=getVisibleParCount(); param++) {
             int result = PARAMETER_DOES_NOT_EXIST;
@@ -299,12 +329,39 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
     
     /**
+     * Returns the total number of parameters for this rule.
+     * @return the total number of parameters for this rule
+     */
+    public int getNumberOfParameters() {
+        return this.specifiedParameterTypes.size();
+    }
+
+    /**
      * Returns whether a numbered parameter can be used as an output parameter
      * @param param the number of the parameter under inquiry
-     * @return true if this parameter can be used as output parameter
+     * @return true if this parameter can be used as output parameter, false otherwise
      */
     public boolean isOutputParameter(int param) {
-        return (getParameterType(param) == PARAMETER_OUTPUT || getParameterType(param) == PARAMETER_BOTH);
+        int parType1 = getParameterType(param);
+        int parType2 = this.specifiedParameterTypes.get(param);
+        return (parType1 == PARAMETER_OUTPUT || parType1 == PARAMETER_BOTH)
+            && (parType2 == PARAMETER_OUTPUT || parType2 == PARAMETER_BOTH);
+    }
+
+    /**
+     * Returns whether a numbered parameter is a creator parameter
+     * @param param the number of the parameter under inquiry
+     * @return the index of the parameter in the creatorNodes array if this 
+     * parameter is a creator parameter, -1 otherwise
+     */
+    public int isCreatorParameter(int param) {
+        Node paramNode = this.getParameter(param);
+        for (int i = 0; i < this.creatorNodes.length; i++) {
+            if (this.creatorNodes[i] == paramNode) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -313,7 +370,30 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return true if this parameter can be used as input parameter
      */
     public boolean isInputParameter(int param) {
-        return (getParameterType(param) == PARAMETER_INPUT || getParameterType(param) == PARAMETER_BOTH);
+        int parType1 = getParameterType(param);
+        int parType2 = this.specifiedParameterTypes.get(param);
+        return (parType1 == PARAMETER_INPUT || parType1 == PARAMETER_BOTH)
+            && (parType2 == PARAMETER_INPUT || parType2 == PARAMETER_BOTH);
+    }
+
+    /**
+     * Returns whether the given parameter number is a required input parameter.
+     * Parameters are required if they are on an isolated attribute node.
+     * @param param the number of the parameter under inquiry
+     * @return true if this is a required input parameter, false otherwise
+     */
+    public boolean isRequiredInput(int param) {
+        return this.requiredInputs != null
+            && this.requiredInputs.contains(getParameter(param));
+    }
+
+    /**
+     * Returns whether this rule has required input parameters. Parameters are 
+     * required if they are on an isolated attribute node.
+     * @return true if this rule has required input parameters, false otherwise
+     */
+    public boolean hasRequiredInputs() {
+        return this.requiredInputs != null && this.requiredInputs.size() > 0;
     }
 
     /**
@@ -350,8 +430,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /** This implementation sets the anchor graph elements to relevant. */
     @Override
     MatchStrategy<VarNodeEdgeMap> createMatcher() {
-        return getMatcherFactory().createMatcher(this, null, null,
-            getMatchRelevantNodes());
+        Set<Node> anchorNodes = new HashSet<Node>();
+        Set<Edge> anchorEdges = new HashSet<Edge>();
+        if (getRootMap() != null) {
+            anchorNodes.addAll(getRootMap().nodeMap().values());
+            anchorEdges.addAll(getRootMap().edgeMap().values());
+        }
+        anchorNodes.addAll(getRequiredInputs());
+        return getMatcherFactory().createMatcher(this, anchorNodes,
+            anchorEdges, getMatchRelevantNodes());
     }
 
     @Override
@@ -1208,6 +1295,40 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
+    @Override
+    protected void computeUnresolvedNodes() {
+        super.computeUnresolvedNodes();
+        Iterator<VariableNode> it = this.unresolvedVariableNodes.iterator();
+        while (it.hasNext()) {
+            Node node = it.next();
+            boolean resolved = false;
+            for (int i = 1; i <= getVisibleParCount(); i++) {
+                if (getParameter(i) == node && !isOutputParameter(i)) {
+                    resolved = true;
+                }
+            }
+            if (resolved) {
+                it.remove();
+            }
+        }
+    }
+
+    Set<Node> getRequiredInputs() {
+        if (this.requiredInputs == null) {
+            this.requiredInputs = new HashSet<Node>();
+        }
+        return this.requiredInputs;
+    }
+
+    /**
+     * Sets the requiredInputs to the given value.
+     * @param requiredInputs a {@code Set<Node>} that describes which Nodes must
+     * be given by a control program as input 
+     */
+    public void setRequiredInputs(Set<Node> requiredInputs) {
+        this.requiredInputs = requiredInputs;
+    }
+
     //
     // /**
     // * Initialises the parameter map.
@@ -1332,7 +1453,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private Node[] isolatedNodes;
     /**
      * The rhs nodes that are not ruleMorph images
-     * @invariant rhsOnlyNodeSet \subseteq rhs.nodeSet()
+     * @invariant creatorNodes \subseteq rhs.nodeSet()
      */
     private Node[] creatorNodes;
 
@@ -1405,7 +1526,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * time spent in certificate calculation.
      */
     static public long getMatchingTime() {
-        return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
+        return SearchPlanStrategy.searchFindReporter.getTotalTime();
     }
 
     private void debug(String msg) {
@@ -1420,6 +1541,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
 
-    private final HashMap<Integer,Integer> parameterTypes =
+    private final Map<Integer,Integer> parameterTypes =
         new HashMap<Integer,Integer>();
+
+    private Map<Integer,Integer> specifiedParameterTypes;
+    private Map<Integer,String> attributeParameterTypes;
+
+    /**
+     * The set of nodes required as input parameters from a control program.
+     */
+    protected Set<Node> requiredInputs;
+
 }

@@ -21,7 +21,6 @@ import groove.lts.ProductGTS;
 import groove.lts.StateGenerator;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
-import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -118,7 +117,6 @@ public class SystemRecord implements NodeFactory {
      */
     public RuleEvent normaliseEvent(RuleEvent event) {
         RuleEvent result;
-        reporter.start(GET_EVENT);
         if (isReuseEvents() && event instanceof AbstractEvent<?,?>) {
             result = this.eventMap.put((AbstractEvent<?,?>) event);
             if (result == null) {
@@ -129,7 +127,6 @@ public class SystemRecord implements NodeFactory {
         } else {
             result = event;
         }
-        reporter.stop();
         return result;
     }
 
@@ -403,7 +400,8 @@ public class SystemRecord implements NodeFactory {
      * {@link ConcurrentModificationException}s if iterators over the parent's
      * data structures are still alive.
      */
-    private boolean copyGraphs = true;
+    // EDUARDO: Switched to false to see if the performance is improved...
+    private boolean copyGraphs = false;
 
     /**
      * Changes the state of the storeTransitions property.
@@ -454,8 +452,6 @@ public class SystemRecord implements NodeFactory {
      * as in the simulator. This means the copyGraphs should never be disabled.
      */
     private boolean randomAccess = false;
-    static private final Reporter reporter = Reporter.register(RuleEvent.class);
-    static private final int GET_EVENT = reporter.newMethod("getEvent");
 
     private StateGenerator stateGenerator;
 

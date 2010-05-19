@@ -385,11 +385,10 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
     /**
      * Computes a map indicating the maximal allowed number of nodes of given
      * type, whenever this number is finite.
-     * @return A map from GraphPatterns that are types that are types in this
-     *         abstract graph into their multiplicity, whenever this
-     *         multiplicity is finite. OPTIM this is computed each time. Maybe
-     *         it should be pre-computed, and updated whenever a graph is
-     *         changed
+     * @return A map from GraphPatterns that are types in this  abstract graph
+     *         into their multiplicity, whenever this multiplicity is finite.
+     *         OPTIM this is computed each time. Maybe it should be
+     *         pre-computed, and updated whenever a graph is changed.
      */
     Map<GraphPattern,Integer> maxAllowed() {
         checkInvariants();
@@ -644,7 +643,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
             Map<GraphPattern,Node> inverseMap =
                 new HashMap<GraphPattern,Node>(graph.nodeCount());
 
-            // for each node of the graph, comute the corresponding pattern,
+            // for each node of the graph, compute the corresponding pattern,
             // add a new node to the resulting graph if necessary, and update
             // the typeMult map
             for (Node currNode : graph.nodeSet()) {
@@ -684,7 +683,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
     }
 
     /**
-     * This implemention uses the criterion that, for a graph with
+     * This implementation uses the criterion that, for a graph with
      * concretisations, the type of all node should be present in its
      * neighbourhood. That is, returns false if for some <code>node</code> in
      * the graph, there is no morphism from the type of <code>node</code> into
@@ -714,10 +713,11 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
     // ////////////////////////////////////////////////////////
 
     /*
-     * @invariant (A) nodeSet() is equal to typeMult.keySet() @invariant (B) for
-     * all node of this graph, multiplicityOf(node) is a multiplicity with
-     * precision this.precision @invariant (C) for all node of this graph,
-     * typeOf(node) is issued by this.family
+     * @invariant (A) nodeSet() is equal to typeMult.keySet()
+     * @invariant (B) for all node of this graph, multiplicityOf(node) is a 
+     * multiplicity with precision this.precision
+     * @invariant (C) for all node of this graph, typeOf(node) is issued by
+     * this.family
      */
     void checkInvariants() {
         if (!Util.ea()) {

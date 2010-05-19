@@ -16,53 +16,42 @@
  */
 package groove.explore;
 
+import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
-import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
-import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.Strategy;
-import groove.gui.Simulator;
-import groove.gui.dialog.ErrorDialog;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
-
-import javax.swing.JDialog;
+import groove.view.FormatException;
 
 /**
- * Wrapper class for explorations. Provides functionality for storing and
- * executing an exploration. Also remembers the Result set of the last time
- * the exploration was executed. 
- * An exploration is given by a combination of a serialized strategy, a
- * serialized acceptor, and the number of results.
- *
+ * <!=========================================================================>
+ * An Exploration is a combination of a serialized strategy, a serialized
+ * acceptor and a number of results. By parsing its fields (relative to the
+ * Simulator), the exploration can be executed. The result of the execution
+ * (which is a Result set) is remembered in the Exploration.
+ * <!=========================================================================>
  * @author Maarten de Mol
- * @version $Revision $
  */
 public class Exploration {
-    // The serialized strategy.
-    private Serialized<Strategy> strategy;
-    // The serialized acceptor.
-    private Serialized<Acceptor> acceptor;
-    // The number of results to store.
-    private int nrResults;
-    // The result set of the last exploration.
+
+    private final Serialized strategy;
+    private final Serialized acceptor;
+    private final int nrResults;
+
     private Result lastResult;
 
-    // Internal info, needed during execution of the exploration.
     private boolean interrupted;
-    static private final Reporter reporter =
-        Reporter.register(DefaultScenario.class);
-    static private final int RUNNING = reporter.newMethod("playScenario()");
+    static private final Reporter playReporter = DefaultScenario.playReporter;
 
     /**
-     * Initialize an exploration. 
+     * Initialize to a given exploration. 
      * @param strategy - strategy component of the exploration
      * @param acceptor - acceptor component of the exploration
      * @param nrResults - nrResults component of the exploration
      */
-    public Exploration(Serialized<Strategy> strategy,
-            Serialized<Acceptor> acceptor, int nrResults) {
+    public Exploration(Serialized strategy, Serialized acceptor, int nrResults) {
         this.strategy = strategy;
         this.acceptor = acceptor;
         this.nrResults = nrResults;
@@ -70,12 +59,46 @@ public class Exploration {
     }
 
     /**
-     * Initializes a default exploration (breadth-first, final states,
-     * infinite results).
+     * Initialize to the default exploration, which is formed by the default
+     * strategy, the default acceptor and 0 (=infinite) results.  
      */
     public Exploration() {
-        this(new Serialized<Strategy>("Breadth-First", new BFSStrategy()),
-            new Serialized<Acceptor>("Final", new FinalStateAcceptor()), 0);
+        this(new Serialized("bfs"), new Serialized("final"), 0);
+    }
+
+    /**
+     * Getter for the strategy.
+     */
+    public Serialized getStrategy() {
+        return this.strategy;
+    }
+
+    /**
+     * Getter for the acceptor.
+     */
+    public Serialized getAcceptor() {
+        return this.acceptor;
+    }
+
+    /**
+     * Getter for the number of results.
+     */
+    public int getNrResults() {
+        return this.nrResults;
+    }
+
+    /**
+     * Getter for the result of the last exploration. 
+     */
+    public Result getLastResult() {
+        return this.lastResult;
+    }
+
+    /**
+     * Getter for the isInterrupted flag. 
+     */
+    public Boolean isInterrupted() {
+        return this.interrupted;
     }
 
     /**
@@ -84,117 +107,64 @@ public class Exploration {
      */
     public String getIdentifier() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("(");
-        buffer.append(this.strategy.getIdentifier());
-        buffer.append(", ");
-        buffer.append(this.acceptor.getIdentifier());
-        buffer.append(", ");
+        buffer.append("");
+        buffer.append(this.strategy.toString());
+        buffer.append(" / ");
+        buffer.append(this.acceptor.toString());
+        buffer.append(" / ");
         if (this.nrResults == 0) {
-            buffer.append("Infinite");
+            buffer.append("infinite");
         } else {
             buffer.append(this.nrResults);
         }
-        buffer.append(")");
         return buffer.toString();
-    }
-
-    /**
-     * Getter for the serialized strategy.
-     * @return the serialized strategy
-     */
-    public Serialized<Strategy> getStrategy() {
-        return this.strategy;
-    }
-
-    /**
-     * Getter for the serialized acceptor.
-     * @return the serialized acceptor
-     */
-    public Serialized<Acceptor> getAcceptor() {
-        return this.acceptor;
-    }
-
-    /**
-     * Getter for the number of results.
-     * @return the number of results
-     */
-    public int getNrResults() {
-        return this.nrResults;
-    }
-
-    /**
-     * Returns the result of the last exploration. 
-     * @return the result (set of graph states)
-     */
-    public Result getLastResult() {
-        return this.lastResult;
     }
 
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.
-     * @param simulator - reference to the Simulator, needed to materialize
-     * @param gts - reference to the GTS, which must be prepared
+     * @param gts - the GTS on which the exploration will be performed
      * @param state - the state in which exploration will start (may be null)
      */
-    public void play(Simulator simulator, GTS gts, GraphState state) {
+    public void play(GTS gts, GraphState state) throws FormatException {
 
-        // materialize
-        Strategy strategy = this.strategy.materialize(simulator);
-        Acceptor acceptor = this.acceptor.materialize(simulator);
+        // parse the strategy
+        Strategy parsedStrategy =
+            new StrategyEnumerator().parse(gts, this.strategy);
 
-        if (strategy == null || acceptor == null) {
-            StringBuffer errorMessage = new StringBuffer();
-            errorMessage.append("<HTML>Unable to bind the exploration");
-            errorMessage.append("<BR><FONT color=#FF4500><B>");
-            errorMessage.append(getIdentifier());
-            errorMessage.append("</B></FONT><BR>");
-            errorMessage.append("to the current grammar.<BR><P>");
-
-            JDialog errorDialog =
-                new ErrorDialog(simulator.getFrame(), errorMessage.toString(),
-                    null);
-            errorDialog.setVisible(true);
-            return;
-        }
+        // parse the acceptor
+        Acceptor parsedAcceptor =
+            new AcceptorEnumerator().parse(gts, this.acceptor);
 
         // initialize acceptor and GTS
-        acceptor.setResult(new Result(this.nrResults));
-        strategy.prepare(gts, state);
+        parsedAcceptor.setResult(new Result(this.nrResults));
+        parsedStrategy.prepare(gts, state);
 
         // initialize profiling and prepare graph listener
-        reporter.start(RUNNING);
-        strategy.addGTSListener(acceptor);
+        playReporter.start();
+        parsedStrategy.addGTSListener(parsedAcceptor);
         this.interrupted = false;
 
         // start working until done or nothing to do
-        while (!this.interrupted && !acceptor.getResult().done()
-            && strategy.next()) {
+        while (!this.interrupted && !parsedAcceptor.getResult().done()
+            && parsedStrategy.next()) {
             this.interrupted = Thread.currentThread().isInterrupted();
         }
 
         // remove graph listener and stop profiling       
-        strategy.removeGTSListener(acceptor);
-        reporter.stop();
+        parsedStrategy.removeGTSListener(parsedAcceptor);
+        playReporter.stop();
 
         // store result
-        this.lastResult = acceptor.getResult();
+        this.lastResult = parsedAcceptor.getResult();
     }
 
     /**
-     * Checks whether the LaunchThread has been interrupted during play().
-     * @return the value of the internal boolean interrupted
-     */
-    public boolean isInterrupted() {
-        return this.interrupted;
-    }
-
-    /** 
      * Returns the total running time of the exploration.
      * This information can be used for profiling.
-     * @return the running time 
+     * @return the long holding the running time in number of seconds 
      */
     public long getRunningTime() {
-        return reporter.getTotalTime(RUNNING);
+        return playReporter.getTotalTime();
     }
 }

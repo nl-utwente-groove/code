@@ -38,7 +38,14 @@ import java.util.HashMap;
     	}
     }
     
+    /**
+     * marks whether a given CommonTree can instantly terminate
+     */
     private HashMap<CommonTree,Boolean> it = new HashMap<CommonTree,Boolean>();
+    
+    /**
+     * The initial action for a given CommonTree
+     */
     private HashMap<CommonTree,ArrayList<CommonTree>> init = new HashMap<CommonTree,ArrayList<CommonTree>>();
     
     private ArrayList<CommonTree> getInit(CommonTree o) {
@@ -241,7 +248,9 @@ expression
 		addInit($ornode.tree, getInit($orexpr2.tree));
 	})
 	| ^(plusnode=PLUS plusexpr=expression expression {
-		it.put($plusnode.tree, it.get($plusexpr.tree));
+		// XXX: done this to make sure "a+; a;" was not allowed
+		//it.put($plusnode.tree, it.get($plusexpr.tree));
+		it.put($plusnode.tree, true);
 		addInit($plusnode.tree, getInit($plusexpr.tree));
 	})
 	| ^(starnode=STAR starexpr=expression { 
@@ -289,10 +298,19 @@ var_declaration
 
 var_type
 	: NODE_TYPE
+	| BOOL_TYPE
+	| STRING_TYPE
+	| INT_TYPE
+	| REAL_TYPE
 	;
 
 param
 	: ^(PARAM IDENTIFIER)
 	| ^(PARAM OUT IDENTIFIER)
 	| ^(PARAM DONT_CARE)
+	| ^(PARAM BOOL_TYPE TRUE)
+	| ^(PARAM BOOL_TYPE FALSE)
+	| ^(PARAM STRING_TYPE IDENTIFIER)
+	| ^(PARAM INT_TYPE IDENTIFIER)
+	| ^(PARAM REAL_TYPE IDENTIFIER)
 	;

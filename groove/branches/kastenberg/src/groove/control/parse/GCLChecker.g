@@ -11,6 +11,7 @@ options {
 package groove.control.parse;
 import groove.control.*;
 import groove.trans.Rule;
+import groove.trans.SPORule;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -41,7 +42,7 @@ import java.util.HashMap;
     private List<String> syntaxInit = new ArrayList<String>();
     
     int numParameters = 0;
-    String currentRule;
+    SPORule currentRule;
     HashSet<String> currentOutputParameters = new HashSet<String>();
     
     private void debug(String msg) {
@@ -99,15 +100,16 @@ condition
   ;
 
 rule
-  : ^(CALL r=IDENTIFIER { currentRule = r.getText(); } param* {
-		debug("currentRule: "+currentRule);
+  : ^(CALL r=IDENTIFIER { currentRule = namespace.getRule(r.getText()); } param* {
+		//debug("currentRule: "+currentRule.getName().toString());
 		debug("checking if "+$r.text+" exists");
 		if (!namespace.hasRule($r.text) && !namespace.hasProc($r.text)) {
-			debug("ERROR!");
 			errors.add("No such rule: "+$r.text+" on line "+$r.line);
+		} else if (numParameters != 0 && numParameters != currentRule.getVisibleParCount()) {
+			errors.add("The number of parameters used in this call of "+currentRule.getName().toString()+" ("+numParameters+") does not match the number of parameters defined in the rule ("+currentRule.getVisibleParCount()+") on line "+$IDENTIFIER.line);
 		}
-		if (numParameters != 0 && numParameters != namespace.getRule(currentRule).getVisibleParCount()) {
-			errors.add("The number of parameters used in this call of "+currentRule+" ("+numParameters+") does not match the number of parameters defined in the rule ("+namespace.getRule(currentRule).getVisibleParCount()+") on line "+$IDENTIFIER.line);
+		if (numParameters == 0 && currentRule != null && currentRule.hasRequiredInputs()) {
+			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+$IDENTIFIER.line);
 		}
 		numParameters = 0;
 		currentOutputParameters.clear();
@@ -115,11 +117,14 @@ rule
   ;
 
 var_declaration
-	: ^(VAR var_type IDENTIFIER { namespace.addVariable($IDENTIFIER.text); st.declareSymbol($IDENTIFIER.text); } )
-	;
-
-var_type
-	: NODE_TYPE
+	: ^(VAR t=(NODE_TYPE | BOOL_TYPE | STRING_TYPE | INT_TYPE | REAL_TYPE) IDENTIFIER { 
+		if (!namespace.hasVariable($IDENTIFIER.text)) {
+			namespace.addVariable($IDENTIFIER.text); 
+			st.declareSymbol($IDENTIFIER.text, t.getText());
+		} else {
+			errors.add("Double declaration of variable '"+$IDENTIFIER.text+"' on line "+$IDENTIFIER.line);
+		}
+	} )
 	;
 
 param
@@ -132,8 +137,15 @@ param
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text);
 			}
-			if (!namespace.getRule(currentRule).isInputParameter(numParameters)) {
-				errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule+" on line "+$IDENTIFIER.line);
+			if (currentRule != null && currentRule.getNumberOfParameters() < numParameters) {
+				errors.add("Rule "+currentRule.getName().toString()+" does not have this many parameters on line "+$IDENTIFIER.line); 
+			} else {
+				if (currentRule != null && !currentRule.isInputParameter(numParameters)) {
+					errors.add("Parameter number "+(numParameters)+" cannot be an input parameter in rule "+currentRule.getName().toString()+" on line "+$IDENTIFIER.line);
+				}
+				if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType($IDENTIFIER.text))) {
+					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
+				}
 			}
 		} )
 	| ^(PARAM OUT IDENTIFIER {
@@ -149,13 +161,55 @@ param
 			} else {
 				errors.add("No such variable: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);
 			}
-			if (!namespace.getRule(currentRule).isOutputParameter(numParameters)) {
-				errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule+" on line "+$IDENTIFIER.line);
-			}
-			if (currentOutputParameters.contains($IDENTIFIER.text)) {
-				errors.add("You can not use the same parameter as output more than once per call: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);			
-			}
+			if (currentRule != null && currentRule.getNumberOfParameters() < numParameters) {
+				errors.add("Rule "+currentRule.getName().toString()+" does not have this many parameters on line "+$IDENTIFIER.line); 
+			} else {
+				if (currentRule != null && !currentRule.isOutputParameter(numParameters)) {
+					errors.add("Parameter number "+(numParameters)+" cannot be an output parameter in rule "+currentRule.getName().toString()+" on line "+$IDENTIFIER.line);
+				}
+				if (currentOutputParameters.contains($IDENTIFIER.text)) {
+					errors.add("You can not use the same parameter as output more than once per call: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);			
+				}
+				if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals(st.getType($IDENTIFIER.text))) {
+					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
+				}
+				if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
+					errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+				}
+			} 
 			currentOutputParameters.add($IDENTIFIER.text);
 		} )
-	| ^(PARAM DONT_CARE { numParameters++; })
+	| ^(PARAM DONT_CARE { 
+		numParameters++;
+		if (currentRule != null && currentRule.isRequiredInput(numParameters)) {
+			errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
+		} 
+	})
+	| ^(PARAM BOOL_TYPE bool=(TRUE|FALSE) {
+		numParameters++;
+		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("bool")) {
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+bool.getText()+"' on line "+bool.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not bool)");
+		}
+	})
+	| ^(PARAM STRING_TYPE str=IDENTIFIER {
+		numParameters++;
+		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("string")) {
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and "+str.getText()+" on line "+str.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not string)");
+		}
+	})
+	| ^(PARAM INT_TYPE in=IDENTIFIER {
+		numParameters++;
+		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("int")) {
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+in.getText()+"' on line "+in.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not int)");
+		}
+	})
+	| ^(PARAM REAL_TYPE r=IDENTIFIER {
+		numParameters++;
+		if (r.getText().equals(".")) {
+			errors.add("'.' is not a valid real value on line "+r.getLine());
+		}
+		if (currentRule != null && !currentRule.getAttributeParameterType(numParameters).equals("real")) {
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+r.getText()+"' on line "+r.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not real)");
+		}
+	})
 	;

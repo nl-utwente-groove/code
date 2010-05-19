@@ -16,99 +16,176 @@
  */
 package groove.explore;
 
-import groove.explore.Serialized.Materialize;
+import groove.explore.encode.EncodedEdgeMap;
+import groove.explore.encode.EncodedEnabledRule;
+import groove.explore.encode.EncodedInt;
+import groove.explore.encode.EncodedRuleMode;
+import groove.explore.encode.TemplateList;
+import groove.explore.encode.Template.Template0;
+import groove.explore.encode.Template.Template1;
+import groove.explore.encode.Template.Template2;
+import groove.explore.prettyparse.PIdentifier;
+import groove.explore.prettyparse.PLiteral;
+import groove.explore.prettyparse.PNumber;
+import groove.explore.prettyparse.POptional;
+import groove.explore.prettyparse.PSeparated;
+import groove.explore.prettyparse.PSequence;
+import groove.explore.result.EdgeBoundCondition;
+import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
+import groove.explore.result.NodeBoundCondition;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
-import groove.explore.strategy.ExploreRuleDFStrategy;
+import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.Strategy;
+import groove.graph.Label;
+import groove.lts.GTS;
 import groove.trans.Rule;
 
+import java.util.Map;
+
 /**
- * An enumeration of Serialized<Strategy>.
- * Stores all the exploration strategies that can be executed within Groove.
- *
+ * <!=========================================================================>
+ * StrategyEnumerator enumerates all strategies that are available in GROOVE.
+ * With this enumeration, it is possible to create an editor for strategies
+ * (inherited method createEditor, stored results as a Serialized) and to
+ * parse a strategy from a Serialized (inherited method parse).
+ * TODO: Also use this enumerator in the Generator.
+ * <!=========================================================================>
  * @author Maarten de Mol
- * @version $Revision $
- * 
  */
-public class StrategyEnumerator extends Enumerator<Strategy> {
+public class StrategyEnumerator extends TemplateList<Strategy> {
+
+    private static final String STRATEGY_TOOLTIP =
+        "<HTML>" + "The exploration strategy determines at each state:<BR>"
+            + "<B>1.</B> Which of the applicable transitions will be taken; "
+            + "and<BR>"
+            + "<B>2.</B> In which order the reached states will be explored."
+            + "</HTML>";
+
     /**
-     * Extended constructor. Enumerates the available strategies one by one.
+     * Enumerates the available strategies one by one. A strategy is defined
+     * by means of a Template<Strategy> instance.
      */
     public StrategyEnumerator() {
-        super();
+        super("exploration strategy", STRATEGY_TOOLTIP);
 
-        addElement("Breadth-First", "Breadth-First Exploration",
+        addTemplate(new Template0<Strategy>("bfs", "Breadth-First Exploration",
             "This strategy first generates all possible transitions from each "
-                + "open state, and then continues in a breadth-first fashion.",
-            new BFSStrategy());
+                + "open state, and then continues in a breadth-first fashion.") {
 
-        addElement("Depth-First", "Depth-First Exploration",
+            @Override
+            public Strategy create(GTS gts) {
+                return new BFSStrategy();
+            }
+        });
+
+        addTemplate(new Template0<Strategy>("dfs", "Depth-First Exploration",
             "This strategy first generates all possible transitions from each "
-                + "open state, and then continues in a depth-first fashion.",
-            new ExploreRuleDFStrategy());
+                + "open state, and then continues in a depth-first fashion.") {
 
-        addElement("LinearConfluent", "Linear Confluent Exploration",
-            "This strategy generates all possible transitions from each open "
-                + "state, but only takes one transition of each pair of "
-                + "transitions that have been marked as confluent.",
-            new LinearConfluentRules());
+            @Override
+            public Strategy create(GTS gts) {
+                return new DFSStrategy();
+            }
+        });
 
-        addElement("Linear", "Linear Exploration",
+        addTemplate(new Template0<Strategy>("linear", "Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition of choice will be the same within one "
-                + "incarnation of Groove.", new LinearStrategy());
+                + "incarnation of Groove.") {
 
-        addElement("RandomLinear", "Random Linear Exploration",
+            @Override
+            public Strategy create(GTS gts) {
+                return new LinearStrategy();
+            }
+        });
+
+        addTemplate(new Template0<Strategy>("random",
+            "Random Linear Exploration",
             "This strategy chooses one transition from each open state. "
-                + "The transition is chosen randomly.",
-            new RandomLinearStrategy());
+                + "The transition is chosen randomly.") {
 
-        addElement(
-            "ConditionalBFS",
-            "Breadth-First + Rule Condition",
-            "This strategy distinguishes between normal states, which are "
-                + "explored in the same way as the breadth-first strategy, and "
-                + "special states, which are not explored at all. "
-                + "The distinction is made on the basis of an additional rule "
-                + "condition.", new ConditionalModeArgument(),
-            new RuleArgument(""), new MaterializeConditionalBFSStrategy());
-    }
+            @Override
+            public Strategy create(GTS gts) {
+                return new RandomLinearStrategy();
+            }
+        });
 
-    private class ConditionalModeArgument extends OptionArgument {
-        static final String MODE_POSITIVE = "Positive";
-        static final String MODE_POSITIVE_ID =
-            "Do not explore state if rule matches.";
+        addTemplate(new Template0<Strategy>("confluent",
+            "Linear Confluent Exploration",
+            "This strategy generates all possible transitions from each open "
+                + "state, but only takes one transition of each pair of "
+                + "transitions that have been marked as confluent.") {
 
-        static final String MODE_NEGATIVE = "Negative";
-        static final String MODE_NEGATIVE_ID =
-            "Do not explore state if rule does not match.";
+            @Override
+            public Strategy create(GTS gts) {
+                return new LinearConfluentRules();
+            }
+        });
 
-        public ConditionalModeArgument() {
-            super("Mode");
-            addOption(MODE_POSITIVE, MODE_POSITIVE_ID);
-            addOption(MODE_NEGATIVE, MODE_NEGATIVE_ID);
-            setSerializedValue(MODE_POSITIVE);
-        }
-    }
+        addTemplate(new Template2<Strategy,Rule,Boolean>("crule",
+            "Conditional Exploration (Rule Condition)",
+            "This strategy performs a conditional breadth-first exploration. "
+                + "If a given rule is applicable in a newly reached state, it "
+                + " is not explored further. "
+                + "All other states are explored normally.", new PSequence(
+                new POptional("!", "mode", EncodedRuleMode.NEGATIVE,
+                    EncodedRuleMode.POSITIVE), new PIdentifier("rule")),
+            "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
 
-    private class MaterializeConditionalBFSStrategy implements
-            Materialize<Strategy> {
+            @Override
+            public Strategy create(GTS gts, Rule rule, Boolean mode) {
+                IsRuleApplicableCondition condition =
+                    new IsRuleApplicableCondition(rule, mode);
+                ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
+                strategy.setExploreCondition(condition);
+                return strategy;
+            }
+        });
 
-        @Override
-        public Strategy materialize(Object[] arguments) {
-            boolean modeArg =
-                ((String) arguments[0]).equals(ConditionalModeArgument.MODE_POSITIVE);
-            Rule ruleArg = (Rule) arguments[1];
-            IsRuleApplicableCondition condition =
-                new IsRuleApplicableCondition(ruleArg, modeArg);
-            ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
-            strategy.setExploreCondition(condition);
-            return strategy;
-        }
+        addTemplate(new Template1<Strategy,Integer>("cnbound",
+            "Conditional Exploration (Node Bound)",
+            "This strategy performs a conditional breadth-first exploration. "
+                + "If the number of nodes in a newly reached state exceeds a "
+                + "given bound, it is not explored further. "
+                + "All other states are explored normally.", new PNumber(
+                "node-bound"), "node-bound", new EncodedInt(0, -1)) {
+
+            @Override
+            public Strategy create(GTS gts, Integer bound) {
+                ExploreCondition<Integer> condition = new NodeBoundCondition();
+                condition.setCondition(bound);
+                ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
+                strategy.setExploreCondition(condition);
+                return strategy;
+            }
+        });
+
+        addTemplate(new Template1<Strategy,Map<Label,Integer>>("cebound",
+            "Conditional Exploration (Edge Bound)",
+            "This strategy performs a conditional breadth-first exploration. "
+                + "If the number of edges in a newly reached state exceeds a "
+                + "given bound, it is not explored further. "
+                + "All other states are explored normally.",
+
+            new PSeparated(new PSequence(new PIdentifier("edge-bound"),
+                new PLiteral(">", "edge-bound"), new PNumber("edge-bound")),
+                new PLiteral(",", "edge-bound")), "edge-bound",
+            new EncodedEdgeMap()) {
+
+            @Override
+            public Strategy create(GTS gts, Map<Label,Integer> bounds) {
+                ExploreCondition<Map<Label,Integer>> condition =
+                    new EdgeBoundCondition();
+                condition.setCondition(bounds);
+                ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
+                strategy.setExploreCondition(condition);
+                return strategy;
+            }
+        });
     }
 }

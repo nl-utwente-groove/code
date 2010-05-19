@@ -23,7 +23,6 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
-import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -85,7 +84,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * values.
      */
     public Map<Element,Certificate<?>> getCertificateMap() {
-        reporter.start(GET_CERTIFICATE_MAP);
         // check if the map has been computed before
         if (this.certificateMap == null) {
             getGraphCertificate();
@@ -99,7 +97,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 this.certificateMap.put(edgeCert.getElement(), edgeCert);
             }
         }
-        reporter.stop();
         return this.certificateMap;
     }
 
@@ -138,13 +135,13 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Node> computeNodePartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
+        PartitionRefiner.getPartitionReporter.start();
         PartitionMap<Node> result = new PartitionMap<Node>();
         // invert the certificate map
         for (Certificate<Node> cert : this.nodeCerts) {
             result.add(cert);
         }
-        reporter.stop();
+        PartitionRefiner.getPartitionReporter.stop();
         return result;
     }
 
@@ -153,14 +150,14 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<Edge> computeEdgePartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
+        PartitionRefiner.getPartitionReporter.start();
         PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
             result.add(this.edgeCerts[i]);
         }
-        reporter.stop();
+        PartitionRefiner.getPartitionReporter.stop();
         return result;
     }
 
@@ -172,12 +169,10 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         if (TRACE) {
             System.err.printf("Computing graph certificate%n");
         }
-        reporter.start(GET_GRAPH_CERTIFICATE);
         // check if the certificate has been computed before
         if (this.graphCertificate == 0) {
             computeCertificates();
         }
-        reporter.stop();
         if (TRACE) {
             System.err.printf("Graph certificate: %d%n", this.graphCertificate);
         }
@@ -222,6 +217,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     /** Computes the node and edge certificate arrays. */
     synchronized private void computeCertificates() {
         // we compute the certificate map
+        PartitionRefiner.computeCertReporter.start();
         initCertificates();
         this.partition = new NodePartition(this.nodeCerts);
         // initially all blocks are splitters
@@ -283,7 +279,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         if (this.graphCertificate == 0) {
             this.graphCertificate = 1;
         }
-        reporter.stop();
+        PartitionRefiner.computeCertReporter.stop();
     }
 
     /**
@@ -295,8 +291,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         // is likely that this results in the actual graph construction
         int nodeCount = this.graph.nodeCount();
         int edgeCount = this.graph.edgeCount();
-        reporter.start(COMPUTE_CERTIFICATES);
-        reporter.start(INIT_CERTIFICATES);
         this.nodeCertCount = 0;
         this.nodeCerts = new NodeCertificate[nodeCount];
         this.edgeCerts = new Certificate[edgeCount];
@@ -308,26 +302,13 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         for (Edge edge : this.graph.edgeSet()) {
             initEdgeCert(edge);
         }
-        reporter.stop();
     }
-
-    //
-    // /**
-    // * Initialises {@link #partition}, and returns the resulting value.
-    // */
-    // private void initPartition() {
-    // NodePartition result = new NodePartition();
-    // this.partition = result;
-    // }
 
     /**
      * Creates a {@link NodeCertificate} for a given graph node, and inserts
      * into the certificate node map.
      */
     private NodeCertificate initNodeCert(final Node node) {
-        if (TIME) {
-            reporter.start(INIT_CERT_NODE);
-        }
         NodeCertificate nodeCert;
         // if the node is an instance of OperationNode, the certificate
         // of this node also depends on the operation represented by it
@@ -341,9 +322,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         putNodeCert(nodeCert);
         this.nodeCerts[this.nodeCertCount] = nodeCert;
         this.nodeCertCount++;
-        if (TIME) {
-            reporter.stop();
-        }
         return nodeCert;
     }
 
@@ -352,9 +330,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * into the certificate edge map.
      */
     private void initEdgeCert(Edge edge) {
-        if (TIME) {
-            reporter.start(INIT_CERT_EDGE);
-        }
         Node source = edge.source();
         NodeCertificate sourceCert = getNodeCert(source);
         assert sourceCert != null : "Edge source of " + edge + " not found in "
@@ -381,9 +356,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
-        }
-        if (TIME) {
-            reporter.stop();
         }
     }
 
@@ -452,7 +424,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     }
 
     private void splitNext(Queue<Block> splitterList) {
-        reporter.start(SPLIT);
         if (RECORD) {
             List<Block> clone = new ArrayList<Block>();
             for (Block block : splitterList) {
@@ -491,7 +462,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
             }
             splitterList.addAll(newBlocks);
         }
-        reporter.stop();
     }
 
     /**
@@ -724,31 +694,6 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         Collections.<Block>emptySet();
 
     // --------------------------- reporter definitions ---------------------
-    /** Reporter instance to profile methods of this class. */
-    static public final Reporter reporter = DefaultIsoChecker.reporter;
-    /** Handle to profile {@link #computeCertificates()}. */
-    static public final int COMPUTE_CERTIFICATES =
-        PartitionRefiner.COMPUTE_CERTIFICATES;
-    /** Handle to profile {@link #initCertificates()}. */
-    static protected final int INIT_CERTIFICATES =
-        PartitionRefiner.INIT_CERTIFICATES;
-    /** Handle to profile {@link #initNodeCert(Node)}. */
-    static protected final int INIT_CERT_NODE = PartitionRefiner.INIT_CERT_NODE;
-    /** Handle to profile {@link #initEdgeCert(Edge)}. */
-    static protected final int INIT_CERT_EDGE = PartitionRefiner.INIT_CERT_EDGE;
-    /** Handle to profile {@link #split(Queue)}. */
-    static protected final int SPLIT = PartitionRefiner.ITERATE_CERTIFICATES;
-    /** Handle to profile {@link #getCertificateMap()}. */
-    static protected final int GET_CERTIFICATE_MAP =
-        PartitionRefiner.GET_CERTIFICATE_MAP;
-    /** Handle to profile {@link #getNodePartitionMap()}. */
-    static protected final int GET_PARTITION_MAP =
-        PartitionRefiner.GET_PARTITION_MAP;
-    /** Handle to profile {@link #getGraphCertificate()}. */
-    static protected final int GET_GRAPH_CERTIFICATE =
-        PartitionRefiner.GET_GRAPH_CERTIFICATE;
-    /** Flag to turn on more time profiling. */
-    static private final boolean TIME = false;
     /** Flag to turn on System.out-tracing. */
     static private final boolean TRACE = false;
     /** Flag to turn on partition recording. */

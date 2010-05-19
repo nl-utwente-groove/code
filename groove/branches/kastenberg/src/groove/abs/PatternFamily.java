@@ -64,7 +64,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
      * @param radius the radius of patterns in this family
      * @param max_incidence the maximal allowed incidence of nodes
      * @require radius should be positive (>= 1)
-     * @require max_incidence should be positie (>=1)
+     * @require max_incidence should be positive (>=1)
      */
     public PatternFamily(final int radius, final int max_incidence) {
         assert radius > 0 && max_incidence > 0 : "A radius and max_incidence should be positive.";
@@ -104,7 +104,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
      * node <code>n</code>. If this pattern is already in the family, then
      * returns the pattern in the family.
      * @param graph The graph from which a pattern is to be extracted.
-     * @param cnode The cenral node of the pattern
+     * @param cnode The central node of the pattern
      * @return the pattern of graph defined by cnode
      * @throws ExceptionIncompatibleWithMaxIncidence if the pattern violates the
      *         maximum incidence constraint
@@ -157,7 +157,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
     }
 
     /**
-     * Extracts the neighbourhood of of <code>cnode</code> in
+     * Extracts the neighbourhood of <code>cnode</code> in
      * <code>graph</code> as a subgraph of <code>graph</code>. The
      * neighbourhood is of the same radius as the radius of this family.
      * @param graph
@@ -216,7 +216,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
                 // and add the end of the edge not yet known to exploredNodes[r]
                 for (Edge ee : incidentEdges) {
                     DefaultEdge e = (DefaultEdge) ee; // Not defined for non
-                                                        // binary edges
+                    // binary edges
                     res.add(e);
                     for (Node newNode : e.ends()) {
                         if (newNode == currNode) {
@@ -465,7 +465,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
     }
 
     /**
-     * Implements a naive hacher
+     * Implements a naive hasher
      * @author Iovka Boneva
      */
     class DefaultGraphPatternHasher implements Hasher<GraphPattern> {

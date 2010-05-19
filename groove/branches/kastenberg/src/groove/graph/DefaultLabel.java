@@ -19,6 +19,8 @@ package groove.graph;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.util.Converter;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,14 +225,35 @@ public final class DefaultLabel extends AbstractLabel {
     /**
      * Returns a HTML-formatted string for a given label, without the
      * surrounding html-tag. The string is set to bold if the label is a node
-     * type.
+     * type and is set to italic if the label is a flag.
      */
     static public String toHtmlString(Label label) {
+        String result = Converter.toHtml(label.text());
         if (label.isNodeType()) {
-            return Converter.STRONG_TAG.on(Converter.toHtml(label.text()));
-        } else {
-            return Converter.toHtml(label.text());
+            result = Converter.STRONG_TAG.on(result);
+        } else if (label.isFlag()) {
+            result = Converter.ITALIC_TAG.on(result);
         }
+        return result;
+    }
+
+    /**
+     * Returns a HTML-formatted string for a given label in combination
+     * with its edge role, without the
+     * surrounding html-tag. The string is set to bold if the label is a node
+     * type and is set to italic if the label is a flag; colours and
+     * prefixes are used to indicate the role.
+     */
+    public static String toHtmlString(Label edgeLabel, AspectValue edgeRole) {
+        String result = toHtmlString(edgeLabel);
+        if (RuleAspect.ERASER.equals(edgeRole)) {
+            result = Converter.blue.on("- " + result);
+        } else if (RuleAspect.CREATOR.equals(edgeRole)) {
+            result = Converter.green.on("+ " + result);
+        } else if (RuleAspect.EMBARGO.equals(edgeRole)) {
+            result = Converter.red.on("! " + result);
+        }
+        return result;
     }
 
     /**

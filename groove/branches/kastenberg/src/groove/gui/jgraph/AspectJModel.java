@@ -60,7 +60,6 @@ import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
 import java.awt.Font;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -189,24 +188,6 @@ public class AspectJModel extends GraphJModel {
     }
 
     /**
-     * This implementation returns <code>false</code> if the node represented by
-     * the cell has a {@link RuleAspect#RULE_ASPECT_NAME} role.
-     */
-    @Override
-    public boolean isMoveable(JCell jCell) {
-        return jCell instanceof JEdge
-            || isMoveable(((AspectJVertex) jCell).getNode());
-    }
-
-    /**
-     * Callback method to determine whether a certain node is moveable in the
-     * GUI. Rule-identifying nodes are not moveable.
-     */
-    protected boolean isMoveable(AspectNode node) {
-        return !(role(node) instanceof RuleAspect.RuleAspectValue);
-    }
-
-    /**
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
     public final boolean isShowRemarks() {
@@ -225,10 +206,6 @@ public class AspectJModel extends GraphJModel {
             if (getAttributeValue(aspectNode) != null) {
                 result.applyMap(getJVertexDataAttr());
             }
-        }
-        if (!isMoveable(aspectNode)) {
-            GraphConstants.setMoveable(result, false);
-            GraphConstants.setBounds(result, new Rectangle(0, 0));
         }
         return result;
     }
@@ -445,22 +422,24 @@ public class AspectJModel extends GraphJModel {
          * node.
          */
         boolean isAllowedNodeLabel(AspectEdge dataEdge) {
-            boolean result;
-            // test for equal rule roles
-            AspectValue edgeRole = role(dataEdge);
-            AspectValue sourceRole = role(getNode());
-            result =
-                edgeRole == null ? sourceRole == null
-                        : edgeRole.equals(sourceRole);
-            // test for equal nesting level
-            if (result) {
-                AspectValue edgeNesting =
-                    NestingAspect.getNestingValue(dataEdge);
-                AspectValue sourceNesting =
-                    NestingAspect.getNestingValue(getNode());
+            boolean result = dataEdge.isUnaryEdge();
+            if (!result) {
+                // test for equal rule roles
+                AspectValue edgeRole = role(dataEdge);
+                AspectValue sourceRole = role(getNode());
                 result =
-                    edgeNesting == null ? sourceNesting == null
-                            : edgeNesting.equals(sourceNesting);
+                    edgeRole == null ? sourceRole == null
+                            : edgeRole.equals(sourceRole);
+                // test for equal nesting level
+                if (result) {
+                    AspectValue edgeNesting =
+                        NestingAspect.getNestingValue(dataEdge);
+                    AspectValue sourceNesting =
+                        NestingAspect.getNestingValue(getNode());
+                    result =
+                        edgeNesting == null ? sourceNesting == null
+                                : edgeNesting.equals(sourceNesting);
+                }
             }
             return result;
         }
@@ -489,7 +468,7 @@ public class AspectJModel extends GraphJModel {
                 result.append(Converter.HTML_EXISTS);
             }
             String level = nesting.getContent();
-            if (level.length() != 0) {
+            if (level != null && level.length() != 0) {
                 result.insert(0, level + LEVEL_NAME_SEPARATOR);
             }
             return result;
@@ -520,8 +499,7 @@ public class AspectJModel extends GraphJModel {
                 result.add(AspectParser.toString(value));
             }
             // we do not do a super call, for that adds the value of the actual
-            // node
-            // which we have here anyway
+            // node which we have here anyway
             for (Edge edge : getSelfEdges()) {
                 result.add(getPlainLabel(edge));
             }
@@ -556,6 +534,8 @@ public class AspectJModel extends GraphJModel {
         public boolean isVisible() {
             if (RuleAspect.isRemark(getNode())) {
                 return isShowRemarks();
+            } else if (ParameterAspect.getParameterValue(getNode()) != null) {
+                return true;
             } else {
                 return super.isVisible();
             }

@@ -16,11 +16,19 @@
  */
 package groove.lts;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraRegister;
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.control.Location;
+import groove.graph.DefaultMorphism;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.trans.RuleEvent;
+import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
@@ -29,9 +37,7 @@ import groove.util.TransformSet;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -50,7 +56,9 @@ abstract public class AbstractGraphState extends
     public AbstractGraphState(CacheReference<StateCache> reference,
             Location location) {
         super(reference);
-        this.location = location;
+        if (location != null) {
+            this.setLocation(location);
+        }
         stateCount++;
     }
 
@@ -70,6 +78,11 @@ abstract public class AbstractGraphState extends
 
     public void setLocation(Location l) {
         this.location = l;
+        if (this.parameters == null && l != null
+            && ((ControlState) l).getInitializedVariables().size() > 0) {
+            this.parameters =
+                new Node[((ControlState) l).getInitializedVariables().size()];
+        }
     }
 
     /*
@@ -304,8 +317,9 @@ abstract public class AbstractGraphState extends
     @Override
     public String toString() {
         if (hasNumber()) {
-            return "s" + getNumber()
-                + (this.hasParameters() ? this.parameters : "");
+            return "s"
+                + getNumber()
+                + (this.hasParameters() ? Arrays.toString(this.parameters) : "");
         } else {
             return "s??";
         }
@@ -357,7 +371,7 @@ abstract public class AbstractGraphState extends
      * @throws IllegalArgumentException if <code>nr</code> is illegal (i.e.,
      *         negative)
      */
-    protected void setNumber(int nr) {
+    public void setNumber(int nr) {
         if (hasNumber()) {
             throw new IllegalStateException(String.format(
                 "State number already set to %s", this.nr));
@@ -375,31 +389,72 @@ abstract public class AbstractGraphState extends
     }
 
     /**
-     * Sets a parameter to a Node
-     * @param varName the name of the parameter
-     * @param varNode the node to assign this parameter to
-     */
-    public void setParameter(String varName, Node varNode) {
-        if (this.parameters == null) {
-            this.parameters = new HashMap<String,Node>();
-        }
-        this.parameters.put(varName, varNode);
-    }
-
-    /**
      * Whether this state has parameters with a value
      * @return true if this state has parameters, false if not
      */
     public boolean hasParameters() {
-        return this.parameters != null && this.parameters.size() > 0;
+        return this.parameters != null && this.parameters.length > 0;
     }
 
     /**
      * Returns the map of parameters to nodes for this state
      * @return a Map<String,Node> of parameters
      */
-    public Map<String,Node> getParameters() {
+    public Node[] getParameters() {
         return this.parameters;
+    }
+
+    /**
+     * Sets the parameter at position index to the given parameter
+     * @param index the parameter index to change
+     * @param parameter the parameter to set it to
+     */
+    public void setParameter(int index, Node parameter) {
+        this.parameters[index] = parameter;
+    }
+
+    /**
+     * Returns a partial Morphism for this state, based on the given 
+     * ControlTransition's input parameters
+     * @param ct the ControlTransition to base the Morphism on
+     * @return a partial Morphism which can be used in determining whether rules
+     * Match given certain parameters
+     */
+    public Morphism getPartialMorphism(ControlTransition ct) {
+        Morphism m = null;
+        if (ct.hasInputParameters()) {
+            SPORule rule = (SPORule) ct.getRule();
+            String[] input = ct.getInputParameters();
+            m = new DefaultMorphism(rule.getTarget(), this.getGraph());
+            for (int i = 0; i < input.length; i++) {
+                if (input[i] != null && !input[i].equals("_")) {
+                    Node src = (rule).getParameter(i + 1);
+                    Node tgt;
+                    if (rule.getAttributeParameterType(i + 1).equals("node")) {
+                        tgt =
+                            this.parameters[((ControlState) this.location).getVariablePosition(input[i])];
+                    } else {
+                        int idx =
+                            ((ControlState) this.location).getVariablePosition(input[i]);
+                        if (idx != -1) {
+                            tgt = this.parameters[idx];
+                        } else {
+                            Algebra<?> alg =
+                                AlgebraRegister.getInstance().getAlgebra(input[i]);
+                            tgt =
+                                ValueNode.createValueNode(alg,
+                                    alg.getValue(input[i]));
+                        }
+                    }
+                    if (tgt == null) {
+                        // we're trying to match a node that has been deleted!
+                        return null;
+                    }
+                    m.putNode(src, tgt);
+                }
+            }
+        }
+        return m;
     }
 
     /** The internally stored (optional) control location. */
@@ -418,7 +473,7 @@ abstract public class AbstractGraphState extends
      * 
      * @invariant nr < nrNodes
      */
-    private int nr = -1;
+    protected int nr = -1;
 
     /** Returns the total number of fixed delta graphs. */
     static public int getFrozenGraphCount() {
@@ -439,5 +494,5 @@ abstract public class AbstractGraphState extends
         new GraphTransitionStub[0];
 
     /** Keeps track of bound variables */
-    private Map<String,Node> parameters;
+    private Node[] parameters;
 }

@@ -14,142 +14,88 @@
  */
 package groove.gui;
 
-import groove.trans.SystemProperties;
-
-import java.awt.Component;
-import java.awt.Container;
-import java.util.ArrayList;
-
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 
 /**
- * Program that working with user settings
- * @author Maria Zimakova
- * @version $Revision: 1490 $
+ * Class that saves some basic information on the status of the Simulator.
+ * @author Eduardo Zambon
  */
 
 /** Class saving a previous user settings. */
 public class UserSettings {
 
-    /** Get parameter index in the array */
-    private static int GetIndex(int p_id, String p_string, String p_parameter,
-            int p_index) {
-        int ind;
-        if (p_id < 0) {
-            if (p_string.indexOf(p_parameter + "=") >= 0) {
-                ind = p_index - 1;
-            } else {
-                ind = -1;
-            }
+    /** Reads and applies previously stored settings. */
+    public static void applyUserSettings(JFrame frame) {
+        String simMax = Options.userPrefs.get(SIM_MAX, "");
+        String simWidth = Options.userPrefs.get(SIM_WIDTH, "");
+        String simHeight = Options.userPrefs.get(SIM_HEIGHT, "");
+        String rulePos = Options.userPrefs.get(RULE_GRAPH_DIV_POS, "");
+        String mainPos = Options.userPrefs.get(MAIN_DIV_POS, "");
+
+        if (simMax.isEmpty() || simWidth.isEmpty() || simHeight.isEmpty()
+            || rulePos.isEmpty() || mainPos.isEmpty()) {
+            return;
+        }
+
+        if (Boolean.parseBoolean(simMax)) {
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         } else {
-            ind = p_id;
+            int w = Integer.parseInt(simWidth);
+            int h = Integer.parseInt(simHeight);
+            frame.setSize(w, h);
         }
-        return ind;
+
+        JSplitPane jsp = (JSplitPane) frame.getContentPane().getComponent(1);
+        jsp.setDividerLocation(Integer.parseInt(mainPos));
+
+        jsp = (JSplitPane) jsp.getLeftComponent();
+        jsp.setDividerLocation(Integer.parseInt(rulePos));
     }
 
-    /** Checks a previous user settings on maximization */
-    private static boolean CheckMaximize(String p_string) {
-        if (p_string.substring(p_string.indexOf("=") + 1).equals("Y")) {
-            return true;
-        } else {
-            return false;
-        }
+    private static boolean isFrameMaximized(JFrame frame) {
+        return frame.getExtendedState() == JFrame.MAXIMIZED_BOTH;
     }
 
-    /** Get a number from string parameter */
-    private static int GetNumber(String p_string) {
-        int num;
-        try {
-            String str = p_string.substring(p_string.indexOf("=") + 1);
-            num = Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            num = 0;
-        }
-        return num;
+    private static int getFrameWidth(JFrame frame) {
+        return frame.getWidth();
     }
 
-    /** Reads and applies a previous user settings. */
-    public static void applyUserSettings(JFrame MyFrame) {
-         ArrayList<String> user_settings = new ArrayList<String>();
-         int id_maximize = -1;
-         int id_width = -1;
-         int id_height = -1;
-         int id_divider = -1;
-
-         String[] sh =
-             Options.userPrefs.get(SystemProperties.USER_SETTINGS, "").split(",");
-         for (String p : sh) {
-             user_settings.add(p);
-             id_maximize = GetIndex(id_maximize, p, "maximization", user_settings.size());
-             id_width    = GetIndex(id_width, p, "width", user_settings.size());
-             id_height   = GetIndex(id_height, p, "height", user_settings.size());
-             id_divider  = GetIndex(id_divider, p, "divider", user_settings.size());
-         }
-
-         if ((id_maximize >= 0) && (CheckMaximize(user_settings.get(id_maximize)))) {
-              MyFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);                 
-         } else {
-             if ((id_width >= 0) && (GetNumber(user_settings.get(id_width)) > 0)) {
-                  MyFrame.setSize(GetNumber(user_settings.get(id_width)), MyFrame.getHeight());                     
-             }
-             if ((id_height >= 0) && (GetNumber(user_settings.get(id_height)) > 0)) {
-                  MyFrame.setSize(MyFrame.getWidth(), GetNumber(user_settings.get(id_height)));                     
-             }
-         }
-         
-         if ((id_divider >= 0) && (GetNumber(user_settings.get(id_divider)) > 0)) {
-              Container contentPane = MyFrame.getContentPane();
-              for (int i=0; i < contentPane.getComponentCount(); i++) {
-                  Component comp = contentPane.getComponent(i);
-                  if (comp instanceof JSplitPane) {
-                      JSplitPane jsp = (JSplitPane) comp;
-                      jsp.setDividerLocation(GetNumber(user_settings.get(id_divider)));
-                  }
-              }                              
-         }
-     }
-
-    /** Generates a user setting string */
-    private static String makeUserSettingString(JFrame MyFrame) {
-       ArrayList<String> hist = new ArrayList<String>();
-       String ret = "";
-        if (MyFrame.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
-            ret = ret + "maximization=Y,";
-        } else {
-            ret = ret + "maximization=N,";
-            ret = ret + "width=" + MyFrame.getWidth() + ",";
-            ret = ret + "height=" + MyFrame.getHeight() + ",";
-        }
-
-        Container contentPane = MyFrame.getContentPane();
-        for (int i=0; i < contentPane.getComponentCount(); i++) {
-            Component comp = contentPane.getComponent(i);
-            if (comp instanceof JSplitPane) {
-                JSplitPane jsp = (JSplitPane) comp;
-                ret = ret + "divider=" + jsp.getDividerLocation() + ",";
-            }
-        }    
-        
-        String[] ht =
-            Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(",");
-        for (String p : ht) {
-            hist.add(p);
-        }
-
-        if (ret.lastIndexOf(",") == ret.length()) {
-            ret = ret.substring(0, ret.length() - 1);
-        }
-        return ret;
+    private static int getFrameHeight(JFrame frame) {
+        return frame.getHeight();
     }
 
-    /**
-     * Synchronizes saved user settings with the current ones
-     */
-    public static void synchSettings(JFrame MyFrame) {
-        String newStr = makeUserSettingString(MyFrame);
-        Options.userPrefs.put(SystemProperties.USER_SETTINGS, newStr);
+    private static int getRuleDivPos(JFrame frame) {
+        JSplitPane jsp = (JSplitPane) frame.getContentPane().getComponent(1);
+        jsp = (JSplitPane) jsp.getLeftComponent();
+        return jsp.getDividerLocation();
     }
 
+    private static int getMainDivPos(JFrame frame) {
+        JSplitPane jsp = (JSplitPane) frame.getContentPane().getComponent(1);
+        return jsp.getDividerLocation();
+    }
+
+    /** Synchronizes saved settings with the current ones. */
+    public static void synchSettings(JFrame frame) {
+        String simMax = new Boolean(isFrameMaximized(frame)).toString();
+        String simWidth = new Integer(getFrameWidth(frame)).toString();
+        String simHeight = new Integer(getFrameHeight(frame)).toString();
+        String rulePos = new Integer(getRuleDivPos(frame)).toString();
+        String mainPos = new Integer(getMainDivPos(frame)).toString();
+
+        Options.userPrefs.put(SIM_MAX, simMax);
+        Options.userPrefs.put(SIM_WIDTH, simWidth);
+        Options.userPrefs.put(SIM_HEIGHT, simHeight);
+        Options.userPrefs.put(RULE_GRAPH_DIV_POS, rulePos);
+        Options.userPrefs.put(MAIN_DIV_POS, mainPos);
+    }
+
+    static private final String SIM_MAX = "Simulator maximized";
+    static private final String SIM_WIDTH = "Simulator width";
+    static private final String SIM_HEIGHT = "Simulator height";
+    static private final String RULE_GRAPH_DIV_POS =
+        "Rule-Graph divider position";
+    static private final String MAIN_DIV_POS = "Main panel divider position";
 
 }

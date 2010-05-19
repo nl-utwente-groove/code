@@ -16,15 +16,19 @@
  */
 package groove.explore.util;
 
+import groove.control.ControlState;
+import groove.control.ControlTransition;
+import groove.graph.Morphism;
+import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
-import groove.util.Reporter;
 import groove.util.TransformIterator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -63,15 +67,12 @@ public class MatchesIterator implements Iterator<RuleEvent> {
     }
 
     public boolean hasNext() {
-        reporter.start(HAS_NEXT);
         goToNext();
         boolean result = this.eventIter != null && this.eventIter.hasNext();
-        reporter.stop();
         return result;
     }
 
     public RuleEvent next() {
-        reporter.start(NEXT);
         goToNext();
         if (this.eventIter == null) {
             throw new NoSuchElementException();
@@ -79,7 +80,6 @@ public class MatchesIterator implements Iterator<RuleEvent> {
         RuleEvent result = this.eventIter.next();
         this.rulesIter.updateMatches(this.currentRule);
         this.isEndRule = !this.eventIter.hasNext();
-        reporter.stop();
         return result;
     }
 
@@ -160,20 +160,45 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 
     /** Callback method to create an iterator over the matches of a given rule. */
     protected Iterator<RuleEvent> createEventIter(Rule rule) {
+        Morphism m = null;
+        boolean morphismError = false;
+        if (this.state instanceof AbstractGraphState
+            && this.state.getLocation() != null) {
+            ControlTransition ct =
+                ((ControlState) this.state.getLocation()).getTransition(rule);
+            if (ct.hasInputParameters()) {
+                m = ((AbstractGraphState) this.state).getPartialMorphism(ct);
+                if (m == null) {
+                    morphismError = true;
+                }
+            }
+        }
         if (this.COLLECT_ALL_MATCHES) {
             List<RuleEvent> result = new ArrayList<RuleEvent>();
-            for (RuleMatch match : rule.getMatches(this.state.getGraph(), null)) {
-                result.add(this.record.getEvent(match));
+            if (!morphismError) {
+                for (RuleMatch match : rule.getMatches(this.state.getGraph(), m)) {
+                    result.add(this.record.getEvent(match));
+                }
             }
             return result.iterator();
         } else {
-            return new TransformIterator<RuleMatch,RuleEvent>(
-                rule.getMatchIter(this.state.getGraph(), null)) {
-                @Override
-                protected RuleEvent toOuter(RuleMatch from) {
-                    return MatchesIterator.this.record.getEvent(from);
-                }
-            };
+            if (morphismError) {
+                return new TransformIterator<RuleMatch,RuleEvent>(
+                    Collections.<RuleMatch>emptyList().iterator()) {
+                    @Override
+                    protected RuleEvent toOuter(RuleMatch from) {
+                        return MatchesIterator.this.record.getEvent(from);
+                    }
+                };
+            } else {
+                return new TransformIterator<RuleMatch,RuleEvent>(
+                    rule.getMatchIter(this.state.getGraph(), m)) {
+                    @Override
+                    protected RuleEvent toOuter(RuleMatch from) {
+                        return MatchesIterator.this.record.getEvent(from);
+                    }
+                };
+            }
         }
     }
 
@@ -198,10 +223,4 @@ public class MatchesIterator implements Iterator<RuleEvent> {
 
     /** Flag to collect all matches at once, rather than doing a true iteration. */
     private final boolean COLLECT_ALL_MATCHES = true;
-    static final Reporter reporter = Reporter.register(MatchSetCollector.class);
-    static final int CONSTRUCT = reporter.newMethod("constructor");
-    private static final int HAS_NEXT = reporter.newMethod("hasNext");
-    private static final int NEXT = reporter.newMethod("next");
-    static final int COMPUTE_ALIAS_MAP =
-        reporter.newMethod("computeAliasedMatches");
 }

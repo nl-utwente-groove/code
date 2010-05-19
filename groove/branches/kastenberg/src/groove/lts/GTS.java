@@ -43,7 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -284,7 +284,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     // ----------------------- OBJECT OVERRIDES ------------------------
 
     public Set<? extends GraphState> nodeSet() {
-        return Collections.unmodifiableSet(this.stateSet);
+        return Collections.unmodifiableSet(getStateSet());
     }
 
     public Set<? extends GraphTransition> edgeSet() {
@@ -352,7 +352,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     public void addTransition(GraphTransition transition) {
         if (isStoreTransitions()) {
-            reporter.start(ADD_TRANSITION_STOP);
             // add (possibly isomorphically modified) edge to LTS
             if (transition.source().addTransition(transition)) {
                 this.transitionCount++;
@@ -360,12 +359,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             } else {
                 spuriousTransitionCount++;
             }
-            reporter.stop();
         } else if (transition instanceof GraphNextState) {
-            reporter.start(ADD_TRANSITION_STOP);
             this.transitionCount++;
             fireAddEdge(transition);
-            reporter.stop();
         }
     }
 
@@ -379,14 +375,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      *         then, <tt>state</tt> was added and the listeners notified).
      */
     public GraphState addState(GraphState newState) {
-        reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
         GraphState result = getStateSet().put(newState);
         if (result == null) {
-            ((AbstractGraphState) newState).setNumber(nodeCount());
+            ((AbstractGraphState) newState).setNumber(nodeCount() - 1);
             fireAddNode(newState);
         }
-        reporter.stop();
         return result;
     }
 
@@ -493,25 +487,22 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                         // if variables are involved we need to make sure they 
                         // map to isomorphic nodes
                         ControlState cs = (ControlState) stateKey.getLocation();
-                        Graph g1 = stateKey.getGraph();
-                        Graph g2 = otherStateKey.getGraph();
                         if (cs != null) {
-                            Set<String> variables =
+                            List<String> variables =
                                 ((ControlState) stateKey.getLocation()).getInitializedVariables();
                             if (variables.size() > 0) {
                                 NodeEdgeMap isomorphism =
                                     ((DefaultIsoChecker) this.checker).getIsomorphism(
                                         one, two);
                                 if (isomorphism != null) {
-                                    Map<String,Node> parametersOne =
+                                    Node[] parametersOne =
                                         stateKey.getParameters();
-                                    Map<String,Node> parametersTwo =
+                                    Node[] parametersTwo =
                                         otherStateKey.getParameters();
                                     if (parametersOne != null
                                         && parametersTwo != null) {
-                                        for (String variable : variables) {
-                                            if (isomorphism.nodeMap().get(
-                                                parametersOne.get(variable)) != parametersTwo.get(variable)) {
+                                        for (int i = 0; i < parametersOne.length; i++) {
+                                            if (parametersOne[i] != parametersTwo[i]) {
                                                 return false;
                                             }
                                         }
@@ -562,8 +553,19 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                     result = certificate.hashCode();
                 }
                 Object control = stateKey.getLocation();
-                result +=
-                    control == null ? 0 : System.identityHashCode(control);
+                result += control == null ? 0 : control.hashCode();
+                if (stateKey.getParameters() != null) {
+                    CertificateStrategy certifier =
+                        stateKey.getGraph().getCertifier(true);
+                    for (Node n : stateKey.getParameters()) {
+                        if (n != null) {
+                            result +=
+                                certifier.getCertificateMap().get(n).hashCode();
+                            // shift left to ensure the parameters' order matters
+                            result = result << 1 | (result < 0 ? 1 : 0);
+                        }
+                    }
+                }
             }
             return result;
         }
@@ -711,11 +713,4 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Number of states for which the state set should have room initially.
      */
     protected final static int INITIAL_STATE_SET_SIZE = 10000;
-
-    /** Profiling aid for adding states. */
-    static public final int ADD_STATE = reporter.newMethod("addState");
-    /** Profiling aid for adding transitions. */
-    static public final int ADD_TRANSITION_STOP =
-        reporter.newMethod("addTransition  - stop");
-
 }

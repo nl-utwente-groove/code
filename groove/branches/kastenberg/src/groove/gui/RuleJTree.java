@@ -35,6 +35,8 @@ import groove.view.StoredGrammarView;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -54,7 +56,6 @@ import java.util.TreeSet;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -107,6 +108,24 @@ public class RuleJTree extends JTree implements SimulationListener {
         im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);
         // add tool tips
         ToolTipManager.sharedInstance().registerComponent(this);
+        addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                RuleJTree.this.repaint();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                RuleJTree.this.repaint();
+                TreePath[] paths = getSelectionPaths();
+                if (paths != null && paths.length == 1) {
+                    Object selectedNode = paths[0].getLastPathComponent();
+                    if (selectedNode instanceof RuleTreeNode) {
+                        switchSimulatorToRulePanel();
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -318,7 +337,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Refreshes the selection in the tree, based on the current state of the
      * Simulator.
      */
-    void refresh() {
+    private void refresh() {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
         if (getCurrentState() == null) {
@@ -515,6 +534,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     protected JPopupMenu createPopupMenu(TreeNode node) {
         JPopupMenu res = new JPopupMenu();
+        res.setFocusable(false);
         res.add(getSimulator().getNewRuleAction());
         if (node instanceof RuleTreeNode) {
             res.addSeparator();
@@ -557,6 +577,15 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** Returns the associated simulator. */
     private final Simulator getSimulator() {
         return this.simulator;
+    }
+
+    /**
+     * Switches the simulator to the state panel view, and
+     * refreshes the actions.
+     */
+    private void switchSimulatorToRulePanel() {
+        getSimulator().setGraphPanel(getSimulator().getRulePanel());
+        getSimulator().refreshActions();
     }
 
     /**
@@ -615,13 +644,9 @@ public class RuleJTree extends JTree implements SimulationListener {
         return "(" + name + ")";
     }
 
-    static private final Color TREE_ENABLED_COLOR;
-
-    static {
-        JLabel label = new JLabel();
-        label.setEnabled(true);
-        TREE_ENABLED_COLOR = Color.WHITE;
-    }
+    static private final Color TREE_ENABLED_COLOR = Color.WHITE;
+    /** The background colour of a selected cell if the list does not have focus. */
+    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
 
     /**
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
@@ -640,7 +665,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         public void valueChanged(TreeSelectionEvent evt) {
             // only do something if a path was added to the selection
             if (isListenToSelectionChanges() && evt.isAddedPath()) {
-                // mzimakova - Multiple selection
                 TreePath[] paths = getSelectionPaths();
                 for (int i = 0; i < paths.length; i++) {
                     Object selectedNode = paths[i].getLastPathComponent();
@@ -650,8 +674,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                         if (paths.length == 1) {
                             getSimulator().setRule(
                                 ((RuleTreeNode) selectedNode).getRule().getRuleName());
-                            getSimulator().setGraphPanel(
-                                getSimulator().getRulePanel());
+                            switchSimulatorToRulePanel();
                         }
                     } else if (selectedNode instanceof MatchTreeNode) {
                         // selected tree node is a match (level 2 node)
@@ -661,14 +684,10 @@ public class RuleJTree extends JTree implements SimulationListener {
                             RuleJTree.this.matchTransitionMap.get(event);
                         if (trans == null) {
                             // possibly there is a transition associated with
-                            // this
-                            // event
-                            // that has not yet made it to the
-                            // matchTransitionMap
-                            // because the refresh is only occurring after
-                            // setting
-                            // the event; so look it up among the outgoing
-                            // transitions
+                            // this event that has not yet made it to the
+                            // matchTransitionMap because the refresh is only
+                            // occurring after setting the event; so look it
+                            // up among the outgoing transitions
                             Iterator<GraphTransition> outTransitions =
                                 getCurrentState().getTransitionIter();
                             while (outTransitions.hasNext()) {
@@ -713,7 +732,6 @@ public class RuleJTree extends JTree implements SimulationListener {
             if (evt.getButton() == MouseEvent.BUTTON3) {
                 TreePath selectedPath =
                     getPathForLocation(evt.getX(), evt.getY());
-                // mzimakova - Multiple selection
                 if (selectedPath != null) {
                     TreePath[] paths = getSelectionPaths();
                     boolean pathIsSelected = false;
@@ -759,6 +777,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 TreeNode selectedNode =
                     selectedPath == null ? null
                             : (TreeNode) selectedPath.getLastPathComponent();
+                RuleJTree.this.requestFocus();
                 createPopupMenu(selectedNode).show(evt.getComponent(),
                     evt.getX(), evt.getY());
             }
@@ -963,5 +982,29 @@ public class RuleJTree extends JTree implements SimulationListener {
             setOpaque(!sel);
             return this;
         }
+
+        @Override
+        public Color getBackgroundSelectionColor() {
+            Color result;
+            if (RuleJTree.this.isFocusOwner()) {
+                result = super.getBackgroundSelectionColor();
+            } else {
+                result = SELECTION_NON_FOCUS_COLOR;
+                if (getCurrentGTS() == null) {
+                    result = result.darker();
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Color getTextSelectionColor() {
+            if (RuleJTree.this.isFocusOwner() || getCurrentGTS() == null) {
+                return super.getTextSelectionColor();
+            } else {
+                return Color.BLACK;
+            }
+        }
+
     }
 }

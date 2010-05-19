@@ -29,7 +29,6 @@ import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Property;
 import groove.view.FormatException;
-import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -490,10 +489,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
             default:
                 // default atoms
-                String prefix = TypeAspect.NODE_TYPE.getPrefix();
-                if (text.startsWith(prefix)) {
-                    text = text.substring(prefix.length());
-                }
+                // skip any node type or flag prefix
+                text = DefaultLabel.createTypedLabel(text).text();
                 boolean correct = true;
                 int i;
                 for (i = 0; correct && i < text.length(); i++) {
@@ -646,23 +643,29 @@ abstract public class RegExpr { // implements VarSetSupport {
 
     /** Tests this class. */
     static public void main(String[] args) {
-        test("");
-        test("?");
-        test("a|b");
-        test("|b");
-        test("*");
-        test("((a).(b))*");
-        test("((a)*|b)+");
-        test("?.'b.c'. 'b'. \"c\". (d*)");
-        test("a+*");
-        test("a.?*");
-        test("((a)");
-        test("(<a)");
-        test("(a . b)* .c. d|e*");
-        test("=. b|c*");
-        test("!a*");
-        test("!a.b | !(a.!b)");
-        test("?ab");
+        if (args.length == 0) {
+            test("");
+            test("?");
+            test("a|b");
+            test("|b");
+            test("*");
+            test("((a).(b))*");
+            test("((a)*|b)+");
+            test("?.'b.c'. 'b'. \"c\". (d*)");
+            test("a+*");
+            test("a.?*");
+            test("((a)");
+            test("(<a)");
+            test("(a . b)* .c. d|e*");
+            test("=. b|c*");
+            test("!a*");
+            test("!a.b | !(a.!b)");
+            test("?ab");
+        } else {
+            for (String arg : args) {
+                test(arg);
+            }
+        }
     }
 
     /**
@@ -769,8 +772,8 @@ abstract public class RegExpr { // implements VarSetSupport {
      * before the {@link Atom}.
      */
     static private final RegExpr[] prototypes =
-        new RegExpr[] {new Atom(), new Choice(), new Seq(), new Neg(),
-            new Star(), new Plus(), new Wildcard(), new Empty(), new Inv()};
+        new RegExpr[] {new Atom(), new Neg(), new Choice(), new Seq(),
+            new Inv(), new Star(), new Plus(), new Wildcard(), new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
@@ -1347,6 +1350,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 throw error;
             }
             String prefix = operands[0];
+            // derive the type of labels the wildcard should match
             int labelType = Label.BINARY;
             int separatorPos = prefix.length() - 1;
             if (separatorPos >= 0) {
@@ -1359,8 +1363,11 @@ abstract public class RegExpr { // implements VarSetSupport {
                     throw error;
                 }
             }
+            // parse the identifier and constraint expression
             String text = operands[1];
-            if (text.length() != 0) {
+            if (text.length() == 0) {
+                result = newInstance();
+            } else {
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
                 int subStringCount = operand.second().size();
                 String identifier = operand.first();

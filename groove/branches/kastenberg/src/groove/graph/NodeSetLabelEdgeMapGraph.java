@@ -67,25 +67,18 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
 
     @Override
     public boolean containsElement(Element elem) {
-        reporter.start(CONTAINS_ELEMENT);
-        try {
-            if (elem instanceof Node) {
-                return this.nodeSet.contains(elem);
-            } else {
-                assert elem instanceof Edge;
-                Set<Edge> elemSet =
-                    this.labelEdgeMap.get(((Edge) elem).label());
-                return elemSet != null && elemSet.contains(elem);
-            }
-        } finally {
-            reporter.stop();
+        if (elem instanceof Node) {
+            return this.nodeSet.contains(elem);
+        } else {
+            assert elem instanceof Edge;
+            Set<Edge> elemSet = this.labelEdgeMap.get(((Edge) elem).label());
+            return elemSet != null && elemSet.contains(elem);
         }
     }
 
     // ------------------------- COMMANDS ------------------------------
 
     public boolean addNode(Node node) {
-        reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = this.nodeSet.add(node);
         if (added) {
@@ -93,12 +86,10 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
                 "Overlapping node number for %s in %s", node, nodeSet());
             fireAddNode(node);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean addEdge(Edge edge) {
-        reporter.start(ADD_EDGE);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         Set<Edge> edgeSet = this.labelEdgeMap.get(edge.label());
         if (edgeSet == null) {
@@ -114,12 +105,10 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
             }
             fireAddEdge(edge);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean removeNode(Node node) {
-        reporter.start(REMOVE_NODE);
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = this.nodeSet.remove(node);
@@ -135,24 +124,20 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
             }
             fireRemoveNode(node);
         }
-        reporter.stop();
         return removed;
     }
 
     public boolean removeEdge(Edge edge) {
-        reporter.start(REMOVE_EDGE);
         Set<Edge> edgeSet = this.labelEdgeMap.get(edge.label());
         boolean removed = edgeSet != null && edgeSet.remove(edge);
         if (removed) {
             fireRemoveEdge(edge);
         }
-        reporter.stop();
         return removed;
     }
 
     @Override
     public boolean removeNodeSet(Collection<Node> nodeSet) {
-        reporter.start(REMOVE_NODE);
         boolean removed = false;
         Iterator<Edge> edgeIter =
             new CollectionOfCollections<Edge>(this.labelEdgeMap.values()).iterator();
@@ -175,14 +160,12 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
                 removed = true;
             }
         }
-        reporter.stop();
         return removed;
     }
 
     // -------------------- PackageGraph methods ---------------------
 
     public boolean addEdgeWithoutCheck(Edge edge) {
-        reporter.start(ADD_EDGE);
         Label label = edge.label();
         Set<Edge> edgeSet = this.labelEdgeMap.get(label);
         if (edgeSet == null) {
@@ -192,17 +175,14 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
         if (added) {
             fireAddEdge(edge);
         }
-        reporter.stop();
         return added;
     }
 
     public boolean removeNodeWithoutCheck(Node node) {
-        reporter.start(REMOVE_NODE);
         boolean removed = this.nodeSet.remove(node);
         if (removed) {
             fireRemoveNode(node);
         }
-        reporter.stop();
         return removed;
     }
 
@@ -210,9 +190,7 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
 
     @Override
     public Graph clone() {
-        reporter.start(CLONE);
         Graph result = new NodeSetLabelEdgeMapGraph(this);
-        reporter.stop();
         return result;
     }
 

@@ -28,6 +28,7 @@ import groove.view.FormatException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -115,7 +116,7 @@ public class AutomatonBuilder extends Namespace {
      */
     public void mergeInitializedVariables(ControlState s1, ControlState s2,
             ControlState tar) {
-        Set<String> variables = s1.getInitializedVariables();
+        List<String> variables = s1.getInitializedVariables();
         variables.retainAll(s2.getInitializedVariables());
         tar.setInitializedVariables(variables);
     }
@@ -419,13 +420,12 @@ public class AutomatonBuilder extends Namespace {
 
         for (ControlTransition ct : this.transitions) {
             if (ct.getFailures().keySet().contains(_DELTA_)) {
-                System.out.println(ct);
                 checkOrphan.add(ct.target());
                 remove.add(ct);
             }
         }
 
-        //consolidateFailures(this.aut.getStart(), new HashSet<ControlState>());
+        consolidateFailures();
 
         // Do actual remove
         for (ControlTransition ct : remove) {
@@ -462,50 +462,158 @@ public class AutomatonBuilder extends Namespace {
     /**
      * Consolidates failure transitions into new transitions consisting of a 
      * rule name and a set of failures.
-     * @param cs the ControlState to consolidate
      */
-    public Set<ControlTransition> consolidateFailures(ControlState cs,
-            Set<ControlState> examined) {
-        Set<ControlTransition> ret = new HashSet<ControlTransition>();
-        examined.add(cs);
+    public void consolidateFailures() {
+        Map<ControlState,TransitiveClosure> closures = getTransitiveClosures();
 
-        for (ControlTransition ct : getTransitionsFrom(cs)) {
-            if (ct.hasFailures() && ct.getRule() == null && cs != ct.target()) {
-                this.possibleOrphans.add(ct.target());
-                rmTransition(ct);
+        // for each transition, make this transition "applicable" for all states
+        // in the closure for the source state
+        for (ControlTransition ct : getNonFailureTransitions()) {
+            TransitiveClosure closure = closures.get(ct.source());
+            if (closure != null) {
+                for (ControlState cs : closure.getReachableFrom()) {
+                    // no point adding more transitions when this state is reachable
+                    // through a cycle of failure transitions
+                    if (cs != ct.source()) {
+                        for (Set<ControlTransition> failures : closure.getClosures(cs)) {
+                            // make a new transition from cs to ct.target() with 
+                            // the failures from the closure + the label from ct
+                            ControlTransition newTransition = ct.clone();
+                            newTransition.setSource(cs);
+                            Map<String,ControlTransition> newFailures =
+                                new HashMap<String,ControlTransition>();
+                            for (ControlTransition failure : failures) {
+                                for (String fail : failure.getFailures().keySet()) {
+                                    newFailures.put(fail, failure);
+                                }
+                            }
+                            newTransition.setFailures(newFailures);
 
-                Map<String,ControlTransition> currentFailures =
-                    ct.getFailures();
-
-                Set<ControlTransition> consolidated =
-                    consolidateFailures(ct.target(), examined);
-                for (ControlTransition ct2 : consolidated) {
-                    ControlTransition newTransition = ct2.clone();
-                    newTransition.setSource(ct.source());
-
-                    Map<String,ControlTransition> newFailures =
-                        new HashMap<String,ControlTransition>(currentFailures);
-                    newFailures.putAll(ct2.getFailures());
-                    newTransition.setFailures(newFailures);
-                    ret.add(newTransition);
-                    this.transitions.add(newTransition);
-                    this.aut.addTransition(newTransition);
-                    ct.source().add(newTransition);
-                    debug("Transition added by consolidate: " + newTransition);
+                            this.transitions.add(newTransition);
+                            this.aut.addTransition(newTransition);
+                            cs.add(newTransition);
+                        }
+                    }
                 }
-                if (consolidated.isEmpty()) {
-                    this.transitions.add(ct);
-                    this.aut.addTransition(ct);
-                    ct.source().add(ct);
-                }
-            } else {
-                if (!examined.contains(ct.target())) {
-                    consolidateFailures(ct.target(), examined);
-                }
-                ret.add(ct);
             }
         }
-        return ret;
+
+        // remove all failure transtions
+        for (ControlTransition ct : getFailureTransitions()) {
+            this.possibleOrphans.add(ct.target());
+            rmTransition(ct);
+        }
+
+    }
+
+    /**
+     * Calculates the transitive (failure-) closure for this automaton, e.g.
+     * for each state the states it can be reached from with only failures, as 
+     * well as the paths used for this.
+     * @return a map with for each state the states it can be reached from,
+     * including the path(s) needed to reach it from those states
+     */
+    private Map<ControlState,TransitiveClosure> getTransitiveClosures() {
+        Map<ControlState,TransitiveClosure> closures =
+            new HashMap<ControlState,TransitiveClosure>();
+
+        Set<ControlTransition> failureTransitions = getFailureTransitions();
+
+        // initialize the closure by adding all failure transitions:
+        for (ControlTransition ct : failureTransitions) {
+            TransitiveClosure failures = this.new TransitiveClosure();
+            Set<ControlTransition> failureSet =
+                new HashSet<ControlTransition>();
+            failureSet.add(ct);
+            failures.addClosure(ct.source(), failureSet);
+
+            // if the target is a success state, the source should be a 
+            // conditional success:
+            if (ct.target().isSuccess()) {
+                Map<Rule,String[]> condition = new HashMap<Rule,String[]>();
+                Rule r = getRule(ct.getFailures().keySet().iterator().next());
+                condition.put(r, ct.getInputParameters());
+                ct.source().addSuccess(condition);
+            }
+
+            closures.put(ct.target(), failures);
+        }
+
+        boolean added = true;
+
+        // as long as something was added in the previous pass...
+        while (added) {
+            added = false;
+
+            // for all failure transitions...
+            for (ControlTransition ct : failureTransitions) {
+                // for all ControlStates in the closure...
+                for (ControlState cs : closures.keySet()) {
+                    // if the target of this transition can reach the state 
+                    // we're investigating...
+                    if (closures.get(cs).containsState(ct.target())) {
+                        Set<ControlTransition> failureSet =
+                            new HashSet<ControlTransition>();
+                        failureSet.add(ct);
+
+                        // compute the new set of failure sets
+                        for (Set<ControlTransition> closureForTarget : closures.get(
+                            cs).getClosures(ct.target())) {
+                            HashSet<ControlTransition> newClosureForTarget =
+                                new HashSet<ControlTransition>(closureForTarget);
+                            newClosureForTarget.addAll(failureSet);
+                            added |=
+                                closures.get(cs).addClosure(ct.source(),
+                                    newClosureForTarget);
+                        }
+
+                        if (ct.target().getSuccessConditions() != null) {
+                            for (Map<Rule,String[]> condition : ct.target().getSuccessConditions()) {
+                                Map<Rule,String[]> newCondition =
+                                    new HashMap<Rule,String[]>();
+                                newCondition.putAll(condition);
+                                newCondition.put(ct.getRule(),
+                                    ct.getInputParameters());
+                                ct.source().addSuccess(newCondition);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return closures;
+    }
+
+    /**
+     * Returns a Set of failure transitions (transitions that do not have a 
+     * label but do have failures)
+     * @return a Set of failure transitions
+     */
+    private Set<ControlTransition> getFailureTransitions() {
+        Set<ControlTransition> failureTransitions =
+            new HashSet<ControlTransition>();
+        for (ControlTransition ct : this.transitions) {
+            if (ct.hasFailures() && !ct.hasLabel()) {
+                failureTransitions.add(ct);
+            }
+        }
+        return failureTransitions;
+    }
+
+    /**
+     * Returns a Set of non-failure transitions (transitions that have a label)
+     * @return a Set of non-failure transitions
+     */
+    private Set<ControlTransition> getNonFailureTransitions() {
+        Set<ControlTransition> nonFailureTransitions =
+            new HashSet<ControlTransition>();
+        for (ControlTransition ct : this.transitions) {
+            if (ct.hasLabel()) {
+                nonFailureTransitions.add(ct);
+            }
+        }
+        return nonFailureTransitions;
     }
 
     /**
@@ -662,5 +770,52 @@ public class AutomatonBuilder extends Namespace {
 
     private void debug(String msg) {
         //System.err.println("debug: " + msg);
+    }
+
+    /**
+     * Keeps track of the transitive (failure-) closure for a state, e.g. the 
+     * states it is reachable from as well as the failures required to reach 
+     * it from that state.
+     * @author Olaf Keijsers
+     * @version $Revision $
+     */
+    class TransitiveClosure {
+        Map<ControlState,Set<Set<ControlTransition>>> closure;
+
+        public TransitiveClosure() {
+            this.closure =
+                new HashMap<ControlState,Set<Set<ControlTransition>>>();
+        }
+
+        public boolean addClosure(ControlState cs,
+                Set<ControlTransition> failures) {
+            if (this.closure.get(cs) == null) {
+                this.closure.put(cs, new HashSet<Set<ControlTransition>>());
+            }
+
+            if (this.closure.get(cs).contains(failures)) {
+                return false;
+            } else {
+                this.closure.get(cs).add(failures);
+                return true;
+            }
+        }
+
+        public boolean containsState(ControlState cs) {
+            return this.closure.containsKey(cs);
+        }
+
+        public Set<Set<ControlTransition>> getClosures(ControlState cs) {
+            return this.closure.get(cs);
+        }
+
+        public Set<ControlState> getReachableFrom() {
+            return this.closure.keySet();
+        }
+
+        @Override
+        public String toString() {
+            return this.closure.toString();
+        }
     }
 }

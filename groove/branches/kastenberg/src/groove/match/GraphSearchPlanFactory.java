@@ -27,6 +27,7 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -258,6 +259,10 @@ public class GraphSearchPlanFactory {
             for (Node node : unmatchedNodes) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
+                    assert !(node instanceof VariableNode)
+                        || anchorNodes.contains(node) : String.format(
+                        "Variable node '%s' should be among anchors %s", node,
+                        anchorNodes);
                     result.add(nodeItem);
                 }
             }
@@ -368,6 +373,8 @@ public class GraphSearchPlanFactory {
         protected AbstractSearchItem createNodeSearchItem(Node node) {
             if (node instanceof ValueNode) {
                 return new ValueNodeSearchItem((ValueNode) node);
+            } else if (node instanceof VariableNode) {
+                return new VariableNodeSearchItem((VariableNode) node);
             } else if (node instanceof ProductNode) {
                 return null;
             } else {
@@ -670,6 +677,7 @@ public class GraphSearchPlanFactory {
          * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
+         * <li> {@link VariableNodeSearchItem}s
          * <li> {@link AnchorSearchItem}s
          * </ul>
          */
@@ -723,6 +731,10 @@ public class GraphSearchPlanFactory {
             }
             result++;
             if (itemClass == ValueNodeSearchItem.class) {
+                return result;
+            }
+            result++;
+            if (itemClass == VariableNodeSearchItem.class) {
                 return result;
             }
             result++;

@@ -33,7 +33,6 @@ import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
-import groove.util.Reporter;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -260,7 +259,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     final public Iterator<M> getMatchIter(GraphShape host,
             NodeEdgeMap contextMap) {
         Iterator<M> result = null;
-        reporter.start(GET_MATCHING);
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
         final VarNodeEdgeMap anchorMap;
@@ -268,7 +266,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             testGround();
             anchorMap = EMPTY_ANCHOR_MAP;
         } else {
-            anchorMap = createAnchorMap(contextMap);
+            if (isGround()) {
+                anchorMap = new VarNodeEdgeHashMap(contextMap);
+            } else {
+                anchorMap = createAnchorMap(contextMap);
+            }
         }
         if (anchorMap == null) {
             // the context map could not be lifted to this condition
@@ -278,7 +280,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                 computeMatchIter(host, getMatcher().getMatchIter(host,
                     anchorMap));
         }
-        reporter.stop();
         return result;
     }
 
@@ -483,15 +484,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     private final SystemProperties properties;
     /** Subtyping relation, derived from the SystemProperties. */
     private final LabelStore labelStore;
-
-    /** Reporter instance for profiling this class. */
-    static public final Reporter reporter = Reporter.register(Condition.class);
-
-    /**
-     * Handle for profiling {@link #getMatches(GraphShape,NodeEdgeMap)} and
-     * related methods.
-     */
-    static public final int GET_MATCHING = reporter.newMethod("getMatching...");
     /** Constant empty anchor map. */
     static final VarNodeEdgeMap EMPTY_ANCHOR_MAP = new VarNodeEdgeHashMap();
 }

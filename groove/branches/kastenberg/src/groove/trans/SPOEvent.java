@@ -98,7 +98,6 @@ final public class SPOEvent extends
      */
     @Override
     int computeEventHashCode() {
-        reporter.start(HASHCODE);
         int result = getRule().hashCode();
         // we don't use getAnchorImage() because the events are often
         // just created to look up a stored event; then we shouldn't spend too
@@ -120,7 +119,6 @@ final public class SPOEvent extends
                 result += anchorMap.getEdge((Edge) anchor).hashCode() << i;
             }
         }
-        reporter.stop();
         return result;
     }
 
@@ -240,7 +238,6 @@ final public class SPOEvent extends
      *         <code>host</code>
      */
     private boolean isCorrectFor(Graph host) {
-        reporter.start(GET_PARTIAL_MATCH);
         VarNodeEdgeMap anchorMap = getAnchorMap();
         boolean correct = true;
         Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
@@ -257,7 +254,6 @@ final public class SPOEvent extends
                         || host.containsElement(nodeImage);
             }
         }
-        reporter.stop();
         return correct;
     }
 
@@ -273,7 +269,6 @@ final public class SPOEvent extends
      * the anchor image.
      */
     private Element[] computeAnchorImage(VarNodeEdgeMap anchorMap) {
-        reporter.start(GET_ANCHOR_IMAGE);
         Element[] anchor = getRule().anchor();
         int anchorSize = anchor.length;
         Element[] result = new Element[anchor.length];
@@ -286,7 +281,6 @@ final public class SPOEvent extends
             assert result[i] != null : String.format(
                 "No image for %s in anchor map %s", anchor[i], anchorMap);
         }
-        reporter.stop();
         return result;
     }
 
@@ -649,7 +643,7 @@ final public class SPOEvent extends
      * Returns the derivation record associated with this event. May be
      * <code>null</code>.
      */
-    private NodeFactory getNodeFactory() {
+    public NodeFactory getNodeFactory() {
         return this.nodeFactory;
     }
 
@@ -733,12 +727,6 @@ final public class SPOEvent extends
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference =
         CacheReference.<SPOEventCache>newInstance(false);
-
-    static private int HASHCODE = reporter.newMethod("computeHashCode()");
-    static private int GET_PARTIAL_MATCH =
-        reporter.newMethod("getPartialMatch()");
-    static private int GET_ANCHOR_IMAGE =
-        reporter.newMethod("getAnchorImage()");
 
     /** Cache holding the anchor map. */
     final class SPOEventCache extends

@@ -21,8 +21,10 @@ import groove.graph.Element;
 import groove.graph.Node;
 import groove.trans.Rule;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,9 +66,8 @@ public class ControlState implements Node, Location {
         } else if (transition.hasFailures()) {
             this.elseTransitions.add(transition);
         } else if (transition.hasLabel()) {
-            Rule rule = transition.getRule();
             // store targets by rule
-            this.ruleTargetMap.put(rule, transition);
+            this.ruleTargetMap.put(transition.getRule(), transition);
         } else {
             // should never be reached
             assert false;
@@ -195,13 +196,15 @@ public class ControlState implements Node, Location {
      * @param varName the name of the variable
      */
     public void initializeVariable(String varName) {
-        this.initializedVariables.add(varName);
+        if (!this.initializedVariables.contains(varName)) {
+            this.initializedVariables.add(varName);
+        }
     }
 
     /**
      * @return a set of initialized variables
      */
-    public Set<String> getInitializedVariables() {
+    public List<String> getInitializedVariables() {
         return this.initializedVariables;
     }
 
@@ -216,16 +219,38 @@ public class ControlState implements Node, Location {
     /**
      * @param variables
      */
-    public void initializeVariables(Set<String> variables) {
-        this.initializedVariables.addAll(variables);
+    public void initializeVariables(List<String> variables) {
+        for (String var : variables) {
+            this.initializeVariable(var);
+        }
     }
 
     /**
      * @param variables
      */
-    public void setInitializedVariables(Set<String> variables) {
+    public void setInitializedVariables(List<String> variables) {
         this.initializedVariables.clear();
         initializeVariables(variables);
+    }
+
+    /**
+     * Returns the name of the variable at the given position in the variables list
+     * @param index the position of the parameter to return
+     * @return the name of the variable at the given position in the variables list
+     */
+    public String getVariableName(int index) {
+        return this.initializedVariables.get(index);
+    }
+
+    /**
+     * Returns the index of the given variable in this ControlState's list
+     * of variables
+     * @param variable
+     * @return the index of the given variable in this ControlState's list 
+     * of variables
+     */
+    public int getVariablePosition(String variable) {
+        return this.initializedVariables.indexOf(variable);
     }
 
     /**
@@ -258,7 +283,7 @@ public class ControlState implements Node, Location {
     /** Set of outgoing failure transitions. */
     private final Set<ControlTransition> elseTransitions =
         new HashSet<ControlTransition>();
-    private final Set<String> initializedVariables = new HashSet<String>();
+    private final List<String> initializedVariables = new ArrayList<String>();
 
     /** Sets of rules which, if all rules in an element of this set fail, mean
      * this state is a success state.
@@ -345,6 +370,7 @@ public class ControlState implements Node, Location {
                 }
             }
         }
+        //System.out.println(this.toString() + ".getTransition("+ rule.getName().toString() + "): " + ret);
         return ret;
     }
 

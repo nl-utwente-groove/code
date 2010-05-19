@@ -23,6 +23,7 @@ package groove.util;
  * the given name occurs, the corresponding option instance will be given the
  * opportunity to exert its effect, through a call of the
  * <tt>{@link #parse}</tt> method.
+ * 
  * @author Arend Rensink
  * @version $Revision$
  */

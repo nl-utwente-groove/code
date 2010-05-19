@@ -16,7 +16,9 @@
  */
 package groove.control.parse;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,7 +32,7 @@ public class Scope {
      * Creates a new Scope with empty declared and initialized sets
      */
     public Scope() {
-        this.declared = new HashSet<String>();
+        this.declared = new HashMap<String,String>();
         this.initialized = new HashSet<String>();
     }
 
@@ -38,8 +40,8 @@ public class Scope {
      * Declares a variable in this Scope
      * @param var the variable to declare
      */
-    public void declare(String var) {
-        this.declared.add(var);
+    public void declare(String var, String type) {
+        this.declared.put(var, type);
     }
 
     /**
@@ -56,7 +58,7 @@ public class Scope {
      * @return true if the variable is declared, false otherwise
      */
     public boolean isDeclared(String var) {
-        return this.declared.contains(var);
+        return this.declared.containsKey(var);
     }
 
     /**
@@ -68,5 +70,16 @@ public class Scope {
         return this.initialized.contains(var);
     }
 
-    private Set<String> declared, initialized;
+    /**
+     * Returns the type of a declared variable
+     * @param var the name of the variable to look up
+     * @return the type of var
+     */
+    public String getType(String var) {
+        return this.declared.get(var);
+    }
+
+    private Map<String,String> declared;
+    private Set<String> initialized;
+
 }

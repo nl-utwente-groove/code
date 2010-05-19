@@ -136,7 +136,6 @@ public class DeltaGraphCache extends GraphCache {
      * method from {@link #getCacheDelta()}.
      */
     protected void initCache() {
-        reporter.start(INIT_DELTA);
         this.frozen = getGraph().isFrozen();
         if (this.frozen) {
             initFrozenCache();
@@ -145,7 +144,6 @@ public class DeltaGraphCache extends GraphCache {
         } else {
             initModifiableCache();
         }
-        reporter.stop();
     }
 
     /**
@@ -193,7 +191,6 @@ public class DeltaGraphCache extends GraphCache {
      * @see #getCacheDelta()
      */
     protected Set<Node> computeNodeSet() {
-        reporter.start(COMPUTE_NODE_SET);
         Set<Node> result;
         Graph basis = getCacheBasis();
         DeltaStore delta = getCacheDelta();
@@ -202,7 +199,6 @@ public class DeltaGraphCache extends GraphCache {
         } else {
             result = delta.newStackedNodeSet(getNodeSet(basis));
         }
-        reporter.stop();
         return result;
     }
 
@@ -213,7 +209,6 @@ public class DeltaGraphCache extends GraphCache {
      * @see #getCacheDelta()
      */
     protected Set<Edge> computeEdgeSet() {
-        reporter.start(COMPUTE_EDGE_SET);
         Set<Edge> result;
         DeltaStore delta = getCacheDelta();
         Graph basis = getCacheBasis();
@@ -222,7 +217,6 @@ public class DeltaGraphCache extends GraphCache {
         } else {
             result = delta.newStackedEdgeSet(getEdgeSet(basis));
         }
-        reporter.stop();
         return result;
     }
 
@@ -236,7 +230,6 @@ public class DeltaGraphCache extends GraphCache {
         // the cache basis
         AbstractGraph<?> basis = getCacheBasis();
         // otherwise, we can use the cache delta
-        reporter.start(COMPUTE_LABEL_EDGE_MAP);
         DeltaApplier delta = getCacheDelta();
         @SuppressWarnings("unchecked")
         final List<Map<Label,Set<Edge>>> basisMaps =
@@ -269,7 +262,6 @@ public class DeltaGraphCache extends GraphCache {
             }
         };
         delta.applyDelta(target, DeltaApplier.EDGES_ONLY);
-        reporter.stop();
         assert getEdgeSet().containsAll(
             new CollectionOfCollections<Edge>(result.get(2).values())) : "Edges not correct: "
             + getEdgeSet()
@@ -293,13 +285,11 @@ public class DeltaGraphCache extends GraphCache {
             // so we have to compute it the hard way
             return super.computeNodeEdgeMap();
         } else {
-            reporter.start(COMPUTE_NODE_EDGE_MAP);
             @SuppressWarnings("unchecked")
             Map<Node,Set<Edge>> basisMap = (Map) basis.nodeEdgeMap();
             Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>(basisMap);
             DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);
             getCacheDelta().applyDelta(target);
-            reporter.stop();
             assert getEdgeSet().containsAll(
                 new CollectionOfCollections<Edge>(result.values())) : "Map not correct: \nEdges "
                 + getEdgeSet()
@@ -504,10 +494,8 @@ public class DeltaGraphCache extends GraphCache {
      */
     protected void notifySetFixed() {
         if (this.nodeSet instanceof DeltaSet<?>) {
-            reporter.start(NODESET_LOWER);
             this.nodeSet = ((DeltaSet<Node>) this.nodeSet).lower();
             this.edgeSet = ((DeltaSet<Edge>) this.edgeSet).lower();
-            reporter.stop();
         }
     }
 
@@ -741,10 +729,4 @@ public class DeltaGraphCache extends GraphCache {
          */
         static private final int INIT_DISTANCE = Integer.MAX_VALUE;
     }
-
-    static final int INIT_DELTA = reporter.newMethod("computeCacheDelta()");
-    static final int NODESET_LOWER = reporter.newMethod("setFixed - lower");
-    static final int NODESET_NEW = reporter.newMethod("setFixed - new");
-    static final int COMPUTE_NODE_SET = reporter.newMethod("computeNodeSet()");
-    static final int COMPUTE_EDGE_SET = reporter.newMethod("computeEdgeSet()");
 }

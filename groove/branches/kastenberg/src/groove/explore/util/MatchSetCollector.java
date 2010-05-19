@@ -17,19 +17,15 @@
 package groove.explore.util;
 
 import groove.control.ControlTransition;
-import groove.graph.DefaultMorphism;
 import groove.graph.Morphism;
-import groove.graph.Node;
 import groove.lts.AbstractGraphState;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.trans.VirtualEvent;
-import groove.util.Reporter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +66,6 @@ public class MatchSetCollector {
 
     /** Returns a single match for the state passed in through the constructor. */
     public RuleEvent getMatch() {
-        reporter.start(GET_MATCH);
         RuleEvent result = null;
         Rule currentRule = firstRule();
         while (result == null && currentRule != null) {
@@ -91,7 +86,6 @@ public class MatchSetCollector {
                 result = virtualEvents.iterator().next();
             }
         }
-        reporter.stop();
         return result;
     }
 
@@ -110,7 +104,6 @@ public class MatchSetCollector {
      * constructor into a collection passed in as a parameter.
      */
     public void collectMatchSet(Collection<RuleEvent> result) {
-        reporter.start(GET_MATCH_SET);
         Rule currentRule = firstRule();
         while (currentRule != null) {
             boolean hasMatches = collectEvents(currentRule, result);
@@ -120,7 +113,6 @@ public class MatchSetCollector {
             this.cache.updateExplored(currentRule);
             currentRule = nextRule();
         }
-        reporter.stop();
     }
 
     /**
@@ -138,31 +130,28 @@ public class MatchSetCollector {
             // if this rule used parameters in the control expression, we need
             // to construct a partial morphism out of them
             Morphism m = null;
+            boolean morphismError = false;
             if (this.cache instanceof ControlStateCache) {
                 ControlTransition ct =
                     ((ControlStateCache) this.cache).getTransition(rule);
-                if (ct.hasRelevantParameters()) {
-                    String[] input = ct.getInputParameters();
+                if (ct.hasInputParameters()) {
                     m =
-                        new DefaultMorphism(rule.getTarget(),
-                            this.state.getGraph());
-                    for (int i = 0; i < input.length; i++) {
-                        if (input[i] != null && !input[i].equals("_")) {
-                            Node src = ((SPORule) rule).getParameter(i + 1);
-                            Node tgt =
-                                ((AbstractGraphState) this.state).getParameters().get(
-                                    input[i]);
-                            m.putNode(src, tgt);
-                        }
+                        ((AbstractGraphState) this.state).getPartialMorphism(ct);
+                    if (m == null) {
+                        // this typically occurs if we're trying to match a Node that 
+                        // has been removed
+                        morphismError = true;
                     }
                 }
             }
 
-            // the rule was possibly enabled afresh, so we have to add the fresh
-            // matches
-            for (RuleMatch match : rule.getMatches(this.state.getGraph(), m)) {
-                result.add(this.record.getEvent(match));
-                hasMatched = true;
+            if (!morphismError) {
+                // the rule was possibly enabled afresh, so we have to add the fresh
+                // matches
+                for (RuleMatch match : rule.getMatches(this.state.getGraph(), m)) {
+                    result.add(this.record.getEvent(match));
+                    hasMatched = true;
+                }
             }
         }
         return hasMatched;
@@ -201,7 +190,6 @@ public class MatchSetCollector {
      * in the current state.
      */
     private Map<Rule,Collection<RuleEvent>> computeVirtualEventMap() {
-        reporter.start(COMPUTE_EVENT_MAP);
         Map<Rule,Collection<RuleEvent>> result =
             new HashMap<Rule,Collection<RuleEvent>>();
         if (this.virtualEventSet != null) {
@@ -218,7 +206,6 @@ public class MatchSetCollector {
                 }
             }
         }
-        reporter.stop();
         return result;
     }
 
@@ -256,11 +243,4 @@ public class MatchSetCollector {
     private Set<Rule> enabledRules;
     /** The rules that may be disabled. */
     private Set<Rule> disabledRules;
-
-    private static final Reporter reporter =
-        Reporter.register(MatchSetCollector.class);
-    private static final int GET_MATCH_SET = reporter.newMethod("getMatchSet");
-    private static final int GET_MATCH = reporter.newMethod("getMatch");
-    private static final int COMPUTE_EVENT_MAP =
-        reporter.newMethod("computeVirtualEventMap");
 }

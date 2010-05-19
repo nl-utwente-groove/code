@@ -50,7 +50,16 @@ public class VariableNode extends ProductNode {
      */
     @Override
     protected int computeHashCode() {
+        // note that we can't take the algebra into account,
+        // as it is not yet set at the time we compute the hash code
         return super.computeHashCode() * 3;
+    }
+
+    /** Also tests for equality of the algebras. */
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj)
+            && this.algebra == ((VariableNode) obj).algebra;
     }
 
     /**

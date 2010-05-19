@@ -28,6 +28,16 @@ import java.util.Map.Entry;
 public class SystemProperties extends java.util.Properties implements Fixable,
         Cloneable {
     /**
+     * @return <code>true</code> if the version numbers are set to the current
+     * version of the tool. <code>false</code> otherwise.
+     */
+    public boolean isCurrentVersionProperties() {
+        return this.getGrooveVersion().equals(Version.getCurrentGrooveVersion())
+            && this.getGrammarVersion().equals(
+                Version.getCurrentGrammarVersion());
+    }
+
+    /**
      * Indicates if control is used and that the system will look for a control
      * program. Default value: <code>true</code>
      */
@@ -527,9 +537,6 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * *
      */
     static public final String HISTORY_KEY = "open_history";
-
-    /** (User) Property that holds the user settings separated by ',') **/
-    static public final String USER_SETTINGS = "userSettings";
 
     /**
      * Property that determines if transition parameters are included in the LTS

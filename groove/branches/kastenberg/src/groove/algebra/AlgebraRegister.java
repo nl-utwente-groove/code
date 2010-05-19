@@ -140,6 +140,21 @@ public class AlgebraRegister {
         return result;
     }
 
+    /** 
+     * Returns the algebra containing a given constant.
+     * The constant is looked up in the available algebras of this register.
+     * @param constant the string representation of the constant.
+     * @return the algebra containing {@code constant}, or {@code null} if there is no such algebra.
+     */
+    public Algebra<?> getAlgebra(String constant) {
+        for (Algebra<?> algebra : this.algebraMap.values()) {
+            if (algebra.isValue(constant)) {
+                return algebra;
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns a mapping from operation names to operations for a given algebra.
      */
@@ -220,7 +235,8 @@ public class AlgebraRegister {
     }
 
     /**
-     * Returns the operator for a given signature name and operator name.
+     * Returns the operator for a given signature name and operator name,
+     * or {@code null} if the operator does not exist.
      * @throws UnknownSymbolException if the signature or operator does not
      *         exist
      */

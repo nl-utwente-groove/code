@@ -21,13 +21,17 @@ import groove.graph.MergeLabel;
 import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Mapping from aspects to aspect values, associated with an
@@ -35,13 +39,18 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectMap implements Iterable<AspectValue> {
+public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap> {
     /**
      * Constructs an empty aspect map.
      * @param rule flag indicating if we are in the context of a rule.
      */
     public AspectMap(boolean rule) {
         this.rule = rule;
+        if (rule) {
+            this.defaultParser = RegExprLabelParser.getInstance(false);
+        } else {
+            this.defaultParser = FreeLabelParser.getInstance();
+        }
     }
 
     /** Constructs a copy of a given aspect map. */
@@ -50,6 +59,7 @@ public class AspectMap implements Iterable<AspectValue> {
         this.declaredValues.addAll(other.declaredValues);
         this.text = other.getText();
         this.rule = other.rule;
+        this.defaultParser = other.defaultParser;
     }
 
     /**
@@ -210,6 +220,30 @@ public class AspectMap implements Iterable<AspectValue> {
         return result;
     }
 
+    /** Aspect maps are compared on the basis of an ordered list of their values. */
+    @Override
+    public int compareTo(AspectMap o) {
+        SortedSet<AspectValue> myValues =
+            new TreeSet<AspectValue>(this.aspectMap.values());
+        Iterator<AspectValue> myIter = myValues.iterator();
+        SortedSet<AspectValue> oValues =
+            new TreeSet<AspectValue>(o.aspectMap.values());
+        Iterator<AspectValue> oIter = oValues.iterator();
+        while (myIter.hasNext() && oIter.hasNext()) {
+            int result = myIter.next().compareTo(oIter.next());
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (oIter.hasNext()) {
+            return -1;
+        } else if (myIter.hasNext()) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     /** Indicates if the aspects in this map equal those in another map. */
     public boolean equalsAspects(AspectMap other) {
         return this.aspectMap.equals(other.aspectMap);
@@ -274,7 +308,7 @@ public class AspectMap implements Iterable<AspectValue> {
      * property).
      */
     private LabelParser getDefaultLabelParser() {
-        return (this.rule ? TypeAspect.PATH : TypeAspect.EMPTY).getLabelParser();
+        return this.defaultParser;
     }
 
     /**
@@ -353,8 +387,8 @@ public class AspectMap implements Iterable<AspectValue> {
         new LinkedHashMap<Aspect,AspectValue>();
 
     /** Returns the set of declared values in this aspect map. */
-    public final Set<AspectValue> getDeclaredValues() {
-        return Collections.unmodifiableSet(this.declaredValues);
+    public final List<AspectValue> getDeclaredValues() {
+        return Collections.unmodifiableList(this.declaredValues);
     }
 
     /** Returns the set of inferred values in this aspect map. */
@@ -366,7 +400,8 @@ public class AspectMap implements Iterable<AspectValue> {
     }
 
     /** The (sub)set of declared aspect values. */
-    private final Set<AspectValue> declaredValues = new HashSet<AspectValue>();
+    private final List<AspectValue> declaredValues =
+        new ArrayList<AspectValue>();
 
     /** Sets the label text. */
     void setText(String text) {
@@ -389,4 +424,6 @@ public class AspectMap implements Iterable<AspectValue> {
      * {@link FreeLabelParser} for a graph.
      */
     private final boolean rule;
+    /** The default label parser of this aspect map. */
+    private final LabelParser defaultParser;
 }

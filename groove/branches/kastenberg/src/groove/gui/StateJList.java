@@ -28,6 +28,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -37,11 +39,15 @@ import java.util.Set;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -66,6 +72,18 @@ public class StateJList extends JList implements SimulationListener {
         this.setCellRenderer(new MyCellRenderer());
         this.addMouseListener(new MyMouseListener());
         addListSelectionListener(new MySelectionListener());
+        addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                StateJList.this.repaint();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                StateJList.this.repaint();
+                switchSimulatorToStatePanel();
+            }
+        });
     }
 
     /**
@@ -92,6 +110,7 @@ public class StateJList extends JList implements SimulationListener {
     protected JPopupMenu createPopupMenu(Point atPoint) {
         JPopupMenu result = new JPopupMenu();
         result.add(this.simulator.getNewGraphAction());
+        result.setFocusable(false);
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
         if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
@@ -154,6 +173,7 @@ public class StateJList extends JList implements SimulationListener {
      */
     public void refreshList(boolean keepSelection) {
         setList(getGrammarView().getGraphNames(), keepSelection);
+        setBackground(getCurrentGTS() == null ? null : LIST_ENABLED_COLOR);
     }
 
     /** Returns the list of selected graph names. */
@@ -281,9 +301,23 @@ public class StateJList extends JList implements SimulationListener {
                 : getGrammarView().getStartGraphName();
     }
 
+    /** Convenience method to retrieve the current GTS from the simulator. */
+    private GTS getCurrentGTS() {
+        return getSimulator().getGTS();
+    }
+
     /** Returns the simulator to which the state list belongs. */
     private Simulator getSimulator() {
         return this.simulator;
+    }
+
+    /**
+     * Switches the simulator to the state panel view, and
+     * refreshes the actions.
+     */
+    private void switchSimulatorToStatePanel() {
+        getSimulator().setGraphPanel(getSimulator().getStatePanel());
+        getSimulator().refreshActions();
     }
 
     /**
@@ -305,6 +339,16 @@ public class StateJList extends JList implements SimulationListener {
      */
     private Color enabledBackground;
 
+    static private final Color LIST_ENABLED_COLOR = Color.WHITE;
+    /** The background colour of a selected cell if the list does not have focus. */
+    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
+    /** The background colour of the start graph. */
+    static private final Color START_GRAPH_BACKGROUND_COLOR =
+        new JLabel().getBackground();
+    static private final Border START_GRAPH_BORDER =
+        new CompoundBorder(LineBorder.createBlackLineBorder(), new EmptyBorder(
+            0, 2, 0, 2));
+
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
 
@@ -322,13 +366,14 @@ public class StateJList extends JList implements SimulationListener {
             if (evt.getClickCount() == 1) {
                 if (evt.getButton() == MouseEvent.BUTTON3) { // Right click
                     // Determine if index was really selected
-                    if (index > 0 && cellSelected) {
+                    if (index >= 0 && cellSelected) {
                         // Multiple selection - mzimakova
                         if (getSelectedIndices().length < 2) {
                             // Adjust list selection accordingly.
                             setSelectedIndex(index);
                         }
                     }
+                    StateJList.this.requestFocus();
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                         evt.getX(), evt.getY());
                 }
@@ -343,8 +388,7 @@ public class StateJList extends JList implements SimulationListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulator().setGraphPanel(getSimulator().getStatePanel());
-            getSimulator().refreshActions();
+            switchSimulatorToStatePanel();
         }
     }
 
@@ -363,16 +407,27 @@ public class StateJList extends JList implements SimulationListener {
         {
             Component result =
                 super.getListCellRendererComponent(list, value, index,
-                    isSelected, hasFocus());
+                    isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
+            if (isSelected && !StateJList.this.isFocusOwner()) {
+                Color foreground = Color.BLACK;
+                Color background = SELECTION_NON_FOCUS_COLOR;
+                if (getCurrentGTS() == null) {
+                    foreground = Color.WHITE;
+                    background = background.darker();
+                }
+                result.setForeground(foreground);
+                result.setBackground(background);
+            }
             // set tool tips and special formats
             if (index == 0) {
                 // set the first item (the current state indicator) to special
                 // format
                 if (!isSelected) {
                     // distinguish the current start graph name
-                    result.setBackground(Color.LIGHT_GRAY);
+                    result.setBackground(START_GRAPH_BACKGROUND_COLOR);
+                    ((JComponent) result).setBorder(START_GRAPH_BORDER);
                 }
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setToolTipText("Currently selected state of the simulation");

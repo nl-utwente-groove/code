@@ -23,7 +23,6 @@ import groove.trans.RuleEvent;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -110,5 +109,5 @@ public interface GraphState extends State {
      * their associated Nodes.
      * @return a Map of parameters bound to Nodes, may be null
      */
-    public Map<String,Node> getParameters();
+    public Node[] getParameters();
 }

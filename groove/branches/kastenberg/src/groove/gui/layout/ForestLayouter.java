@@ -16,7 +16,6 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
@@ -82,7 +81,6 @@ public class ForestLayouter extends AbstractLayouter {
      * <tt>prepare()</tt>, <tt>layout()</tt> and <tt>finish()</tt>.
      */
     public void start(boolean complete) {
-        reporter.start(START);
         if (complete) {
             reset();
         }
@@ -96,7 +94,6 @@ public class ForestLayouter extends AbstractLayouter {
             shift(this.roots, MIN_NODE_DISTANCE);
             finish();
         }
-        reporter.stop();
     }
 
     /** This implementation does nothing, */
@@ -128,9 +125,7 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            if (!(key instanceof JCell) || this.jmodel.isMoveable((JCell) key)) {
-                this.branchMap.put(cellLayoutable, branchSet);
-            }
+            this.branchMap.put(cellLayoutable, branchSet);
             if (key instanceof JVertex && ((JVertex) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
@@ -139,7 +134,13 @@ public class ForestLayouter extends AbstractLayouter {
                 Iterator<?> edgeIter = ((JVertex) key).getPort().edges();
                 while (edgeIter.hasNext()) {
                     JEdge edge = (JEdge) edgeIter.next();
-                    if (edge.isVisible() && !this.jmodel.isGrayedOut(edge)) {
+                    // it's possible that the edge is displayed as node label
+                    // even though it has an explicit layout
+                    EdgeView edgeView =
+                        (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
+                            edge, false);
+                    if (edgeView != null && edge.isVisible()
+                        && !this.jmodel.isGrayedOut(edge)) {
                         // the edge source is a node for sure
                         JVertex sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
@@ -148,9 +149,7 @@ public class ForestLayouter extends AbstractLayouter {
                             // the
                             // source node
                             // as well as its end node (if any)
-                            List<?> points =
-                                ((EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
-                                    edge, false)).getPoints();
+                            List<?> points = edgeView.getPoints();
                             JVertex targetVertex = edge.getTargetVertex();
                             Iterator<?> pointsIter = points.iterator();
                             // the first point is the (port of the) source node
@@ -200,9 +199,6 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            if (!(key instanceof JCell) || this.jmodel.isMoveable((JCell) key)) {
-                this.branchMap.put(cellLayoutable, branchSet);
-            }
             if (key instanceof JVertex && ((JVertex) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
@@ -271,7 +267,7 @@ public class ForestLayouter extends AbstractLayouter {
             new CollectionOfCollections<Layoutable>(this.inDegreeMap.values()).iterator();
         // Transfer the suggested roots (if any) from j-cells to layoutables
         Collection<?> suggestedRoots = getSuggestedRoots();
-        if (suggestedRoots != null) {
+        if (suggestedRoots != null && !suggestedRoots.isEmpty()) {
             Iterator<Layoutable> suggestedRootIter =
                 new TransformIterator<Object,Layoutable>(
                     suggestedRoots.iterator()) {

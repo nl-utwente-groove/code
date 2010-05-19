@@ -251,8 +251,8 @@ expression
 			for(Pair<String,Integer> parameter : parameters) {
 				debug("adding a parameter: "+$IDENTIFIER.text);
 				ct.addParameter(parameter.first(), parameter.second()); 
-				ct.setRule(builder.getRule($IDENTIFIER.text));
 			}
+			ct.setRule(builder.getRule($IDENTIFIER.text));
 			currentTransition = ct;
 		}
 	}
@@ -283,7 +283,12 @@ var_declaration
   ;
   
 var_type
-  : NODE_TYPE;
+  : NODE_TYPE
+  | BOOL_TYPE
+  | STRING_TYPE
+  | INT_TYPE
+  | REAL_TYPE
+  ;
   
 parameter
   : ^(PARAM OUT IDENTIFIER {
@@ -296,4 +301,24 @@ parameter
   | ^(PARAM DONT_CARE {
   		parameters.add(new Pair<String,Integer>("", Rule.PARAMETER_DONT_CARE));
   	})
+  | ^(PARAM BOOL_TYPE TRUE {
+  		debug("Adding boolean parameter: true");
+  		parameters.add(new Pair<String,Integer>("true", Rule.PARAMETER_INPUT));
+  })
+  | ^(PARAM BOOL_TYPE FALSE {
+  		debug("Adding boolean parameter: false");
+  		parameters.add(new Pair<String,Integer>("false", Rule.PARAMETER_INPUT));
+  })
+  | ^(PARAM STRING_TYPE str=IDENTIFIER {
+  		debug("Adding string parameter: "+str.getText());
+  		parameters.add(new Pair<String,Integer>("\""+str.getText()+"\"", Rule.PARAMETER_INPUT));
+  	})
+  | ^(PARAM INT_TYPE in=IDENTIFIER {
+  		debug("Adding integer parameter: "+in.getText());
+  		parameters.add(new Pair<String,Integer>(in.getText(), Rule.PARAMETER_INPUT));
+  })
+  | ^(PARAM REAL_TYPE r=IDENTIFIER {
+  		debug("Adding real parameter: "+r.getText());
+  		parameters.add(new Pair<String,Integer>(r.getText(), Rule.PARAMETER_INPUT));
+  })
   ;

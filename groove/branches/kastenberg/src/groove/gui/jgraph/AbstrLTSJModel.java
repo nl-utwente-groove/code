@@ -17,7 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.abs.lts.AGTS;
-import groove.abs.lts.AbstrGraphTransition;
+import groove.abs.lts.ShapeGraphTransition;
 import groove.graph.Edge;
 import groove.gui.Options;
 import groove.lts.LTS;
@@ -60,9 +60,9 @@ public class AbstrLTSJModel extends LTSJModel {
     }
 
     @Override
-    /** @require trans should be of type AbstrGraphTransition */
+    /** @require trans should be of type ShapeGraphTransition */
     public void setActive(State state, Transition trans) {
-        assert trans == null || trans instanceof AbstrGraphTransition : "The transition should be of type AbstrGraphTransition";
+        assert trans == null || trans instanceof ShapeGraphTransition : "The transition should be of type ShapeGraphTransition";
         Set<JCell> changedCells = new HashSet<JCell>();
         Collection<Transition> previousActiveTransitions =
             this.activeTransitionsSet;
@@ -73,7 +73,7 @@ public class AbstrLTSJModel extends LTSJModel {
                 this.activeTransitionsSet = null;
             } else {
                 this.activeTransitionsSet =
-                    ((AGTS) getGraph()).getEquivalentTransitions((AbstrGraphTransition) trans);
+                    ((AGTS) getGraph()).getEquivalentTransitions((ShapeGraphTransition) trans);
                 for (Transition t : this.activeTransitionsSet) {
                     JCell jCell = getJCell(t);
                     assert jCell != null : String.format(

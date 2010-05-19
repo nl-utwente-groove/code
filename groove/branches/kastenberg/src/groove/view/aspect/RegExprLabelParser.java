@@ -35,9 +35,12 @@ import java.util.Set;
 
 /** Parser that attempts to turn the string into a regular expression label. */
 public class RegExprLabelParser implements LabelParser {
-    /** Private constructor for pre-computed images. */
-    private RegExprLabelParser() {
-        // empty
+    /** Private constructor for pre-computed images.
+     * @param certain if {@code true}, the parsed text is certainly a regular 
+     * expression; otherwise, it should be distinguished as such by curly braces.
+     */
+    private RegExprLabelParser(boolean certain) {
+        this.certain = certain;
     }
 
     /**
@@ -75,7 +78,7 @@ public class RegExprLabelParser implements LabelParser {
             result = innerExpr.neg();
             // } else if (text.length() == 1 && ) {
             // result = RegExpr.empty();
-        } else if (text.charAt(0) == RegExpr.EMPTY_OPERATOR
+        } else if (this.certain || text.charAt(0) == RegExpr.EMPTY_OPERATOR
             || text.charAt(0) == RegExpr.WILDCARD_OPERATOR) {
             result = RegExpr.parse(text);
         } else {
@@ -151,7 +154,7 @@ public class RegExprLabelParser implements LabelParser {
         DefaultLabel result;
         if (label instanceof RegExprLabel) {
             result = unparse(((RegExprLabel) label).getRegExpr());
-        } else if (label.isNodeType()) {
+        } else if (label.isNodeType() || label.isFlag()) {
             result = (DefaultLabel) label;
         } else {
             // test if the label should be quoted
@@ -178,7 +181,7 @@ public class RegExprLabelParser implements LabelParser {
         String text;
         if (expr.isNeg()) {
             text = RegExpr.NEG_OPERATOR + unparse(expr.getNegOperand());
-        } else if (expr.isEmpty()) {
+        } else if (expr.isEmpty() || this.certain) {
             text = expr.toString();
         } else if (expr.isAtom()) {
             text = expr.getAtomText();
@@ -188,9 +191,19 @@ public class RegExprLabelParser implements LabelParser {
         return DefaultLabel.createLabel(text);
     }
 
-    /** Returns the static instance of this parser, either curly or not. */
-    static public RegExprLabelParser getInstance() {
-        return instance;
+    /**
+     * Indicates if the parsed text is certainly a regular expression,
+     * or should be distinguished as one using curly braces.
+     */
+    private final boolean certain;
+
+    /** 
+     * Returns a static instance of this parser, either certain or not.
+     * @param certain if {@code true}, the parsed text is certainly a regular 
+     * expression; otherwise, it should be distinguished as such by curly braces.
+     */
+    static public RegExprLabelParser getInstance(boolean certain) {
+        return certain ? certainInstance : uncertainInstance;
     }
 
     /** Static parser for curly-bracketed expressions. */
@@ -203,6 +216,10 @@ public class RegExprLabelParser implements LabelParser {
      */
     static private final char[] SPECIAL_CHARS =
         new char[] {'{', '}', '\'', '\\', Aspect.VALUE_SEPARATOR};
-    /** Static instance of curly parser. */
-    static private final RegExprLabelParser instance = new RegExprLabelParser();
+    /** Static instance of parser that will parse any text as regular expression. */
+    static private final RegExprLabelParser certainInstance =
+        new RegExprLabelParser(true);
+    /** Static instance of parser that will parse only distinguished text as regular expressions. */
+    static private final RegExprLabelParser uncertainInstance =
+        new RegExprLabelParser(false);
 }

@@ -81,13 +81,6 @@ import groove.util.Reporter;
  */
 public class DefaultScenario implements Scenario {
     /** 
-     * Creates a scenario from a given strategy, with a {@link FinalStateAcceptor}.
-     */
-    public DefaultScenario(Strategy strategy) {
-        this(strategy, null);
-    }
-
-    /** 
      * Creates a scenario with a given strategy and acceptor.
      * The acceptor may be {@code null}, in which case a {@link FinalStateAcceptor} will be used. 
      */
@@ -124,7 +117,7 @@ public class DefaultScenario implements Scenario {
     }
 
     public Result play() {
-        reporter.start(RUNNING);
+        playReporter.start();
 
         this.strategy.addGTSListener(this.acceptor);
         this.interrupted = false;
@@ -135,7 +128,7 @@ public class DefaultScenario implements Scenario {
         }
 
         this.strategy.removeGTSListener(this.acceptor);
-        reporter.stop();
+        playReporter.stop();
 
         // return result
         return getResult();
@@ -202,14 +195,14 @@ public class DefaultScenario implements Scenario {
     /** One-line description of this scenario. */
     private final String description;
 
-    /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
+    /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(DefaultScenario.class);
     /** Handle for profiling {@link #prepare(GTS)}. */
-    static private final int RUNNING = reporter.newMethod("playScenario()");
+    static final Reporter playReporter = reporter.register("playScenario()");
 
     /** Returns the total running time of {@link #prepare(GTS)}. */
     public static long getRunningTime() {
-        return reporter.getTotalTime(RUNNING);
+        return playReporter.getTotalTime();
     }
 }

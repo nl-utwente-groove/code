@@ -30,9 +30,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.accessibility.AccessibleState;
 import javax.swing.Box;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -256,15 +259,9 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
      * Returns the refresh listener for this panel. Lazily creates the listener.
      */
-    protected final ItemListener getRefreshListener() {
+    protected final RefreshListener getRefreshListener() {
         if (this.refreshListener == null) {
-            this.refreshListener = new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (isEnabled()) {
-                        refresh();
-                    }
-                }
-            };
+            this.refreshListener = new RefreshListener();
         }
         return this.refreshListener;
     }
@@ -274,20 +271,21 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * given name. Throws an exception if no such option was in the options
      * object passed in at construction time.
      */
-    private void addOptionListener(String option, ItemListener listener) {
+    private void addOptionListener(String option, RefreshListener listener) {
         JMenuItem optionItem = getOptionsItem(option);
         if (optionItem == null) {
             throw new IllegalArgumentException(String.format(
                 "Unknown option: %s", option));
         }
         optionItem.addItemListener(listener);
+        optionItem.addPropertyChangeListener(listener);
         this.listeners.add(new Pair<JMenuItem,ItemListener>(optionItem,
             listener));
     }
 
     /**
      * Removes all listeners added by
-     * {@link #addOptionListener(String, ItemListener)}.
+     * {@link #addOptionListener(String, RefreshListener)}.
      */
     private void removeOptionListeners() {
         for (Pair<JMenuItem,ItemListener> record : this.listeners) {
@@ -355,7 +353,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /** Options for this panel. */
     private final Options options;
     /** Change listener that calls {@link #refresh()} when activated. */
-    private ItemListener refreshListener;
+    private RefreshListener refreshListener;
     /**
      * Panel for showing status messages
      */
@@ -376,4 +374,23 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * preferred width is set to the minimum width.
      */
     public final static int MINIMUM_LABEL_PANE_WIDTH = 100;
+
+    private class RefreshListener implements ItemListener,
+            PropertyChangeListener {
+        public void itemStateChanged(ItemEvent e) {
+            if (isEnabled()) {
+                refresh();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(
+                AccessibleState.ENABLED.toDisplayString())) {
+                if (isEnabled()) {
+                    refresh();
+                }
+            }
+        }
+    }
 }
