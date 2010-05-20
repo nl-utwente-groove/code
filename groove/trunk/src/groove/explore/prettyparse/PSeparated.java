@@ -64,8 +64,7 @@ public class PSeparated implements SerializedParser {
 
     @Override
     public String describeGrammar() {
-        return this.itemParser.describeGrammar() + "("
-            + this.separatorParser.describeGrammar()
-            + this.itemParser.describeGrammar() + ")*";
+        return this.itemParser.describeGrammar()
+            + this.separatorParser.describeGrammar() + "...";
     }
 }

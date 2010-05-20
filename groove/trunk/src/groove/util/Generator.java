@@ -118,7 +118,7 @@ public class Generator extends CommandLineTool {
     static public final String LOAD_ERROR = "Can't load graph grammar";
     /** Usage message for the generator. */
     static public final String USAGE_MESSAGE =
-        "Usage: Generator [options] <grammar-location> [<start-graph-name> | <start-graphs-dir>]";
+        "Usage: Generator [options] <grammar> [<start-graph-name> | <start-graphs-dir>]";
 
     /**
      * Value for the output file name to indicate that the name should be
@@ -128,9 +128,6 @@ public class Generator extends CommandLineTool {
     static public final String GRAMMAR_NAME_VAR = "@";
     /** Separator between grammar name and start state name in reporting. */
     static public final char START_STATE_SEPARATOR = '@';
-
-    /** Indentation used when printing help. */
-    static private final String INDENT = "    ";
 
     /** Number of bytes in a kilobyte */
     static private final int BYTES_PER_KB = 1024;
@@ -176,7 +173,7 @@ public class Generator extends CommandLineTool {
 
         this.exportSimulationOption =
             new EmptyCommandLineOption("e",
-                "Export the simulation to the path of the grammar");
+                "Export the simulation to the 'export' subpath of the grammar");
         this.exportSimulationPathOption = new ExportSimulationPathOption();
         this.exportSimulationFlagsOption = new ExportSimulationFlagsOption();
 
@@ -225,13 +222,13 @@ public class Generator extends CommandLineTool {
         // Verify that -ef only occurs if either e or ep occurs.
         if (ef && (!e && !ep)) {
             printError("The -ef option may only be specified in conjunction "
-                + "with either the -e or the -ep option.", true);
+                + "with either the -e or the -ep option.", false);
         }
 
         // Verify that -e and -ep are not both specified.
         if (e && ep) {
             printError("The -e and -ep options may not both be specified.",
-                true);
+                false);
         }
     }
 
@@ -1178,8 +1175,7 @@ public class Generator extends CommandLineTool {
 
         @Override
         public String[] getDescription() {
-            return new String[] {"Save all final states using filenames starting with "
-                + getParameterName() + " followed by a number"};
+            return new String[] {"Save all final states using 'file' + number as filenames"};
         }
 
         @Override
@@ -1208,8 +1204,7 @@ public class Generator extends CommandLineTool {
 
         @Override
         public String[] getDescription() {
-            return new String[] {"The number of accepted results for the exploration. "
-                + "Default value is infinite."};
+            return new String[] {"The number of accepted exploration results (default is infinite)"};
         }
 
         @Override
@@ -1247,8 +1242,8 @@ public class Generator extends CommandLineTool {
 
         /** 
          * Generic constructor that takes as arguments the name of the option,
-         * the name of its parameter, and an enumerator that describes the
-         * valid values of this parameter.
+         * the name of its parameter and an enumerator that describes the valid
+         * values of this parameter.
          */
         public TemplatedOption(String name, String parameterName,
                 TemplateList<A> enumerator) {
@@ -1264,7 +1259,8 @@ public class Generator extends CommandLineTool {
             desc[0] =
                 "The " + this.enumerator.getTypeIdentifier()
                     + ". Legal values for '" + getParameterName() + "' are:";
-            for (int i = 0; i < lines.length; i++) {
+            desc[1] = "  " + lines[0] + " (default value)";
+            for (int i = 1; i < lines.length; i++) {
                 desc[i + 1] = "  " + lines[i];
             }
             return desc;
@@ -1283,6 +1279,14 @@ public class Generator extends CommandLineTool {
     }
 
     /**
+     * TODO
+     * 
+     * A <code>ScenarioOption</code> is a command line option with which a
+     * predefined combination of a strategy, acceptor and result can be
+     * specified. This option is provided for backwards compatibility.
+     * It is implemented by means of 
+     * 
+     * scenario (a combination of a strategy, acceptor and result) can be
      * Option to control the exploration strategy in the generator.
      */
     static public class StrategyOptionOld implements CommandLineOption {
@@ -1318,6 +1322,7 @@ public class Generator extends CommandLineTool {
         }
 
         public String[] getDescription() {
+            /*
             List<String> result = new LinkedList<String>();
             result.add("Set the exploration strategy. Legal values for '"
                 + getParameterName() + "' are:");
@@ -1325,6 +1330,8 @@ public class Generator extends CommandLineTool {
                 result.add(INDENT + description);
             }
             return result.toArray(new String[0]);
+            */
+            return new String[0];
         }
 
         /**

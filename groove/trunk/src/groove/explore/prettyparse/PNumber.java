@@ -54,7 +54,7 @@ public class PNumber implements SerializedParser {
 
     @Override
     public String describeGrammar() {
-        return "%num";
+        return "n";
     }
 
 }

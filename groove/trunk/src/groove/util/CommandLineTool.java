@@ -455,10 +455,12 @@ public class CommandLineTool {
         for (int i = 0; i < this.optionsList.size(); i++) {
             CommandLineOption option = this.optionsList.get(i);
             String[] description = option.getDescription();
-            System.out.println(Groove.pad(prefix[i], maxPrefixLength)
-                + description[0]);
-            for (int j = 1; j < description.length; j++) {
-                System.out.println(emptyPrefix + description[j]);
+            if (description.length > 0) {
+                System.out.println(Groove.pad(prefix[i], maxPrefixLength)
+                    + description[0]);
+                for (int j = 1; j < description.length; j++) {
+                    System.out.println(emptyPrefix + description[j]);
+                }
             }
         }
     }
@@ -479,7 +481,7 @@ public class CommandLineTool {
     /**
      * The verbosity with which the generation is carried out.
      */
-    private int verbosity = VerbosityOption.LOW_VERBOSITY;
+    private int verbosity = VerbosityOption.MEDIUM_VERBOSITY;
     /**
      * Flag to indicate that the generation process should be logged.
      */
