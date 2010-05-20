@@ -1893,7 +1893,7 @@ public class Simulator {
             action.refresh();
         }
         getControlPanel().refreshAll();
-        getTypePanel().refreshAll();
+        getTypePanel().refreshActions();
     }
 
     /**

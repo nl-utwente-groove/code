@@ -28,6 +28,7 @@ import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -104,9 +105,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     /**
      * Tests if a give graph is correct according to this type graph.
      * @param model the graph to be checked
+     * @param parentTypeMap non-null map of nodes to types that have been defined 
+     * on a parent level. May be {@code null}.
      * @return a list of type errors found in the graph
      */
-    public Set<FormatError> checkTyping(Graph model) {
+    public Set<FormatError> checkTyping(Graph model,
+            Map<Node,Set<Label>> parentTypeMap) {
         Set<FormatError> errors = new TreeSet<FormatError>();
         Map<Node,Label> nodeTypes = new HashMap<Node,Label>();
         // detect node types
@@ -121,6 +125,17 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                         errors.add(new FormatError(
                             "Duplicate types '%s' and '%s' on node '%s'",
                             oldLabel, label, node));
+                    } else {
+                        Set<Label> parentTypes = parentTypeMap.get(node);
+                        if (parentTypes != null) {
+                            for (Label parentType : parentTypes) {
+                                if (!isSubtype(label, parentType)) {
+                                    errors.add(new FormatError(
+                                        "Type '%s' should be subtype of '%s' on node '%s'",
+                                        label, parentType, node));
+                                }
+                            }
+                        }
                     }
                 } else {
                     errors.add(new FormatError(
@@ -146,8 +161,20 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 }
             }
         }
+        // add parent node types
         for (Node untypedNode : untypedNodes) {
-            errors.add(new FormatError("Untyped node '%s'", untypedNode));
+            Set<Label> parentTypes = parentTypeMap.get(untypedNode);
+            if (parentTypes != null && !parentTypes.isEmpty()) {
+                // find minimum type among the parent types
+                Label type = null;
+                for (Label parentType : parentTypes) {
+                    if (type == null || isSubtype(parentType, type)) {
+                        type = parentType;
+                    }
+                }
+            } else {
+                errors.add(new FormatError("Untyped node '%s'", untypedNode));
+            }
         }
         for (Edge edge : model.edgeSet()) {
             if (edge instanceof ArgumentEdge || edge instanceof OperatorEdge) {
@@ -222,6 +249,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             }
         }
         return errors;
+    }
+
+    /**
+     * Tests if a give graph is correct according to this type graph.
+     * @param model the graph to be checked
+     * @return a list of type errors found in the graph
+     */
+    public Set<FormatError> checkTyping(Graph model) {
+        return checkTyping(model, Collections.<Node,Set<Label>>emptyMap());
     }
 
     /** Tests if a given node type label occurs in this type graph. */

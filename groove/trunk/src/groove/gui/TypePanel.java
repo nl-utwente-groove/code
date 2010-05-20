@@ -276,11 +276,16 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         this.refreshables.add(refreshable);
     }
 
-    /** Refreshes all registered refreshables. */
-    public void refreshAll() {
+    /** Refreshes all registered actions. */
+    public void refreshActions() {
         for (Refreshable refreshable : this.refreshables) {
             refreshable.refresh();
         }
+    }
+
+    /** Refreshes all registered actions as well as the display. */
+    public void refreshAll() {
+        refreshActions();
         this.jGraph.setModel(isTypeSelected()
                 ? getTypeJModel(getGrammarView().getTypeView(getSelectedType()))
                 : AspectJModel.EMPTY_ASPECT_JMODEL);
