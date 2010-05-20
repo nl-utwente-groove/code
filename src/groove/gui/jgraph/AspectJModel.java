@@ -469,7 +469,7 @@ public class AspectJModel extends GraphJModel {
             }
             String level = nesting.getContent();
             if (level != null && level.length() != 0) {
-                result.insert(0, level + LEVEL_NAME_SEPARATOR);
+                result.append(Converter.SUB_TAG.on(level));
             }
             return result;
         }
@@ -485,6 +485,16 @@ public class AspectJModel extends GraphJModel {
                 result =
                     AspectParser.toString(
                         ((AspectEdge) object).getDeclaredValues(), result);
+            } else {
+                // add nesting level, if any
+                String levelName =
+                    NestingAspect.getLevelName((AspectEdge) object);
+                if (levelName != null && levelName.length() != 0) {
+                    String prefix =
+                        Converter.HTML_EXISTS + Converter.SUB_TAG.on(levelName)
+                            + LEVEL_NAME_SEPARATOR;
+                    result.insert(0, prefix);
+                }
             }
             return result;
         }

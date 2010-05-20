@@ -349,10 +349,14 @@ public class Converter {
     static public final String STRONG_TAG_NAME = "strong";
     /** Strong font tag. */
     static public final HTMLTag STRONG_TAG = new HTMLTag(STRONG_TAG_NAME);
-    /** Name of the strong font tag (<code>strong</code>). */
+    /** Name of the superscript font tag. */
     static public final String SUPER_TAG_NAME = "sup";
-    /** Strong font tag. */
+    /** Superscript font tag. */
     static public final HTMLTag SUPER_TAG = new HTMLTag(SUPER_TAG_NAME);
+    /** Name of the subscript font tag. */
+    static public final String SUB_TAG_NAME = "sub";
+    /** Subscript font tag. */
+    static public final HTMLTag SUB_TAG = new HTMLTag(SUB_TAG_NAME);
 
     /** The <code>html</code> tag to insert a line break. */
     static public final String HTML_LINEBREAK =
