@@ -54,7 +54,7 @@ public class PIdentifier implements SerializedParser {
 
     @Override
     public String describeGrammar() {
-        return "%ident";
+        return "id";
     }
 
 }
