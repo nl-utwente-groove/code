@@ -490,9 +490,7 @@ public class AspectJModel extends GraphJModel {
                 String levelName =
                     NestingAspect.getLevelName((AspectEdge) object);
                 if (levelName != null && levelName.length() != 0) {
-                    String prefix =
-                        Converter.SUB_TAG.on(levelName) + LEVEL_NAME_SEPARATOR;
-                    result.insert(0, prefix);
+                    result.append(Converter.SUB_TAG.on(levelName));
                 }
             }
             return result;
