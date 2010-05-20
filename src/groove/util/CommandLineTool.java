@@ -442,9 +442,13 @@ public class CommandLineTool {
         int maxPrefixLength = 0;
         for (int i = 0; i < this.optionsList.size(); i++) {
             CommandLineOption option = this.optionsList.get(i);
-            prefix[i] =
-                OPTIONS_PREFIX + option.getName() + " "
-                    + option.getParameterName() + " ";
+            if (option.hasParameter()) {
+                prefix[i] =
+                    OPTIONS_PREFIX + option.getName() + " "
+                        + option.getParameterName() + " ";
+            } else {
+                prefix[i] = OPTIONS_PREFIX + option.getName() + " ";
+            }
             maxPrefixLength = Math.max(maxPrefixLength, prefix[i].length());
         }
         String emptyPrefix = Groove.pad("", maxPrefixLength);

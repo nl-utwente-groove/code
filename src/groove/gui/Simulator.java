@@ -921,6 +921,7 @@ public class Simulator {
      * Ends the program.
      */
     void doQuit() {
+
         groove.gui.UserSettings.synchSettings(this.frame);
         // Saves the current user settings.
         if (confirmAbandon(false)) {
@@ -1459,6 +1460,7 @@ public class Simulator {
             this.frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
             // frame.setSize(500,300);
             this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
             this.frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {

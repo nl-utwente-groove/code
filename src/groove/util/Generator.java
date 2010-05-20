@@ -82,6 +82,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -138,12 +139,17 @@ public class Generator extends CommandLineTool {
     private final TemplatedOption<Strategy> strategyOption;
     private final TemplatedOption<Acceptor> acceptorOption;
     private final ResultOption resultOption;
-    private StrategyOptionOld scenarioOption;
+    private final StrategyOptionOld scenarioOption;
+
     private final FinalSaveOption finalSaveOption;
+
+    private final EmptyCommandLineOption exportSimulationOption;
+    private final ExportSimulationPathOption exportSimulationPathOption;
+    private final ExportSimulationFlagsOption exportSimulationFlagsOption;
 
     /**
      * Attempts to load a graph grammar from a given location provided as a
-     * paramter with either default start state or a start state provided as a
+     * parameter with either default start state or a start state provided as a
      * second parameter.
      * @param args the first argument is the grammar location name; if provided,
      *        the second argument is the start graph filename.
@@ -153,7 +159,7 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * Constructs the generator. In particular, initialises the command line
+     * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
     public Generator(List<String> argsList) {
@@ -163,15 +169,25 @@ public class Generator extends CommandLineTool {
             new TemplatedOption<Strategy>("s", "str", new StrategyEnumerator());
         this.acceptorOption =
             new TemplatedOption<Acceptor>("a", "acc", new AcceptorEnumerator());
-        // this.scenarioOption = new StrategyOptionOld();
-        this.finalSaveOption = new FinalSaveOption();
         this.resultOption = new ResultOption();
+        this.scenarioOption = new StrategyOptionOld();
+
+        this.finalSaveOption = new FinalSaveOption();
+
+        this.exportSimulationOption =
+            new EmptyCommandLineOption("e",
+                "Export the simulation to the path of the grammar");
+        this.exportSimulationPathOption = new ExportSimulationPathOption();
+        this.exportSimulationFlagsOption = new ExportSimulationFlagsOption();
 
         addOption(this.strategyOption);
         addOption(this.acceptorOption);
         addOption(this.resultOption);
-        // addOption(this.scenarioOption);
+        addOption(this.scenarioOption);
         addOption(this.finalSaveOption);
+        addOption(this.exportSimulationOption);
+        addOption(this.exportSimulationPathOption);
+        addOption(this.exportSimulationFlagsOption);
 
         // clear the static field gts
         gts = null;
@@ -185,6 +201,7 @@ public class Generator extends CommandLineTool {
      */
     public void start() {
         processArguments();
+        verifyExportOptions();
         try {
             init();
             Collection<? extends Object> result = generate();
@@ -192,6 +209,29 @@ public class Generator extends CommandLineTool {
             exit(result);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Verifies that a valid combination of export simulation options has been
+     * specified. Aborts otherwise.
+     */
+    private void verifyExportOptions() {
+        // Local variables for the -e, -ep and -ef options.
+        boolean e = isOptionActive(this.exportSimulationOption);
+        boolean ep = isOptionActive(this.exportSimulationPathOption);
+        boolean ef = isOptionActive(this.exportSimulationFlagsOption);
+
+        // Verify that -ef only occurs if either e or ep occurs.
+        if (ef && (!e && !ep)) {
+            printError("The -ef option may only be specified in conjunction "
+                + "with either the -e or the -ep option.", true);
+        }
+
+        // Verify that -e and -ep are not both specified.
+        if (e && ep) {
+            printError("The -e and -ep options may not both be specified.",
+                true);
         }
     }
 
@@ -408,19 +448,19 @@ public class Generator extends CommandLineTool {
         Exploration defaultExploration = new Exploration();
 
         if (isOptionActive(this.strategyOption)) {
-            strategy = this.strategyOption.getResult();
+            strategy = this.strategyOption.getValue();
         } else {
             strategy = defaultExploration.getStrategy();
         }
 
         if (isOptionActive(this.acceptorOption)) {
-            acceptor = this.acceptorOption.getResult();
+            acceptor = this.acceptorOption.getValue();
         } else {
             acceptor = defaultExploration.getAcceptor();
         }
 
         if (isOptionActive(this.resultOption)) {
-            nrResults = this.resultOption.getNrResults();
+            nrResults = this.resultOption.getValue();
         } else {
             nrResults = 0;
         }
@@ -437,7 +477,7 @@ public class Generator extends CommandLineTool {
         if (!isOptionActive(this.finalSaveOption)) {
             return null;
         } else {
-            return this.finalSaveOption.getFinalSaveName();
+            return this.finalSaveOption.getValue();
         }
     }
 
@@ -495,7 +535,68 @@ public class Generator extends CommandLineTool {
             System.out.println("");
             System.out.println("");
         }
+        exportSimulation();
+
         return result;
+    }
+
+    /**
+     * Export the performed simulation to an output file, if either the -e or
+     * the -ep was specified on the command line.
+     */
+    protected void exportSimulation() {
+        // Local variables for the related active command line options. 
+        boolean e = isOptionActive(this.exportSimulationOption);
+        boolean ep = isOptionActive(this.exportSimulationPathOption);
+        boolean ef = isOptionActive(this.exportSimulationFlagsOption);
+
+        // Do nothing if -e and -ep are both absent.
+        if (!e && !ep) {
+            return;
+        }
+
+        // Compute the path to export to, which is either the grammar path (-e)
+        // or the user specified path (-ep).
+        String path;
+        if (e) {
+            path = this.ruleSystemFilter.addExtension(this.grammarLocation);
+        } else {
+            path = this.exportSimulationPathOption.getValue();
+        }
+
+        // Compute the export simulation flags.
+        ExportSimulationFlags flags;
+        if (ef) {
+            flags = this.exportSimulationFlagsOption.getValue();
+        } else {
+            flags = new ExportSimulationFlags();
+        }
+
+        // Create the LTS view to be exported.
+        LTSGraph lts =
+            new LTSGraph(getGTS(), flags.labelFinalStates,
+                flags.labelStartState, flags.labelOpenStates,
+                flags.exportStateNames);
+
+        // Compute the set of states to be exported separately.
+        Collection<GraphState> export = new HashSet<GraphState>(0);
+        if (flags.exportFinalStates) {
+            export = getGTS().getFinalStates();
+        }
+        if (flags.exportAllStates) {
+            export = getGTS().getStateSet();
+        }
+
+        // Perform the export itself.
+        try {
+            Groove.saveGraph(lts, path + "/lts.gxl");
+            for (GraphState state : export) {
+                String name = state.toString();
+                Groove.saveGraph(state.getGraph(), path + "/" + name + ".gst");
+            }
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
     }
 
     /** Prints a report of the run on the standard output. */
@@ -930,120 +1031,197 @@ public class Generator extends CommandLineTool {
         new ExtensionFilter("Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /**
+     * The <code>ExportSimulationPathOption</code> is the command line option
+     * to export the simulation to an explicitly specified path. It is
+     * implemented by means <code>StoreCommandLineOption</code> that stores a
+     * <code>String</code> with the path.
+     * 
+     * @see StoreCommandLineOption
+     */
+    protected class ExportSimulationPathOption extends
+            StoreCommandLineOption<String> {
+
+        /** 
+         * Default constructor. Defines '-ep' to be the name of the command
+         * line option, and 'path' to be the name of its argument.
+         */
+        public ExportSimulationPathOption() {
+            super("ep", "path");
+        }
+
+        @Override
+        public String[] getDescription() {
+            return new String[] {"Export the simulation to the specified path"};
+        }
+
+        @Override
+        public String parseParameter(String parameter) {
+            return parameter; // no parsing needed
+        }
+    }
+
+    /**
+     * The <code>ExportSimulationFlags</code> class is a record that holds all
+     * the flags that can be set with the -ef (export simulation flags) option.
+     * The default value for all flags is <code>false</code>.
+     * 
+     * @see ExportSimulationFlagsOption
+     */
+    static public class ExportSimulationFlags {
+
+        /** Flag to indicate that the start state must be labeled. */
+        public boolean labelStartState = false;
+
+        /** Flag to indicate that the final states must be labeled. */
+        public boolean labelFinalStates = false;
+
+        /** Flag to indicate that the open states must be labeled. */
+        public boolean labelOpenStates = false;
+
+        /** Flag to indicate that the state names must be exported. */
+        public boolean exportStateNames = false;
+
+        /** Flag to indicate that the final states must be exported. */
+        public boolean exportFinalStates = false;
+
+        /** Flag to indicate that all states must be exported. */
+        public boolean exportAllStates = false;
+    }
+
+    /**
+     * The <code>ExportSimulationFlagsOption</code> is the command line option
+     * for additional flags for the export simulation option.
+     * It is implemented as a <code>StoreCommandLineOption</code>.
+     * 
+     * @see StoreCommandLineOption
+     */
+    protected class ExportSimulationFlagsOption extends
+            StoreCommandLineOption<ExportSimulationFlags> {
+
+        /** 
+         * Default constructor. Defines '-ef' to be the name of the command
+         * line option, and 'flags' to be the name of its argument.
+         */
+        public ExportSimulationFlagsOption() {
+            super("ef", "flags");
+        }
+
+        @Override
+        public String[] getDescription() {
+            String[] desc = new String[7];
+
+            desc[0] =
+                "Flags for the export simulation option. Legal flags are:";
+            desc[1] = "  s - label start state";
+            desc[2] = "  f - label final states";
+            desc[3] = "  o - label open states";
+            desc[4] = "  N - export state names";
+            desc[5] = "  A - export all states (in separate files)";
+            desc[6] = "  F - export final states (in separate files)";
+            return desc;
+        }
+
+        @Override
+        public ExportSimulationFlags parseParameter(String parameter) {
+            ExportSimulationFlags result = new ExportSimulationFlags();
+            for (int i = 0; i < parameter.length(); i++) {
+                switch (parameter.charAt(i)) {
+                case 's':
+                    result.labelStartState = true;
+                    break;
+                case 'f':
+                    result.labelFinalStates = true;
+                    break;
+                case 'o':
+                    result.labelOpenStates = true;
+                    break;
+                case 'N':
+                    result.exportStateNames = true;
+                    break;
+                case 'A':
+                    result.exportAllStates = true;
+                    break;
+                case 'F':
+                    result.exportFinalStates = true;
+                    break;
+                default:
+                    throw new IllegalArgumentException("'"
+                        + parameter.charAt(i)
+                        + "' is not a valid export simulation flag.");
+                }
+            }
+            return result;
+        }
+    }
+
+    /**
      * The grammar loader.
      */
     // protected final FileGps loader = createGrammarLoader();
     /**
-     * Option to save all final states generated.
+     * The <code>FinalSaveOption</code> is the command line option for saving
+     * all final states in separate files. It is implemented by means of a
+     * <code>StoreCommandLineOption</code> that stores a <code>String</code>
+     * to indicate the names of the files to be written.
+     * 
+     * @see StoreCommandLineOption 
      */
-    static protected class FinalSaveOption implements CommandLineOption {
+    protected class FinalSaveOption extends StoreCommandLineOption<String> {
 
-        /** Name of the final save option. */
-        static public final String NAME = "f";
-        /** Parameter name of the final save option. */
-        static public final String PARAMETER_NAME = "file";
+        /** 
+         * Default constructor. Defines '-f' to be the name of the command
+         * line option, and 'file' to be the name of its argument.
+         */
+        public FinalSaveOption() {
+            super("f", "file");
+        }
 
+        @Override
         public String[] getDescription() {
-            return new String[] {
-                "Tells the generator to save all final states found",
-                "using filenames starting with " + PARAMETER_NAME
-                    + " followed by a number"};
+            return new String[] {"Save all final states using filenames starting with "
+                + getParameterName() + " followed by a number"};
         }
 
-        public String getName() {
-            return NAME;
+        @Override
+        public String parseParameter(String parameter) {
+            return parameter; // no parsing necessary
         }
-
-        public String getParameterName() {
-            return PARAMETER_NAME;
-        }
-
-        public boolean hasParameter() {
-            return true;
-        }
-
-        /**
-         * Stores the parameter as the final save name.
-         * @see #getFinalSaveName()
-         */
-        public void parse(String parameter) throws IllegalArgumentException {
-            this.finalSaveName = parameter;
-        }
-
-        /**
-         * Returns the name specified as a parameter to the command line option.
-         */
-        public String getFinalSaveName() {
-            return this.finalSaveName;
-        }
-
-        /** The name specified as a parameter of the command line option. */
-        private String finalSaveName;
     }
 
     /**
-     * Option to control the strategy in the generator.
+     * The <code>ResultOption</code> is the command line option for setting the
+     * nrResults stored by the exploration. It is implemented by means of a
+     * <code>StoreCommandLineOption<code> that stores a <code>Integer</code> to
+     * indicate the number of results to be stored.
+     * 
+     * @see StoreCommandLineOption
      */
-    static public class ResultOption implements CommandLineOption {
+    protected class ResultOption extends StoreCommandLineOption<Integer> {
 
-        /** Identification of the result option on the command line. */
-        static public final String NAME = "r";
-
-        /** Name of the result parameter. */
-        static public final String PARAMETER_NAME = "num";
-
-        /** Local copy of the parsed result parameter. */
-        private int nrResults;
-
-        /**
-         * Getter for the NAME field.
+        /** 
+         * Default constructor. Defines '-r' to be the name of the command
+         * line option, and 'num' to be the name of its argument.
          */
-        public String getName() {
-            return NAME;
+        public ResultOption() {
+            super("r", "num");
         }
 
-        /**
-         * Getter for the PARAMATER_NAME field.
-         */
-        public String getParameterName() {
-            return PARAMETER_NAME;
-        }
-
-        /**
-         * Getter for the nrResults field.
-         */
-        public int getNrResults() {
-            return this.nrResults;
-        }
-
-        /**
-         * Indicates that the result option expects an additional parameter.
-         */
-        public boolean hasParameter() {
-            return true;
-        }
-
-        /**
-         * Returns a description of the valid values for the result option.
-         */
+        @Override
         public String[] getDescription() {
-            String[] desc = new String[2];
-
-            desc[0] = "Set the number of accepted results of the exploration.";
-            desc[1] = "Legal values for 'num' are positive numbers.";
-            return desc;
+            return new String[] {"The number of accepted results for the exploration. "
+                + "Default value is infinite."};
         }
 
-        /**
-         * Method to parse the result option as soon as it is encountered
-         * on the command line. The parsing results in an <code>int</code>.
-         */
-        public void parse(String parameter) throws IllegalArgumentException {
+        @Override
+        public Integer parseParameter(String parameter) {
+            Integer result;
             try {
-                this.nrResults = Integer.parseInt(parameter);
-                if (this.nrResults <= 0) {
+                result = Integer.parseInt(parameter);
+                if (result <= 0) {
                     throw new IllegalArgumentException("'" + parameter
                         + "' is not a valid positive number.");
+                } else {
+                    return result;
                 }
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("'" + parameter
@@ -1053,102 +1231,54 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * A <code>TemplatedOption</code> is a parameter of the generator whose
-     * values are described by means of a <code>TemplateList</code>. The result
-     * of parsing will always be a <code>Serialized</code>.
+     * A <code>TemplatedOption</code> is a command line option for a
+     * <code>TemplateList</code>. It is implemented by means of a
+     * <code>StoreCommandLineOption</code> that stores a <code>Serialized</code>. 
      * 
      * @see TemplateList
      * @see Serialized
+     * @see StoreCommandLineOption
      */
-    static public class TemplatedOption<A> implements CommandLineOption {
-
-        // Name of the option on the command line.
-        private final String name;
-
-        // Name of the option argument on the command line.
-        private final String parameterName;
+    protected class TemplatedOption<A> extends
+            StoreCommandLineOption<Serialized> {
 
         // Enumerator of all allowed options.
         private final TemplateList<A> enumerator;
 
-        // The parsed result.
-        private Serialized result;
-
-        /**
-         * Constructs a new <code>TemplatedOption</code> out of a name, a
-         * parameter name and an enumerator of all allowed values.
+        /** 
+         * Generic constructor that takes as arguments the name of the option,
+         * the name of its parameter, and an enumerator that describes the
+         * valid values of this parameter.
          */
         public TemplatedOption(String name, String parameterName,
                 TemplateList<A> enumerator) {
-            this.name = name;
-            this.parameterName = parameterName;
+            super(name, parameterName);
             this.enumerator = enumerator;
         }
 
-        /**
-         * Indicates that the option expects an additional parameter.
-         * The parameter is the part that is actually parsed. It must be
-         * supplied after the option on the command line, separated from it by
-         * means of a white space.
-         */
-        public boolean hasParameter() {
-            return true;
-        }
-
-        /**
-         * Returns a description of the valid values for this option. This
-         * description is generated out of the stored enumerator.
-         */
+        @Override
         public String[] getDescription() {
             String[] lines = this.enumerator.describeCommandlineGrammar();
             String[] desc = new String[lines.length + 1];
 
             desc[0] =
                 "The " + this.enumerator.getTypeIdentifier()
-                    + ". Legal values for '" + this.parameterName + "' are:";
+                    + ". Legal values for '" + getParameterName() + "' are:";
             for (int i = 0; i < lines.length; i++) {
                 desc[i + 1] = "  " + lines[i];
             }
             return desc;
         }
 
-        /**
-         * Method to parse the argument of the option as soon as it is
-         * encountered on the command line. The parsing results in a
-         * <code>Serialized</code>, which can be retrieved later by means of
-         * the <code>getResult</code> method. 
-         */
-        public void parse(String parameter) throws IllegalArgumentException {
-            this.result = this.enumerator.parseCommandline(parameter);
-            if (this.result == null) {
-                throw new IllegalArgumentException("Unable to parse "
-                    + this.name + " argument '" + parameter + "'.");
-            }
-        }
-
-        /**
-         * Getter for the identification (=letter) that is associated with the
-         * option. This method is called <code>getName</code> in the
-         * <code>CommandLineOption</code> interface. 
-         */
         @Override
-        public String getName() {
-            return this.name;
-        }
-
-        /**
-         * Getter for the parameter name, which is equal to the abbreviated
-         * name of the option.
-         */
-        public String getParameterName() {
-            return this.parameterName;
-        }
-
-        /**
-         * Getter for the result field.
-         */
-        public Serialized getResult() {
-            return this.result;
+        public Serialized parseParameter(String parameter) {
+            Serialized result = this.enumerator.parseCommandline(parameter);
+            if (result == null) {
+                throw new IllegalArgumentException("Unable to parse "
+                    + getName() + " argument '" + parameter + "'.");
+            } else {
+                return result;
+            }
         }
     }
 
