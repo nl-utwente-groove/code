@@ -123,7 +123,7 @@ public class GraphProperties extends Properties {
         if (priority == Rule.DEFAULT_PRIORITY) {
             result = (String) remove(PRIORITY_KEY);
         } else {
-            result = (String) setProperty(PRIORITY_KEY, "" + priority);
+            result = (String) super.setProperty(PRIORITY_KEY, "" + priority);
         }
         if (result == null) {
             return Rule.DEFAULT_PRIORITY;
@@ -160,7 +160,7 @@ public class GraphProperties extends Properties {
         if (enabled) {
             result = (String) remove(ENABLED_KEY);
         } else {
-            result = (String) setProperty(ENABLED_KEY, "" + enabled);
+            result = (String) super.setProperty(ENABLED_KEY, "" + enabled);
         }
         if (result == null) {
             return true;
@@ -197,7 +197,7 @@ public class GraphProperties extends Properties {
         if (!confluent) {
             result = (String) remove(CONFLUENT_KEY);
         } else {
-            result = (String) setProperty(CONFLUENT_KEY, "" + confluent);
+            result = (String) super.setProperty(CONFLUENT_KEY, "" + confluent);
         }
         if (result == null) {
             return false;
@@ -225,7 +225,7 @@ public class GraphProperties extends Properties {
         if (remark == null) {
             return (String) remove(TRANSITION_LABEL_KEY);
         } else {
-            return (String) setProperty(TRANSITION_LABEL_KEY, remark);
+            return (String) super.setProperty(TRANSITION_LABEL_KEY, remark);
         }
     }
 
@@ -249,7 +249,7 @@ public class GraphProperties extends Properties {
         if (label == null) {
             return (String) remove(TRANSITION_LABEL_KEY);
         } else {
-            return (String) setProperty(TRANSITION_LABEL_KEY, label);
+            return (String) super.setProperty(TRANSITION_LABEL_KEY, label);
         }
     }
 
@@ -273,11 +273,40 @@ public class GraphProperties extends Properties {
     public String setVersion(String version) {
         String oldVersion;
         if (version != null) {
-            oldVersion = (String) setProperty(VERSION_KEY, version);
+            oldVersion = (String) super.setProperty(VERSION_KEY, version);
         } else {
             oldVersion = (String) remove(VERSION_KEY);
         }
         return oldVersion;
+    }
+
+    @Override
+    public Object setProperty(String key, String value) {
+        Object oldValue;
+        if (!isSystemKey(key) && getDefaultValue(key).equals(value)) {
+            oldValue = remove(key);
+        } else {
+            oldValue = super.setProperty(key, value);
+        }
+        return oldValue;
+    }
+
+    /**
+     * @param key the key of the property.
+     * @return the default valued associated with the key.
+     */
+    static public String getDefaultValue(String key) {
+        if (key.equals(PRIORITY_KEY)) {
+            return Integer.toString(Rule.DEFAULT_PRIORITY);
+        } else if (key.equals(ENABLED_KEY)) {
+            return Boolean.toString(true);
+        } else if (key.equals(CONFLUENT_KEY)) {
+            return Boolean.toString(false);
+        } else if (key.equals(TRANSITION_LABEL_KEY) || key.equals(REMARK_KEY)) {
+            return "";
+        } else {
+            throw new IllegalArgumentException("Invalid key: " + key);
+        }
     }
 
     /**
