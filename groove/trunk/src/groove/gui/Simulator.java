@@ -3480,19 +3480,84 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // EDUARDO: Properly implement multiple selection again.
-            RuleView rule = getCurrentRule();
-            AspectGraph ruleGraph = rule.getView();
-            GraphProperties ruleProperties =
-                GraphInfo.getProperties(ruleGraph, true);
+            // Get selected rules.
+            List<RuleView> selectedRules = getCurrentRuleSet();
+            RuleView[] ruleViews =
+                selectedRules.toArray(new RuleView[selectedRules.size()]);
+
+            // Associated rule graphs.
+            AspectGraph[] ruleGraphs = new AspectGraph[ruleViews.length];
+            // Associated rule properties.
+            GraphProperties[] ruleProperties =
+                new GraphProperties[ruleViews.length];
+
+            // INVARIANT: related elements in the arrays are stored at
+            // the same position.
+            for (int i = 0; i < ruleViews.length; i++) {
+                ruleGraphs[i] = ruleViews[i].getView();
+                ruleProperties[i] =
+                    GraphInfo.getProperties(ruleGraphs[i], true);
+            }
+
+            // Use the first properties of the first rule as the starting point. 
+            GraphProperties dialogProperties =
+                new GraphProperties(ruleProperties[0]);
+
+            // Now we go through the rest of the properties and check if there
+            // are conflicts. If yes the property will be empty in the dialog.
+            for (int i = 1; i < ruleViews.length; i++) {
+                for (String key : GraphProperties.DEFAULT_USER_KEYS.keySet()) {
+                    String entryValue = (String) ruleProperties[i].get(key);
+                    String dialogValue = (String) dialogProperties.get(key);
+                    if (dialogValue != null && !dialogValue.equals(entryValue)) {
+                        // We have a conflict. Remove the key from the dialog.
+                        dialogProperties.remove(key);
+                    }
+                }
+            }
+
             PropertiesDialog dialog =
-                new PropertiesDialog(ruleProperties,
+                new PropertiesDialog(dialogProperties,
                     GraphProperties.DEFAULT_USER_KEYS, true);
+
             if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
-                ruleProperties.clear();
-                ruleProperties.putAll(dialog.getEditedProperties());
-                doDeleteRule(rule.getRuleName());
-                doAddRule(rule.getRuleName(), ruleGraph);
+
+                // We go through the results of the dialog.
+                GraphProperties editedProperties =
+                    new GraphProperties(dialog.getEditedProperties());
+                for (int i = 0; i < ruleViews.length; i++) {
+                    for (String key : GraphProperties.DEFAULT_USER_KEYS.keySet()) {
+                        String entryValue = (String) ruleProperties[i].get(key);
+                        String editedValue = (String) editedProperties.get(key);
+                        if (editedValue != null
+                            && !editedValue.equals(entryValue)) {
+                            // The value was changed in the dialog, set it in
+                            // the rule properties.
+                            ruleProperties[i].setProperty(key, editedValue);
+                        }
+                    }
+                }
+
+                // Now all the elements of the ruleProperties[] are correct.
+                // Let's recreate the rules.
+                for (int i = 0; i < ruleViews.length; i++) {
+                    // Avoiding call to doDeleteRule() and doAddRule() because
+                    // of grammar updates.
+                    RuleName ruleName = ruleViews[i].getRuleName();
+                    getGrammarStore().deleteRule(ruleName);
+                    GraphInfo.setName(ruleGraphs[i], ruleName.text());
+                    try {
+                        getGrammarStore().putRule(ruleGraphs[i]);
+                    } catch (IOException exc) {
+                        showErrorDialog(String.format(
+                            "Error while saving rule '%s'", ruleName), exc);
+                    } catch (UnsupportedOperationException u) {
+                        showErrorDialog("Current grammar is read-only", u);
+                    }
+                }
+                // We are done with the rule changes.
+                // Update the grammar, but just once... :P
+                updateGrammar();
             }
         }
     }
