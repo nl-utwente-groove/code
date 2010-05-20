@@ -3529,11 +3529,18 @@ public class Simulator {
                     for (String key : GraphProperties.DEFAULT_USER_KEYS.keySet()) {
                         String entryValue = (String) ruleProperties[i].get(key);
                         String editedValue = (String) editedProperties.get(key);
+                        String defaultValue =
+                            GraphProperties.getDefaultValue(key);
                         if (editedValue != null
                             && !editedValue.equals(entryValue)) {
                             // The value was changed in the dialog, set it in
                             // the rule properties.
                             ruleProperties[i].setProperty(key, editedValue);
+                        } else if (editedValue == null && entryValue != null
+                            && !defaultValue.equals(entryValue)) {
+                            // The value was cleared in the dialog, set the
+                            // default value in the rule properties.
+                            ruleProperties[i].setProperty(key, defaultValue);
                         }
                     }
                 }
@@ -3548,6 +3555,7 @@ public class Simulator {
                     GraphInfo.setName(ruleGraphs[i], ruleName.text());
                     try {
                         getGrammarStore().putRule(ruleGraphs[i]);
+                        ruleGraphs[i].invalidateView();
                     } catch (IOException exc) {
                         showErrorDialog(String.format(
                             "Error while saving rule '%s'", ruleName), exc);
