@@ -132,9 +132,8 @@ public class IOTest extends TestCase {
         try {
             // first set the control name directly (this is no longer done at
             // load time)
-            SystemProperties properties = view.getProperties().clone();
+            SystemProperties properties = view.getProperties();
             properties.setControlName(controlName);
-            view.getStore().putProperties(properties);
 
             // now instantiate the grammar
             GraphGrammar gg = view.toGrammar();
@@ -160,9 +159,6 @@ public class IOTest extends TestCase {
             }
             return lts;
         } catch (FormatException exc) {
-            assertTrue(false);
-            return null;
-        } catch (IOException exc) {
             assertTrue(false);
             return null;
         }
