@@ -52,7 +52,8 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     public Label getLabel() {
         boolean brackets =
             this.getRule().getSystemProperties().isShowTransitionBrackets();
-        String text = this.getRule().getTransitionLabel();
+        //String text = this.getRule().getTransitionLabel();
+        String text = toString();
         if (brackets) {
             text = BEGIN_CHAR + text + END_CHAR;
         }

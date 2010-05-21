@@ -138,8 +138,7 @@ final public class SPOEvent extends
 
     @Override
     public String toString() {
-        StringBuffer result = new StringBuffer(getRule().getName().text());
-        // result.append(getAnchorImageString());
+        StringBuffer result = new StringBuffer(getRule().getTransitionLabel());
         if (getRule().getSystemProperties().isUseParameters()) {
             result.append(getParameterString());
         }
