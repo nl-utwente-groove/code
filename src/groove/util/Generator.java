@@ -23,6 +23,7 @@ import groove.explore.Exploration;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.Scenario;
 import groove.explore.StrategyEnumerator;
+import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
@@ -30,7 +31,6 @@ import groove.explore.result.ConditionalAcceptor;
 import groove.explore.result.EdgeBoundCondition;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.InvariantViolatedAcceptor;
-import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
 import groove.explore.result.Result;
 import groove.explore.strategy.BFSStrategy;
@@ -64,7 +64,6 @@ import groove.lts.StateGenerator;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.trans.RuleName;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
@@ -136,7 +135,7 @@ public class Generator extends CommandLineTool {
     private final TemplatedOption<Strategy> strategyOption;
     private final TemplatedOption<Acceptor> acceptorOption;
     private final ResultOption resultOption;
-    private final StrategyOptionOld scenarioOption;
+    private final ScenarioOption scenarioOption;
 
     private final FinalSaveOption finalSaveOption;
 
@@ -167,7 +166,7 @@ public class Generator extends CommandLineTool {
         this.acceptorOption =
             new TemplatedOption<Acceptor>("a", "acc", new AcceptorEnumerator());
         this.resultOption = new ResultOption();
-        this.scenarioOption = new StrategyOptionOld();
+        this.scenarioOption = new ScenarioOption();
 
         this.finalSaveOption = new FinalSaveOption();
 
@@ -199,6 +198,7 @@ public class Generator extends CommandLineTool {
     public void start() {
         processArguments();
         verifyExportOptions();
+        verifyExplorationOptions();
         try {
             init();
             Collection<? extends Object> result = generate();
@@ -211,10 +211,10 @@ public class Generator extends CommandLineTool {
 
     /**
      * Verifies that a valid combination of export simulation options has been
-     * specified. Aborts otherwise.
+     * specified. Aborts with an error message otherwise.
      */
     private void verifyExportOptions() {
-        // Local variables for the -e, -ep and -ef options.
+        // Local variables for the existence of the -e, -ep and -ef options.
         boolean e = isOptionActive(this.exportSimulationOption);
         boolean ep = isOptionActive(this.exportSimulationPathOption);
         boolean ef = isOptionActive(this.exportSimulationFlagsOption);
@@ -229,6 +229,33 @@ public class Generator extends CommandLineTool {
         if (e && ep) {
             printError("The -e and -ep options may not both be specified.",
                 false);
+        }
+    }
+
+    /**
+     * Verifies that a valid combination of exploration options has been
+     * specified. Aborts with an error message otherwise.
+     * Also displays a warning message if the deprecated -x option is used.
+     */
+    private void verifyExplorationOptions() {
+        // Local variables for the existence of the -x, -s, -a and -r options.
+        boolean x = isOptionActive(this.scenarioOption);
+        boolean s = isOptionActive(this.strategyOption);
+        boolean a = isOptionActive(this.acceptorOption);
+        boolean r = isOptionActive(this.resultOption);
+
+        // Verify that -x only occurs when -s, -a and -r are all absent.
+        if (x && (s || a || r)) {
+            printError("The deprecated -x option may not be combined with the"
+                + "-s, -a and -r options.", false);
+        }
+
+        // Print a warning message when the deprecated -x feature is used.
+        if (x) {
+            System.err.println("Warning: the -x option has been deprecated, "
+                + "please use -s, -a and -r instead.");
+            System.err.println("Automatically replacing it with equivalent"
+                + " -s, -a and -r options.");
         }
     }
 
@@ -365,18 +392,6 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * Returns the exploration strategy set for the generator. The strategy is
-     * lazily retrieved from the command line options, or set to
-     * {@link DFSStrategy} if no strategy was specified.
-     */
-    protected Scenario getStrategy() {
-        if (this.strategy == null) {
-            this.strategy = computeStrategy();
-        }
-        return this.strategy;
-    }
-
-    /**
       * Returns the exploration strategy set for the generator. The strategy is
       * lazily retrieved from the command line options, or set to the default
       * exploration if nothing was specified.
@@ -404,6 +419,7 @@ public class Generator extends CommandLineTool {
             */
         }
 
+        /*
         Scenario result;
         ExploreStrategyParser exploreParser = this.scenarioOption.getParser();
         result = exploreParser.getStrategy();
@@ -429,9 +445,9 @@ public class Generator extends CommandLineTool {
         } else if (result instanceof ControlledScenario) {
             ((ControlledScenario) result).setProgram(
                 exploreParser.getProgram().getRules(getGrammar()), true);
-        }
+        }*/
 
-        return result;
+        return null;
     }
 
     /**
@@ -443,6 +459,10 @@ public class Generator extends CommandLineTool {
         Serialized strategy, acceptor;
         int nrResults;
         Exploration defaultExploration = new Exploration();
+
+        if (isOptionActive(this.scenarioOption)) {
+            return this.scenarioOption.getValue();
+        }
 
         if (isOptionActive(this.strategyOption)) {
             strategy = this.strategyOption.getValue();
@@ -497,16 +517,13 @@ public class Generator extends CommandLineTool {
         runTime.gc();
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
         if (getVerbosity() > LOW_VERBOSITY) {
-            System.out.print("Grammar: " + this.grammarLocation);
-            System.out.println("; start graph: "
+            println("Grammar:\t" + this.grammarLocation);
+            println("Start graph:\t"
                 + (this.startStateName == null ? "default"
                         : this.startStateName));
-            if (getStrategy() != null) {
-                System.out.println("Strategy: " + getStrategy());
-            } else {
-                System.out.println("Exploration: "
-                    + getExploration().getIdentifier());
-            }
+            println("Exploration:\t" + getExploration().getIdentifier());
+            println("Timestamp:\t" + this.invocationTime);
+            print("\nProgress:\t");
             getGTS().addGraphListener(new GenerateProgressMonitor());
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
@@ -514,24 +531,15 @@ public class Generator extends CommandLineTool {
         }
         this.startTime = System.currentTimeMillis();
 
-        if (getStrategy() != null) {
-            getStrategy().prepare(getGTS());
-            result = getStrategy().play().getValue();
-        } else {
-            try {
-                getExploration().play(getGTS(), null);
-            } catch (FormatException e) {
-                printError("The specified exploration is not "
-                    + "valid for the loaded grammar.\n" + e.getMessage(), false);
-            }
-            result = getExploration().getLastResult().getValue();
+        try {
+            getExploration().play(getGTS(), null);
+        } catch (FormatException e) {
+            printError("The specified exploration is not "
+                + "valid for the loaded grammar.\n" + e.getMessage(), false);
         }
+        result = getExploration().getLastResult().getValue();
 
         this.endTime = System.currentTimeMillis();
-        if (getVerbosity() > LOW_VERBOSITY) {
-            System.out.println("");
-            System.out.println("");
-        }
         exportSimulation();
 
         return result;
@@ -599,6 +607,11 @@ public class Generator extends CommandLineTool {
     /** Prints a report of the run on the standard output. */
     protected void report() {
         startLog();
+        // Advance 2 lines (after the progress).
+        if (getVerbosity() > LOW_VERBOSITY) {
+            println();
+            println();
+        }
         if (getVerbosity() == HIGH_VERBOSITY) {
             Reporter.report();
             if (isLogging()) {
@@ -606,18 +619,9 @@ public class Generator extends CommandLineTool {
             }
             println();
             println("-------------------------------------------------------------------");
+            println();
         }
         if (getVerbosity() > LOW_VERBOSITY) {
-            println("Grammar:\t" + this.grammarLocation);
-            println("Start graph:\t"
-                + (this.startStateName == null ? "default"
-                        : this.startStateName));
-            if (getStrategy() != null) {
-                println("Strategy:\t" + getStrategy());
-            } else {
-                println("Exploration:\t" + getExploration().getIdentifier());
-            }
-            println("Timestamp:\t" + this.invocationTime);
             final Runtime runTime = Runtime.getRuntime();
             // clear all caches to see all available memory
             for (GraphState state : getGTS().nodeSet()) {
@@ -634,7 +638,6 @@ public class Generator extends CommandLineTool {
             System.runFinalization();
             System.gc();
             long usedMemory = runTime.totalMemory() - runTime.freeMemory();
-            println();
             print("Statistics:");
             reportLTS();
             if (getVerbosity() == HIGH_VERBOSITY && Groove.GATHER_STATISTICS) {
@@ -999,10 +1002,6 @@ public class Generator extends CommandLineTool {
     protected static GTS gts;
 
     /**
-     * The strategy to be used for the state space generation.
-     */
-    private Scenario strategy;
-    /**
      * The exploration to be used for the state space generation.
      */
     private Exploration exploration;
@@ -1279,73 +1278,134 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * TODO
-     * 
      * A <code>ScenarioOption</code> is a command line option with which a
      * predefined combination of a strategy, acceptor and result can be
-     * specified. This option is provided for backwards compatibility.
-     * It is implemented by means of 
-     * 
-     * scenario (a combination of a strategy, acceptor and result) can be
-     * Option to control the exploration strategy in the generator.
+     * specified. This option is provided for backwards compatibility only, and
+     * will always result in a 'deprecated feature' warning when used.
+     * It is implemented by means of a <code>StoreCommandLineOption</code>,
+     * which converts its argument to a <code>Serialized</code>.
      */
-    static public class StrategyOptionOld implements CommandLineOption {
-        /** Name of the option. */
-        static public final String NAME = "x";
-        /** Name of the option parameter. */
-        static public final String PARAMETER_NAME = "str";
+    protected class ScenarioOption extends StoreCommandLineOption<Exploration> {
 
-        public String getName() {
-            return NAME;
-        }
-
-        public String getParameterName() {
-            return PARAMETER_NAME;
-        }
-
-        public boolean hasParameter() {
-            return true;
-        }
-
-        public void parse(String parameter) throws IllegalArgumentException {
-            this.parser.parse(parameter);
-            // generator.setStrategy(parser.getStrategy(),
-            // parser.getCondition(), parser.isNegated(), parser.getProgram());
+        /** 
+         * Default constructor. Defines '-x' to be the name of the command
+         * line option, and 'scenario' to be the name of its argument.
+         */
+        public ScenarioOption() {
+            super("x", "scenario");
         }
 
         /**
-         * Parser to extract information about the strategy from the textual
-         * parameter.
+         * As this is a deprecated option, no help is displayed for it (to
+         * encourage users to make use of the new options).
          */
-        public ExploreStrategyParser getParser() {
-            return this.parser;
-        }
-
+        @Override
         public String[] getDescription() {
-            /*
-            List<String> result = new LinkedList<String>();
-            result.add("Set the exploration strategy. Legal values for '"
-                + getParameterName() + "' are:");
-            for (String description : this.parser.getStrategyDescriptions()) {
-                result.add(INDENT + description);
-            }
-            return result.toArray(new String[0]);
-            */
             return new String[0];
         }
 
         /**
-         * The underlying parser for this options.
+         * Removes keyword, plus a ':' separator, from the start of parameter.
+         * Throws an <code>IllegalArgumentException</code> if the ':' is not
+         * there, or if there are no characters behind it.
          */
-        private final ExploreStrategyParser parser =
-            new ExploreStrategyParser(false);
+        public String removeKeyword(String keyword, String parameter) {
+            if (parameter.length() <= keyword.length()) {
+                throw new IllegalArgumentException("':' expected after '"
+                    + keyword + "' in the -x option.");
+            }
+            if (parameter.length() == keyword.length() + 1) {
+                throw new IllegalArgumentException("Expected an argument"
+                    + " after '" + parameter + "' in the -x option.");
+            }
+            return parameter.substring(keyword.length() + 1);
+        }
+
+        /**
+         * Parse a textual rule option into the 'rule' and 'mode' arguments of
+         * a given <code>Serialized</code>.
+         */
+        public void setRuleArgument(Serialized serialized, String ruleArg) {
+            if (ruleArg.startsWith("!")) {
+                serialized.setArgument("mode", EncodedRuleMode.NEGATIVE);
+                serialized.setArgument("rule", ruleArg.substring(1));
+            } else {
+                serialized.setArgument("mode", EncodedRuleMode.NEGATIVE);
+                serialized.setArgument("rule", ruleArg);
+            }
+        }
+
+        @Override
+        public Exploration parseParameter(String parameter) {
+            Serialized strategy, acceptor;
+            String argValue;
+
+            // Convert the scenario's without arguments by means of a lookup
+            // in a fixed Map<String,String>.
+            Map<String,String> convTable = new TreeMap<String,String>();
+            convTable.put("barbed", "dfs");
+            convTable.put("branching", "bfs");
+            convTable.put("linear", "linear");
+            convTable.put("random", "random");
+            convTable.put("full", "bfs");
+            if (convTable.keySet().contains(parameter)) {
+                strategy = new Serialized(convTable.get(parameter));
+                acceptor = new Serialized("final");
+                return new Exploration(strategy, acceptor, 0);
+            }
+
+            // Convert the scenario 'node-bounded'. Its argument can be re-used
+            // without parsing or changing it.
+            if (parameter.startsWith("node-bounded")) {
+                strategy = new Serialized("cnbound");
+                argValue = removeKeyword("node-bounded", parameter);
+                strategy.setArgument("node-bound", argValue);
+                acceptor = new Serialized("final");
+                return new Exploration(strategy, acceptor, 0);
+            }
+
+            // Convert the scenario 'edge-bounded'. In its argument, all '='
+            // signs need to be replaced with '>'.
+            if (parameter.startsWith("edge-bounded")) {
+                strategy = new Serialized("cebound");
+                argValue =
+                    removeKeyword("edge-bounded", parameter).replaceAll("=",
+                        ">");
+                strategy.setArgument("edge-bound", argValue);
+                acceptor = new Serialized("final");
+                return new Exploration(strategy, acceptor, 0);
+            }
+
+            // Convert the scenario 'bounded'. In its argument, a possible
+            // leading '!' needs to be parsed too (see parseRuleArgument).
+            if (parameter.startsWith("bounded")) {
+                strategy = new Serialized("crule");
+                argValue = removeKeyword("bounded", parameter);
+                setRuleArgument(strategy, argValue);
+                acceptor = new Serialized("final");
+                return new Exploration(strategy, acceptor, 0);
+            }
+
+            // Convert the scenario 'invariant'. In its argument, a possible
+            // leading '!' needs to be parsed too (see parseRuleArgument).
+            if (parameter.startsWith("invariant")) {
+                strategy = new Serialized("bfs");
+                acceptor = new Serialized("inv");
+                argValue = removeKeyword("invariant", parameter);
+                setRuleArgument(acceptor, argValue);
+                return new Exploration(strategy, acceptor, 1);
+            }
+
+            throw new IllegalArgumentException("'" + parameter
+                + "' is not a legal value for the deprecated -x option.");
+        }
     }
 
     /**
      * Action class that can parse a string into an exploration strategy and its
      * (conditional) parameters.
      */
-    static public class ExploreStrategyParser {
+    public static class ExploreStrategyParser {
         /** Text that separates the condition from the strategy name. */
         static public final String CONDITION_SEPARATOR = ":";
 
