@@ -354,6 +354,8 @@ public class AutomatonBuilder extends Namespace {
         this.currentEnd.addInit(this.currentStart);
 
         // also merge the variables
+        copyInitializedVariables(this.currentStart, this.currentEnd);
+        copyInitializedVariables(this.currentEnd, this.currentStart);
         if (this.currentEnd.getMerged()) {
             mergeInitializedVariables(this.currentStart, this.currentEnd,
                 this.currentEnd);

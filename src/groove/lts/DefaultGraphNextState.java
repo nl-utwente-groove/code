@@ -109,6 +109,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             String[] output = transition.getOutputParameters();
 
             SPORule rule = (SPORule) appl.getRule();
+            Morphism ruleMorphism = rule.getMorphism();
 
             for (int i = 0; i < output.length; i++) {
                 if (output[i] != null && !output[i].equals("_")) {
@@ -121,7 +122,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
                     } else {
                         value =
                             match.getElementMap().getNode(
-                                match.getRule().getParameter(i + 1));
+                                ruleMorphism.getNode(rule.getParameter(i + 1)));
                     }
                     this.setParameter(position, value);
                 }

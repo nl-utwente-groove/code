@@ -54,6 +54,9 @@ public class ControlVariablesTest extends TestCase {
 
         // b(out var1, out var2); b(var2, out var3);
         explore("variablesTest6", 3, 2, 13, 20);
+
+        // addNode; merge(out par1, out par2)*;
+        //explore("mergeTest", 2, 1, 11, 19);
     }
 
     private void explore(String control, int controlStates,
