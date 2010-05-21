@@ -1755,9 +1755,12 @@ public class Simulator {
      * that this panel may currently not be visible.
      * @see #setGraphPanel(JGraphPanel)
      */
+    // NewTypePanel getTypePanel() {
     TypePanel getTypePanel() {
         if (this.typePanel == null) {
             // panel for state display
+            // EDUARDO: type panel improvements
+            // this.typePanel = new NewTypePanel(this);
             this.typePanel = new TypePanel(this);
             this.typePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
@@ -2915,6 +2918,7 @@ public class Simulator {
     private ConditionalLTSPanel conditionalLTSPanel;
 
     /** Type graph display panel. */
+    // EDUARDO: private NewTypePanel typePanel;
     private TypePanel typePanel;
 
     /** Undo history. */
