@@ -20,6 +20,7 @@ import groove.control.Location;
 import groove.graph.DeltaApplier;
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
@@ -74,8 +75,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * the transition taken to get here.
      */
     private void initializeVariables() {
-        RuleApplication appl =
-            this.event.newApplication(this.source.getGraph());
+        MergeMap nodeMap = this.event.getMergeMap();
         ControlTransition transition = this.getControlTransition();
 
         if (this.getLocation() == null) {
@@ -85,10 +85,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         AbstractGraphState src = this.source;
         // if src has parameters, we need to apply the morphism to them
         if (src.hasParameters()) {
-            Morphism morphism = appl.getMorphism();
             Node[] parameters = src.getParameters();
             for (int i = 0; i < parameters.length; i++) {
-                Node targetNode = morphism.nodeMap().get(parameters[i]);
+                Node targetNode = nodeMap.getNode(parameters[i]);
                 // the node could be deleted by this rule
                 if (targetNode != null
                     && transition.target().isInitialized(
@@ -105,12 +104,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
         // if transition has output parameters, we need to apply them
         if (transition.hasOutputParameters()) {
-            RuleMatch match = appl.getMatch();
+            RuleMatch match = getMatch();
             String[] output = transition.getOutputParameters();
-
-            SPORule rule = (SPORule) appl.getRule();
-            Morphism ruleMorphism = rule.getMorphism();
-
+            SPORule rule = (SPORule) getEvent().getRule();
             for (int i = 0; i < output.length; i++) {
                 if (output[i] != null && !output[i].equals("_")) {
                     int creator = -1;
@@ -121,8 +117,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements
                         value = this.addedNodes[creator];
                     } else {
                         value =
-                            match.getElementMap().getNode(
-                                ruleMorphism.getNode(rule.getParameter(i + 1)));
+                            nodeMap.getNode(match.getElementMap().getNode(
+                                rule.getParameter(i + 1)));
                     }
                     this.setParameter(position, value);
                 }
