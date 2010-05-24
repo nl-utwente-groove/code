@@ -28,6 +28,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.SystemRecord;
@@ -539,25 +540,27 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             if (this.collapse == COLLAPSE_NONE) {
                 result = System.identityHashCode(stateKey);
             } else {
+                CertificateStrategy certifier = null;
                 if (this.collapse == COLLAPSE_EQUAL) {
                     Graph graph = stateKey.getGraph();
                     result =
                         graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 } else {
-                    CertificateStrategy certifier =
-                        stateKey.getGraph().getCertifier(true);
+                    certifier = stateKey.getGraph().getCertifier(true);
                     Object certificate = certifier.getGraphCertificate();
                     result = certificate.hashCode();
                 }
                 Object control = stateKey.getLocation();
                 result += control == null ? 0 : control.hashCode();
                 if (stateKey.getParameters() != null) {
-                    CertificateStrategy certifier =
-                        stateKey.getGraph().getCertifier(true);
+                    if (certifier == null) {
+                        certifier = stateKey.getGraph().getCertifier(true);
+                    }
                     for (Node n : stateKey.getParameters()) {
                         if (n != null) {
-                            result +=
-                                certifier.getCertificateMap().get(n).hashCode();
+                            Certificate<?> parCert =
+                                certifier.getCertificateMap().get(n);
+                            result += parCert.hashCode();
                             // shift left to ensure the parameters' order matters
                             result = result << 1 | (result < 0 ? 1 : 0);
                         }
