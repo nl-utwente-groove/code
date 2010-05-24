@@ -241,7 +241,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             Node actualTarget = oppositeVertex.getActualNode();
             if (actualTarget instanceof ValueNode) {
                 result.append(ASSIGN_TEXT);
-                result.append(((ValueNode) actualTarget).getValue());
+                result.append(((ValueNode) actualTarget).getSymbol());
             } else {
                 result.append(TYPE_TEXT);
                 result.append(((TypeNode) actualTarget).getType());
