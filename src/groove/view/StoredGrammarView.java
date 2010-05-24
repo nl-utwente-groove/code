@@ -330,8 +330,8 @@ public class StoredGrammarView implements GrammarView, Observer {
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
-                            "Error in type graph '%s': '%s'",
-                            typeView.getName(), error, typeView.getView()));
+                            "Error in type graph '%s': %s", typeView.getName(),
+                            error, typeView.getView()));
                     }
                 }
             }
@@ -412,8 +412,12 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (getTypeView() == null) {
             this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
         } else {
-            this.labelStore.add(getTypeView().toModel().getLabelStore());
-            this.labelStore.setFixed();
+            try {
+                this.labelStore.add(getTypeView().toModel().getLabelStore());
+                this.labelStore.setFixed();
+            } catch (FormatException e) {
+                // the type view has errors; don't add subtype labels
+            }
         }
         result.setLabelStore(this.labelStore);
         try {
