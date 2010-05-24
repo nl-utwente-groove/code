@@ -29,6 +29,7 @@ import groove.util.ExprParser;
 import groove.util.Pair;
 import groove.view.FormatException;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -134,12 +135,9 @@ public class RegExprLabelParser implements LabelParser {
      * {@link #SPECIAL_CHARS}.
      */
     private Character getSpecialChar(String text) {
-        Set<Character> firstChars = new HashSet<Character>();
-        for (char c : text.toCharArray()) {
-            firstChars.add(c);
-        }
-        for (char c : SPECIAL_CHARS) {
-            if (firstChars.contains(c)) {
+        for (int i = 0; i < text.length(); i++) {
+            Character c = text.charAt(i);
+            if (SPECIAL_CHARS.contains(c)) {
                 return c;
             }
         }
@@ -214,8 +212,9 @@ public class RegExprLabelParser implements LabelParser {
      * String of characters whose occurrence in an atomic label requires the
      * unparsed view to be quoted.
      */
-    static private final char[] SPECIAL_CHARS =
-        new char[] {'{', '}', '\'', '\\', Aspect.VALUE_SEPARATOR};
+    static private final Set<Character> SPECIAL_CHARS =
+        new HashSet<Character>(Arrays.asList(new Character[] {'{', '}', '\'',
+            '\\', Aspect.VALUE_SEPARATOR}));
     /** Static instance of parser that will parse any text as regular expression. */
     static private final RegExprLabelParser certainInstance =
         new RegExprLabelParser(true);
