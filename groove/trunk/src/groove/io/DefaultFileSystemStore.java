@@ -131,9 +131,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public String deleteControl(String name) throws IOException {
+    public String deleteControl(String name) {
         String result = null;
-
         DeleteControlEdit deleteEdit = doDeleteControl(name);
         if (deleteEdit != null) {
             deleteEdit.checkAndSetVersion();

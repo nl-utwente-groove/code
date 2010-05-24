@@ -132,10 +132,8 @@ public interface GenericSystemStore<R,G,T,C> {
      * @return the type graph with name <code>name</code>, or <code>null</code>
      *         if there was no such type
      * @throws UnsupportedOperationException if the store is immutable
-     * @throws IOException if an error occurred while deleting the type graph
      */
-    public T deleteType(String name) throws UnsupportedOperationException,
-        IOException;
+    public T deleteType(String name) throws UnsupportedOperationException;
 
     /**
      * Adds or replaces a type graph in the store.
@@ -166,12 +164,10 @@ public interface GenericSystemStore<R,G,T,C> {
      * @param name name of the control program to be deleted
      * @return the program with name <code>name</code>, or <code>null</code> if
      *         there was no such program
-     * @throws IOException if an error occurred while deleting the control
-     *         program
      * @throws UnsupportedOperationException if the store is immutable
      */
     public String deleteControl(String name)
-        throws UnsupportedOperationException, IOException;
+        throws UnsupportedOperationException;
 
     /**
      * Adds or replaces a control program in the store.
