@@ -21,8 +21,11 @@ import groove.view.FormatException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -58,9 +61,10 @@ public class ExprParser {
         for (char element : quoteChars) {
             this.quoteChars.add(new Character(element));
         }
-        for (char[] element : brackets) {
-            this.openBrackets.add(new Character(element[0]));
-            this.closeBrackets.add(new Character(element[1]));
+        for (int i = 0; i < brackets.length; i++) {
+            char[] element = brackets[i];
+            this.openBrackets.put(element[0], i);
+            this.closeBrackets.put(element[1], i);
         }
         this.placeholder = placeholder;
     }
@@ -82,68 +86,68 @@ public class ExprParser {
         // current stack of brackets
         Stack<Character> bracketStack = new Stack<Character>();
         // the resulting stripped expression (with PLACEHOLDER chars)
-        StringBuilder strippedExpr = new StringBuilder();
+        SimpleStringBuilder strippedExpr =
+            new SimpleStringBuilder(expr.length());
         // the list of replacements so far
         List<String> replacements = new LinkedList<String>();
         // the string currently being built
-        StringBuilder current = strippedExpr;
+        SimpleStringBuilder current = strippedExpr;
         for (int i = 0; i < expr.length(); i++) {
             char nextChar = expr.charAt(i);
-            Character nextTokenChar = nextChar;
+            Character nextCharObject = nextChar;
             if (escaped) {
-                current.append(nextChar);
+                current.add(nextChar);
                 escaped = false;
             } else if (nextChar == ESCAPE_CHAR) {
-                current.append(nextChar);
+                current.add(nextChar);
                 escaped = true;
             } else if (quoted) {
-                current.append(nextChar);
+                current.add(nextChar);
                 quoted = nextChar != quoteChar;
                 if (!quoted && bracketStack.isEmpty()) {
-                    strippedExpr.append(this.placeholder);
+                    strippedExpr.add(this.placeholder);
                     replacements.add(current.toString());
                     current = strippedExpr;
                 }
-            } else if (this.quoteChars.contains(nextTokenChar)) {
+            } else if (this.quoteChars.contains(nextCharObject)) {
                 if (bracketStack.isEmpty()) {
-                    current = new StringBuilder();
+                    current = new SimpleStringBuilder(expr.length() - i);
                 }
-                current.append(nextChar);
+                current.add(nextChar);
                 quoted = true;
                 quoteChar = nextChar;
-            } else if (this.openBrackets.contains(nextTokenChar)) {
+            } else if (this.openBrackets.containsKey(nextCharObject)) {
                 // we have an opening bracket
                 if (bracketStack.isEmpty()) {
-                    current = new StringBuilder();
+                    current = new SimpleStringBuilder(expr.length() - i);
                 }
-                current.append(nextTokenChar);
-                bracketStack.push(nextTokenChar);
-            } else if (this.closeBrackets.contains(nextTokenChar)) {
+                current.add(nextChar);
+                bracketStack.push(nextChar);
+            } else if (this.closeBrackets.containsKey(nextCharObject)) {
                 // we have a closing bracket; see if it is expected
                 if (bracketStack.isEmpty()) {
                     throw new FormatException(
                         "Unbalanced brackets in expression '%s': '%c' is not opened",
-                        expr, nextTokenChar);
+                        expr, nextChar);
                 }
                 Character openBracket = bracketStack.pop();
-                int openBracketIndex = this.openBrackets.indexOf(openBracket);
-                int closeBracketIndex =
-                    this.closeBrackets.indexOf(nextTokenChar);
+                int openBracketIndex = this.openBrackets.get(openBracket);
+                int closeBracketIndex = this.closeBrackets.get(nextCharObject);
                 if (openBracketIndex != closeBracketIndex) {
                     throw new FormatException(
                         "Unbalanced brackets in expression '%s': '%c' closed by '%c'",
-                        expr, openBracket, nextTokenChar);
+                        expr, openBracket, nextChar);
                 }
-                current.append(nextTokenChar);
+                current.add(nextChar);
                 if (bracketStack.isEmpty()) {
                     // this closes the replacement substring
-                    strippedExpr.append(this.placeholder);
+                    strippedExpr.add(this.placeholder);
                     replacements.add(current.toString());
                     current = strippedExpr;
                 }
             } else {
                 // we have an ordinary character
-                current.append(nextTokenChar);
+                current.add(nextChar);
             }
         }
         if (escaped) {
@@ -310,21 +314,19 @@ public class ExprParser {
     /**
      * A vector of quote characters, encoded as a list of <tt>Character</tt>.
      */
-    private final List<Character> quoteChars = new LinkedList<Character>();
+    private final Set<Character> quoteChars = new LinkedHashSet<Character>();
     /**
-     * An list of opening bracket characters. The corresponding closing bracket
-     * character is at the same index of <tt>closeBrackets</tt>. This is encoded
-     * as a list of <tt>Character</tt>.
-     * @invariant <tt>openBrackets.size() == closeBrachets.size()</tt>
+     * A map from open bracket characters to indices. The corresponding closing bracket
+     * character is at the same index of <tt>closeBrackets</tt>.
      */
-    private final List<Character> openBrackets = new LinkedList<Character>();
+    private final Map<Character,Integer> openBrackets =
+        new LinkedHashMap<Character,Integer>();
     /**
-     * An list of closing bracket characters, The corresponding opening bracket
-     * character is at the same index of <tt>openBrackets</tt>. This is encoded
-     * as a list of <tt>Character</tt>.
-     * @invariant <tt>openBrackets.size() == closeBrachets.size()</tt>
+     * A map of closing bracket characters to indices. The corresponding opening bracket
+     * character is at the same index of <tt>openBrackets</tt>.
      */
-    private final List<Character> closeBrackets = new LinkedList<Character>();
+    private final Map<Character,Integer> closeBrackets =
+        new LinkedHashMap<Character,Integer>();
     /**
      * The character to use as a placeholder in the parse result of this parser.
      */
@@ -857,4 +859,30 @@ public class ExprParser {
 
     /** Prototype parser, used to evaluate the static methods on. */
     static private final ExprParser prototype = new ExprParser();
+
+    /** Class wrapping a fixed length char array
+     * with functionality to add chars and convert the result into a string. 
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    private static class SimpleStringBuilder {
+        /** Constructs a builder with a given (fixed) length. */
+        public SimpleStringBuilder(int capacity) {
+            this.sequence = new char[capacity];
+        }
+
+        /** Appends a char to the builder. */
+        public void add(char next) {
+            this.sequence[this.length] = next;
+            this.length++;
+        }
+
+        @Override
+        public String toString() {
+            return new String(this.sequence, 0, this.length);
+        }
+
+        private final char[] sequence;
+        private int length;
+    }
 }
