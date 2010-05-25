@@ -19,7 +19,6 @@ package groove.util;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -59,15 +58,15 @@ public class ExprParser {
      */
     public ExprParser(char placeholder, char[] quoteChars, char[]... brackets) {
         for (char element : quoteChars) {
-            this.quoteChars.set(element);
+            this.quoteChars[element] = true;
         }
         for (int i = 0; i < brackets.length; i++) {
             char[] element = brackets[i];
             char open = element[0];
-            this.openBrackets.set(open);
+            this.openBrackets[open] = true;
             this.openBracketsIndexMap.put(open, i);
             char close = element[1];
-            this.closeBrackets.set(close);
+            this.closeBrackets[close] = true;
             this.closeBracketsIndexMap.put(close, i);
         }
         this.placeholder = placeholder;
@@ -113,21 +112,21 @@ public class ExprParser {
                     replacements.add(current.toString());
                     current = strippedExpr;
                 }
-            } else if (this.quoteChars.get(nextChar)) {
+            } else if (this.quoteChars[nextChar]) {
                 if (bracketStack.isEmpty()) {
                     current = new SimpleStringBuilder(expr.length() - i);
                 }
                 current.add(nextChar);
                 quoted = true;
                 quoteChar = nextChar;
-            } else if (this.openBrackets.get(nextChar)) {
+            } else if (this.openBrackets[nextChar]) {
                 // we have an opening bracket
                 if (bracketStack.isEmpty()) {
                     current = new SimpleStringBuilder(expr.length() - i);
                 }
                 current.add(nextChar);
                 bracketStack.push(nextChar);
-            } else if (this.closeBrackets.get(nextChar)) {
+            } else if (this.closeBrackets[nextChar]) {
                 // we have a closing bracket; see if it is expected
                 if (bracketStack.isEmpty()) {
                     throw new FormatException(
@@ -179,14 +178,25 @@ public class ExprParser {
      * {@link #parse(String)}, returns a string from which
      * {@link #parse(String)} would have constructed that array.
      */
-    public String unparse(String basis, Iterator<String> replacements) {
-        StringBuilder result = new StringBuilder();
+    public String unparse(String basis, List<String> replacements) {
+        // Calculate the capacity of the result char array,
+        int replacementLength = 0;
+        for (String replacement : replacements) {
+            replacementLength += replacement.length();
+        }
+        SimpleStringBuilder result =
+            new SimpleStringBuilder(basis.length() + replacementLength);
+        Iterator<String> replacementIter = replacements.iterator();
         for (int i = 0; i < basis.length(); i++) {
             char next = basis.charAt(i);
             if (next == this.placeholder) {
-                result.append(replacements.next());
+                // Append next replacement to result
+                String replacement = replacementIter.next();
+                for (int c = 0; c < replacement.length(); c++) {
+                    result.add(replacement.charAt(c));
+                }
             } else {
-                result.append(next);
+                result.add(next);
             }
         }
         return result.toString();
@@ -207,34 +217,31 @@ public class ExprParser {
      * @see String#split(String,int)
      */
     public String[] split(String expr, String split) throws FormatException {
+        List<String> result = new ArrayList<String>();
+        // Parse the expression first, so only non-quoted spaces are used to split
         Pair<String,List<String>> parseResult = parse(expr);
         String parseExpr = parseResult.first();
-        List<String> replacements = parseResult.second();
-        // split the parsed expression
-        List<String> strippedOperands = new ArrayList<String>();
-        int previousIndex = 0;
-        while (previousIndex < parseExpr.length()
-            && Character.isSpaceChar(parseExpr.charAt(previousIndex))) {
-            previousIndex++;
-        }
-        int index = parseExpr.indexOf(split, previousIndex);
-        while (index >= 0) {
-            strippedOperands.add(parseExpr.substring(previousIndex, index).trim());
-            previousIndex = index + split.length();
-            while (previousIndex < parseExpr.length()
-                && Character.isSpaceChar(parseExpr.charAt(previousIndex))) {
-                previousIndex++;
+        Iterator<String> replacements = parseResult.second().iterator();
+        // go through the parsed expression
+        SimpleStringBuilder subResult = new SimpleStringBuilder(expr.length());
+        for (int i = 0; i < parseExpr.length(); i++) {
+            char next = parseExpr.charAt(i);
+            if (next == split.charAt(0) && parseExpr.startsWith(split, i)) {
+                result.add(subResult.toString());
+                subResult.clear();
+            } else if (next == this.placeholder) {
+                // append the next replacement to the subresult
+                String replacement = replacements.next();
+                for (int c = 0; c < replacement.length(); c++) {
+                    subResult.add(replacement.charAt(c));
+                }
+            } else if (!subResult.isEmpty() || !Character.isWhitespace(next)) {
+                subResult.add(next);
             }
-            index = parseExpr.indexOf(split, previousIndex);
         }
-        strippedOperands.add(parseExpr.substring(previousIndex));
-        String[] result = new String[strippedOperands.size()];
-        // put the replacement strings back into the operands
-        Iterator<String> replacementIter = replacements.iterator();
-        for (int i = 0; i < result.length; i++) {
-            result[i] = unparse(strippedOperands.get(i), replacementIter);
-        }
-        return result;
+        // process the last subresult
+        result.add(subResult.toString());
+        return result.toArray(new String[0]);
     }
 
     /**
@@ -289,8 +296,7 @@ public class ExprParser {
                     + "' has empty operand in \"" + expr + "\"");
             } else {
                 return new String[] {unparse(
-                    parsedBasis.substring(oper.length()),
-                    replacements.iterator())};
+                    parsedBasis.substring(oper.length()), replacements)};
             }
         case POSTFIX_POSITION:
             parsedExpr = parse(expr);
@@ -307,8 +313,7 @@ public class ExprParser {
                     + "' has empty operand in \"" + expr + "\"");
             } else {
                 return new String[] {unparse(
-                    parsedBasis.substring(0, operIndex),
-                    replacements.iterator())};
+                    parsedBasis.substring(0, operIndex), replacements)};
             }
         default:
             // this case should not occur
@@ -320,15 +325,15 @@ public class ExprParser {
     /**
      * A bitset of quote characters.
      */
-    private final BitSet quoteChars = new BitSet(0xFF);
+    private final boolean[] quoteChars = new boolean[0xFF];
     /**
      * A bitset of open bracket characters.
      */
-    private final BitSet openBrackets = new BitSet(0xFF);
+    private final boolean[] openBrackets = new boolean[0xFF];
     /**
      * A bitset of close bracket characters.
      */
-    private final BitSet closeBrackets = new BitSet(0xFF);
+    private final boolean[] closeBrackets = new boolean[0xFF];
     /**
      * A map from open bracket characters to indices. The corresponding closing bracket
      * character is at the same index of <tt>closeBrackets</tt>.
@@ -378,7 +383,7 @@ public class ExprParser {
      * {@link #parseExpr(String)}.
      */
     static public String unparseExpr(String basis, List<String> replacements) {
-        return prototype.unparse(basis, replacements.iterator());
+        return prototype.unparse(basis, replacements);
     }
 
     /**
@@ -894,6 +899,21 @@ public class ExprParser {
         @Override
         public String toString() {
             return new String(this.sequence, 0, this.length);
+        }
+
+        /** Returns the current length of the character sequence. */
+        public int length() {
+            return this.length;
+        }
+
+        /** Indicates if the sequence is currently empty. */
+        public boolean isEmpty() {
+            return this.length == 0;
+        }
+
+        /** Resets the sequence to length 0. */
+        public void clear() {
+            this.length = 0;
         }
 
         private final char[] sequence;
