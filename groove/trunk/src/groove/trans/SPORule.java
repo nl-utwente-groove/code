@@ -687,25 +687,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     @Override
     public void setFixed() throws FormatException {
-        if (!isFixed()) {
-            if (getSystemProperties() != null) {
-                if (getSystemProperties().isCheckCreatorEdges()) {
-                    for (Edge edge : getSimpleCreatorEdges()) {
-                        addSubCondition(new EdgeEmbargo(lhs(),
-                            getCreatorMap().mapEdge(edge),
-                            getSystemProperties(), getLabelStore()));
-                    }
-                }
-                if (getSystemProperties().isRhsAsNac() && hasCreators()) {
-                    Condition rhsNac =
-                        new NotCondition(rhs(), getMorphism().elementMap(),
-                            getLabelStore(), getSystemProperties());
-                    rhsNac.setFixed();
-                    addSubCondition(rhsNac);
-                }
-            }
-            super.setFixed();
-        }
+        super.setFixed();
         if (PRINT && isTop()) {
             System.out.println(toString());
         }
