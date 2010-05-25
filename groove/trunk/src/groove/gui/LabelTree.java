@@ -428,7 +428,10 @@ public class LabelTree extends JTree implements GraphModelListener,
         addTreeSelectionListener(this);
     }
 
-    /** Recursively adds related types to a given label node. */
+    /**
+     * Recursively adds related types to a given label node.
+     * Only first level subtypes are added.
+     */
     private void addRelatedTypes(LabelTreeNode labelNode,
             Map<Label,Set<Label>> map, Set<LabelTreeNode> newNodes) {
         Label label = labelNode.getLabel();
@@ -439,8 +442,12 @@ public class LabelTree extends JTree implements GraphModelListener,
         for (Label type : relatedTypes) {
             LabelTreeNode typeNode = new LabelTreeNode(type, false);
             labelNode.add(typeNode);
-            newNodes.add(labelNode);
-            addRelatedTypes(typeNode, map, newNodes);
+            if (newNodes != null) {
+                newNodes.add(labelNode);
+            }
+            // change last parameter to newNodes if subtypes should be added
+            // to arbitrary depth
+            addRelatedTypes(typeNode, map, null);
         }
     }
 

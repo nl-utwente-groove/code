@@ -1004,7 +1004,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             final ErrorListPanel result =
-                this.errorPanel = new ErrorListPanel();
+                this.errorPanel = new ErrorListPanel("Format errors in graph");
             result.addSelectionListener(new Observer() {
                 @Override
                 public void update(Observable o, Object arg) {

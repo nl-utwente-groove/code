@@ -169,8 +169,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.TreePath;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 import org.jgraph.event.GraphSelectionEvent;
@@ -505,8 +508,17 @@ public class Simulator {
         boolean result = false;
         try {
             getGrammarStore().putControl(name, program);
+            boolean isCurrentControl =
+                name.equals(getGrammarView().getControlName());
+            // we only need to refresh the grammar if the added
+            // control program is the currently active one
+            if (isCurrentControl) {
+                updateGrammar();
+            } else {
+                // otherwise, we only need to update the control panel
+                getControlPanel().refreshAll();
+            }
             result = true;
-            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error storing control program " + name, exc);
         }
@@ -533,6 +545,7 @@ public class Simulator {
                     refresh();
                 }
             }
+            result = true;
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving graph '%s'",
                 GraphInfo.getName(graph)), exc);
@@ -553,8 +566,8 @@ public class Simulator {
             GraphInfo.setName(ruleAsGraph, ruleName.text());
             getGrammarStore().putRule(ruleAsGraph);
             ruleAsGraph.invalidateView();
-            result = true;
             updateGrammar();
+            result = true;
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving rule '%s'",
                 ruleName), exc);
@@ -578,13 +591,14 @@ public class Simulator {
                     typeGraph.getErrors()));
             } else {
                 getGrammarStore().putType(typeGraph);
-                result = true;
                 if (GraphInfo.getName(typeGraph).equals(
                     getGrammarView().getTypeName())) {
                     updateGrammar();
                 } else {
-                    refresh();
+                    // otherwise, we only need to update the type panel
+                    getTypePanel().displayType();
                 }
+                result = true;
             }
         } catch (IOException exc) {
             showErrorDialog(String.format("Error while saving type graph '%s'",
@@ -594,26 +608,18 @@ public class Simulator {
     }
 
     /** Removes a control program from this grammar. */
-    boolean doDeleteControl(String name) {
-        boolean result = false;
+    void doDeleteControl(String name) {
         boolean isCurrentControl =
             name.equals(getGrammarView().getControlName());
-        try {
-            getGrammarStore().deleteControl(name);
-            // we only need to refresh the grammar if the deleted
-            // control program was the currently active one
-            if (isCurrentControl) {
-                updateGrammar();
-            } else {
-                // otherwise, we only need to update the list
-                getControlPanel().refreshAll();
-            }
-            result = true;
-        } catch (IOException exc) {
-            showErrorDialog(String.format(
-                "Error while deleting control program '%s'", name), exc);
+        getGrammarStore().deleteControl(name);
+        // we only need to refresh the grammar if the deleted
+        // control program was the currently active one
+        if (isCurrentControl) {
+            updateGrammar();
+        } else {
+            // otherwise, we only need to update the control panel
+            getControlPanel().refreshAll();
         }
-        return result;
     }
 
     /**
@@ -646,24 +652,17 @@ public class Simulator {
     }
 
     /** Removes a type graph from this grammar. */
-    boolean doDeleteType(String name) {
-        boolean result = false;
+    void doDeleteType(String name) {
         boolean isCurrentType = name.equals(getGrammarView().getTypeName());
-        try {
-            getGrammarStore().deleteType(name);
-            // we only need to refresh the grammar if the deleted
-            // type graph was the currently active one
-            if (isCurrentType) {
-                updateGrammar();
-            } else {
-                // otherwise, we only need to update the list
-                getTypePanel().refreshAll();
-            }
-        } catch (IOException exc) {
-            showErrorDialog(String.format(
-                "Error while deleting type graph '%s'", name), exc);
+        getGrammarStore().deleteType(name);
+        // we only need to refresh the grammar if the deleted
+        // type graph was the currently active one
+        if (isCurrentType) {
+            updateGrammar();
+        } else {
+            // otherwise, we only need to update the type panel
+            getTypePanel().displayType();
         }
-        return result;
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
@@ -1019,7 +1018,8 @@ public class Simulator {
     /**
      * Renames a given type graph.
      */
-    void doRenameType(AspectGraph graph, String newName) {
+    boolean doRenameType(AspectGraph graph, String newName) {
+        boolean result = false;
         String oldName = GraphInfo.getName(graph);
         // test now if this is the type graph, before it is deleted from the
         // grammar
@@ -1029,13 +1029,16 @@ public class Simulator {
             if (isTypeGraph) {
                 updateGrammar();
             } else {
-                refresh();
+                // otherwise, we only need to update the type panel
+                getTypePanel().displayType();
             }
+            result = true;
         } catch (IOException exc) {
             showErrorDialog(String.format(
                 "Error while renaming type graph '%s'",
                 GraphInfo.getName(graph)), exc);
         }
+        return result;
     }
 
     /**
@@ -1625,7 +1628,8 @@ public class Simulator {
     private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             final ErrorListPanel result =
-                this.errorPanel = new ErrorListPanel();
+                this.errorPanel =
+                    new ErrorListPanel("Format errors in grammar");
             result.addSelectionListener(new Observer() {
                 @Override
                 public void update(Observable observable, Object arg) {
@@ -2478,7 +2482,6 @@ public class Simulator {
     public void refresh() {
         setTitle();
         getStateList().refreshList(true);
-        getTypePanel().refreshAll();
         refreshActions();
     }
 
@@ -2953,7 +2956,36 @@ public class Simulator {
     }
 
     /** The undo manager of this simulator. */
-    private final UndoManager undoManager = new UndoManager();
+    private final UndoManager undoManager = new UndoManager() {
+        @Override
+        public void undoableEditHappened(UndoableEditEvent e) {
+            super.undoableEditHappened(e);
+            refreshActions();
+        }
+
+        @Override
+        public synchronized void discardAllEdits() {
+            super.discardAllEdits();
+            refreshActions();
+        }
+
+        @Override
+        public synchronized void redo() throws CannotRedoException {
+            super.redo();
+            refreshActions();
+        }
+
+        @Override
+        public synchronized void undo() throws CannotUndoException {
+            super.undo();
+            refreshActions();
+        }
+
+        private void refreshActions() {
+            getUndoAction().refresh();
+            getRedoAction().refresh();
+        }
+    };
 
     /**
      * Class that spawns a thread to perform a long-lasting action, while
@@ -4470,7 +4502,7 @@ public class Simulator {
     /**
      * Returns the redo action permanently associated with this simulator.
      */
-    public Action getRedoAction() {
+    public RedoAction getRedoAction() {
         if (this.redoAction == null) {
             this.redoAction = new RedoAction();
         }
@@ -4485,10 +4517,11 @@ public class Simulator {
     /**
      * Action for redoing the last edit to the grammar.
      */
-    private class RedoAction extends RefreshableAction {
+    private class RedoAction extends AbstractAction {
         /** Constructs an instance of the action. */
         RedoAction() {
             super(Options.REDO_ACTION_NAME, Groove.REDO_ICON);
+            putValue(SHORT_DESCRIPTION, Options.REDO_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.REDO_KEY);
             setEnabled(false);
         }
@@ -5061,7 +5094,7 @@ public class Simulator {
     /**
      * Returns the undo action permanently associated with this simulator.
      */
-    public Action getUndoAction() {
+    public UndoAction getUndoAction() {
         if (this.undoAction == null) {
             this.undoAction = new UndoAction();
         }
@@ -5076,10 +5109,11 @@ public class Simulator {
     /**
      * Action for undoing an edit to the grammar.
      */
-    private class UndoAction extends RefreshableAction {
+    private class UndoAction extends AbstractAction {
         /** Constructs an instance of the action. */
         UndoAction() {
             super(Options.UNDO_ACTION_NAME, Groove.UNDO_ICON);
+            putValue(SHORT_DESCRIPTION, Options.UNDO_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.UNDO_KEY);
             setEnabled(false);
         }

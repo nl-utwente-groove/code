@@ -89,7 +89,7 @@ public class DefaultGxl extends AbstractXml {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
             Pair<Graph,Map<String,Node>> result =
-                DefaultGxlIO.getInstance().loadGraphWithMap(in);
+                JaxbGxlIO.getInstance().loadGraphWithMap(in);
             Graph resultGraph = result.first();
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());

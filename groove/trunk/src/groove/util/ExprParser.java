@@ -19,10 +19,10 @@ package groove.util;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,12 +59,16 @@ public class ExprParser {
      */
     public ExprParser(char placeholder, char[] quoteChars, char[]... brackets) {
         for (char element : quoteChars) {
-            this.quoteChars.add(new Character(element));
+            this.quoteChars.set(element);
         }
         for (int i = 0; i < brackets.length; i++) {
             char[] element = brackets[i];
-            this.openBrackets.put(element[0], i);
-            this.closeBrackets.put(element[1], i);
+            char open = element[0];
+            this.openBrackets.set(open);
+            this.openBracketsIndexMap.put(open, i);
+            char close = element[1];
+            this.closeBrackets.set(close);
+            this.closeBracketsIndexMap.put(close, i);
         }
         this.placeholder = placeholder;
     }
@@ -109,21 +113,21 @@ public class ExprParser {
                     replacements.add(current.toString());
                     current = strippedExpr;
                 }
-            } else if (this.quoteChars.contains(nextCharObject)) {
+            } else if (this.quoteChars.get(nextChar)) {
                 if (bracketStack.isEmpty()) {
                     current = new SimpleStringBuilder(expr.length() - i);
                 }
                 current.add(nextChar);
                 quoted = true;
                 quoteChar = nextChar;
-            } else if (this.openBrackets.containsKey(nextCharObject)) {
+            } else if (this.openBrackets.get(nextChar)) {
                 // we have an opening bracket
                 if (bracketStack.isEmpty()) {
                     current = new SimpleStringBuilder(expr.length() - i);
                 }
                 current.add(nextChar);
                 bracketStack.push(nextChar);
-            } else if (this.closeBrackets.containsKey(nextCharObject)) {
+            } else if (this.closeBrackets.get(nextChar)) {
                 // we have a closing bracket; see if it is expected
                 if (bracketStack.isEmpty()) {
                     throw new FormatException(
@@ -131,8 +135,10 @@ public class ExprParser {
                         expr, nextChar);
                 }
                 Character openBracket = bracketStack.pop();
-                int openBracketIndex = this.openBrackets.get(openBracket);
-                int closeBracketIndex = this.closeBrackets.get(nextCharObject);
+                int openBracketIndex =
+                    this.openBracketsIndexMap.get(openBracket);
+                int closeBracketIndex =
+                    this.closeBracketsIndexMap.get(nextCharObject);
                 if (openBracketIndex != closeBracketIndex) {
                     throw new FormatException(
                         "Unbalanced brackets in expression '%s': '%c' closed by '%c'",
@@ -174,16 +180,16 @@ public class ExprParser {
      * {@link #parse(String)} would have constructed that array.
      */
     public String unparse(String basis, Iterator<String> replacements) {
-        StringBuffer result = new StringBuffer();
-        int previousPlace = 0;
-        int place = basis.indexOf(this.placeholder, previousPlace);
-        while (place >= 0) {
-            result.append(basis.substring(previousPlace, place));
-            result.append(replacements.next());
-            previousPlace = place + 1;
-            place = basis.indexOf(this.placeholder, previousPlace);
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < basis.length(); i++) {
+            char next = basis.charAt(i);
+            if (next == this.placeholder) {
+                result.append(replacements.next());
+            } else {
+                result.append(next);
+            }
         }
-        return result.append(basis.substring(previousPlace, basis.length())).toString();
+        return result.toString();
     }
 
     /**
@@ -312,20 +318,28 @@ public class ExprParser {
     }
 
     /**
-     * A vector of quote characters, encoded as a list of <tt>Character</tt>.
+     * A bitset of quote characters.
      */
-    private final Set<Character> quoteChars = new LinkedHashSet<Character>();
+    private final BitSet quoteChars = new BitSet(0xFF);
+    /**
+     * A bitset of open bracket characters.
+     */
+    private final BitSet openBrackets = new BitSet(0xFF);
+    /**
+     * A bitset of close bracket characters.
+     */
+    private final BitSet closeBrackets = new BitSet(0xFF);
     /**
      * A map from open bracket characters to indices. The corresponding closing bracket
      * character is at the same index of <tt>closeBrackets</tt>.
      */
-    private final Map<Character,Integer> openBrackets =
+    private final Map<Character,Integer> openBracketsIndexMap =
         new LinkedHashMap<Character,Integer>();
     /**
      * A map of closing bracket characters to indices. The corresponding opening bracket
      * character is at the same index of <tt>openBrackets</tt>.
      */
-    private final Map<Character,Integer> closeBrackets =
+    private final Map<Character,Integer> closeBracketsIndexMap =
         new LinkedHashMap<Character,Integer>();
     /**
      * The character to use as a placeholder in the parse result of this parser.
