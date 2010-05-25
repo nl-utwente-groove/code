@@ -147,7 +147,6 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         LabelStore labelStore = null;
-        AspectJModel model = AspectJModel.EMPTY_ASPECT_JMODEL;
         String setTypeName = null;
         this.typeJModelMap.clear();
         if (grammar != null) {
@@ -159,16 +158,11 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             } else if (!grammar.getTypeNames().isEmpty()) {
                 setTypeName = grammar.getTypeNames().iterator().next();
             }
-            if (setTypeName != null) {
-                model = getTypeJModel(grammar.getTypeView(setTypeName));
-            }
             labelStore = grammar.getLabelStore();
         }
         setSelectedType(setTypeName);
         this.jGraph.setLabelStore(labelStore);
-        // reset the display
-        this.jGraph.setModel(model);
-        refreshAll();
+        displayType();
     }
 
     /**
@@ -191,6 +185,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      *        fresh
      */
     private void handleEditType(final Graph type, final boolean fresh) {
+        final String oldSelectedType = getSelectedType();
         EditorDialog dialog =
             new EditorDialog(getSimulator().getFrame(), getOptions(), type,
                 null) {
@@ -202,9 +197,9 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                     if (typeName != null) {
                         AspectGraph newType = getAspectGraph();
                         GraphInfo.setName(newType, typeName);
+                        setSelectedType(typeName);
                         if (getSimulator().doAddType(newType)) {
-                            setSelectedType(typeName);
-                            refreshAll();
+                            setSelectedType(oldSelectedType);
                         }
                     }
                 }
@@ -270,7 +265,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
     /**
      * Registers a refreshable.
-     * @see #refreshAll()
+     * @see #refreshActions()
      */
     private void addRefreshable(Refreshable refreshable) {
         this.refreshables.add(refreshable);
@@ -283,15 +278,18 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         }
     }
 
-    /** Refreshes all registered actions as well as the display. */
-    public void refreshAll() {
-        refreshActions();
-        this.jGraph.setModel(isTypeSelected()
-                ? getTypeJModel(getGrammarView().getTypeView(getSelectedType()))
-                : AspectJModel.EMPTY_ASPECT_JMODEL);
+    /** Sets the model according to the currently selected type. */
+    public void displayType() {
+        AspectJModel newModel =
+            isTypeSelected() ? getTypeJModel(getGrammarView().getTypeView(
+                getSelectedType())) : AspectJModel.EMPTY_ASPECT_JMODEL;
+        if (newModel != getJModel()) {
+            this.jGraph.setModel(newModel);
+        }
         setEnabled(isTypeSelected()
             && getSelectedType().equals(getGrammarView().getTypeName()));
-        refresh();
+        refreshActions();
+        refreshStatus();
     }
 
     /** List of registered refreshables. */
@@ -358,7 +356,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 public void actionPerformed(ActionEvent e) {
                     if (getSelectedItem() != null) {
                         setSelectedType((String) getSelectedItem());
-                        refreshAll();
+                        displayType();
                     }
                 }
             };
@@ -432,9 +430,12 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 TypeView oldTypeView = getGrammarView().getTypeView(oldName);
                 AspectGraph newType = oldTypeView.getView().clone();
                 GraphInfo.setName(newType, newName);
-                getSimulator().doAddType(newType);
+                // set the selected type, so that the next refresh 
+                // will actually change the display
                 setSelectedType(newName);
-                refreshAll();
+                if (getSimulator().doAddType(newType)) {
+                    setSelectedType(oldTypeView.getName());
+                }
             }
         }
 
@@ -517,15 +518,9 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 String newName =
                     itemNr >= 0 ? (String) getNameField().getItemAt(itemNr)
                             : null;
-                doDelete(typeName);
                 setSelectedType(newName);
-                refreshAll();
+                getSimulator().doDeleteType(typeName);
             }
-        }
-
-        /** Deletes a given type graph from the grammar. */
-        public void doDelete(String typeName) {
-            getSimulator().doDeleteType(typeName);
         }
 
         @Override
@@ -566,9 +561,8 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
         @Override
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarView().getTypeName() != null
-                && !getGrammarView().getTypeName().isEmpty());
+            setEnabled(isTypeSelected()
+                && getSelectedType().equals(getGrammarView().getTypeName()));
         }
     }
 
@@ -711,12 +705,14 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                     oldName, false);
             if (newName != null && !oldName.equals(newName)) {
                 TypeView type = getGrammarView().getTypeView(oldName);
-                getSimulator().doRenameType(type.getView(), newName);
-                if (oldName.equals(getGrammarView().getTypeName())) {
-                    getEnableAction().doEnable(newName);
-                }
                 setSelectedType(newName);
-                refreshAll();
+                if (getSimulator().doRenameType(type.getView(), newName)) {
+                    if (oldName.equals(getGrammarView().getTypeName())) {
+                        getEnableAction().doEnable(newName);
+                    }
+                } else {
+                    setSelectedType(oldName);
+                }
             }
         }
 

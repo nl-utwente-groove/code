@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.gui.jgraph.JAttr;
+import groove.util.Converter;
 import groove.view.FormatError;
 
 import java.awt.BorderLayout;
@@ -49,9 +50,9 @@ public class ErrorListPanel extends JPanel {
     /**
      * Constructs a new panel.
      */
-    public ErrorListPanel() {
+    public ErrorListPanel(String title) {
         super(new BorderLayout());
-        add(new JLabel("<html><b>Format errors in graph</b></html>"),
+        add(new JLabel(Converter.HTML_TAG.on(Converter.STRONG_TAG.on(title))),
             BorderLayout.NORTH);
         JScrollPane scrollPane = new JScrollPane(getErrorArea());
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);

@@ -106,20 +106,8 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         this.jGraph.setLabelStore(newLabelStore);
         // reset the display
         RuleView currentRule = this.simulator.getCurrentRule();
-        this.displayedRule =
-            currentRule == null ? null : currentRule.getRuleName();
-        if (this.displayedRule != null) {
-            if (this.ruleJModelMap.containsKey(this.displayedRule)) {
-                this.jGraph.setModel(this.ruleJModelMap.get(this.displayedRule));
-            } else {
-                this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
-                this.displayedRule = null;
-            }
-        } else {
-            this.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
-        }
-        refresh();
-        // displayedGrammar = grammar;
+        displayRule(currentRule == null ? null : currentRule.getRuleName(),
+            true);
     }
 
     /** Does nothing (according to contract, the grammar has already been set). */
@@ -137,13 +125,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         if (!this.ruleJModelMap.containsKey(name)) {
             throw new IllegalArgumentException("Unknown rule: " + name);
         }
-        if (this.displayedRule != name) {
-            JModel ruleJModel = this.ruleJModelMap.get(name);
-            // display new rule
-            this.jGraph.setModel(ruleJModel);
-            this.displayedRule = name;
-            refresh();
-        }
+        displayRule(name, false);
     }
 
     /**
@@ -178,10 +160,31 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         // nothing happens here
     }
 
-    @Override
-    protected void refresh() {
-        setEnabled(this.displayedRule != null);
-        super.refresh();
+    /** 
+     * Sets the rule with a given name as model, and refreshes the view.
+     * Also updates the {@link #displayedRule} accordingly.
+     * @param ruleName the name of the rule to be displayed
+     * @param reload if {@code true}, always reloads the rule with the given
+     * name; otherwise, only loads it if {@code ruleName} is different from
+     * {@link #displayedRule}.
+     */
+    private void displayRule(RuleName ruleName, boolean reload) {
+        if (reload || ruleName == null && this.displayedRule != null
+            || !ruleName.equals(this.displayedRule)) {
+            JModel ruleJModel =
+                ruleName == null ? AspectJModel.EMPTY_ASPECT_JMODEL
+                        : this.ruleJModelMap.get(ruleName);
+            if (ruleJModel == null) {
+                // apparently the rule name is unknown
+                ruleName = null;
+                ruleJModel = AspectJModel.EMPTY_ASPECT_JMODEL;
+            }
+            // display new rule
+            this.displayedRule = ruleName;
+            this.jGraph.setModel(ruleJModel);
+            setEnabled(ruleName != null);
+            refreshStatus();
+        }
     }
 
     /**
