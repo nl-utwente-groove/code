@@ -57,7 +57,9 @@ import org.exolab.castor.xml.ValidationException;
  * Class to read and write graphs in GXL format.
  * @author Arend Rensink
  * @version $Revision: 1568 $
+ * @deprecated("replaced by {@link JaxbGxlIO}")
  */
+@Deprecated
 public class DefaultGxlIO {
     /**
      * Private constructor for the singleton instance.

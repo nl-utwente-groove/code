@@ -52,7 +52,7 @@ import de.gupro.gxl.gxl_1_0.NodeType;
 import de.gupro.gxl.gxl_1_0.ObjectFactory;
 
 /**
- * Class to read and write graphs in GXL format.
+ * Class to read and write graphs in GXL format, using JXB data binding.
  * @author Arend Rensink
  * @version $Revision: 1568 $
  */
