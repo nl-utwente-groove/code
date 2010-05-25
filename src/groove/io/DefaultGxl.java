@@ -76,7 +76,7 @@ public class DefaultGxl extends AbstractXml {
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
-        DefaultGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
+        JaxbGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
     }
 
     /**

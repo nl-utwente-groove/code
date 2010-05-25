@@ -16,18 +16,13 @@
  */
 package groove.io;
 
-import groove.graph.AbstractBinaryEdge;
-import groove.graph.AbstractLabel;
-import groove.graph.AbstractUnaryEdge;
-import groove.graph.BinaryEdge;
-import groove.graph.DefaultLabel;
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -37,26 +32,24 @@ import groove.view.FormatError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-
-import org.exolab.castor.xml.MarshalException;
-import org.exolab.castor.xml.Marshaller;
-import org.exolab.castor.xml.ValidationException;
+import javax.xml.bind.Marshaller;
 
 import de.gupro.gxl.gxl_1_0.AttrType;
 import de.gupro.gxl.gxl_1_0.EdgeType;
+import de.gupro.gxl.gxl_1_0.EdgemodeType;
 import de.gupro.gxl.gxl_1_0.GraphElementType;
 import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
+import de.gupro.gxl.gxl_1_0.ObjectFactory;
 
 /**
  * Class to read and write graphs in GXL format.
@@ -75,13 +68,14 @@ public class JaxbGxlIO {
      * Saves a graph to an output stream.
      */
     public void saveGraph(Graph graph, OutputStream out) throws IOException {
-        Graph attrGraph = normToAttrGraph(graph);
-
-        GraphInfo.setVersion(attrGraph, Version.GXL_VERSION);
-        groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
+        GraphInfo.setVersion(graph, Version.GXL_VERSION);
+        GraphType gxlGraph = graphToGxl(graph);
         // now marshal the attribute graph
-
-        marshalGxlGraph(gxlGraph, new OutputStreamWriter(out));
+        try {
+            marshal(gxlGraph, out);
+        } catch (JAXBException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -91,20 +85,18 @@ public class JaxbGxlIO {
      */
     public Pair<Graph,Map<String,Node>> loadGraphWithMap(InputStream in)
         throws IOException {
-        Graph result;
         GraphType gxlGraph = unmarshal(in);
         in.close();
-        Pair<Graph,Map<String,Node>> attrGraph = gxlToAttrGraph(gxlGraph);
-        result = attrToNormGraph(attrGraph.first());
-        Map<String,Node> conversion = attrGraph.second();
-        if (!Version.isKnownGxlVersion(GraphInfo.getVersion(result))) {
+        Pair<Graph,Map<String,Node>> result = gxlToGraph(gxlGraph);
+        Graph graph = result.first();
+        if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
             GraphInfo.addErrors(
-                result,
+                graph,
                 Arrays.asList(new FormatError(
                     "GXL file format version '%s' is higher than supported version '%s'",
-                    GraphInfo.getVersion(result), Version.GXL_VERSION)));
+                    GraphInfo.getVersion(graph), Version.GXL_VERSION)));
         }
-        return new Pair<Graph,Map<String,Node>>(result, conversion);
+        return result;
     }
 
     /**
@@ -121,54 +113,36 @@ public class JaxbGxlIO {
      * @param graph a graph with only <tt>AttributeLabel</tt>s
      * @return the resulting GXL graph
      */
-    private groove.gxl.Graph attrToGxlGraph(Graph graph) {
-        groove.gxl.Graph gxlGraph = new groove.gxl.Graph();
+    private GraphType graphToGxl(Graph graph) {
+        GraphType gxlGraph = this.factory.createGraphType();
         gxlGraph.setEdgeids(false);
+        gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
         String name = GraphInfo.getName(graph);
         gxlGraph.setId(name == null ? DEFAULT_GRAPH_NAME : name);
         String role = GraphInfo.getRole(graph);
         gxlGraph.setRole(role == null ? Groove.GRAPH_ROLE : role);
+        List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
         // add the nodes
-        Map<Node,groove.gxl.Node> nodeMap = new HashMap<Node,groove.gxl.Node>();
+        Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
         for (Node node : graph.nodeSet()) {
             // create an xml element for this node
-            groove.gxl.Node gxlNode = new groove.gxl.Node();
-            nodeMap.put(node, gxlNode);
+            NodeType gxlNode = this.factory.createNodeType();
             // give the element an id
             gxlNode.setId(node.toString());
-            // add the node to the graph
-            groove.gxl.GraphTypeItem gxlGraphTypeItem =
-                new groove.gxl.GraphTypeItem();
-            gxlGraphTypeItem.setNode(gxlNode);
-            gxlGraph.addGraphTypeItem(gxlGraphTypeItem);
+            nodeMap.put(node, gxlNode);
+            nodesEdges.add(gxlNode);
         }
         // add the edges
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
-            groove.gxl.Edge gxlEdge = new groove.gxl.Edge();
+            EdgeType gxlEdge = this.factory.createEdgeType();
             gxlEdge.setFrom(nodeMap.get(edge.source()));
-            if (edge.endCount() == 2) {
-                gxlEdge.setTo(nodeMap.get(edge.end(Edge.TARGET_INDEX)));
-            } else if (edge.endCount() > 2) {
-                throw new IllegalArgumentException("Hyperedge " + edge
-                    + " not supported");
-            }
-            // add the attributes from the map
-            assert edge.label() instanceof AttributeLabel : "Label "
-                + edge.label() + " should have been an attribute label";
-            for (Map.Entry<String,String> entry : ((AttributeLabel) edge.label()).getAttributes().entrySet()) {
-                groove.gxl.Value gxlLabelText = new groove.gxl.Value();
-                gxlLabelText.setString(entry.getValue().toString());
-                groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
-                gxlLabelAttr.setName(entry.getKey());
-                gxlLabelAttr.setValue(gxlLabelText);
-                gxlEdge.addAttr(gxlLabelAttr);
-            }
-            // add the edge to the graph
-            groove.gxl.GraphTypeItem gxlGraphTypeItem =
-                new groove.gxl.GraphTypeItem();
-            gxlGraphTypeItem.setEdge(gxlEdge);
-            gxlGraph.addGraphTypeItem(gxlGraphTypeItem);
+            gxlEdge.setTo(nodeMap.get(edge.opposite()));
+            AttrType labelAttr = this.factory.createAttrType();
+            labelAttr.setName(LABEL_ATTR_NAME);
+            labelAttr.setString(edge.label().text());
+            gxlEdge.getAttr().add(labelAttr);
+            nodesEdges.add(gxlEdge);
         }
         // add the graph info
         GraphInfo info = GraphInfo.getInfo(graph, false);
@@ -180,20 +154,17 @@ public class JaxbGxlIO {
                 gxlGraph.setRole(info.getRole());
             }
             // add the graph attributes, if any
+            List<AttrType> graphAttrs = gxlGraph.getAttr();
             GraphProperties properties = info.getProperties(false);
             if (properties != null) {
                 for (Map.Entry<Object,Object> entry : properties.entrySet()) {
                     // EZ: Removed this conversion because it causes problems
                     // with rule properties keys.
                     // String attrName = ((String) entry.getKey()).toLowerCase();
-                    String attrName = (String) entry.getKey();
-                    String value = (String) entry.getValue();
-                    groove.gxl.Value gxlValue = new groove.gxl.Value();
-                    gxlValue.setString(value);
-                    groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
-                    gxlLabelAttr.setName(attrName);
-                    gxlLabelAttr.setValue(gxlValue);
-                    gxlGraph.addAttr(gxlLabelAttr);
+                    AttrType attr = this.factory.createAttrType();
+                    attr.setName((String) entry.getKey());
+                    attr.setString((String) entry.getValue());
+                    graphAttrs.add(attr);
                 }
             }
         }
@@ -210,7 +181,7 @@ public class JaxbGxlIO {
      * @return pair consisting of the resulting attribute graph (with only
      *         <tt>AttributeLabel</tt>s) and a non-<code>null</code> map
      */
-    private Pair<Graph,Map<String,Node>> gxlToAttrGraph(GraphType gxlGraph) {
+    private Pair<Graph,Map<String,Node>> gxlToGraph(GraphType gxlGraph) {
         Graph graph = this.graphFactory.newGraph();
         // Hash map for the ID lookup (ID to Vertex)
         Map<String,Node> nodeIds = new HashMap<String,Node>();
@@ -246,12 +217,16 @@ public class JaxbGxlIO {
                     ((NodeType) ((EdgeType) gxlElement).getTo()).getId();
                 Node targetNode = nodeIds.get(targetId);
                 // Fetch Label
-                Map<String,String> attributes = new HashMap<String,String>();
-                for (AttrType attr : ((EdgeType) gxlElement).getAttr()) {
-                    attributes.put(attr.getName().toLowerCase(),
-                        attr.getString());
-                }
-                graph.addEdge(createEdge(sourceNode, attributes, targetNode));
+                List<AttrType> attrs = ((EdgeType) gxlElement).getAttr();
+                assert attrs.size() == 1 : String.format(
+                    "More than one edge attribute in %s", attrs);
+                AttrType edgeAttr = attrs.get(0);
+                assert edgeAttr.getName().equals(LABEL_ATTR_NAME) : String.format(
+                    "Unknown edge attribute %s", edgeAttr.getName());
+                String label = edgeAttr.getString();
+                assert label != null : String.format(
+                    "Label attribute %s should have String type", edgeAttr);
+                graph.addEdge(createEdge(sourceNode, label, targetNode));
             }
         }
         // add the graph attributes
@@ -308,92 +283,27 @@ public class JaxbGxlIO {
     }
 
     /**
-     * Converts an ordinary graph into an attribute graph, by turning edge
-     * labels into maps with a <tt>LABEL_ATTR_NAME</tt>-key.
-     * @param graph the original graph
-     * @return the new, equivalent attribute graph.
+     * Callback factory method to create an attribute edge with given source
+     * node, and a label based on a given attribute map. The edge will be unary
+     * of <code>targetNode == null</code>, binary otherwise.
      */
-    private Graph normToAttrGraph(GraphShape graph) {
-        Graph attrGraph = this.graphFactory.newGraph();
-        // just copy the nodes
-        attrGraph.addNodeSet(graph.nodeSet());
-        // turn the edges into attribute maps and store those
-        Map<String,String> labelAttr = new HashMap<String,String>(1);
-        for (Edge edge : graph.edgeSet()) {
-            labelAttr.put(LABEL_ATTR_NAME, edge.label().text());
-            attrGraph.addEdge(createEdge(edge.ends(), labelAttr));
-        }
-        transferGraphInfo(graph, attrGraph);
-        attrGraph.setFixed();
-        return attrGraph;
+    private Edge createEdge(Node sourceNode, String label, Node targetNode) {
+        return DefaultEdge.createEdge(sourceNode, label, targetNode);
     }
 
-    /**
-     * Converts an attribute graph into an ordinary graph, by turning maps with
-     * a <tt>LABEL_ATTR_NAME</tt>-key into a {@link DefaultLabel}.
-     * @param attrGraph the original attributed graph
-     * @return the new, equivalent graph.
-     */
-    private Graph attrToNormGraph(Graph attrGraph) {
-        Graph graph = this.graphFactory.newGraph();
-        // Simply copy the nodes
-        graph.addNodeSet(attrGraph.nodeSet());
-        // Take the label value of the attribute labels
-        for (Edge edge : attrGraph.edgeSet()) {
-            Map<String,String> attributes =
-                ((AttributeLabel) edge.label()).getAttributes();
-            String labelText = attributes.get(LABEL_ATTR_NAME).trim();
-            if (labelText.length() == 0) {
-                GraphInfo.addErrors(graph, Arrays.asList(new FormatError(
-                    "Empty label in graph")));
-            } else {
-                graph.addEdge(edge.ends(), DefaultLabel.createLabel(labelText));
-            }
-        }
-        transferGraphInfo(attrGraph, graph);
-        return graph;
-    }
-
-    /**
-     * Transfers the graph information items with allowed property names from
-     * one graph to another.
-     * @param source the source graph
-     * @param target the target graph
-     */
-    private void transferGraphInfo(GraphShape source, Graph target) {
-        GraphInfo info = GraphInfo.getInfo(source, false);
-        if (info != null) {
-            GraphInfo.getInfo(target, true).load(info);
-        }
-    }
-
-    /**
-     * Marshals a GXL graph to an untyped GXL writer.
-     * @param gxlGraph the GXL graph
-     * @param writer the writer for the marshalling operation
-     * @throws IOException if the marshalling runs into some IO or XML errors
-     */
-    private void marshalGxlGraph(groove.gxl.Graph gxlGraph, Writer writer)
-        throws IOException {
-        groove.gxl.Gxl gxl = new groove.gxl.Gxl();
-        gxl.addGraph(gxlGraph);
-        try {
-            gxl.validate();
-            Marshaller marshaller = new Marshaller(writer);
-            marshaller.marshal(gxl);
-            writer.close();
-        } catch (MarshalException e) {
-            throw new IOException(e.getMessage());
-        } catch (ValidationException e) {
-            throw new IOException(e.getMessage());
-        }
+    private void marshal(GraphType gxlGraph, OutputStream out)
+        throws JAXBException, IOException {
+        GxlType document = new GxlType();
+        document.getGraph().add(gxlGraph);
+        this.marshaller.marshal(this.factory.createGxl(document), out);
+        out.close();
     }
 
     @SuppressWarnings("unchecked")
     private GraphType unmarshal(InputStream inputStream) throws IOException {
         try {
             JAXBElement<GxlType> doc =
-                (JAXBElement<GxlType>) this.u.unmarshal(inputStream);
+                (JAXBElement<GxlType>) this.unmarshaller.unmarshal(inputStream);
             inputStream.close();
             return doc.getValue().getGraph().get(0);
         } catch (JAXBException e) {
@@ -402,48 +312,29 @@ public class JaxbGxlIO {
         }
     }
 
-    JAXBContext jc;
-    javax.xml.bind.Unmarshaller u;
+    /** The graph factory for this marshaller. */
+    private final GraphFactory graphFactory = GraphFactory.getInstance();
+
+    /** Reusable context for JAXB (un)marshalling. */
+    private JAXBContext context;
+    /** Reusable marshaller. */
+    private javax.xml.bind.Marshaller marshaller;
+    /** Reusable unmarshaller. */
+    private javax.xml.bind.Unmarshaller unmarshaller;
     {
         try {
-            this.jc =
+            this.context =
                 JAXBContext.newInstance(GxlType.class.getPackage().getName());
-            this.u = this.jc.createUnmarshaller();
+            this.unmarshaller = this.context.createUnmarshaller();
+            this.marshaller = this.context.createMarshaller();
+            this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
+                Boolean.TRUE);
         } catch (JAXBException e) {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Callback factory method to create an attribute edge with given ends and
-     * attribute map.
-     */
-    private Edge createEdge(Node[] ends, Map<String,String> attributes) {
-        if (ends.length == BinaryEdge.END_COUNT) {
-            return new AttributeEdge2(ends, new AttributeLabel(attributes));
-        } else {
-            return new AttributeEdge1(ends, new AttributeLabel(attributes));
-        }
-    }
-
-    /**
-     * Callback factory method to create an attribute edge with given source
-     * node, and a label based on a given attribute map. The edge will be unary
-     * of <code>targetNode == null</code>, binary otherwise.
-     */
-    private Edge createEdge(Node sourceNode, Map<String,String> attributes,
-            Node targetNode) {
-        if (targetNode == null) {
-            return new AttributeEdge1(sourceNode,
-                new AttributeLabel(attributes));
-        } else {
-            return new AttributeEdge2(sourceNode,
-                new AttributeLabel(attributes), targetNode);
-        }
-    }
-
-    /** The graph factory for this marshaller. */
-    private final GraphFactory graphFactory = GraphFactory.getInstance();
+    /** Object factory used for marshalling. */
+    private final ObjectFactory factory = new ObjectFactory();
 
     /** Returns the singleton instance of this class. */
     static public JaxbGxlIO getInstance() {
@@ -459,57 +350,4 @@ public class JaxbGxlIO {
     static private final String DEFAULT_GRAPH_NAME = "graph";
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
-
-    /**
-     * The following implementation of <tt>Label</tt> allows us to use graphs to
-     * store attribute maps.
-     */
-    static private class AttributeLabel extends AbstractLabel {
-        /** Constructs an instance, based on a given attribute map. */
-        public AttributeLabel(Map<String,String> attributes) {
-            this.attributes = new HashMap<String,String>(attributes);
-        }
-
-        public String text() {
-            return this.attributes.toString();
-        }
-
-        @Override
-        public String toString() {
-            return this.attributes.toString();
-        }
-
-        /** Returns the attribute map of this label instance. */
-        public Map<String,String> getAttributes() {
-            return this.attributes;
-        }
-
-        private final Map<String,String> attributes;
-    }
-
-    /** Edge carrying an attribute map on its label, with an unknown end count. */
-    static private class AttributeEdge2 extends
-            AbstractBinaryEdge<Node,AttributeLabel,Node> {
-        /** Constructs in instance for given ends and label. */
-        public AttributeEdge2(Node[] ends, AttributeLabel label) {
-            this(ends[SOURCE_INDEX], label, ends[TARGET_INDEX]);
-        }
-
-        AttributeEdge2(Node source, AttributeLabel label, Node target) {
-            super(source, label, target);
-        }
-    }
-
-    /** Edge carrying an attribute map on its label, with an unknown end count. */
-    static private class AttributeEdge1 extends
-            AbstractUnaryEdge<Node,AttributeLabel> {
-        /** Constructs in instance for given ends and label. */
-        public AttributeEdge1(Node[] ends, AttributeLabel label) {
-            this(ends[SOURCE_INDEX], label);
-        }
-
-        AttributeEdge1(Node source, AttributeLabel label) {
-            super(source, label);
-        }
-    }
 }
