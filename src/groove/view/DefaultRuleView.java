@@ -1238,6 +1238,8 @@ public class DefaultRuleView implements RuleView {
                 this.rhs.addNode(rhsNode);
                 if (RuleAspect.inLHS(viewNode)) {
                     this.ruleMorph.putNode(lhsNode, rhsNode);
+                } else if (getSystemProperties().isRhsAsNac()) {
+                    this.nacNodeSet.add(lhsNode);
                 }
             }
             return result;
@@ -1265,6 +1267,12 @@ public class DefaultRuleView implements RuleView {
                 this.rhs.addEdge(rhsEdge);
                 if (RuleAspect.inLHS(viewEdge)) {
                     this.ruleMorph.putEdge(lhsEdge, rhsEdge);
+                } else if (getSystemProperties().isRhsAsNac()) {
+                    this.nacEdgeSet.add(lhsEdge);
+                } else if (getSystemProperties().isCheckCreatorEdges()
+                    && RuleAspect.inLHS(viewEdge.source())
+                    && RuleAspect.inLHS(viewEdge.target())) {
+                    this.nacEdgeSet.add(lhsEdge);
                 }
             }
         }
