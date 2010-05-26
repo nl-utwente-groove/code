@@ -227,23 +227,6 @@ public class VirtualEvent<C> implements RuleEvent {
             super(event, innerTarget);
             this.innerAddedNodes = innerAddedNodes;
             this.symmetry = symmetry;
-            // assert event.getRule().equals(innerTarget.getEvent().getRule()) :
-            // String.format("Virtual rule %s should equal content rule %s",
-            // event.getRule().getName(),
-            // innerTarget.getEvent().getRule().getName());
-        }
-
-        /**
-         * Returns the target of a given rule event, by trying to walk around
-         * three sides of a confluent diamond instead of computing the target
-         * directly.
-         * @param event the rule event
-         * @return the target state; <code>null</code> if no confluent diamond
-         *         was found
-         */
-        public groove.lts.GraphState getConfluentTarget(RuleEvent event) {
-            return isConfluent(event) ? getInnerTarget().getNextState(event)
-                    : null;
         }
 
         /**

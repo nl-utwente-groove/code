@@ -23,6 +23,7 @@ import groove.graph.Element;
 import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
@@ -252,7 +253,7 @@ public class ShapeGraphState extends AbstractGraphState {
     // ------------------------------------------------------------
 
     @Override
-    public GraphState getNextState(RuleEvent prime) {
+    public GraphTransitionStub getOutStub(RuleEvent prime) {
         throw new UnsupportedOperationException();
     }
 

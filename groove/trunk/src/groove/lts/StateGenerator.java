@@ -129,10 +129,10 @@ public class StateGenerator {
                 transition = createTransition(appl, source, source, false);
             }
         } else {
-            GraphState confluentTarget = getConfluentTarget(source, appl);
+            transition = computeConfluentTransition(source, appl);
 
-            if (confluentTarget == null
-                || confluentTarget.getLocation() != targetLocation) {
+            if (transition == null
+                || transition.target().getLocation() != targetLocation) {
                 // can't have this as add_transition, it may be counted as
                 // matching
                 GraphNextState freshTarget = createState(appl, source);
@@ -145,8 +145,6 @@ public class StateGenerator {
                         createTransition(appl, source, isoTarget, true);
                 }
             } else {
-                transition =
-                    createTransition(appl, source, confluentTarget, false);
                 confluentDiamondCount++;
             }
         }
@@ -214,36 +212,31 @@ public class StateGenerator {
      * @return the target state; <code>null</code> if no confluent diamond was
      *         found
      */
-    private GraphState getConfluentTarget(GraphState source,
+    private GraphTransition computeConfluentTransition(GraphState source,
             RuleApplication appl) {
-        // FIXME: where is isUseDependencies set then?
-        // !AliasRuleApplier.isUseDependencies() ||
         if (!(appl instanceof AliasRuleApplication)) {
             return null;
         }
-
         assert source instanceof GraphNextState;
-
         AliasRuleApplication aliasAppl = (AliasRuleApplication) appl;
         GraphTransitionStub prior = aliasAppl.getPrior();
         if (prior.isSymmetry()) {
             return null;
         }
-        // if (!priorTarget.isClosed()) {
-        // // the prior target does not have its outgoing transitions computed
-        // yet
-        // return null;
-        // }
         RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
         if (aliasAppl.getEvent().conflicts(sourceEvent)) {
             // alternating the events does not imply confluence
             return null;
         }
-        GraphState result = prior.getTarget(source).getNextState(sourceEvent);
-        // if (result != null) {
-        // confluentDiamondCount++;
-        // }
-        return result;
+        GraphState parent = ((GraphNextState) source).source();
+        GraphState priorTarget = prior.getTarget(parent);
+        GraphTransitionStub priorOutStub = priorTarget.getOutStub(sourceEvent);
+        if (priorOutStub != null) {
+            return createTransition(appl, source,
+                priorOutStub.getTarget(priorTarget), priorOutStub.isSymmetry());
+        } else {
+            return null;
+        }
     }
 
     /**

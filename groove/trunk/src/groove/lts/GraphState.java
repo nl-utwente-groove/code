@@ -53,7 +53,7 @@ public interface GraphState extends State {
      * Retrieves an outgoing transition with a given event, if it exists. Yields
      * <code>null</code> otherwise.
      */
-    public GraphState getNextState(RuleEvent prime);
+    public GraphTransitionStub getOutStub(RuleEvent prime);
 
     /**
      * Returns an iterator over the current set of outgoing transitions starting
