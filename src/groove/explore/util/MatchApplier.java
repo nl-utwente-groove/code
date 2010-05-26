@@ -17,7 +17,6 @@
 package groove.explore.util;
 
 import groove.control.ControlState;
-import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -28,6 +27,7 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
 import groove.trans.VirtualEvent;
 import groove.util.Reporter;
@@ -62,24 +62,31 @@ public class MatchApplier {
             Location targetLocation) {
         addTransitionReporter.start();
         GraphTransition transition = null;
-        ControlTransition ct = null;
-        if (source.getLocation() != null) {
-            ct =
-                ((ControlState) source.getLocation()).getTransition(event.getRule());
-        }
-        if (source.getLocation() == targetLocation
+        Location sourceLocation = source.getLocation();
+        if (sourceLocation == targetLocation
             && !event.getRule().isModifying()
-            && (source.getLocation() == null || !((ControlState) source.getLocation()).getTransition(
+            && (sourceLocation == null || !((ControlState) sourceLocation).getTransition(
                 event.getRule()).hasOutputParameters())) {
             transition = createTransition(event, source, source, false);
         } else if (targetLocation == null && event instanceof VirtualEvent<?>) {
+            // try to find the target state by walking around three previously
+            // generated sides of a confluent diamond
+            // the parent state is the source of source
+            // the sibling is the child reached by the virtual event
             assert source instanceof GraphNextState;
             VirtualEvent.GraphState virtual = (VirtualEvent.GraphState) event;
-            GraphState target =
-                virtual.getConfluentTarget(((GraphNextState) source).getEvent());
-            if (target != null) {
-                transition = createTransition(event, source, target, false);
-                confluentDiamondCount++;
+            RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
+            if (virtual.isConfluent(sourceEvent)) {
+                GraphState sibling = virtual.getInnerTarget();
+                GraphTransitionStub siblingOut =
+                    sibling.getOutStub(sourceEvent);
+                if (siblingOut != null) {
+                    transition =
+                        createTransition(event, source,
+                            siblingOut.getTarget(sibling),
+                            siblingOut.isSymmetry());
+                    confluentDiamondCount++;
+                }
             }
         }
         if (transition == null) {

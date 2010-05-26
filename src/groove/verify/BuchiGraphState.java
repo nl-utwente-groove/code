@@ -21,6 +21,7 @@ import groove.graph.Graph;
 import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.GraphTransitionStub;
 import groove.lts.ProductTransition;
 import groove.lts.StateReference;
 import groove.trans.RuleEvent;
@@ -218,8 +219,8 @@ public class BuchiGraphState extends AbstractGraphState {
     }
 
     @Override
-    public GraphState getNextState(RuleEvent prime) {
-        return this.state.getNextState(prime);
+    public GraphTransitionStub getOutStub(RuleEvent prime) {
+        return this.state.getOutStub(prime);
     }
 
     @Override

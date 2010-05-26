@@ -163,15 +163,15 @@ abstract public class AbstractGraphState extends
         };
     }
 
-    public GraphState getNextState(RuleEvent event) {
+    public GraphTransitionStub getOutStub(RuleEvent event) {
         assert event != null;
-        GraphState result = null;
+        GraphTransitionStub result = null;
         if (isClosed()) {
             GraphTransitionStub[] outTransitions = this.transitionStubs;
             for (int i = 0; result == null && i < outTransitions.length; i++) {
                 GraphTransitionStub trans = outTransitions[i];
                 if (trans.getEvent(this) == event) {
-                    result = trans.getTarget(AbstractGraphState.this);
+                    result = trans;
                 }
             }
         } else {
@@ -180,7 +180,7 @@ abstract public class AbstractGraphState extends
             while (result == null && outTransIter.hasNext()) {
                 GraphTransitionStub trans = outTransIter.next();
                 if (trans.getEvent(this) == event) {
-                    result = trans.getTarget(AbstractGraphState.this);
+                    result = trans;
                 }
             }
         }
@@ -440,7 +440,8 @@ abstract public class AbstractGraphState extends
                             tgt = this.parameters[idx];
                         } else {
                             Algebra<?> alg =
-                                AlgebraRegister.getInstance().getAlgebra(input[i]);
+                                AlgebraRegister.getInstance().getAlgebra(
+                                    input[i]);
                             tgt =
                                 ValueNode.createValueNode(alg,
                                     alg.getValue(input[i]));
