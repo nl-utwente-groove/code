@@ -1273,7 +1273,7 @@ public final class GraphToTikz {
     private static final String NEW = "new";
     private static final String NOT_COL = "not:";
     private static final String NOT = "not";
-    private static final String SUB = "sub::";
+    private static final String SUB = "sub:";
 
     // Tikz output
     private static final String CRLF = "\\\\";
