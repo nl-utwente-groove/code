@@ -234,6 +234,16 @@ public class DefaultRuleView implements RuleView {
             && getSystemProperties().isInjective();
     }
 
+    private final boolean isRhsAsNac() {
+        return getSystemProperties() != null
+            && getSystemProperties().isRhsAsNac();
+    }
+
+    private final boolean isCheckCreatorEdges() {
+        return getSystemProperties() != null
+            && getSystemProperties().isCheckCreatorEdges();
+    }
+
     /**
      * Invalidates any previous construction of the underlying rule. This means
      * the rule will be reconstructed when there is a call for it, using
@@ -1238,8 +1248,10 @@ public class DefaultRuleView implements RuleView {
                 this.rhs.addNode(rhsNode);
                 if (RuleAspect.inLHS(viewNode)) {
                     this.ruleMorph.putNode(lhsNode, rhsNode);
-                } else if (getSystemProperties().isRhsAsNac()) {
-                    this.nacNodeSet.add(lhsNode);
+                } else {
+                    if (isRhsAsNac()) {
+                        this.nacNodeSet.add(lhsNode);
+                    }
                 }
             }
             return result;
@@ -1267,9 +1279,9 @@ public class DefaultRuleView implements RuleView {
                 this.rhs.addEdge(rhsEdge);
                 if (RuleAspect.inLHS(viewEdge)) {
                     this.ruleMorph.putEdge(lhsEdge, rhsEdge);
-                } else if (getSystemProperties().isRhsAsNac()) {
+                } else if (isRhsAsNac()) {
                     this.nacEdgeSet.add(lhsEdge);
-                } else if (getSystemProperties().isCheckCreatorEdges()
+                } else if (isCheckCreatorEdges()
                     && RuleAspect.inLHS(viewEdge.source())
                     && RuleAspect.inLHS(viewEdge.target())) {
                     this.nacEdgeSet.add(lhsEdge);
