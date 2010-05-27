@@ -166,19 +166,37 @@ public final class DefaultLabel extends AbstractLabel {
      * input string.
      * @param prefixedText text of the label, possibly prefixed with a type
      *        prefix {@link #NODE_TYPE_PREFIX} or {@link #FLAG_PREFIX}
-     * @return a label without the prefix, with label type determined by the
-     *         prefix
+     * @param stripPrefix flag to indicate if the prefix should be stripped
+     * @return a label with label type determined by the prefix
      */
-    public static DefaultLabel createTypedLabel(String prefixedText) {
+    public static DefaultLabel createTypedLabel(String prefixedText,
+            boolean stripPrefix) {
         int labelType = BINARY;
         if (prefixedText.startsWith(getTypePrefix(NODE_TYPE))) {
             labelType = NODE_TYPE;
         } else if (prefixedText.startsWith(getTypePrefix(FLAG))) {
             labelType = FLAG;
         }
-        String actualText =
-            prefixedText.substring(getTypePrefix(labelType).length());
+        String actualText;
+        if (stripPrefix) {
+            actualText =
+                prefixedText.substring(getTypePrefix(labelType).length());
+        } else {
+            actualText = prefixedText;
+        }
         return createLabel(actualText, labelType);
+    }
+
+    /**
+     * Returns a default or node type label, depending on the prefix in the
+     * input string.
+     * @param prefixedText text of the label, possibly prefixed with a type
+     *        prefix {@link #NODE_TYPE_PREFIX} or {@link #FLAG_PREFIX}
+     * @return a label without the prefix, with label type determined by the
+     *         prefix
+     */
+    public static DefaultLabel createTypedLabel(String prefixedText) {
+        return createTypedLabel(prefixedText, true);
     }
 
     /**
