@@ -288,7 +288,9 @@ public class JaxbGxlIO {
      * of <code>targetNode == null</code>, binary otherwise.
      */
     private Edge createEdge(Node sourceNode, String label, Node targetNode) {
-        return DefaultEdge.createEdge(sourceNode, label, targetNode);
+        //return DefaultEdge.createEdge(sourceNode, label, targetNode);
+        return DefaultEdge.createEdgeWithLabelPrefix(sourceNode, label,
+            targetNode);
     }
 
     private void marshal(GraphType gxlGraph, OutputStream out)
