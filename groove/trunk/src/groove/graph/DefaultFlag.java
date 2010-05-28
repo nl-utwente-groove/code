@@ -33,7 +33,7 @@ public class DefaultFlag extends AbstractUnaryEdge<Node,Label> {
      *         <tt>label().text().equals(text)</tt>
      */
     public DefaultFlag(Node source, String text) {
-        this(source, DefaultLabel.createLabel(text));
+        this(source, DefaultLabel.createLabel(text, Label.FLAG));
     }
 
     /**
@@ -55,6 +55,6 @@ public class DefaultFlag extends AbstractUnaryEdge<Node,Label> {
      * {@link DefaultLabel#createLabel(String)}.
      */
     protected Label createLabel(String text) {
-        return DefaultLabel.createLabel(text);
+        return DefaultLabel.createLabel(text, Label.FLAG);
     }
 }

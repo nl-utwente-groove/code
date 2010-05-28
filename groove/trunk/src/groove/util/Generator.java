@@ -408,7 +408,6 @@ public class Generator extends CommandLineTool {
      * strategy is computed from the command line options, or set to
      * {@link DFSStrategy} if no strategy was specified.
      */
-    @SuppressWarnings("unchecked")
     protected Scenario computeStrategy() {
         if (!isOptionActive(this.scenarioOption)) {
             return null;

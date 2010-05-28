@@ -23,6 +23,7 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.StateJGraph;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
@@ -150,6 +151,7 @@ public class Exporter {
             this.formats.add(EpsFormat.getInstance());
             this.formats.add(AutFormat.getInstance());
             this.formats.add(TikzFormat.getInstance());
+            this.formats.add(KthFormat.getInstance());
             this.formats.add(FsmFormat.getInstance());
             this.formats.add(LispFormat.getInstance());
         }
@@ -661,7 +663,7 @@ public class Exporter {
         }
 
         /**
-         * Extension filter used for exporting graphs in aut format.
+         * Extension filter used for exporting graphs in .aut format.
          */
         private final ExtensionFilter autFilter =
             new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
@@ -709,6 +711,59 @@ public class Exporter {
 
         /** The singleton instance of this class. */
         private static final Format instance = new TikzFormat();
+    }
+
+    /** Class implementing the <code>.kth</code> export format. */
+    private static class KthFormat implements StructuralFormat {
+        /** Empty constructor to ensure singleton usage of the class. */
+        private KthFormat() {
+            // empty
+        }
+
+        public ExtensionFilter getFilter() {
+            return this.kthFilter;
+        }
+
+        /**
+         * Exports the jgraph by calling
+         * {@link Converter#graphToKth(groove.graph.GraphShape, PrintWriter)} on
+         * the graph contained therein.
+         */
+        public void export(JGraph jGraph, File file) throws IOException {
+            GraphShape graph;
+            if (jGraph instanceof StateJGraph) {
+                graph = ((GraphJModel) jGraph.getModel()).getGraph();
+                export(graph, file);
+            } else {
+                throw new IOException(
+                    "This exporter can only be used with state graphs");
+            }
+
+        }
+
+        /**
+         * Exports the graph by calling
+         * {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}.
+         */
+        public void export(GraphShape graph, File file) throws IOException {
+            PrintWriter writer = new PrintWriter(new FileWriter(file));
+            Converter.graphToKth(graph, writer);
+            writer.close();
+        }
+
+        /**
+         * Extension filter used for exporting graphs in .kth format.
+         */
+        private final ExtensionFilter kthFilter =
+            new ExtensionFilter("Simple .kth files", Groove.KTH_EXTENSION);
+
+        /** Returns the singleton instance of this class. */
+        public static Format getInstance() {
+            return instance;
+        }
+
+        /** The singleton instance of this class. */
+        private static final Format instance = new KthFormat();
     }
 
     /**

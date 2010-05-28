@@ -42,7 +42,7 @@ import javax.swing.border.EmptyBorder;
  */
 public class ErrorDialog extends JDialog {
     /**
-     * Consructs a new error dialog, with the same top-level frame as the given
+     * Constructs a new error dialog, with the same top-level frame as the given
      * component, a simple error message, and an exception giving more detail
      * about the error. The dialog is not yet shown.
      */
@@ -149,6 +149,7 @@ public class ErrorDialog extends JDialog {
 
     /** The level of details in the error dialog. */
     protected int detailsLevel = NO_DETAILS;
+
     /**
      * Searches upwards in the hierarchy of parent components until it finds a
      * <tt>JFrame</tt> or <tt>null</tt>.
@@ -181,6 +182,7 @@ public class ErrorDialog extends JDialog {
     private static final String[] DETAILS_LEVEL_TEXT =
         {NO_DETAILS_BUTTON_TEXT, SOME_DETAILS_BUTTON_TEXT,
             ALL_DETAILS_BUTTON_TEXT};
+
     /** Action listener that takes care of the dialog buttons. */
     protected class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {

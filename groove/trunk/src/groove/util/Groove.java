@@ -124,6 +124,11 @@ public class Groove {
     /** Extension for text files. */
     public static final String TEXT_EXTENSION = ".txt";
 
+    /** Extension for KTH <code>.kth</code> files.
+     *  Used by the program analysis tool by Marieke et al. 
+     */
+    public static final String KTH_EXTENSION = ".kth";
+
     /** Default name for the start graph. */
     public static final String DEFAULT_START_GRAPH_NAME = "start";
 
