@@ -1245,7 +1245,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     getExporter().export(JGraph.this, selectedFile);
                 } catch (IOException exc) {
                     new ErrorDialog(JGraph.this, "Error while exporting to "
-                        + selectedFile, exc);
+                        + selectedFile, exc).setVisible(true);
                 }
 
             }

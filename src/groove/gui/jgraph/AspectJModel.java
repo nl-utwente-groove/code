@@ -560,9 +560,6 @@ public class AspectJModel extends GraphJModel {
 
         /** The role of the underlying rule node. */
         private final AspectValue role;
-
-        /** Separator between level name and edge label. */
-        private static final char LEVEL_NAME_SEPARATOR = ':';
     }
 
     /**

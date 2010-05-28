@@ -170,6 +170,11 @@ public class Converter {
         writer.print(GraphToTikz.convertGraphToTikzStr(graphModel, layoutMap));
     }
 
+    /** Writes a graph in a simple .kth format to a print writer. */
+    static public void graphToKth(GraphShape graph, PrintWriter writer) {
+        writer.print(GraphToKth.convertGraph(graph));
+    }
+
     // html defs
     /**
      * Converts a piece of text to HTML by replacing special characters to their
