@@ -240,32 +240,34 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     }
 
     /**
-     * Returns the control program name, if any. May be <code>null</code> if no
-     * control program is set explicitly.
+     * Returns the control program name, or <code>null</code> if there
+     * is no name set.
      */
     public String getControlName() {
         // for compatibility, strip the extension from the stored control name
         String result = getProperty(CONTROL_NAME_KEY);
-        return result == null ? null
-                : Groove.createControlFilter().stripExtension(result);
+        if (result != null) {
+            result = Groove.createControlFilter().stripExtension(result);
+        }
+        return stringOrNull(result);
     }
 
     /**
      * Sets the type graph name to a certain value. The empty string resets the
      * type graph name.
-     * @param program the new type graph name (non-null)
+     * @param type the new type graph name (non-null)
      */
-    public void setTypeName(String program) {
-        setProperty(TYPE_NAME_KEY, program);
+    public void setTypeName(String type) {
+        setProperty(TYPE_NAME_KEY, type);
     }
 
     /**
-     * Returns the type graph name, if any. Returns the empty string if no type
+     * Returns the type graph name, or {@code null} if no type
      * graph is set.
      */
     public String getTypeName() {
         String result = getProperty(TYPE_NAME_KEY);
-        return result == null ? "" : result;
+        return stringOrNull(result);
     }
 
     /**
@@ -275,7 +277,11 @@ public class SystemProperties extends java.util.Properties implements Fixable,
         setProperty(ALGEBRA_KEY, family);
     }
 
-    /** Returns the selected algebra family. */
+    /** 
+     * Returns the selected algebra family.
+     * @return the selected algebra family, or {@link AlgebraRegister#DEFAULT_ALGEBRAS}
+     * if none is selected. 
+     */
     public String getAlgebraFamily() {
         String result = getProperty(ALGEBRA_KEY);
         return result == null ? AlgebraRegister.DEFAULT_ALGEBRAS : result;
@@ -528,6 +534,10 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     static public boolean isCheckDangling(SystemProperties properties) {
         return properties != null && properties.isCheckDangling();
+    }
+
+    static String stringOrNull(String input) {
+        return input == null || input.length() == 0 ? null : input;
     }
 
     /**
