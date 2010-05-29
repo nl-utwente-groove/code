@@ -1847,8 +1847,7 @@ public class DefaultRuleView implements RuleView {
                     this.specifiedParameterTypes.put(nr, parType);
                     boolean hasControl =
                         getSystemProperties() != null
-                            && getSystemProperties().isUseControl()
-                            && getSystemProperties().getControlName() != null;
+                            && getSystemProperties().isUseControl();
                     if (parType == Rule.PARAMETER_INPUT) {
                         this.requiredInputs.add(level.getLhsMap().getNode(node));
                         if (!hasControl) {
