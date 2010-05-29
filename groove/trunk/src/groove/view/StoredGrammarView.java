@@ -80,7 +80,21 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** Returns the system properties of this grammar view. */
     public SystemProperties getProperties() {
-        return this.store.getProperties();
+        SystemProperties result = this.store.getProperties();
+        // take care that, if there is no explicit control program name,
+        // either the control program name is set to the 
+        // default if such a control program exists, or the useControl property
+        // is set to false
+        if (!this.controlPropertyAdjusted && result.isUseControl()
+            && result.getControlName() == null) {
+            if (getDefaultControlName() == null) {
+                result.setUseControl(false);
+            } else {
+                result.setControlName(getDefaultControlName());
+            }
+            this.controlPropertyAdjusted = true;
+        }
+        return result;
     }
 
     /** Returns a list of all available control program names. */
@@ -159,13 +173,13 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * Returns the name of the control program to be used. This is taken from
-     * the system properties; if no explicit control name is given, it is set to
-     * {@link Groove#DEFAULT_CONTROL_NAME}.
-     * @see SystemProperties#getControlName()
+     * Returns the name of the control program to be used if control is 
+     * enabled, or {@code null} otherwise. This is taken
+     * from the system properties.
      */
     public String getControlName() {
-        return getControlName(true);
+        return getProperties().isUseControl()
+                ? getProperties().getControlName() : null;
     }
 
     @Override
@@ -261,41 +275,25 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * Indicates if control is explicitly enabled. This means not only the
-     * {@link SystemProperties#isUseControl()} yields <code>true</code>, but
-     * also {@link #getControlName()} yields a non-<code>null</code> value.
-     * @return <code>true</code> if control is explicitly enabled, in the above
-     *         sense.
+     * Indicates if control is explicitly enabled.
      */
     public boolean isUseControl() {
-        return getProperties().isUseControl() && getControlName() != null;
+        return getControlName() != null;
     }
 
-    /**
-     * Returns the name of the control program to be used. This is taken from
-     * the system properties. If no explicit control name is given,
-     * {@link Groove#DEFAULT_CONTROL_NAME} or {@link #getName()} is taken as
-     * default name, if any control program by that name exists; otherwise
-     * <code>null</code> is returned.
-     * @param useDefault flag to determine if either of the defaults (
-     *        {@link Groove#DEFAULT_CONTROL_NAME} or {@link #getName()}) should
-     *        be returned in case no explicit control name has been set in the
-     *        system properties.
-     * @see SystemProperties#getControlName()
+    /** 
+     * Returns the default control name.
+     * The first choice is {@link Groove#DEFAULT_CONTROL_NAME};
+     * if that does not exist, the next choice is the grammar name.
+     * If that does not exist either, the name is {@code null}.
      */
-    private String getControlName(boolean useDefault) {
-        String result = this.controlName;
-        if (result == null || result.length() == 0) {
-            result = getProperties().getControlName();
-        }
-        if ((result == null || result.length() == 0) && useDefault) {
-            // first default name: Groove.DEFAULT_CONTROL_NAME
-            // second default name: grammar name
-            if (this.controlMap.containsKey(Groove.DEFAULT_CONTROL_NAME)) {
-                result = Groove.DEFAULT_CONTROL_NAME;
-            } else if (this.controlMap.containsKey(getName())) {
-                result = getName();
-            }
+    // second default name: grammar name
+    private String getDefaultControlName() {
+        String result = null;
+        if (this.controlMap.containsKey(Groove.DEFAULT_CONTROL_NAME)) {
+            result = Groove.DEFAULT_CONTROL_NAME;
+        } else if (this.controlMap.containsKey(getName())) {
+            result = getName();
         }
         return result;
     }
@@ -319,7 +317,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
         // check type correctness
-        if (!getTypeName().isEmpty()) {
+        if (getTypeName() != null) {
             TypeView typeView = getTypeView();
             if (typeView == null) {
                 errors.add(new FormatError("Type graph '%s' cannot be found",
@@ -440,6 +438,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         this.grammar = null;
         this.errors = null;
         this.labelStore = null;
+        this.controlPropertyAdjusted = false;
         if (this.startGraphName != null) {
             this.startGraph = null;
         }
@@ -471,13 +470,15 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** The store backing this view. */
     private final SystemStore store;
+    /** 
+     * Flag indicating that the system properties
+     * have been adjusted to reflect the presence of a control program
+     * with a default name.
+     * @see #getProperties()
+     */
+    private boolean controlPropertyAdjusted;
     /** The start graph of the grammar. */
     private GraphView startGraph;
-    /**
-     * Name of the current control program, if it is explicitly set;
-     * <code>null</code> otherwise.
-     */
-    private String controlName;
     /**
      * Name of the current start graph, if it is one of the graphs in this rule
      * system; <code>null</code> otherwise.

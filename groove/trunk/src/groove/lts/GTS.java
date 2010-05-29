@@ -25,6 +25,7 @@ import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
@@ -231,20 +232,19 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         this.closedCount++;
     }
 
-    // a state is final if
-    // - with location, and then the location is a success state
-    // - without location, and then no outgoing transitions
+    /** a state is final if
+     * - with location, and then the location is a success state
+     * - without location, and then no outgoing transitions
+     */
     private boolean determineIsFinal(GraphState state) {
         if (state.getLocation() == null) {
-
-            // only states without applications of unmodifying rules are final
+            // only states without applications of modifying rules are final
             for (GraphTransition trans : state.getTransitionSet()) {
                 if (trans.getEvent().getRule().isModifying()) {
                     return false;
                 }
             }
             return true;
-
         } else {
             Set<Rule> rulesFound = new HashSet<Rule>();
             for (GraphTransition trans : state.getTransitionSet()) {
@@ -558,9 +558,16 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                     }
                     for (Node n : stateKey.getParameters()) {
                         if (n != null) {
-                            Certificate<?> parCert =
-                                certifier.getCertificateMap().get(n);
-                            result += parCert.hashCode();
+                            int hashCode;
+                            // value nodes may be no longer in the graph
+                            if (n instanceof ValueNode) {
+                                hashCode = n.hashCode();
+                            } else {
+                                Certificate<?> parCert =
+                                    certifier.getCertificateMap().get(n);
+                                hashCode = parCert.hashCode();
+                            }
+                            result += hashCode;
                             // shift left to ensure the parameters' order matters
                             result = result << 1 | (result < 0 ? 1 : 0);
                         }
