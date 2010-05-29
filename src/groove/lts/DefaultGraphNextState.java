@@ -112,15 +112,16 @@ public class DefaultGraphNextState extends AbstractGraphState implements
                     int creator = -1;
                     int position =
                         ((ControlState) this.getLocation()).getVariablePosition(output[i]);
-                    Node value = null;
+                    Node targetValue;
                     if ((creator = rule.isCreatorParameter(i + 1)) != -1) {
-                        value = this.addedNodes[creator];
+                        targetValue = this.addedNodes[creator];
                     } else {
-                        value =
-                            nodeMap.getNode(match.getElementMap().getNode(
-                                rule.getParameter(i + 1)));
+                        Node sourceValue =
+                            match.getElementMap().getNode(
+                                rule.getParameter(i + 1));
+                        targetValue = nodeMap.getNode(sourceValue);
                     }
-                    this.setParameter(position, value);
+                    this.setParameter(position, targetValue);
                 }
             }
         }
