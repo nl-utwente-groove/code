@@ -60,17 +60,17 @@ public class LinearConfluentRules extends AbstractStrategy {
         }
         ExploreCache cache = getCache(true, false);
         ConfluentMatchSetCollector collector =
-            new ConfluentMatchSetCollector(getAtState(), cache, getRecord(), null);
+            new ConfluentMatchSetCollector(getAtState(), cache, getRecord(),
+                null);
         // collect all matches
         List<RuleEvent> matches = new ArrayList<RuleEvent>();
         collector.collectMatchSet(matches);
         Iterator<RuleEvent> matchesIter = matches.iterator();
         while (matchesIter.hasNext()) {
-            getGenerator().applyMatch(getAtState(), matchesIter.next(), cache);
+            applyEvent(matchesIter.next(), cache);
         }
         setClosed(getAtState());
         updateAtState();
         return true;
     }
-
 }

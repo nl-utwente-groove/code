@@ -204,6 +204,7 @@ public class MatchSetCollector {
                         result.put(rule, matches);
                     }
                     matches.add(virtual);
+                    virtualEventReuse++;
                 }
             }
         }
@@ -244,4 +245,12 @@ public class MatchSetCollector {
     private Set<Rule> enabledRules;
     /** The rules that may be disabled. */
     private Set<Rule> disabledRules;
+
+    /** Returns the total number of reused parent events. */
+    public static int getEventReuse() {
+        return virtualEventReuse;
+    }
+
+    /** Counter for the number of reused parent events. */
+    private static int virtualEventReuse;
 }

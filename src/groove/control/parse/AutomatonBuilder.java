@@ -519,10 +519,8 @@ public class AutomatonBuilder extends Namespace {
         Map<ControlState,TransitiveClosure> closures =
             new HashMap<ControlState,TransitiveClosure>();
 
-        Set<ControlTransition> failureTransitions = getFailureTransitions();
-
         // initialize the closure by adding all failure transitions:
-        for (ControlTransition ct : failureTransitions) {
+        for (ControlTransition ct : getFailureTransitions()) {
             TransitiveClosure failures = this.new TransitiveClosure();
             Set<ControlTransition> failureSet =
                 new HashSet<ControlTransition>();
@@ -533,8 +531,10 @@ public class AutomatonBuilder extends Namespace {
             // conditional success:
             if (ct.target().isSuccess()) {
                 Map<Rule,String[]> condition = new HashMap<Rule,String[]>();
-                Rule r = getRule(ct.getFailures().keySet().iterator().next());
-                condition.put(r, ct.getInputParameters());
+                for (String ruleName : ct.getFailures().keySet()) {
+                    Rule r = getRule(ruleName);
+                    condition.put(r, ct.getInputParameters());
+                }
                 ct.source().addSuccess(condition);
             }
 
@@ -548,7 +548,7 @@ public class AutomatonBuilder extends Namespace {
             added = false;
 
             // for all failure transitions...
-            for (ControlTransition ct : failureTransitions) {
+            for (ControlTransition ct : getFailureTransitions()) {
                 // for all ControlStates in the closure...
                 for (ControlState cs : closures.keySet()) {
                     // if the target of this transition can reach the state 

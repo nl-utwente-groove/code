@@ -292,22 +292,6 @@ public class ControlState implements Node, Location {
 
     private boolean hasMerged = false;
 
-    private String name = "";
-
-    @Override
-    public Set<Rule> getDependency(Rule rule) {
-        Set<Rule> ret = new HashSet<Rule>();
-        // this is a rule that has a failure dependency
-        if (!this.ruleTargetMap.containsKey(rule)) {
-            for (ControlTransition ct : this.elseTransitions) {
-                if (ct.getRule() == rule) {
-                    ret.addAll(ct.getFailureSet());
-                }
-            }
-        }
-        return ret;
-    }
-
     /**
      * TODO: return a Map<Rule,Parameter> or something, ensure that the caller
      * of this method knows that there are input parameters to be processed.
@@ -342,31 +326,17 @@ public class ControlState implements Node, Location {
     }
 
     /**
-     * TODO: perhaps failedRules is not needed here anymore, since a state can 
-     * only have one transition for a given rule. Thus, if the rule has already
-     * been reported as "allowed to match", we can find the target and return it.
-     */
-    @Override
-    public Location getTarget(Rule rule) {
-        return this.getTransition(rule).target();
-    }
-
-    /**
      * Returns the transition to be taken given a Rule and a set of Rules that failed
      * @param rule the Rule to apply
      * @return the transition to be taken from this state given the inputs
      */
     public ControlTransition getTransition(Rule rule) {
-        ControlTransition ret = null;
-        if (this.ruleTargetMap.containsKey(rule)) {
-            ret = this.ruleTargetMap.get(rule);
-        } else {
+        ControlTransition ret = this.ruleTargetMap.get(rule);
+        if (ret == null) {
             for (ControlTransition ct : this.elseTransitions) {
                 if (ct.getRule() == rule) {
-                    //if (failedRules.containsAll(ct.getFailureSet())) {
                     ret = ct;
                     break;
-                    //}
                 }
             }
         }

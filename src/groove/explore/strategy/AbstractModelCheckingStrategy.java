@@ -31,7 +31,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
-import groove.lts.StateGenerator;
 import groove.verify.BuchiAutomatonGraph;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -248,8 +247,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
                 getGTS().startState(), this.initialLocation, null);
         setStartBuchiState(startState);
         this.productGTS.setStartState(startState);
-        this.productGenerator =
-            this.productGTS.getRecord().getStateGenerator(this.productGTS);
     }
 
     /**
@@ -364,34 +361,78 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * @param location the location of the target Buechi graph-state
      * @see ProductGTS#addTransition(ProductTransition)
      */
-    public Set<ProductTransition> addProductTransition(
-            GraphTransition transition, BuchiLocation location) {
-        Set<ProductTransition> result = null; // new
+    public ProductTransition addProductTransition(GraphTransition transition,
+            BuchiLocation location) {
+        ProductTransition result = null; // new
         // HashSet<ProductTransition>();
         // if the current source state is already closed
         // the product-gts contains all transitions and
         // we do not have to add new transitions.
         if (getProductGTS().isOpen(getAtBuchiState())) {
-            result =
-                getProductGenerator().addTransition(getAtBuchiState(),
-                    transition, location);
-            assert (result.size() == 1) : "Expected the result to be of size 1 instead of "
-                + result.size();
+            result = addTransition(getAtBuchiState(), transition, location);
         } else {
-            result = new HashSet<ProductTransition>();
             for (ProductTransition nextTransition : getProductGTS().outEdgeSet(
                 getAtBuchiState())) {
                 if (nextTransition.graphTransition().equals(transition)
                     && nextTransition.target().getBuchiLocation().equals(
                         location)) {
-                    result.add(nextTransition);
+                    result = nextTransition;
+                    break;
                 }
             }
-            assert (result.size() == 1) : "Expected the result to be of size 1 instead of "
-                + result.size();
-            return result;
         }
         return result;
+    }
+
+    /**
+     * Adds a transition to the product gts given a source Buechi graph-state, a
+     * graph transition, and a target Buechi location.
+     * @param source the source Buechi graph-state
+     * @param transition the graph transition
+     * @param targetLocation the target Buechi location
+     * @return the added product transition
+     */
+    public ProductTransition addTransition(BuchiGraphState source,
+            GraphTransition transition, BuchiLocation targetLocation) {
+        // we assume that we only add transitions for modifying graph
+        // transitions
+        BuchiGraphState target =
+            createBuchiGraphState(source, transition, targetLocation);
+        BuchiGraphState isoTarget = getProductGTS().addState(target);
+        ProductTransition result = null;
+
+        if (isoTarget == null) {
+            // no isomorphic state found
+            result = createProductTransition(source, transition, target);
+        } else {
+            assert (isoTarget.iteration() <= ModelChecking.CURRENT_ITERATION) : "This state belongs to the next iteration and should not be explored now.";
+            result = createProductTransition(source, transition, isoTarget);
+        }
+        source.addTransition(result);
+        return result;
+    }
+
+    private BuchiGraphState createBuchiGraphState(BuchiGraphState source,
+            GraphTransition transition, BuchiLocation targetLocation) {
+        if (transition == null) {
+            // the system-state is a final one for which we assume an artificial
+            // self-loop
+            // the resulting Buchi graph-state is nevertheless the product of
+            // the
+            // graph-state component of the source Buchi graph-state and the
+            // target
+            // Buchi-location
+            return new BuchiGraphState(getProductGTS().getRecord(),
+                source.getGraphState(), targetLocation, source);
+        } else {
+            return new BuchiGraphState(getProductGTS().getRecord(),
+                transition.target(), targetLocation, source);
+        }
+    }
+
+    private ProductTransition createProductTransition(BuchiGraphState source,
+            GraphTransition transition, BuchiGraphState target) {
+        return new ProductTransition(source, transition, target);
     }
 
     /**
@@ -430,14 +471,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      */
     public ProductGTS getProductGTS() {
         return this.productGTS;
-    }
-
-    /**
-     * Returns the state-generator used for constructing the product gts.
-     * @return the current state-generator
-     */
-    public StateGenerator getProductGenerator() {
-        return this.productGenerator;
     }
 
     /*
@@ -525,7 +558,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     /** State collector which randomly provides unexplored states. */
     protected RandomNewStateChooser collector = new RandomNewStateChooser();
 
-    private StateGenerator productGenerator;
     private String property;
     private groove.verify.ltl2ba.BuchiGraph buchiGraph;
     private BuchiLocation initialLocation;

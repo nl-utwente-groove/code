@@ -18,56 +18,42 @@ package groove.abs.lts;
 
 import groove.abs.AbstrGraph;
 import groove.abs.AbstrTransformer;
-import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
-import groove.explore.util.ExploreCache;
-import groove.lts.GTS;
+import groove.control.Location;
+import groove.explore.util.RuleEventApplier;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.StateGenerator;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
- * A version of a {@link StateGenerator} to be used with abstract exploration.
+ * A version of a {@link RuleEventApplier} to be used with abstract exploration.
  * @author Iovka Boneva
  * @version $Revision $
  */
-public class AbstrStateGenerator extends StateGenerator {
-
-    private Abstraction.Parameters options;
+public class AbstrStateGenerator implements RuleEventApplier {
 
     /**
      * Creates a state generator for a given abstract graph transition system.
      * @param gts
      */
-    public AbstrStateGenerator(AGTS gts, Abstraction.Parameters options) {
-        super(gts);
-        this.options = options;
+    public AbstrStateGenerator(AGTS gts) {
+        this.gts = gts;
     }
 
-    /** Has no effect if options were already set. */
-    public void setOptions(Abstraction.Parameters options) {
-        if (this.options == null) {
-            this.options = options;
-        }
-    }
-
-    @Override
     /**
      * For abstract transformation, the application of a match may result in
      * several (or none) abstract graph states.
      */
-    public Set<? extends GraphTransition> applyMatch(GraphState source,
-            RuleEvent event, ExploreCache cache) {
+    @Override
+    public GraphTransition apply(GraphState source, RuleEvent event,
+            Location targetLocation) {
         ShapeGraphState abstrSource = (ShapeGraphState) source;
-        Set<GraphTransition> result = new HashSet<GraphTransition>();
+        GraphTransition result = null;
         Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
 
         // EDUARDO: Modified this part such that it actually performs the
@@ -75,7 +61,8 @@ public class AbstrStateGenerator extends StateGenerator {
         AbstrGraph host = (AbstrGraph) source.getGraph();
         RuleMatch match = event.getMatch(host);
         AbstrTransformer.transform(host, match,
-            ((SPOEvent) event).getNodeFactory(), this.options, transfResult);
+            ((SPOEvent) event).getNodeFactory(), getGTS().getParameters(),
+            transfResult);
 
         for (AbstrGraph transf : transfResult) {
             GraphTransition trans;
@@ -87,8 +74,7 @@ public class AbstrStateGenerator extends StateGenerator {
                 if (oldState != null) {
                     // the state was not added as an equivalent state existed
                     trans =
-                        new ShapeGraphTransition(abstrSource, event,
-                            oldState);
+                        new ShapeGraphTransition(abstrSource, event, oldState);
                 } else {
                     // the state was added as a next-state
                     trans = newState;
@@ -99,22 +85,16 @@ public class AbstrStateGenerator extends StateGenerator {
                         AGTS.INVALID_STATE);
             }
             getGTS().addTransition(trans);
-            result.add(trans);
+            result = trans;
         }
         return result;
     }
 
-    @Override
-    /** @require gts is of type {@link AGTS} */
-    public void setGTS(GTS gts) {
-        assert gts instanceof AGTS : "The transition system should be of type AGTS.";
-        super.setGTS(gts);
-    }
-
-    @Override
     /** Specialises return type. */
+    @Override
     public AGTS getGTS() {
-        return (AGTS) super.getGTS();
+        return this.gts;
     }
 
+    private final AGTS gts;
 }

@@ -16,14 +16,17 @@
  */
 package groove.test;
 
-import groove.control.ControlAutomaton;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.Scenario;
 import groove.explore.strategy.BFSStrategy;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.FormatException;
 import groove.view.StoredGrammarView;
+
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 /**
@@ -46,8 +49,6 @@ public class ControlAttributeParametersTest extends TestCase {
             SystemProperties sp = sgv.getProperties();
             sp.setControlName(control);
             sp.setUseControl(true);
-            ControlAutomaton ca =
-                sgv.getControlView().toAutomaton(sgv.toGrammar());
             GTS lts = new GTS(sgv.toGrammar());
 
             Scenario scenario =
@@ -59,7 +60,9 @@ public class ControlAttributeParametersTest extends TestCase {
             assertFalse(scenario.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
-        } catch (Exception e) {
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } catch (FormatException e) {
             throw new IllegalStateException(e);
         }
     }

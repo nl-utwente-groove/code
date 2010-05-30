@@ -49,7 +49,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
         // this.getGTS().setFinal(this.startState());
         // }
         while (matchesIter.hasNext()) {
-            getGenerator().applyMatch(startState(), matchesIter.next(), cache);
+            applyEvent(matchesIter.next(), cache);
         }
         // the current state has been fully explored
         // therefore we can close it

@@ -21,8 +21,6 @@ import groove.verify.BuchiGraphState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 
-import java.util.Set;
-
 /**
  * This bounded version deviates from the default nested DFS in the way it deals
  * with so-called pocket states. This strategy black-paints the pocket states
@@ -34,10 +32,7 @@ import java.util.Set;
 public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
     @Override
     protected void processFinalState(BuchiTransition transition) {
-        Set<? extends ProductTransition> productTransitions =
-            addProductTransition(null, transition.target());
-        assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
-            + productTransitions.size();
+        addProductTransition(null, transition.target());
         // we should set the state to pocket but that is
         // the case by default
     }

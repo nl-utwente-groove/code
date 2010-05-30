@@ -23,6 +23,7 @@ import groove.trans.RuleEvent;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class DefaultAliasApplication extends DefaultApplication implements
         AliasRuleApplication {
     /**

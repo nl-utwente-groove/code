@@ -26,6 +26,7 @@ import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
 import groove.explore.util.MatchApplier;
+import groove.explore.util.MatchSetCollector;
 import groove.graph.DeltaGraph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
@@ -35,11 +36,9 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.io.ExtensionFilter;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
-import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.ProductGTS;
-import groove.lts.StateGenerator;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -1088,7 +1087,6 @@ public class LTLBenchmarker extends CommandLineTool {
             print("Statistics:");
             reportLTS();
             if (getVerbosity() == HIGH_VERBOSITY && Groove.GATHER_STATISTICS) {
-                reportGraphStatistics();
                 reportTransitionStatistics();
                 reportIsomorphism();
                 reportGraphElementStatistics();
@@ -1134,8 +1132,6 @@ public class LTLBenchmarker extends CommandLineTool {
      * Reports data on the LTS generated.
      */
     private void reportLTS() {
-        // println("\tStates:\t" + getGTS().nodeCount());
-        // println("\tTransitions:\t" + getGTS().edgeCount());
         println("\tStates:\t"
             + getScenario().getStrategy().getProductGTS().nodeCount());
         println("\tTransitions:\t"
@@ -1143,24 +1139,11 @@ public class LTLBenchmarker extends CommandLineTool {
     }
 
     /**
-     * Gives some statistics regarding the graphs and deltas.
-     */
-    private void reportGraphStatistics() {
-        // printf("\tGraphs:\tModifiable:\t%d%n",
-        // groove.graph.AbstractGraph.getModifiableGraphCount());
-        // printf("\t\tFrozen:\t%d%n",
-        // AbstractGraphState.getFrozenGraphCount());
-        // // printf("\t\tFraction:\t%s%n",
-        // percentage(DeltaGraph.getFrozenFraction()));
-        // printf("\t\tBytes/state:\t%.1f%n", getProduGTS().getBytesPerState());
-    }
-
-    /**
      * Gives some statistics regarding the generated transitions.
      */
     private void reportTransitionStatistics() {
-        printf("\tTransitions:\tAliased:\t%d%n",
-            DefaultAliasApplication.getAliasCount());
+        printf("\tTransitions:\tReused:\t%d%n",
+            MatchSetCollector.getEventReuse());
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n",
@@ -1254,7 +1237,7 @@ public class LTLBenchmarker extends CommandLineTool {
         long running = DefaultScenario.getRunningTime();
         long overhead = total - running;
         long isoChecking = DefaultIsoChecker.getTotalTime();
-        long building = StateGenerator.getGenerateTime() - isoChecking;
+        long building = MatchApplier.getGenerateTime() - isoChecking;
 
         // this calculation incorporates only transforming RuleMatches into
         // RuleApplications

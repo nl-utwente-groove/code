@@ -48,8 +48,8 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
 
         this.collector.reset();
         while (this.currMatchIter.hasNext() && !this.currMatchIter.isEndRule()) {
-            RuleEvent match = this.currMatchIter.next();
-            getGenerator().applyMatch(getAtState(), match, cache);
+            RuleEvent event = this.currMatchIter.next();
+            applyEvent(event, cache);
         }
         if (!this.currMatchIter.hasNext()) {
             setClosed(getAtState());
@@ -62,7 +62,7 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
     @Override
     protected void updateAtState() {
         this.backFrom = null; // will be given non null value in case of
-                                // backtracking
+        // backtracking
         if (this.collector.pickRandomNewState() != null) {
             this.atState = this.collector.pickRandomNewState();
             return;
@@ -89,8 +89,8 @@ public class ExploreRuleDFStrategy extends AbstractBacktrackingStrategy {
             return;
         } // the start state is reached and does not have open successors
         if (s != null) { // the current state has an open successor (is not
-                            // really backtracking, a sibling state is fully
-                            // explored)
+            // really backtracking, a sibling state is fully
+            // explored)
             this.backFrom = null;
             this.atState = s;
         }

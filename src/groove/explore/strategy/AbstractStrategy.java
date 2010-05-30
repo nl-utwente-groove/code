@@ -16,7 +16,10 @@
  */
 package groove.explore.strategy;
 
+import groove.abs.lts.AGTS;
+import groove.abs.lts.AbstrStateGenerator;
 import groove.abs.lts.ShapeGraphState;
+import groove.control.Location;
 import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ControlStateCache;
@@ -25,11 +28,13 @@ import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
 import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomChooserInSequence;
+import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.StartGraphState;
-import groove.lts.StateGenerator;
+import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 
 import java.util.Iterator;
@@ -46,10 +51,8 @@ public abstract class AbstractStrategy implements Strategy {
 
     public void prepare(GTS gts, GraphState state) {
         this.gts = gts;
-        this.generator = gts.getRecord().getStateGenerator(gts);
         this.atState =
             this.startState = state == null ? gts.startState() : state;
-        this.applier = new MatchApplier(gts);
     }
 
     /**
@@ -66,14 +69,6 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected final GraphState startState() {
         return this.startState;
-    }
-
-    /**
-     * The state generator used as interface with the GTS. Is initialised at the
-     * same time as the GTS.
-     */
-    protected final StateGenerator getGenerator() {
-        return this.generator;
     }
 
     /**
@@ -212,8 +207,24 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /** Returns the match applier of this strategy. */
-    protected MatchApplier getMatchApplier() {
+    protected RuleEventApplier getMatchApplier() {
+        if (this.applier == null) {
+            if (this.gts instanceof AGTS) {
+                this.applier = new AbstrStateGenerator((AGTS) this.gts);
+            } else {
+                this.applier = new MatchApplier(this.gts);
+            }
+        }
         return this.applier;
+    }
+
+    /**
+     * Applies a given rule event to the current state, and returns
+     * the resulting transition.
+     */
+    protected GraphTransition applyEvent(RuleEvent event, ExploreCache cache) {
+        Location targetLocation = cache.getTarget(event.getRule());
+        return getMatchApplier().apply(getAtState(), event, targetLocation);
     }
 
     /**
@@ -260,15 +271,13 @@ public abstract class AbstractStrategy implements Strategy {
     /**
      * Match applier for the underlying GTS.
      */
-    private MatchApplier applier;
+    private RuleEventApplier applier;
     /** The graph transition system explored by the strategy. */
     private GTS gts;
     /** The state where the strategy starts exploring. */
     private GraphState startState;
     /** The state that will be explored by the next call of {@link #next()}. */
     protected GraphState atState;
-    /** The state generator used as interface with the GTS. */
-    private StateGenerator generator;
     /**
      * Indicates whether the strategy should use aliasing or not. Default value
      * is true.

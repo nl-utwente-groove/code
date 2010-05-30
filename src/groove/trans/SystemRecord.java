@@ -1,8 +1,6 @@
 /* $Id$ */
 package groove.trans;
 
-import groove.abs.lts.AGTS;
-import groove.abs.lts.AbstrStateGenerator;
 import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.PriorityCache;
@@ -11,12 +9,8 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
-import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.ProductGTS;
-import groove.lts.StateGenerator;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.TreeHashSet;
@@ -246,7 +240,8 @@ public class SystemRecord implements NodeFactory {
     public ExploreCache createCache(GraphState state,
             boolean isRuleInterrupted, boolean isRandomized) {
         ExploreCache result = freshCache(state, isRandomized);
-        // Increment the iterator
+        // Increment the iterator with the transitions already explored
+        // for this state
         Iterator<GraphTransition> succIter = state.getTransitionIter();
         while (succIter.hasNext()) {
             Rule r = succIter.next().getEvent().getRule();
@@ -449,24 +444,4 @@ public class SystemRecord implements NodeFactory {
      * as in the simulator. This means the copyGraphs should never be disabled.
      */
     private boolean randomAccess = false;
-
-    private StateGenerator stateGenerator;
-
-    /** Gives a state generator for a given GTS. */
-    public StateGenerator getStateGenerator(LTS gts) {
-        if (this.stateGenerator == null) {
-            if (gts instanceof AGTS) {
-                this.stateGenerator =
-                    new AbstrStateGenerator((AGTS) gts,
-                        ((AGTS) gts).getParameters());
-            } else if (gts instanceof ProductGTS) {
-                this.stateGenerator = new StateGenerator((ProductGTS) gts);
-            } else if (gts instanceof GTS) {
-                this.stateGenerator = new StateGenerator((GTS) gts);
-            } else {
-                assert false : "Wrong type of a GTS";
-            }
-        }
-        return this.stateGenerator;
-    }
 }
