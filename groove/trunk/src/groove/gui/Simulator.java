@@ -39,6 +39,7 @@ import groove.abs.Abstraction;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
+import groove.control.Location;
 import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
@@ -50,6 +51,8 @@ import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
+import groove.explore.util.MatchApplier;
+import groove.explore.util.RuleEventApplier;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -91,7 +94,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTSGraph;
 import groove.lts.State;
-import groove.lts.StateGenerator;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
@@ -332,9 +334,6 @@ public class Simulator {
         this.currentTransition = null;
         this.currentEvent = null;
         this.currentState = gts == null ? null : gts.startState();
-        if (gts != null) {
-            getGenerator().setGTS(gts);
-        }
         return result;
     }
 
@@ -1417,16 +1416,16 @@ public class Simulator {
             ExploreCache cache =
                 getGTS().getRecord().createCache(getCurrentState(), false,
                     false);
-            Set<? extends GraphTransition> resultTransitions =
-                getGenerator().applyMatch(getCurrentState(), getCurrentEvent(),
-                    cache);
-            if (!resultTransitions.isEmpty()) {
-                // may be empty in the case of abstract transformation
-                GraphTransition trans = resultTransitions.iterator().next();
-                setCurrentState(trans.target());
-                fireApplyTransition(trans);
+            Location targetLocation =
+                cache.getTarget(getCurrentEvent().getRule());
+            GraphTransition result =
+                getEventApplier().apply(getCurrentState(), getCurrentEvent(),
+                    targetLocation);
+            if (result != null) {
+                setCurrentState(result.target());
+                fireApplyTransition(result);
+                refreshActions();
             }
-            refreshActions();
         }
     }
 
@@ -2515,28 +2514,16 @@ public class Simulator {
     /**
      * Returns the state generator for the current GTS, if any.
      */
-    private StateGenerator getGenerator() {
-        if (this.stateGenerator == null
-            || this.stateGenerator.getGTS() != getGTS()) {
-            if (getGTS() != null) {
-                this.stateGenerator = createStateGenerator(getGTS());
+    private RuleEventApplier getEventApplier() {
+        if (this.eventApplier == null || this.eventApplier.getGTS() != getGTS()) {
+            if (getGTS() instanceof AGTS) {
+                AGTS agts = (AGTS) getGTS();
+                this.eventApplier = new AbstrStateGenerator(agts);
+            } else if (getGTS() != null) {
+                this.eventApplier = new MatchApplier(getGTS());
             }
         }
-        return this.stateGenerator;
-    }
-
-    /** Callback factory method for the state generator. */
-    private StateGenerator createStateGenerator(GTS gts) {
-        StateGenerator result;
-        if (gts instanceof AGTS) {
-            result =
-                new AbstrStateGenerator((AGTS) gts,
-                    ((AGTS) gts).getParameters());
-        } else {
-            result = new StateGenerator(gts);
-        }
-        // result.setGTS(gts);
-        return result;
+        return this.eventApplier;
     }
 
     /**
@@ -2813,8 +2800,11 @@ public class Simulator {
      */
     private JMenuItem defaultExplorationMenuItem;
 
-    /** The state generator strategy for the current GTS. */
-    private StateGenerator stateGenerator;
+    /** The rule event applier for the current GTS. */
+    private RuleEventApplier eventApplier;
+
+    /** The state generator strategy for the current GTS, if it is an AGTS. */
+    private AbstrStateGenerator abstrStateGenerator;
 
     private ExploreStateStrategy exploreStateStrategy;
 

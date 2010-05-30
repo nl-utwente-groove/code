@@ -108,13 +108,11 @@ public class BoundedNestedDFSStrategy extends
                         if (nextTransition.getEvent().getRule().isModifying()) {
                             finalState = false;
 
-                            Set<? extends ProductTransition> productTransitions =
+                            ProductTransition productTransition =
                                 addProductTransition(nextTransition,
                                     nextPropertyTransition.target());
-                            assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
-                                + productTransitions.size();
                             if (counterExample(getAtBuchiState(),
-                                productTransitions.iterator().next().target())) {
+                                productTransition.target())) {
                                 // notify counter-example
                                 constructCounterExample();
                                 return true;
@@ -156,10 +154,7 @@ public class BoundedNestedDFSStrategy extends
             // mark it red
             getAtBuchiState().setColour(ModelChecking.RED);
         } else {
-            Set<? extends ProductTransition> productTransitions =
-                addProductTransition(null, transition.target());
-            assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
-                + productTransitions.size();
+            addProductTransition(null, transition.target());
         }
     }
 

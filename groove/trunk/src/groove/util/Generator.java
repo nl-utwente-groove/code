@@ -41,6 +41,7 @@ import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.MatchApplier;
+import groove.explore.util.MatchSetCollector;
 import groove.graph.AbstractGraphShape;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
@@ -54,13 +55,11 @@ import groove.graph.iso.PaigeTarjanMcKay;
 import groove.io.ExtensionFilter;
 import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
-import groove.lts.DefaultAliasApplication;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.LTSGraph;
 import groove.lts.State;
-import groove.lts.StateGenerator;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -711,8 +710,8 @@ public class Generator extends CommandLineTool {
      * Gives some statistics regarding the generated transitions.
      */
     private void reportTransitionStatistics() {
-        printf("\tTransitions:\tAliased:\t%d%n",
-            DefaultAliasApplication.getAliasCount());
+        printf("\tTransitions:\tReused:\t%d%n",
+            MatchSetCollector.getEventReuse());
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n",
@@ -816,8 +815,7 @@ public class Generator extends CommandLineTool {
         long running = DefaultScenario.getRunningTime();
         long overhead = total - running;
         long isoChecking = DefaultIsoChecker.getTotalTime();
-        long generateTime =
-            MatchApplier.getGenerateTime() + StateGenerator.getGenerateTime();
+        long generateTime = MatchApplier.getGenerateTime();
         long building = generateTime - isoChecking;
         long measuring = Reporter.getReportTime();
 

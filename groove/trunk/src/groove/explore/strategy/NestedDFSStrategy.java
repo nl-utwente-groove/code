@@ -68,13 +68,11 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                     getAtBuchiState().getGraphState())) {
                     if (nextTransition.getEvent().getRule().isModifying()) {
                         finalState = false;
-                        Set<? extends ProductTransition> productTransitions =
+                        ProductTransition productTransition =
                             addProductTransition(nextTransition,
                                 nextPropertyTransition.target());
-                        assert (productTransitions.size() <= 1) : "There should be at most one target state instead of "
-                            + productTransitions.size();
                         if (counterExample(getAtBuchiState(),
-                            productTransitions.iterator().next().target())) {
+                            productTransition.target())) {
                             // notify counter-example
                             for (BuchiGraphState state : searchStack()) {
                                 getResult().add(state.getGraphState());
@@ -125,7 +123,7 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                     s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
                 }
             } while (parent != null && s == null); // ) &&
-                                                    // !getProductGTS().isOpen(getAtBuchiState()));
+            // !getProductGTS().isOpen(getAtBuchiState()));
 
             // identify the reason of exiting the loop
             if (parent == null) {
@@ -134,8 +132,8 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                 return;
             }
             if (s != null) { // the current state has an open successor (is
-                                // not really backtracking, a sibling state is
-                                // fully explored)
+                // not really backtracking, a sibling state is
+                // fully explored)
                 this.atBuchiState = s;
             }
             // else, atState is open, so we continue exploring it
@@ -152,10 +150,7 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
             // mark it red
             getAtBuchiState().setColour(ModelChecking.RED);
         } else {
-            Set<? extends ProductTransition> productTransitions =
-                addProductTransition(null, transition.target());
-            assert (productTransitions.size() == 1) : "There should be at most one target state instead of "
-                + productTransitions.size();
+            addProductTransition(null, transition.target());
         }
     }
 }

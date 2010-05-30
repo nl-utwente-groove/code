@@ -25,6 +25,7 @@ import groove.trans.RuleApplication;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public interface AliasRuleApplication extends RuleApplication {
     /**
      * Returns the stored prior transition of this application.

@@ -38,7 +38,7 @@ import groove.util.Reporter;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MatchApplier {
+public class MatchApplier implements RuleEventApplier {
     /**
      * Creates an applier for a given graph transition system.
      */
@@ -58,7 +58,7 @@ public class MatchApplier {
      * rule event. The event is assumed not to have been explored yet.
      * @return the added (new) transition
      */
-    public GraphTransition addTransition(GraphState source, RuleEvent event,
+    public GraphTransition apply(GraphState source, RuleEvent event,
             Location targetLocation) {
         addTransitionReporter.start();
         GraphTransition transition = null;

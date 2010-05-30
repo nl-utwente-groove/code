@@ -59,7 +59,7 @@ public class ExploreSingleTransitionDFStrategy extends
             if (!isExistingOutTransition(event, getAtState())) {
                 // add the transition corresponding to match, this may not
                 // result in a new state
-                getGenerator().applyMatch(getAtState(), event, cache);
+                applyEvent(event, cache);
             }
         }
         if (!matchIter.hasNext()) {
@@ -91,8 +91,8 @@ public class ExploreSingleTransitionDFStrategy extends
         } // the start state is reached and does not have open successors
 
         if (s != null) { // the current atState has an open successor (not
-                            // really a backtracking, a sibling is fully
-                            // explored)
+            // really a backtracking, a sibling is fully
+            // explored)
             this.backFrom = null;
             this.atState = s;
         } // else, atState is open, so we continue exploring it

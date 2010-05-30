@@ -153,7 +153,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             String grammarType = grammar.getTypeName();
             if (isTypeSelected() && grammarHasType(getSelectedType())) {
                 setTypeName = getSelectedType();
-            } else if (grammarHasType(grammarType)) {
+            } else if (grammarType != null && grammarHasType(grammarType)) {
                 setTypeName = grammarType;
             } else if (!grammar.getTypeNames().isEmpty()) {
                 setTypeName = grammar.getTypeNames().iterator().next();

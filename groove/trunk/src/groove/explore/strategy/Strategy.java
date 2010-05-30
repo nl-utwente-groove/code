@@ -17,9 +17,9 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Acceptor;
+import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.StateGenerator;
 
 /**
  * A strategy defines an order in which the states of a graph transition system
@@ -30,7 +30,7 @@ import groove.lts.StateGenerator;
  * some state, fixed by the {@link #prepare(GTS, GraphState)} method.
  * 
  * A strategy adds states and transitions to a graph transition system. However,
- * it should use a {@link StateGenerator} and not manipulate the graph
+ * it should use a {@link RuleEventApplier} and not manipulate the graph
  * transition system directly.
  */
 public interface Strategy {

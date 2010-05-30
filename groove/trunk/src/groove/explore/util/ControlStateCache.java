@@ -40,8 +40,6 @@ public class ControlStateCache implements ExploreCache {
     public ControlStateCache(Location location, GraphState state,
             boolean isRandomized) {
         this.location = location;
-        this.state = state;
-
         this.failed = new HashSet<Rule>();
         this.matched = new HashSet<Rule>();
 
@@ -141,10 +139,10 @@ public class ControlStateCache implements ExploreCache {
     private final Set<Rule> failed;
     /** The set of rules that are known to match in this cache's state. */
     private final Set<Rule> matched;
-    /** The state on which this cache works. */
-    private final GraphState state;
+    /** The current rule iterator. */
     private Iterator<Rule> iterator;
-
+    /** Control location on which this cache works. */
     private final Location location;
+    /** Most recently returned rule. */
     private Rule last;
 }

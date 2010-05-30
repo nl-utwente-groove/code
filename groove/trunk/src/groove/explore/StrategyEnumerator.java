@@ -35,6 +35,7 @@ import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
 import groove.explore.strategy.BFSStrategy;
+import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearConfluentRules;
@@ -80,6 +81,17 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             @Override
             public Strategy create(GTS gts) {
                 return new BFSStrategy();
+            }
+        });
+
+        addTemplate(new Template0<Strategy>("branching",
+            "Breadth-First Exploration",
+            "This strategy first generates all possible transitions from each "
+                + "open state, and then continues in a breadth-first fashion.") {
+
+            @Override
+            public Strategy create(GTS gts) {
+                return new BranchingStrategy();
             }
         });
 

@@ -54,18 +54,6 @@ public class AliasMatchesIterator extends MatchesIterator {
             }
             return aliasedMatches.iterator();
         }
-        // if (currentRule.getPriority() > priority &&
-        // !enabledRules.contains(currentRule)) {
-        // return new EmptyMatchIter();
-        // }
-        // if (currentRule.getPriority() <= priority
-        // && !((currentRule instanceof SPORule && ((SPORule)
-        // currentRule).hasSubRules()) || enabledRules
-        // .contains(currentRule))) {
-        // // it didn't match in the previous state or no matches left after
-        // rematching
-        // return new EmptyMatchIter();
-        // }
         return super.createEventIter(rule);
     }
 
