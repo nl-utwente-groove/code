@@ -76,7 +76,11 @@ public class DefaultGxl extends AbstractXml {
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
-        JaxbGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
+        if (JAXB) {
+            JaxbGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
+        } else {
+            JibxGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
+        }
     }
 
     /**
@@ -88,8 +92,12 @@ public class DefaultGxl extends AbstractXml {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            Pair<Graph,Map<String,Node>> result =
-                JaxbGxlIO.getInstance().loadGraphWithMap(in);
+            Pair<Graph,Map<String,Node>> result;
+            if (JAXB) {
+                result = JaxbGxlIO.getInstance().loadGraphWithMap(in);
+            } else {
+                result = JibxGxlIO.getInstance().loadGraphWithMap(in);
+            }
             Graph resultGraph = result.first();
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());
@@ -177,4 +185,5 @@ public class DefaultGxl extends AbstractXml {
     /** Private isomorphism checker, for testing purposes. */
     static private final IsoChecker isoChecker =
         DefaultIsoChecker.getInstance(true);
+    static private final boolean JAXB = false;
 }

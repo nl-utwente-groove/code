@@ -515,7 +515,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             Pair<Graph,Map<String,Node>> plainGraphAndMap =
-                JaxbGxlIO.getInstance().loadGraphWithMap(in);
+                JibxGxlIO.getInstance().loadGraphWithMap(in);
             Graph plainGraph = plainGraphAndMap.first();
             /*
              * For backward compatibility, we set the role and name of the graph
