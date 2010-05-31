@@ -225,9 +225,6 @@ public final class GraphToKth {
      * @return a map with the attribute name as key and the attribute value.
      */
     private static Map<String,String> getStringAttributes(AspectNode node) {
-        // EDUARDO says: this is an ugly hack. There is probably a better and
-        // easier way get the attributes of an AspectNode, but I could not
-        // find it now. If anyone has a suggestion for improvement, let me know.
         HashMap<String,String> attrs = new HashMap<String,String>();
         Graph model = null;
         try {

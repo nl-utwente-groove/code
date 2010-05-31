@@ -231,7 +231,7 @@ public class ControlJModel extends GraphJModel {
                 && ((ControlTransition) edge).isLambda()) {
                 return new StringBuilder("\u03BB");
             } else if (edge instanceof ControlTransition) {
-                ControlTransition ct = (ControlTransition) edge;
+                // ControlTransition ct = (ControlTransition) edge;
                 StringBuilder sb = super.getLine(edge);
                 /*
                  * 

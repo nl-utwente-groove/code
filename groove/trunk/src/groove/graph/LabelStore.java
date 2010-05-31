@@ -135,7 +135,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      * Recalculates the subtype relation by transitively closing the direct
      * subtype relation.
      */
-    private void calculateSubtypes() {
+    public void calculateSubtypes() {
         // first order all types consistently with the subtype relation.
         Set<Label> allTypes = new LinkedHashSet<Label>();
         Set<Label> remaining =

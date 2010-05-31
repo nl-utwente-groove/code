@@ -18,10 +18,14 @@ package groove.view;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.Node;
 import groove.graph.TypeGraph;
+import groove.graph.TypeNode;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.GraphGrammar;
@@ -110,6 +114,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return Collections.unmodifiableSet(getStore().getRules().keySet());
     }
 
+    /** Returns a list of all available type graph names. */
     public Set<String> getTypeNames() {
         return Collections.unmodifiableSet(getStore().getTypes().keySet());
     }
@@ -124,12 +129,10 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (stateGraph != null) {
             result = stateGraph.toGraphView(getProperties());
             TypeGraph type = null;
-            if (getTypeView() != null) {
-                try {
-                    type = getTypeView().toModel();
-                } catch (FormatException e) {
-                    // don't set the type graph
-                }
+            try {
+                type = getTypeViews().toModel();
+            } catch (FormatException e) {
+                // don't set the type graph
             }
             result.setType(type);
         }
@@ -142,12 +145,10 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (ruleGraph != null) {
             result = ruleGraph.toRuleView(getProperties());
             TypeGraph type = null;
-            if (getTypeView() != null) {
-                try {
-                    type = getTypeView().toModel();
-                } catch (FormatException e) {
-                    // don't set the type graph
-                }
+            try {
+                type = getTypeViews().toModel();
+            } catch (FormatException e) {
+                // don't set the type graph
             }
             result.setType(type);
         }
@@ -159,17 +160,45 @@ public class StoredGrammarView implements GrammarView, Observer {
         return typeGraph == null ? null : typeGraph.toTypeView(getProperties());
     }
 
+    /**
+     * @return an arbitrary type view from the list of set type graphs.
+     */
     public TypeView getTypeView() {
-        return getTypeName() == null ? null : getTypeView(getTypeName());
+        List<String> setTypes = this.getSetTypeNames();
+        return setTypes.isEmpty() ? null : getTypeView(setTypes.get(0));
     }
 
     /**
-     * Returns the name of the type graph to be used. This is taken from the
-     * system properties. The empty string means that no type graph is set.
-     * @see SystemProperties#getTypeName()
+     * Lazily creates a list of selected type views.
+     * @param checkedTypes the list of checked types to construct the type graph.
+     * @return a list of type views that yield a composite type graph.
      */
-    public String getTypeName() {
-        return getProperties().getTypeName();
+    public TypeViewList getTypeViews(List<String> checkedTypes) {
+        if (this.composedTypeView == null
+            || !this.composedTypeView.typeViewMap.keySet().equals(checkedTypes)) {
+            this.composedTypeView = new TypeViewList(checkedTypes);
+        }
+        return this.composedTypeView;
+    }
+
+    /**
+     * Lazily creates a list of selected type views.
+     * @return a list of type views that yield a composite type graph.
+     */
+    public TypeViewList getTypeViews() {
+        if (this.composedTypeView == null) {
+            this.composedTypeView = new TypeViewList();
+        }
+        return this.composedTypeView;
+    }
+
+    /**
+     * Returns a list of the type graph to be used. This is taken from the
+     * system properties. The empty list means that no type graph is set.
+     * @see SystemProperties#getTypeNames()
+     */
+    public List<String> getSetTypeNames() {
+        return getProperties().getTypeNames();
     }
 
     /**
@@ -317,11 +346,11 @@ public class StoredGrammarView implements GrammarView, Observer {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
         // check type correctness
-        if (getTypeName() != null) {
-            TypeView typeView = getTypeView();
+        for (String typeName : getSetTypeNames()) {
+            TypeView typeView = getTypeView(typeName);
             if (typeView == null) {
                 errors.add(new FormatError("Type graph '%s' cannot be found",
-                    getTypeName()));
+                    typeName));
             } else {
                 try {
                     typeView.toModel();
@@ -406,6 +435,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (getStartGraphView() != null) {
             this.labelStore.addLabels(getStartGraphView().getLabels());
         }
+        // EDUARDO FIXME
         // add subtyping relation from properties to label store
         if (getTypeView() == null) {
             this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
@@ -439,6 +469,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         this.errors = null;
         this.labelStore = null;
         this.controlPropertyAdjusted = false;
+        this.composedTypeView = null;
         if (this.startGraphName != null) {
             this.startGraph = null;
         }
@@ -490,6 +521,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar grammar;
     /** The labels occurring in this view. */
     private LabelStore labelStore;
+    /** The type view composed from the individual elements. */
+    private TypeViewList composedTypeView;
 
     /**
      * Creates an instance based on a store located at a given URL.
@@ -576,6 +609,124 @@ public class StoredGrammarView implements GrammarView, Observer {
             return newInstance(new File(location), false);
         } catch (IOException exc) {
             return newInstance(new File(location), false);
+        }
+    }
+
+    /** Class to store the views that are used to compose the type graph. */
+    public class TypeViewList {
+
+        private Map<String,TypeView> typeViewMap;
+        private TypeGraph model;
+        private List<FormatError> errors;
+        private Map<Label,TypeNode> labelToTypeNodeMap;
+        private int lastUsedNodeNr;
+
+        private TypeViewList() {
+            this(getSetTypeNames());
+        }
+
+        private TypeViewList(List<String> setTypeNames) {
+            this.typeViewMap = new HashMap<String,TypeView>();
+            this.model = null;
+            this.errors = new ArrayList<FormatError>();
+            for (String typeName : setTypeNames) {
+                TypeView typeView = getTypeView(typeName);
+                if (typeView != null) {
+                    this.typeViewMap.put(typeName, typeView);
+                    this.errors.addAll(typeView.getErrors());
+                }
+            }
+            this.labelToTypeNodeMap = new HashMap<Label,TypeNode>();
+            this.lastUsedNodeNr = -1;
+        }
+
+        /**
+         * @return the composite type graph from the view list.
+         * @throws FormatException if any of the views has errors.
+         * @throws IllegalArgumentException if the composition of types gives
+         *         rise to typing cycles.
+         */
+        public TypeGraph toModel() throws FormatException,
+            IllegalArgumentException {
+            this.initialise();
+            if (this.model == null) {
+                throw new FormatException(this.getErrors());
+            } else {
+                if (this.typeViewMap.isEmpty()) {
+                    return null;
+                } else {
+                    return this.model;
+                }
+            }
+        }
+
+        /**
+         * @return the errors in the underlying type views.
+         */
+        public List<FormatError> getErrors() {
+            this.initialise();
+            return this.errors;
+        }
+
+        /** Constructs the model and associated data structures from the view. */
+        private void initialise() {
+            // first test if there is something to be done
+            if (this.errors.isEmpty()) {
+                // There are no errors in each of the views, try to compose the
+                // type graph.
+                this.model = new TypeGraph();
+                for (TypeView view : this.typeViewMap.values()) {
+                    try {
+                        TypeGraph type = view.toModel();
+                        for (Node typeNode : type.nodeSet()) {
+                            this.addTypeNode(typeNode);
+                        }
+                        for (Edge typeEdge : type.edgeSet()) {
+                            this.addTypeEdge(typeEdge);
+                        }
+                        this.model.getLabelStore().add(type.getLabelStore());
+                    } catch (FormatException e) {
+                        this.errors.addAll(e.getErrors());
+                    }
+                }
+                if (this.errors.isEmpty()) {
+                    this.model.getLabelStore().calculateSubtypes();
+                    this.model.setFixed();
+                } else {
+                    this.model = null;
+                }
+            }
+        }
+
+        private void addTypeNode(Node typeNode) {
+            assert typeNode instanceof TypeNode : "Wrong node type: "
+                + typeNode;
+            this.model.addNode(this.getMappedTypeNode((TypeNode) typeNode));
+        }
+
+        private void addTypeEdge(Edge typeEdge) {
+            Node source = typeEdge.source();
+            Node target = typeEdge.opposite();
+            assert source instanceof TypeNode : "Wrong node type: " + source;
+            assert target instanceof TypeNode : "Wrong node type: " + target;
+            TypeNode sourceType = getMappedTypeNode((TypeNode) source);
+            TypeNode targetType = getMappedTypeNode((TypeNode) target);
+            this.model.addEdge(sourceType, typeEdge.label(), targetType);
+        }
+
+        private TypeNode getMappedTypeNode(TypeNode from) {
+            Label fromLabel = from.getType();
+            TypeNode to = this.labelToTypeNodeMap.get(fromLabel);
+            if (to == null) {
+                to = new TypeNode(this.getNewNodeNr(), fromLabel);
+                this.labelToTypeNodeMap.put(fromLabel, to);
+            }
+            return to;
+        }
+
+        private int getNewNodeNr() {
+            this.lastUsedNodeNr++;
+            return this.lastUsedNodeNr;
         }
     }
 }

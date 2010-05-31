@@ -579,7 +579,7 @@ public class Simulator {
     /**
      * Saves an aspect graph as a type graph under a given name, and puts the
      * type graph into the current grammar view.
-     * @param typeGraph the new rule, given as an aspect graph
+     * @param typeGraph the new type, given as an aspect graph
      * @return <code>true</code> if saving the type graph has succeeded
      */
     boolean doAddType(AspectGraph typeGraph) {
@@ -590,8 +590,8 @@ public class Simulator {
                     typeGraph.getErrors()));
             } else {
                 getGrammarStore().putType(typeGraph);
-                if (GraphInfo.getName(typeGraph).equals(
-                    getGrammarView().getTypeName())) {
+                if (getGrammarView().getSetTypeNames().contains(
+                    GraphInfo.getName(typeGraph))) {
                     updateGrammar();
                 } else {
                     // otherwise, we only need to update the type panel
@@ -652,11 +652,11 @@ public class Simulator {
 
     /** Removes a type graph from this grammar. */
     void doDeleteType(String name) {
-        boolean isCurrentType = name.equals(getGrammarView().getTypeName());
+        boolean isUsed = getGrammarView().getSetTypeNames().contains(name);
         getGrammarStore().deleteType(name);
         // we only need to refresh the grammar if the deleted
         // type graph was the currently active one
-        if (isCurrentType) {
+        if (isUsed) {
             updateGrammar();
         } else {
             // otherwise, we only need to update the type panel
@@ -1022,7 +1022,8 @@ public class Simulator {
         String oldName = GraphInfo.getName(graph);
         // test now if this is the type graph, before it is deleted from the
         // grammar
-        boolean isTypeGraph = oldName.equals(getGrammarView().getTypeName());
+        boolean isTypeGraph =
+            getGrammarView().getSetTypeNames().contains(oldName);
         try {
             getGrammarStore().renameType(oldName, newName);
             if (isTypeGraph) {
@@ -1758,12 +1759,9 @@ public class Simulator {
      * that this panel may currently not be visible.
      * @see #setGraphPanel(JGraphPanel)
      */
-    // NewTypePanel getTypePanel() {
     TypePanel getTypePanel() {
         if (this.typePanel == null) {
             // panel for state display
-            // EDUARDO: type panel improvements
-            // this.typePanel = new NewTypePanel(this);
             this.typePanel = new TypePanel(this);
             this.typePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
@@ -2803,9 +2801,6 @@ public class Simulator {
     /** The rule event applier for the current GTS. */
     private RuleEventApplier eventApplier;
 
-    /** The state generator strategy for the current GTS, if it is an AGTS. */
-    private AbstrStateGenerator abstrStateGenerator;
-
     private ExploreStateStrategy exploreStateStrategy;
 
     /** Flag to indicate that one of the simulation events is underway. */
@@ -2911,7 +2906,6 @@ public class Simulator {
     private ConditionalLTSPanel conditionalLTSPanel;
 
     /** Type graph display panel. */
-    // EDUARDO: private NewTypePanel typePanel;
     private TypePanel typePanel;
 
     /** Undo history. */

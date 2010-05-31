@@ -253,21 +253,24 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     }
 
     /**
-     * Sets the type graph name to a certain value. The empty string resets the
-     * type graph name.
-     * @param type the new type graph name (non-null)
+     * Sets the type graph names property.
+     * @param types the list of type graphs that are in use.
      */
-    public void setTypeName(String type) {
-        setProperty(TYPE_NAME_KEY, type);
+    public void setTypeNames(List<String> types) {
+        setProperty(TYPE_NAME_KEY,
+            Groove.toString(types.toArray(), "", "", " "));
     }
 
     /**
-     * Returns the type graph name, or {@code null} if no type
-     * graph is set.
+     * Returns a list of type graph names that are in use.
      */
-    public String getTypeName() {
-        String result = getProperty(TYPE_NAME_KEY);
-        return stringOrNull(result);
+    public ArrayList<String> getTypeNames() {
+        String types = getProperty(SystemProperties.TYPE_NAME_KEY);
+        if (types == null || "".equals(types)) {
+            return new ArrayList<String>();
+        } else {
+            return new ArrayList<String>(Arrays.asList(types.split("\\s")));
+        }
     }
 
     /**
@@ -737,16 +740,6 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     static public final String DESCRIPTION = "Rule system properties for %s";
     /** Map storing default property instances. */
     static private SystemProperties instance = new SystemProperties();
-    //	
-    // static {
-    // // initialise the instance map
-    // for (boolean attributed: new boolean[] { true, false } ) {
-    // SystemProperties properties = new SystemProperties();
-    // properties.setAttributed(attributed);
-    // properties.setFixed();
-    // instances.put(attributed, properties);
-    // }
-    // }
 
     /**
      * The default rule properties: not attributed and no control or common

@@ -39,24 +39,19 @@ import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 /**
@@ -81,17 +76,18 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
     private JToolBar createToolbar() {
         JToolBar result = new JToolBar();
+        result.setFloatable(false);
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
         result.add(createButton(getCopyAction()));
         result.add(createButton(getDeleteAction()));
         result.add(createButton(getRenameAction()));
         result.addSeparator();
-        result.add(new JLabel("Name: "));
-        result.add(getNameField());
+        result.add(new JLabel("Type Graphs: "));
+        result.add(getNameListPane());
         result.addSeparator();
-        result.add(createButton(getDisableAction()));
-        result.add(createButton(getEnableAction()));
+        result.add(createButton(getUncheckAllAction()));
+        result.add(createButton(getCheckAllAction()));
         result.addSeparator();
         result.add(createButton(new CreateAction()));
         return result;
@@ -147,20 +143,11 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         LabelStore labelStore = null;
-        String setTypeName = null;
         this.typeJModelMap.clear();
         if (grammar != null) {
-            String grammarType = grammar.getTypeName();
-            if (isTypeSelected() && grammarHasType(getSelectedType())) {
-                setTypeName = getSelectedType();
-            } else if (grammarType != null && grammarHasType(grammarType)) {
-                setTypeName = grammarType;
-            } else if (!grammar.getTypeNames().isEmpty()) {
-                setTypeName = grammar.getTypeNames().iterator().next();
-            }
             labelStore = grammar.getLabelStore();
+            this.getNameList().refresh();
         }
-        setSelectedType(setTypeName);
         this.jGraph.setLabelStore(labelStore);
         displayType();
     }
@@ -170,11 +157,8 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * @param typeGraph The type graph to be displayed.
      */
     public void displayTypeGraph(Graph typeGraph) {
-
         GraphInfo.setName(typeGraph, "Type graph");
-
         this.jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
-
         setEnabled(true);
     }
 
@@ -198,13 +182,34 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                         AspectGraph newType = getAspectGraph();
                         GraphInfo.setName(newType, typeName);
                         setSelectedType(typeName);
-                        if (getSimulator().doAddType(newType)) {
+                        if (!getSimulator().doAddType(newType)) {
                             setSelectedType(oldSelectedType);
                         }
                     }
                 }
             };
         dialog.start();
+    }
+
+    /**
+     * Saves the current checked type graphs as a list in the system properties.
+     */
+    public void doSaveProperties() {
+        List<String> checkedTypes = getNameList().getModel().getCheckedTypes();
+        try {
+            getGrammarView().getTypeViews(checkedTypes).toModel();
+            SystemProperties oldProperties = getGrammarView().getProperties();
+            SystemProperties newProperties = oldProperties.clone();
+            newProperties.setTypeNames(checkedTypes);
+            getSimulator().doSaveProperties(newProperties);
+        } catch (IllegalArgumentException e) {
+            getSimulator().showErrorDialog("Illegal type graph composition", e);
+            SystemProperties oldProperties = getGrammarView().getProperties();
+            this.getNameList().getModel().setCheckedTypes(
+                oldProperties.getTypeNames());
+        } catch (FormatException e) {
+            // Does nothing.
+        }
     }
 
     /**
@@ -223,7 +228,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      *        in the type graph names of the current grammar.
      */
     public void setSelectedType(String name) {
-        this.selectedType = name;
+        this.getNameList().getModel().setSelectedType(name);
     }
 
     /**
@@ -231,11 +236,11 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * @return either <code>null</code> or an existing type graph name
      */
     private final String getSelectedType() {
-        return this.selectedType;
+        return this.getNameList().getModel().getSelectedType();
     }
 
     /** Convenience method to indicate if a type graph name has been selected. */
-    private final boolean isTypeSelected() {
+    protected final boolean isTypeSelected() {
         return getSelectedType() != null;
     }
 
@@ -260,14 +265,11 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     private final Map<TypeView,AspectJModel> typeJModelMap =
         new HashMap<TypeView,AspectJModel>();
 
-    /** Name of the currently visible type graph. */
-    private String selectedType;
-
     /**
      * Registers a refreshable.
      * @see #refreshActions()
      */
-    private void addRefreshable(Refreshable refreshable) {
+    protected void addRefreshable(Refreshable refreshable) {
         this.refreshables.add(refreshable);
     }
 
@@ -286,8 +288,11 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         if (newModel != getJModel()) {
             this.jGraph.setModel(newModel);
         }
-        setEnabled(isTypeSelected()
-            && getSelectedType().equals(getGrammarView().getTypeName()));
+        if (newModel == AspectJModel.EMPTY_ASPECT_JMODEL) {
+            setEnabled(false);
+        } else {
+            setEnabled(getNameList().getModel().isSelectedChecked());
+        }
         refreshActions();
         refreshStatus();
     }
@@ -305,7 +310,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * Returns the current grammar view. Convenience method for
      * <code>getSimulator().getGrammarView()</code>.
      */
-    private StoredGrammarView getGrammarView() {
+    protected StoredGrammarView getGrammarView() {
         return getSimulator().getGrammarView();
     }
 
@@ -324,7 +329,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * Interface for objects that need to refresh their own status when actions
      * on the type panel occur.
      */
-    private interface Refreshable {
+    protected interface Refreshable {
         /**
          * Callback method to give the implementing object a chance to refresh
          * its status.
@@ -332,60 +337,41 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         public void refresh();
     }
 
-    /** Lazily creates and returns the field displaying the type name. */
-    private JComboBox getNameField() {
-        if (this.nameField == null) {
-            this.nameField = new TypeNameField();
-            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
-            this.nameField.setMaximumSize(new Dimension(150, 24));
+    /** Lazily creates and returns the list displaying the type names. */
+    private JTypeNameList getNameList() {
+        if (this.nameList == null) {
+            this.nameList = new JTypeNameList(this);
         }
-        return this.nameField;
+        return this.nameList;
     }
 
-    /** Name field of the type graph. */
-    private JComboBox nameField;
+    /** Name list of type graphs. */
+    private JTypeNameList nameList;
 
-    private class TypeNameField extends JComboBox implements Refreshable {
-        public TypeNameField() {
-            setBorder(BorderFactory.createLoweredBevelBorder());
-            setMaximumSize(new Dimension(150, 24));
-            setEnabled(false);
-            setEditable(false);
-            this.selectionListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (getSelectedItem() != null) {
-                        setSelectedType((String) getSelectedItem());
-                        displayType();
-                    }
-                }
-            };
-            addActionListener(this.selectionListener);
+    /** Lazily creates and returns the pane displaying the type names. */
+    private TypeNamesPane getNameListPane() {
+        if (this.nameListPane == null) {
+            this.nameListPane = new TypeNamesPane(getNameList());
+        }
+        return this.nameListPane;
+    }
+
+    /** Name list of type graphs. */
+    private TypeNamesPane nameListPane;
+
+    private class TypeNamesPane extends JScrollPane implements Refreshable {
+
+        TypeNamesPane(JTypeNameList nameList) {
+            super(nameList);
             addRefreshable(this);
         }
 
         @Override
         public void refresh() {
-            removeActionListener(this.selectionListener);
-            this.removeAllItems();
-            if (getGrammarView() == null) {
-                setEnabled(false);
-            } else {
-                Set<String> names =
-                    new TreeSet<String>(getGrammarView().getTypeNames());
-                if (isTypeSelected()) {
-                    names.add(getSelectedType());
-                }
-                for (String typeName : names) {
-                    addItem(typeName);
-                }
-                setSelectedItem(getSelectedType());
-                setEnabled(getItemCount() > 0);
-            }
-            addActionListener(this.selectionListener);
+            this.revalidate();
+            this.repaint();
         }
 
-        private final ActionListener selectionListener;
     }
 
     /** Abstract superclass for actions that can refresh their own status. */
@@ -433,7 +419,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 // set the selected type, so that the next refresh 
                 // will actually change the display
                 setSelectedType(newName);
-                if (getSimulator().doAddType(newType)) {
+                if (!getSimulator().doAddType(newType)) {
                     setSelectedType(oldTypeView.getName());
                 }
             }
@@ -456,7 +442,6 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     class CreateAction extends RefreshableAction {
         public CreateAction() {
             super("Compute type graph", null);
-            addRefreshable(this);
         }
 
         @Override
@@ -476,7 +461,6 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 Graph typeGraph =
                     TypeReconstructor.reconstruct(getGrammarView().toGrammar());
                 displayTypeGraph(typeGraph);
-
             } catch (FormatException fe) {
                 System.err.printf("Graph format error: %s", fe.getMessage());
             }
@@ -504,19 +488,19 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         public DeleteAction() {
             super(Options.DELETE_TYPE_ACTION_NAME, Groove.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
-            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
             String typeName = getSelectedType();
             if (getSimulator().confirmBehaviour(Options.DELETE_TYPE_OPTION,
                 String.format("Delete type graph '%s'?", typeName))) {
-                int itemNr = getNameField().getSelectedIndex() + 1;
-                if (itemNr == getNameField().getItemCount()) {
+                int itemNr = getNameList().getSelectedIndex() + 1;
+                if (itemNr == getNameList().getModel().getSize()) {
                     itemNr -= 2;
                 }
                 String newName =
-                    itemNr >= 0 ? (String) getNameField().getItemAt(itemNr)
+                    itemNr >= 0
+                            ? getNameList().getModel().getElementAt(itemNr).dataItem
                             : null;
                 setSelectedType(newName);
                 getSimulator().doDeleteType(typeName);
@@ -534,74 +518,63 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link UncheckAllAction}.
      */
-    private DisableAction getDisableAction() {
-        if (this.disableAction == null) {
-            this.disableAction = new DisableAction();
+    private UncheckAllAction getUncheckAllAction() {
+        if (this.uncheckAllAction == null) {
+            this.uncheckAllAction = new UncheckAllAction();
         }
-        return this.disableAction;
+        return this.uncheckAllAction;
     }
 
-    /** Singular instance of the {@link EnableAction}. */
-    private DisableAction disableAction;
+    /** Singular instance of the {@link CheckAllAction}. */
+    private UncheckAllAction uncheckAllAction;
 
     /** Action to disable the currently displayed type graph. */
-    private class DisableAction extends RefreshableAction {
-        public DisableAction() {
-            super(Options.DISABLE_TYPE_ACTION_NAME, Groove.DISABLE_ICON);
+    private class UncheckAllAction extends RefreshableAction {
+        public UncheckAllAction() {
+            super("Uncheck all type graphs", Groove.DISABLE_ICON);
         }
 
         public void actionPerformed(ActionEvent arg0) {
-            SystemProperties oldProperties = getGrammarView().getProperties();
-            SystemProperties newProperties = oldProperties.clone();
-            newProperties.setTypeName("");
-            getSimulator().doSaveProperties(newProperties);
+            getNameList().getModel().uncheckAll();
+            doSaveProperties();
         }
 
         @Override
         public void refresh() {
-            setEnabled(isTypeSelected()
-                && getSelectedType().equals(getGrammarView().getTypeName()));
+            setEnabled(!getNameList().getModel().isAllUnchecked());
         }
     }
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link CheckAllAction}.
      */
-    private EnableAction getEnableAction() {
-        if (this.enableAction == null) {
-            this.enableAction = new EnableAction();
+    private CheckAllAction getCheckAllAction() {
+        if (this.checkAllAction == null) {
+            this.checkAllAction = new CheckAllAction();
         }
-        return this.enableAction;
+        return this.checkAllAction;
     }
 
-    /** Singular instance of the {@link EnableAction}. */
-    private EnableAction enableAction;
+    /** Singular instance of the {@link CheckAllAction}. */
+    private CheckAllAction checkAllAction;
 
     /** Action to enable the currently displayed type graph. */
-    private class EnableAction extends RefreshableAction {
-        public EnableAction() {
-            super(Options.ENABLE_TYPE_ACTION_NAME, Groove.ENABLE_ICON);
+    private class CheckAllAction extends RefreshableAction {
+        public CheckAllAction() {
+            super("Check all type graphs", Groove.ENABLE_ICON);
         }
 
         public void actionPerformed(ActionEvent evt) {
-            doEnable(getSelectedType());
-        }
-
-        /** Enables a type graph with a given name. */
-        public void doEnable(String typeName) {
-            SystemProperties oldProperties = getGrammarView().getProperties();
-            SystemProperties newProperties = oldProperties.clone();
-            newProperties.setTypeName(typeName);
-            getSimulator().doSaveProperties(newProperties);
+            getNameList().getModel().checkAll();
+            doSaveProperties();
         }
 
         @Override
         public void refresh() {
-            setEnabled(isTypeSelected()
-                && !getSelectedType().equals(getGrammarView().getTypeName()));
+            setEnabled(!getNameList().getModel().isAllChecked());
         }
     }
 
@@ -706,11 +679,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             if (newName != null && !oldName.equals(newName)) {
                 TypeView type = getGrammarView().getTypeView(oldName);
                 setSelectedType(newName);
-                if (getSimulator().doRenameType(type.getView(), newName)) {
-                    if (oldName.equals(getGrammarView().getTypeName())) {
-                        getEnableAction().doEnable(newName);
-                    }
-                } else {
+                if (!getSimulator().doRenameType(type.getView(), newName)) {
                     setSelectedType(oldName);
                 }
             }
