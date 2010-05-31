@@ -38,8 +38,10 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
@@ -247,10 +249,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             // change the type-related system properties, if necessary
             SystemProperties oldProps = null;
             SystemProperties newProps = null;
-            if (name.equals(getProperties().getTypeName())) {
+            ArrayList<String> types = getProperties().getTypeNames();
+            if (types.remove(name)) {
                 oldProps = getProperties();
                 newProps = getProperties().clone();
-                newProps.setTypeName("");
+                newProps.setTypeNames(types);
             }
             result = new DeleteTypeEdit(type, oldProps, newProps);
         }
@@ -529,10 +532,12 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         if (edited) {
             SystemProperties oldProps = null;
             SystemProperties newProps = null;
-            if (oldName.equals(getProperties().getTypeName())) {
+            List<String> types = getProperties().getTypeNames();
+            if (types.remove(oldName)) {
                 oldProps = getProperties();
-                newProps = oldProps.clone();
-                newProps.setTypeName(newName);
+                newProps = getProperties().clone();
+                types.add(newName);
+                newProps.setTypeNames(types);
             }
             result =
                 new RenameTypeEdit(oldName, newName, oldType, oldProps,

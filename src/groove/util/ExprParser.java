@@ -901,11 +901,6 @@ public class ExprParser {
             return new String(this.sequence, 0, this.length);
         }
 
-        /** Returns the current length of the character sequence. */
-        public int length() {
-            return this.length;
-        }
-
         /** Indicates if the sequence is currently empty. */
         public boolean isEmpty() {
             return this.length == 0;
