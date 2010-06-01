@@ -360,8 +360,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     /** Name list of type graphs. */
     private TypeNamesPane nameListPane;
 
-    private class TypeNamesPane extends JScrollPane implements Refreshable {
-
+    private class TypeNamesPane extends JScrollPane {
         TypeNamesPane(JTypeNameList nameList) {
             super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -369,15 +368,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             this.setMinimumSize(JTypeNameList.MIN_DIMENSIONS);
             this.setMaximumSize(JTypeNameList.MAX_DIMENSIONS);
             this.setPreferredSize(JTypeNameList.MAX_DIMENSIONS);
-            addRefreshable(this);
         }
-
-        @Override
-        public void refresh() {
-            this.revalidate();
-            this.repaint();
-        }
-
     }
 
     /** Abstract superclass for actions that can refresh their own status. */
@@ -509,6 +500,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                             ? getNameList().getModel().getElementAt(itemNr).dataItem
                             : null;
                 setSelectedType(newName);
+                getNameList().getModel().removeType(typeName);
                 getSimulator().doDeleteType(typeName);
             }
         }

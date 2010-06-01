@@ -20,6 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -55,15 +56,19 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     // Static Fields
     // ------------------------------------------------------------------------
 
+    private static final int LIST_HEIGHT = 35;
     /** The min dimensions of the list. */
-    public static final Dimension MIN_DIMENSIONS = new Dimension(200, 35);
+    public static final Dimension MIN_DIMENSIONS =
+        new Dimension(200, LIST_HEIGHT);
     /** The max dimensions of the list. */
-    public static final Dimension MAX_DIMENSIONS = new Dimension(400, 35);
+    public static final Dimension MAX_DIMENSIONS =
+        new Dimension(400, LIST_HEIGHT);
 
     private static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
     private static final int CHECKBOX_WIDTH =
         new JCheckBox().getPreferredSize().width;
+    private static final int CELL_WIDTH = 100;
 
     private static JTextField enabledField = new JTextField();
     private static JTextField disabledField = new JTextField();
@@ -108,6 +113,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.setLayoutOrientation(JList.VERTICAL_WRAP);
         this.setVisibleRowCount(1);
+        this.setFixedCellWidth(CELL_WIDTH);
 
         this.selectionListener = new ListSelectionListener() {
             @Override
@@ -153,12 +159,23 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                     this.panel.getGrammarView().getProperties().getTypeNames();
                 this.model.setCheckedTypes(types);
                 this.model.selectMostAppropriateType();
-                this.setPreferredSize(MAX_DIMENSIONS);
+                this.setPreferredSize(this.getPreferredScrollableViewportSize());
             }
         }
         this.revalidate();
         this.repaint();
         this.addListSelectionListener(this.selectionListener);
+    }
+
+    // EDUARDO says: this is a horrible hack but I didn't manage to find a
+    // better solution to the refresh problem.
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        Insets insets = getInsets();
+        int dx = insets.left + insets.right;
+        int visibleColumnCount = this.model.getSize();
+        int width = (visibleColumnCount * getFixedCellWidth()) + dx;
+        return new Dimension(width, LIST_HEIGHT);
     }
 
     // ------------------------------------------------------------------------
@@ -342,6 +359,18 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 return this.items.get(index);
             } else {
                 return null;
+            }
+        }
+
+        /**
+         * Removes the given type name from the list.
+         * @param typeName the name of the graph to remove.
+         */
+        public void removeType(String typeName) {
+            int index = this.getIndexByName(typeName);
+            if (index >= 0) {
+                this.items.remove(index);
+                JTypeNameList.this.panel.doSaveProperties();
             }
         }
 
