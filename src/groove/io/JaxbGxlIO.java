@@ -56,7 +56,7 @@ import de.gupro.gxl.gxl_1_0.ObjectFactory;
  * @author Arend Rensink
  * @version $Revision: 1568 $
  */
-public class JaxbGxlIO {
+public class JaxbGxlIO implements GxlIO {
     /**
      * Private constructor for the singleton instance.
      */
