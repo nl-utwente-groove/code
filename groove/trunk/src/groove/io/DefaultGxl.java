@@ -68,7 +68,7 @@ public class DefaultGxl extends AbstractXml {
     }
 
     /**
-     * This implementation works by delegating to {@link DefaultGxlIO}.
+     * This implementation works by delegating to a {@link GxlIO}.
      */
     public void marshalGraph(Graph graph, File file) throws IOException {
         // create parent dirs if necessary
@@ -76,15 +76,11 @@ public class DefaultGxl extends AbstractXml {
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
-        if (JAXB) {
-            JaxbGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
-        } else {
-            JibxGxlIO.getInstance().saveGraph(graph, new FileOutputStream(file));
-        }
+        io.saveGraph(graph, new FileOutputStream(file));
     }
 
     /**
-     * This implementation works by delegating to {@link DefaultGxlIO}.
+     * This implementation works by delegating to a {@link GxlIO}.
      */
     @Override
     protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
@@ -92,12 +88,7 @@ public class DefaultGxl extends AbstractXml {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            Pair<Graph,Map<String,Node>> result;
-            if (JAXB) {
-                result = JaxbGxlIO.getInstance().loadGraphWithMap(in);
-            } else {
-                result = JibxGxlIO.getInstance().loadGraphWithMap(in);
-            }
+            Pair<Graph,Map<String,Node>> result = io.loadGraphWithMap(in);
             Graph resultGraph = result.first();
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());
@@ -131,6 +122,9 @@ public class DefaultGxl extends AbstractXml {
                 url, exc.getMessage()), exc);
         }
     }
+
+    /** Marshaller/unmarshaller. */
+    static private final GxlIO io = JaxbGxlIO.getInstance();
 
     /**
      * Test method: tries loading and saving graphs, and comparing them for
@@ -185,5 +179,4 @@ public class DefaultGxl extends AbstractXml {
     /** Private isomorphism checker, for testing purposes. */
     static private final IsoChecker isoChecker =
         DefaultIsoChecker.getInstance(true);
-    static private final boolean JAXB = false;
 }
