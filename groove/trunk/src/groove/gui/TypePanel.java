@@ -364,8 +364,11 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
         TypeNamesPane(JTypeNameList nameList) {
             super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             this.setViewportView(nameList);
+            this.setMinimumSize(JTypeNameList.MIN_DIMENSIONS);
+            this.setMaximumSize(JTypeNameList.MAX_DIMENSIONS);
+            this.setPreferredSize(JTypeNameList.MAX_DIMENSIONS);
             addRefreshable(this);
         }
 

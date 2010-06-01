@@ -55,8 +55,11 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     // Static Fields
     // ------------------------------------------------------------------------
 
-    /** The dimensions of the list. */
-    public static final Dimension DIMENSIONS = new Dimension(50, 50);
+    /** The min dimensions of the list. */
+    public static final Dimension MIN_DIMENSIONS = new Dimension(200, 35);
+    /** The max dimensions of the list. */
+    public static final Dimension MAX_DIMENSIONS = new Dimension(400, 35);
+
     private static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
     private static final int CHECKBOX_WIDTH =
@@ -101,14 +104,10 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         this.setModel(this.model);
 
         this.setEnabled(false);
+        this.setBackground(getColor(false));
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        this.setVisibleRowCount(-1);
-
-        this.setMinimumSize(DIMENSIONS);
-        this.setMaximumSize(DIMENSIONS);
-        this.setPreferredSize(DIMENSIONS);
-        this.setSize(DIMENSIONS);
+        this.setLayoutOrientation(JList.VERTICAL_WRAP);
+        this.setVisibleRowCount(1);
 
         this.selectionListener = new ListSelectionListener() {
             @Override
@@ -141,19 +140,24 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         if (this.panel.getGrammarView() == null) {
             // No grammar. Disable the component. 
             this.setEnabled(false);
+            this.setBackground(getColor(false));
         } else {
-            this.setEnabled(true);
             Set<String> names =
                 new TreeSet<String>(this.panel.getGrammarView().getTypeNames());
+            if (!names.isEmpty()) {
+                this.setEnabled(true);
+                this.setBackground(getColor(true));
+            }
             if (this.model.synchronizeModel(names)) {
                 List<String> types =
                     this.panel.getGrammarView().getProperties().getTypeNames();
                 this.model.setCheckedTypes(types);
                 this.model.selectMostAppropriateType();
-                this.revalidate();
-                this.repaint();
+                this.setPreferredSize(MAX_DIMENSIONS);
             }
         }
+        this.revalidate();
+        this.repaint();
         this.addListSelectionListener(this.selectionListener);
     }
 
