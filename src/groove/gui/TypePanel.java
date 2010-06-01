@@ -53,6 +53,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
 
 /**
  * @author Frank van Es
@@ -362,7 +363,9 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     private class TypeNamesPane extends JScrollPane implements Refreshable {
 
         TypeNamesPane(JTypeNameList nameList) {
-            super(nameList);
+            super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+            this.setViewportView(nameList);
             addRefreshable(this);
         }
 
