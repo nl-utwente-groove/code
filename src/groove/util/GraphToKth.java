@@ -132,7 +132,16 @@ public final class GraphToKth {
     }
 
     private static boolean isFlowProp(AspectNode node) {
-        return FLOW_PROP_TYPE.equals(getType(node));
+        return FLOW_PROP_TYPE.equals(getType(node)) || isMethodProp(node)
+            || isExceptionProp(node);
+    }
+
+    private static boolean isMethodProp(AspectNode node) {
+        return METHOD_PROP_TYPE.equals(getType(node));
+    }
+
+    private static boolean isExceptionProp(AspectNode node) {
+        return EXCEPTION_PROP_TYPE.equals(getType(node));
     }
 
     private static boolean isEmptyEdge(AspectEdge edge) {
@@ -242,7 +251,7 @@ public final class GraphToKth {
                     // We found a string attribute.
                     String key = possibleKey;
                     ValueNode target = (ValueNode) possibleTarget;
-                    String value = (String) target.getValue();
+                    String value = wrapValue((String) target.getValue(), node);
                     attrs.put(key, value);
                 }
             }
@@ -297,6 +306,20 @@ public final class GraphToKth {
 
     // ------------------------------------------------------------------------
 
+    private static String wrapValue(String value, AspectNode node) {
+        String result;
+        if (isMethodProp(node)) {
+            result = BEGIN_METHOD + value + END_METHOD;
+        } else if (isExceptionProp(node)) {
+            result = BEGIN_EXCEPTION + value + END_EXCEPTION;
+        } else {
+            result = value;
+        }
+        return result;
+    }
+
+    // ------------------------------------------------------------------------
+
     /** The graph the exporter is working on. */
     private static AspectGraph graph;
     /** The StringBuilder the exporter is working on. */
@@ -306,6 +329,8 @@ public final class GraphToKth {
     private static final String FLOW_NODE_TYPE = "FlowNode";
     private static final String FLOW_EDGE_TYPE = "FlowEdge";
     private static final String FLOW_PROP_TYPE = "FlowProp";
+    private static final String METHOD_PROP_TYPE = "MethodProp";
+    private static final String EXCEPTION_PROP_TYPE = "ExceptionProp";
     private static final String EMPTY_EDGE_LABEL = "empty";
     private static final String TO_EDGE_LABEL = "to";
     private static final String OUT_EDGE_LABEL = "out";
@@ -318,5 +343,9 @@ public final class GraphToKth {
     private static final String SPACE = " ";
     private static final String BEGIN_EDGE = "edge";
     private static final String END_EDGE = "\n";
-    private static final String OUT_EMPTY_EDGE_LABEL = "epsilon";
+    private static final String OUT_EMPTY_EDGE_LABEL = "eps";
+    private static final String BEGIN_METHOD = "meth(";
+    private static final String END_METHOD = ")";
+    private static final String BEGIN_EXCEPTION = "exc(";
+    private static final String END_EXCEPTION = ")";
 }
