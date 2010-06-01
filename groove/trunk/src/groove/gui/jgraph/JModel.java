@@ -234,8 +234,7 @@ abstract public class JModel extends DefaultGraphModel {
                 elementMap.put(node, (JVertex) root);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
                 for (String label : ((JVertex) root).getPlainLabels()) {
-                    result.addEdge(node, DefaultLabel.createTypedLabel(label,
-                        false), node);
+                    result.addEdge(node, DefaultLabel.createLabel(label), node);
                 }
             }
         }
@@ -255,8 +254,8 @@ abstract public class JModel extends DefaultGraphModel {
                 // parse edge text into label set
                 for (String label : jEdge.getPlainLabels()) {
                     Edge edge =
-                        result.addEdge(source, DefaultLabel.createTypedLabel(
-                            label, false), target);
+                        result.addEdge(source, DefaultLabel.createLabel(label),
+                            target);
                     // add layout information if there is anything to be noted
                     // about the edge
                     if (!attrIsDefault) {

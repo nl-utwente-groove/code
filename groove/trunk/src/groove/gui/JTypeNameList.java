@@ -56,7 +56,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     // ------------------------------------------------------------------------
 
     /** The dimensions of the list. */
-    public static final Dimension DIMENSIONS = new Dimension(350, 100);
+    public static final Dimension DIMENSIONS = new Dimension(50, 50);
     private static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
     private static final int CHECKBOX_WIDTH =
@@ -107,6 +107,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
 
         this.setMinimumSize(DIMENSIONS);
         this.setMaximumSize(DIMENSIONS);
+        this.setPreferredSize(DIMENSIONS);
         this.setSize(DIMENSIONS);
 
         this.selectionListener = new ListSelectionListener() {

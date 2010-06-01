@@ -96,26 +96,6 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
     }
 
     /**
-     * Creates an default edge from a given source node, label text and target
-     * node. To save space, a set of standard instances is kept internally, and
-     * consulted to return the same object whenever an edge is requested with
-     * the same end nodes and label text.
-     * @param source the source node of the new edge; should not be
-     *        <code>null</code>
-     * @param text the text of the new edge; should not be <code>null</code>
-     * @param target the target node of the new edge; should not be
-     *        <code>null</code>
-     * @return an edge based on <code>source</code>, <code>text</code> and
-     *         <code>target</code>; the label is a {@link DefaultLabel}
-     * @see #createEdge(Node, Label, Node)
-     */
-    static public DefaultEdge createEdgeWithLabelPrefix(Node source,
-            String text, Node target) {
-        return DefaultEdge.createEdge(source, DefaultLabel.createTypedLabel(
-            text, false), target);
-    }
-
-    /**
      * Creates an default edge from a given source node, label and target node.
      * To save space, a set of standard instances is kept internally, and
      * consulted to return the same object whenever an edge is requested with
