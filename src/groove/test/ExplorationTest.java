@@ -112,7 +112,7 @@ public class ExplorationTest extends TestCase {
     public void testAppend() {
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
-        testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
+        testExploration("append.gps", "append-2-list-5", "dfs", 145, 256);
         testExploration("append.gps", "append-2-list-5", "cnbound:20", 62, 88,
             13);
         testExploration("append.gps", "append-2-list-5", "cebound:append>6",
@@ -144,7 +144,7 @@ public class ExplorationTest extends TestCase {
     /** Tests the priorities sample. */
     public void testPriorities() {
         testExploration("priorities.gps", "start", "bfs", 13, 34);
-        testExploration("priorities.gps", "start", "bfs", 13, 34);
+        testExploration("priorities.gps", "start", "dfs", 13, 34);
         testExploration("priorities.gps", "start", "linear", 8, 8);
     }
 

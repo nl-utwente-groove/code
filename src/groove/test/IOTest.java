@@ -16,14 +16,10 @@
  */
 package groove.test;
 
-import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
-import groove.explore.result.Acceptor;
-import groove.explore.strategy.DFSStrategy;
+import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
-import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -50,12 +46,6 @@ public class IOTest extends TestCase {
     static private final String ALT_START = "start2";
     static private final String DEF_CONTROL = "control";
     static private final String ALT_CONTROL = "control2";
-
-    /**
-     * Parser for the exploration strategies.
-     */
-    private final Generator.ExploreStrategyParser parser =
-        new Generator.ExploreStrategyParser(false);
 
     /** test loading a directory grammar directly */
     public void testLoadDefault() {
@@ -144,12 +134,9 @@ public class IOTest extends TestCase {
             assertEquals(rulecount, gg.getRules().size());
 
             GTS lts = new GTS(gg);
-            Scenario scenario =
-                ScenarioFactory.getScenario(new DFSStrategy(), new Acceptor(),
-                    "bah", "dus");
-            scenario.prepare(lts);
-            scenario.play();
-            assertFalse(scenario.isInterrupted());
+            Exploration exploration = new Exploration();
+            exploration.play(lts, null);
+            assertFalse(exploration.isInterrupted());
 
             if (nodeCount >= 0) {
                 assertEquals(nodeCount, lts.nodeCount());
