@@ -17,6 +17,7 @@
 package groove.io;
 
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -24,6 +25,7 @@ import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
@@ -131,6 +133,17 @@ public class JaxbGxlIO implements GxlIO {
             gxlNode.setId(node.toString());
             nodeMap.put(node, gxlNode);
             nodesEdges.add(gxlNode);
+            // add appropriate edges for value nodes
+            if (node instanceof ValueNode) {
+                EdgeType gxlEdge = this.factory.createEdgeType();
+                gxlEdge.setFrom(nodeMap.get(node));
+                gxlEdge.setTo(nodeMap.get(node));
+                AttrType labelAttr = this.factory.createAttrType();
+                labelAttr.setName(LABEL_ATTR_NAME);
+                labelAttr.setString(((ValueNode) node).getLabelText());
+                gxlEdge.getAttr().add(labelAttr);
+                nodesEdges.add(gxlEdge);
+            }
         }
         // add the edges
         for (Edge edge : graph.edgeSet()) {
@@ -140,7 +153,7 @@ public class JaxbGxlIO implements GxlIO {
             gxlEdge.setTo(nodeMap.get(edge.opposite()));
             AttrType labelAttr = this.factory.createAttrType();
             labelAttr.setName(LABEL_ATTR_NAME);
-            labelAttr.setString(edge.label().text());
+            labelAttr.setString(DefaultLabel.toTypedString(edge.label()));
             gxlEdge.getAttr().add(labelAttr);
             nodesEdges.add(gxlEdge);
         }
