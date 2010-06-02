@@ -20,7 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
+import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -41,7 +41,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -64,11 +63,10 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     public static final Dimension MAX_DIMENSIONS =
         new Dimension(400, LIST_HEIGHT);
 
-    private static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
+    private static final EmptyBorder INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
     private static final int CHECKBOX_WIDTH =
         new JCheckBox().getPreferredSize().width;
-    private static final int CELL_WIDTH = 100;
 
     private static JTextField enabledField = new JTextField();
     private static JTextField disabledField = new JTextField();
@@ -113,7 +111,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.setLayoutOrientation(JList.VERTICAL_WRAP);
         this.setVisibleRowCount(1);
-        this.setFixedCellWidth(CELL_WIDTH);
 
         this.selectionListener = new ListSelectionListener() {
             @Override
@@ -167,14 +164,30 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         this.addListSelectionListener(this.selectionListener);
     }
 
-    // EDUARDO says: this is a horrible hack but I didn't manage to find a
-    // better solution to the refresh problem.
+    // EZ says: Although the code looks OK, I consider this to be a hack.
+    // The problem is how to properly calculate the width of the list.
+    // I expected this to be handled automatically by the layouter but this is
+    // not the case.
+    // Therefore, we have to override the method and do it ourselves...
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        Insets insets = getInsets();
-        int dx = insets.left + insets.right;
+        // Get the information on the font the is being used on the list.
+        FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
+        // The longest text width in the list.
+        int maxTextWidth = 0;
+        for (ListItem item : this.model.items) {
+            String text = item.dataItem;
+            // Calculate the size of the text.
+            int textWidth = fontMetrics.stringWidth(text);
+            if (textWidth > maxTextWidth) {
+                maxTextWidth = textWidth;
+            }
+        }
+        // We must also consider the cell borders.
+        int dx = 2 * INSET_BORDER.getBorderInsets().left;
+        int maxCellWidth = CHECKBOX_WIDTH + maxTextWidth + dx;
         int visibleColumnCount = this.model.getSize();
-        int width = (visibleColumnCount * getFixedCellWidth()) + dx;
+        int width = (visibleColumnCount * maxCellWidth);
         return new Dimension(width, LIST_HEIGHT);
     }
 
@@ -514,11 +527,11 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 item = (ListItem) value;
                 this.containerBox = Box.createHorizontalBox();
                 this.containerBox.add(new JLabel(item.dataItem));
-                this.containerBox.add(Box.createRigidArea(new Dimension(0, 100)));
             } else {
                 this.containerBox = null;
             }
             if (this.containerBox != null) {
+                // Store of max width of a cell
                 this.checkBox.setSelected(item.checked);
                 setBackground(background);
                 // re-add the label (it gets detached if used as a stand-alone
@@ -528,6 +541,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             } else {
                 result = this.jLabel;
             }
+
             return result;
         }
 
