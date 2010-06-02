@@ -18,6 +18,8 @@ package groove.graph.algebra;
 
 import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
+import groove.algebra.AlgebraRegister;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.HashMap;
@@ -58,6 +60,14 @@ public class ValueNode extends VariableNode {
      */
     public String getSymbol() {
         return getAlgebra().getSymbol(getValue());
+    }
+
+    /** Returns the label text for this value node,
+     * consisting of the signature name followed by a separator and the value symbol.
+     */
+    public String getLabelText() {
+        return AlgebraRegister.getSignatureName(getAlgebra())
+            + Aspect.VALUE_SEPARATOR + getSymbol();
     }
 
     /**
