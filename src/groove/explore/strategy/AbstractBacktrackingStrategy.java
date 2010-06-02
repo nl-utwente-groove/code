@@ -16,13 +16,13 @@
  */
 package groove.explore.strategy;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchesIterator;
 import groove.lts.GraphState;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * A strategy that uses backtracking mechanism to determine a next state to be
@@ -33,6 +33,7 @@ import groove.lts.GraphState;
  * @author Iovka Boneva
  * 
  */
+@Deprecated
 public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
 
     /**

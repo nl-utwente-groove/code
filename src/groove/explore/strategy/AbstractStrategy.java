@@ -21,12 +21,10 @@ import groove.abs.lts.AbstrStateGenerator;
 import groove.abs.lts.ShapeGraphState;
 import groove.control.Location;
 import groove.explore.result.Acceptor;
-import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
-import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
@@ -159,11 +157,13 @@ public abstract class AbstractStrategy implements Strategy {
 
     /**
      * Gives an appropriate matches iterator for atState. This may be a
-     * {@link MatchesIterator} or an {@link AliasMatchesIterator}.
+     * {@link groove.explore.util.MatchesIterator} or an {@link groove.explore.util.AliasMatchesIterator}.
      * @param cache
      */
+    @Deprecated
     @SuppressWarnings("all")
-    protected MatchesIterator getMatchesIterator(ExploreCache cache) {
+    protected groove.explore.util.MatchesIterator getMatchesIterator(
+            ExploreCache cache) {
         // Two cases where an alias iterator may be returned :
         // the parent is closed, or one of the successors is closed
 
@@ -178,23 +178,25 @@ public abstract class AbstractStrategy implements Strategy {
             GraphState parent = parentOf(getAtState());
             if (this.aliasing && parent != null && parent.isClosed()) {
                 GraphNextState s = (GraphNextState) getAtState();
-                return new AliasMatchesIterator(s, cache, getRecord());
+                return new groove.explore.util.AliasMatchesIterator(s, cache,
+                    getRecord());
             }
-
-            // Second case : one of the successors is closed.
-            // This is only considered for backtracking strategies, in
-            // which the state from which we backtrack is closed
-            // and recently used matches iterators may be cached
-            if (false && this instanceof AbstractBacktrackingStrategy) {
-                AbstractBacktrackingStrategy str =
-                    (AbstractBacktrackingStrategy) this;
-                // TODO integrate alias matches iterator constructed from a
-                // sibling or child
-            }
+            //
+            //            // Second case : one of the successors is closed.
+            //            // This is only considered for backtracking strategies, in
+            //            // which the state from which we backtrack is closed
+            //            // and recently used matches iterators may be cached
+            //            if (false && this instanceof AbstractBacktrackingStrategy) {
+            //                AbstractBacktrackingStrategy str =
+            //                    (AbstractBacktrackingStrategy) this;
+            //                // TODO integrate alias matches iterator constructed from a
+            //                // sibling or child
+            //            }
         }
 
         // in all other cases, return a "normal" matches iterator
-        return new MatchesIterator(getAtState(), cache, getRecord());
+        return new groove.explore.util.MatchesIterator(getAtState(), cache,
+            getRecord());
     }
 
     /**
@@ -203,7 +205,7 @@ public abstract class AbstractStrategy implements Strategy {
      * @param cache the rule cache for the collector
      */
     protected MatchSetCollector createMatchCollector(ExploreCache cache) {
-        return new MatchSetCollector(getAtState(), cache, getRecord(), null);
+        return new MatchSetCollector(getAtState(), cache, getRecord());
     }
 
     /** Returns the match applier of this strategy. */

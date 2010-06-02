@@ -48,7 +48,8 @@ public class MatchSetCollector {
      * @param cache object to decide on applicable rules
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
-     * @param virtualEventSet outgoing transitions from the parent state
+     * @param virtualEventSet outgoing transitions from the parent state;
+     * may be {@code null}
      */
     public MatchSetCollector(GraphState state, ExploreCache cache,
             SystemRecord record,
@@ -62,6 +63,18 @@ public class MatchSetCollector {
             this.enabledRules = record.getEnabledRules(lastRule);
             this.disabledRules = record.getDisabledRules(lastRule);
         }
+    }
+
+    /**
+     * Constructs a match collector for a given (start) state.
+     * @param state the state for which matches are to be collected
+     * @param cache object to decide on applicable rules
+     * @param record factory to turn {@link RuleMatch}es in to
+     *        {@link RuleEvent}s.
+     */
+    public MatchSetCollector(GraphState state, ExploreCache cache,
+            SystemRecord record) {
+        this(state, cache, record, null);
     }
 
     /** Returns a single match for the state passed in through the constructor. */

@@ -22,7 +22,7 @@ import groove.explore.result.Acceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.ExploreStateDFStrategy;
+import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.Strategy;
 import groove.graph.Graph;
@@ -106,8 +106,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
             } else {
                 // try depth first
                 sc =
-                    createScenario(new ExploreStateDFStrategy(),
-                        new FinalStateAcceptor(new Result(1)));
+                    createScenario(new DFSStrategy(), new FinalStateAcceptor(
+                        new Result(1)));
                 sc.prepare(getGTS());
                 scenarioResult = sc.play();
                 if (scenarioResult.done()) {

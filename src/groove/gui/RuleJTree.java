@@ -16,7 +16,7 @@
  */
 package groove.gui;
 
-import groove.explore.util.MatchesIterator;
+import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
@@ -27,6 +27,7 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
+import groove.trans.SystemRecord;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.GrammarView;
@@ -340,22 +341,18 @@ public class RuleJTree extends JTree implements SimulationListener {
     private void refresh() {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
-        if (getCurrentState() == null) {
+        GraphState state = getCurrentState();
+        if (state == null) {
             refreshMatchesClosed(Collections.<GraphTransition>emptySet());
-        } else if (setDisplayedState(getCurrentState())) {
-            if (getCurrentState().isClosed()) {
+        } else if (setDisplayedState(state)) {
+            if (state.isClosed()) {
                 refreshMatchesClosed(getCurrentGTS().outEdgeSet(
                     getCurrentState()));
             } else {
-                Collection<RuleEvent> matches = new ArrayList<RuleEvent>();
-                MatchesIterator matchIter =
-                    new MatchesIterator(getCurrentState(),
-                        getCurrentGTS().getRecord().freshCache(
-                            getCurrentState(), false),
-                        getCurrentGTS().getRecord());
-                while (matchIter.hasNext()) {
-                    matches.add(matchIter.next());
-                }
+                SystemRecord record = getCurrentGTS().getRecord();
+                Collection<RuleEvent> matches =
+                    new MatchSetCollector(state,
+                        record.freshCache(state, false), record).getMatchSet();
                 refreshMatchesOpen(matches);
             }
         }
