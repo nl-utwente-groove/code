@@ -41,6 +41,7 @@ import java.util.NoSuchElementException;
  * @author Iovka Boneva
  * @version $Revision$
  */
+@Deprecated
 public class MatchesIterator implements Iterator<RuleEvent> {
     /**
      * Constructs a new matches iterator for a given state, updating the cache

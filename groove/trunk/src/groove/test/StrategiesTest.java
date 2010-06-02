@@ -44,6 +44,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 @SuppressWarnings("all")
 public class StrategiesTest extends TestCase {
 

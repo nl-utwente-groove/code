@@ -42,6 +42,7 @@ import java.util.Iterator;
  * @author Iovka Boneva
  * 
  */
+@Deprecated
 public class ExploreStateDFStrategy extends AbstractStrategy {
     /**
      * The next step makes atomic the full exploration of a state.

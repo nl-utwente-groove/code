@@ -37,6 +37,7 @@ import groove.trans.RuleEvent;
  * @author Iovka Boneva
  * 
  */
+@Deprecated
 public class ExploreSingleTransitionDFStrategy extends
         AbstractBacktrackingStrategy {
 

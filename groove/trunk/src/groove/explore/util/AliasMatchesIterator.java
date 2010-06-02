@@ -23,6 +23,7 @@ import java.util.TreeMap;
  * instance, the aliasMatchIter field is not needed, super.matchIter may be used
  * instead
  */
+@Deprecated
 public class AliasMatchesIterator extends MatchesIterator {
     /**
      * Creates an aliased matches iterator for a state and a rule.

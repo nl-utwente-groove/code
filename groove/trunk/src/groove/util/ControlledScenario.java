@@ -5,13 +5,13 @@ import groove.explore.DefaultScenario;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.AbstractStrategy;
 import groove.explore.util.ExploreCache;
-import groove.explore.util.MatchesIterator;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -57,8 +57,8 @@ public class ControlledScenario extends DefaultScenario {
                 return false;
             }
             ExploreCache cache = new ControlledCache(this.currRule);
-            MatchesIterator matchIter =
-                new MatchesIterator(this.atState, cache, getRecord());
+            Iterator<RuleEvent> matchIter =
+                createMatchCollector(cache).getMatchSet().iterator();
 
             if (this.findAll) {
                 while (matchIter.hasNext()) {
