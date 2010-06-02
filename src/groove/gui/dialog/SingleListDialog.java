@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -73,6 +74,7 @@ public class SingleListDialog extends JDialog implements ActionListener {
         labelPanel.add(new JLabel(message));
         dialogContent.add(labelPanel);
 
+        Collections.sort(list);
         this.list = new JList(list.toArray());
         this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.list.setLayoutOrientation(JList.VERTICAL);
@@ -80,7 +82,7 @@ public class SingleListDialog extends JDialog implements ActionListener {
 
         // Scroll pane for the list. 
         JScrollPane listScroller = new JScrollPane(this.list);
-        listScroller.setPreferredSize(new Dimension(250, 250));
+        listScroller.setPreferredSize(new Dimension(100, 150));
         dialogContent.add(listScroller);
 
         // OK & Cancel buttons.

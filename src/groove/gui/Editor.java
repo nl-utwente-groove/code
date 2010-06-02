@@ -1038,6 +1038,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             keys.remove(GraphProperties.CONFLUENT_KEY);
             keys.remove(GraphProperties.PRIORITY_KEY);
             keys.remove(GraphProperties.ENABLED_KEY);
+            keys.remove(GraphProperties.TRANSITION_LABEL_KEY);
         }
         return new PropertiesDialog(getModel().getProperties(), keys, editable);
     }
@@ -1194,9 +1195,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             return typeNames.iterator().next();
         } else {
             SingleListDialog dialog =
-                new SingleListDialog(this.getFrame(), "Type Graph selection",
-                    "Select the type graph you want to display:", typeNames,
-                    false);
+                new SingleListDialog(this.getFrame(), "Type graph selection",
+                    "Select the type graph to display:", typeNames, false);
             return dialog.getSelectedItem();
         }
     }
@@ -2076,7 +2076,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         public void actionPerformed(ActionEvent evt) {
             if (getType() != null) {
                 String typeName = showTypeGraphSelectionDialog();
-                showPreviewDialog(getTypeViewList().getTypeView(typeName),
+                showPreviewDialog(
+                    getTypeViewList().getTypeViewByName(typeName),
                     Options.OK_BUTTON);
             } else {
                 super.actionPerformed(evt);
@@ -2112,12 +2113,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             String typeName = showTypeGraphSelectionDialog();
-            showPreviewDialog(getTypeViewList().getTypeView(typeName),
+            showPreviewDialog(getTypeViewList().getTypeViewByName(typeName),
                 Options.OK_BUTTON);
         }
     }
 
-    /** This will change the source of the actionevent to graph. */
+    /** This will change the source of the action event to graph. */
     private class TransferAction extends ToolbarAction {
         /**
          * Constructs an action that redirects to another action, while setting

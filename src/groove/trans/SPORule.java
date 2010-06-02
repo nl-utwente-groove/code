@@ -119,11 +119,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         assert this.coRootMap != null : String.format(
             "Sub-rule at level %s must have a non-trivial co-root map",
             Arrays.toString(level));
-        assert parent.rhs().nodeSet().containsAll(
-            this.coRootMap.nodeMap().keySet()) : String.format(
-            "Rule '%s': Parent nodes %s do not contain all co-roots %s",
-            getName(), parent.rhs().nodeSet(),
-            this.coRootMap.nodeMap().keySet());
+        if (parent != null) {
+            assert parent.rhs().nodeSet().containsAll(
+                this.coRootMap.nodeMap().keySet()) : String.format(
+                "Rule '%s': Parent nodes %s do not contain all co-roots %s",
+                getName(), parent.rhs().nodeSet(),
+                this.coRootMap.nodeMap().keySet());
+        }
         this.parent = parent;
         this.level = level;
     }
