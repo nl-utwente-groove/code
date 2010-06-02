@@ -16,9 +16,7 @@
  */
 package groove.test;
 
-import groove.explore.GeneratorScenarioFactory;
-import groove.explore.Scenario;
-import groove.explore.strategy.BFSStrategy;
+import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -51,13 +49,10 @@ public class ControlAttributeParametersTest extends TestCase {
             sp.setUseControl(true);
             GTS lts = new GTS(sgv.toGrammar());
 
-            Scenario scenario =
-                GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(),
-                    "Breadth first full exploration.", "full");
-            scenario.prepare(lts);
-            scenario.play();
+            Exploration exploration = new Exploration();
+            exploration.play(lts, null);
 
-            assertFalse(scenario.isInterrupted());
+            assertFalse(exploration.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
         } catch (IOException e) {
