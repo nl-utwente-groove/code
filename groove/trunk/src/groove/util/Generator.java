@@ -17,43 +17,25 @@
 package groove.util;
 
 import groove.explore.AcceptorEnumerator;
-import groove.explore.ConditionalScenario;
 import groove.explore.DefaultScenario;
 import groove.explore.Exploration;
-import groove.explore.GeneratorScenarioFactory;
-import groove.explore.Scenario;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
-import groove.explore.result.ConditionalAcceptor;
-import groove.explore.result.EdgeBoundCondition;
-import groove.explore.result.ExploreCondition;
-import groove.explore.result.InvariantViolatedAcceptor;
-import groove.explore.result.NodeBoundCondition;
-import groove.explore.result.Result;
-import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.BoundedNestedDFSStrategy;
-import groove.explore.strategy.ConditionalBFSStrategy;
-import groove.explore.strategy.DFSStrategy;
-import groove.explore.strategy.LinearStrategy;
-import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.AbstractGraphShape;
-import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
 import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PaigeTarjanMcKay;
 import groove.io.ExtensionFilter;
-import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -62,7 +44,6 @@ import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
@@ -79,9 +60,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -388,52 +367,6 @@ public class Generator extends CommandLineTool {
             this.exploration = computeExploration();
         }
         return this.exploration;
-    }
-
-    /**
-     * Callback factory method to construct the exploration strategy. The
-     * strategy is computed from the command line options, or set to
-     * {@link DFSStrategy} if no strategy was specified.
-     */
-    protected Scenario computeStrategy() {
-        if (!isOptionActive(this.scenarioOption)) {
-            return null;
-            /*
-            result =
-                GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(),
-                    "Breadth first full exploration.", "full");
-            */
-        }
-
-        /*
-        Scenario result;
-        ExploreStrategyParser exploreParser = this.scenarioOption.getParser();
-        result = exploreParser.getStrategy();
-        if (result instanceof ConditionalScenario) {
-            ConditionalScenario<?> condResult = (ConditionalScenario<?>) result;
-            String conditionName = exploreParser.getCondition();
-            if (condResult.getConditionType().equals(Rule.class)) {
-                Rule condition =
-                    getGrammar().getRule(new RuleName(conditionName));
-                if (condition == null) {
-                    printError(
-                        "Error in exploration strategy: unknown condition "
-                            + conditionName, true);
-                } else {
-                    ExploreCondition<Rule> explCond =
-                        new IsRuleApplicableCondition();
-                    explCond.setCondition(condition);
-                    explCond.setNegated(exploreParser.isNegated());
-                    ((ConditionalScenario<Rule>) result).setCondition(explCond,
-                        conditionName);
-                }
-            }
-        } else if (result instanceof ControlledScenario) {
-            ((ControlledScenario) result).setProgram(
-                exploreParser.getProgram().getRules(getGrammar()), true);
-        }*/
-
-        return null;
     }
 
     /**
@@ -1378,276 +1311,6 @@ public class Generator extends CommandLineTool {
             throw new IllegalArgumentException("'" + parameter
                 + "' is not a legal value for the deprecated -x option.");
         }
-    }
-
-    /**
-     * Action class that can parse a string into an exploration strategy and its
-     * (conditional) parameters.
-     */
-    public static class ExploreStrategyParser {
-        /** Text that separates the condition from the strategy name. */
-        static public final String CONDITION_SEPARATOR = ":";
-
-        /** Condition negator. */
-        static public final String NEGATION = "!";
-
-        /**
-         * Constructs a parser that can recognise all implemented exploration
-         * strategies.
-         */
-        public ExploreStrategyParser(boolean closeFast) {
-            addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new DFSStrategy(), "Depth first full exploration.", "barbed"));
-            addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new BFSStrategy(), "Breadth first full exploration.",
-                "branching"));
-            addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new LinearStrategy(),
-                "Explores the first successor of each state until a final state or a loop is reached.",
-                "linear"));
-            addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new RandomLinearStrategy(true),
-                "Explores a random successor of each state until a final state or a loop is reached.",
-                "random"));
-            addStrategy(GeneratorScenarioFactory.getScenarioHandler(
-                new BFSStrategy(),
-                "Breadth first full exploration (same as branching)", "full"));
-            addStrategy(GeneratorScenarioFactory.getConditionalScenario(
-                new ConditionalBFSStrategy(),
-                Integer.class,
-                "Only explores states where the node count does not exceed a given bound.",
-                "node-bounded"));
-            addStrategy(GeneratorScenarioFactory.getConditionalScenario(
-                new ConditionalBFSStrategy(),
-                Map.class,
-                "Only explores states where the edge counts do not exceed given bounds.",
-                "edge-bounded"));
-            addStrategy(GeneratorScenarioFactory.getConditionalScenario(
-                new ConditionalBFSStrategy(), Rule.class,
-                "Explores all states in which the (negated) condition holds.",
-                "bounded"));
-            addStrategy(GeneratorScenarioFactory.getConditionalScenario(
-                new BFSStrategy(),
-                Rule.class,
-                new InvariantViolatedAcceptor(new Result(1)),
-                "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.",
-                "invariant"));
-            addStrategy(GeneratorScenarioFactory.getBoundedModelCheckingScenario(
-                new BoundedNestedDFSStrategy(),
-                "Bounded model checking exploration", "model-checking"));
-            addStrategy(new ControlledScenario(null, "controlled",
-                "Performs a depth-first search controlled by a sequence of rules."));
-        }
-
-        /**
-         * Returns the exploration strategy determined by parsing.
-         * @see #parse(String)
-         */
-        public Scenario getStrategy() {
-            return this.parsedStrategy;
-        }
-
-        /**
-         * Returns the condition determined by parsing, in case the strategy is
-         * conditional. Returns <tt>null</tt> if no condition was specified.
-         * @see #parse(String)
-         * @see ConditionalAcceptor#setCondition(ExploreCondition)
-         */
-        public String getCondition() {
-            return this.parsedCondition;
-        }
-
-        /**
-         * Indicates if the condition was negated, in case of a conditional
-         * strategy. Returns <tt>false</tt> if no condition was specified.
-         * @see #parse(String)
-         * @see #getCondition()
-         */
-        public boolean isNegated() {
-            return this.parsedNegated;
-        }
-
-        /**
-         * Returns a list of rule names in case the strategy is a
-         * {@link ControlledScenario}
-         */
-        public RuleList getProgram() {
-            return this.parsedProgram;
-        }
-
-        /**
-         * Returns a list of descriptions for the strategies recognised by this
-         * parser, indicating the supported string format.
-         */
-        public List<String> getStrategyDescriptions() {
-            List<String> result = new ArrayList<String>();
-            for (Map.Entry<String,Scenario> strategyEntry : this.strategies.entrySet()) {
-                Scenario strategy = strategyEntry.getValue();
-                String name = strategyEntry.getKey();
-                if (strategy instanceof ConditionalScenario<?>) {
-                    ConditionalScenario<?> condStrategy =
-                        (ConditionalScenario<?>) strategy;
-                    if (condStrategy.getConditionType().equals(Integer.class)) {
-                        name += CONDITION_SEPARATOR + "<bound>";
-                    } else if (condStrategy.getConditionType().equals(
-                        Rule.class)) {
-                        name +=
-                            CONDITION_SEPARATOR + "[" + NEGATION
-                                + "]<condition>";
-                    } else if (condStrategy.getConditionType().equals(Map.class)) {
-                        name +=
-                            CONDITION_SEPARATOR + "<key=value>{,<key=value>}*";
-                    } else {
-                        assert false : "Unknown condition type "
-                            + condStrategy.getConditionType();
-                    }
-                }
-                result.add(name + " - " + strategy.getDescription());
-            }
-            return result;
-        }
-
-        /**
-         * Parses a given string specifying an exploration strategy. The result
-         * of parsing can be queried by {@link #getStrategy()},
-         * {@link #getCondition()} and {@link #isNegated()}.
-         * @param parameter string from which the strategy is to be determined.
-         * @throws IllegalArgumentException if <tt>parameter</tt> is not
-         *         formatted correctly
-         */
-        @SuppressWarnings("unchecked")
-        public void parse(String parameter) throws IllegalArgumentException {
-            this.parsedStrategy = null;
-            Iterator<Map.Entry<String,Scenario>> strategyIter =
-                this.strategies.entrySet().iterator();
-            while (this.parsedStrategy == null && strategyIter.hasNext()) {
-                Map.Entry<String,Scenario> strategyEntry = strategyIter.next();
-                String strategyName = strategyEntry.getKey();
-                if (parameter.startsWith(strategyName)) {
-                    this.parsedStrategy = strategyEntry.getValue();
-                    if (parameter.startsWith(strategyName + CONDITION_SEPARATOR)) {
-                        parameter =
-                            parameter.substring(strategyName.length() + 1);
-                    } else {
-                        parameter = "";
-                    }
-                    if (this.parsedStrategy instanceof ConditionalScenario) {
-                        ConditionalScenario<?> condStrategy =
-                            (ConditionalScenario<?>) this.parsedStrategy;
-                        if (condStrategy.getConditionType().equals(
-                            Integer.class)) {
-                            try {
-                                int bound = Integer.parseInt(parameter);
-                                ExploreCondition<Integer> explCond =
-                                    new NodeBoundCondition();
-                                explCond.setCondition(bound);
-                                ((ConditionalScenario<Integer>) condStrategy).setCondition(
-                                    explCond, "" + bound);
-                            } catch (NumberFormatException exc) {
-                                throw new IllegalArgumentException(parameter
-                                    + " is not a valid node bound");
-                            }
-                        } else if (condStrategy.getConditionType().equals(
-                            Rule.class)) {
-                            if (parameter.length() == 0) {
-                                throw new IllegalArgumentException("Strategy "
-                                    + parameter
-                                    + " does not specify condition; syntax: '"
-                                    + strategyName + CONDITION_SEPARATOR
-                                    + "<condition rule>'");
-                            }
-                            this.parsedNegated = parameter.startsWith(NEGATION);
-                            if (this.parsedNegated) {
-                                this.parsedCondition = parameter.substring(1);
-                            } else {
-                                this.parsedCondition = parameter;
-                            }
-                        } else if (condStrategy.getConditionType().equals(
-                            Map.class)) {
-                            String[] bounds = parameter.split(",");
-                            Map<Label,Integer> conditions =
-                                new HashMap<Label,Integer>();
-                            for (String element : bounds) {
-                                String[] keyValue = element.split("=");
-                                if (keyValue.length != 2) {
-                                    throw new IllegalArgumentException(
-                                        "Edge bounds '"
-                                            + element
-                                            + "' should be formatted as 'key=value'");
-                                }
-                                Label key =
-                                    DefaultLabel.createLabel(keyValue[0]);
-                                try {
-                                    int value = Integer.parseInt(keyValue[1]);
-                                    conditions.put(key, value);
-                                } catch (NumberFormatException exc) {
-                                    throw new IllegalArgumentException(
-                                        "Value '" + keyValue[1]
-                                            + "' in edge bounds '" + element
-                                            + "' is not a number");
-                                }
-                            }
-                            ExploreCondition<Map<Label,Integer>> explCond =
-                                new EdgeBoundCondition();
-                            explCond.setCondition(conditions);
-                            ((ConditionalScenario<Map<Label,Integer>>) condStrategy).setCondition(
-                                explCond, "");
-                        } else {
-                            assert false : "Unknown condition type "
-                                + condStrategy.getConditionType();
-                        }
-
-                    } else if (this.parsedStrategy instanceof ControlledScenario) {
-                        try {
-                            this.parsedProgram =
-                                new RuleList(new File(parameter));
-                        } catch (IOException exc) {
-                            throw new IllegalArgumentException(exc.getMessage());
-                        }
-                    }
-                }
-            }
-            if (this.parsedStrategy == null) {
-                throw new IllegalArgumentException(parameter
-                    + " is not a supported exploration strategy");
-            }
-        }
-
-        /** Returns the strategy corresponding to a given strategy name. */
-        protected Scenario getStrategy(String name) {
-            return this.strategies.get(name);
-        }
-
-        /**
-         * Adds a given strategy to the available strategies.
-         */
-        protected void addStrategy(Scenario strategy) {
-            this.strategies.put(strategy.getName(), strategy);
-            this.maxNameLength =
-                Math.max(this.maxNameLength, strategy.getName().length());
-        }
-
-        /** Length of the longest strategy name. */
-        private int maxNameLength = 0;
-
-        /**
-         * A mapping from strategy names (as appearing in the options) to
-         * strategies.
-         */
-        private final Map<String,Scenario> strategies =
-            new TreeMap<String,Scenario>();
-
-        /** The strategy determined by the parser. */
-        private Scenario parsedStrategy;
-
-        /** String description of the condition for a conditional strategy. */
-        private String parsedCondition;
-
-        /** Switch indicating if the condition was negated. */
-        private boolean parsedNegated;
-
-        /** Switch indicating if the condition was negated. */
-        private RuleList parsedProgram;
     }
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
