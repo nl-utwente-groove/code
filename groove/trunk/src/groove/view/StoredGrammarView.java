@@ -682,7 +682,7 @@ public class StoredGrammarView implements GrammarView, Observer {
          * @return the associated view on the given name.
          *         May be <code>null</code>.
          */
-        public TypeView getTypeView(String typeName) {
+        public TypeView getTypeViewByName(String typeName) {
             return this.typeViewMap.get(typeName);
         }
 
