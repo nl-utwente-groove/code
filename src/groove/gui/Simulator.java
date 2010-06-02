@@ -110,7 +110,7 @@ import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
-import groove.view.TypeView;
+import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -292,8 +292,9 @@ public class Simulator {
     }
 
     /** Returns the type graph associated with the grammar, if any. */
-    private TypeView getTypeView() {
-        return getGrammarView() == null ? null : getGrammarView().getTypeView();
+    private TypeViewList getTypeView() {
+        return getGrammarView() == null ? null
+                : getGrammarView().getTypeViews();
     }
 
     /**
@@ -2180,8 +2181,8 @@ public class Simulator {
 
         // IOVKA change to activate abstract simulation
         // EDUARDO Uncommented to test abstraction.
-        result.add(new JMenuItem(getStartAbstrSimulationAction()));
-        result.add(new JMenuItem(getAbstrExplorationAction()));
+        // result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        // result.add(new JMenuItem(getAbstrExplorationAction()));
 
         return result;
     }

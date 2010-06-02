@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.view.TypeView;
+import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Container;
@@ -49,7 +49,7 @@ abstract public class EditorDialog {
      * @throws HeadlessException
      */
     public EditorDialog(JFrame owner, Options options, Graph graph,
-            TypeView typeView) throws HeadlessException {
+            TypeViewList typeView) throws HeadlessException {
         this.parent = owner;
         this.oldJMenuBar = this.parent.getJMenuBar();
         this.oldContentPane = this.parent.getContentPane();

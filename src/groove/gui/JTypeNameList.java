@@ -171,14 +171,12 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     // Therefore, we have to override the method and do it ourselves...
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        // Get the information on the font the is being used on the list.
-        FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
         // The longest text width in the list.
         int maxTextWidth = 0;
         for (ListItem item : this.model.items) {
             String text = item.dataItem;
             // Calculate the size of the text.
-            int textWidth = fontMetrics.stringWidth(text);
+            int textWidth = this.getStringWidth(text);
             if (textWidth > maxTextWidth) {
                 maxTextWidth = textWidth;
             }
@@ -189,6 +187,11 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         int visibleColumnCount = this.model.getSize();
         int width = (visibleColumnCount * maxCellWidth);
         return new Dimension(width, LIST_HEIGHT);
+    }
+
+    @Override
+    public CheckBoxListModel getModel() {
+        return this.model;
     }
 
     // ------------------------------------------------------------------------
@@ -207,9 +210,10 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         return result;
     }
 
-    @Override
-    public CheckBoxListModel getModel() {
-        return this.model;
+    private int getStringWidth(String text) {
+        // Get the information on the font the is being used on the list.
+        FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
+        return fontMetrics.stringWidth(text);
     }
 
     // ------------------------------------------------------------------------
@@ -378,11 +382,28 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         /**
          * Removes the given type name from the list.
          * @param typeName the name of the graph to remove.
+         * @param saveProp flag indicating if the properties should be saved.
          */
-        public void removeType(String typeName) {
+        public void removeType(String typeName, boolean saveProp) {
             int index = this.getIndexByName(typeName);
             if (index >= 0) {
                 this.items.remove(index);
+                if (saveProp) {
+                    JTypeNameList.this.panel.doSaveProperties();
+                }
+            }
+        }
+
+        /**
+         * Adds a new type name to the list.
+         * @param typeName the name of the type graph.
+         * @param checked flag indicating if the item should start checked.
+         * @param saveProp flag indicating if the properties should be saved.
+         */
+        public void addType(String typeName, boolean checked, boolean saveProp) {
+            ListItem item = new ListItem(typeName, checked);
+            this.items.add(item);
+            if (saveProp) {
                 JTypeNameList.this.panel.doSaveProperties();
             }
         }
@@ -420,6 +441,19 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             int index = this.getIndexByName(typeName);
             if (index >= 0) {
                 JTypeNameList.this.setSelectedIndex(index);
+            }
+        }
+
+        /**
+         * Sets the check box of the item.
+         * @param typeName the type graph name.
+         * @param checked flag to indicate if the check box is ticked.
+         */
+        public void checkType(String typeName, boolean checked) {
+            ListItem item = this.getElementByName(typeName);
+            if (item != null) {
+                item.checked = checked;
+                JTypeNameList.this.panel.doSaveProperties();
             }
         }
 
@@ -527,6 +561,9 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 item = (ListItem) value;
                 this.containerBox = Box.createHorizontalBox();
                 this.containerBox.add(new JLabel(item.dataItem));
+                int width = getStringWidth(item.dataItem);
+                int height = this.containerBox.getHeight();
+                this.containerBox.setSize(width, height);
             } else {
                 this.containerBox = null;
             }
