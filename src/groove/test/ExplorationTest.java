@@ -17,19 +17,13 @@
 
 package groove.test;
 
-import groove.explore.ConditionalScenario;
-import groove.explore.GeneratorScenarioFactory;
-import groove.explore.Scenario;
-import groove.explore.result.ExploreCondition;
-import groove.explore.result.IsRuleApplicableCondition;
-import groove.explore.strategy.BFSStrategy;
+import groove.explore.Exploration;
+import groove.explore.StrategyEnumerator;
+import groove.explore.encode.Serialized;
 import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
-import groove.trans.Rule;
-import groove.trans.RuleName;
-import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
@@ -117,18 +111,18 @@ public class ExplorationTest extends TestCase {
     /** Tests the append sample. */
     public void testAppend() {
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
-        testExploration("append.gps", "append-2-list-5", "full", 145, 256);
-        testExploration("append.gps", "append-2-list-5", "branching", 145, 256);
-        testExploration("append.gps", "append-2-list-5", "node-bounded:20", 62,
-            88, 13);
-        testExploration("append.gps", "append-2-list-5",
-            "edge-bounded:append=6", 79, 108, 12);
+        testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
+        testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
+        testExploration("append.gps", "append-2-list-5", "cnbound:20", 62, 88,
+            13);
+        testExploration("append.gps", "append-2-list-5", "cebound:append>6",
+            79, 108, 12);
     }
 
     /** Tests the ferryman sample. */
     public void testFerryman() {
-        testExploration("ferryman.gps", "start", "full", 114, 198);
-        testExploration("ferryman.gps", "start", "bounded:!eat", 40, 51);
+        testExploration("ferryman.gps", "start", "bfs", 114, 198);
+        testExploration("ferryman.gps", "start", "crule:eat", 40, 51);
     }
 
     /** Tests the mergers sample. */
@@ -149,14 +143,14 @@ public class ExplorationTest extends TestCase {
 
     /** Tests the priorities sample. */
     public void testPriorities() {
-        testExploration("priorities.gps", "start", "full", 13, 34);
-        testExploration("priorities.gps", "start", "branching", 13, 34);
+        testExploration("priorities.gps", "start", "bfs", 13, 34);
+        testExploration("priorities.gps", "start", "bfs", 13, 34);
         testExploration("priorities.gps", "start", "linear", 8, 8);
     }
 
     /** Tests the variables sample. */
     public void testVariables() {
-        testExploration("variables.gps", "start-smaller", "full", 61, 176);
+        testExploration("variables.gps", "start-smaller", "bfs", 61, 176);
     }
 
     /** Tests the counting sample. */
@@ -302,37 +296,23 @@ public class ExplorationTest extends TestCase {
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    @SuppressWarnings("unchecked")
     protected GTS testExploration(GrammarView view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount, boolean save) {
         try {
             GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
-            Scenario scenario;
-            if (strategyDescr != null) {
-                this.parser.parse(strategyDescr);
-                scenario = this.parser.getStrategy();
-                if (this.parser.getCondition() != null) {
-                    Rule conditionRule =
-                        gg.getRule(new RuleName(this.parser.getCondition()));
-                    assertNotNull(conditionRule);
-                    // the scenario handler must then be conditional
-                    ExploreCondition<Rule> explCond =
-                        new IsRuleApplicableCondition();
-                    explCond.setCondition(conditionRule);
-                    explCond.setNegated(this.parser.isNegated());
-                    ((ConditionalScenario<Rule>) scenario).setCondition(
-                        explCond, this.parser.getCondition());
-                }
+
+            Exploration exploration;
+            if (strategyDescr == null) {
+                exploration = new Exploration();
             } else {
-                scenario =
-                    GeneratorScenarioFactory.getScenarioHandler(
-                        new BFSStrategy(), "Breadth first full exploration.",
-                        "full");
+                Serialized strategy =
+                    new StrategyEnumerator().parseCommandline(strategyDescr);
+                Serialized acceptor = new Serialized("final");
+                exploration = new Exploration(strategy, acceptor, 0);
             }
-            scenario.prepare(lts);
-            scenario.play();
-            assertFalse(scenario.isInterrupted());
+            exploration.play(lts, null);
+            assertFalse(exploration.isInterrupted());
 
             if (save) {
                 try {
@@ -477,10 +457,4 @@ public class ExplorationTest extends TestCase {
             throw new RuntimeException(exc);
         }
     }
-
-    /**
-     * Parser for the exploration strategies.
-     */
-    private final Generator.ExploreStrategyParser parser =
-        new Generator.ExploreStrategyParser(false);
 }
