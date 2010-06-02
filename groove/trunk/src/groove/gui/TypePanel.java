@@ -21,6 +21,7 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
+import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.TypeJGraph;
@@ -182,9 +183,10 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                     if (typeName != null) {
                         AspectGraph newType = getAspectGraph();
                         GraphInfo.setName(newType, typeName);
-                        setSelectedType(typeName);
-                        if (!getSimulator().doAddType(newType)) {
-                            setSelectedType(oldSelectedType);
+                        getSimulator().doAddType(newType);
+                        if (!oldSelectedType.equals(typeName)) {
+                            getNameListModel().addType(typeName, false, false);
+                            getNameListModel().selectMostAppropriateType();
                         }
                     }
                 }
@@ -196,18 +198,13 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * Saves the current checked type graphs as a list in the system properties.
      */
     public void doSaveProperties() {
-        List<String> checkedTypes = getNameList().getModel().getCheckedTypes();
+        List<String> checkedTypes = getNameListModel().getCheckedTypes();
         try {
             getGrammarView().getTypeViews(checkedTypes).toModel();
             SystemProperties oldProperties = getGrammarView().getProperties();
             SystemProperties newProperties = oldProperties.clone();
             newProperties.setTypeNames(checkedTypes);
             getSimulator().doSaveProperties(newProperties);
-        } catch (IllegalArgumentException e) {
-            getSimulator().showErrorDialog("Illegal type graph composition", e);
-            SystemProperties oldProperties = getGrammarView().getProperties();
-            this.getNameList().getModel().setCheckedTypes(
-                oldProperties.getTypeNames());
         } catch (FormatException e) {
             // Does nothing.
         }
@@ -229,7 +226,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      *        in the type graph names of the current grammar.
      */
     public void setSelectedType(String name) {
-        this.getNameList().getModel().setSelectedType(name);
+        this.getNameListModel().setSelectedType(name);
     }
 
     /**
@@ -237,7 +234,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * @return either <code>null</code> or an existing type graph name
      */
     private final String getSelectedType() {
-        return this.getNameList().getModel().getSelectedType();
+        return this.getNameListModel().getSelectedType();
     }
 
     /** Convenience method to indicate if a type graph name has been selected. */
@@ -292,7 +289,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         if (newModel == AspectJModel.EMPTY_ASPECT_JMODEL) {
             setEnabled(false);
         } else {
-            setEnabled(getNameList().getModel().isSelectedChecked());
+            setEnabled(getNameListModel().isSelectedChecked());
         }
         refreshActions();
         refreshStatus();
@@ -344,6 +341,10 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             this.nameList = new JTypeNameList(this);
         }
         return this.nameList;
+    }
+
+    private CheckBoxListModel getNameListModel() {
+        return this.getNameList().getModel();
     }
 
     /** Name list of type graphs. */
@@ -413,12 +414,9 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 TypeView oldTypeView = getGrammarView().getTypeView(oldName);
                 AspectGraph newType = oldTypeView.getView().clone();
                 GraphInfo.setName(newType, newName);
-                // set the selected type, so that the next refresh 
-                // will actually change the display
-                setSelectedType(newName);
-                if (!getSimulator().doAddType(newType)) {
-                    setSelectedType(oldTypeView.getName());
-                }
+                getSimulator().doAddType(newType);
+                getNameListModel().addType(newName, false, false);
+                getNameListModel().selectMostAppropriateType();
             }
         }
 
@@ -491,16 +489,8 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             String typeName = getSelectedType();
             if (getSimulator().confirmBehaviour(Options.DELETE_TYPE_OPTION,
                 String.format("Delete type graph '%s'?", typeName))) {
-                int itemNr = getNameList().getSelectedIndex() + 1;
-                if (itemNr == getNameList().getModel().getSize()) {
-                    itemNr -= 2;
-                }
-                String newName =
-                    itemNr >= 0
-                            ? getNameList().getModel().getElementAt(itemNr).dataItem
-                            : null;
-                setSelectedType(newName);
-                getNameList().getModel().removeType(typeName);
+                getNameListModel().selectMostAppropriateType();
+                getNameListModel().removeType(typeName, true);
                 getSimulator().doDeleteType(typeName);
             }
         }
@@ -535,13 +525,13 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         }
 
         public void actionPerformed(ActionEvent arg0) {
-            getNameList().getModel().uncheckAll();
+            getNameListModel().uncheckAll();
             doSaveProperties();
         }
 
         @Override
         public void refresh() {
-            setEnabled(!getNameList().getModel().isAllUnchecked());
+            setEnabled(!getNameListModel().isAllUnchecked());
         }
     }
 
@@ -566,13 +556,13 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         }
 
         public void actionPerformed(ActionEvent evt) {
-            getNameList().getModel().checkAll();
+            getNameListModel().checkAll();
             doSaveProperties();
         }
 
         @Override
         public void refresh() {
-            setEnabled(!getNameList().getModel().isAllChecked());
+            setEnabled(!getNameListModel().isAllChecked());
         }
     }
 
@@ -676,9 +666,12 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                     oldName, false);
             if (newName != null && !oldName.equals(newName)) {
                 TypeView type = getGrammarView().getTypeView(oldName);
-                setSelectedType(newName);
-                if (!getSimulator().doRenameType(type.getView(), newName)) {
-                    setSelectedType(oldName);
+                boolean checked =
+                    getNameListModel().getElementByName(oldName).checked;
+                getNameListModel().removeType(oldName, true);
+                if (getSimulator().doRenameType(type.getView(), newName)) {
+                    getNameListModel().checkType(newName, checked);
+                    getNameListModel().setSelectedType(newName);
                 }
             }
         }

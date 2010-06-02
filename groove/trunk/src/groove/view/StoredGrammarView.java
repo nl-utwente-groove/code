@@ -363,6 +363,14 @@ public class StoredGrammarView implements GrammarView, Observer {
                 }
             }
         }
+        // We have constructed all views of the type graphs.
+        // Make the composition now.
+        try {
+            this.getTypeViews().toModel();
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
+
         // set rules
         for (RuleName ruleName : getRuleNames()) {
             RuleView ruleView = getRuleView(ruleName);
@@ -668,6 +676,23 @@ public class StoredGrammarView implements GrammarView, Observer {
             return this.errors;
         }
 
+        /**
+         * Looks into the type view map.
+         * @param typeName the type graph name to look.
+         * @return the associated view on the given name.
+         *         May be <code>null</code>.
+         */
+        public TypeView getTypeView(String typeName) {
+            return this.typeViewMap.get(typeName);
+        }
+
+        /**
+         * @return an unmodifiable map from type names to views.
+         */
+        public Map<String,TypeView> getTypeViewMap() {
+            return Collections.unmodifiableMap(this.typeViewMap);
+        }
+
         /** Constructs the model and associated data structures from the view. */
         private void initialise() {
             // first test if there is something to be done
@@ -687,6 +712,8 @@ public class StoredGrammarView implements GrammarView, Observer {
                         this.model.getLabelStore().add(type.getLabelStore());
                     } catch (FormatException e) {
                         this.errors.addAll(e.getErrors());
+                    } catch (IllegalArgumentException e) {
+                        this.errors.add(new FormatError(e.getMessage()));
                     }
                 }
                 if (this.errors.isEmpty()) {

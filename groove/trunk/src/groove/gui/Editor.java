@@ -25,6 +25,7 @@ import groove.graph.TypeGraph;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
+import groove.gui.dialog.SingleListDialog;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
@@ -44,8 +45,8 @@ import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
-import groove.view.TypeView;
 import groove.view.View;
+import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -198,13 +199,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Sets the type graph for this editor. */
-    public void setTypeView(TypeView typeView) {
+    public void setTypeView(TypeViewList typeView) {
         this.type = null;
-        this.typeView = null;
+        this.typeViewList = null;
         if (typeView != null) {
             try {
                 this.type = typeView.toModel();
-                this.typeView = typeView;
+                this.typeViewList = typeView;
             } catch (FormatException e) {
                 // do nothing
             }
@@ -272,8 +273,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Returns the type graph set in this editor, if any. */
-    public TypeView getTypeView() {
-        return this.typeView;
+    public TypeViewList getTypeViewList() {
+        return this.typeViewList;
     }
 
     /** Returns the type graph set in this editor, if any. */
@@ -1185,6 +1186,21 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
     }
 
+    private String showTypeGraphSelectionDialog() {
+        List<String> typeNames =
+            new ArrayList<String>(
+                this.getTypeViewList().getTypeViewMap().keySet());
+        if (typeNames.size() == 1) {
+            return typeNames.iterator().next();
+        } else {
+            SingleListDialog dialog =
+                new SingleListDialog(this.getFrame(), "Type Graph selection",
+                    "Select the type graph you want to display:", typeNames,
+                    false);
+            return dialog.getSelectedItem();
+        }
+    }
+
     /**
      * Creates a preview of an aspect model, with properties. Returns a j-model
      * if the edited model should be replaced, <code>null</code> otherwise.
@@ -1402,7 +1418,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Index of the currently set editor role */
     private int roleIndex = -1;
     /** Type view against which the edited graph is checked. */
-    private TypeView typeView;
+    private TypeViewList typeViewList;
     /** Type against which the edited graph is checked. */
     private TypeGraph type;
     /**
@@ -1861,7 +1877,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Lazily creates and returns the action to save the current graph under a
-     * different name. AREND Arend, decide whether to include this action!
+     * different name.
      */
     @SuppressWarnings("all")
     private Action getSaveGraphAsAction() {
@@ -2059,7 +2075,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             if (getType() != null) {
-                showPreviewDialog(getTypeView(), Options.OK_BUTTON);
+                String typeName = showTypeGraphSelectionDialog();
+                showPreviewDialog(getTypeViewList().getTypeView(typeName),
+                    Options.OK_BUTTON);
             } else {
                 super.actionPerformed(evt);
                 if (!setRole(TYPE_INDEX)) {
@@ -2093,7 +2111,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            showPreviewDialog(getTypeView(), Options.OK_BUTTON);
+            String typeName = showTypeGraphSelectionDialog();
+            showPreviewDialog(getTypeViewList().getTypeView(typeName),
+                Options.OK_BUTTON);
         }
     }
 
