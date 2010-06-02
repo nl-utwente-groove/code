@@ -138,8 +138,7 @@ public class Generator extends CommandLineTool {
 
     private final FinalSaveOption finalSaveOption;
 
-    private final EmptyCommandLineOption exportSimulationOption;
-    private final ExportSimulationPathOption exportSimulationPathOption;
+    private final ExportSimulationOption exportSimulationOption;
     private final ExportSimulationFlagsOption exportSimulationFlagsOption;
 
     /**
@@ -169,10 +168,7 @@ public class Generator extends CommandLineTool {
 
         this.finalSaveOption = new FinalSaveOption();
 
-        this.exportSimulationOption =
-            new EmptyCommandLineOption("e",
-                "Export the simulation to the 'export' subpath of the grammar");
-        this.exportSimulationPathOption = new ExportSimulationPathOption();
+        this.exportSimulationOption = new ExportSimulationOption();
         this.exportSimulationFlagsOption = new ExportSimulationFlagsOption();
 
         addOption(this.strategyOption);
@@ -181,7 +177,6 @@ public class Generator extends CommandLineTool {
         addOption(this.scenarioOption);
         addOption(this.finalSaveOption);
         addOption(this.exportSimulationOption);
-        addOption(this.exportSimulationPathOption);
         addOption(this.exportSimulationFlagsOption);
 
         // clear the static field gts
@@ -213,21 +208,14 @@ public class Generator extends CommandLineTool {
      * specified. Aborts with an error message otherwise.
      */
     private void verifyExportOptions() {
-        // Local variables for the existence of the -e, -ep and -ef options.
+        // Local variables for the existence of the -e and -ef options.
         boolean e = isOptionActive(this.exportSimulationOption);
-        boolean ep = isOptionActive(this.exportSimulationPathOption);
         boolean ef = isOptionActive(this.exportSimulationFlagsOption);
 
-        // Verify that -ef only occurs if either e or ep occurs.
-        if (ef && (!e && !ep)) {
+        // Verify that -ef only occurs if -e also occurs.
+        if (ef && !e) {
             printError("The -ef option may only be specified in conjunction "
-                + "with either the -e or the -ep option.", false);
-        }
-
-        // Verify that -e and -ep are not both specified.
-        if (e && ep) {
-            printError("The -e and -ep options may not both be specified.",
-                false);
+                + "with the -e option.", false);
         }
     }
 
@@ -550,22 +538,15 @@ public class Generator extends CommandLineTool {
     protected void exportSimulation() {
         // Local variables for the related active command line options. 
         boolean e = isOptionActive(this.exportSimulationOption);
-        boolean ep = isOptionActive(this.exportSimulationPathOption);
         boolean ef = isOptionActive(this.exportSimulationFlagsOption);
 
-        // Do nothing if -e and -ep are both absent.
-        if (!e && !ep) {
+        // Do nothing if -e was not specified.
+        if (!e) {
             return;
         }
 
-        // Compute the path to export to, which is either the grammar path (-e)
-        // or the user specified path (-ep).
-        String path;
-        if (e) {
-            path = this.ruleSystemFilter.addExtension(this.grammarLocation);
-        } else {
-            path = this.exportSimulationPathOption.getValue();
-        }
+        // Compute the export path, which is the argument of the -e option.
+        String path = this.exportSimulationOption.getValue();
 
         // Compute the export simulation flags.
         ExportSimulationFlags flags;
@@ -1025,26 +1006,27 @@ public class Generator extends CommandLineTool {
 
     /**
      * The <code>ExportSimulationPathOption</code> is the command line option
-     * to export the simulation to an explicitly specified path. It is
+     * to export the simulation to an explicitly specified absolute path. It is
      * implemented by means <code>StoreCommandLineOption</code> that stores a
      * <code>String</code> with the path.
      * 
      * @see StoreCommandLineOption
      */
-    protected class ExportSimulationPathOption extends
+    protected class ExportSimulationOption extends
             StoreCommandLineOption<String> {
 
         /** 
-         * Default constructor. Defines '-ep' to be the name of the command
+         * Default constructor. Defines '-e' to be the name of the command
          * line option, and 'path' to be the name of its argument.
          */
-        public ExportSimulationPathOption() {
-            super("ep", "path");
+        public ExportSimulationOption() {
+            super("e", "path");
         }
 
         @Override
         public String[] getDescription() {
-            return new String[] {"Export the simulation to the specified path"};
+            return new String[] {"Export the simulation to the specified "
+                + "(absolute) path"};
         }
 
         @Override
