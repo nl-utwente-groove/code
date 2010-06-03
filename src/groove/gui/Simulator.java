@@ -2177,7 +2177,7 @@ public class Simulator {
             result.add(getDefaultExplorationAction());
         result.add(getExplorationDialogAction());
 
-        result.addSeparator();
+        //result.addSeparator();
 
         // IOVKA change to activate abstract simulation
         // EDUARDO Uncommented to test abstraction.
