@@ -53,7 +53,6 @@ import java.util.Map;
  * With this enumeration, it is possible to create an editor for strategies
  * (inherited method createEditor, stored results as a Serialized) and to
  * parse a strategy from a Serialized (inherited method parse).
- * TODO: Also use this enumerator in the Generator.
  * <!=========================================================================>
  * @author Maarten de Mol
  */
