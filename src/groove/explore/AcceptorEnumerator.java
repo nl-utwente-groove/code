@@ -42,7 +42,6 @@ import groove.trans.Rule;
  * With this enumeration, it is possible to create an editor for acceptors
  * (inherited method createEditor, stored results as a Serialized) and to
  * parse an acceptor from a Serialized (inherited method parse).
- * TODO: Also use this enumerator in the Generator.
  * <!=========================================================================>
  * @author Maarten de Mol
  */
