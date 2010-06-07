@@ -386,14 +386,11 @@ public class StringDialog {
 
         @Override
         public void windowClosed(WindowEvent e) {
-            System.out.printf("Source %s, window %s%n", e.getSource(),
-                e.getWindow());
+            // do nothing
         }
 
         @Override
         public void windowClosing(WindowEvent e) {
-            System.out.printf("Source %s, window %s%n", e.getSource(),
-                e.getWindow());
             if (setResult(null)) {
                 StringDialog.this.dialog.setVisible(false);
             }
