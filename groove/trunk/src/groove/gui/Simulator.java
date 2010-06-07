@@ -68,11 +68,11 @@ import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExportDialog;
-import groove.gui.dialog.FormulaDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
+import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionErrorDialog;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
@@ -692,9 +692,7 @@ public class Simulator {
          * the user to enter a property (via a getFormulaDialog).
          */
         if (scenario instanceof ModelCheckingScenario) {
-            FormulaDialog dialog = getFormulaDialog();
-            dialog.showDialog(getFrame());
-            String property = dialog.getProperty();
+            String property = getFormulaDialog().showDialog(getFrame());
             if (property == null) {
                 return;
             }
@@ -2314,9 +2312,9 @@ public class Simulator {
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */
-    public FormulaDialog getFormulaDialog() {
+    public StringDialog getFormulaDialog() {
         if (this.formulaDialog == null) {
-            this.formulaDialog = new FormulaDialog();
+            this.formulaDialog = new StringDialog("Enter the Temporal Formula");
         }
         return this.formulaDialog;
     }
@@ -2843,7 +2841,7 @@ public class Simulator {
     /**
      * Dialog for entering temporal formulae.
      */
-    private FormulaDialog formulaDialog;
+    private StringDialog formulaDialog;
 
     /**
      * Graph exporter.
@@ -5158,9 +5156,7 @@ public class Simulator {
                         "Open states", JOptionPane.YES_NO_OPTION);
             }
             if (goOn == JOptionPane.YES_OPTION) {
-                FormulaDialog dialog = getFormulaDialog();
-                dialog.showDialog(getFrame());
-                String property = dialog.getProperty();
+                String property = getFormulaDialog().showDialog(getFrame());
                 if (property != null) {
                     doVerifyProperty(property);
                 }

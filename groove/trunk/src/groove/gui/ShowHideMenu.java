@@ -23,6 +23,7 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphListener;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.gui.dialog.StringDialog;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
@@ -682,8 +683,7 @@ public class ShowHideMenu extends JMenu {
         public void actionPerformed(ActionEvent evt) {
             GraphShape graph =
                 ((GraphJModel) this.jgraph.getModel()).getGraph();
-            String exprText =
-                JOptionPane.showInputDialog("Regular Expression: ");
+            String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
                     RegExpr expr = RegExpr.parse(exprText);
@@ -736,6 +736,9 @@ public class ShowHideMenu extends JMenu {
          * calculator.
          */
         private Relation currentRelation;
+
+        private static StringDialog exprDialog =
+            new StringDialog("Regular Expression: ");
     }
 
     /**

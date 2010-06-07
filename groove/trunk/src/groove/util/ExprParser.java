@@ -558,7 +558,8 @@ public class ExprParser {
      */
     static public String toUnquoted(String string, char quote)
         throws FormatException {
-        boolean startsWithQuote = string.charAt(0) == quote;
+        boolean startsWithQuote =
+            !string.isEmpty() && string.charAt(0) == quote;
         boolean endsWithQuote = false;
         char[] content = string.toCharArray();
         StringBuffer result = new StringBuffer();
