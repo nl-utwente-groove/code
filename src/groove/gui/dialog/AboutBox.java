@@ -88,8 +88,8 @@ public class AboutBox extends JDialog {
         result.append("Libraries used: \n* ");
         //        result.append(getCastorText());
         //        result.append("\n* ");
-        result.append(getXercesText());
-        result.append("\n* ");
+        //        result.append(getXercesText());
+        //        result.append("\n* ");
         result.append(getJGraphText());
         result.append("\n");
         return result.toString();
@@ -100,11 +100,11 @@ public class AboutBox extends JDialog {
     //    private String getCastorText() {
     //        return "Castor " + org.exolab.castor.util.Version.getBuildVersion();
     //    }
-
-    /** Returns a description of the Xerces component. */
-    private String getXercesText() {
-        return org.apache.xerces.impl.Version.getVersion();
-    }
+    //
+    //    /** Returns a description of the Xerces component. */
+    //    private String getXercesText() {
+    //        return org.apache.xerces.impl.Version.getVersion();
+    //    }
 
     /** Returns a description of the JGraph component. */
     private String getJGraphText() {

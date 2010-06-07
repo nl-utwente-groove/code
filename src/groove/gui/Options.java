@@ -17,6 +17,8 @@
 package groove.gui;
 
 import groove.gui.jgraph.JAttr;
+import groove.util.ExprParser;
+import groove.view.FormatException;
 
 import java.awt.Font;
 import java.awt.event.InputEvent;
@@ -634,8 +636,51 @@ public class Options {
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 
+    /** Returns the user preferences for a given key, as a list of Strings. */
+    public static String[] getUserPrefs(String key) {
+        String[] result = new String[0];
+        String storedValue = userPrefs.get(key, "");
+        try {
+            result = ExprParser.splitExpr(storedValue, ",");
+        } catch (FormatException e) {
+            assert false : String.format(
+                "Format error in user preference string %s: %s", storedValue,
+                e.getMessage());
+        }
+        for (int i = 0; i < result.length; i++) {
+            try {
+                String newValue = ExprParser.toUnquoted(result[i], '"');
+                assert result[i] != null : String.format(
+                    "User preference string %s is not correctly quoted",
+                    result[i]);
+                result[i] = newValue;
+            } catch (FormatException e) {
+                assert false : String.format(
+                    "Format error in user preference string %s: %s", result[i],
+                    e.getMessage());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Stores an array of string values as user preferences, under a given key.
+     * The preferences can later be retrieved by {@link #getUserPrefs(String)}.
+     */
+    public static void storeUserPrefs(String key, String[] values) {
+        StringBuilder result = new StringBuilder();
+        for (String value : values) {
+            if (result.length() > 0) {
+                result.append(",");
+            }
+            value = ExprParser.toQuoted(value, '"');
+            result.append(value);
+        }
+        userPrefs.put(key, result.toString());
+    }
+
     /** The persistently stored user preferences. */
-    static final Preferences userPrefs =
+    public static final Preferences userPrefs =
         Preferences.userNodeForPackage(Options.class);
 
     static {

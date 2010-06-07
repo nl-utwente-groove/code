@@ -79,7 +79,7 @@ public class Version {
      * A '+' sign at the end of the number indicates a development version.
      */
     // TODO: Change this to 4.0.0 when making the new release.
-    public static final String NUMBER = "3.3.1+";
+    public static final String NUMBER = "4.0.0";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.5";
