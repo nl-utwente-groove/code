@@ -203,7 +203,7 @@ MINUS : '-';
 QUOTE   : '"';
 BSLASH : '\\';
 
-IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
+IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
 //STRING : QUOTE (options {greedy=false;} : .)* QUOTE ;
 //{ setText(getText().substring(1, getText().length()-1)); };
 NUMBER : ('0'..'9')+;
