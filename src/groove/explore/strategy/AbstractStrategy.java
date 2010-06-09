@@ -49,6 +49,7 @@ public abstract class AbstractStrategy implements Strategy {
 
     public void prepare(GTS gts, GraphState state) {
         this.gts = gts;
+        this.applier = null;
         this.atState =
             this.startState = state == null ? gts.startState() : state;
     }
