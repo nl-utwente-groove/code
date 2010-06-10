@@ -404,7 +404,7 @@ public class SystemRecord implements NodeFactory {
      * {@link ConcurrentModificationException}s if iterators over the parent's
      * data structures are still alive.
      */
-    // EDUARDO: Switched to false to see if the performance is improved...
+    // EZ says: Switched to false to see if the performance is improved...
     private boolean copyGraphs = false;
 
     /**

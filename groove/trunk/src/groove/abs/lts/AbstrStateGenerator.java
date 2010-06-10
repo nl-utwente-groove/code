@@ -56,8 +56,6 @@ public class AbstrStateGenerator implements RuleEventApplier {
         GraphTransition result = null;
         Collection<AbstrGraph> transfResult = new ArrayList<AbstrGraph>();
 
-        // EDUARDO: Modified this part such that it actually performs the
-        // transformation.
         AbstrGraph host = (AbstrGraph) source.getGraph();
         RuleMatch match = event.getMatch(host);
         AbstrTransformer.transform(host, match,

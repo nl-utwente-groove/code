@@ -156,7 +156,7 @@ public class ShapeGraphState extends AbstractGraphState {
      * transitions.
      */
     public ShapeGraphState(AbstrGraph graph) {
-        // EDUARDO: We don't have a cache reference at the moment, so just pass
+        // We don't have a cache reference at the moment, so just pass
         // null to the super constructor.
         super(null);
         this.graph = graph;
@@ -181,8 +181,6 @@ public class ShapeGraphState extends AbstractGraphState {
      * be adapted if I want to group together graphs with compatible
      * multiplicities
      */
-    // EDUARDO: TODO: Perform the optimization described above, otherwise the
-    // state spaces get too big.
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ShapeGraphState)) {
