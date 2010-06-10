@@ -443,7 +443,6 @@ public class StoredGrammarView implements GrammarView, Observer {
         if (getStartGraphView() != null) {
             this.labelStore.addLabels(getStartGraphView().getLabels());
         }
-        // EDUARDO FIXME
         // add subtyping relation from properties to label store
         if (getTypeView() == null) {
             this.labelStore.addDirectSubtypes(getProperties().getSubtypes());

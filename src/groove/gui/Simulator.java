@@ -2175,12 +2175,11 @@ public class Simulator {
             result.add(getDefaultExplorationAction());
         result.add(getExplorationDialogAction());
 
-        //result.addSeparator();
-
         // IOVKA change to activate abstract simulation
-        // EDUARDO Uncommented to test abstraction.
-        // result.add(new JMenuItem(getStartAbstrSimulationAction()));
-        // result.add(new JMenuItem(getAbstrExplorationAction()));
+        // EZ says: Uncommented to test abstraction.
+        result.addSeparator();
+        result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        result.add(new JMenuItem(getAbstrExplorationAction()));
 
         return result;
     }
