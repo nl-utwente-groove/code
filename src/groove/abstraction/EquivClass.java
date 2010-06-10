@@ -16,8 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.Node;
-
 import java.util.HashSet;
 
 /**
@@ -25,6 +23,6 @@ import java.util.HashSet;
  * @author Eduardo Zambon
  * @version $Revision $
  */
-public class EquivClass<T extends Node> extends HashSet<T> {
+public class EquivClass<T> extends HashSet<T> {
     // Empty class.
 }

@@ -241,14 +241,44 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return equiv;
     }
 
+    /** EDUARDO */
+    public boolean areEquivalent(Edge e0, Edge e1) {
+        return e0.label().equals(e1.label())
+            && this.areEquivalent(e0.source(), e1.source())
+            && this.areEquivalent(e0.opposite(), e1.opposite());
+    }
+
+    /** EDUARDO */
+    public EquivClass<Edge> getEdgeEquivClass(Edge edge) {
+        EquivClass<Edge> ec = new EquivClass<Edge>();
+        ec.add(edge);
+        for (Edge e : this.graph.edgeSet()) {
+            if (areEquivalent(edge, e)) {
+                ec.add(e);
+            }
+        }
+        return ec;
+    }
+
+    /** EDUARDO */
+    public EquivRelation<Edge> getEdgesEquivRel() {
+        EquivRelation<Edge> er = new EquivRelation<Edge>();
+        for (Edge edge : this.graph.edgeSet()) {
+            EquivClass<Edge> ec = this.getEdgeEquivClass(edge);
+            er.add(ec);
+        }
+        return er;
+    }
+
     // ------------------------------------------------------------------------
-    // Test methods.
+    // Test methods
     // ------------------------------------------------------------------------
 
     private static void testLevelZeroEquiv() {
         File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-0.gst");
         try {
             Graph graph = Groove.loadGraph(file);
+            System.out.println(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
             System.out.println(gne);
             Node n0 = null, n1 = null, n4 = null;
@@ -276,6 +306,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-1.gst");
         try {
             Graph graph = Groove.loadGraph(file);
+            System.out.println(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
             System.out.println(gne);
             gne.refineEquivRelation();
@@ -292,6 +323,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-2.gst");
         try {
             Graph graph = Groove.loadGraph(file);
+            System.out.println(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
             System.out.println(gne);
             gne.refineEquivRelation();

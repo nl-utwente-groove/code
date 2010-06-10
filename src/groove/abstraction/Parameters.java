@@ -24,16 +24,19 @@ package groove.abstraction;
 public final class Parameters {
 
     // ------------------------------------------------------------------------
-    // Fields
+    // Static fields
     // ------------------------------------------------------------------------
 
     /** Node multiplicity bound (\nu). Is a natural number. Defaults to 1. */
     private static int nodeMultBound = 1;
     /** Edge multiplicity bound (\mu). Is a natural number. Defaults to 1. */
     private static int edgeMultBound = 1;
+    /** The radius of the abstraction (i). Is a positive natural number.
+     *  Defaults to 1. */
+    private static int absRadius = 1;
 
     // ------------------------------------------------------------------------
-    // Other methods
+    // Static methods
     // ------------------------------------------------------------------------
 
     /** EDUARDO */
@@ -45,4 +48,10 @@ public final class Parameters {
     public static int getEdgeMultBound() {
         return edgeMultBound;
     }
+
+    /** EDUARDO */
+    public static int getAbsRadius() {
+        return absRadius;
+    }
+
 }

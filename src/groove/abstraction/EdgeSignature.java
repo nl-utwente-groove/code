@@ -16,32 +16,33 @@
  */
 package groove.abstraction;
 
-import java.util.HashSet;
+import groove.graph.Label;
 
 /**
  * EDUARDO
  * @author Eduardo Zambon
  * @version $Revision $
  */
-public class EquivRelation<T> extends HashSet<EquivClass<T>> {
+public class EdgeSignature {
+
+    // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
+    private ShapeNode source;
+    private Label label;
+    private EquivClass<ShapeNode> targetEc;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** EDUARDO */
-    public EquivClass<T> getEquivClassOf(T elem) {
-        EquivClass<T> result = null;
-        for (EquivClass<T> ec : this) {
-            if (ec.contains(elem)) {
-                result = ec;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /** EDUARDO */
-    public boolean areEquivalent(T elem0, T elem1) {
-        EquivClass<T> ec0 = this.getEquivClassOf(elem0);
-        EquivClass<T> ec1 = this.getEquivClassOf(elem1);
-        return ec0 == ec1;
+    public EdgeSignature(ShapeNode source, Label label,
+            EquivClass<ShapeNode> targetEc) {
+        this.source = source;
+        this.label = label;
+        this.targetEc = targetEc;
     }
 
 }
