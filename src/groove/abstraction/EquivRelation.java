@@ -19,24 +19,21 @@ package groove.abstraction;
 import groove.graph.Node;
 
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * EDUARDO
  * @author Eduardo Zambon
  * @version $Revision $
  */
-public class EquivRelation<T extends Node> extends
-        HashSet<EquivClass<T>> {
+public class EquivRelation<T extends Node> extends HashSet<EquivClass<T>> {
 
     /** EDUARDO */
     public EquivClass<T> getEquivClassOf(T node) {
         EquivClass<T> result = null;
-        Iterator<EquivClass<T>> iterator = this.iterator();
-        while (result == null && iterator.hasNext()) {
-            EquivClass<T> ec = iterator.next();
+        for (EquivClass<T> ec : this) {
             if (ec.contains(node)) {
                 result = ec;
+                break;
             }
         }
         return result;

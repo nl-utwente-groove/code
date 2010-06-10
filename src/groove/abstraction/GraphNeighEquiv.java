@@ -24,9 +24,12 @@ import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * EDUARDO
@@ -52,7 +55,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         // This is the first iteration.
         this.radius = 0;
         // Compute and store the equivalence classes based on node labels.
-        for (EquivClass<Node> ec : computeInitialEquivClasses(graph).values()) {
+        for (EquivClass<Node> ec : computeInitialEquivClasses()) {
             this.add(ec);
         }
     }
@@ -76,29 +79,19 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return this.radius;
     }
 
-    private HashMap<HashSet<Label>,EquivClass<Node>> computeInitialEquivClasses(
-            Graph graph) {
+    private Collection<EquivClass<Node>> computeInitialEquivClasses() {
         // Map from node labels to equivalence classes.
-        HashMap<HashSet<Label>,EquivClass<Node>> labelsToClass =
-            new HashMap<HashSet<Label>,EquivClass<Node>>();
+        Map<Set<Label>,EquivClass<Node>> labelsToClass =
+            new HashMap<Set<Label>,EquivClass<Node>>();
 
         // Compute the equivalence classes.
-        for (Node node : graph.nodeSet()) {
+        for (Node node : this.graph.nodeSet()) {
             // Collect node labels.
-            HashSet<Label> nodeLabels = new HashSet<Label>();
-            for (Edge edge : graph.outEdgeSet(node)) {
-                if (edge.source() == edge.opposite()) {
-                    // We have a self-edge. Use its label.
-                    nodeLabels.add(edge.label());
-                }
-            }
+            Set<Label> nodeLabels = Util.getNodeLabels(this.graph, node);
 
             // Look in all label sets and try to find an equivalence class.
             EquivClass<Node> ec = null;
-            Iterator<HashSet<Label>> iterator =
-                labelsToClass.keySet().iterator();
-            while (ec == null && iterator.hasNext()) {
-                HashSet<Label> labels = iterator.next();
+            for (Set<Label> labels : labelsToClass.keySet()) {
                 if (labels.equals(nodeLabels)) {
                     // Found the equivalence class.
                     ec = labelsToClass.get(labels);
@@ -117,7 +110,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
             }
         }
 
-        return labelsToClass;
+        return labelsToClass.values();
     }
 
     /** EDUARDO */
@@ -126,16 +119,12 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         // during iteration.
 
         // Equivalence classes created by splitting. 
-        HashSet<EquivClass<Node>> newEquivClasses =
-            new HashSet<EquivClass<Node>>();
+        Set<EquivClass<Node>> newEquivClasses = new HashSet<EquivClass<Node>>();
         // Equivalence classes removed by splitting. 
-        HashSet<EquivClass<Node>> delEquivClasses =
-            new HashSet<EquivClass<Node>>();
+        Set<EquivClass<Node>> delEquivClasses = new HashSet<EquivClass<Node>>();
 
         // For all equivalence classes.
-        Iterator<EquivClass<Node>> iterator = this.iterator();
-        while (iterator.hasNext()) {
-            EquivClass<Node> ec = iterator.next();
+        for (EquivClass<Node> ec : this) {
             this.refineEquivClass(ec, newEquivClasses, delEquivClasses);
         }
 
@@ -146,8 +135,8 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     }
 
     private void refineEquivClass(EquivClass<Node> ec,
-            HashSet<EquivClass<Node>> newEquivClasses,
-            HashSet<EquivClass<Node>> delEquivClasses) {
+            Set<EquivClass<Node>> newEquivClasses,
+            Set<EquivClass<Node>> delEquivClasses) {
 
         // Convert the equivalence class to an array for efficiency's sake.
         Node nodes[] = new Node[ec.size()];
@@ -181,7 +170,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         assert equiv.length > 0 && equiv[0].length > 0 : "Invalid equivalence matrix";
         boolean result = false;
         for (int j = 1; j < equiv[0].length; j++) {
-            if (equiv[0][j] == false) {
+            if (!equiv[0][j]) {
                 // We have two nodes that are no longer equivalent. Split.
                 result = true;
                 break;
@@ -191,9 +180,9 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     }
 
     private void doSplit(Node nodes[], boolean equiv[][],
-            HashSet<EquivClass<Node>> newEquivClasses) {
+            Set<EquivClass<Node>> newEquivClasses) {
 
-        for (int i = 0; i < nodes.length - 1; i++) {
+        for (int i = 0; i < nodes.length; i++) {
             Node ni = nodes[i];
 
             // Check first if the i-th element appears in a previous row of the
@@ -204,7 +193,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
             // Variable i has its role reversed and marks the column instead of
             // a row.
             for (int ii = i - 1; ii >= 0; ii--) {
-                if (equiv[ii][i] == true) {
+                if (equiv[ii][i]) {
                     alreadyIncluded = true;
                     break;
                 }
@@ -216,7 +205,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
                 EquivClass<Node> ec = new EquivClass<Node>();
                 ec.add(ni);
                 for (int j = i + 1; j < nodes.length; j++) {
-                    if (equiv[i][j] == true) {
+                    if (equiv[i][j]) {
                         Node nj = nodes[j];
                         ec.add(nj);
                     }
@@ -228,8 +217,28 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     }
 
     private boolean areStillEquivalent(Node n0, Node n1) {
-        // EDUARDO
-        return this.graph != null;
+        boolean equiv = true;
+        // For all labels.
+        labelLoop: for (Label label : Util.labelSet(this.graph)) {
+            // For all equivalence classes.
+            for (EquivClass<Node> ec : this) {
+                Set<Edge> n0InterEc =
+                    Util.getIntersectEdges(this.graph, n0, ec, label);
+                Set<Edge> n1InterEc =
+                    Util.getIntersectEdges(this.graph, n1, ec, label);
+                Set<Edge> ecInterN0 =
+                    Util.getIntersectEdges(this.graph, ec, n0, label);
+                Set<Edge> ecInterN1 =
+                    Util.getIntersectEdges(this.graph, ec, n1, label);
+                equiv =
+                    equiv && Multiplicity.haveSameMult(n0InterEc, n1InterEc)
+                        && Multiplicity.haveSameMult(ecInterN0, ecInterN1);
+                if (!equiv) {
+                    break labelLoop;
+                }
+            }
+        }
+        return equiv;
     }
 
     // ------------------------------------------------------------------------
@@ -237,7 +246,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     // ------------------------------------------------------------------------
 
     private static void testLevelZeroEquiv() {
-        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test.gst");
+        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-0.gst");
         try {
             Graph graph = Groove.loadGraph(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
@@ -257,6 +266,41 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
             System.out.println("Equivalence comparison:");
             System.out.println("n0 equiv n1 = " + gne.areEquivalent(n0, n1));
             System.out.println("n0 equiv n4 = " + gne.areEquivalent(n0, n4));
+            System.out.println();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void testLevelOneEquiv() {
+        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-1.gst");
+        try {
+            Graph graph = Groove.loadGraph(file);
+            GraphNeighEquiv gne = new GraphNeighEquiv(graph);
+            System.out.println(gne);
+            gne.refineEquivRelation();
+            System.out.println(gne);
+            gne.refineEquivRelation();
+            System.out.println(gne);
+            System.out.println();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void testLevelTwoEquiv() {
+        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-2.gst");
+        try {
+            Graph graph = Groove.loadGraph(file);
+            GraphNeighEquiv gne = new GraphNeighEquiv(graph);
+            System.out.println(gne);
+            gne.refineEquivRelation();
+            System.out.println(gne);
+            gne.refineEquivRelation();
+            System.out.println(gne);
+            gne.refineEquivRelation();
+            System.out.println(gne);
+            System.out.println();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -264,7 +308,10 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
 
     /** Used for unit testing. */
     public static void main(String args[]) {
+        Multiplicity.initMultStore();
         testLevelZeroEquiv();
+        testLevelOneEquiv();
+        testLevelTwoEquiv();
     }
 
 }

@@ -16,6 +16,11 @@
  */
 package groove.abstraction;
 
+import groove.graph.Edge;
+import groove.graph.Node;
+
+import java.util.Set;
+
 /**
  * EDUARDO
  * @author Eduardo Zambon
@@ -43,8 +48,8 @@ public final class Multiplicity {
         int multUpperBound =
             Math.max(Parameters.getNodeMultBound(),
                 Parameters.getEdgeMultBound());
-        STORE = new Multiplicity[multUpperBound + 1];
-        for (int i = 0; i < multUpperBound; i++) {
+        STORE = new Multiplicity[multUpperBound + 2];
+        for (int i = 0; i <= multUpperBound; i++) {
             STORE[i] = new Multiplicity(i);
         }
         STORE[multUpperBound] = OMEGA;
@@ -53,8 +58,38 @@ public final class Multiplicity {
     /** EDUARDO */
     public static Multiplicity getMultOf(int value) {
         assert STORE != null : "The multiplicity store must be initialized first.";
-        assert value >= 0 && value < STORE.length - 1 : "Invalid multiplicity value";
+        assert value >= 0 && value < STORE.length - 1 : "Invalid multiplicity value: "
+            + value;
         return STORE[value];
+    }
+
+    /** EDUARDO */
+    public static Multiplicity getNodeSetMult(Set<Node> nodes) {
+        int setSize = nodes.size();
+        int nodesMultBound = Parameters.getNodeMultBound();
+        return getSetMult(setSize, nodesMultBound);
+    }
+
+    /** EDUARDO */
+    public static Multiplicity getEdgeSetMult(Set<Edge> edges) {
+        int setSize = edges.size();
+        int edgesMultBound = Parameters.getEdgeMultBound();
+        return getSetMult(setSize, edgesMultBound);
+    }
+
+    private static Multiplicity getSetMult(int setSize, int multBound) {
+        Multiplicity result;
+        if (setSize <= multBound) {
+            result = getMultOf(setSize);
+        } else {
+            result = OMEGA;
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public static boolean haveSameMult(Set<Edge> s0, Set<Edge> s1) {
+        return getEdgeSetMult(s0).equals(getEdgeSetMult(s1));
     }
 
     // ------------------------------------------------------------------------
