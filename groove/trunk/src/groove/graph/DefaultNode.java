@@ -40,6 +40,11 @@ public class DefaultNode implements Node {
         this.hashCode = computeHashCode();
     }
 
+    /** Factory constructor. */
+    public DefaultNode newNode(int nr) {
+        return new DefaultNode(nr);
+    }
+
     /**
      * Returns an alias to this node itself (which is immutable).
      */
@@ -168,8 +173,12 @@ public class DefaultNode implements Node {
      * Factory method to create a default node with a certain number. The idea
      * is to create canonical representatives, so node equality is object
      * equality. For negative numbers, the node is not stored.
+     * @param cons is an object that defines the constructor. Subclasses of
+     *             <code>DefaultNode</code> may override the method
+     *             {@link #newNode(int)} so that the factory creates nodes with
+     *             a more specialized type. See, e.g., <code>ShapeNode</code>.
      */
-    static public DefaultNode createNode(int nr) {
+    static public DefaultNode createNode(int nr, DefaultNode cons) {
         DefaultNode result;
         if (nr >= 0) {
             if (nr >= nodes.length) {
@@ -181,14 +190,19 @@ public class DefaultNode implements Node {
             }
             result = nodes[nr];
             if (result == null) {
-                result = nodes[nr] = new DefaultNode(nr);
+                result = nodes[nr] = cons.newNode(nr);
                 nextNodeNr = Math.max(nextNodeNr, nr);
                 nodeCount++;
             }
         } else {
-            result = new DefaultNode(nr);
+            result = cons.newNode(nr);
         }
         return result;
+    }
+
+    /** Default method that uses the DefaultNode constructor. */
+    static public DefaultNode createNode(int nr) {
+        return createNode(nr, CONS);
     }
 
     /**
@@ -203,6 +217,11 @@ public class DefaultNode implements Node {
     /** Returns the node with the first currently unused node number. */
     static public DefaultNode createNode() {
         return createNode(nextNodeNr());
+    }
+
+    /** Returns the node with the first currently unused node number. */
+    static public DefaultNode createNode(DefaultNode constructor) {
+        return createNode(nextNodeNr(), constructor);
     }
 
     /**
@@ -220,23 +239,6 @@ public class DefaultNode implements Node {
         return nextNodeNr;
     }
 
-    //
-    // /**
-    // * Extracts a node number from a node. The node number is assumed to exist
-    // * only if the node is a {@link DefaultNode}, and not a subclass.
-    // * Returns {@link #NO_NODE_NUMBER} otherwise.
-    // * @param node the node of which to get the number
-    // * @return the number of the given node
-    // */
-    // static public int getNodeNr(Node node) {
-    // if (node instanceof DefaultNode) {
-    // int result = node.getNumber();
-    // return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
-    // } else {
-    // return NO_NODE_NUMBER;
-    // }
-    // }
-
     /**
      * Returns the next free node number, according to the static counter.
      * @return the next node-number
@@ -247,15 +249,6 @@ public class DefaultNode implements Node {
         }
         return nextNodeNr;
     }
-
-    //
-    // /**
-    // * Returns the fresh node number for subclasses of DefaultNode, and
-    // * increments the counter.
-    // */
-    // static protected int nextExtNodeNr() {
-    // return ++nextNodeNrExt;
-    // }
 
     /**
      * The total number of nodes in the {@link #nodes} array.
@@ -276,21 +269,13 @@ public class DefaultNode implements Node {
      * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
      */
     static private DefaultNode[] nodes = new DefaultNode[INIT_CAPACITY];
-    //
-    // /**
-    // * The maximal number for {@link DefaultNode}s.
-    // */
-    //
-    // public static final int MAX_NODE_NUMBER = 999999999;
-    //
-    // /**
-    // * First fresh node number for subclasses van DefaultNode.
-    // */
-    // static private int nextNodeNrExt = MAX_NODE_NUMBER + 1;
 
     /**
      * Value indicating an invalid node number.
      */
     public static final int NO_NODE_NUMBER = -1;
+
+    /** Used only as a reference for the constructor */
+    public static final DefaultNode CONS = new DefaultNode(NO_NODE_NUMBER);
 
 }
