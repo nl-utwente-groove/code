@@ -695,7 +695,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         /** Constructs the model and associated data structures from the view. */
         private void initialise() {
             // first test if there is something to be done
-            if (this.errors.isEmpty()) {
+            if (this.errors.isEmpty() && this.model == null) {
                 // There are no errors in each of the views, try to compose the
                 // type graph.
                 this.model = new TypeGraph();
