@@ -40,6 +40,19 @@ public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
         this.nr = nr;
     }
 
+    /** This is just a factory constructor so we can have a reference for an
+     *  object of this class.
+     */
+    protected DefaultEdge() {
+        super(null, null, null);
+        this.nr = -1;
+    }
+
+    /** Factory constructor. */
+    public DefaultEdge newEdge(Node source, Label label, Node target, int nr) {
+        return new DefaultEdge(source, label, target, nr);
+    }
+
     /**
      * For efficiency, this implementation tests for object equality. It is,
      * however, considered an error if two distinct {@link DefaultEdge} objects
@@ -105,21 +118,31 @@ public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
      * @param label for the new edge; should not be <code>null</code>
      * @param target the target node of the new edge; should not be
      *        <code>null</code>
+     * @param cons is an object that defines the constructor. Subclasses of
+     *             <code>DefaultEdge</code> may override the method
+     *             {@link #newEdge(Node, Label, Node, int)} so that the factory
+     *             creates nodes with a more specialized type.
+     *             See, e.g., <code>ShapeEdge</code>.
      * @return an edge based on <code>source</code>, <code>label</code> and
      *         <code>target</code>
      * @see #createEdge(Node, String, Node)
      */
-    static public DefaultEdge createEdge(Node source, Label label, Node target) {
+    static public DefaultEdge createEdge(Node source, Label label, Node target,
+            DefaultEdge cons) {
         assert source != null : "Source node of default edge should not be null";
         assert target != null : "Target node of default edge should not be null";
         assert label != null : "Label of default edge should not be null";
-        DefaultEdge edge =
-            new DefaultEdge(source, label, target, edgeSet.size());
+        DefaultEdge edge = cons.newEdge(source, label, target, edgeSet.size());
         DefaultEdge result = DefaultEdge.edgeSet.put(edge);
         if (result == null) {
             result = edge;
         }
         return result;
+    }
+
+    /** Default method that uses the DefaultEdge constructor. */
+    static public DefaultEdge createEdge(Node source, Label label, Node target) {
+        return createEdge(source, label, target, CONS);
     }
 
     /**
@@ -158,4 +181,7 @@ public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
                 return false;
             }
         };
+
+    /** Used only as a reference for the constructor */
+    public static final DefaultEdge CONS = new DefaultEdge();
 }

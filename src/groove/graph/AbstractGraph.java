@@ -38,13 +38,8 @@ import java.util.Set;
  */
 public abstract class AbstractGraph<C extends GraphCache> extends
         AbstractGraphShape<C> implements InternalGraph {
+
     public Morphism getIsomorphismTo(final Graph to) {
-        // Morphism isoMorphism = new DefaultMorphism(this, to) {
-        // @Override
-        // protected MatchStrategy createMatchStrategy() {
-        // return IsoMatchFactory.getInstance().createMatcher(dom());
-        // }
-        // };
         Morphism result;
         final NodeEdgeMap map =
             DefaultIsoChecker.getInstance(true).getIsomorphism(
@@ -68,6 +63,15 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      */
     public Node createNode() {
         return DefaultNode.createNode();
+    }
+
+    /**
+     * Factory method for nodes of this graph.
+     * @param constructor an object that specializes the constructor.
+     * @return the freshly created node
+     */
+    public Node createNode(DefaultNode constructor) {
+        return DefaultNode.createNode(constructor);
     }
 
     /**
@@ -110,11 +114,21 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @return the freshly binary created edge
      */
     public BinaryEdge createEdge(Node source, Label label, Node target) {
-        // if (label instanceof DefaultLabel) {
-        // return new DefaultLabelEdge(source, (DefaultLabel) label, target);
-        // } else {
         return DefaultEdge.createEdge(source, label, target);
-        // }
+    }
+
+    /**
+     * Factory method for binary edges of this graph. This implementation
+     * returns a sub type of {@link DefaultEdge}, determined by the constructor.
+     * @param source the source node of the new edge
+     * @param label the label of the new edge
+     * @param target the target node of the new edge
+     * @param constructor an object that specializes the constructor.
+     * @return the freshly binary created edge
+     */
+    public BinaryEdge createEdge(Node source, Label label, Node target,
+            DefaultEdge constructor) {
+        return DefaultEdge.createEdge(source, label, target, constructor);
     }
 
     /**
@@ -126,11 +140,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @return the freshly created unary edge
      */
     public UnaryEdge createEdge(Node source, Label label) {
-        // if (label instanceof DefaultLabel) {
-        // return new DefaultLabelFlag(source, (DefaultLabel) label);
-        // } else {
         return new DefaultFlag(source, label);
-        // }
     }
 
     public Node addNode() {
@@ -446,7 +456,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
 
         public boolean removeNodeWithoutCheck(Node node) {
             throw new UnsupportedOperationException(
-                "Can't remove element vrom fixed empty graph");
+                "Can't remove element from fixed empty graph");
         }
 
         @Override
@@ -478,12 +488,12 @@ public abstract class AbstractGraph<C extends GraphCache> extends
 
         public boolean removeEdge(Edge edge) {
             throw new UnsupportedOperationException(
-                "Can't remove element vrom fixed empty graph");
+                "Can't remove element from fixed empty graph");
         }
 
         public boolean removeNode(Node node) {
             throw new UnsupportedOperationException(
-                "Can't remove element vrom fixed empty graph");
+                "Can't remove element from fixed empty graph");
         }
     }
 }
