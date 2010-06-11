@@ -31,7 +31,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
         this.label = label;
     }
 
-    public final N source() {
+    public N source() {
         return this.source;
     }
 

@@ -25,6 +25,10 @@ import java.util.HashSet;
  */
 public class EquivRelation<T> extends HashSet<EquivClass<T>> {
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
     /** EDUARDO */
     public EquivClass<T> getEquivClassOf(T elem) {
         EquivClass<T> result = null;

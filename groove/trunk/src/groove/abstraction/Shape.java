@@ -26,8 +26,10 @@ import groove.util.Groove;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * EDUARDO
@@ -44,9 +46,9 @@ public class Shape extends DefaultGraph {
     private final Map<Node,ShapeNode> nodeShaping;
     private final Map<Edge,ShapeEdge> edgeShaping;
     private final EquivRelation<ShapeNode> equivRel;
-    private final Map<ShapeNode,Multiplicity> nodeMultMap;
     private final Map<EdgeSignature,Multiplicity> outEdgeMultMap;
     private final Map<EdgeSignature,Multiplicity> inEdgeMultMap;
+    private final Set<EdgeSignature> edgeSigSet;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -59,9 +61,9 @@ public class Shape extends DefaultGraph {
         this.nodeShaping = new HashMap<Node,ShapeNode>();
         this.edgeShaping = new HashMap<Edge,ShapeEdge>();
         this.equivRel = new EquivRelation<ShapeNode>();
-        this.nodeMultMap = new HashMap<ShapeNode,Multiplicity>();
         this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
+        this.edgeSigSet = new HashSet<EdgeSignature>();
         this.buildShape();
     }
 
@@ -73,6 +75,40 @@ public class Shape extends DefaultGraph {
     @SuppressWarnings("unchecked")
     public Set<ShapeNode> nodeSet() {
         return (Set<ShapeNode>) super.nodeSet();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<ShapeEdge> edgeSet() {
+        return (Set<ShapeEdge>) super.edgeSet();
+    }
+
+    @Override
+    public ShapeNode createNode() {
+        return (ShapeNode) super.createNode(ShapeNode.CONS);
+    }
+
+    @Override
+    public ShapeEdge createEdge(Node source, Label label, Node target) {
+        return (ShapeEdge) super.createEdge(source, label, target,
+            ShapeEdge.CONS);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Nodes:\n");
+        for (ShapeNode node : this.nodeSet()) {
+            sb.append("  " + node + ":" + node.getMultiplicity() + " ");
+            sb.append(Util.getNodeLabels(this, node) + "\n");
+        }
+        sb.append("Edges:\n");
+        for (Edge edge : Util.getBinaryEdges(this)) {
+            ShapeEdge e = (ShapeEdge) edge;
+            sb.append("  " + this.getEdgeOutMult(e) + ":" + edge + ":"
+                + this.getEdgeInMult(e) + "\n");
+        }
+        return sb.toString();
     }
 
     // ------------------------------------------------------------------------
@@ -93,24 +129,24 @@ public class Shape extends DefaultGraph {
 
         this.createShapeNodes(currGraphNeighEquiv);
         this.createShapeNodesEquivRel(prevGraphNeighEquiv);
-        this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel(),
-            prevGraphNeighEquiv);
+        this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
+        this.createEdgeMultMaps(currGraphNeighEquiv);
     }
 
     private void createShapeNodes(GraphNeighEquiv currGraphNeighEquiv) {
         // Each node of the shape correspond to an equivalence class
         // of the graph.
         for (EquivClass<Node> nodeEquivClass : currGraphNeighEquiv) {
-            ShapeNode shapeNode = (ShapeNode) this.createNode();
+            ShapeNode shapeNode = this.createNode();
             // Add a shape node to the shape.
             this.addNode(shapeNode);
             // Update the shaping information.
             for (Node graphNode : nodeEquivClass) {
                 this.nodeShaping.put(graphNode, shapeNode);
             }
-            // Fill the shape node multiplicity mapping.
+            // Fill the shape node multiplicity.
             Multiplicity nodeMult = Multiplicity.getNodeSetMult(nodeEquivClass);
-            this.nodeMultMap.put(shapeNode, nodeMult);
+            shapeNode.setMultiplicity(nodeMult);
         }
     }
 
@@ -126,45 +162,132 @@ public class Shape extends DefaultGraph {
         }
     }
 
-    private void createShapeEdges(EquivRelation<Edge> edgeEquivRel,
-            GraphNeighEquiv prevGraphNeighEquiv) {
+    private void createShapeEdges(EquivRelation<Edge> edgeEquivRel) {
         // Each edge of the shape correspond to an equivalence class
         // of the graph.
-        for (EquivClass<Edge> edgeEquivClass : edgeEquivRel) {
+        for (EquivClass<Edge> edgeEquivClassG : edgeEquivRel) {
             // Get an arbitrary edge from the equivalence class.
-            Edge graphEdge = edgeEquivClass.iterator().next();
+            Edge edgeG = edgeEquivClassG.iterator().next();
 
-            Node srcG = graphEdge.source();
-            Node tgtG = graphEdge.opposite();
-            ShapeNode seSource = this.nodeShaping.get(srcG);
-            ShapeNode seTarget = this.nodeShaping.get(tgtG);
-            Label seLabel = graphEdge.label();
-            // Add a shape edge to the shape.
-            ShapeEdge shapeEdge =
-                (ShapeEdge) this.createEdge(seSource, seLabel, seTarget);
+            // Create and add a shape edge to the shape.
+            Node srcG = edgeG.source();
+            Node tgtG = edgeG.opposite();
+            ShapeNode srcS = this.nodeShaping.get(srcG);
+            ShapeNode tgtS = this.nodeShaping.get(tgtG);
+            Label labelS = edgeG.label();
+            ShapeEdge edgeS = this.createEdge(srcS, labelS, tgtS);
+            this.addEdge(edgeS);
 
             // Update the shaping information.
-            for (Edge edge : edgeEquivClass) {
-                this.edgeShaping.put(edge, shapeEdge);
+            for (Edge eG : edgeEquivClassG) {
+                this.edgeShaping.put(eG, edgeS);
             }
-
-            // Fill the shape edge in and out multiplicity mapping.
-            EquivClass<Node> gTargetEc =
-                prevGraphNeighEquiv.getEquivClassOf(tgtG);
-            Set<Edge> nInterEc =
-                Util.getIntersectEdges(this.graph, srcG, gTargetEc, seLabel);
-            Set<Edge> ecInterN =
-                Util.getIntersectEdges(this.graph, gTargetEc, srcG, seLabel);
-            Multiplicity outEdgeMult = Multiplicity.getEdgeSetMult(nInterEc);
-            Multiplicity inEdgeMult = Multiplicity.getEdgeSetMult(ecInterN);
-            // EDUARDO: Check if we need to change this.
-            EquivClass<ShapeNode> seTargetEc =
-                this.equivRel.getEquivClassOf(seTarget);
-            EdgeSignature seSig =
-                new EdgeSignature(seSource, seLabel, seTargetEc);
-            this.outEdgeMultMap.put(seSig, outEdgeMult);
-            this.inEdgeMultMap.put(seSig, inEdgeMult);
         }
+    }
+
+    private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv) {
+        // For all labels.
+        for (Label label : Util.labelSet(this.graph)) {
+            // For all nodes in the graph.
+            for (Node node : this.graph.nodeSet()) {
+                /*EquivClass<Node> nEc =
+                    currGraphNeighEquiv.getEquivClassOf(node);*/
+                // For all equivalence classes in the shape.
+                for (EquivClass<ShapeNode> ecS : this.equivRel) {
+                    Set<Node> nodesG = this.getReverseNodeMap(ecS);
+                    ShapeNode nodeS = this.getShapeNode(node);
+                    EdgeSignature es = this.getEdgeSignature(nodeS, label, ecS);
+
+                    // Outgoing multiplicity.
+                    Set<Edge> outInter =
+                        Util.getIntersectEdges(this.graph, node, nodesG, label);
+                    Multiplicity outMult =
+                        Multiplicity.getEdgeSetMult(outInter);
+                    if (outMult.isPositive()) {
+                        this.setEdgeOutMult(es, outMult);
+                    } // else don't store multiplicity zero.
+
+                    // Incoming multiplicity.
+                    Set<Edge> inInter =
+                        Util.getIntersectEdges(this.graph, nodesG, node, label);
+                    Multiplicity inMult = Multiplicity.getEdgeSetMult(inInter);
+                    if (inMult.isPositive()) {
+                        this.setEdgeInMult(es, inMult);
+                    } // else don't store multiplicity zero.
+                }
+            }
+        }
+    }
+
+    private void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
+        this.outEdgeMultMap.put(es, mult);
+    }
+
+    private void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
+        this.inEdgeMultMap.put(es, mult);
+    }
+
+    private Multiplicity getEdgeOutMult(ShapeEdge edge) {
+        EdgeSignature es = this.getEdgeOutSignature(edge);
+        Multiplicity mult = this.outEdgeMultMap.get(es);
+        if (mult == null) {
+            mult = Multiplicity.getMultOf(0);
+        }
+        return mult;
+    }
+
+    private Multiplicity getEdgeInMult(ShapeEdge edge) {
+        EdgeSignature es = this.getEdgeInSignature(edge);
+        Multiplicity mult = this.inEdgeMultMap.get(es);
+        if (mult == null) {
+            mult = Multiplicity.getMultOf(0);
+        }
+        return mult;
+    }
+
+    private Set<Node> getReverseNodeMap(EquivClass<ShapeNode> ecS) {
+        Set<Node> nodesG = new HashSet<Node>();
+        for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
+            if (ecS.contains(entry.getValue())) {
+                nodesG.add(entry.getKey());
+            }
+        }
+        return nodesG;
+    }
+
+    private ShapeNode getShapeNode(Node node) {
+        return this.nodeShaping.get(node);
+    }
+
+    private EdgeSignature getEdgeOutSignature(ShapeEdge edge) {
+        EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.opposite());
+        return this.getEdgeSignature(edge.source(), edge.label(), ec);
+    }
+
+    private EdgeSignature getEdgeInSignature(ShapeEdge edge) {
+        EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.source());
+        return this.getEdgeSignature(edge.opposite(), edge.label(), ec);
+    }
+
+    private EdgeSignature getEdgeSignature(ShapeNode node, Label label,
+            EquivClass<ShapeNode> ec) {
+        EdgeSignature newEs = new EdgeSignature(node, label, ec);
+        EdgeSignature result = null;
+        for (EdgeSignature es : this.edgeSigSet) {
+            if (es.equals(newEs)) {
+                result = es;
+                break;
+            }
+        }
+        if (result == null) {
+            this.edgeSigSet.add(newEs);
+            result = newEs;
+        }
+        return result;
+    }
+
+    private EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
+        return this.equivRel.getEquivClassOf(node);
     }
 
     // ------------------------------------------------------------------------
@@ -172,7 +295,21 @@ public class Shape extends DefaultGraph {
     // ------------------------------------------------------------------------
 
     private static void testShapeBuild0() {
-        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-0.gst");
+        File file =
+            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-0.gst");
+        try {
+            Graph graph = Groove.loadGraph(file);
+            System.out.println(file);
+            Shape shape = new Shape(graph);
+            System.out.println(shape);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void testShapeBuild1() {
+        File file =
+            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-1.gst");
         try {
             Graph graph = Groove.loadGraph(file);
             System.out.println(file);
@@ -187,6 +324,7 @@ public class Shape extends DefaultGraph {
     public static void main(String args[]) {
         Multiplicity.initMultStore();
         testShapeBuild0();
+        testShapeBuild1();
     }
 
 }
