@@ -97,7 +97,7 @@ abstract public class AbstractBinaryEdge<SN extends Node,L extends Label,TN exte
     }
 
     @Override
-    public final TN opposite() {
+    public TN opposite() {
         return this.target;
     }
 

@@ -25,9 +25,48 @@ import groove.graph.DefaultNode;
  */
 public class ShapeNode extends DefaultNode {
 
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    /** Used only as a reference for the constructor */
+    public static final ShapeNode CONS = new ShapeNode(NO_NODE_NUMBER);
+
+    // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
+    private Multiplicity mult;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /** EDUARDO */
     protected ShapeNode(int nr) {
         super(nr);
+        this.mult = null;
     }
 
+    /** Factory constructor. */
+    @Override
+    public DefaultNode newNode(int nr) {
+        return new ShapeNode(nr);
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Should be called right after the object construction. */
+    public void setMultiplicity(Multiplicity mult) {
+        assert mult != null : "Cannot set a node multiplicity to null.";
+        this.mult = mult;
+    }
+
+    /** Ensures that the multiplicity object is non-null. */
+    public Multiplicity getMultiplicity() {
+        assert this.mult != null : "This node is not initialized!";
+        return this.mult;
+    }
 }

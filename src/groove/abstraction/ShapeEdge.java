@@ -27,9 +27,49 @@ import groove.graph.Node;
  */
 public class ShapeEdge extends DefaultEdge {
 
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    /** Used only as a reference for the constructor */
+    public static final ShapeEdge CONS = new ShapeEdge();
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /** EDUARDO */
     protected ShapeEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target, nr);
+    }
+
+    /** This is just a factory constructor so we can have a reference for an
+     *  object of this class.
+     */
+    private ShapeEdge() {
+        super();
+    }
+
+    /** Factory constructor. */
+    @Override
+    public DefaultEdge newEdge(Node source, Label label, Node target, int nr) {
+        assert source instanceof ShapeNode : "Invalid source node";
+        assert target instanceof ShapeNode : "Invalid target node";
+        return new ShapeEdge(source, label, target, nr);
+    }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public ShapeNode source() {
+        return (ShapeNode) super.source();
+    }
+
+    @Override
+    public ShapeNode opposite() {
+        return (ShapeNode) super.opposite();
     }
 
 }

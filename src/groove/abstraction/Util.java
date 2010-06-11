@@ -35,12 +35,25 @@ public class Util {
     public static Set<Label> getNodeLabels(Graph graph, Node node) {
         HashSet<Label> nodeLabels = new HashSet<Label>();
         for (Edge edge : graph.outEdgeSet(node)) {
-            if (edge.source() == edge.opposite()) {
-                // We have a self-edge. Use its label.
-                nodeLabels.add(edge.label());
+            Label label = edge.label();
+            if (label.text().startsWith("type:")
+                || label.text().startsWith("flag:")) {
+                nodeLabels.add(label);
             }
         }
         return nodeLabels;
+    }
+
+    /** EDUARDO */
+    public static Set<Edge> getBinaryEdges(Graph graph) {
+        HashSet<Edge> edges = new HashSet<Edge>();
+        for (Edge edge : graph.edgeSet()) {
+            String label = edge.label().text();
+            if (!(label.startsWith("type:") || label.startsWith("flag:"))) {
+                edges.add(edge);
+            }
+        }
+        return edges;
     }
 
     /** EDUARDO */
@@ -72,7 +85,7 @@ public class Util {
     public static Set<Edge> getInEdges(Graph graph, Node node, Label label) {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Edge edge : graph.edgeSet(node)) {
-            if (edge.label().equals(label)) {
+            if (edge.opposite().equals(node) && edge.label().equals(label)) {
                 inEdges.add(edge);
             }
         }
@@ -84,7 +97,7 @@ public class Util {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Node node : nodes) {
             for (Edge edge : graph.edgeSet(node)) {
-                if (edge.label().equals(label)) {
+                if (edge.opposite().equals(node) && edge.label().equals(label)) {
                     inEdges.add(edge);
                 }
             }
