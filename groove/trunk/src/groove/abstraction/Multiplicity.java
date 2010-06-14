@@ -155,7 +155,8 @@ public final class Multiplicity {
         int result;
         if (this.value == mult.value) {
             result = 0;
-        } else if (this.value == OMEGA_VALUE || this.value > mult.value) {
+        } else if (this.value == OMEGA_VALUE
+            || (mult.value != OMEGA_VALUE && this.value > mult.value)) {
             result = 1;
         } else {
             result = -1;
@@ -168,6 +169,14 @@ public final class Multiplicity {
      */
     public boolean isPositive() {
         return this.value == OMEGA_VALUE || this.value > 0;
+    }
+
+    /**
+     * @param mult the multiplicity to compare.
+     * @return false if this is greater than mult; true, otherwise.
+     */
+    public boolean isAtMost(Multiplicity mult) {
+        return this.compare(mult) != 1;
     }
 
 }

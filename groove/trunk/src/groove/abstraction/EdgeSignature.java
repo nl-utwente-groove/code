@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import groove.graph.Edge;
 import groove.graph.Label;
 
 /**
@@ -67,6 +68,24 @@ public class EdgeSignature {
             result = false;
         }
         return result;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** EDUARDO */
+    public boolean asOutSigContains(Edge edge) {
+        return this.node.equals(edge.source())
+            && this.label.equals(edge.label())
+            && this.equivClass.contains(edge.opposite());
+    }
+
+    /** EDUARDO */
+    public boolean asInSigContains(Edge edge) {
+        return this.node.equals(edge.opposite())
+            && this.label.equals(edge.label())
+            && this.equivClass.contains(edge.source());
     }
 
 }

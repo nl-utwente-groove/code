@@ -16,13 +16,16 @@
  */
 package groove.abstraction;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Utility functions for abstraction.
@@ -35,10 +38,8 @@ public class Util {
     public static Set<Label> getNodeLabels(Graph graph, Node node) {
         HashSet<Label> nodeLabels = new HashSet<Label>();
         for (Edge edge : graph.outEdgeSet(node)) {
-            Label label = edge.label();
-            if (label.text().startsWith("type:")
-                || label.text().startsWith("flag:")) {
-                nodeLabels.add(label);
+            if (isUnary(edge)) {
+                nodeLabels.add(edge.label());
             }
         }
         return nodeLabels;
@@ -48,12 +49,30 @@ public class Util {
     public static Set<Edge> getBinaryEdges(Graph graph) {
         HashSet<Edge> edges = new HashSet<Edge>();
         for (Edge edge : graph.edgeSet()) {
-            String label = edge.label().text();
-            if (!(label.startsWith("type:") || label.startsWith("flag:"))) {
+            if (!isUnary(edge)) {
                 edges.add(edge);
             }
         }
         return edges;
+    }
+
+    /** EDUARDO */
+    public static boolean isUnary(Edge edge) {
+        boolean result = false;
+        Label label = edge.label();
+        if (label instanceof DefaultLabel) {
+            // We may have labels with proper information.
+            DefaultLabel dl = (DefaultLabel) label;
+            result = !dl.isBinary();
+            if (!result) {
+                // It may be the case that binary edges are still used
+                // in a plain graph...
+                result =
+                    label.text().startsWith("type:")
+                        || label.text().startsWith("flag:");
+            }
+        }
+        return result;
     }
 
     /** EDUARDO */
@@ -157,4 +176,53 @@ public class Util {
         return result;
     }
 
+    /** Returns the label set of binary edges of the given graph */
+    public static Set<Label> binaryLabelSet(Graph graph) {
+        Set<Label> result = new HashSet<Label>();
+        for (Edge edge : graph.edgeSet()) {
+            if (!isUnary(edge)) {
+                result.add(edge.label());
+            }
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public static Set<Node> getReverseNodeMap(NodeEdgeMap map, Node value) {
+        Set<Node> result = new HashSet<Node>();
+        if (map.containsValue(value)) {
+            for (Entry<Node,Node> entry : map.nodeMap().entrySet()) {
+                if (entry.getValue().equals(value)) {
+                    result.add(entry.getKey());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public static Set<Edge> getReverseOutEdgeMap(NodeEdgeMap map,
+            EdgeSignature es) {
+        Set<Edge> result = new HashSet<Edge>();
+        for (Entry<Edge,Edge> entry : map.edgeMap().entrySet()) {
+            Edge edge = entry.getValue();
+            if (es.asOutSigContains(edge)) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public static Set<Edge> getReverseInEdgeMap(NodeEdgeMap map,
+            EdgeSignature es) {
+        Set<Edge> result = new HashSet<Edge>();
+        for (Entry<Edge,Edge> entry : map.edgeMap().entrySet()) {
+            Edge edge = entry.getValue();
+            if (es.asInSigContains(edge)) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
+    }
 }
