@@ -20,14 +20,10 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.util.Groove;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -268,82 +264,6 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
             er.add(ec);
         }
         return er;
-    }
-
-    // ------------------------------------------------------------------------
-    // Test methods
-    // ------------------------------------------------------------------------
-
-    private static void testLevelZeroEquiv() {
-        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-0.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            GraphNeighEquiv gne = new GraphNeighEquiv(graph);
-            System.out.println(gne);
-            Node n0 = null, n1 = null, n4 = null;
-            Iterator<? extends Node> iterator = graph.nodeSet().iterator();
-            while (iterator.hasNext()) {
-                Node n = iterator.next();
-                if (n.getNumber() == 0) {
-                    n0 = n;
-                } else if (n.getNumber() == 1) {
-                    n1 = n;
-                } else if (n.getNumber() == 4) {
-                    n4 = n;
-                }
-            }
-            System.out.println("Equivalence comparison:");
-            System.out.println("n0 equiv n1 = " + gne.areEquivalent(n0, n1));
-            System.out.println("n0 equiv n4 = " + gne.areEquivalent(n0, n4));
-            System.out.println();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testLevelOneEquiv() {
-        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-1.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            GraphNeighEquiv gne = new GraphNeighEquiv(graph);
-            System.out.println(gne);
-            gne.refineEquivRelation();
-            System.out.println(gne);
-            gne.refineEquivRelation();
-            System.out.println(gne);
-            System.out.println();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testLevelTwoEquiv() {
-        File file = new File("/home/zambon/Temp/abs-list.gps/equiv-test-2.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            GraphNeighEquiv gne = new GraphNeighEquiv(graph);
-            System.out.println(gne);
-            gne.refineEquivRelation();
-            System.out.println(gne);
-            gne.refineEquivRelation();
-            System.out.println(gne);
-            gne.refineEquivRelation();
-            System.out.println(gne);
-            System.out.println();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Used for unit testing. */
-    public static void main(String args[]) {
-        Multiplicity.initMultStore();
-        testLevelZeroEquiv();
-        testLevelOneEquiv();
-        testLevelTwoEquiv();
     }
 
 }
