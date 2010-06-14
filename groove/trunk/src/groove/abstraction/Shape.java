@@ -225,7 +225,8 @@ public class Shape extends DefaultGraph {
         this.inEdgeMultMap.put(es, mult);
     }
 
-    private Multiplicity getEdgeOutMult(ShapeEdge edge) {
+    /** EDUARDO */
+    public Multiplicity getEdgeOutMult(ShapeEdge edge) {
         EdgeSignature es = this.getEdgeOutSignature(edge);
         Multiplicity mult = this.outEdgeMultMap.get(es);
         if (mult == null) {
@@ -234,7 +235,8 @@ public class Shape extends DefaultGraph {
         return mult;
     }
 
-    private Multiplicity getEdgeInMult(ShapeEdge edge) {
+    /** EDUARDO */
+    public Multiplicity getEdgeInMult(ShapeEdge edge) {
         EdgeSignature es = this.getEdgeInSignature(edge);
         Multiplicity mult = this.inEdgeMultMap.get(es);
         if (mult == null) {

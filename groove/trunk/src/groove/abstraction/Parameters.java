@@ -54,4 +54,19 @@ public final class Parameters {
         return absRadius;
     }
 
+    /** EDUARDO */
+    public static void setNodeMultBound(int nodeMultBound) {
+        Parameters.nodeMultBound = nodeMultBound;
+    }
+
+    /** EDUARDO */
+    public static void setEdgeMultBound(int edgeMultBound) {
+        Parameters.edgeMultBound = edgeMultBound;
+    }
+
+    /** EDUARDO */
+    public static void setAbsRadius(int absRadius) {
+        Parameters.absRadius = absRadius;
+    }
+
 }
