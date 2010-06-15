@@ -43,6 +43,8 @@ public class TestShape extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
     }
 

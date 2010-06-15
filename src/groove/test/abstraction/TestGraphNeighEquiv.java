@@ -18,6 +18,7 @@ package groove.test.abstraction;
 
 import groove.abstraction.GraphNeighEquiv;
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Parameters;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.util.Groove;
@@ -40,6 +41,8 @@ public class TestGraphNeighEquiv extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
     }
 

@@ -17,6 +17,7 @@
 package groove.test.abstraction;
 
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Parameters;
 import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.graph.Graph;
@@ -43,6 +44,8 @@ public class TestPreMatch extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
     }
 
