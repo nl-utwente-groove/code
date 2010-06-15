@@ -19,6 +19,7 @@ package groove.abstraction;
 import groove.graph.Edge;
 import groove.graph.Node;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -115,17 +116,17 @@ public final class Multiplicity {
     public static Multiplicity getNodeSetMult(Set<Node> nodes) {
         int setSize = nodes.size();
         int nodesMultBound = Parameters.getNodeMultBound();
-        return getSetMult(setSize, nodesMultBound);
+        return getMult(setSize, nodesMultBound);
     }
 
     /** EDUARDO */
     public static Multiplicity getEdgeSetMult(Set<Edge> edges) {
         int setSize = edges.size();
         int edgesMultBound = Parameters.getEdgeMultBound();
-        return getSetMult(setSize, edgesMultBound);
+        return getMult(setSize, edgesMultBound);
     }
 
-    private static Multiplicity getSetMult(int setSize, int multBound) {
+    private static Multiplicity getMult(int setSize, int multBound) {
         Multiplicity result;
         if (setSize <= multBound) {
             result = getMultOf(setSize);
@@ -179,4 +180,62 @@ public final class Multiplicity {
         return this.compare(mult) != 1;
     }
 
+    /** EDUARDO */
+    public Multiplicity add(Multiplicity mult, int bound) {
+        assert bound > 0 : "Invalid multiplicity bound: " + bound;
+        Multiplicity result;
+        if (this.value == OMEGA_VALUE || mult.value == OMEGA_VALUE) {
+            result = OMEGA;
+        } else {
+            result = getMult(this.value + mult.value, bound);
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public Multiplicity addNodeMult(Multiplicity mult) {
+        return this.add(mult, Parameters.getNodeMultBound());
+    }
+
+    /** EDUARDO */
+    public Multiplicity addEdgeMult(Multiplicity mult) {
+        return this.add(mult, Parameters.getEdgeMultBound());
+    }
+
+    /**
+     * Subtracts mult from this.
+     * @param mult the value to be subtracted; it is required that mult <= this.
+     * @param bound the bound used in these multiplicities.
+     * @return a set of multiplicities. There are two cases.
+     *         - If this != omega, then the result is a singleton set with
+     *           this.value - mult.value .
+     *         - If this == omega, then the result is a set of multiplicities
+     *           in the range (bound + 1 - mult.value, ..., omega) .
+     */
+    public Set<Multiplicity> sub(Multiplicity mult, int bound) {
+        assert mult.isAtMost(this) : "Cannot subtract " + mult + " from "
+            + this;
+        Set<Multiplicity> result = new HashSet<Multiplicity>();
+        if (this.value != OMEGA_VALUE
+            || (this.value == OMEGA_VALUE && mult.value == OMEGA_VALUE)) {
+            result.add(getMultOf(this.value - mult.value));
+        } else {
+            int lowerBound = bound + 1 - mult.value;
+            for (int i = lowerBound; i <= bound; i++) {
+                result.add(getMultOf(i));
+            }
+            result.add(OMEGA);
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public Multiplicity subNodeMult(Multiplicity mult) {
+        return this.add(mult, Parameters.getNodeMultBound());
+    }
+
+    /** EDUARDO */
+    public Multiplicity subEdgeMult(Multiplicity mult) {
+        return this.add(mult, Parameters.getEdgeMultBound());
+    }
 }
