@@ -173,6 +173,13 @@ public final class Multiplicity {
     }
 
     /**
+     * @return false if the multiplicity is at most one; true, otherwise.
+     */
+    public boolean isAbstract() {
+        return !this.isAtMost(getMultOf(1));
+    }
+
+    /**
      * @param mult the multiplicity to compare.
      * @return false if this is greater than mult; true, otherwise.
      */
@@ -230,12 +237,12 @@ public final class Multiplicity {
     }
 
     /** EDUARDO */
-    public Multiplicity subNodeMult(Multiplicity mult) {
-        return this.add(mult, Parameters.getNodeMultBound());
+    public Set<Multiplicity> subNodeMult(Multiplicity mult) {
+        return this.sub(mult, Parameters.getNodeMultBound());
     }
 
     /** EDUARDO */
-    public Multiplicity subEdgeMult(Multiplicity mult) {
-        return this.add(mult, Parameters.getEdgeMultBound());
+    public Set<Multiplicity> subEdgeMult(Multiplicity mult) {
+        return this.sub(mult, Parameters.getEdgeMultBound());
     }
 }

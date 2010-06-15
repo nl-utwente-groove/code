@@ -21,10 +21,9 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.util.Groove;
+import groove.trans.Rule;
+import groove.trans.RuleMatch;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -109,6 +108,18 @@ public class Shape extends DefaultGraph {
                 + this.getEdgeInMult(e) + "\n");
         }
         return sb.toString();
+    }
+
+    @Override
+    public Shape clone() {
+        Shape shape = new Shape(this.graph);
+        shape.nodeShaping.putAll(this.nodeShaping);
+        shape.edgeShaping.putAll(this.edgeShaping);
+        shape.equivRel.addAll(this.equivRel);
+        shape.outEdgeMultMap.putAll(this.outEdgeMultMap);
+        shape.inEdgeMultMap.putAll(this.inEdgeMultMap);
+        shape.edgeSigSet.addAll(this.edgeSigSet);
+        return shape;
     }
 
     // ------------------------------------------------------------------------
@@ -313,123 +324,25 @@ public class Shape extends DefaultGraph {
         return mult;
     }
 
-    // ------------------------------------------------------------------------
-    // Test methods
-    // ------------------------------------------------------------------------
-
-    private static void testShapeBuild0() {
-        File file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-0.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    /** EDUARDO */
+    public Set<RuleMatch> getPreMatches(Rule rule) {
+        return PreMatch.getPreMatches(this, rule);
     }
 
-    private static void testShapeBuild1() {
-        File file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-1.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    /** EDUARDO */
+    public void addNewlyMatNode(ShapeNode newNode, ShapeNode origNode) {
+        this.copyUnaryEdges(origNode, newNode);
+        // XXX FIXME EDUARDO WTF???
     }
 
-    private static void testShapeBuild2() {
-        File file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-2.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
+    /** EDUARDO */
+    private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
+        for (Edge edge : this.outEdgeSet(from)) {
+            if (Util.isUnary(edge)) {
+                Label label = edge.label();
+                this.addEdge(to, label, to);
+            }
         }
-        file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-3.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-4.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testShapeBuild3() {
-        File file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-5.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-6.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-7.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testShapeBuild4() {
-        File file =
-            new File("/home/zambon/Temp/abs-list.gps/shape-build-test-8.gst");
-        try {
-            Graph graph = Groove.loadGraph(file);
-            System.out.println(file);
-            Shape shape = new Shape(graph);
-            System.out.println(shape);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Used for unit testing. */
-    public static void main(String args[]) {
-        Multiplicity.initMultStore();
-        testShapeBuild0();
-        testShapeBuild1();
-        testShapeBuild2();
-        testShapeBuild3();
-        testShapeBuild4();
     }
 
 }
