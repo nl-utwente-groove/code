@@ -109,7 +109,7 @@ public class RuleMatch extends CompositeMatch {
     }
 
     @Override
-    protected RuleMatch createMatch() {
+    public RuleMatch createMatch() {
         return new RuleMatch(getRule(), getElementMap());
     }
 
