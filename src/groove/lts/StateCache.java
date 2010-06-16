@@ -24,6 +24,7 @@ import groove.graph.FrozenDeltaApplier;
 import groove.graph.Graph;
 import groove.graph.NewDeltaGraph;
 import groove.graph.Node;
+import groove.trans.DefaultApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
@@ -92,23 +93,41 @@ class StateCache {
     }
 
     /** 
-     * Retrieves the delta stored in this cache,
-     * or if no delta is stored, gets it from the state (and stores it here).
+     * Lazily creates and returns the delta with respect to the
+     * parent state.
      */
     DeltaApplier getDelta() {
-        return computeDelta(this.state);
+        if (this.delta == null) {
+            this.delta = createDelta();
+        }
+        return this.delta;
     }
 
-    /** 
-     * Returns the delta of a given state.
+    //
+    //    /** 
+    //     * Returns the delta of a given state.
+    //     */
+    //    private DeltaApplier computeDelta(AbstractGraphState state) {
+    //        DeltaApplier result;
+    //        Element[] frozenGraph = state.getFrozenGraph();
+    //        if (frozenGraph != null) {
+    //            result = new FrozenDeltaApplier(frozenGraph);
+    //        } else {
+    //            result = createDelta((DefaultGraphNextState) state);
+    //        }
+    //        return result;
+    //    }
+
+    /**
+     * Callback factory method for a rule application on the basis of this
+     * state.
      */
-    private DeltaApplier computeDelta(AbstractGraphState state) {
-        DeltaApplier result;
-        Element[] frozenGraph = state.getFrozenGraph();
-        if (frozenGraph != null) {
-            result = new FrozenDeltaApplier(frozenGraph);
-        } else {
-            result = ((DefaultGraphNextState) state).getDelta();
+    private DeltaApplier createDelta() {
+        DeltaApplier result = null;
+        if (this.state instanceof DefaultGraphNextState) {
+            DefaultGraphNextState state = (DefaultGraphNextState) this.state;
+            return new DefaultApplication(state.getEvent(),
+                state.source().getGraph(), state.getAddedNodes());
         }
         return result;
     }
@@ -122,7 +141,9 @@ class StateCache {
         Element[] frozenGraph = this.state.getFrozenGraph();
         Graph result;
         if (frozenGraph != null) {
-            result = this.graphFactory.newGraph(null, getDelta());
+            result =
+                this.graphFactory.newGraph(null, new FrozenDeltaApplier(
+                    frozenGraph));
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
                 "Underlying state does not have information to reconstruct the graph");
@@ -132,21 +153,20 @@ class StateCache {
             // make sure states get reconstructed sequentially rather than
             // recursively
             AbstractGraphState backward = state.source();
-            List<AbstractGraphState> stateChain =
-                new LinkedList<AbstractGraphState>();
+            List<DefaultGraphNextState> stateChain =
+                new LinkedList<DefaultGraphNextState>();
             while (backward instanceof GraphNextState
                 && backward.isCacheCleared()
                 && backward.getFrozenGraph() == null) {
-                stateChain.add(0, backward);
+                stateChain.add(0, (DefaultGraphNextState) backward);
                 backward = ((DefaultGraphNextState) backward).source();
                 depth++;
             }
             // now let all states along the chain reconstruct their graphs,
             // from ancestor to this one
             result = backward.getGraph();
-            for (AbstractGraphState forward : stateChain) {
-                result =
-                    this.graphFactory.newGraph(result, computeDelta(forward));
+            for (DefaultGraphNextState forward : stateChain) {
+                result = this.graphFactory.newGraph(result, forward.getDelta());
             }
             result = this.graphFactory.newGraph(result, getDelta());
             // If the state is closed, then we are reconstructing the graph
@@ -330,6 +350,8 @@ class StateCache {
     private final AbstractGraphState state;
     /** The system record generating this state. */
     private final SystemRecord record;
+    /** The delta with respect to the state's parent. */
+    private DeltaApplier delta;
     /** Cached map from events to target transitions. */
     private Map<RuleEvent,GraphState> transitionMap;
     /** Cached graph for this state. */

@@ -55,19 +55,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
      */
+    @Deprecated
     public DefaultGraphNextState(AbstractGraphState source,
             RuleApplication appl, Location control) {
         this(source, appl.getEvent(), appl.getCreatedNodes(), control);
         // getCache().setGraph(appl.getTarget());
-    }
-
-    /**
-     * Constructs a state on the basis of a given parent state and rule
-     * application, with <code>null</code> control location.
-     */
-    public DefaultGraphNextState(AbstractGraphState source, RuleEvent event,
-            Node[] addedNodes) {
-        this(source, event, addedNodes, null);
     }
 
     /**
@@ -295,17 +287,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Returns the delta applier associated with the rule application leading up
      * to this state.
      */
-    DeltaApplier getDelta() {
-        return createRuleApplication();
-    }
-
-    /**
-     * Callback factory method for a rule application on the basis of this
-     * state.
-     */
-    RuleApplication createRuleApplication() {
-        return new DefaultApplication(getEvent(), source().getGraph(),
-            getAddedNodes());
+    public DeltaApplier getDelta() {
+        return getCache().getDelta();
     }
 
     @Override
