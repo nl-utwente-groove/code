@@ -330,13 +330,7 @@ public class Shape extends DefaultGraph {
     }
 
     /** EDUARDO */
-    public void addNewlyMatNode(ShapeNode newNode, ShapeNode origNode) {
-        this.copyUnaryEdges(origNode, newNode);
-        // XXX FIXME EDUARDO WTF???
-    }
-
-    /** EDUARDO */
-    private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
+    public void copyUnaryEdges(ShapeNode from, ShapeNode to) {
         for (Edge edge : this.outEdgeSet(from)) {
             if (Util.isUnary(edge)) {
                 Label label = edge.label();
