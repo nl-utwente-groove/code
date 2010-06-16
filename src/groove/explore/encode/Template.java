@@ -115,7 +115,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
         Serialized result = new Serialized(this.keyword);
         if (this.argumentNames.length == 0) {
-            return result;
+            if (stream.isEmpty()) {
+                return result;
+            } else {
+                return null;
+            }
         }
         if (!stream.consumeLiteral(":")) {
             return null;

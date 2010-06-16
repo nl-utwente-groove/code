@@ -109,6 +109,13 @@ public class StringConsumer {
     }
 
     /**
+     * Checks if the text has been consumed totally.
+     */
+    public boolean isEmpty() {
+        return this.text.isEmpty();
+    }
+
+    /**
      * Attempts to consume a positive number from the beginning of the text.
      * The returned <code>boolean</code> indicates if a number was found (in
      * which case it is removed from text), or not (in which case the text is
