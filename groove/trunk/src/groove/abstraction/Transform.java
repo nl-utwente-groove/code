@@ -36,7 +36,7 @@ public class Transform {
 
     /** EDUARDO */
     public static Set<Shape> transform(GraphShape host, Rule rule) {
-        assert host instanceof Shape : "Cannot use abstract methods to non-abstract graphs.";
+        assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
         Shape shape = (Shape) host;
         Set<Shape> result = new HashSet<Shape>();
 
@@ -46,9 +46,10 @@ public class Transform {
         for (RuleMatch preMatch : preMatches) {
             // Find all materialisations.
             Set<Materialisation> mats =
-                Materialisation.getMats(shape, preMatch);
+                Materialisation.getMaterialisations(shape, preMatch);
             // For all materialisations.
             for (Materialisation mat : mats) {
+                // Transform the shape.
                 result.add(mat.applyMatch());
             }
         }

@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 /**
@@ -24,6 +25,21 @@ import java.util.HashSet;
  * @version $Revision $
  */
 public class EquivRelation<T> extends HashSet<EquivClass<T>> {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** EDUARDO */
+    public EquivRelation() {
+        super();
+    }
+
+    /** EDUARDO */
+    public EquivRelation(Collection<? extends EquivClass<T>> elems) {
+        super();
+        this.addAll(elems);
+    }
 
     // ------------------------------------------------------------------------
     // Other methods
