@@ -24,6 +24,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -201,6 +202,20 @@ public class Util {
     }
 
     /** EDUARDO */
+    public static Set<Node> getReverseNodeMap(Map<Node,? extends Node> map,
+            Node value) {
+        Set<Node> result = new HashSet<Node>();
+        if (map.containsValue(value)) {
+            for (Entry<Node,? extends Node> entry : map.entrySet()) {
+                if (entry.getValue().equals(value)) {
+                    result.add(entry.getKey());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** EDUARDO */
     public static Set<Edge> getReverseOutEdgeMap(NodeEdgeMap map,
             EdgeSignature es) {
         Set<Edge> result = new HashSet<Edge>();
@@ -225,4 +240,19 @@ public class Util {
         }
         return result;
     }
+
+    /** EDUARDO */
+    public static Set<Edge> getReverseEdgeMap(Map<Edge,? extends Edge> map,
+            Edge value) {
+        Set<Edge> result = new HashSet<Edge>();
+        if (map.containsValue(value)) {
+            for (Entry<Edge,? extends Edge> entry : map.entrySet()) {
+                if (entry.getValue().equals(value)) {
+                    result.add(entry.getKey());
+                }
+            }
+        }
+        return result;
+    }
+
 }
