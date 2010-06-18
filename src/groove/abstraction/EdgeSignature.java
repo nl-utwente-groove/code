@@ -88,9 +88,4 @@ public class EdgeSignature {
             && this.equivClass.contains(edge.source());
     }
 
-    /** EDUARDO */
-    public EquivClass<ShapeNode> getEquivClass() {
-        return this.equivClass;
-    }
-
 }

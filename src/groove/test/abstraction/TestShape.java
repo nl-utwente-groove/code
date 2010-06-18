@@ -85,8 +85,8 @@ public class TestShape extends TestCase {
             Shape shape = new Shape(graph);
             assertTrue(shape.nodeSet().size() == 1);
             assertTrue(Util.getBinaryEdges(shape).size() == 1);
-            assertTrue(shape.nodeSet().iterator().next().getMultiplicity().equals(
-                Multiplicity.OMEGA));
+            ShapeNode node = shape.nodeSet().iterator().next();
+            assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,8 +98,8 @@ public class TestShape extends TestCase {
             Shape shape = new Shape(graph);
             assertTrue(shape.nodeSet().size() == 1);
             assertTrue(Util.getBinaryEdges(shape).size() == 1);
-            assertTrue(shape.nodeSet().iterator().next().getMultiplicity().equals(
-                Multiplicity.getMultOf(3)));
+            ShapeNode node = shape.nodeSet().iterator().next();
+            assertTrue(shape.getNodeMult(node).equals(Multiplicity.getMultOf(3)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -111,8 +111,8 @@ public class TestShape extends TestCase {
             Shape shape = new Shape(graph);
             assertTrue(shape.nodeSet().size() == 1);
             assertTrue(Util.getBinaryEdges(shape).size() == 1);
-            assertTrue(shape.nodeSet().iterator().next().getMultiplicity().equals(
-                Multiplicity.OMEGA));
+            ShapeNode node = shape.nodeSet().iterator().next();
+            assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -144,7 +144,7 @@ public class TestShape extends TestCase {
             assertTrue(shape.nodeSet().size() == 2);
             assertTrue(Util.getBinaryEdges(shape).size() == 4);
             for (ShapeNode node : shape.nodeSet()) {
-                assertTrue(node.getMultiplicity().equals(Multiplicity.OMEGA));
+                assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
             }
             for (Edge edge : Util.getBinaryEdges(shape)) {
                 ShapeEdge se = (ShapeEdge) edge;
