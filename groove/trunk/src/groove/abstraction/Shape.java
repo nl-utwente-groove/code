@@ -412,6 +412,27 @@ public class Shape extends DefaultGraph {
     }
 
     /** EDUARDO */
+    public void setShapeAndCreateIdentityMorphism(Graph graph) {
+        assert graph instanceof Shape : "Cannot create a shaping morphism from a non-abstract graph.";
+
+        this.graph = graph;
+
+        // Clear the old shaping map.
+        this.nodeShaping.clear();
+        this.edgeShaping.clear();
+
+        // Create identity node morphism.
+        for (Node node : this.graph.nodeSet()) {
+            this.nodeShaping.put(node, (ShapeNode) node);
+        }
+
+        // Create identity edge morphism.
+        for (Edge edge : this.graph.edgeSet()) {
+            this.edgeShaping.put(edge, (ShapeEdge) edge);
+        }
+    }
+
+    /** EDUARDO */
     public Set<Pair<ShapeNode,Set<Multiplicity>>> materialiseNodes(
             Set<Pair<ShapeNode,Integer>> nodes) {
         Set<Pair<ShapeNode,Set<Multiplicity>>> result =
@@ -430,10 +451,10 @@ public class Shape extends DefaultGraph {
             for (int i = 0; i < numberNewNodes; i++) {
                 ShapeNode newNode = this.createNode();
                 newNodes[i] = newNode;
-                // The new node is concrete so set its multiplicity to one.
-                this.setNodeMult(newNode, oneMult);
                 // Add the new node to the shape.
                 this.addNode(newNode);
+                // The new node is concrete so set its multiplicity to one.
+                this.setNodeMult(newNode, oneMult);
                 // Copy the labels from the original node.
                 this.copyUnaryEdges(origNode, newNode);
                 // Add the new node to the equivalence class of the original node.
@@ -495,6 +516,29 @@ public class Shape extends DefaultGraph {
             result.add(new Pair<ShapeNode,Set<Multiplicity>>(origNode, mults));
         }
 
+        return result;
+    }
+
+    /** EDUARDO */
+    public Map<Node,ShapeNode> getNodeShaping() {
+        return this.nodeShaping;
+    }
+
+    /** EDUARDO */
+    public Map<Edge,ShapeEdge> getEdgeShaping() {
+        return this.edgeShaping;
+    }
+
+    /** EDUARDO */
+    public ShapeEdge getShapeEdge(ShapeNode source, Label label,
+            ShapeNode target) {
+        ShapeEdge result = null;
+        for (ShapeEdge edge : this.outEdgeSet(source)) {
+            if (edge.label().equals(label) && edge.opposite().equals(target)) {
+                result = edge;
+                break;
+            }
+        }
         return result;
     }
 
