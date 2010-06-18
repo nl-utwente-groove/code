@@ -53,7 +53,7 @@ public class PreMatch {
             boolean complyToNodeMult = true;
             for (ShapeNode nodeS : shape.nodeSet()) {
                 Set<Node> nodesG = Util.getReverseNodeMap(map, nodeS);
-                Multiplicity nSMult = nodeS.getMultiplicity();
+                Multiplicity nSMult = shape.getNodeMult(nodeS);
                 if (!Multiplicity.getNodeSetMult(nodesG).isAtMost(nSMult)) {
                     // Violation of node multiplicity.
                     complyToNodeMult = false;

@@ -45,16 +45,17 @@ public class Shape extends DefaultGraph {
     private Graph graph;
 
     // EZ says to himself: BE CAREFUL HERE. Remember that:
-    // - If this.graph is an instance of a concrete graph, then the shaping
+    // - If 'this.graph' is an instance of a concrete graph, then the shaping
     //   relation is an abstraction morphism that goes from elements of
-    //   this.graph to elements of this .
-    // - If this.graph is an instance of a shape, then the shaping relation is
+    //   'this.graph' to elements of 'this'.
+    // - If 'this.graph' is an instance of a shape, then the shaping relation is
     //   a shaping morphism that goes in the OTHER direction, from elements of
-    //   this to elements of this.graph .
+    //   'this' to elements of 'this.graph'.
     private final Map<Node,ShapeNode> nodeShaping;
     private final Map<Edge,ShapeEdge> edgeShaping;
 
     private final EquivRelation<ShapeNode> equivRel;
+    private final Map<ShapeNode,Multiplicity> nodeMultMap;
     private final Map<EdgeSignature,Multiplicity> outEdgeMultMap;
     private final Map<EdgeSignature,Multiplicity> inEdgeMultMap;
     private final Set<EdgeSignature> edgeSigSet;
@@ -70,6 +71,7 @@ public class Shape extends DefaultGraph {
         this.nodeShaping = new HashMap<Node,ShapeNode>();
         this.edgeShaping = new HashMap<Edge,ShapeEdge>();
         this.equivRel = new EquivRelation<ShapeNode>();
+        this.nodeMultMap = new HashMap<ShapeNode,Multiplicity>();
         this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.edgeSigSet = new HashSet<EdgeSignature>();
@@ -83,6 +85,8 @@ public class Shape extends DefaultGraph {
         this.nodeShaping = new HashMap<Node,ShapeNode>(shape.nodeShaping);
         this.edgeShaping = new HashMap<Edge,ShapeEdge>(shape.edgeShaping);
         this.equivRel = new EquivRelation<ShapeNode>(shape.equivRel);
+        this.nodeMultMap =
+            new HashMap<ShapeNode,Multiplicity>(shape.nodeMultMap);
         this.outEdgeMultMap =
             new HashMap<EdgeSignature,Multiplicity>(shape.outEdgeMultMap);
         this.inEdgeMultMap =
@@ -130,21 +134,11 @@ public class Shape extends DefaultGraph {
     }
 
     @Override
-    public boolean removeEdge(Edge edge) {
-        boolean result = super.removeEdge(edge);
-        if (result) {
-            // Update edge multiplicity maps.
-            // EDUARDO : Implement this.
-        }
-        return result;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Nodes:\n");
         for (ShapeNode node : this.nodeSet()) {
-            sb.append("  " + node + ":" + node.getMultiplicity() + " ");
+            sb.append("  " + node + ":" + this.getNodeMult(node) + " ");
             sb.append(Util.getNodeLabels(this, node) + "\n");
         }
         sb.append("Edges:\n");
@@ -197,7 +191,7 @@ public class Shape extends DefaultGraph {
             }
             // Fill the shape node multiplicity.
             Multiplicity nodeMult = Multiplicity.getNodeSetMult(nodeEquivClass);
-            shapeNode.setMultiplicity(nodeMult);
+            this.setNodeMult(shapeNode, nodeMult);
         }
     }
 
@@ -268,12 +262,28 @@ public class Shape extends DefaultGraph {
         }
     }
 
+    /** EDUARDO */
+    public void setNodeMult(ShapeNode node, Multiplicity mult) {
+        assert this.nodeSet().contains(node) : "Node " + node
+            + " is not in the shape!";
+        this.nodeMultMap.put(node, mult);
+    }
+
     private void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
         this.outEdgeMultMap.put(es, mult);
     }
 
     private void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
         this.inEdgeMultMap.put(es, mult);
+    }
+
+    /** EDUARDO */
+    public Multiplicity getNodeMult(ShapeNode node) {
+        Multiplicity mult = this.nodeMultMap.get(node);
+        if (mult == null) {
+            mult = Multiplicity.getMultOf(0);
+        }
+        return mult;
     }
 
     /** EDUARDO */
@@ -402,34 +412,16 @@ public class Shape extends DefaultGraph {
     }
 
     /** EDUARDO */
-    public void setShapeAndCreateIdentityMorphism(Graph graph) {
-        assert graph instanceof Shape : "Cannot create a shaping morphism from a non-abstract graph.";
+    public Set<Pair<ShapeNode,Set<Multiplicity>>> materialiseNodes(
+            Set<Pair<ShapeNode,Integer>> nodes) {
+        Set<Pair<ShapeNode,Set<Multiplicity>>> result =
+            new HashSet<Pair<ShapeNode,Set<Multiplicity>>>();
 
-        this.graph = graph;
-
-        // Clear the old shaping map.
-        this.nodeShaping.clear();
-        this.edgeShaping.clear();
-
-        // Create identity node morphism.
-        for (Node node : this.graph.nodeSet()) {
-            this.nodeShaping.put(node, (ShapeNode) node);
-        }
-
-        // Create identity edge morphism.
-        for (Edge edge : this.graph.edgeSet()) {
-            this.edgeShaping.put(edge, (ShapeEdge) edge);
-        }
-    }
-
-    /** EDUARDO */
-    public void materialiseNodes(Set<Pair<ShapeNode,Integer>> nodes) {
         // For all nodes that need to be materialised.
         for (Pair<ShapeNode,Integer> pair : nodes) {
             ShapeNode origNode = pair.first();
 
             int numberNewNodes = pair.second().intValue();
-            //Multiplicity toSub = Multiplicity.getMultOf(numberNewNodes);
             Multiplicity oneMult = Multiplicity.getMultOf(1);
 
             // Create the new nodes.
@@ -439,7 +431,7 @@ public class Shape extends DefaultGraph {
                 ShapeNode newNode = this.createNode();
                 newNodes[i] = newNode;
                 // The new node is concrete so set its multiplicity to one.
-                newNode.setMultiplicity(oneMult);
+                this.setNodeMult(newNode, oneMult);
                 // Add the new node to the shape.
                 this.addNode(newNode);
                 // Copy the labels from the original node.
@@ -494,45 +486,15 @@ public class Shape extends DefaultGraph {
             // We add the new edges in the end to avoid concurrent modification
             // errors from the iterator in the loop.
             this.addEdgeSetWithoutCheck(newEdges);
-        }
-    }
 
-    /** EDUARDO */
-    public Map<Node,ShapeNode> getNodeShaping() {
-        return this.nodeShaping;
-    }
-
-    /** EDUARDO */
-    public Map<Edge,ShapeEdge> getEdgeShaping() {
-        return this.edgeShaping;
-    }
-
-    /** EDUARDO */
-    public Set<ShapeEdge> getInSharedEdges(ShapeEdge edgeS) {
-        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
-
-        ShapeNode target = edgeS.opposite();
-        Label label = edgeS.label();
-        EdgeSignature es = this.getEdgeInSignature(edgeS);
-        for (ShapeNode source : es.getEquivClass()) {
-            ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null) {
-                result.add(edge);
-            }
+            // OK, we materialised the node, now store the multiplicity set
+            // that will come out from the original node.
+            Multiplicity toSub = Multiplicity.getMultOf(numberNewNodes);
+            Set<Multiplicity> mults =
+                this.getNodeMult(origNode).subNodeMult(toSub);
+            result.add(new Pair<ShapeNode,Set<Multiplicity>>(origNode, mults));
         }
 
-        return result;
-    }
-
-    private ShapeEdge getShapeEdge(ShapeNode source, Label label,
-            ShapeNode target) {
-        ShapeEdge result = null;
-        for (ShapeEdge edge : this.outEdgeSet(source)) {
-            if (edge.label().equals(label) && edge.opposite().equals(target)) {
-                result = edge;
-                break;
-            }
-        }
         return result;
     }
 
