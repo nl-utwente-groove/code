@@ -156,6 +156,35 @@ public class Shape extends DefaultGraph {
         return shape;
     }
 
+    @Override
+    public boolean removeNode(Node node) {
+        boolean removed;
+        removed = super.removeNode(node);
+        if (removed) {
+            // Update all maps of the shape.
+            ShapeNode nodeS = (ShapeNode) node;
+            this.getEquivClassOf(nodeS).remove(nodeS);
+            this.nodeMultMap.remove(nodeS);
+            this.nodeShaping.remove(nodeS);
+
+            for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
+                this.removeEdge(edgeS);
+            }
+        }
+        return removed;
+    }
+
+    @Override
+    public boolean removeEdge(Edge edge) {
+        boolean removed;
+        removed = super.removeEdge(edge);
+        if (removed) {
+            ShapeEdge edgeS = (ShapeEdge) edge;
+            this.edgeShaping.remove(edgeS);
+        }
+        return removed;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -266,14 +295,22 @@ public class Shape extends DefaultGraph {
     public void setNodeMult(ShapeNode node, Multiplicity mult) {
         assert this.nodeSet().contains(node) : "Node " + node
             + " is not in the shape!";
-        this.nodeMultMap.put(node, mult);
+        if (mult.isPositive()) {
+            this.nodeMultMap.put(node, mult);
+        } else {
+            // Setting a node multiplicity to zero is equivalent to removing
+            // the node from the shape.
+            this.removeNode(node);
+        }
     }
 
-    private void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
+    /** EDUARDO */
+    public void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
         this.outEdgeMultMap.put(es, mult);
     }
 
-    private void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
+    /** EDUARDO */
+    public void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
         this.inEdgeMultMap.put(es, mult);
     }
 
@@ -320,12 +357,14 @@ public class Shape extends DefaultGraph {
         return this.nodeShaping.get(node);
     }
 
-    private EdgeSignature getEdgeOutSignature(ShapeEdge edge) {
+    /** EDUARDO */
+    public EdgeSignature getEdgeOutSignature(ShapeEdge edge) {
         EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.opposite());
         return this.getEdgeSignature(edge.source(), edge.label(), ec);
     }
 
-    private EdgeSignature getEdgeInSignature(ShapeEdge edge) {
+    /** EDUARDO */
+    public EdgeSignature getEdgeInSignature(ShapeEdge edge) {
         EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.source());
         return this.getEdgeSignature(edge.opposite(), edge.label(), ec);
     }
@@ -542,4 +581,27 @@ public class Shape extends DefaultGraph {
         return result;
     }
 
+    /** EDUARDO */
+    public void removeImpossibleOutEdges(EdgeSignature es, Set<Edge> edgesToKeep) {
+        ShapeNode source = es.getNode();
+        Label label = es.getLabel();
+        for (ShapeNode target : es.getEquivClass()) {
+            ShapeEdge edge = this.getShapeEdge(source, label, target);
+            if (edge != null && !edgesToKeep.contains(edge)) {
+                this.removeEdge(edge);
+            }
+        }
+    }
+
+    /** EDUARDO */
+    public void removeImpossibleInEdges(EdgeSignature es, Set<Edge> edgesToKeep) {
+        ShapeNode target = es.getNode();
+        Label label = es.getLabel();
+        for (ShapeNode source : es.getEquivClass()) {
+            ShapeEdge edge = this.getShapeEdge(source, label, target);
+            if (edge != null && !edgesToKeep.contains(edge)) {
+                this.removeEdge(edge);
+            }
+        }
+    }
 }

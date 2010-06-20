@@ -95,10 +95,22 @@ public class Materialisation {
 
         // Check the node images.
         for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
-            ShapeNode node = (ShapeNode) nodeEntry.getValue();
-            if (shape.getNodeMult(node).isAbstract()) {
+            ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
+            if (shape.getNodeMult(nodeS).isAbstract()) {
                 // We have a node in the rule that was matched to an abstract node.
-                elemsToMat.putNode(nodeEntry.getKey(), node);
+                elemsToMat.putNode(nodeEntry.getKey(), nodeS);
+            }
+        }
+
+        // Check the edge images.
+        for (Entry<Edge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
+            Edge edgeR = edgeEntry.getKey();
+            ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
+            if (elemsToMat.nodeMap().containsKey(edgeR.source())
+                || elemsToMat.nodeMap().containsKey(edgeR.opposite())) {
+                if (!Util.isUnary(edgeR)) {
+                    elemsToMat.putEdge(edgeR, edgeS);
+                }
             }
         }
 
@@ -242,7 +254,73 @@ public class Materialisation {
         // At this point we assume that all variations on the nodes were
         // resolved, and that the rule match is complete and fixed.
         // Now, we go through the matched edges of the rule and adjust the 
-        
+        // shared edge multiplicities.
+
+        for (Edge origEdge : this.absElems.edgeMap().values()) {
+            ShapeEdge origEdgeS = (ShapeEdge) origEdge;
+            // Through the shaping morphism in the shape of the
+            // materialisation we can get the materialised edges.
+            Set<Edge> newEdges =
+                Util.getReverseEdgeMap(this.shape.getEdgeShaping(), origEdge);
+            // Remove the original edge since it will not help extend
+            // the match.
+            newEdges.remove(origEdgeS);
+
+            Multiplicity toSub = Multiplicity.getMultOf(newEdges.size());
+
+            Set<Materialisation> newMats = new HashSet<Materialisation>();
+
+            // Outgoing edges.
+            EdgeSignature outEs = this.shape.getEdgeOutSignature(origEdgeS);
+            Multiplicity origEdgeOutMult = this.shape.getEdgeSigOutMult(outEs);
+            Set<Multiplicity> outMults = origEdgeOutMult.subEdgeMult(toSub);
+            // For all multiplicities that the original edge needs to have.
+            for (Multiplicity outMult : outMults) {
+                // Create a new materialisation...
+                Materialisation newMat;
+                if (outMults.size() == 1) {
+                    newMat = this;
+                } else {
+                    newMat = this.clone();
+                }
+                if (outMult.isPositive()) {
+                    // ...and properly adjust the multiplicity of the edge signature.
+                    newMat.shape.setEdgeOutMult(outEs, outMult);
+                } else {
+                    // ...remove the impossible edges from the shape.
+                    newMat.shape.removeImpossibleOutEdges(outEs, newEdges);
+                }
+                newMats.add(newMat);
+            }
+
+            // Incoming edges.
+            for (Materialisation newMat : newMats) {
+                EdgeSignature inEs = this.shape.getEdgeInSignature(origEdgeS);
+                Multiplicity origEdgeInMult = this.shape.getEdgeSigInMult(inEs);
+                Set<Multiplicity> inMults = origEdgeInMult.subEdgeMult(toSub);
+                // For all multiplicities that the original edge needs to have.
+                for (Multiplicity inMult : inMults) {
+                    // Create a new materialisation...
+                    // Sorry, running out of meaningful names... :P 
+                    Materialisation spankingNewMat;
+                    if (outMults.size() == 1) {
+                        spankingNewMat = newMat;
+                    } else {
+                        spankingNewMat = newMat.clone();
+                    }
+                    if (inMult.isPositive()) {
+                        // ...and properly adjust the multiplicity of the edge signature.
+                        spankingNewMat.shape.setEdgeInMult(inEs, inMult);
+                    } else {
+                        // ...remove the impossible edges from the shape.
+                        spankingNewMat.shape.removeImpossibleInEdges(inEs,
+                            newEdges);
+                    }
+                    result.add(spankingNewMat);
+                }
+            }
+        }
+
         return result;
     }
 
