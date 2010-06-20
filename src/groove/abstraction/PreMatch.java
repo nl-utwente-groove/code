@@ -16,7 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -63,7 +62,9 @@ public class PreMatch {
 
             // Check edge multiplicities.
             boolean complyToEdgeMult = true;
-            if (complyToNodeMult) {
+            // EZ says to himself: this check was commented out because it
+            // should only be performed after materialisation.
+            /*if (complyToNodeMult) {
                 for (EdgeSignature es : shape.getEdgeSigSet()) {
                     // Outgoing multiplicities.
                     Set<Edge> edgesG = Util.getReverseOutEdgeMap(map, es);
@@ -83,7 +84,7 @@ public class PreMatch {
                         break;
                     }
                 }
-            }
+            }*/
 
             if (complyToNodeMult && complyToEdgeMult) {
                 // We have a pre-match.

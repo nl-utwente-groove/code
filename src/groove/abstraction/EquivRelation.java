@@ -36,9 +36,12 @@ public class EquivRelation<T> extends HashSet<EquivClass<T>> {
     }
 
     /** EDUARDO */
+    @SuppressWarnings("unchecked")
     public EquivRelation(Collection<? extends EquivClass<T>> elems) {
         super();
-        this.addAll(elems);
+        for (EquivClass<T> ec : elems) {
+            this.add((EquivClass<T>) ec.clone());
+        }
     }
 
     // ------------------------------------------------------------------------

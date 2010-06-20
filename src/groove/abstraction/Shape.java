@@ -27,6 +27,7 @@ import groove.util.Pair;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -84,14 +85,28 @@ public class Shape extends DefaultGraph {
         this.graph = shape.graph;
         this.nodeShaping = new HashMap<Node,ShapeNode>(shape.nodeShaping);
         this.edgeShaping = new HashMap<Edge,ShapeEdge>(shape.edgeShaping);
-        this.equivRel = new EquivRelation<ShapeNode>(shape.equivRel);
         this.nodeMultMap =
             new HashMap<ShapeNode,Multiplicity>(shape.nodeMultMap);
-        this.outEdgeMultMap =
-            new HashMap<EdgeSignature,Multiplicity>(shape.outEdgeMultMap);
-        this.inEdgeMultMap =
-            new HashMap<EdgeSignature,Multiplicity>(shape.inEdgeMultMap);
-        this.edgeSigSet = new HashSet<EdgeSignature>(shape.edgeSigSet);
+        this.equivRel = new EquivRelation<ShapeNode>(shape.equivRel);
+
+        // Clone the edge signature set.
+        this.edgeSigSet = new HashSet<EdgeSignature>();
+        for (EdgeSignature es : shape.edgeSigSet) {
+            this.edgeSigSet.add(this.getEdgeSignature(es));
+        }
+
+        // Clone the multiplicity maps.
+        this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
+        for (Entry<EdgeSignature,Multiplicity> entry : shape.outEdgeMultMap.entrySet()) {
+            this.outEdgeMultMap.put(this.getEdgeSignature(entry.getKey()),
+                entry.getValue());
+        }
+        this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
+        for (Entry<EdgeSignature,Multiplicity> entry : shape.inEdgeMultMap.entrySet()) {
+            this.inEdgeMultMap.put(this.getEdgeSignature(entry.getKey()),
+                entry.getValue());
+        }
+
     }
 
     // ------------------------------------------------------------------------
@@ -158,31 +173,46 @@ public class Shape extends DefaultGraph {
 
     @Override
     public boolean removeNode(Node node) {
-        boolean removed;
-        removed = super.removeNode(node);
-        if (removed) {
-            // Update all maps of the shape.
-            ShapeNode nodeS = (ShapeNode) node;
-            this.getEquivClassOf(nodeS).remove(nodeS);
-            this.nodeMultMap.remove(nodeS);
-            this.nodeShaping.remove(nodeS);
+        assert this.nodeSet().contains(node) : "Cannot remove non-existent node.";
+        ShapeNode nodeS = (ShapeNode) node;
 
-            for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
-                this.removeEdge(edgeS);
+        // Remove entry from node multiplicity map.
+        this.nodeMultMap.remove(nodeS);
+
+        // Remove entry from node shaping map.
+        this.nodeShaping.remove(nodeS);
+
+        // Update edge signature maps.
+        Iterator<EdgeSignature> esIter = this.edgeSigSet.iterator();
+        while (esIter.hasNext()) {
+            EdgeSignature es = esIter.next();
+            if (es.getNode().equals(nodeS)) {
+                this.outEdgeMultMap.remove(es);
+                this.inEdgeMultMap.remove(es);
+                esIter.remove();
             }
         }
-        return removed;
+
+        // Collect edges to remove.
+        Set<ShapeEdge> toRemove = new HashSet<ShapeEdge>();
+        toRemove.addAll(this.edgeSet(nodeS));
+        for (ShapeEdge edgeS : toRemove) {
+            this.removeEdge(edgeS);
+        }
+
+        // Remove node from equivalence relation.
+        this.getEquivClassOf(nodeS).remove(nodeS);
+        // Remove node from graph.
+        return super.removeNodeWithoutCheck(node);
     }
 
     @Override
     public boolean removeEdge(Edge edge) {
-        boolean removed;
-        removed = super.removeEdge(edge);
-        if (removed) {
-            ShapeEdge edgeS = (ShapeEdge) edge;
-            this.edgeShaping.remove(edgeS);
-        }
-        return removed;
+        ShapeEdge edgeS = (ShapeEdge) edge;
+        // Remove entry from edge shaping map.
+        this.edgeShaping.remove(edgeS);
+        // Remove edge from graph.
+        return super.removeEdge(edge);
     }
 
     // ------------------------------------------------------------------------
@@ -289,6 +319,10 @@ public class Shape extends DefaultGraph {
                 }
             }
         }
+        // Clean the signature set.
+        this.edgeSigSet.clear();
+        this.edgeSigSet.addAll(this.outEdgeMultMap.keySet());
+        this.edgeSigSet.addAll(this.inEdgeMultMap.keySet());
     }
 
     /** EDUARDO */
@@ -369,7 +403,8 @@ public class Shape extends DefaultGraph {
         return this.getEdgeSignature(edge.opposite(), edge.label(), ec);
     }
 
-    private EdgeSignature getEdgeSignature(ShapeNode node, Label label,
+    /** EDUARDO */
+    public EdgeSignature getEdgeSignature(ShapeNode node, Label label,
             EquivClass<ShapeNode> ec) {
         EdgeSignature newEs = new EdgeSignature(node, label, ec);
         EdgeSignature result = null;
@@ -386,7 +421,17 @@ public class Shape extends DefaultGraph {
         return result;
     }
 
-    private EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
+    /** EDUARDO */
+    public EdgeSignature getEdgeSignature(EdgeSignature es) {
+        ShapeNode node = es.getNode();
+        Label label = es.getLabel();
+        EquivClass<ShapeNode> ec =
+            getEquivClassOf(es.getEquivClass().iterator().next());
+        return this.getEdgeSignature(node, label, ec);
+    }
+
+    /** EDUARDO */
+    public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
         return this.equivRel.getEquivClassOf(node);
     }
 
