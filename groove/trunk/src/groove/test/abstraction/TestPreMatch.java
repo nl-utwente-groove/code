@@ -50,6 +50,9 @@ public class TestPreMatch extends TestCase {
     }
 
     public void testPreMatch0() {
+        Parameters.setNodeMultBound(3);
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
@@ -67,6 +70,9 @@ public class TestPreMatch extends TestCase {
     }
 
     public void testPreMatch1() {
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
@@ -75,10 +81,10 @@ public class TestPreMatch extends TestCase {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-1");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 2);
+            assertTrue(preMatches.size() == 3);
             rule = grammar.getRule("test-match-2");
             preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.isEmpty());
+            assertTrue(preMatches.size() == 4);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
@@ -95,7 +101,7 @@ public class TestPreMatch extends TestCase {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-3");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 5);
+            assertTrue(preMatches.size() == 16);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {

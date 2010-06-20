@@ -18,6 +18,7 @@ package groove.abstraction;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -176,7 +177,12 @@ public class Materialisation {
             // For all multiplicities that the original node needs to have.
             for (Multiplicity mult : mults) {
                 // Create a new materialisation...
-                Materialisation newMat = this.clone();
+                Materialisation newMat;
+                if (mults.size() == 1) {
+                    newMat = this;
+                } else {
+                    newMat = this.clone();
+                }
                 // ...and properly adjust the multiplicity of the original node.
                 newMat.shape.setNodeMult(origNode, mult);
                 newMats.add(newMat);
@@ -262,61 +268,82 @@ public class Materialisation {
             // materialisation we can get the materialised edges.
             Set<Edge> newEdges =
                 Util.getReverseEdgeMap(this.shape.getEdgeShaping(), origEdge);
-            // Remove the original edge since it will not help extend
-            // the match.
+            // Remove the original edge.
             newEdges.remove(origEdgeS);
-
             Multiplicity toSub = Multiplicity.getMultOf(newEdges.size());
+
+            // Collect the set of nodes the we need to inspect.
+            Set<ShapeNode> outNodes = new HashSet<ShapeNode>();
+            Set<ShapeNode> inNodes = new HashSet<ShapeNode>();
+            for (Edge newEdge : newEdges) {
+                outNodes.add((ShapeNode) newEdge.source());
+                inNodes.add((ShapeNode) newEdge.opposite());
+            }
+
+            Label label = origEdgeS.label();
+            EquivClass<ShapeNode> tgtEc =
+                this.shape.getEquivClassOf(origEdgeS.opposite());
+            EquivClass<ShapeNode> srcEc =
+                this.shape.getEquivClassOf(origEdgeS.source());
 
             Set<Materialisation> newMats = new HashSet<Materialisation>();
 
-            // Outgoing edges.
-            EdgeSignature outEs = this.shape.getEdgeOutSignature(origEdgeS);
-            Multiplicity origEdgeOutMult = this.shape.getEdgeSigOutMult(outEs);
-            Set<Multiplicity> outMults = origEdgeOutMult.subEdgeMult(toSub);
-            // For all multiplicities that the original edge needs to have.
-            for (Multiplicity outMult : outMults) {
-                // Create a new materialisation...
-                Materialisation newMat;
-                if (outMults.size() == 1) {
-                    newMat = this;
-                } else {
-                    newMat = this.clone();
+            for (ShapeNode outNode : outNodes) {
+                // Outgoing edges.
+                EdgeSignature outEs =
+                    this.shape.getEdgeSignature(outNode, label, tgtEc);
+                Multiplicity origEdgeOutMult =
+                    this.shape.getEdgeSigOutMult(outEs);
+                Set<Multiplicity> outMults = origEdgeOutMult.subEdgeMult(toSub);
+                // For all multiplicities that the original edge needs to have.
+                for (Multiplicity outMult : outMults) {
+                    // Create a new materialisation...
+                    Materialisation newMat;
+                    if (outMults.size() == 1) {
+                        newMat = this;
+                    } else {
+                        newMat = this.clone();
+                    }
+                    if (outMult.isPositive()) {
+                        // ...and properly adjust the multiplicity of the edge signature.
+                        newMat.shape.setEdgeOutMult(outEs, outMult);
+                    } else {
+                        // ...remove the impossible edges from the shape.
+                        newMat.shape.removeImpossibleOutEdges(outEs, newEdges);
+                    }
+                    newMats.add(newMat);
                 }
-                if (outMult.isPositive()) {
-                    // ...and properly adjust the multiplicity of the edge signature.
-                    newMat.shape.setEdgeOutMult(outEs, outMult);
-                } else {
-                    // ...remove the impossible edges from the shape.
-                    newMat.shape.removeImpossibleOutEdges(outEs, newEdges);
-                }
-                newMats.add(newMat);
             }
 
             // Incoming edges.
             for (Materialisation newMat : newMats) {
-                EdgeSignature inEs = this.shape.getEdgeInSignature(origEdgeS);
-                Multiplicity origEdgeInMult = this.shape.getEdgeSigInMult(inEs);
-                Set<Multiplicity> inMults = origEdgeInMult.subEdgeMult(toSub);
-                // For all multiplicities that the original edge needs to have.
-                for (Multiplicity inMult : inMults) {
-                    // Create a new materialisation...
-                    // Sorry, running out of meaningful names... :P 
-                    Materialisation spankingNewMat;
-                    if (outMults.size() == 1) {
-                        spankingNewMat = newMat;
-                    } else {
-                        spankingNewMat = newMat.clone();
+                for (ShapeNode inNode : inNodes) {
+                    EdgeSignature inEs =
+                        this.shape.getEdgeSignature(inNode, label, srcEc);
+                    Multiplicity origEdgeInMult =
+                        this.shape.getEdgeSigInMult(inEs);
+                    Set<Multiplicity> inMults =
+                        origEdgeInMult.subEdgeMult(toSub);
+                    // For all multiplicities that the original edge needs to have.
+                    for (Multiplicity inMult : inMults) {
+                        // Create a new materialisation...
+                        // Sorry, running out of meaningful names... :P 
+                        Materialisation spankingNewMat;
+                        if (inMults.size() == 1) {
+                            spankingNewMat = newMat;
+                        } else {
+                            spankingNewMat = newMat.clone();
+                        }
+                        if (inMult.isPositive()) {
+                            // ...and properly adjust the multiplicity of the edge signature.
+                            spankingNewMat.shape.setEdgeInMult(inEs, inMult);
+                        } else {
+                            // ...remove the impossible edges from the shape.
+                            spankingNewMat.shape.removeImpossibleInEdges(inEs,
+                                newEdges);
+                        }
+                        result.add(spankingNewMat);
                     }
-                    if (inMult.isPositive()) {
-                        // ...and properly adjust the multiplicity of the edge signature.
-                        spankingNewMat.shape.setEdgeInMult(inEs, inMult);
-                    } else {
-                        // ...remove the impossible edges from the shape.
-                        spankingNewMat.shape.removeImpossibleInEdges(inEs,
-                            newEdges);
-                    }
-                    result.add(spankingNewMat);
                 }
             }
         }
@@ -359,10 +386,36 @@ public class Materialisation {
         }
     }
 
+    private static void testMaterialisation1() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-1").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-1");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
     /** Unit test. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        testMaterialisation0();
+        //testMaterialisation0();
+        testMaterialisation1();
     }
 
 }

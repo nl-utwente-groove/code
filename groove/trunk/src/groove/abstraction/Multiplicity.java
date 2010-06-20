@@ -107,9 +107,11 @@ public final class Multiplicity {
     /** EDUARDO */
     public static Multiplicity getMultOf(int value) {
         assert STORE != null : "The multiplicity store must be initialized first.";
-        assert value >= 0 && value < STORE.length - 1 : "Invalid multiplicity value: "
-            + value;
-        return STORE[value];
+        if (value >= 0 && value < STORE.length - 1) {
+            return STORE[value];
+        } else {
+            return new Multiplicity(value);
+        }
     }
 
     /** EDUARDO */
