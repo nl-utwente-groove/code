@@ -66,7 +66,7 @@ public class Materialisation {
     private Materialisation(Materialisation mat) {
         this.shape = mat.shape.clone();
         this.preMatch = mat.preMatch;
-        this.absElems = mat.absElems;
+        this.absElems = mat.absElems.clone();
         this.match = mat.match.clone();
     }
 
@@ -190,35 +190,45 @@ public class Materialisation {
         }
 
         // Now we need to expand the pre-match that is shared by all newMats.
-        for (Materialisation newMat : newMats) {
-            for (Node nodeR : newMat.absElems.nodeMap().keySet()) {
-                // nodeR was matched in the pre-match to an abstract node.
-                ShapeNode origNode =
-                    (ShapeNode) newMat.absElems.nodeMap().get(nodeR);
-                // Through the shaping morphism in the shape of the
-                // materialisation we can get the materialised nodes.
-                Set<Node> newNodes =
-                    Util.getReverseNodeMap(newMat.shape.getNodeShaping(),
-                        origNode);
-                // Remove the original node since it will not help extend
-                // the match.
-                newNodes.remove(origNode);
-                if (newNodes.size() == 1) {
-                    ShapeNode nodeS = (ShapeNode) newNodes.iterator().next();
-                    newMat.extendMatch(nodeR, nodeS);
+        Set<Materialisation> todoMats = new HashSet<Materialisation>(newMats);
+        while (!todoMats.isEmpty()) {
+            Set<Materialisation> newTodoMats = new HashSet<Materialisation>();
+            for (Materialisation newMat : todoMats) {
+                if (newMat.isExtensionFinished()) {
                     result.add(newMat);
                 } else {
-                    // For each possibility to match the rule node, we
-                    // create a new materialisation object.
-                    for (Node newNode : newNodes) {
-                        ShapeNode nodeS = (ShapeNode) newNode;
-                        // Sorry, running out of meaningful names... :P 
-                        Materialisation spankingNewMat = newMat.clone();
-                        spankingNewMat.extendMatch(nodeR, nodeS);
-                        result.add(spankingNewMat);
+                    for (Node nodeR : newMat.absElems.nodeMap().keySet()) {
+                        // nodeR was matched in the pre-match to an abstract node.
+                        ShapeNode origNode =
+                            (ShapeNode) newMat.absElems.nodeMap().get(nodeR);
+                        // Through the shaping morphism in the shape of the
+                        // materialisation we can get the materialised nodes.
+                        Set<Node> newNodes =
+                            Util.getReverseNodeMap(
+                                newMat.shape.getNodeShaping(), origNode);
+                        // Remove the original node since it will not help extend
+                        // the match.
+                        newNodes.remove(origNode);
+                        if (newNodes.size() == 1) {
+                            ShapeNode nodeS =
+                                (ShapeNode) newNodes.iterator().next();
+                            newMat.extendMatch(nodeR, nodeS);
+                            newTodoMats.add(newMat);
+                        } else {
+                            // For each possibility to match the rule node, we
+                            // create a new materialisation object.
+                            for (Node newNode : newNodes) {
+                                ShapeNode nodeS = (ShapeNode) newNode;
+                                // Sorry, running out of meaningful names... :P 
+                                Materialisation spankingNewMat = newMat.clone();
+                                spankingNewMat.extendMatch(nodeR, nodeS);
+                                newTodoMats.add(spankingNewMat);
+                            }
+                        }
                     }
                 }
             }
+            todoMats = newTodoMats;
         }
 
         return result;
@@ -226,6 +236,7 @@ public class Materialisation {
 
     private void extendMatch(Node nodeR, ShapeNode nodeS) {
         this.match.putNode(nodeR, nodeS);
+        this.absElems.removeNode(nodeR);
         // Look for all edges where nodeR occurs and update the edge map.
         for (Entry<Edge,Edge> edgeEntry : this.match.edgeMap().entrySet()) {
             Edge edgeR = edgeEntry.getKey();
@@ -252,6 +263,10 @@ public class Materialisation {
                 this.match.putEdge(edgeR, newEdgeS);
             }
         }
+    }
+
+    private boolean isExtensionFinished() {
+        return this.absElems.nodeMap().isEmpty();
     }
 
     private Set<Materialisation> finishMaterialisation() {
@@ -294,6 +309,10 @@ public class Materialisation {
                     this.shape.getEdgeSignature(outNode, label, tgtEc);
                 Multiplicity origEdgeOutMult =
                     this.shape.getEdgeSigOutMult(outEs);
+                if (!toSub.isAtMost(origEdgeOutMult)) {
+                    // We have an invalid configuration. Skip it.
+                    continue;
+                }
                 Set<Multiplicity> outMults = origEdgeOutMult.subEdgeMult(toSub);
                 // For all multiplicities that the original edge needs to have.
                 for (Multiplicity outMult : outMults) {
@@ -322,6 +341,11 @@ public class Materialisation {
                         this.shape.getEdgeSignature(inNode, label, srcEc);
                     Multiplicity origEdgeInMult =
                         this.shape.getEdgeSigInMult(inEs);
+                    // EDUARDO : WTF? This check is wrong...
+                    if (!toSub.isAtMost(origEdgeInMult)) {
+                        // We have an invalid configuration. Skip it.
+                        continue;
+                    }
                     Set<Multiplicity> inMults =
                         origEdgeInMult.subEdgeMult(toSub);
                     // For all multiplicities that the original edge needs to have.
