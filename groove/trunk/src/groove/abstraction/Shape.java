@@ -426,12 +426,14 @@ public class Shape extends DefaultGraph {
         ShapeNode node = es.getNode();
         Label label = es.getLabel();
         EquivClass<ShapeNode> ec =
-            getEquivClassOf(es.getEquivClass().iterator().next());
+            this.getEquivClassOf(es.getEquivClass().iterator().next());
         return this.getEdgeSignature(node, label, ec);
     }
 
     /** EDUARDO */
     public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
+        assert this.nodeSet().contains(node) : "Node " + node
+            + " is not in the shape!";
         return this.equivRel.getEquivClassOf(node);
     }
 
@@ -627,24 +629,24 @@ public class Shape extends DefaultGraph {
     }
 
     /** EDUARDO */
-    public void removeImpossibleOutEdges(EdgeSignature es, Set<Edge> edgesToKeep) {
+    public void removeImpossibleOutEdges(EdgeSignature es, ShapeEdge edgeToKeep) {
         ShapeNode source = es.getNode();
         Label label = es.getLabel();
         for (ShapeNode target : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null && !edgesToKeep.contains(edge)) {
+            if (edge != null && !edgeToKeep.equals(edge)) {
                 this.removeEdge(edge);
             }
         }
     }
 
     /** EDUARDO */
-    public void removeImpossibleInEdges(EdgeSignature es, Set<Edge> edgesToKeep) {
+    public void removeImpossibleInEdges(EdgeSignature es, ShapeEdge edgeToKeep) {
         ShapeNode target = es.getNode();
         Label label = es.getLabel();
         for (ShapeNode source : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null && !edgesToKeep.contains(edge)) {
+            if (edge != null && !edgeToKeep.equals(edge)) {
                 this.removeEdge(edge);
             }
         }

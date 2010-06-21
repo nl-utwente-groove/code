@@ -60,33 +60,7 @@ public class PreMatch {
                 }
             }
 
-            // Check edge multiplicities.
-            boolean complyToEdgeMult = true;
-            // EZ says to himself: this check was commented out because it
-            // should only be performed after materialisation.
-            /*if (complyToNodeMult) {
-                for (EdgeSignature es : shape.getEdgeSigSet()) {
-                    // Outgoing multiplicities.
-                    Set<Edge> edgesG = Util.getReverseOutEdgeMap(map, es);
-                    Multiplicity esOutMult = shape.getEdgeSigOutMult(es);
-                    if (!Multiplicity.getEdgeSetMult(edgesG).isAtMost(esOutMult)) {
-                        // Violation of edge out multiplicity.
-                        complyToEdgeMult = false;
-                        break;
-                    }
-
-                    // Incoming multiplicities.
-                    edgesG = Util.getReverseInEdgeMap(map, es);
-                    Multiplicity esInMult = shape.getEdgeSigInMult(es);
-                    if (!Multiplicity.getEdgeSetMult(edgesG).isAtMost(esInMult)) {
-                        // Violation of edge in multiplicity.
-                        complyToEdgeMult = false;
-                        break;
-                    }
-                }
-            }*/
-
-            if (complyToNodeMult && complyToEdgeMult) {
+            if (complyToNodeMult) {
                 // We have a pre-match.
                 preMatches.add(match);
             }
