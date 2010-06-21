@@ -20,7 +20,10 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.rel.VarNodeEdgeMap;
+import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.SPOEvent;
 import groove.util.Pair;
 
 import java.util.ArrayList;
@@ -311,9 +314,11 @@ public class Materialisation {
     }
 
     /** EDUARDO */
-    public Shape applyMatch() {
-        // EDUARDO : Implement this.
-        return null;
+    public ShapeApplication getRuleApplication() {
+        RuleEvent transfEvent =
+            new SPOEvent(this.preMatch.getRule(), (VarNodeEdgeMap) this.match,
+                null, false);
+        return new ShapeApplication(transfEvent, this.shape);
     }
 
     /** EDUARDO */
