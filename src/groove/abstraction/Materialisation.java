@@ -17,21 +17,15 @@
 package groove.abstraction;
 
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.util.Pair;
-import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -77,8 +71,8 @@ public class Materialisation {
 
     @Override
     public String toString() {
-        return this.shape.toString() + this.match.toString() + "\n"
-            + this.absElems.toString() + "\n";
+        return "Materialisation:\nShape:\n" + this.shape.toString() + "Match: "
+            + this.match.toString() + "\n";
     }
 
     @Override
@@ -170,23 +164,22 @@ public class Materialisation {
         // By materialising nodes we actually want a set of materialisations.
         // Construct this set now.
         Set<Materialisation> newMats = new HashSet<Materialisation>();
-        // For all original node that materialised one or more copies.
-        for (Pair<ShapeNode,Set<Multiplicity>> pair : origNodesAndMults) {
-            ShapeNode origNode = pair.first();
-            Set<Multiplicity> mults = pair.second();
-            // For all multiplicities that the original node needs to have.
-            for (Multiplicity mult : mults) {
-                // Create a new materialisation...
-                Materialisation newMat;
-                if (mults.size() == 1) {
-                    newMat = this;
-                } else {
-                    newMat = this.clone();
-                }
-                // ...and properly adjust the multiplicity of the original node.
+        Iterator<Set<Pair<ShapeNode,Multiplicity>>> iter =
+            new PairSetIterator<ShapeNode,Multiplicity>(origNodesAndMults);
+        while (iter.hasNext()) {
+            // This set represents a variation of a materialisation.
+            Set<Pair<ShapeNode,Multiplicity>> nodesAndMultsPairs = iter.next();
+            // Create a new materialisation object.
+            Materialisation newMat = this.clone();
+            for (Pair<ShapeNode,Multiplicity> pair : nodesAndMultsPairs) {
+                // For all original node that materialised one or more copies.
+                ShapeNode origNode = pair.first();
+                Multiplicity mult = pair.second();
+                // Properly adjust the multiplicity of the original node.
                 newMat.shape.setNodeMult(origNode, mult);
-                newMats.add(newMat);
             }
+            // Store this new materialisation.
+            newMats.add(newMat);
         }
 
         // Extend the pre-match of all the newly constructed materialisations.
@@ -280,7 +273,9 @@ public class Materialisation {
                 // Variables srcS and tgtS were already properly updated.
                 ShapeEdge newEdgeS =
                     this.shape.getShapeEdge(srcS, origEdgeS.label(), tgtS);
-                this.match.putEdge(edgeR, newEdgeS);
+                if (newEdgeS != null) {
+                    this.match.putEdge(edgeR, newEdgeS);
+                }
             }
         }
     }
@@ -321,91 +316,9 @@ public class Materialisation {
         return null;
     }
 
-    // ------------------------------------------------------------------------
-    // Test methods
-    // ------------------------------------------------------------------------
-
-    private static void testMaterialisation0() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-0").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testMaterialisation1() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-1").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testMaterialisation2() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-2").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Unit test. */
-    public static void main(String args[]) {
-        Multiplicity.initMultStore();
-        //testMaterialisation0();
-        //testMaterialisation1();
-        testMaterialisation2();
+    /** EDUARDO */
+    public Shape getShape() {
+        return this.shape;
     }
 
 }
