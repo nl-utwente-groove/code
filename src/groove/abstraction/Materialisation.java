@@ -18,7 +18,6 @@ package groove.abstraction;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -31,7 +30,9 @@ import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -76,8 +77,8 @@ public class Materialisation {
 
     @Override
     public String toString() {
-        return this.shape.toString() + this.preMatch.toString() + "\n"
-            + this.absElems.toString();
+        return this.shape.toString() + this.match.toString() + "\n"
+            + this.absElems.toString() + "\n";
     }
 
     @Override
@@ -135,11 +136,10 @@ public class Materialisation {
         // Initial materialisation object.
         Materialisation initialMat = new Materialisation(shapeClone, preMatch);
 
-        Set<Materialisation> possibleMats =
-            initialMat.materialiseNodesAndExtendPreMatch();
+        result = initialMat.materialiseNodesAndExtendPreMatch();
 
-        for (Materialisation possibleMat : possibleMats) {
-            result.addAll(possibleMat.finishMaterialisation());
+        for (Materialisation mat : result) {
+            mat.finishMaterialisation();
         }
 
         return result;
@@ -189,49 +189,69 @@ public class Materialisation {
             }
         }
 
-        // Now we need to expand the pre-match that is shared by all newMats.
-        Set<Materialisation> todoMats = new HashSet<Materialisation>(newMats);
-        while (!todoMats.isEmpty()) {
-            Set<Materialisation> newTodoMats = new HashSet<Materialisation>();
-            for (Materialisation newMat : todoMats) {
-                if (newMat.isExtensionFinished()) {
-                    result.add(newMat);
-                } else {
-                    for (Node nodeR : newMat.absElems.nodeMap().keySet()) {
-                        // nodeR was matched in the pre-match to an abstract node.
-                        ShapeNode origNode =
-                            (ShapeNode) newMat.absElems.nodeMap().get(nodeR);
-                        // Through the shaping morphism in the shape of the
-                        // materialisation we can get the materialised nodes.
-                        Set<Node> newNodes =
-                            Util.getReverseNodeMap(
-                                newMat.shape.getNodeShaping(), origNode);
-                        // Remove the original node since it will not help extend
-                        // the match.
-                        newNodes.remove(origNode);
-                        if (newNodes.size() == 1) {
-                            ShapeNode nodeS =
-                                (ShapeNode) newNodes.iterator().next();
-                            newMat.extendMatch(nodeR, nodeS);
-                            newTodoMats.add(newMat);
-                        } else {
-                            // For each possibility to match the rule node, we
-                            // create a new materialisation object.
-                            for (Node newNode : newNodes) {
-                                ShapeNode nodeS = (ShapeNode) newNode;
-                                // Sorry, running out of meaningful names... :P 
-                                Materialisation spankingNewMat = newMat.clone();
-                                spankingNewMat.extendMatch(nodeR, nodeS);
-                                newTodoMats.add(spankingNewMat);
-                            }
-                        }
-                    }
-                }
-            }
-            todoMats = newTodoMats;
+        // Extend the pre-match of all the newly constructed materialisations.
+        for (Materialisation newMat : newMats) {
+            result.addAll(newMat.extendPreMatch());
         }
 
         return result;
+    }
+
+    private Set<Materialisation> extendPreMatch() {
+        Set<Materialisation> result = new HashSet<Materialisation>();
+        // Process the nodes pre-matched to abstract nodes using a queue.
+        List<Materialisation> todoMats = new ArrayList<Materialisation>();
+        // Add initial element to end.
+        todoMats.add(this);
+        while (!todoMats.isEmpty()) {
+            // Remove from head.
+            Materialisation mat = todoMats.remove(0);
+            if (mat.isExtensionFinished()) {
+                // We are done with this one.
+                result.add(mat);
+            } else {
+                // Take the next node in the pre-match that need to be extended.
+                Entry<Node,Node> entry =
+                    mat.absElems.nodeMap().entrySet().iterator().next();
+                Node nodeR = entry.getKey();
+                ShapeNode origNodeS = (ShapeNode) entry.getValue();
+                // Look in the shaping morphism to get the new nodes that were
+                // materialised from the original node.
+                Set<Node> newNodes =
+                    Util.getReverseNodeMap(mat.shape.getNodeShaping(),
+                        origNodeS);
+                // Remove the original node from the set of new nodes because
+                // the original node will not help to extend the match.
+                newNodes.remove(origNodeS);
+                // The match should be injective so remove previously matched
+                // nodes.
+                mat.removePreviouslyMatchedNodes(newNodes);
+                // Iterate over the new nodes and duplicate the materialisation
+                // object when necessary.
+                for (Node newNode : newNodes) {
+                    ShapeNode nodeS = (ShapeNode) newNode;
+                    if (newNodes.size() == 1) {
+                        // We only have one new node, so no need for cloning.
+                        mat.extendMatch(nodeR, nodeS);
+                        todoMats.add(mat);
+                    } else {
+                        // Clone our current materialisation.
+                        Materialisation newMat = mat.clone();
+                        newMat.extendMatch(nodeR, nodeS);
+                        todoMats.add(newMat);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void removePreviouslyMatchedNodes(Set<Node> nodes) {
+        // Look at the partially extended match and remove occurring nodes.
+        for (Node node : this.match.nodeMap().values()) {
+            nodes.remove(node);
+        }
     }
 
     private void extendMatch(Node nodeR, ShapeNode nodeS) {
@@ -269,110 +289,30 @@ public class Materialisation {
         return this.absElems.nodeMap().isEmpty();
     }
 
-    private Set<Materialisation> finishMaterialisation() {
-        Set<Materialisation> result = new HashSet<Materialisation>();
-
+    private void finishMaterialisation() {
         // At this point we assume that all variations on the nodes were
         // resolved, and that the rule match is complete and fixed.
         // Now, we go through the matched edges of the rule and adjust the 
         // shared edge multiplicities.
 
-        for (Edge origEdge : this.absElems.edgeMap().values()) {
-            ShapeEdge origEdgeS = (ShapeEdge) origEdge;
-            // Through the shaping morphism in the shape of the
-            // materialisation we can get the materialised edges.
-            Set<Edge> newEdges =
-                Util.getReverseEdgeMap(this.shape.getEdgeShaping(), origEdge);
-            // Remove the original edge.
-            newEdges.remove(origEdgeS);
-            Multiplicity toSub = Multiplicity.getMultOf(newEdges.size());
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
+        for (Edge edgeR : this.absElems.edgeMap().keySet()) {
+            ShapeEdge mappedEdge = (ShapeEdge) this.match.getEdge(edgeR);
 
-            // Collect the set of nodes the we need to inspect.
-            Set<ShapeNode> outNodes = new HashSet<ShapeNode>();
-            Set<ShapeNode> inNodes = new HashSet<ShapeNode>();
-            for (Edge newEdge : newEdges) {
-                outNodes.add((ShapeNode) newEdge.source());
-                inNodes.add((ShapeNode) newEdge.opposite());
+            // Check outgoing multiplicities.
+            EdgeSignature outEs = this.shape.getEdgeOutSignature(mappedEdge);
+            Multiplicity outMult = this.shape.getEdgeSigOutMult(outEs);
+            if (outMult.equals(oneMult)) {
+                this.shape.removeImpossibleOutEdges(outEs, mappedEdge);
             }
 
-            Label label = origEdgeS.label();
-            EquivClass<ShapeNode> tgtEc =
-                this.shape.getEquivClassOf(origEdgeS.opposite());
-            EquivClass<ShapeNode> srcEc =
-                this.shape.getEquivClassOf(origEdgeS.source());
-
-            Set<Materialisation> newMats = new HashSet<Materialisation>();
-
-            for (ShapeNode outNode : outNodes) {
-                // Outgoing edges.
-                EdgeSignature outEs =
-                    this.shape.getEdgeSignature(outNode, label, tgtEc);
-                Multiplicity origEdgeOutMult =
-                    this.shape.getEdgeSigOutMult(outEs);
-                if (!toSub.isAtMost(origEdgeOutMult)) {
-                    // We have an invalid configuration. Skip it.
-                    continue;
-                }
-                Set<Multiplicity> outMults = origEdgeOutMult.subEdgeMult(toSub);
-                // For all multiplicities that the original edge needs to have.
-                for (Multiplicity outMult : outMults) {
-                    // Create a new materialisation...
-                    Materialisation newMat;
-                    if (outMults.size() == 1) {
-                        newMat = this;
-                    } else {
-                        newMat = this.clone();
-                    }
-                    if (outMult.isPositive()) {
-                        // ...and properly adjust the multiplicity of the edge signature.
-                        newMat.shape.setEdgeOutMult(outEs, outMult);
-                    } else {
-                        // ...remove the impossible edges from the shape.
-                        newMat.shape.removeImpossibleOutEdges(outEs, newEdges);
-                    }
-                    newMats.add(newMat);
-                }
-            }
-
-            // Incoming edges.
-            for (Materialisation newMat : newMats) {
-                for (ShapeNode inNode : inNodes) {
-                    EdgeSignature inEs =
-                        this.shape.getEdgeSignature(inNode, label, srcEc);
-                    Multiplicity origEdgeInMult =
-                        this.shape.getEdgeSigInMult(inEs);
-                    // EDUARDO : WTF? This check is wrong...
-                    if (!toSub.isAtMost(origEdgeInMult)) {
-                        // We have an invalid configuration. Skip it.
-                        continue;
-                    }
-                    Set<Multiplicity> inMults =
-                        origEdgeInMult.subEdgeMult(toSub);
-                    // For all multiplicities that the original edge needs to have.
-                    for (Multiplicity inMult : inMults) {
-                        // Create a new materialisation...
-                        // Sorry, running out of meaningful names... :P 
-                        Materialisation spankingNewMat;
-                        if (inMults.size() == 1) {
-                            spankingNewMat = newMat;
-                        } else {
-                            spankingNewMat = newMat.clone();
-                        }
-                        if (inMult.isPositive()) {
-                            // ...and properly adjust the multiplicity of the edge signature.
-                            spankingNewMat.shape.setEdgeInMult(inEs, inMult);
-                        } else {
-                            // ...remove the impossible edges from the shape.
-                            spankingNewMat.shape.removeImpossibleInEdges(inEs,
-                                newEdges);
-                        }
-                        result.add(spankingNewMat);
-                    }
-                }
+            // Check incoming multiplicities.
+            EdgeSignature inEs = this.shape.getEdgeInSignature(mappedEdge);
+            Multiplicity inMult = this.shape.getEdgeSigInMult(inEs);
+            if (inMult.equals(oneMult)) {
+                this.shape.removeImpossibleInEdges(inEs, mappedEdge);
             }
         }
-
-        return result;
     }
 
     /** EDUARDO */
@@ -435,11 +375,37 @@ public class Materialisation {
         }
     }
 
+    private static void testMaterialisation2() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-2").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-1");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
     /** Unit test. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
         //testMaterialisation0();
-        testMaterialisation1();
+        //testMaterialisation1();
+        testMaterialisation2();
     }
 
 }
