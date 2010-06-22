@@ -34,7 +34,6 @@ public class AllAbstractionTests {
         suite.addTest(new TestSuite(TestGraphNeighEquiv.class));
         suite.addTest(new TestSuite(TestShape.class));
         suite.addTest(new TestSuite(TestPreMatch.class));
-        suite.addTest(new TestSuite(TestPreMatch.class));
         suite.addTest(new TestSuite(TestMaterialisation.class));
         // $JUnit-END$
         return suite;

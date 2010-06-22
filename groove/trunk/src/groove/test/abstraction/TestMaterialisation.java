@@ -64,6 +64,8 @@ public class TestMaterialisation extends TestCase {
                 assertTrue(mats.size() == 2);
                 for (Materialisation mat : mats) {
                     assertTrue(mat.getShape().nodeSet().size() == 5);
+                    Shape result = mat.applyMatch();
+                    assertTrue(result.nodeSet().size() == 4);
                 }
             }
         } catch (IOException e) {
@@ -120,6 +122,35 @@ public class TestMaterialisation extends TestCase {
                 for (Materialisation mat : mats) {
                     assertTrue(mat.getShape().nodeSet().size() == 5
                         || mat.getShape().nodeSet().size() == 4);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testRuleApplication() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("rule-app-test-0").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("add");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            assertTrue(preMatches.size() == 1);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                assertTrue(mats.size() == 1);
+                for (Materialisation mat : mats) {
+                    assertTrue(mat.getShape().nodeSet().size() == 4);
+                    Shape result = mat.applyMatch();
+                    assertTrue(result.nodeSet().size() == 5);
                 }
             }
         } catch (IOException e) {

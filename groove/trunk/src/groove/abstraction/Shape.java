@@ -17,6 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.DefaultGraph;
+import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -25,6 +26,7 @@ import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.util.Pair;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,10 +36,11 @@ import java.util.Map.Entry;
 
 /**
  * EDUARDO
+ * This is where the magic happens... :P
  * @author Eduardo Zambon
  * @version $Revision $
  */
-public class Shape extends DefaultGraph {
+public class Shape extends DefaultGraph implements DeltaTarget {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -171,6 +174,58 @@ public class Shape extends DefaultGraph {
         return shape;
     }
 
+    /**
+     * WARNING! Be very careful with this method!
+     * Since we are overriding it, we cannot add additional parameters.
+     * Therefore, we have no information to update the shape. Thus, we have
+     * to resort to a default behaviour, that is:
+     * - The node gets multiplicity one;
+     * - The node gets its own new equivalence class.
+     * If you want to avoid the method side-effects and perform the book
+     * keeping yourself, the call super.addNode(Node) . In this case, be careful
+     * not to leave the shape structures in an inconsistent state...
+     */
+    @Override
+    public boolean addNode(Node node) {
+        assert node instanceof ShapeNode : "Invalid node type!";
+        boolean added = super.addNode(node);
+        if (added) {
+            ShapeNode nodeS = (ShapeNode) node;
+            this.setNodeMult(nodeS, Multiplicity.getMultOf(1));
+            EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
+            newEc.add(nodeS);
+            this.equivRel.add(newEc);
+        }
+        return added;
+    }
+
+    @Override
+    public boolean addEdgeWithoutCheck(Edge edge) {
+        assert edge instanceof ShapeEdge : "Invalid edge type!";
+        ShapeEdge edgeS = (ShapeEdge) edge;
+        boolean added = super.addEdgeWithoutCheck(edgeS);
+        if (added) {
+            if (!Util.isUnary(edgeS)) {
+                Multiplicity zero = Multiplicity.getMultOf(0);
+                Multiplicity one = Multiplicity.getMultOf(1);
+
+                // Outgoing multiplicity.
+                EdgeSignature outEs = this.getEdgeOutSignature(edgeS);
+                Multiplicity outMult = this.getEdgeSigOutMult(outEs);
+                if (outMult.equals(zero)) {
+                    this.setEdgeOutMult(outEs, one);
+                }
+                // Incoming multiplicity.
+                EdgeSignature inEs = this.getEdgeInSignature(edgeS);
+                Multiplicity inMult = this.getEdgeSigInMult(inEs);
+                if (inMult.equals(zero)) {
+                    this.setEdgeInMult(inEs, one);
+                }
+            }
+        }
+        return added;
+    }
+
     @Override
     public boolean removeNode(Node node) {
         assert this.nodeSet().contains(node) : "Cannot remove non-existent node.";
@@ -215,6 +270,15 @@ public class Shape extends DefaultGraph {
         return super.removeEdge(edge);
     }
 
+    @Override
+    public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
+        boolean removed = false;
+        for (Node node : nodeSet) {
+            removed |= this.removeNode(node);
+        }
+        return removed;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -243,7 +307,9 @@ public class Shape extends DefaultGraph {
         for (EquivClass<Node> nodeEquivClass : currGraphNeighEquiv) {
             ShapeNode shapeNode = this.createNode();
             // Add a shape node to the shape.
-            this.addNode(shapeNode);
+            // Call the super method because we have additional information on
+            // the node to be added.
+            super.addNode(shapeNode);
             // Update the shaping information.
             for (Node graphNode : nodeEquivClass) {
                 this.nodeShaping.put(graphNode, shapeNode);
@@ -537,8 +603,9 @@ public class Shape extends DefaultGraph {
             for (int i = 0; i < numberNewNodes; i++) {
                 ShapeNode newNode = this.createNode();
                 newNodes[i] = newNode;
-                // Add the new node to the shape.
-                this.addNode(newNode);
+                // Add the new node to the shape. Call the super method because
+                // we have additional information on the node to be added.
+                super.addNode(newNode);
                 // The new node is concrete so set its multiplicity to one.
                 this.setNodeMult(newNode, oneMult);
                 // Copy the labels from the original node.

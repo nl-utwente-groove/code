@@ -16,6 +16,9 @@
  */
 package groove.graph;
 
+import groove.abstraction.ShapeEdge;
+import groove.abstraction.ShapeNode;
+
 /**
  * Default implementation of a generic node-edge-map. The implementation is
  * based on two internally stored hash maps, for the nodes and edges. Labels are
@@ -109,6 +112,15 @@ public class NodeEdgeHashMap extends
      */
     protected BinaryEdge createBinaryEdge(Node sourceImage, Label labelImage,
             Node targetImage) {
+        // EDUARDO says: very ugly hack here.
+        // Sorry about this, need to solve this fast... :P
+        // Begin HACK 
+        if (sourceImage instanceof ShapeNode
+            || targetImage instanceof ShapeNode) {
+            return DefaultEdge.createEdge(sourceImage, labelImage, targetImage,
+                ShapeEdge.CONS);
+        }
+        // End HACK
         return DefaultEdge.createEdge(sourceImage, labelImage, targetImage);
     }
 
