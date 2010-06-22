@@ -52,7 +52,7 @@ public final class Multiplicity {
     // ------------------------------------------------------------------------
 
     private Multiplicity() {
-        // does nothing by design.
+        // Does nothing by design.
     }
 
     /**

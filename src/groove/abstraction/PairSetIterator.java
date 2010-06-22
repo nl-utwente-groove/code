@@ -69,20 +69,23 @@ public class PairSetIterator<N,M> implements Iterator<Set<Pair<N,M>>> {
     @SuppressWarnings("unchecked")
     public PairSetIterator(Set<Pair<N,Set<M>>> pairSet) {
         int size = pairSet.size();
-        assert size > 0 : "Cannot iterate over an empty set.";
         this.size = size;
-        // Stupid Java generics don't allow the declaration of an array of N ...
-        this.pairFirst = (N[]) new Object[size];
-        this.pairSecond = (M[][]) new Object[size][];
-        this.currIdx = new int[size];
-        Iterator<Pair<N,Set<M>>> iterSet = pairSet.iterator();
-        for (int i = 0; i < size; i++) {
-            Pair<N,Set<M>> pair = iterSet.next();
-            this.pairFirst[i] = pair.first();
-            this.pairSecond[i] = (M[]) pair.second().toArray();
-            this.currIdx[i] = 0;
+        if (size > 0) {
+            // Stupid Java generics don't allow the declaration of an array of N ...
+            this.pairFirst = (N[]) new Object[size];
+            this.pairSecond = (M[][]) new Object[size][];
+            this.currIdx = new int[size];
+            Iterator<Pair<N,Set<M>>> iterSet = pairSet.iterator();
+            for (int i = 0; i < size; i++) {
+                Pair<N,Set<M>> pair = iterSet.next();
+                this.pairFirst[i] = pair.first();
+                this.pairSecond[i] = (M[]) pair.second().toArray();
+                this.currIdx[i] = 0;
+            }
+            this.hasNext = true;
+        } else {
+            this.hasNext = false;
         }
-        this.hasNext = true;
     }
 
     // ------------------------------------------------------------------------

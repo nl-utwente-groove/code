@@ -58,6 +58,7 @@ public class EdgeSignature {
 
     @Override
     public boolean equals(Object o) {
+        assert o != null : "Cannot compare to null!";
         boolean result;
         if (o instanceof EdgeSignature) {
             EdgeSignature es = (EdgeSignature) o;

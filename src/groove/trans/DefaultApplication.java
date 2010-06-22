@@ -383,7 +383,6 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Adds edges to the target, as dictated by the rule's RHS.
      * @param target the target to which to apply the changes
      */
-    // protected because of the Gossips sample
     protected void createEdges(DeltaTarget target) {
         // first add the (pre-computed) simple creator edge images
         for (Edge image : getEvent().getSimpleCreatedEdges()) {

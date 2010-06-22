@@ -50,8 +50,7 @@ public class Transform {
             // For all materialisations.
             for (Materialisation mat : mats) {
                 // Transform the shape.
-                ShapeApplication app = mat.getRuleApplication();
-                result.add(app.applyMatch());
+                result.add(mat.applyMatch());
             }
         }
 
