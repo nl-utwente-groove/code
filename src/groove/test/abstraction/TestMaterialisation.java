@@ -131,7 +131,7 @@ public class TestMaterialisation extends TestCase {
         }
     }
 
-    public void testRuleApplication() {
+    public void testRuleApplicationAndShapeNormalisation() {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
 
         File file = new File(DIRECTORY);
