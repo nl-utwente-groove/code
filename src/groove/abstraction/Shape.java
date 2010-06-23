@@ -427,11 +427,11 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                         }
                         // Calculate the sums.
                         outMult =
-                            Multiplicity.sumOutMult(origShape, nodeS, label,
-                                kSet);
+                            Multiplicity.sumOutMult(origShape,
+                                (ShapeNode) node, label, kSet);
                         inMult =
-                            Multiplicity.sumInMult(origShape, nodeS, label,
-                                kSet);
+                            Multiplicity.sumInMult(origShape, (ShapeNode) node,
+                                label, kSet);
 
                     } else { // From graph.
                         // Outgoing multiplicity.
