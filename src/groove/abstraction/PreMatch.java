@@ -50,9 +50,11 @@ public class PreMatch {
 
             // Check node multiplicities.
             boolean complyToNodeMult = true;
-            for (ShapeNode nodeS : shape.nodeSet()) {
-                Set<Node> nodesG = Util.getReverseNodeMap(map, nodeS);
+            // For all nodes in the image of the LHS.
+            for (Node node : map.nodeMap().values()) {
+                ShapeNode nodeS = (ShapeNode) node;
                 Multiplicity nSMult = shape.getNodeMult(nodeS);
+                Set<Node> nodesG = Util.getReverseNodeMap(map, nodeS);
                 if (!Multiplicity.getNodeSetMult(nodesG).isAtMost(nSMult)) {
                     // Violation of node multiplicity.
                     complyToNodeMult = false;
@@ -60,7 +62,42 @@ public class PreMatch {
                 }
             }
 
-            if (complyToNodeMult) {
+            // Check edge multiplicities.
+            boolean complyToEdgeMult = true;
+            // EZ says: the snippet of code commented below comes from the
+            // definition of pre-matching (see the technical report: 
+            // "Graph Abstraction and Abstract Graph Transformation", page 21,
+            // definition 35). However, item 2 of the definition is wrong since
+            // it excludes valid pre-matches. Instead, we leave for the
+            // materialisation algorithm to rule out invalid configurations.
+
+            /*if (complyToNodeMult) {
+                // For all edges in the image of the LHS.
+                for (Edge edge : map.edgeMap().values()) {
+                    ShapeEdge edgeS = (ShapeEdge) edge;
+                    Set<Edge> edgesG = Util.getReverseEdgeMap(map, edgeS);
+                    //Multiplicity eGMult = Multiplicity.getEdgeSetMult(edgesG);
+                    Multiplicity eGMult =
+                        Multiplicity.getMult(edgesG.size(),
+                            Parameters.getNodeMultBound());
+
+                    // Outgoing multiplicities.
+                    if (!eGMult.isAtMost(shape.getEdgeOutMult(edgeS))) {
+                        // Violation of edge out multiplicity.
+                        complyToEdgeMult = false;
+                        break;
+                    }
+
+                    // Incoming multiplicities.
+                    if (!eGMult.isAtMost(shape.getEdgeInMult(edgeS))) {
+                        // Violation of edge out multiplicity.
+                        complyToEdgeMult = false;
+                        break;
+                    }
+                }
+            }*/
+
+            if (complyToNodeMult && complyToEdgeMult) {
                 // We have a pre-match.
                 preMatches.add(match);
             }

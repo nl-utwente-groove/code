@@ -17,6 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 
 import java.util.HashSet;
@@ -128,7 +129,8 @@ public final class Multiplicity {
         return getMult(setSize, edgesMultBound);
     }
 
-    private static Multiplicity getMult(int setSize, int multBound) {
+    /** EDUARDO */
+    public static Multiplicity getMult(int setSize, int multBound) {
         Multiplicity result;
         if (setSize <= multBound) {
             result = getMultOf(setSize);
@@ -141,6 +143,40 @@ public final class Multiplicity {
     /** EDUARDO */
     public static boolean haveSameMult(Set<Edge> s0, Set<Edge> s1) {
         return getEdgeSetMult(s0).equals(getEdgeSetMult(s1));
+    }
+
+    /** EDUARDO */
+    public static Multiplicity sumOutMult(Shape shape, ShapeNode node,
+            Label label, Set<EquivClass<ShapeNode>> kSet) {
+        Multiplicity accumulator = getMultOf(0);
+        for (EquivClass<ShapeNode> k : kSet) {
+            EdgeSignature es = shape.getEdgeSignature(node, label, k);
+            Multiplicity out = shape.getEdgeSigOutMult(es);
+            accumulator = accumulator.addEdgeMult(out);
+        }
+        return accumulator;
+    }
+
+    /** EDUARDO */
+    public static Multiplicity sumInMult(Shape shape, ShapeNode node,
+            Label label, Set<EquivClass<ShapeNode>> kSet) {
+        Multiplicity accumulator = getMultOf(0);
+        for (EquivClass<ShapeNode> k : kSet) {
+            EdgeSignature es = shape.getEdgeSignature(node, label, k);
+            Multiplicity in = shape.getEdgeSigInMult(es);
+            accumulator = accumulator.addEdgeMult(in);
+        }
+        return accumulator;
+    }
+
+    /** EDUARDO */
+    public static Multiplicity getNodeSetMultSum(Shape shape, Set<Node> nodes) {
+        Multiplicity accumulator = getMultOf(0);
+        for (Node node : nodes) {
+            Multiplicity nodeMult = shape.getNodeMult((ShapeNode) node);
+            accumulator = accumulator.addNodeMult(nodeMult);
+        }
+        return accumulator;
     }
 
     // ------------------------------------------------------------------------

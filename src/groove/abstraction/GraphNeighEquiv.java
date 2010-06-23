@@ -39,7 +39,8 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     // ------------------------------------------------------------------------
 
     private int radius;
-    private Graph graph;
+    /** EDUARDO */
+    protected Graph graph;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -212,10 +213,11 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         }
     }
 
-    private boolean areStillEquivalent(Node n0, Node n1) {
+    /** EDUARDO */
+    protected boolean areStillEquivalent(Node n0, Node n1) {
         boolean equiv = true;
         // For all labels.
-        labelLoop: for (Label label : Util.labelSet(this.graph)) {
+        labelLoop: for (Label label : Util.binaryLabelSet(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<Node> ec : this) {
                 Set<Edge> n0InterEc =

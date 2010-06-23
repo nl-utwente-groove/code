@@ -50,7 +50,9 @@ public class Transform {
             // For all materialisations.
             for (Materialisation mat : mats) {
                 // Transform the shape.
-                result.add(mat.applyMatch());
+                Shape transformedShape = mat.applyMatch();
+                Shape normalisedShape = transformedShape.normalise();
+                result.add(normalisedShape);
             }
         }
 

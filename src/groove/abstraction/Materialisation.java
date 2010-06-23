@@ -362,7 +362,11 @@ public class Materialisation {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
-                    mat.applyMatch();
+                    // Transform the shape.
+                    Shape transformedShape = mat.applyMatch();
+                    Shape normalisedShape = transformedShape.normalise();
+                    System.out.println(transformedShape);
+                    System.out.println(normalisedShape);
                 }
             }
         } catch (IOException e) {
