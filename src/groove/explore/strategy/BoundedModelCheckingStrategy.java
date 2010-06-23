@@ -25,10 +25,9 @@ package groove.explore.strategy;
  * or backtracks if there are no unexplored successor states.
  * 
  * Even though this depth first search backtracks for finding the next state to
- * explore, it is not considered as a backtracking strategy (in the sense of
- * {@link AbstractBacktrackingStrategy}. This is because all explored states
- * are closed, thus the strategy does not need to cache any information, neither
- * to know from where it backtracked.
+ * explore, it is not considered as a backtracking strategy. This is because
+ * all explored states are closed, thus the strategy does not need to cache any
+ * information, neither to know from where it backtracked.
  * 
  * @author Harmen Kastenberg
  * @version $Revision$
