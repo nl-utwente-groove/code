@@ -151,6 +151,8 @@ public class TestMaterialisation extends TestCase {
                     assertTrue(mat.getShape().nodeSet().size() == 4);
                     Shape result = mat.applyMatch();
                     assertTrue(result.nodeSet().size() == 5);
+                    Shape normalisedShape = result.normalise();
+                    assertTrue(normalisedShape.nodeSet().size() == 4);
                 }
             }
         } catch (IOException e) {

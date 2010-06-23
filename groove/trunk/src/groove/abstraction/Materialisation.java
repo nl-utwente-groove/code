@@ -17,23 +17,16 @@
 package groove.abstraction;
 
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
 import groove.util.Pair;
-import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -343,42 +336,4 @@ public class Materialisation {
         return this.shape;
     }
 
-    // ------------------------------------------------------------------------
-    // Test methods
-    // ------------------------------------------------------------------------
-
-    private static void testMaterialisation0() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("rule-app-test-0").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("add");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    // Transform the shape.
-                    Shape transformedShape = mat.applyMatch();
-                    Shape normalisedShape = transformedShape.normalise();
-                    System.out.println(transformedShape);
-                    System.out.println(normalisedShape);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Unit testing. */
-    public static void main(String args[]) {
-        Multiplicity.initMultStore();
-        testMaterialisation0();
-    }
 }
