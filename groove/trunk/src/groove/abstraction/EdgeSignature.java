@@ -104,4 +104,9 @@ public class EdgeSignature {
         return this.equivClass;
     }
 
+    /** EDUARDO */
+    public boolean isUnique() {
+        return this.equivClass.size() == 1;
+    }
+
 }

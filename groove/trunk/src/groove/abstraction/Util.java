@@ -190,15 +190,7 @@ public class Util {
 
     /** EDUARDO */
     public static Set<Node> getReverseNodeMap(NodeEdgeMap map, Node value) {
-        Set<Node> result = new HashSet<Node>();
-        if (map.containsValue(value)) {
-            for (Entry<Node,Node> entry : map.nodeMap().entrySet()) {
-                if (entry.getValue().equals(value)) {
-                    result.add(entry.getKey());
-                }
-            }
-        }
-        return result;
+        return getReverseNodeMap(map.nodeMap(), value);
     }
 
     /** EDUARDO */
@@ -216,29 +208,8 @@ public class Util {
     }
 
     /** EDUARDO */
-    public static Set<Edge> getReverseOutEdgeMap(NodeEdgeMap map,
-            EdgeSignature es) {
-        Set<Edge> result = new HashSet<Edge>();
-        for (Entry<Edge,Edge> entry : map.edgeMap().entrySet()) {
-            Edge edge = entry.getValue();
-            if (es.asOutSigContains(edge)) {
-                result.add(entry.getKey());
-            }
-        }
-        return result;
-    }
-
-    /** EDUARDO */
-    public static Set<Edge> getReverseInEdgeMap(NodeEdgeMap map,
-            EdgeSignature es) {
-        Set<Edge> result = new HashSet<Edge>();
-        for (Entry<Edge,Edge> entry : map.edgeMap().entrySet()) {
-            Edge edge = entry.getValue();
-            if (es.asInSigContains(edge)) {
-                result.add(entry.getKey());
-            }
-        }
-        return result;
+    public static Set<Edge> getReverseEdgeMap(NodeEdgeMap map, Edge value) {
+        return getReverseEdgeMap(map.edgeMap(), value);
     }
 
     /** EDUARDO */
