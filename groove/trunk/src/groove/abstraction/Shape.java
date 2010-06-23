@@ -22,6 +22,8 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
+import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.util.Pair;
@@ -285,12 +287,12 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         this.edgeShaping.remove(edgeS);
         // Update outgoing multiplicity map.
         EdgeSignature outEs = this.getEdgeOutSignature(edgeS);
-        if (outEs.isUnique()) {
+        if (outEs.isUnique() || this.isOutEdgeSigUnique(outEs)) {
             this.outEdgeMultMap.remove(outEs);
         }
         // Update incoming multiplicity map.
         EdgeSignature inEs = this.getEdgeInSignature(edgeS);
-        if (inEs.isUnique()) {
+        if (inEs.isUnique() || this.isInEdgeSigUnique(inEs)) {
             this.inEdgeMultMap.remove(inEs);
         }
         // Remove edge from graph.
@@ -304,6 +306,27 @@ public class Shape extends DefaultGraph implements DeltaTarget {
             removed |= this.removeNode(node);
         }
         return removed;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        boolean result;
+        if (!(o instanceof Shape)) {
+            result = false;
+        } else {
+            Shape shape = (Shape) o;
+            // Check first the graph structure of both shapes.
+            NodeEdgeMap morphism = this.getPreIsomorphism(shape);
+            if (morphism == null) {
+                // The graph structure differs...
+                result = false;
+            } else {
+                // The graph structure is isomorphic, so now check if the shape
+                // constraints are equivalent. 
+                result = this.isValidIsomorphism(morphism, shape);
+            }
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -794,10 +817,111 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         }
     }
 
+    private boolean isOutEdgeSigUnique(EdgeSignature es) {
+        int edgeCount = 0;
+        ShapeNode source = es.getNode();
+        Label label = es.getLabel();
+        for (ShapeNode target : es.getEquivClass()) {
+            ShapeEdge edge = this.getShapeEdge(source, label, target);
+            if (edge != null) {
+                edgeCount++;
+                if (edgeCount > 1) {
+                    break;
+                }
+            }
+        }
+        return edgeCount == 1;
+    }
+
+    private boolean isInEdgeSigUnique(EdgeSignature es) {
+        int edgeCount = 0;
+        ShapeNode target = es.getNode();
+        Label label = es.getLabel();
+        for (ShapeNode source : es.getEquivClass()) {
+            ShapeEdge edge = this.getShapeEdge(source, label, target);
+            if (edge != null) {
+                edgeCount++;
+                if (edgeCount > 1) {
+                    break;
+                }
+            }
+        }
+        return edgeCount == 1;
+    }
+
     /** EDUARDO */
     public Shape normalise() {
         Shape normalisedShape = new Shape();
         normalisedShape.buildShapeFromShape(this);
         return normalisedShape;
+    }
+
+    private NodeEdgeMap getPreIsomorphism(Shape shape) {
+        return DefaultIsoChecker.getInstance(true).getIsomorphism(this, shape);
+    }
+
+    private boolean isValidIsomorphism(NodeEdgeMap morphism, Shape shape) {
+        // First check the node multiplicities.
+        boolean complyToNodeMult = true;
+        for (Entry<Node,Node> nodeEntry : morphism.nodeMap().entrySet()) {
+            ShapeNode domNode = (ShapeNode) nodeEntry.getKey();
+            ShapeNode codNode = (ShapeNode) nodeEntry.getValue();
+            Multiplicity domNMult = this.getNodeMult(domNode);
+            Multiplicity codNMult = shape.getNodeMult(codNode);
+            if (!domNMult.equals(codNMult)) {
+                complyToNodeMult = false;
+                break;
+            }
+        }
+
+        // Now check the edge multiplicities.
+        boolean complyToEdgeMult = true;
+        if (complyToNodeMult) {
+            for (Entry<Edge,Edge> edgeEntry : morphism.edgeMap().entrySet()) {
+                ShapeEdge domEdge = (ShapeEdge) edgeEntry.getKey();
+                ShapeEdge codEdge = (ShapeEdge) edgeEntry.getValue();
+                // Outgoing multiplicities.
+                Multiplicity domEOutMult = this.getEdgeOutMult(domEdge);
+                Multiplicity codEOutMult = shape.getEdgeOutMult(codEdge);
+                if (!domEOutMult.equals(codEOutMult)) {
+                    complyToEdgeMult = false;
+                    break;
+                }
+                // Incoming multiplicities.
+                Multiplicity domEInMult = this.getEdgeInMult(domEdge);
+                Multiplicity codEInMult = shape.getEdgeInMult(codEdge);
+                if (!domEInMult.equals(codEInMult)) {
+                    complyToEdgeMult = false;
+                    break;
+                }
+            }
+        }
+
+        // Last, check the equivalence relation.
+        boolean complyToEquivRel = true;
+        if (complyToNodeMult && complyToEdgeMult) {
+            if (this.equivRel.size() != shape.equivRel.size()) {
+                complyToEquivRel = false;
+            } else {
+                EquivClass<ShapeNode> mappedCodEc = new EquivClass<ShapeNode>();
+                for (EquivClass<ShapeNode> domEc : this.equivRel) {
+                    ShapeNode codNode = null;
+                    for (ShapeNode domNode : domEc) {
+                        codNode = (ShapeNode) morphism.getNode(domNode);
+                        mappedCodEc.add(codNode);
+                    }
+                    EquivClass<ShapeNode> codEc =
+                        shape.getEquivClassOf(codNode);
+                    if (!codEc.equals(mappedCodEc)) {
+                        complyToEquivRel = false;
+                        break;
+                    } else {
+                        mappedCodEc.clear();
+                    }
+                }
+            }
+        }
+
+        return complyToNodeMult && complyToEdgeMult && complyToEquivRel;
     }
 }
