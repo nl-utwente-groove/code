@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.abstraction.ShapeEdge;
+import groove.abstraction.ShapeNode;
 import groove.util.TreeHashSet;
 
 /**
@@ -142,6 +144,13 @@ public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
 
     /** Default method that uses the DefaultEdge constructor. */
     static public DefaultEdge createEdge(Node source, Label label, Node target) {
+        // EDUARDO says: very ugly hack here.
+        // Sorry about this, need to solve this fast... :P
+        // Begin HACK 
+        if (source instanceof ShapeNode && target instanceof ShapeNode) {
+            return createEdge(source, label, target, ShapeEdge.CONS);
+        }
+        // End HACK
         return createEdge(source, label, target, CONS);
     }
 
