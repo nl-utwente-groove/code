@@ -17,8 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.GraphShape;
-import groove.trans.Rule;
-import groove.trans.RuleMatch;
+import groove.trans.RuleEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,18 +34,16 @@ public class Transform {
     // ------------------------------------------------------------------------
 
     /** EDUARDO */
-    public static Set<Shape> transform(GraphShape host, Rule rule) {
+    public static Set<Shape> transform(GraphShape host, RuleEvent event) {
         assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
         Shape shape = (Shape) host;
         Set<Shape> result = new HashSet<Shape>();
 
-        // Find the pre-matches of the rule into the shape.
-        Set<RuleMatch> preMatches = shape.getPreMatches(rule);
-        // For all pre-matches.
-        for (RuleMatch preMatch : preMatches) {
+        if (shape.isValidPreMatch(event)) {
             // Find all materialisations.
             Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+                Materialisation.getMaterialisations(shape,
+                    event.getMatch(shape));
             // For all materialisations.
             for (Materialisation mat : mats) {
                 // Transform the shape.

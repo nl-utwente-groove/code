@@ -25,6 +25,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.util.Pair;
 
@@ -622,6 +623,11 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     /** EDUARDO */
     public Set<RuleMatch> getPreMatches(Rule rule) {
         return PreMatch.getPreMatches(this, rule);
+    }
+
+    /** EDUARDO */
+    public boolean isValidPreMatch(RuleEvent event) {
+        return PreMatch.isValidPreMatch(this, event);
     }
 
     /** EDUARDO */

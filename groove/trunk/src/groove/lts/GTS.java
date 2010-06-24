@@ -424,7 +424,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     private final GraphGrammar ruleSystem;
     /** The set of states of the GTS. */
-    private TreeHashSet<GraphState> stateSet;
+    protected TreeHashSet<GraphState> stateSet;
 
     /**
      * Set of states that have not yet been extended.
