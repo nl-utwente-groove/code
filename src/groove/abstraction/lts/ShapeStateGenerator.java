@@ -74,9 +74,14 @@ public class ShapeStateGenerator implements RuleEventApplier {
                 // The state was not added as an equivalent state existed.
                 trans =
                     new ShapeTransition((ShapeState) source, event, oldState);
+                System.out.println("New transition: " + trans);
             } else {
                 // the state was added as a next-state
                 trans = newState;
+                System.out.println("New state: " + source + "--" + event
+                    + "-->" + newState.toText());
+                /*System.out.println("New state: " + source + "--" + event
+                    + "-->" + newState);*/
             }
             getGTS().addTransition(trans);
             result = trans;

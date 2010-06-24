@@ -132,11 +132,6 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public String toString() {
-        return "s" + (hasNumber() ? this.nr : "??");
-    }
-
-    @Override
     public int hashCode() {
         return getGraph().hashCode();
     }
@@ -203,6 +198,11 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public void setLocation(Location l) {
         throw new UnsupportedOperationException();
+    }
+
+    /** Debug method. */
+    public String toText() {
+        return super.toString() + ":\n" + this.shape.toString();
     }
 
 }

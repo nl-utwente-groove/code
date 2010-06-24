@@ -275,8 +275,17 @@ public class Shape extends DefaultGraph implements DeltaTarget {
             this.removeEdge(edgeS);
         }
 
-        // Remove node from equivalence relation.
-        this.getEquivClassOf(nodeS).remove(nodeS);
+        // Update the equivalence relation
+        EquivClass<ShapeNode> nodeEc = this.getEquivClassOf(nodeS);
+        if (nodeEc.size() == 1) {
+            // Remove singleton equivalence relation.
+            this.equivRel.remove(nodeEc);
+            this.cleanEdgeSigSet();
+        } else {
+            // Remove node from equivalence relation.
+            nodeEc.remove(nodeS);
+        }
+
         // Remove node from graph.
         return super.removeNodeWithoutCheck(node);
     }
@@ -479,7 +488,10 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                 }
             }
         }
-        // Clean the signature set.
+        this.cleanEdgeSigSet();
+    }
+
+    private void cleanEdgeSigSet() {
         this.edgeSigSet.clear();
         this.edgeSigSet.addAll(this.outEdgeMultMap.keySet());
         this.edgeSigSet.addAll(this.inEdgeMultMap.keySet());
@@ -711,6 +723,9 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                 this.copyUnaryEdges(origNode, newNode);
                 // Add the new node to the equivalence class of the original node.
                 origNodeEc.add(newNode);
+                /*EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
+                newEc.add(newNode);
+                this.equivRel.add(newEc);*/
                 // Update the shaping morphism.
                 this.nodeShaping.put(newNode, origNode);
             }

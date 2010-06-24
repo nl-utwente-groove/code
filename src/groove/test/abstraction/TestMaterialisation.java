@@ -20,6 +20,7 @@ import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
+import groove.abstraction.Util;
 import groove.graph.Graph;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -64,8 +65,10 @@ public class TestMaterialisation extends TestCase {
                 assertTrue(mats.size() == 2);
                 for (Materialisation mat : mats) {
                     assertTrue(mat.getShape().nodeSet().size() == 5);
+                    assertTrue(Util.getBinaryEdges(mat.getShape()).size() == 6);
                     Shape result = mat.applyMatch();
                     assertTrue(result.nodeSet().size() == 4);
+                    assertTrue(Util.getBinaryEdges(result).size() == 5);
                 }
             }
         } catch (IOException e) {
@@ -92,8 +95,11 @@ public class TestMaterialisation extends TestCase {
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertTrue(mats.size() == 6);
                 for (Materialisation mat : mats) {
-                    assertTrue(mat.getShape().nodeSet().size() == 4
-                        || mat.getShape().nodeSet().size() == 3);
+                    Shape matShape = mat.getShape();
+                    assertTrue((matShape.nodeSet().size() == 4 && Util.getBinaryEdges(
+                        matShape).size() == 3)
+                        || (matShape.nodeSet().size() == 3 && Util.getBinaryEdges(
+                            matShape).size() == 2));
                 }
             }
         } catch (IOException e) {
@@ -120,8 +126,11 @@ public class TestMaterialisation extends TestCase {
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertTrue(mats.size() == 12);
                 for (Materialisation mat : mats) {
-                    assertTrue(mat.getShape().nodeSet().size() == 5
-                        || mat.getShape().nodeSet().size() == 4);
+                    Shape matShape = mat.getShape();
+                    assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
+                        matShape).size() == 4)
+                        || (matShape.nodeSet().size() == 4 && Util.getBinaryEdges(
+                            matShape).size() == 2));
                 }
             }
         } catch (IOException e) {
@@ -149,10 +158,13 @@ public class TestMaterialisation extends TestCase {
                 assertTrue(mats.size() == 1);
                 for (Materialisation mat : mats) {
                     assertTrue(mat.getShape().nodeSet().size() == 4);
+                    assertTrue(Util.getBinaryEdges(mat.getShape()).size() == 5);
                     Shape result = mat.applyMatch();
                     assertTrue(result.nodeSet().size() == 5);
+                    assertTrue(Util.getBinaryEdges(result).size() == 6);
                     Shape normalisedShape = result.normalise();
                     assertTrue(normalisedShape.nodeSet().size() == 4);
+                    assertTrue(Util.getBinaryEdges(normalisedShape).size() == 5);
                 }
             }
         } catch (IOException e) {
