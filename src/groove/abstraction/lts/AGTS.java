@@ -41,6 +41,7 @@ public class AGTS extends GTS {
     public AGTS(GraphGrammar grammar) {
         super(grammar);
         this.getRecord().setCheckIso(true);
+        this.stateSet = new ShapeStateSet(this.getCollapse());
         // This adds the start state.
         this.startState();
     }
@@ -97,4 +98,24 @@ public class AGTS extends GTS {
         return result;
     }
 
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    /** EDUARDO */
+    public static class ShapeStateSet extends GTS.StateSet {
+
+        /** EDUARDO */
+        public ShapeStateSet(int collapse) {
+            super(collapse);
+        }
+
+        @Override
+        protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
+            Shape one = (Shape) stateKey.getGraph();
+            Shape two = (Shape) otherStateKey.getGraph();
+            return one.equals(two);
+        }
+
+    }
 }

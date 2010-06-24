@@ -63,7 +63,7 @@ public class ShapeStateGenerator implements RuleEventApplier {
         GraphTransition result = null;
 
         Shape host = (Shape) source.getGraph();
-        Set<Shape> targets = Transform.transform(host, event.getRule());
+        Set<Shape> targets = Transform.transform(host, event);
 
         for (Shape target : targets) {
             GraphTransition trans;
