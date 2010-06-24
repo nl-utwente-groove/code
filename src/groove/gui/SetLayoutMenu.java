@@ -55,8 +55,8 @@ public class SetLayoutMenu extends JMenu {
      * @param jgraph the jgraph upon which the actions in this menu should work
      */
     public SetLayoutMenu(JGraph jgraph) {
-        this(jgraph, new SpringLayouter());
-        addLayoutItem(new ForestLayouter());
+        this(jgraph, new ForestLayouter());
+        addLayoutItem(new SpringLayouter());
     }
 
     /** Returns the layout item describing the currently selected layout action. */

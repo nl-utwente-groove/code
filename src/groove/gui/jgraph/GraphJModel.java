@@ -72,7 +72,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      *        labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr,
+    protected GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr,
             AttributeMap defaultEdgeAttr, Options options) {
         // the model is to store attributes
         super(defaultNodeAttr, defaultEdgeAttr, options);

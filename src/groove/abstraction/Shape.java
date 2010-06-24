@@ -723,9 +723,6 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                 this.copyUnaryEdges(origNode, newNode);
                 // Add the new node to the equivalence class of the original node.
                 origNodeEc.add(newNode);
-                /*EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
-                newEc.add(newNode);
-                this.equivRel.add(newEc);*/
                 // Update the shaping morphism.
                 this.nodeShaping.put(newNode, origNode);
             }

@@ -18,8 +18,10 @@ package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
 import groove.abstraction.Transform;
+import groove.abstraction.gui.ShapeDialog;
 import groove.control.Location;
 import groove.explore.util.RuleEventApplier;
+import groove.gui.Options;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
@@ -32,6 +34,16 @@ import java.util.Set;
  * @version $Revision $
  */
 public class ShapeStateGenerator implements RuleEventApplier {
+
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    private static Options options = new Options();
+    static {
+        options.setValue(Options.SHOW_NODE_IDS_OPTION, 1);
+        options.setValue(Options.SHOW_VERTEX_LABELS_OPTION, 0);
+    }
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -78,10 +90,12 @@ public class ShapeStateGenerator implements RuleEventApplier {
             } else {
                 // the state was added as a next-state
                 trans = newState;
-                System.out.println("New state: " + source + "--" + event
-                    + "-->" + newState.toText());
                 /*System.out.println("New state: " + source + "--" + event
-                    + "-->" + newState);*/
+                    + "-->" + newState.toText());*/
+                System.out.println("New state: " + source + "--" + event
+                    + "-->" + newState);
+                new ShapeDialog((Shape) newState.getGraph(), options,
+                    Integer.toString(newState.getNumber()));
             }
             getGTS().addTransition(trans);
             result = trans;
