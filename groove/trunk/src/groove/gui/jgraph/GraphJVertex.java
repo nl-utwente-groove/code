@@ -18,6 +18,9 @@ package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
 import groove.abs.AbstrGraph;
+import groove.abstraction.Shape;
+import groove.abstraction.ShapeNode;
+import groove.abstraction.gui.ShapeJModel;
 import groove.algebra.Algebra;
 import groove.control.Location;
 import groove.graph.DefaultLabel;
@@ -186,6 +189,13 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (this.jModel instanceof AbstrGraphJModel) {
             AbstrGraph graph = (AbstrGraph) this.jModel.getGraph();
             String mult = graph.multiplicityOf(this.node).toString();
+            result.add(Converter.createSpanTag("color: rgb(50,50,255)").on(
+                ITALIC_TAG.on(new StringBuilder(mult))));
+        }
+        // EDUARDO : HACK HACK HACK 
+        if (this.jModel instanceof ShapeJModel) {
+            Shape shape = (Shape) this.jModel.getGraph();
+            String mult = shape.getNodeMult((ShapeNode) this.node).toString();
             result.add(Converter.createSpanTag("color: rgb(50,50,255)").on(
                 ITALIC_TAG.on(new StringBuilder(mult))));
         }
