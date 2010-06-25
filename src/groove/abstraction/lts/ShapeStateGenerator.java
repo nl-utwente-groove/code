@@ -18,7 +18,6 @@ package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
 import groove.abstraction.Transform;
-import groove.abstraction.gui.ShapeDialog;
 import groove.control.Location;
 import groove.explore.util.RuleEventApplier;
 import groove.gui.Options;
@@ -50,6 +49,8 @@ public class ShapeStateGenerator implements RuleEventApplier {
     // ------------------------------------------------------------------------
 
     private final AGTS gts;
+    public int transitions = 0;
+    public int states = 1;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -94,10 +95,12 @@ public class ShapeStateGenerator implements RuleEventApplier {
                     + "-->" + newState.toText());*/
                 System.out.println("New state: " + source + "--" + event
                     + "-->" + newState);
-                new ShapeDialog((Shape) newState.getGraph(), options,
-                    Integer.toString(newState.getNumber()));
+                /*new ShapeDialog((Shape) newState.getGraph(), options,
+                    Integer.toString(newState.getNumber()));*/
+                this.states++;
             }
             getGTS().addTransition(trans);
+            this.transitions++;
             result = trans;
         }
 
