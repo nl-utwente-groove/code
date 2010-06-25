@@ -812,6 +812,16 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     }
 
     /** EDUARDO */
+    public Map<EdgeSignature,Multiplicity> getOutEdgeMultMap() {
+        return this.outEdgeMultMap;
+    }
+
+    /** EDUARDO */
+    public Map<EdgeSignature,Multiplicity> getInEdgeMultMap() {
+        return this.inEdgeMultMap;
+    }
+
+    /** EDUARDO */
     public void removeImpossibleOutEdges(EdgeSignature es, ShapeEdge edgeToKeep) {
         ShapeNode source = es.getNode();
         Label label = es.getLabel();
@@ -835,7 +845,8 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         }
     }
 
-    private boolean isOutEdgeSigUnique(EdgeSignature es) {
+    /** EDUARDO */
+    public boolean isOutEdgeSigUnique(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode source = es.getNode();
         Label label = es.getLabel();
@@ -851,7 +862,8 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         return edgeCount == 1;
     }
 
-    private boolean isInEdgeSigUnique(EdgeSignature es) {
+    /** EDUARDO */
+    public boolean isInEdgeSigUnique(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode target = es.getNode();
         Label label = es.getLabel();

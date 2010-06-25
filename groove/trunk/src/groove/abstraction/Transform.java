@@ -52,7 +52,6 @@ public class Transform {
                 result.add(normalisedShape);
             }
         }
-
         return result;
     }
 

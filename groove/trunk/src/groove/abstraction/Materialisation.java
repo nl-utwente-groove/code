@@ -105,10 +105,12 @@ public class Materialisation {
         // Check the edge images.
         for (Entry<Edge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
             Edge edgeR = edgeEntry.getKey();
-            ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
-            if (elemsToMat.nodeMap().containsKey(edgeR.source())
-                || elemsToMat.nodeMap().containsKey(edgeR.opposite())) {
-                if (!Util.isUnary(edgeR)) {
+            if (!Util.isUnary(edgeR)) {
+                ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
+                EdgeSignature outEs = shape.getEdgeOutSignature(edgeS);
+                EdgeSignature inEs = shape.getEdgeInSignature(edgeS);
+                if (!shape.isOutEdgeSigUnique(outEs)
+                    || !shape.isInEdgeSigUnique(inEs)) {
                     elemsToMat.putEdge(edgeR, edgeS);
                 }
             }
@@ -134,9 +136,14 @@ public class Materialisation {
         // Initial materialisation object.
         Materialisation initialMat = new Materialisation(shapeClone, preMatch);
 
-        if (!initialMat.isExtensionFinished()) {
+        if (!initialMat.isMaterialisationFinished()) {
             // This is the normal case.
-            result = initialMat.materialiseNodesAndExtendPreMatch();
+            if (!initialMat.isExtensionFinished()) {
+                result = initialMat.materialiseNodesAndExtendPreMatch();
+            } else {
+                // We don't need to materialise any node.
+                result.add(initialMat);
+            }
 
             for (Materialisation mat : result) {
                 mat.finishMaterialisation();
@@ -291,6 +298,10 @@ public class Materialisation {
         }
     }
 
+    private boolean isMaterialisationFinished() {
+        return this.absElems.isEmpty();
+    }
+
     private boolean isExtensionFinished() {
         return this.absElems.nodeMap().isEmpty();
     }
@@ -319,6 +330,7 @@ public class Materialisation {
                 this.shape.removeImpossibleInEdges(inEs, mappedEdge);
             }
         }
+        this.absElems.edgeMap().clear();
     }
 
     /** EDUARDO */
