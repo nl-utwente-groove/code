@@ -25,21 +25,21 @@ package groove.graph;
 public abstract class AbstractLabel implements Cloneable, Label {
     @Override
     public boolean isNodeType() {
-        return getType() == NODE_TYPE;
+        return getKind() == NODE_TYPE;
     }
 
     @Override
     public boolean isFlag() {
-        return getType() == FLAG;
+        return getKind() == FLAG;
     }
 
     @Override
     public boolean isBinary() {
-        return getType() == BINARY;
+        return getKind() == BINARY;
     }
 
     /** Labels are binary by default. */
-    public int getType() {
+    public int getKind() {
         return BINARY;
     }
 

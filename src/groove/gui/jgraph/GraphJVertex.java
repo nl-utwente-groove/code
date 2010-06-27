@@ -322,11 +322,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * This implementation calls {@link DefaultLabel#toTypedString(Label)} on
+     * This implementation calls {@link DefaultLabel#toPrefixedString(Label)} on
      * the edge label.
      */
     public String getPlainLabel(Edge edge) {
-        return DefaultLabel.toTypedString(edge.label());
+        return DefaultLabel.toPrefixedString(edge.label());
     }
 
     /**

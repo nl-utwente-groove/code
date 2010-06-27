@@ -35,7 +35,7 @@ public interface Label extends Comparable<Label>, java.io.Serializable {
      * Returns the label type. The return value is one of {@link #BINARY},
      * {@link #NODE_TYPE} or {@link #FLAG}.
      */
-    int getType();
+    int getKind();
 
     /**
      * Indicates if this label stands for a node type. Equivalent to {@code

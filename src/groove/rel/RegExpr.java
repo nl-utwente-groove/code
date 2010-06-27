@@ -456,7 +456,8 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * Tests whether a given text may be regarded as an atom, according to the
      * rules of regular expressions. (If not, then it should be single-quoted.)
-     * This implementation throws an exception if the text is empty contains any
+     * Atoms may be preceded by a label kind prefix.
+     * Throws an exception if the text is empty or contains any
      * characters not allowed by {@link ExprParser#isIdentifierChar(char)}.
      * @param text the text to be tested
      * @throws FormatException if the text contains a special character
@@ -612,15 +613,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Creates and returns a named wildcard regular expression.
      */
     public static Wildcard wildcard(String text) {
-        return wildcard(text, null);
-    }
-
-    /**
-     * Creates and returns a named wildcard regular expression with a constraint
-     * on the label.
-     */
-    public static Wildcard wildcard(String text, Property<Label> constraint) {
-        return new Wildcard(text, constraint);
+        return new Wildcard(text, null);
     }
 
     /**
@@ -661,6 +654,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             test("!a*");
             test("!a.b | !(a.!b)");
             test("?ab");
+            test("type:?ab[a,b]");
+            test("flag:?ab[^a,b]");
         } else {
             for (String arg : args) {
                 test(arg);
@@ -1251,11 +1246,17 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * Constructs a wildcard expression with a given identifier. Currently
-         * not supported.
+         * Constructs a wildcard expression with a given identifier
          * @param identifier the wildcard identifier
          */
-        public Wildcard(String identifier, Property<Label> constraint) {
+        public Wildcard(String identifier) {
+            this(identifier, null);
+        }
+
+        /**
+         * Constructs a wildcard expression with a given (possibly {@code null}) identifier and (possibly {@code null}) label constraint.
+         */
+        private Wildcard(String identifier, LabelConstraint constraint) {
             this();
             this.identifier = identifier;
             this.guard = constraint;
@@ -1264,9 +1265,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public RegExpr relabel(Label oldLabel, Label newLabel) {
             LabelConstraint newConstraint = null;
-            if (this.guard instanceof LabelConstraint) {
-                newConstraint =
-                    ((LabelConstraint) this.guard).relabel(oldLabel, newLabel);
+            if (this.guard != null) {
+                newConstraint = this.guard.relabel(oldLabel, newLabel);
             }
             return newConstraint == null ? this : newInstance(this.identifier,
                 newConstraint);
@@ -1274,11 +1274,14 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public Set<Label> getLabels() {
-            if (this.guard instanceof LabelConstraint) {
-                return ((LabelConstraint) this.guard).getLabels();
-            } else {
-                return Collections.emptySet();
+            Set<Label> result = null;
+            if (this.guard != null) {
+                result = this.guard.getLabels();
             }
+            if (result == null) {
+                result = Collections.emptySet();
+            }
+            return result;
         }
 
         /**
@@ -1297,7 +1300,11 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String toString() {
-            StringBuilder result = new StringBuilder(super.toString());
+            StringBuilder result = new StringBuilder();
+            if (this.guard != null) {
+                result.append(this.guard.getTypePrefix());
+            }
+            result.append(super.toString());
             if (getIdentifier() != null) {
                 result.append(getIdentifier());
             }
@@ -1312,13 +1319,29 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String getDescription() {
-            return toString();
+            StringBuilder result = new StringBuilder();
+            if (getIdentifier() != null) {
+                result.append(getIdentifier() + "=");
+            }
+            result.append(getSymbol());
+            if (this.guard != null) {
+                String type = DefaultLabel.getPrefix(this.guard.labelType);
+                if (!type.isEmpty()) {
+                    result.append(" ");
+                    result.append(type.subSequence(0, type.length() - 1));
+                }
+                if (this.guard.getLabels() != null) {
+                    result.append(this.guard.negated ? " not in " : " from ");
+                    result.append(Groove.toString(this.guard.getLabels().toArray()));
+                }
+            }
+            return result.toString();
         }
 
         /**
          * Returns the optional guard of this wildcard expression.
          */
-        public Property<Label> getGuard() {
+        public LabelConstraint getGuard() {
             return this.guard;
         }
 
@@ -1346,7 +1369,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return result;
             }
             // TODO allow non-empty wildcard prefixes
-            if (operands.length != 2 || operands[0].length() != 0) {
+            if (operands.length != 2) { // || operands[0].length() != 0) {
                 throw error;
             }
             String prefix = operands[0];
@@ -1354,24 +1377,24 @@ abstract public class RegExpr { // implements VarSetSupport {
             int labelType = Label.BINARY;
             int separatorPos = prefix.length() - 1;
             if (separatorPos >= 0) {
-                if (prefix.charAt(separatorPos) != DefaultLabel.TYPE_SEPARATOR) {
+                if (prefix.charAt(separatorPos) != DefaultLabel.KIND_SEPARATOR) {
                     throw error;
                 }
                 labelType =
-                    DefaultLabel.getLabelType(prefix.substring(0, separatorPos));
+                    DefaultLabel.getPrefixKind(prefix.substring(0, separatorPos));
                 if (labelType < 0) {
                     throw error;
                 }
             }
             // parse the identifier and constraint expression
+            String identifier = null;
+            LabelConstraint constraint = new LabelConstraint(labelType);
             String text = operands[1];
-            if (text.length() == 0) {
-                result = newInstance();
-            } else {
+            if (!text.isEmpty()) {
+                // decompose text into identifier and label list
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
                 int subStringCount = operand.second().size();
-                String identifier = operand.first();
-                Property<Label> constraint = null;
+                identifier = operand.first();
                 if (subStringCount > 1) {
                     throw error;
                 } else if (subStringCount == 1) {
@@ -1379,31 +1402,29 @@ abstract public class RegExpr { // implements VarSetSupport {
                     if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
                         throw error;
                     } else {
-                        constraint = getConstraint(labelType, parameter);
+                        setConstraint(constraint, parameter);
                     }
                     identifier =
                         identifier.substring(0, identifier.length() - 1);
                 }
-                if (ExprParser.isIdentifier(identifier)) {
-                    result = newInstance(identifier, constraint);
-                } else if (identifier.length() == 0) {
-                    result = newInstance(null, constraint);
-                } else {
+                if (identifier.isEmpty()) {
+                    identifier = null;
+                } else if (!ExprParser.isIdentifier(identifier)) {
                     throw new FormatException(
                         "Invalid wildcard identifier '%s'", text);
                 }
             }
-            return result;
+            return newInstance(identifier, constraint);
         }
 
         /**
-         * Turns a given string into a constraint on edge labels.
-         * @param parameter the string to be converted
-         * @return the property on edge labels encoded by <code>parameter</code>
+         * Adds label information to a given label constraint.
+         * @param constraint the constraint to be modified
+         * @param parameter the string encoding the label information
          * @throws FormatException if <code>parameter</code> is not correctly
          *         formed as a constraint.
          */
-        private Property<Label> getConstraint(int labelType, String parameter)
+        private void setConstraint(LabelConstraint constraint, String parameter)
             throws FormatException {
             String constraintList =
                 ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN,
@@ -1430,29 +1451,29 @@ abstract public class RegExpr { // implements VarSetSupport {
                     atom = parse(part);
                 } catch (FormatException exc) {
                     throw new FormatException(
-                        "Option '%s' in constraint '%s' cannot be parsed",
-                        part, parameter);
+                        "Label '%s' in constraint '%s' cannot be parsed", part,
+                        parameter);
                 }
                 if (atom instanceof Atom) {
                     Label label = atom.toLabel();
                     if (!label.isBinary()) {
                         throw new FormatException(
-                            "Option '%s' in constraint '%s' should not be prefixed",
+                            "Label '%s' in constraint '%s' should not be prefixed",
                             part, parameter);
                     }
                     constrainedLabels.add(label.text());
                 } else {
                     throw new FormatException(
-                        "Option '%s' in constraint '%s' should be an atom",
+                        "Label '%s' in constraint '%s' should be an atom",
                         part, parameter);
                 }
             }
-            return new LabelConstraint(labelType, constrainedLabels, negated);
+            constraint.setLabels(constrainedLabels, negated);
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
         protected Wildcard newInstance(String identifier,
-                Property<Label> constraint) {
+                LabelConstraint constraint) {
             return new Wildcard(identifier, constraint);
         }
 
@@ -1463,7 +1484,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /** The (optional) constraint for this wildcard. */
-        private Property<Label> guard;
+        private LabelConstraint guard;
 
         /** The (optional) identifier for this wildcard. */
         private String identifier;
@@ -1477,16 +1498,27 @@ abstract public class RegExpr { // implements VarSetSupport {
         /** Character to separate constraint parts. */
         static private final char CONSTRAINT_SEPARATOR = ',';
 
-        /** Constraint testing if a string is or is not in a set of strings. */
+        /** Constraint testing if a label is of a correct type and is or is not in a predefined set of labels. */
         private static class LabelConstraint extends Property<Label> {
-            LabelConstraint(int labelType, List<String> textList,
-                    boolean negated) {
+            /** Constructs a new constraint.
+             * @param labelType The type of labels tested for; only labels of this type can ever satisfy the constraint
+             */
+            LabelConstraint(int labelType) {
+                this.labelType = labelType;
+            }
+
+            /** 
+             * Sets the set of labels to test for.
+             * @param textList List of labels which membership is tested; may be {@code null} if only the label type is tested for
+             * @param negated if {@code true}, satisfaction is defined as presence in {@code textList}; otherwise as absence
+             */
+            public void setLabels(List<String> textList, boolean negated) {
                 this.textList = textList;
                 this.labelSet = new HashSet<Label>();
                 for (String text : textList) {
-                    this.labelSet.add(DefaultLabel.createLabel(text, labelType));
+                    this.labelSet.add(DefaultLabel.createLabel(text,
+                        this.labelType));
                 }
-                this.labelType = labelType;
                 this.negated = negated;
             }
 
@@ -1502,24 +1534,22 @@ abstract public class RegExpr { // implements VarSetSupport {
              */
             public LabelConstraint relabel(Label oldLabel, Label newLabel) {
                 LabelConstraint result = this;
-                if (this.labelSet.contains(oldLabel)) {
+                if (this.labelSet != null && this.labelSet.contains(oldLabel)) {
                     int index = this.textList.indexOf(oldLabel.text());
                     List<String> newTextList =
                         new ArrayList<String>(this.textList);
-                    if (newLabel.getType() == this.labelType) {
+                    if (newLabel.getKind() == this.labelType) {
                         newTextList.set(index, newLabel.text());
                     } else {
                         newTextList.remove(index);
                     }
-                    result =
-                        new LabelConstraint(this.labelType, newTextList,
-                            this.negated);
+                    result = new LabelConstraint(this.labelType);
                 }
                 return result;
             }
 
             /**
-             * Returns the set of labels occurring in this label constraint.
+             * Returns the (possibly {@code null}) set of labels occurring in this label constraint.
              * @see RegExpr#getLabels()
              */
             public Set<Label> getLabels() {
@@ -1528,29 +1558,37 @@ abstract public class RegExpr { // implements VarSetSupport {
 
             @Override
             public boolean isSatisfied(Label value) {
-                return this.labelType == value.getType()
-                    && this.negated != this.labelSet.contains(value);
+                return this.labelType == value.getKind()
+                    && (this.labelSet == null || this.negated != this.labelSet.contains(value));
             }
 
             @Override
             public String toString() {
-                String start;
-                if (this.negated) {
-                    start = "" + CONSTRAINT_OPEN + CONSTRAINT_NEGATOR;
-                } else {
-                    start = "" + CONSTRAINT_OPEN;
+                String result = "";
+                if (this.labelSet != null) {
+                    result += CONSTRAINT_OPEN;
+                    if (this.negated) {
+                        result += CONSTRAINT_NEGATOR;
+                    }
+                    result =
+                        Groove.toString(this.textList.toArray(), result, ""
+                            + CONSTRAINT_CLOSE, "" + CONSTRAINT_SEPARATOR);
                 }
-                return Groove.toString(this.textList.toArray(), start, ""
-                    + CONSTRAINT_CLOSE, "" + CONSTRAINT_SEPARATOR);
+                return result;
+            }
+
+            /** Returns the wildcard prefix dictated by the label type of this constraint. */
+            public String getTypePrefix() {
+                return DefaultLabel.getPrefix(this.labelType);
             }
 
             /** The list of strings indicating the labels to be matched. */
-            private final List<String> textList;
+            private List<String> textList;
             /** The set of labels to be tested for inclusion. */
-            private final Set<Label> labelSet;
+            private Set<Label> labelSet;
             /** Flag indicating if we are testing for absence or presence. */
-            private final boolean negated;
-            /** The type of label we are testing for. See {@link Label#getType()} */
+            private boolean negated;
+            /** The type of label we are testing for. See {@link Label#getKind()} */
             private final int labelType;
         }
     }

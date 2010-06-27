@@ -18,7 +18,6 @@ package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
-import groove.util.ExprParser;
 import groove.view.FormatException;
 
 /**
@@ -32,24 +31,24 @@ public class TypeAspect extends AbstractAspect {
         super(TYPE_ASPECT_NAME);
     }
 
-    @Override
-    public void checkEdge(AspectEdge edge, AspectGraph graph)
-        throws FormatException {
-        boolean isSelfEdge = edge.source().equals(edge.opposite());
-        if (isNodeType(edge) && !isSelfEdge) {
-            throw new FormatException(
-                "Node type label '%s' not allowed on edges", edge.label(), edge);
-        } else if (isFlag(edge) && !isSelfEdge) {
-            throw new FormatException("Flag label '%s' not allowed on edges",
-                edge.label(), edge);
-        }
-    }
-
-    /** Indicates if a given aspect edge stands for a node type. */
-    public static boolean isNodeType(AspectEdge edge) {
-        AspectValue value = edge.getValue(getInstance());
-        return NODE_TYPE.equals(value);
-    }
+    //    @Override
+    //    public void checkEdge(AspectEdge edge, AspectGraph graph)
+    //        throws FormatException {
+    //        boolean isSelfEdge = edge.source().equals(edge.opposite());
+    //        if (isNodeType(edge) && !isSelfEdge) {
+    //            throw new FormatException(
+    //                "Node type label '%s' not allowed on edges", edge.label(), edge);
+    //        } else if (isFlag(edge) && !isSelfEdge) {
+    //            throw new FormatException("Flag label '%s' not allowed on edges",
+    //                edge.label(), edge);
+    //        }
+    //    }
+    //
+    //    /** Indicates if a given aspect edge stands for a node type. */
+    //    public static boolean isNodeType(AspectEdge edge) {
+    //        AspectValue value = edge.getValue(getInstance());
+    //        return NODE_TYPE.equals(value);
+    //    }
 
     /** Indicates if a given aspect edge is a subtype edge. */
     public static boolean isSubtype(AspectEdge edge) {
@@ -57,11 +56,12 @@ public class TypeAspect extends AbstractAspect {
         return SUB.equals(value);
     }
 
-    /** Indicates if a given aspect edge stands for a flag. */
-    public static boolean isFlag(AspectEdge edge) {
-        AspectValue value = edge.getValue(getInstance());
-        return FLAG.equals(value);
-    }
+    //
+    //    /** Indicates if a given aspect edge stands for a flag. */
+    //    public static boolean isFlag(AspectEdge edge) {
+    //        AspectValue value = edge.getValue(getInstance());
+    //        return FLAG.equals(value);
+    //    }
 
     /** Indicates if a given aspect edge stands for a path. */
     public static boolean isPath(AspectEdge edge) {
@@ -88,10 +88,10 @@ public class TypeAspect extends AbstractAspect {
     static private final TypeAspect instance = new TypeAspect();
     /** Name of this aspect. */
     static public final String TYPE_ASPECT_NAME = "type";
-    /** The node type aspect value. */
-    static public final AspectValue NODE_TYPE;
-    /** Name of the flag aspect value. */
-    static public final AspectValue FLAG;
+    //    /** The node type aspect value. */
+    //    static public final AspectValue NODE_TYPE;
+    //    /** Name of the flag aspect value. */
+    //    static public final AspectValue FLAG;
     /** Name of the path aspect value. */
     static public final String PATH_NAME = "path";
     /** The path aspect value. */
@@ -107,10 +107,10 @@ public class TypeAspect extends AbstractAspect {
 
     static {
         try {
-            NODE_TYPE = instance.addEdgeValue(DefaultLabel.NODE_TYPE_PREFIX);
-            NODE_TYPE.setLabelParser(TypedLabelParser.getInstance(Label.NODE_TYPE));
-            FLAG = instance.addEdgeValue(DefaultLabel.FLAG_PREFIX);
-            FLAG.setLabelParser(TypedLabelParser.getInstance(Label.FLAG));
+            //            NODE_TYPE = instance.addEdgeValue(DefaultLabel.NODE_TYPE_PREFIX);
+            //            NODE_TYPE.setLabelParser(TypedLabelParser.getInstance(Label.NODE_TYPE));
+            //            FLAG = instance.addEdgeValue(DefaultLabel.FLAG_PREFIX);
+            //            FLAG.setLabelParser(TypedLabelParser.getInstance(Label.FLAG));
             PATH = instance.addEdgeValue(PATH_NAME);
             PATH.setLabelParser(RegExprLabelParser.getInstance(true));
             SUB = instance.addEdgeValue(SUB_NAME);
@@ -122,56 +122,6 @@ public class TypeAspect extends AbstractAspect {
         } catch (FormatException exc) {
             throw new Error("Aspect '" + TYPE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
-        }
-    }
-
-    /**
-     * Parser constructing node type labels.
-     */
-    static private class TypedLabelParser implements LabelParser {
-        /**
-         * Private constructor for this singleton class.
-         * @param labelType the type of label to be created: either
-         *        {@link Label#FLAG} or {@link Label#NODE_TYPE}.
-         */
-        private TypedLabelParser(int labelType) {
-            this.labelType = labelType;
-        }
-
-        @Override
-        public Label parse(String text) throws FormatException {
-            if (ExprParser.isIdentifier(text)) {
-                return DefaultLabel.createLabel(text, this.labelType);
-            } else {
-                throw new FormatException(
-                    "Node type label '%s' is not a valid identifier", text);
-            }
-        }
-
-        @Override
-        public DefaultLabel unparse(Label label) {
-            return DefaultLabel.createLabel(label.text(), label.getType());
-        }
-
-        /**
-         * The type of label to be created (either {@link Label#FLAG} or
-         * {@link Label#NODE_TYPE}).
-         */
-        private final int labelType;
-
-        /**
-         * Returns an instance of this class, for a given label type (either
-         * {@link Label#FLAG} or {@link Label#NODE_TYPE}).
-         */
-        static public TypedLabelParser getInstance(int labelType) {
-            return instances[labelType];
-        }
-
-        /** Singleton instance of this class. */
-        static private TypedLabelParser[] instances = new TypedLabelParser[3];
-        static {
-            instances[Label.NODE_TYPE] = new TypedLabelParser(Label.NODE_TYPE);
-            instances[Label.FLAG] = new TypedLabelParser(Label.FLAG);
         }
     }
 

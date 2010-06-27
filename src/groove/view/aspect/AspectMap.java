@@ -49,7 +49,7 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap> {
         if (rule) {
             this.defaultParser = RegExprLabelParser.getInstance(false);
         } else {
-            this.defaultParser = FreeLabelParser.getInstance();
+            this.defaultParser = PrefixedLabelParser.getInstance();
         }
     }
 

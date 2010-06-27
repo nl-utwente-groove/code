@@ -153,7 +153,7 @@ public class JaxbGxlIO implements GxlIO {
             gxlEdge.setTo(nodeMap.get(edge.opposite()));
             AttrType labelAttr = this.factory.createAttrType();
             labelAttr.setName(LABEL_ATTR_NAME);
-            labelAttr.setString(DefaultLabel.toTypedString(edge.label()));
+            labelAttr.setString(DefaultLabel.toPrefixedString(edge.label()));
             gxlEdge.getAttr().add(labelAttr);
             nodesEdges.add(gxlEdge);
         }

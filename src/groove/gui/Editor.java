@@ -1105,11 +1105,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         this.errorCells.clear();
         this.errorCellMap.clear();
         for (FormatError error : errors) {
-            if (error.getObject() != null) {
-                JCell errorCell = this.graphToModelMap.get(error.getObject());
+            for (Element errorObject : error.getElements()) {
+                JCell errorCell = this.graphToModelMap.get(errorObject);
                 if (errorCell != null) {
                     this.errorCells.add(errorCell);
                     this.errorCellMap.put(error, errorCell);
+                    break;
                 }
             }
         }

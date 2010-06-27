@@ -20,6 +20,8 @@ import groove.control.ControlView;
 import groove.graph.Element;
 import groove.view.aspect.AspectGraph;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,13 +30,6 @@ import java.util.Map;
  * @version $Revision $
  */
 public class FormatError implements Comparable<FormatError> {
-    /** Constructs an error for a given graph, erroneous element and string message. */
-    public FormatError(AspectGraph graph, Element object, String message) {
-        this(message);
-        this.graph = graph;
-        this.object = object;
-    }
-
     /** Constructs an error consisting of a string message. */
     public FormatError(String message) {
         this.message = message;
@@ -56,35 +51,28 @@ public class FormatError implements Comparable<FormatError> {
 
     /**
      * Attempts to set a context value ({@link #graph}, {@link #control}, 
-     * {@link #object}) from a given object.
+     * {@link #elements}) from a given object.
      */
     private void addContext(Object par) {
         if (par instanceof FormatError) {
             this.graph = ((FormatError) par).getGraph();
-            this.object = ((FormatError) par).getObject();
+            this.elements.addAll(((FormatError) par).getElements());
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
         } else if (par instanceof ControlView) {
             this.control = (ControlView) par;
         } else if (par instanceof Element) {
-            this.object = (Element) par;
+            this.elements.add((Element) par);
         }
     }
 
     /** Constructs an error from an existing error, by adding extra information. */
     public FormatError(FormatError prior, Object... pars) {
         this(prior.toString(), pars);
-        if (this.object == null) {
-            this.object = prior.getObject();
-        }
+        this.elements.addAll(prior.getElements());
         if (this.graph == null) {
             this.graph = prior.getGraph();
         }
-    }
-
-    /** Copies a given error while filling in the error graph. */
-    public FormatError(AspectGraph graph, FormatError error) {
-        this(graph, error.getObject(), error.toString());
     }
 
     /** Compares the error graph, error object and message. */
@@ -100,8 +88,8 @@ public class FormatError implements Comparable<FormatError> {
                 getControl() == null ? err.getControl() == null
                         : getControl().equals(err.getControl());
             result &=
-                getObject() == null ? err.getObject() == null
-                        : getObject().equals(err.getObject());
+                getElements() == null ? err.getElements() == null
+                        : getElements().equals(err.getElements());
             result &= toString().equals(err.toString());
         }
         return result;
@@ -113,7 +101,7 @@ public class FormatError implements Comparable<FormatError> {
         int result = toString().hashCode();
         result += getGraph() == null ? 0 : getGraph().hashCode();
         result += getControl() == null ? 0 : getControl().hashCode();
-        result += getObject() == null ? 0 : getObject().hashCode();
+        result += getElements() == null ? 0 : getElements().hashCode();
         return result;
     }
 
@@ -128,14 +116,17 @@ public class FormatError implements Comparable<FormatError> {
      */
     @Override
     public int compareTo(FormatError other) {
-        int result;
-        if (getObject() == null) {
-            // errors without object precede errors with
-            result = other.getObject() == null ? 0 : -1;
-        } else {
-            result =
-                other.getObject() == null ? 1 : getObject().compareTo(
-                    other.getObject());
+        int result = 0;
+        // establish lexicographical ordering of error objects
+        int upper = Math.min(this.elements.size(), other.elements.size());
+        for (int i = 0; i < upper; i++) {
+            result = getElements().get(i).compareTo(other.getElements().get(i));
+            if (result != 0) {
+                break;
+            }
+        }
+        if (result == 0) {
+            result = this.elements.size() - other.elements.size();
         }
         if (result == 0) {
             result = toString().compareTo(other.toString());
@@ -153,9 +144,9 @@ public class FormatError implements Comparable<FormatError> {
         return this.graph;
     }
 
-    /** Returns the graph element in which the error occurs. May be {@code null}. */
-    public final Element getObject() {
-        return this.object;
+    /** Returns the list of elements in which the error occurs. May be {@code null}. */
+    public final List<Element> getElements() {
+        return this.elements;
     }
 
     /** Returns a new format error that extends this one with context information. */
@@ -165,15 +156,17 @@ public class FormatError implements Comparable<FormatError> {
 
     /** Returns a new format error in which the context information is transferred. */
     public FormatError transfer(Map<?,?> map) {
-        Element newObject = this.object;
-        if (map.containsKey(newObject)) {
-            newObject = (Element) map.get(newObject);
+        List<Element> newElements = new ArrayList<Element>();
+        for (Element errorObject : this.elements) {
+            if (map.containsKey(errorObject)) {
+                newElements.add((Element) map.get(errorObject));
+            }
         }
         AspectGraph newGraph = this.graph;
         if (map.containsKey(newGraph)) {
             newGraph = (AspectGraph) map.get(newGraph);
         }
-        return new FormatError(this, newObject, newGraph);
+        return new FormatError(this, newElements, newGraph);
     }
 
     /** The control view in which the error occurs. */
@@ -181,7 +174,7 @@ public class FormatError implements Comparable<FormatError> {
     /** The graph in which the error occurs. */
     private AspectGraph graph;
     /** The erroneous element. */
-    private Element object;
+    private final List<Element> elements = new ArrayList<Element>();
     /** The error message. */
     private final String message;
 }

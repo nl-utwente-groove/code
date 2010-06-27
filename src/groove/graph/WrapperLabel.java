@@ -37,7 +37,7 @@ public class WrapperLabel<Type extends Comparable<Type>> extends AbstractLabel
     }
 
     @Override
-    public int getType() {
+    public int getKind() {
         return BINARY;
     }
 

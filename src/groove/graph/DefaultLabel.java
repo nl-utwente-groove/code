@@ -19,6 +19,8 @@ package groove.graph;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.util.Converter;
+import groove.util.ExprParser;
+import groove.view.FormatException;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.RuleAspect;
 
@@ -38,14 +40,14 @@ public final class DefaultLabel extends AbstractLabel {
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.
      * @param index the index of the label text
-     * @param type indicator of the type of label (normal, node type or flag).
+     * @param kind indicator of the type of label (normal, node type or flag).
      *        The value is respectively 0, {@link #NODE_TYPE_MASK} or
      *        {@link #FLAG_MASK}.
      */
-    private DefaultLabel(char index, int type) {
+    private DefaultLabel(char index, int kind) {
         this.index = index;
         this.hashCode = computeHashCode();
-        this.type = type;
+        this.kind = kind;
     }
 
     public String text() {
@@ -53,8 +55,8 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     @Override
-    public int getType() {
-        return this.type;
+    public int getKind() {
+        return this.kind;
     }
 
     // ------------------------- OBJECT OVERRIDES ---------------------
@@ -79,7 +81,7 @@ public final class DefaultLabel extends AbstractLabel {
     private int computeHashCode() {
         int result = text().hashCode() * (this.index + 1);
         int mask;
-        switch (this.type) {
+        switch (this.kind) {
         case NODE_TYPE:
             mask = NODE_TYPE_MASK;
             break;
@@ -133,7 +135,7 @@ public final class DefaultLabel extends AbstractLabel {
     /** The hash code of this label. */
     private final int hashCode;
     /** The type of label (normal, node type or flag). */
-    private final int type;
+    private final int kind;
 
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
@@ -148,17 +150,40 @@ public final class DefaultLabel extends AbstractLabel {
 
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
-     * string and label type. The string is used as-is, and is guaranteed to
+     * string and label kind, while optionally testing if this label is legal. 
+     * The string is used as-is, and is guaranteed to
      * equal the text of the resulting label.
      * @param text the text of the label; non-null
-     * @param labelType type of the label to be created
-     * @return an existing or new label with the given text and node type
-     *         property; non-null
-     * @see #getType()
+     * @param kind kind of label to be created
+     * @param test if {@code true}, a {@link groove.view.FormatException} may be thrown
+     * if {@code text} does not satisfy the requirements of {@code kind}-labels.
+     * @return an existing or new label with the given text and kind; non-null
+     * @see #createLabel(String, int)
+     * @throws FormatException if {@code text} does not satisfy the constraints
+     * for labels of kind {@code kind}
      */
-    public static DefaultLabel createLabel(String text, int labelType) {
+    public static DefaultLabel createLabel(String text, int kind, boolean test)
+        throws FormatException {
+        if (test && kind != BINARY && !ExprParser.isIdentifier(text)) {
+            throw new FormatException(
+                "%s label '%s' is not a valid identifier",
+                kindDescriptors[kind], text);
+        }
+        return createLabel(text, kind);
+    }
+
+    /**
+     * Returns the unique representative of a {@link DefaultLabel} for a given
+     * string and label kind. The string is used as-is, and is guaranteed to
+     * equal the text of the resulting label.
+     * @param text the text of the label; non-null
+     * @param kind kind of label to be created
+     * @return an existing or new label with the given text and kind; non-null
+     * @see #getKind()
+     */
+    public static DefaultLabel createLabel(String text, int kind) {
         assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text, labelType));
+        return getLabel(newLabelIndex(text, kind));
     }
 
     /**
@@ -170,13 +195,13 @@ public final class DefaultLabel extends AbstractLabel {
      */
     public static DefaultLabel createTypedLabel(String prefixedText) {
         int labelType = BINARY;
-        if (prefixedText.startsWith(getTypePrefix(NODE_TYPE))) {
+        if (prefixedText.startsWith(getPrefix(NODE_TYPE))) {
             labelType = NODE_TYPE;
-        } else if (prefixedText.startsWith(getTypePrefix(FLAG))) {
+        } else if (prefixedText.startsWith(getPrefix(FLAG))) {
             labelType = FLAG;
         }
         String actualText =
-            prefixedText.substring(getTypePrefix(labelType).length());
+            prefixedText.substring(getPrefix(labelType).length());
         return createLabel(actualText, labelType);
     }
 
@@ -256,11 +281,11 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
-     * Returns the text of the label string, prefixed by the node type aspect if
-     * the label is a node type.
+     * Returns the text of the label string, prefixed by the node type 
+     * or flag aspect if the label is a node type or flag.
      */
-    static public String toTypedString(Label label) {
-        return getTypePrefix(label.getType()) + label.text();
+    static public String toPrefixedString(Label label) {
+        return getPrefix(label.getKind()) + label.text();
     }
 
     /** Creates a data type label for a given algebra. */
@@ -282,12 +307,12 @@ public final class DefaultLabel extends AbstractLabel {
      * Returns the index of a certain label text, if it is in the list. Returns
      * a special value if the text is not in the list.
      * @param text the label text being looked up
-     * @param labelType the type of the label to be looked up or created
+     * @param kind the kind of label to be looked up or created
      * @return the index of <tt>text</tt>, if it is the list;
      *         <tt>Character.MAX_VALUE</tt> otherwise.
      */
-    static private char labelIndex(String text, int labelType) {
-        Character index = getIndexMap(labelType).get(text);
+    static private char labelIndex(String text, int kind) {
+        Character index = getIndexMap(kind).get(text);
         if (index == null) {
             return Character.MAX_VALUE;
         } else {
@@ -299,18 +324,18 @@ public final class DefaultLabel extends AbstractLabel {
      * Returns an index for a certain label text, creating a new entry if
      * required.
      * @param text the label text being looked up
-     * @param labelType the type of the label to be looked up or created
+     * @param kind the kind of label to be looked up or created
      * @return a valid index for <tt>text</tt>
      * @require <tt>text != null</tt>
      * @ensure <tt>labelText(result).equals(text)</tt>
      */
-    static private char newLabelIndex(String text, int labelType) {
-        Character index = getIndexMap(labelType).get(text);
+    static private char newLabelIndex(String text, int kind) {
+        Character index = getIndexMap(kind).get(text);
         if (index == null) {
             char result = (char) textList.size();
             textList.add(text);
-            labelList.add(new DefaultLabel(result, labelType));
-            getIndexMap(labelType).put(text, new Character(result));
+            labelList.add(new DefaultLabel(result, kind));
+            getIndexMap(kind).put(text, new Character(result));
             return result;
         } else {
             return index.charValue();
@@ -318,10 +343,10 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
-     * Returns the appropriate index map for a given label type.
+     * Returns the appropriate index map for a given label kind.
      */
-    static private Map<String,Character> getIndexMap(int labelType) {
-        switch (labelType) {
+    static private Map<String,Character> getIndexMap(int kind) {
+        switch (kind) {
         case NODE_TYPE:
             return nodeTypeIndexMap;
         case FLAG:
@@ -332,22 +357,73 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     /**
-     * Returns the textual prefix belonging to a given label type.
+     * Returns the textual prefix belonging to a given label kind.
+     * This method is the inverse of {@link #getPrefixKind(String)}.
      * @return the label type corresponding to {@code labelType}, including the
-     *         {@link #TYPE_SEPARATOR} where necessary; {@code null} if {@code
+     *         {@link #KIND_SEPARATOR} where necessary; {@code null} if {@code
      *         labelType} is not a valid label type.
+     * @see #getPrefixKind(String)
      */
-    private static String getTypePrefix(int labelType) {
-        switch (labelType) {
+    public static String getPrefix(int labelKind) {
+        switch (labelKind) {
         case NODE_TYPE:
-            return NODE_TYPE_PREFIX + TYPE_SEPARATOR;
+            return NODE_TYPE_PREFIX + KIND_SEPARATOR;
         case FLAG:
-            return FLAG_PREFIX + TYPE_SEPARATOR;
+            return FLAG_PREFIX + KIND_SEPARATOR;
         case BINARY:
             return "";
         default:
             return null;
         }
+    }
+
+    /** 
+     * Extracts the label prefix from a given label text.
+     * The prefix is either {@link #NODE_TYPE_PREFIX} or 
+     * {@link #FLAG_PREFIX}, followed by {@link #KIND_SEPARATOR});
+     * or {@code null} if there is no type prefix.
+     * @see #getPrefix(int)
+     */
+    public static String getPrefix(String label) {
+        if (label.startsWith(getPrefix(NODE_TYPE))) {
+            return getPrefix(NODE_TYPE);
+        } else if (label.startsWith(getPrefix(FLAG))) {
+            return getPrefix(FLAG);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Determines the label type, based on a given prefix.
+     * This method is the inverse of {@link #getPrefix(int)}.
+     * @param prefix the tested prefix; should not include
+     *        {@link #KIND_SEPARATOR}
+     * @return one of {@link #BINARY}, {@link #NODE_TYPE} or {@link #FLAG}, or a
+     *         negative number if {@code prefix} is not a known label type
+     * @see #getKind()
+     * @see #getPrefix(int)
+     * @see #NODE_TYPE_PREFIX
+     * @see #FLAG_PREFIX
+     */
+    static public int getPrefixKind(String prefix) {
+        if (prefix.length() == 0) {
+            return BINARY;
+        } else if (prefix.equals(getPrefix(NODE_TYPE))) {
+            return NODE_TYPE;
+        } else if (prefix.equals(getPrefix(FLAG))) {
+            return FLAG;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Returns a descriptor for a given label kind.
+     * A descriptor is a human-readable explanation of the label kind.
+     */
+    public static String getDescriptor(int labelKind) {
+        return kindDescriptors[labelKind];
     }
 
     /**
@@ -383,33 +459,14 @@ public final class DefaultLabel extends AbstractLabel {
     /** Mask to distinguish (the hash code of) flag labels. */
     static private final int FLAG_MASK = 0x5555;
 
-    /**
-     * Determines the label type, based on a given prefix.
-     * @param prefix the tested prefix; should not include
-     *        {@link #TYPE_SEPARATOR}
-     * @return one of {@link #BINARY}, {@link #NODE_TYPE} or {@link #FLAG}, or a
-     *         negative number if {@code prefix} is not a known label type
-     * @see #getType()
-     * @see #NODE_TYPE_PREFIX
-     * @see #FLAG_PREFIX
-     */
-    static public int getLabelType(String prefix) {
-        if (prefix.length() == 0) {
-            return BINARY;
-        } else if (prefix.equals(NODE_TYPE_PREFIX)) {
-            return NODE_TYPE;
-        } else if (prefix.equals(FLAG_PREFIX)) {
-            return FLAG;
-        } else {
-            return -1;
-        }
-    }
-
-    /** Separator between label type prefix and label text. */
-    static public final char TYPE_SEPARATOR = ':';
+    /** Separator between label kind prefix and label text. */
+    static public final char KIND_SEPARATOR = ':';
     /** Prefix indicating that a label is a node type. */
     static public final String FLAG_PREFIX = "flag";
     /** Prefix indicating that a label is a flag. */
     static public final String NODE_TYPE_PREFIX = "type";
+    /** Array of descriptions for the various label kinds. */
+    static private final String[] kindDescriptors =
+        new String[] {"Type", "Flag", "Binary"};
 
 }

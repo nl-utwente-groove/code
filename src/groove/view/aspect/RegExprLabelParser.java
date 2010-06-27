@@ -71,14 +71,14 @@ public class RegExprLabelParser implements LabelParser {
         if (text.length() == 0) {
             throw new FormatException("Empty expression is not allowed");
         } else if (text.startsWith(NEG_OPERATOR)) {
-            RegExpr innerExpr =
-                parseAsRegExpr(text.substring(NEG_OPERATOR.length()));
-            if (innerExpr.containsOperator(NEG_OPERATOR)) {
-                throw new FormatException("Nested negation is not allowed");
+            RegExpr innerExpr;
+            String subText = text.substring(NEG_OPERATOR.length());
+            try {
+                innerExpr = RegExpr.parse(subText);
+            } catch (FormatException exc) {
+                innerExpr = parseAsRegExpr(subText);
             }
             result = innerExpr.neg();
-            // } else if (text.length() == 1 && ) {
-            // result = RegExpr.empty();
         } else if (this.certain || text.charAt(0) == RegExpr.EMPTY_OPERATOR
             || text.charAt(0) == RegExpr.WILDCARD_OPERATOR) {
             result = RegExpr.parse(text);
@@ -93,14 +93,9 @@ public class RegExprLabelParser implements LabelParser {
                         throw new FormatException(
                             "Incorrectly bracketed regular expression");
                     } else {
-                        RegExpr resultExpr =
+                        result =
                             RegExpr.parse(subText.substring(1,
                                 subText.length() - 1));
-                        if (resultExpr.containsOperator(NEG_OPERATOR)) {
-                            throw new FormatException(
-                                "Nested negation is not allowed");
-                        }
-                        result = resultExpr;
                     }
                     break;
                 default:
@@ -125,6 +120,9 @@ public class RegExprLabelParser implements LabelParser {
                 }
                 result = RegExpr.atom(text);
             }
+        }
+        if (result.containsOperator(NEG_OPERATOR)) {
+            throw new FormatException("Nested negation is not allowed");
         }
         return result;
     }

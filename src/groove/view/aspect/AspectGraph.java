@@ -31,11 +31,11 @@ import groove.rel.RegExprLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.DefaultGraphView;
+import groove.view.DefaultRuleView;
 import groove.view.DefaultTypeView;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
-import groove.view.DefaultRuleView;
 import groove.view.RuleView;
 import groove.view.TypeView;
 import groove.view.View;
@@ -496,17 +496,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 if (replacement != null) {
                     AspectMap newData = edge.getAspectMap().clone();
                     newData.remove(TypeAspect.getInstance());
-                    if (replacement.isNodeType()) {
-                        newData.addDeclaredValue(TypeAspect.NODE_TYPE);
-                    } else if (replacement.isFlag()) {
-                        newData.addDeclaredValue(TypeAspect.FLAG);
-                    }
+                    //                    if (replacement.isNodeType()) {
+                    //                        newData.addDeclaredValue(TypeAspect.NODE_TYPE);
+                    //                    } else if (replacement.isFlag()) {
+                    //                        newData.addDeclaredValue(TypeAspect.FLAG);
+                    //                    }
                     if (GraphInfo.hasRuleRole(this)) {
                         replacement =
                             RegExprLabelParser.getInstance(false).unparse(
                                 replacement);
                     }
-                    newData.setText(replacement.text());
+                    newData.setText(DefaultLabel.toPrefixedString(replacement));
                     oldToNew.put(edge, createAspectEdge(edge.source(),
                         edge.target(), newData));
                 }

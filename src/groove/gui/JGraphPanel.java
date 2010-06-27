@@ -136,10 +136,11 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
      * If the underlying model is a {@link GraphJModel},
      * selects the element corresponding to a given graph element.
+     * @return {@code true} if {@code elem} occurs in the {@link GraphJModel}.
      */
-    public void selectJCell(Element elem) {
+    public boolean selectJCell(Element elem) {
+        JCell cell = null;
         if (getJModel() instanceof GraphJModel) {
-            JCell cell = null;
             if (elem instanceof Node) {
                 cell = ((GraphJModel) getJModel()).getJVertex((Node) elem);
             } else if (elem instanceof Edge) {
@@ -147,12 +148,13 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
             }
             if (cell != null) {
                 if (cell instanceof GraphJEdge
-                    && ((GraphJEdge) cell).isDataEdgeSourceLabel()) {
+                    && ((GraphJEdge) cell).isSourceLabel()) {
                     cell = ((GraphJEdge) cell).getSourceVertex();
                 }
                 getJGraph().setSelectionCell(cell);
             }
         }
+        return cell != null;
     }
 
     /**
