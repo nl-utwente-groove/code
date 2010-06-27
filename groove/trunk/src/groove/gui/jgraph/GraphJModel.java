@@ -715,8 +715,19 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Indicates whether self-edges should be shown as node labels.
      */
     boolean isShowVertexLabels() {
-        return getOptionValue(Options.SHOW_VERTEX_LABELS_OPTION);
+        return this.showVertexLabels
+            || getOptionValue(Options.SHOW_VERTEX_LABELS_OPTION);
     }
+
+    /** Option to make sure vertex labels are shown, 
+     * irregardless of the option value.
+     */
+    public void setShowVertexLabels() {
+        this.showVertexLabels = true;
+    }
+
+    /** Private flag to show vertex labels irregardless of the menu option. */
+    private boolean showVertexLabels;
 
     /**
      * Indicates whether anchors should be shown in the rule and lts views.

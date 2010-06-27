@@ -920,6 +920,14 @@ public class Options {
         return result.toString();
     }
 
+    /** Returns a clone of this options object. */
+    @Override
+    public Options clone() {
+        Options result = new Options();
+        result.itemMap.putAll(this.itemMap);
+        return result;
+    }
+
     /**
      * Map from option names to menu items.
      */
