@@ -19,6 +19,7 @@ package groove.util;
 import groove.control.ControlShape;
 import groove.control.ControlTransition;
 import groove.graph.Edge;
+import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
@@ -69,6 +70,7 @@ public final class GraphToTikz {
         boolean showBackground =
             model.getOptions().getValue(Options.SHOW_BACKGROUND_OPTION) == 1
                     ? true : false;
+        String role = GraphInfo.getRole(graph);
         StringBuilder result = new StringBuilder();
 
         result.append(beginTikzFig());
@@ -83,7 +85,7 @@ public final class GraphToTikz {
             boolean isEmphasized = model.isEmphasized(vertex);
             boolean isGrayedOut = model.isGrayedOut(vertex);
             result.append(convertNodeToTikzStr(vertex, layout, showBackground,
-                isEmphasized, isGrayedOut));
+                isEmphasized, isGrayedOut, role));
         }
 
         for (Edge edge : graph.edgeSet()) {
@@ -95,7 +97,7 @@ public final class GraphToTikz {
             boolean isEmphasized = model.isEmphasized(jCell);
             boolean isGrayedOut = model.isGrayedOut(jCell);
             result.append(convertEdgeToTikzStr(jCell, layout, layoutMap,
-                isEmphasized, isGrayedOut));
+                isEmphasized, isGrayedOut, role));
         }
 
         result.append(endTikzFig());
@@ -110,11 +112,12 @@ public final class GraphToTikz {
      * @param showBackground flag to indicate if the node should be filled.
      * @param isEmphasized flag that indicates if the node is emphasized.
      * @param isGrayedOut flag that indicates if the node is grayed out.
+     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a StringBuilder filled with the Tikz string.
      */
     private static StringBuilder convertNodeToTikzStr(GraphJVertex node,
             JVertexLayout layout, boolean showBackground, boolean isEmphasized,
-            boolean isGrayedOut) {
+            boolean isGrayedOut, String role) {
 
         StringBuilder result = new StringBuilder();
 
@@ -123,7 +126,7 @@ public final class GraphToTikz {
 
             // Styles.
             result.append(convertStyles(node, showBackground, isEmphasized,
-                isGrayedOut));
+                isGrayedOut, role));
 
             // Node ID.
             appendNode(node, result);
@@ -165,16 +168,17 @@ public final class GraphToTikz {
      * @param layoutMap the layout information associated with the graph.
      * @param isEmphasized flag that indicates if the edge is emphasized.
      * @param isGrayedOut flag that indicates if the edge is grayed out.
+     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a StringBuilder filled with the Tikz string if the JCell could
      *         cast into a valid sub-type or an empty StringBuilder otherwise.
      */
     private static StringBuilder convertEdgeToTikzStr(JCell cell,
             JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
-            boolean isEmphasized, boolean isGrayedOut) {
+            boolean isEmphasized, boolean isGrayedOut, String role) {
 
         if (cell instanceof GraphJEdge) {
             return convertEdgeToTikzStr((GraphJEdge) cell, layout, layoutMap,
-                isEmphasized, isGrayedOut);
+                isEmphasized, isGrayedOut, role);
         } else {
             return new StringBuilder();
         }
@@ -187,17 +191,18 @@ public final class GraphToTikz {
      * @param layoutMap the layout information associated with the graph.
      * @param isEmphasized flag that indicates if the edge is emphasized.
      * @param isGrayedOut flag that indicates if the edge is grayed out.
+     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a StringBuilder filled with the Tikz string.
      */
     private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge,
             JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
-            boolean isEmphasized, boolean isGrayedOut) {
+            boolean isEmphasized, boolean isGrayedOut, String role) {
 
         StringBuilder result = new StringBuilder();
 
         if (edge.isVisible()) {
             ArrayList<String> styles =
-                convertStyles(edge, isEmphasized, isGrayedOut);
+                convertStyles(edge, isEmphasized, isGrayedOut, role);
             String edgeStyle = styles.get(0);
             String labStyle = styles.get(1);
 
@@ -1001,10 +1006,12 @@ public final class GraphToTikz {
      * @param showBackground flag to indicate if the node should be filled.
      * @param isEmphasized flag that indicates if the node is emphasized.
      * @param isGrayedOut flag that indicates if the node is grayed out.
+     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a string with all the Tikz styles to be used.
      */
     private static String convertStyles(GraphJVertex node,
-            boolean showBackground, boolean isEmphasized, boolean isGrayedOut) {
+            boolean showBackground, boolean isEmphasized, boolean isGrayedOut,
+            String role) {
 
         if (node instanceof ControlJModel.StateJVertex) {
             // Node from control automaton.
@@ -1020,17 +1027,17 @@ public final class GraphToTikz {
 
         // If we got to this point we have either a node from a rule,
         // a state graph or a type graph.
-
+        boolean isRule = Groove.isRuleRole(role);
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
 
-        if (allLabels.contains(DEL_COL)) {
+        if (isRule && allLabels.contains(DEL_COL)) {
             // Eraser node
             styles.add(ERASER_NODE_STYLE);
-        } else if (allLabels.contains(NEW_COL)) {
+        } else if (isRule && allLabels.contains(NEW_COL)) {
             // Creator node
             styles.add(CREATOR_NODE_STYLE);
-        } else if (allLabels.contains(NOT_COL)) {
+        } else if (isRule && allLabels.contains(NOT_COL)) {
             // Embargo node
             styles.add(EMBARGO_NODE_STYLE);
         } else {
@@ -1046,7 +1053,7 @@ public final class GraphToTikz {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (node.isProductNode()) {
             styles.add(PRODUCT_NODE_STYLE);
-        } else {
+        } else if (isRule) {
             for (String label : allLabels) {
                 if (label.contains(FORALL) || label.contains(EXISTS + ":")
                     || label.contains(FORALLX) || label.contains(EXISTS + "=")) {
@@ -1150,17 +1157,19 @@ public final class GraphToTikz {
      * @param edge the edge to be analysed.
      * @param isEmphasized flag that indicates if the edge is emphasized.
      * @param isGrayedOut flag that indicates if the edge is grayed out.
+     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return an array of size two. The first string is the edge style and the
      *         second one is the label style.
      */
     private static ArrayList<String> convertStyles(GraphJEdge edge,
-            boolean isEmphasized, boolean isGrayedOut) {
+            boolean isEmphasized, boolean isGrayedOut, String role) {
 
         if (edge instanceof TransitionJEdge) {
             return convertStyles((TransitionJEdge) edge, isEmphasized,
                 isGrayedOut);
         }
-
+        boolean isRule = Groove.isRuleRole(role);
+        boolean isType = Groove.isTypeRole(role);
         ArrayList<String> styles = new ArrayList<String>();
 
         if (edge.getRole().equals(DEL)) {
@@ -1173,7 +1182,7 @@ public final class GraphToTikz {
             styles.add(EMBARGO_EDGE_STYLE);
             styles.add(EMBARGO_LABEL_STYLE);
         } else { // role == "use"
-            if (edge.getPlainLabels().contains(SUB)) {
+            if (isType && edge.getPlainLabels().contains(SUB)) {
                 styles.add(INHERITANCE_EDGE_STYLE);
                 styles.add(INHERITANCE_LABEL_STYLE);
             } else {
@@ -1183,14 +1192,17 @@ public final class GraphToTikz {
         }
 
         // Quantification edges.
-        Collection<String> col = new ArrayList<String>();
-        col.addAll(edge.getSourceVertex().getPlainLabels());
-        col.addAll(edge.getTargetVertex().getPlainLabels());
-        for (String label : col) {
-            if (label.contains(EXISTS + ":") || label.contains(EXISTS + "=")
-                || label.contains(FORALL) || label.contains(FORALLX)) {
-                styles.set(0, QUANTIFIER_EDGE_STYLE);
-                styles.set(1, BASIC_LABEL_STYLE);
+        if (isRule) {
+            Collection<String> col = new ArrayList<String>();
+            col.addAll(edge.getSourceVertex().getPlainLabels());
+            col.addAll(edge.getTargetVertex().getPlainLabels());
+            for (String label : col) {
+                if (label.contains(EXISTS + ":")
+                    || label.contains(EXISTS + "=") || label.contains(FORALL)
+                    || label.contains(FORALLX)) {
+                    styles.set(0, QUANTIFIER_EDGE_STYLE);
+                    styles.set(1, BASIC_LABEL_STYLE);
+                }
             }
         }
 
