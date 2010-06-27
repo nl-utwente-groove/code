@@ -485,7 +485,7 @@ public class GraphInfo {
      * @see Groove#RULE_ROLE
      */
     public static boolean hasRuleRole(GraphShape graph) {
-        return Groove.RULE_ROLE.equals(getRole(graph));
+        return Groove.isRuleRole(getRole(graph));
     }
 
     /**
@@ -494,7 +494,7 @@ public class GraphInfo {
      * @see Groove#GRAPH_ROLE
      */
     public static boolean hasGraphRole(GraphShape graph) {
-        return Groove.GRAPH_ROLE.equals(getRole(graph));
+        return Groove.isGraphRole(getRole(graph));
     }
 
     /**
@@ -503,7 +503,7 @@ public class GraphInfo {
      * @see Groove#TYPE_ROLE
      */
     public static boolean hasTypeRole(GraphShape graph) {
-        return Groove.TYPE_ROLE.equals(getRole(graph));
+        return Groove.isTypeRole(getRole(graph));
     }
 
     /**
@@ -583,8 +583,8 @@ public class GraphInfo {
      */
     public static final String FILE_KEY = "file";
     /**
-     * Key for graph role. The value should be one of {@link Groove#GRAPH_ROLE}
-     * or {@link Groove#RULE_ROLE} .
+     * Key for graph role. The value should be one of {@link Groove#GRAPH_ROLE},
+     * {@link Groove#RULE_ROLE} or {@link Groove#TYPE_ROLE}.
      */
     public static final String ROLE_KEY = "type";
     /**

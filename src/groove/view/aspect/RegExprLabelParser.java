@@ -121,8 +121,7 @@ public class RegExprLabelParser implements LabelParser {
             } else {
                 Character specialChar = getSpecialChar(text);
                 if (specialChar != null) {
-                    throw new FormatException(
-                        "Special character %c should be quoted", specialChar);
+                    RegExpr.assertAtom(text);
                 }
                 result = RegExpr.atom(text);
             }

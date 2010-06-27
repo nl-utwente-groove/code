@@ -60,6 +60,7 @@ public class AspectParser {
         boolean end = false;
         boolean edgeOnly = false;
         int nextIndex = text.indexOf(VALUE_SEPARATOR);
+        end |= nextIndex > 0 && !Character.isLetter(text.charAt(0));
         while (!end && nextIndex >= 0) {
             // look for the next aspect value between prevIndex and nextIndex
             String valueText = text.substring(0, nextIndex);
@@ -83,6 +84,7 @@ public class AspectParser {
             }
             text = text.substring(nextIndex + 1);
             nextIndex = text.indexOf(VALUE_SEPARATOR);
+            end |= nextIndex > 0 && !Character.isLetter(text.charAt(0));
         }
         if (edgeOnly || text.length() > 0) {
             if (this.convertToCurly) {
