@@ -24,6 +24,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.NodeSet;
+import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -161,10 +162,17 @@ public class Converter {
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public void graphToTikz(JGraph graph, PrintWriter writer) {
         JModel model = graph.getModel();
-        GraphJModel graphModel =
-            model instanceof GraphJModel ? (GraphJModel) graph.getModel()
-                    : GraphJModel.newInstance(model.toPlainGraph(),
-                        model.getOptions());
+        GraphJModel graphModel;
+        // if the model is an editor model, self-edges should be displayed as
+        // node labels
+        if (model instanceof EditorJModel) {
+            graphModel =
+                GraphJModel.newInstance(model.toPlainGraph(),
+                    model.getOptions());
+            graphModel.setShowVertexLabels();
+        } else {
+            graphModel = (GraphJModel) model;
+        }
         LayoutMap<Node,Edge> layoutMap =
             GraphInfo.getLayoutMap(graphModel.getGraph());
         writer.print(GraphToTikz.convertGraphToTikzStr(graphModel, layoutMap));
