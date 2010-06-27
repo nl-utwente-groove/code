@@ -79,7 +79,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * {@link #isSelfEdgeSourceLabel()} or {@link #isDataEdgeSourceLabel()}
      * return <code>true</code>.
      */
-    boolean isSourceLabel() {
+    public boolean isSourceLabel() {
         return isSelfEdgeSourceLabel() || isDataEdgeSourceLabel();
     }
 
@@ -251,7 +251,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * This implementation returns <code>edge.label().text()</code>.
      */
     public String getPlainLabel(Edge edge) {
-        return DefaultLabel.toTypedString(edge.label());
+        return DefaultLabel.toPrefixedString(edge.label());
     }
 
     /** Specialises the return type of the method. */

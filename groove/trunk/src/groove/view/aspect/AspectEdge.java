@@ -148,15 +148,23 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
 
     /**
      * Returns the label that this edge gets, when compiled to a model edge.
-     * Convenience method for {@code getAspectMap().toModelLabel(regExpr)}
+     * Convenience method for {@code getAspectMap().toModelLabel()}
      * @throws FormatException if the label contains a format error
      */
     public Label getModelLabel() throws FormatException {
+        Label result;
         try {
-            return getAspectMap().toModelLabel();
+            result = getAspectMap().toModelLabel();
         } catch (FormatException exc) {
-            throw new FormatException(exc.getMessage(), this);
+            throw new FormatException(exc.getMessage(), this, this.source());
         }
+        if (!result.isBinary() && !source().equals(target())) {
+            throw new FormatException(
+                "%s label '%s' should only occur on nodes",
+                DefaultLabel.getDescriptor(result.getKind()), result, this,
+                this.source());
+        }
+        return result;
     }
 
     /**
@@ -207,7 +215,16 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
      *         false, otherwise.
      */
     public boolean isUnaryEdge() {
-        return (this.isNodeType() == 0 || this.isFlag() == 0);
+        boolean result = false;
+        try {
+            Label modelLabel = getModelLabel();
+            if (modelLabel != null) {
+                result = !modelLabel.isBinary();
+            }
+        } catch (FormatException e1) {
+            // do nothing
+        }
+        return result;
     }
 
     /**
@@ -224,10 +241,10 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
         // label, then the target
         result = source().compareTo(other.source());
         if (result == 0) {
-            result = isNodeType() - other.isNodeType();
+            result = other.isNodeType() - isNodeType();
         }
         if (result == 0) {
-            result = isFlag() - other.isFlag();
+            result = other.isFlag() - isFlag();
         }
         if (result == 0) {
             result = getAspectMap().compareTo(other.getAspectMap());
@@ -243,12 +260,24 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
 
     /** Tests if this aspect edge stands for a node type. */
     public int isNodeType() {
-        return TypeAspect.isNodeType(this) ? 0 : 1;
+        int result = 0;
+        try {
+            result = getModelLabel().isNodeType() ? 1 : 0;
+        } catch (FormatException e) {
+            // do nothing
+        }
+        return result;
     }
 
     /** Tests if this aspect edge stands for a flag. */
     public int isFlag() {
-        return TypeAspect.isFlag(this) ? 0 : 1;
+        int result = 0;
+        try {
+            result = getModelLabel().isFlag() ? 1 : 0;
+        } catch (FormatException e) {
+            // do nothing
+        }
+        return result;
     }
 
     /**

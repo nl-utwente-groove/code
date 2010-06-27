@@ -53,6 +53,7 @@ import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.RuleEventApplier;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -1650,8 +1651,10 @@ public class Simulator {
                             }
                             // select the error cell and switch to the panel
                             if (panel != null) {
-                                if (error.getObject() != null) {
-                                    panel.selectJCell(error.getObject());
+                                for (Element errorObject : error.getElements()) {
+                                    if (panel.selectJCell(errorObject)) {
+                                        break;
+                                    }
                                 }
                                 setGraphPanel(panel);
                             }

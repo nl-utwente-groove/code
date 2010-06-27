@@ -90,9 +90,9 @@ public class RelabelDialog {
      */
     private void propagateSelection() {
         Label selection = (Label) getOldField().getSelectedItem();
-        getOldTypeLabel().setText(LABEL_TYPE_TEXT[selection.getType()]);
+        getOldTypeLabel().setText(LABEL_TYPE_TEXT[selection.getKind()]);
         //        getOldTypeCombobox().setSelectedIndex(selection.getType());
-        getNewTypeCombobox().setSelectedIndex(selection.getType());
+        getNewTypeCombobox().setSelectedIndex(selection.getKind());
         //        getNewTypeCheckbox().setSelected(selection.isNodeType());
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
@@ -289,7 +289,7 @@ public class RelabelDialog {
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
-            result.setText(LABEL_TYPE_TEXT[getOldLabel().getType()]);
+            result.setText(LABEL_TYPE_TEXT[getOldLabel().getKind()]);
             result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
             result.setBorder(new EtchedBorder());
             result.setEnabled(true);
@@ -308,7 +308,7 @@ public class RelabelDialog {
             for (int i = 0; i < LABEL_TYPE_TEXT.length; i++) {
                 result.addItem(LABEL_TYPE_TEXT[i]);
             }
-            result.setSelectedIndex(getOldLabel().getType());
+            result.setSelectedIndex(getOldLabel().getKind());
             result.setEnabled(true);
             result.setFocusable(false);
             result.addActionListener(new ActionListener() {

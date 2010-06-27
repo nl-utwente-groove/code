@@ -34,6 +34,7 @@ import static groove.view.aspect.RuleAspect.REMARK;
 import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.MergeLabel;
@@ -121,18 +122,21 @@ public class AspectJModel extends GraphJModel {
         List<FormatError> graphErrors = this.view.getErrors();
         if (graphErrors != null) {
             for (FormatError error : graphErrors) {
-                JCell errorCell = null;
-                if (error.getObject() instanceof Node) {
-                    errorCell = getJVertex((Node) error.getObject());
-                } else if (error.getObject() instanceof Edge) {
-                    errorCell = getJCell((Edge) error.getObject());
-                    if (errorCell instanceof GraphJEdge
-                        && ((GraphJEdge) errorCell).isDataEdgeSourceLabel()) {
-                        errorCell = ((GraphJEdge) errorCell).getSourceVertex();
+                for (Element errorObject : error.getElements()) {
+                    JCell errorCell = null;
+                    if (errorObject instanceof Node) {
+                        errorCell = getJVertex((Node) errorObject);
+                    } else if (errorObject instanceof Edge) {
+                        errorCell = getJCell((Edge) errorObject);
+                        if (errorCell instanceof GraphJEdge
+                            && ((GraphJEdge) errorCell).isDataEdgeSourceLabel()) {
+                            errorCell =
+                                ((GraphJEdge) errorCell).getSourceVertex();
+                        }
                     }
-                }
-                if (errorCell != null) {
-                    this.errorCells.add(errorCell);
+                    if (errorCell != null) {
+                        this.errorCells.add(errorCell);
+                    }
                 }
             }
         }

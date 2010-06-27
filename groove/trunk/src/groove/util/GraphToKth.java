@@ -206,7 +206,7 @@ public final class GraphToKth {
     private static String getType(AspectNode node) {
         String type = null;
         for (AspectEdge edge : graph.outEdgeSet(node)) {
-            if (edge.isNodeType() == 0) {
+            if (edge.isNodeType() == 1) {
                 type = edge.label().text();
                 break;
             }

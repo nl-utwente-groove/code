@@ -60,7 +60,6 @@ import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
-import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1105,7 +1104,7 @@ public class DefaultRuleView implements RuleView {
                     sublevel.addEdge(viewEdge, ruleEdge);
                 }
             } else if (!RuleAspect.inNAC(viewEdge)
-                && TypeAspect.isNodeType(viewEdge)) {
+                && viewEdge.isNodeType() == 1) {
                 // add type edges to all sublevels
                 addTypeEdge(ruleEdge);
             }

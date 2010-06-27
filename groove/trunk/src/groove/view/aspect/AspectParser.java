@@ -20,6 +20,7 @@ import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.UnknownSymbolException;
+import groove.graph.DefaultLabel;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.rel.RegExpr;
@@ -57,13 +58,12 @@ public class AspectParser {
      */
     public AspectMap parse(String text) throws FormatException {
         List<AspectValue> aspectValues = new ArrayList<AspectValue>();
-        boolean end = false;
         boolean edgeOnly = false;
-        int nextIndex = text.indexOf(VALUE_SEPARATOR);
-        end |= nextIndex > 0 && !Character.isLetter(text.charAt(0));
-        while (!end && nextIndex >= 0) {
+        int nextIndex = aspectEnd(text);
+        while (nextIndex >= 0) {
             // look for the next aspect value between prevIndex and nextIndex
             String valueText = text.substring(0, nextIndex);
+            boolean end;
             try {
                 String contentText;
                 int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
@@ -83,8 +83,7 @@ public class AspectParser {
                 throw new FormatException("%s in '%s'", exc.getMessage(), text);
             }
             text = text.substring(nextIndex + 1);
-            nextIndex = text.indexOf(VALUE_SEPARATOR);
-            end |= nextIndex > 0 && !Character.isLetter(text.charAt(0));
+            nextIndex = end ? -1 : aspectEnd(text);
         }
         if (edgeOnly || text.length() > 0) {
             if (this.convertToCurly) {
@@ -119,6 +118,22 @@ public class AspectParser {
             result.addDeclaredValue(value);
         }
         result.setText(text);
+        return result;
+    }
+
+    /** 
+     * Determines if the remaining label text still starts with an aspect value.
+     * @return the index of the end of the next aspect value in {@code text},
+     * or {@code -1} if there is no next aspect value 
+     */
+    private int aspectEnd(String text) {
+        int result = text.indexOf(VALUE_SEPARATOR);
+        if (result > 0) {
+            if (!Character.isLetter(text.charAt(0))
+                || DefaultLabel.getPrefix(text) != null) {
+                result = -1;
+            }
+        }
         return result;
     }
 
