@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * EDUARDO
@@ -212,9 +212,7 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         if (added) {
             ShapeNode nodeS = (ShapeNode) node;
             this.setNodeMult(nodeS, Multiplicity.getMultOf(1));
-            EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
-            newEc.add(nodeS);
-            this.equivRel.add(newEc);
+            this.addToNewEquivClass(nodeS);
         }
         return added;
     }
@@ -435,22 +433,30 @@ public class Shape extends DefaultGraph implements DeltaTarget {
 
     private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv,
             boolean fromShape) {
-        // For all labels.
-        for (Label label : Util.binaryLabelSet(this.graph)) {
-            // For all nodes in the graph.
-            for (Node node : this.graph.nodeSet()) {
+        // For all nodes in the graph.
+        for (Node node : this.graph.nodeSet()) {
+            ShapeNode nodeS = this.getShapeNode(node);
+            // For all binary labels.
+            for (Edge edge : this.graph.edgeSet(node)) {
+                if (Util.isUnary(edge)) {
+                    // EZ says: I don't like this jump, but if I don't use it,
+                    // I will have one extra indentation level, which looks
+                    // like crap...
+                    continue;
+                } // else, we have a binary edge.
+
+                Label label = edge.label();
                 // For all equivalence classes in the shape.
                 for (EquivClass<ShapeNode> ecS : this.equivRel) {
                     Multiplicity outMult;
                     Multiplicity inMult;
-                    ShapeNode nodeS = this.getShapeNode(node);
                     Set<Node> nodesG = this.getReverseNodeMap(ecS);
                     EdgeSignature es = this.getEdgeSignature(nodeS, label, ecS);
 
                     if (fromShape) {
                         Shape origShape = (Shape) this.graph;
-                        // Compute the set of equivalence classes from the shape that
-                        // we need to consider.
+                        // Compute the set of equivalence classes from the
+                        // shape that we need to consider.
                         Set<EquivClass<ShapeNode>> kSet =
                             new HashSet<EquivClass<ShapeNode>>();
                         for (EquivClass<ShapeNode> possibleK : origShape.equivRel) {
@@ -465,7 +471,6 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                         inMult =
                             Multiplicity.sumInMult(origShape, (ShapeNode) node,
                                 label, kSet);
-
                     } else { // From graph.
                         // Outgoing multiplicity.
                         Set<Edge> outInter =
@@ -607,6 +612,14 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         assert this.nodeSet().contains(node) : "Node " + node
             + " is not in the shape!";
         return this.equivRel.getEquivClassOf(node);
+    }
+
+    /** EDUARDO */
+    private EquivClass<ShapeNode> addToNewEquivClass(ShapeNode node) {
+        EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
+        newEc.add(node);
+        this.equivRel.add(newEc);
+        return newEc;
     }
 
     /** EDUARDO */
@@ -847,6 +860,10 @@ public class Shape extends DefaultGraph implements DeltaTarget {
 
     /** EDUARDO */
     public boolean isOutEdgeSigUnique(EdgeSignature es) {
+        return this.getOutEdgeSigCount(es) == 1;
+    }
+
+    private int getOutEdgeSigCount(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode source = es.getNode();
         Label label = es.getLabel();
@@ -859,11 +876,15 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                 }
             }
         }
-        return edgeCount == 1;
+        return edgeCount;
     }
 
     /** EDUARDO */
     public boolean isInEdgeSigUnique(EdgeSignature es) {
+        return this.getInEdgeSigCount(es) == 1;
+    }
+
+    private int getInEdgeSigCount(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode target = es.getNode();
         Label label = es.getLabel();
@@ -876,7 +897,7 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                 }
             }
         }
-        return edgeCount == 1;
+        return edgeCount;
     }
 
     /** EDUARDO */

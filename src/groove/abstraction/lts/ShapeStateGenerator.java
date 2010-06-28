@@ -18,6 +18,7 @@ package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
 import groove.abstraction.Transform;
+import groove.abstraction.gui.ShapeDialog;
 import groove.control.Location;
 import groove.explore.util.RuleEventApplier;
 import groove.gui.Options;
@@ -49,7 +50,9 @@ public class ShapeStateGenerator implements RuleEventApplier {
     // ------------------------------------------------------------------------
 
     private final AGTS gts;
+    /** EDUARDO */
     public int transitions = 0;
+    /** EDUARDO */
     public int states = 1;
 
     // ------------------------------------------------------------------------
@@ -105,6 +108,11 @@ public class ShapeStateGenerator implements RuleEventApplier {
         }
 
         return result;
+    }
+
+    /** EDUARDO */
+    public static void showShape(Shape shape) {
+        new ShapeDialog(shape, options, "");
     }
 
 }

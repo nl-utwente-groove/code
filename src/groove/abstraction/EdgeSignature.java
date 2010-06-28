@@ -109,4 +109,9 @@ public class EdgeSignature {
         return this.equivClass.size() == 1;
     }
 
+    /** EDUARDO */
+    public boolean isSelfReferencing() {
+        return this.equivClass.contains(this.node);
+    }
+
 }
