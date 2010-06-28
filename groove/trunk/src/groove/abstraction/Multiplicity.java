@@ -283,4 +283,10 @@ public final class Multiplicity {
     public Set<Multiplicity> subEdgeMult(Multiplicity mult) {
         return this.sub(mult, Parameters.getEdgeMultBound());
     }
+
+    /** EDUARDO */
+    public Multiplicity sub(Multiplicity mult) {
+        assert !this.equals(OMEGA) && !mult.equals(OMEGA);
+        return this.sub(mult, 0).iterator().next();
+    }
 }

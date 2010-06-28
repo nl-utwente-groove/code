@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * EDUARDO
@@ -136,22 +136,15 @@ public class Materialisation {
         // Initial materialisation object.
         Materialisation initialMat = new Materialisation(shapeClone, preMatch);
 
-        if (!initialMat.isMaterialisationFinished()) {
-            // This is the normal case.
-            if (!initialMat.isExtensionFinished()) {
-                result = initialMat.materialiseNodesAndExtendPreMatch();
-            } else {
-                // We don't need to materialise any node.
-                result.add(initialMat);
-            }
-
-            for (Materialisation mat : result) {
-                mat.finishMaterialisation();
-            }
+        if (!initialMat.isExtensionFinished()) {
+            result = initialMat.materialiseNodesAndExtendPreMatch();
         } else {
-            // This is a corner case on which the pre-match is already concrete.
-            // Nothing to do.
+            // We don't need to materialise any node.
             result.add(initialMat);
+        }
+
+        for (Materialisation mat : result) {
+            mat.finishMaterialisation();
         }
 
         return result;
@@ -296,10 +289,6 @@ public class Materialisation {
                 }
             }
         }
-    }
-
-    private boolean isMaterialisationFinished() {
-        return this.absElems.isEmpty();
     }
 
     private boolean isExtensionFinished() {
