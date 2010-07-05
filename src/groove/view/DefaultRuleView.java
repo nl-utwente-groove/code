@@ -1463,13 +1463,22 @@ public class DefaultRuleView implements RuleView {
                 Set<Node> nacNodes = nacPair.first();
                 Set<Edge> nacEdges = nacPair.second();
                 // check NAC typing
+                // first add end nodes of NAC edges
                 Set<Node> typableNacNodes = new HashSet<Node>(nacNodes);
                 for (Edge nacEdge : nacEdges) {
                     for (Node nacEdgeEnd : nacEdge.ends()) {
                         typableNacNodes.add(nacEdgeEnd);
                     }
                 }
-                errors.addAll(checkTyping(typableNacNodes, nacEdges));
+                // now add type edges for NAC nodes
+                Set<Edge> typableNacEdges = new HashSet<Edge>(nacEdges);
+                for (Edge typeEdge : this.lhsMap.edgeMap().values()) {
+                    if (typeEdge.label().isNodeType()
+                        && typableNacNodes.contains(typeEdge.source())) {
+                        typableNacEdges.add(typeEdge);
+                    }
+                }
+                errors.addAll(checkTyping(typableNacNodes, typableNacEdges));
                 // construct the NAC itself
                 result.addSubCondition(computeNac(this.lhs, nacNodes, nacEdges));
             }

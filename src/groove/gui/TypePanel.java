@@ -184,7 +184,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                         AspectGraph newType = getAspectGraph();
                         GraphInfo.setName(newType, typeName);
                         getSimulator().doAddType(newType);
-                        if (!oldSelectedType.equals(typeName)) {
+                        if (!typeName.equals(oldSelectedType)) {
                             getNameListModel().addType(typeName, false, false);
                             getNameListModel().selectMostAppropriateType();
                         }

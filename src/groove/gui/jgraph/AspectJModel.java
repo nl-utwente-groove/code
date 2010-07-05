@@ -164,7 +164,7 @@ public class AspectJModel extends GraphJModel {
      */
     @Override
     public GraphJVertex getJVertex(Node node) {
-        assert node instanceof AspectNode;
+        //assert node instanceof AspectNode;
         if (node instanceof AspectNode) {
             return super.getJVertex(node);
         } else {
