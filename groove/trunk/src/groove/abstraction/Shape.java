@@ -362,7 +362,6 @@ public class Shape extends DefaultGraph implements DeltaTarget {
             currGraphNeighEquiv.refineEquivRelation();
         }
         // At this point variable prevGraphNeighEquiv is no longer null.
-
         this.createShapeNodes(currGraphNeighEquiv, fromShape);
         this.createShapeNodesEquivRel(prevGraphNeighEquiv);
         this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
@@ -517,12 +516,16 @@ public class Shape extends DefaultGraph implements DeltaTarget {
 
     /** EDUARDO */
     public void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
-        this.outEdgeMultMap.put(es, mult);
+        if (mult.isPositive()) {
+            this.outEdgeMultMap.put(es, mult);
+        }
     }
 
     /** EDUARDO */
     public void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
-        this.inEdgeMultMap.put(es, mult);
+        if (mult.isPositive()) {
+            this.inEdgeMultMap.put(es, mult);
+        }
     }
 
     /** EDUARDO */
@@ -974,5 +977,68 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         }
 
         return complyToNodeMult && complyToEdgeMult && complyToEquivRel;
+    }
+
+    private Set<EdgeSignature> getEdgeSignatures(EquivClass<ShapeNode> ec) {
+        Set<EdgeSignature> result = new HashSet<EdgeSignature>();
+        for (EdgeSignature es : this.edgeSigSet) {
+            if (ec.equals(es.getEquivClass())) {
+                result.add(es);
+            }
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public Set<ShapeEdge> getCrossingEdges(ShapeNode node,
+            EquivClass<ShapeNode> ec) {
+        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
+        for (ShapeEdge edge : this.edgeSet(node)) {
+            if (!Util.isUnary(edge)) {
+                if ((edge.source().equals(node) && ec.contains(edge.opposite()))
+                    || (edge.opposite().equals(node) && ec.contains(edge.source()))) {
+                    result.add(edge);
+                }
+            }
+        }
+        return result;
+    }
+
+    /** EDUARDO */
+    public void splitEquivClassOf(ShapeNode node) {
+        EquivClass<ShapeNode> ec = this.getEquivClassOf(node);
+        EquivClass<ShapeNode> newEc = this.addToNewEquivClass(node);
+        for (EdgeSignature es : this.getEdgeSignatures(ec)) {
+            Label label = es.getLabel();
+            EdgeSignature newEs =
+                this.getEdgeSignature(es.getNode(), label, newEc);
+            Multiplicity outMult = this.getOutMultSum(node, label, newEc, null);
+            Multiplicity inMult = this.getInMultSum(node, label, newEc, null);
+            this.setEdgeOutMult(newEs, outMult);
+            this.setEdgeOutMult(newEs, inMult);
+
+            outMult = this.getOutMultSum(node, label, ec, node);
+            inMult = this.getInMultSum(node, label, ec, node);
+            this.setEdgeOutMult(es, outMult);
+            this.setEdgeOutMult(es, inMult);
+        }
+        ec.remove(node);
+    }
+
+    private Multiplicity getOutMultSum(ShapeNode node, Label label,
+            EquivClass<ShapeNode> ec, ShapeNode excludeNode) {
+        //Multiplicity accumulator = Multiplicity.getMultOf(0);
+        EdgeSignature es = this.getEdgeSignature(node, label, ec);
+        return this.getEdgeSigOutMult(es);
+        //return accumulator;
+    }
+
+    private Multiplicity getInMultSum(ShapeNode node, Label label,
+            EquivClass<ShapeNode> ec, ShapeNode excludeNode) {
+        /*Multiplicity accumulator = Multiplicity.getMultOf(0);
+
+        return accumulator;*/
+        EdgeSignature es = this.getEdgeSignature(node, label, ec);
+        return this.getEdgeSigInMult(es);
     }
 }

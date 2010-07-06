@@ -98,8 +98,8 @@ public class ShapeStateGenerator implements RuleEventApplier {
                     + "-->" + newState.toText());*/
                 System.out.println("New state: " + source + "--" + event
                     + "-->" + newState);
-                /*new ShapeDialog((Shape) newState.getGraph(), options,
-                    Integer.toString(newState.getNumber()));*/
+                new ShapeDialog((Shape) newState.getGraph(), options,
+                    Integer.toString(newState.getNumber()));
                 this.states++;
             }
             getGTS().addTransition(trans);
