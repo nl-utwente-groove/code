@@ -88,7 +88,7 @@ public class Imager extends CommandLineTool {
             this.imagerFrame.setVisible(true);
         } else {
             this.imagerFrame = null;
-            addOption(new FormatOption(this));
+            addOption(getFormatOption());
         }
     }
 
@@ -148,11 +148,29 @@ public class Imager extends CommandLineTool {
             ExtensionFilter acceptingFilter = accept(inFile);
             if (acceptingFilter != null) {
                 try {
+                    String imageFormat = getImageFormat();
+                    // if the format is not set, try to derive it
+                    // from the output file name
+                    if (imageFormat == null) {
+                        imageFormat = ExtensionFilter.getExtension(outFile);
+                        if (!getExporter().getExtensions().contains(imageFormat)) {
+                            // otherwise, use the default format
+                            imageFormat =
+                                getExporter().getDefaultFormat().getFilter().getExtension();
+                        }
+                    }
+                    // use the input file parent,
+                    // if the output file has no explicit parent
+                    File outFileParent = outFile.getParentFile();
+                    if (outFileParent == null) {
+                        outFileParent = inFile.getParentFile();
+                    }
                     String outFileName =
-                        acceptingFilter.stripExtension(outFile.getPath());
+                        acceptingFilter.stripExtension(outFile.getName());
                     outFile =
                         new File(
-                            new ExtensionFilter(this.imageFormat).addExtension(outFileName));
+                            outFileParent,
+                            new ExtensionFilter(imageFormat).addExtension(outFileName));
                     GraphShape graph = graphLoader.unmarshalGraph(inFile);
 
                     if (graph.size() == 0) {
@@ -186,7 +204,7 @@ public class Imager extends CommandLineTool {
                     jGraph.setSize(newPrefSize);
                     printlnMedium("Imaging " + inFile + " as " + outFile);
 
-                    this.exporter.export(jGraph, outFile);
+                    getExporter().export(jGraph, outFile);
                     Thread.yield();
                 } catch (FileNotFoundException fnfe) {
                     println("File " + outFile + "does not exist.");
@@ -246,20 +264,6 @@ public class Imager extends CommandLineTool {
      */
     public void setOutFile(String outFileName) {
         this.outFile = new File(outFileName);
-    }
-
-    /**
-     * Returns the image format to which the graphs will be converted.
-     */
-    public String getImageFormat() {
-        return this.imageFormat;
-    }
-
-    /**
-     * Sets the image format to which the graphs will be converted.
-     */
-    public void setImageFormat(String imageFormat) {
-        this.imageFormat = imageFormat;
     }
 
     /**
@@ -335,11 +339,31 @@ public class Imager extends CommandLineTool {
         }
     }
 
+    /** Returns the exporter associated with this Imager. */
+    private Exporter getExporter() {
+        return this.exporter;
+    }
+
     /** The image exporter used. */
-    final Exporter exporter = new Exporter();
+    private final Exporter exporter = new Exporter();
+
+    /**
+     * Returns the image format to which the graphs will be converted.
+     */
+    private String getImageFormat() {
+        return this.imageFormat;
+    }
+
+    /**
+     * Sets the image format to which the graphs will be converted.
+     */
+    private void setImageFormat(String imageFormat) {
+        this.imageFormat = imageFormat;
+    }
+
     /** Name of the image format to which the imager converts. */
-    private String imageFormat =
-        this.exporter.getDefaultFormat().getFilter().getExtension();
+    private String imageFormat;
+
     /**
      * The imager frame if the invocation is gui-based; <tt>null</tt> if it is
      * command-line based.
@@ -349,6 +373,20 @@ public class Imager extends CommandLineTool {
     private File inFile;
     /** The intended location of the image file(s). */
     private File outFile;
+
+    /** Lazily creates and returns the format option associated with this Imager. */
+    private FormatOption getFormatOption() {
+        if (this.formatOption == null) {
+            this.formatOption = new FormatOption(this);
+        }
+        return this.formatOption;
+    }
+
+    /** 
+     * The format option associated with this Imager.
+     * Lazily created by {@link #getFormatOption()}.
+     */
+    private FormatOption formatOption;
 
     /** Starts the imager with a list of options and file names. */
     public static void main(String[] args) {
@@ -401,7 +439,7 @@ public class Imager extends CommandLineTool {
     /**
      * Option to set the output format for the imager.
      */
-    static public class FormatOption implements CommandLineOption {
+    static private class FormatOption implements CommandLineOption {
         /** Abbreviation of the format option. */
         static public final String NAME = "f";
         /** Short description of the format option. */
@@ -415,7 +453,6 @@ public class Imager extends CommandLineTool {
         /** Constructs a command-line format option working on a given imager. */
         public FormatOption(Imager imager) {
             this.imager = imager;
-            this.exporter = imager.exporter;
         }
 
         public String getName() {
@@ -425,9 +462,9 @@ public class Imager extends CommandLineTool {
         public String[] getDescription() {
             List<String> result = new LinkedList<String>();
             result.add(DESCRIPTION);
-            for (String formatName : this.exporter.getExtensions()) {
+            for (String formatName : this.imager.getExporter().getExtensions()) {
                 String format = "* " + formatName;
-                if (format.equals(this.exporter.getDefaultFormat().getFilter().getExtension())) {
+                if (format.equals(this.imager.getExporter().getDefaultFormat().getFilter().getExtension())) {
                     format += DEFAULT_SUFFIX;
                 }
                 result.add(format);
@@ -450,7 +487,7 @@ public class Imager extends CommandLineTool {
         public void parse(String parameter) {
             String extension = ExtensionFilter.SEPARATOR + parameter;
             // first check if parameter is a valid format name
-            if (!this.exporter.getExtensions().contains(extension)) {
+            if (!this.imager.getExporter().getExtensions().contains(extension)) {
                 throw new IllegalArgumentException("Unknown format: "
                     + parameter);
             }
@@ -458,15 +495,13 @@ public class Imager extends CommandLineTool {
         }
 
         private final Imager imager;
-        /** The exporter used by {@link #imager}. */
-        private final Exporter exporter;
     }
 
     /**
      * Frame with fields for selecting input and output files and starting the
      * imager.
      */
-    public class ImagerFrame extends JFrame {
+    private class ImagerFrame extends JFrame {
         /** Constructs an instanceof the frame, with GUI components set. */
         public ImagerFrame() {
             super(APPLICATION_NAME);
