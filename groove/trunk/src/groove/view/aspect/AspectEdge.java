@@ -158,7 +158,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
         } catch (FormatException exc) {
             throw new FormatException(exc.getMessage(), this, this.source());
         }
-        if (!result.isBinary() && !source().equals(target())) {
+        if (result != null && !result.isBinary() && !source().equals(target())) {
             throw new FormatException(
                 "%s label '%s' should only occur on nodes",
                 DefaultLabel.getDescriptor(result.getKind()), result, this,

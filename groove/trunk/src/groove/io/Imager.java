@@ -17,6 +17,7 @@
 package groove.io;
 
 import groove.graph.GraphShape;
+import groove.gui.Editor;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJModel;
@@ -89,6 +90,7 @@ public class Imager extends CommandLineTool {
         } else {
             this.imagerFrame = null;
             addOption(getFormatOption());
+            addOption(getEditorViewOption());
         }
     }
 
@@ -183,7 +185,10 @@ public class Imager extends CommandLineTool {
                     }
 
                     JModel model;
-                    if (acceptingFilter == ruleFilter) {
+                    if (isEditorView()) {
+                        getEditor().setPlainGraph(graph);
+                        model = getEditor().getModel();
+                    } else if (acceptingFilter == ruleFilter) {
                         RuleView rule =
                             AspectGraph.newInstance(graph).toRuleView(null);
                         model = AspectJModel.newInstance(rule, new Options());
@@ -367,6 +372,22 @@ public class Imager extends CommandLineTool {
     private String imageFormat;
 
     /**
+     * Indicates if the exported image should be in editor view.
+     */
+    private boolean isEditorView() {
+        return this.editorView;
+    }
+
+    /**
+     * Changes the export to editor or display view.
+     */
+    private void setEditorView(boolean editorView) {
+        this.editorView = editorView;
+    }
+
+    /** Indicates if the exported image should be in editor view. */
+    private boolean editorView;
+    /**
      * The imager frame if the invocation is gui-based; <tt>null</tt> if it is
      * command-line based.
      */
@@ -376,10 +397,24 @@ public class Imager extends CommandLineTool {
     /** The intended location of the image file(s). */
     private File outFile;
 
+    /** Lazily creates and returns the editor view option associated with this Imager. */
+    private EditorViewOption getEditorViewOption() {
+        if (this.editorViewOption == null) {
+            this.editorViewOption = new EditorViewOption();
+        }
+        return this.editorViewOption;
+    }
+
+    /** 
+     * The editor view option associated with this Imager.
+     * Lazily created by {@link #getEditorViewOption()}.
+     */
+    private EditorViewOption editorViewOption;
+
     /** Lazily creates and returns the format option associated with this Imager. */
     private FormatOption getFormatOption() {
         if (this.formatOption == null) {
-            this.formatOption = new FormatOption(this);
+            this.formatOption = new FormatOption();
         }
         return this.formatOption;
     }
@@ -389,6 +424,20 @@ public class Imager extends CommandLineTool {
      * Lazily created by {@link #getFormatOption()}.
      */
     private FormatOption formatOption;
+
+    /** Lazily creates and returns the editor needed to export images in edit view. */
+    private Editor getEditor() {
+        if (this.editor == null) {
+            this.editor = new Editor();
+        }
+        return this.editor;
+
+    }
+
+    /** The editor (needed to get edit view export).
+     * Lazily created by {@link #getEditor()}.
+     */
+    private Editor editor;
 
     /** Starts the imager with a list of options and file names. */
     public static void main(String[] args) {
@@ -438,10 +487,42 @@ public class Imager extends CommandLineTool {
     static final ExtensionFilter[] acceptFilters =
         new ExtensionFilter[] {gpsFilter, ruleFilter, stateFilter, gxlFilter};
 
+    private class EditorViewOption implements CommandLineOption {
+        @Override
+        public String[] getDescription() {
+            return new String[] {DESCRIPTION};
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) throws IllegalArgumentException {
+            setEditorView(true);
+        }
+
+        /** Abbreviation of the editor view option. */
+        static public final String NAME = "e";
+        /** Short description of the editor view option. */
+        static public final String DESCRIPTION = "Enforces editor view export";
+    }
+
     /**
      * Option to set the output format for the imager.
      */
-    static private class FormatOption implements CommandLineOption {
+    private class FormatOption implements CommandLineOption {
         /** Abbreviation of the format option. */
         static public final String NAME = "f";
         /** Short description of the format option. */
@@ -452,11 +533,6 @@ public class Imager extends CommandLineTool {
         /** Option parameter name. */
         static public final String PARAMETER_NAME = "name";
 
-        /** Constructs a command-line format option working on a given imager. */
-        public FormatOption(Imager imager) {
-            this.imager = imager;
-        }
-
         public String getName() {
             return NAME;
         }
@@ -464,9 +540,9 @@ public class Imager extends CommandLineTool {
         public String[] getDescription() {
             List<String> result = new LinkedList<String>();
             result.add(DESCRIPTION);
-            for (String formatName : this.imager.getExporter().getExtensions()) {
+            for (String formatName : getExporter().getExtensions()) {
                 String format = "* " + formatName;
-                if (format.equals(this.imager.getExporter().getDefaultFormat().getFilter().getExtension())) {
+                if (format.equals(getExporter().getDefaultFormat().getFilter().getExtension())) {
                     format += DEFAULT_SUFFIX;
                 }
                 result.add(format);
@@ -489,14 +565,12 @@ public class Imager extends CommandLineTool {
         public void parse(String parameter) {
             String extension = ExtensionFilter.SEPARATOR + parameter;
             // first check if parameter is a valid format name
-            if (!this.imager.getExporter().getExtensions().contains(extension)) {
+            if (!getExporter().getExtensions().contains(extension)) {
                 throw new IllegalArgumentException("Unknown format: "
                     + parameter);
             }
-            this.imager.setImageFormat(extension);
+            setImageFormat(extension);
         }
-
-        private final Imager imager;
     }
 
     /**
