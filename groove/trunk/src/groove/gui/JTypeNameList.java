@@ -57,11 +57,11 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
 
     private static final int LIST_HEIGHT = 35;
     /** The min dimensions of the list. */
-    public static final Dimension MIN_DIMENSIONS =
-        new Dimension(200, LIST_HEIGHT);
+    public static final Dimension MIN_DIMENSIONS = new Dimension(200,
+        LIST_HEIGHT);
     /** The max dimensions of the list. */
-    public static final Dimension MAX_DIMENSIONS =
-        new Dimension(400, LIST_HEIGHT);
+    public static final Dimension MAX_DIMENSIONS = new Dimension(400,
+        LIST_HEIGHT);
 
     private static final EmptyBorder INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
@@ -401,8 +401,13 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
          * @param saveProp flag indicating if the properties should be saved.
          */
         public void addType(String typeName, boolean checked, boolean saveProp) {
-            ListItem item = new ListItem(typeName, checked);
-            this.items.add(item);
+            ListItem item = this.getElementByName(typeName);
+            if (item == null) {
+                item = new ListItem(typeName, checked);
+                this.items.add(item);
+            } else {
+                item.checked = checked;
+            }
             if (saveProp) {
                 JTypeNameList.this.panel.doSaveProperties();
             }
