@@ -99,7 +99,9 @@ public class Imager extends CommandLineTool {
     public void start() {
         File inFile = getInFile();
         File outFile = getOutFile();
-        if (!inFile.exists()) {
+        if (inFile == null) {
+            println("No input file specified");
+        } else if (!inFile.exists()) {
             println("Input file " + inFile + " does not exist");
         } else if (outFile == null) {
             makeImage(inFile, inFile);
