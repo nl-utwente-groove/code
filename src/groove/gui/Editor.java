@@ -18,6 +18,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -183,7 +184,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * @param graph the graph to be edited; if <code>null</code>, an empty model
      *        is started.
      */
-    public void setPlainGraph(Graph graph) {
+    public void setPlainGraph(GraphShape graph) {
         setErrors(null);
         if (graph == null) {
             setModel(new EditorJModel(this));
