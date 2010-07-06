@@ -136,15 +136,17 @@ public class Materialisation {
         // Initial materialisation object.
         Materialisation initialMat = new Materialisation(shapeClone, preMatch);
 
+        Set<Materialisation> partialMats;
         if (!initialMat.isExtensionFinished()) {
-            result = initialMat.materialiseNodesAndExtendPreMatch();
+            partialMats = initialMat.materialiseNodesAndExtendPreMatch();
         } else {
             // We don't need to materialise any node.
-            result.add(initialMat);
+            partialMats = new HashSet<Materialisation>();
+            partialMats.add(initialMat);
         }
 
-        for (Materialisation mat : result) {
-            mat.finishMaterialisation();
+        for (Materialisation partialMat : partialMats) {
+            result.addAll(partialMat.finishMaterialisation());
         }
 
         return result;
@@ -295,31 +297,102 @@ public class Materialisation {
         return this.absElems.nodeMap().isEmpty();
     }
 
-    private void finishMaterialisation() {
+    private Set<Materialisation> finishMaterialisation() {
         // At this point we assume that all variations on the nodes were
         // resolved, and that the rule match is complete and fixed.
         // Now, we go through the matched edges of the rule and adjust the 
         // shared edge multiplicities.
 
-        Multiplicity oneMult = Multiplicity.getMultOf(1);
         for (Edge edgeR : this.absElems.edgeMap().keySet()) {
             ShapeEdge mappedEdge = (ShapeEdge) this.match.getEdge(edgeR);
-
-            // Check outgoing multiplicities.
-            EdgeSignature outEs = this.shape.getEdgeOutSignature(mappedEdge);
-            Multiplicity outMult = this.shape.getEdgeSigOutMult(outEs);
-            if (outMult.equals(oneMult)) {
-                this.shape.removeImpossibleOutEdges(outEs, mappedEdge);
-            }
-
-            // Check incoming multiplicities.
-            EdgeSignature inEs = this.shape.getEdgeInSignature(mappedEdge);
-            Multiplicity inMult = this.shape.getEdgeSigInMult(inEs);
-            if (inMult.equals(oneMult)) {
-                this.shape.removeImpossibleInEdges(inEs, mappedEdge);
-            }
+            this.removeImpossibleEdges(mappedEdge);
         }
         this.absElems.edgeMap().clear();
+
+        return this.adjustEquivRelation();
+    }
+
+    private void removeImpossibleEdges(ShapeEdge mappedEdge) {
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
+        // Check outgoing multiplicities.
+        EdgeSignature outEs = this.shape.getEdgeOutSignature(mappedEdge);
+        Multiplicity outMult = this.shape.getEdgeSigOutMult(outEs);
+        if (outMult.equals(oneMult)) {
+            this.shape.removeImpossibleOutEdges(outEs, mappedEdge);
+        }
+        // Check incoming multiplicities.
+        EdgeSignature inEs = this.shape.getEdgeInSignature(mappedEdge);
+        Multiplicity inMult = this.shape.getEdgeSigInMult(inEs);
+        if (inMult.equals(oneMult)) {
+            this.shape.removeImpossibleInEdges(inEs, mappedEdge);
+        }
+    }
+
+    private Set<Materialisation> adjustEquivRelation() {
+        Set<Materialisation> result = new HashSet<Materialisation>();
+
+        // Re-use the absElems map to store the nodes in the rule that
+        // need to be processed.
+        for (Entry<Node,Node> nodeEntry : this.match.nodeMap().entrySet()) {
+            this.absElems.putNode(nodeEntry.getKey(), nodeEntry.getValue());
+        }
+
+        // Process the nodes using a queue.
+        List<Materialisation> todoMats = new ArrayList<Materialisation>();
+        // Add initial element to end.
+        todoMats.add(this);
+        while (!todoMats.isEmpty()) {
+            // Remove from head.
+            Materialisation mat = todoMats.remove(0);
+            if (mat.isExtensionFinished()) {
+                // We are done with this one.
+                result.add(mat);
+            } else {
+                // Take all the nodes in the image of the LHS and put them in a
+                // singleton equivalence class.
+
+                // Take the next node.
+                Entry<Node,Node> entry =
+                    mat.absElems.nodeMap().entrySet().iterator().next();
+                Node nodeR = entry.getKey();
+                ShapeNode nodeS = (ShapeNode) entry.getValue();
+                mat.absElems.removeNode(nodeR);
+                if (mat.shape.getEquivClassOf(nodeS).size() > 1) {
+                    // Splitting an equivalence class is a non-deterministic
+                    // step because we may need to resolve shared edges.
+                    todoMats.addAll(mat.splitEquivClassOf(nodeS));
+                } else {
+                    // Nothing to do for this image node. Re-insert this
+                    // materialisation in the queue so that it gets further
+                    // processed.
+                    todoMats.add(mat);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private Set<Materialisation> splitEquivClassOf(ShapeNode node) {
+        Set<Materialisation> result = new HashSet<Materialisation>();
+
+        EquivClass<ShapeNode> ec = this.shape.getEquivClassOf(node);
+        if (ec.size() == 1) {
+            // The node is already in its own equivalence class. Nothing to do.
+            result.add(this);
+        } else {
+            Set<ShapeEdge> crossEdges = this.shape.getCrossingEdges(node, ec);
+            for (ShapeEdge crossEdge : crossEdges) {
+                // Clone our current materialisation.
+                Materialisation newMat = this.clone();
+                // Clear impossible configurations.
+                newMat.removeImpossibleEdges(crossEdge);
+                newMat.shape.splitEquivClassOf(node);
+                result.add(newMat);
+            }
+        }
+
+        return result;
     }
 
     /** EDUARDO */
