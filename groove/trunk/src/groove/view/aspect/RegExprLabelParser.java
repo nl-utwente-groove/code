@@ -79,10 +79,17 @@ public class RegExprLabelParser implements LabelParser {
                 innerExpr = parseAsRegExpr(subText);
             }
             result = innerExpr.neg();
-        } else if (this.certain || text.charAt(0) == RegExpr.EMPTY_OPERATOR
-            || text.charAt(0) == RegExpr.WILDCARD_OPERATOR) {
-            result = RegExpr.parse(text);
         } else {
+            try {
+                result = RegExpr.parse(text);
+                if (!(this.certain || result.isWildcard() || result.isEmpty())) {
+                    result = null;
+                }
+            } catch (FormatException exc) {
+                // the expression is not regular
+            }
+        }
+        if (result == null) {
             Pair<String,List<String>> parseResult = CURLY_PARSER.parse(text);
             List<String> substitutions = parseResult.second();
             if (!substitutions.isEmpty()) {
