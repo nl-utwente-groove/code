@@ -81,7 +81,7 @@ public class RelabelDialog {
                 title == null ? DEFAULT_TITLE : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
-        boolean result = response == getOkButton() || response == getOldField();
+        boolean result = response == getOkButton() || response == getNewField();
         return result;
     }
 
