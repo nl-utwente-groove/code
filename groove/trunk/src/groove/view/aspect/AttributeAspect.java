@@ -284,10 +284,12 @@ public class AttributeAspect extends AbstractAspect {
         if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
             OperationLabelParser parser =
                 (OperationLabelParser) edgeValue.getLabelParser();
-            try {
-                result = parser.getOperation(edge.label().text());
-            } catch (FormatException exc) {
-                // no valid operation
+            if (parser != null) {
+                try {
+                    result = parser.getOperation(edge.label().text());
+                } catch (FormatException exc) {
+                    // no valid operation
+                }
             }
         }
         return result;
