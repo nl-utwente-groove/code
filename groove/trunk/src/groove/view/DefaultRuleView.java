@@ -1547,11 +1547,12 @@ public class DefaultRuleView implements RuleView {
                     result =
                         createMergeEmbargo(lhs, embargoEdge.source(),
                             embargoEdge.opposite());
-                } else {
+                } else if (VarSupport.getAllVars(embargoEdge).isEmpty()) {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);
                 }
-            } else {
+            }
+            if (result == null) {
                 // if we're here it means we couldn't make an embargo
                 result = createNAC(lhs);
                 Graph nacTarget = result.getTarget();
