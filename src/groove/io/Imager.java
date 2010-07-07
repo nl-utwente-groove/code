@@ -17,7 +17,6 @@
 package groove.io;
 
 import groove.graph.GraphShape;
-import groove.gui.Editor;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJModel;
@@ -27,7 +26,7 @@ import groove.gui.jgraph.JModel;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
-import groove.view.RuleView;
+import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
@@ -186,14 +185,10 @@ public class Imager extends CommandLineTool {
 
                     JModel model;
                     if (isEditorView()) {
-                        getEditor().setPlainGraph(graph);
-                        model = getEditor().getModel();
-                    } else if (acceptingFilter == ruleFilter) {
-                        RuleView rule =
-                            AspectGraph.newInstance(graph).toRuleView(null);
-                        model = AspectJModel.newInstance(rule, new Options());
-                    } else {
                         model = GraphJModel.newInstance(graph, new Options());
+                    } else {
+                        View<?> view = AspectGraph.newInstance(graph).toView();
+                        model = AspectJModel.newInstance(view, new Options());
                     }
 
                     JGraph jGraph = new JGraph(model, false, null);
@@ -425,19 +420,20 @@ public class Imager extends CommandLineTool {
      */
     private FormatOption formatOption;
 
-    /** Lazily creates and returns the editor needed to export images in edit view. */
-    private Editor getEditor() {
-        if (this.editor == null) {
-            this.editor = new Editor();
-        }
-        return this.editor;
-
-    }
-
-    /** The editor (needed to get edit view export).
-     * Lazily created by {@link #getEditor()}.
-     */
-    private Editor editor;
+    //
+    //    /** Lazily creates and returns the editor needed to export images in edit view. */
+    //    private Editor getEditor() {
+    //        if (this.editor == null) {
+    //            this.editor = new Editor();
+    //        }
+    //        return this.editor;
+    //
+    //    }
+    //
+    //    /** The editor (needed to get edit view export).
+    //     * Lazily created by {@link #getEditor()}.
+    //     */
+    //    private Editor editor;
 
     /** Starts the imager with a list of options and file names. */
     public static void main(String[] args) {
