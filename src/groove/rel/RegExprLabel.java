@@ -17,6 +17,7 @@
 package groove.rel;
 
 import groove.graph.AbstractLabel;
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.Property;
 
@@ -43,11 +44,28 @@ public class RegExprLabel extends AbstractLabel {
         this.regExpr = regExpr;
     }
 
+    @Override
+    public int getKind() {
+        if (getRegExpr().isWildcard()) {
+            return ((RegExpr.Wildcard) getRegExpr()).getKind();
+        } else {
+            return super.getKind();
+        }
+    }
+
     /**
      * Returns the textual description of the underlying regular expression.
      */
     public String text() {
-        return this.regExpr.toString();
+        String result = this.regExpr.toString();
+        // if the label is not binary, it means the regular expression
+        // is preceded with a kind prefix that we have to strip off
+        // in order to get the label text
+        if (!isBinary()) {
+            result =
+                result.substring(DefaultLabel.getPrefix(getKind()).length());
+        }
+        return result;
     }
 
     /**
