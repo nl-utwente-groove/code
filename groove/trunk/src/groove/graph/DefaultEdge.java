@@ -39,9 +39,9 @@ public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
      */
     protected DefaultEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target);
-        assert label.isBinary() || source.equals(target) : String.format(
-            "Unary edge label %s for binary edge between %s and %s",
-            DefaultLabel.toPrefixedString(label), source, target);
+        //        assert label.isBinary() || source.equals(target) : String.format(
+        //            "Unary edge label %s for binary edge between %s and %s",
+        //            DefaultLabel.toPrefixedString(label), source, target);
         this.nr = nr;
     }
 

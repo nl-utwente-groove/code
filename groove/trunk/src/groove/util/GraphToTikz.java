@@ -24,13 +24,13 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.jgraph.ControlJModel;
-import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJModel;
+import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -1028,6 +1028,7 @@ public final class GraphToTikz {
         // If we got to this point we have either a node from a rule,
         // a state graph or a type graph.
         boolean isRule = Groove.isRuleRole(role);
+        boolean isGraph = Groove.isGraphRole(role);
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
 
@@ -1040,7 +1041,7 @@ public final class GraphToTikz {
         } else if (isRule && allLabels.contains(NOT_COL)) {
             // Embargo node
             styles.add(EMBARGO_NODE_STYLE);
-        } else if (isRule && allLabels.contains(REM_COL)) {
+        } else if ((isRule || isGraph) && allLabels.contains(REM_COL)) {
             // Remark node
             styles.add(REMARK_NODE_STYLE);
         } else {
@@ -1299,9 +1300,9 @@ public final class GraphToTikz {
     private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG =
         "\\begin{tikzpicture}[scale=\\tikzscale]";
-    private static final String END_TIKZ_FIG = "\\userdefinedmacro\n"
-        + "\\end{tikzpicture}\n"
-        + "\\renewcommand{\\userdefinedmacro}{\\relax}";
+    private static final String END_TIKZ_FIG =
+        "\\userdefinedmacro\n" + "\\end{tikzpicture}\n"
+            + "\\renewcommand{\\userdefinedmacro}{\\relax}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
@@ -1381,6 +1382,7 @@ public final class GraphToTikz {
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
-    private static final String DOC = "% To use this figure in your LaTeX "
-        + "document\n% import the package groove/resources/groove2tikz.sty\n";
+    private static final String DOC =
+        "% To use this figure in your LaTeX "
+            + "document\n% import the package groove/resources/groove2tikz.sty\n";
 }

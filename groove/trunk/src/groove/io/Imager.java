@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.gui.Exporter;
 import groove.gui.Options;
@@ -185,6 +186,7 @@ public class Imager extends CommandLineTool {
 
                     JModel model;
                     if (isEditorView()) {
+                        GraphInfo.setRole(graph, null);
                         model = GraphJModel.newInstance(graph, new Options());
                     } else {
                         View<?> view = AspectGraph.newInstance(graph).toView();
