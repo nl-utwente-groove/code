@@ -63,6 +63,10 @@ public class FormatError implements Comparable<FormatError> {
             this.control = (ControlView) par;
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
+        } else if (par instanceof Object[]) {
+            for (Object subpar : (Object[]) par) {
+                addContext(subpar);
+            }
         }
     }
 
@@ -160,13 +164,11 @@ public class FormatError implements Comparable<FormatError> {
         for (Element errorObject : this.elements) {
             if (map.containsKey(errorObject)) {
                 newElements.add((Element) map.get(errorObject));
+            } else {
+                newElements.add(errorObject);
             }
         }
-        AspectGraph newGraph = this.graph;
-        if (map.containsKey(newGraph)) {
-            newGraph = (AspectGraph) map.get(newGraph);
-        }
-        return new FormatError(this, newElements, newGraph);
+        return new FormatError(this.toString(), newElements.toArray());
     }
 
     /** The control view in which the error occurs. */
