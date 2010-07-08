@@ -24,13 +24,13 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.jgraph.ControlJModel;
+import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJModel;
-import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -1040,6 +1040,9 @@ public final class GraphToTikz {
         } else if (isRule && allLabels.contains(NOT_COL)) {
             // Embargo node
             styles.add(EMBARGO_NODE_STYLE);
+        } else if (isRule && allLabels.contains(REM_COL)) {
+            // Remark node
+            styles.add(REMARK_NODE_STYLE);
         } else {
             // Reader node
             if (isGrayedOut) {
@@ -1181,6 +1184,9 @@ public final class GraphToTikz {
         } else if (edge.getRole().equals(NOT)) {
             styles.add(EMBARGO_EDGE_STYLE);
             styles.add(EMBARGO_LABEL_STYLE);
+        } else if (edge.getRole().equals(REM)) {
+            styles.add(REMARK_EDGE_STYLE);
+            styles.add(REMARK_LABEL_STYLE);
         } else { // role == "use"
             if (isType && edge.getPlainLabels().contains(SUB)) {
                 styles.add(INHERITANCE_EDGE_STYLE);
@@ -1286,14 +1292,16 @@ public final class GraphToTikz {
     private static final String NOT_COL = "not:";
     private static final String NOT = "not";
     private static final String SUB = "sub:";
+    private static final String REM_COL = "rem:";
+    private static final String REM = "rem";
 
     // Tikz output
     private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG =
         "\\begin{tikzpicture}[scale=\\tikzscale]";
-    private static final String END_TIKZ_FIG =
-        "\\userdefinedmacro\n" + "\\end{tikzpicture}\n"
-            + "\\renewcommand{\\userdefinedmacro}{\\relax}";
+    private static final String END_TIKZ_FIG = "\\userdefinedmacro\n"
+        + "\\end{tikzpicture}\n"
+        + "\\renewcommand{\\userdefinedmacro}{\\relax}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
@@ -1323,6 +1331,9 @@ public final class GraphToTikz {
     private static final String EMBARGO_NODE_STYLE = "nacnode";
     private static final String EMBARGO_EDGE_STYLE = "nacedge";
     private static final String EMBARGO_LABEL_STYLE = "naclab";
+    private static final String REMARK_NODE_STYLE = "remnode";
+    private static final String REMARK_EDGE_STYLE = "remedge";
+    private static final String REMARK_LABEL_STYLE = "remlab";
     private static final String THIN_NODE_STYLE = "thinnode";
     private static final String THIN_EDGE_STYLE = "thinedge";
     private static final String THIN_LABEL_STYLE = "thinlab";
@@ -1370,7 +1381,6 @@ public final class GraphToTikz {
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
-    private static final String DOC =
-        "% To use this figure in your LaTeX "
-            + "document\n% import the package groove/resources/groove2tikz.sty\n";
+    private static final String DOC = "% To use this figure in your LaTeX "
+        + "document\n% import the package groove/resources/groove2tikz.sty\n";
 }
