@@ -49,19 +49,6 @@ public class VarSupport {
     }
 
     /**
-     * Returns the set of variables bound by a given edge. If the edge is has a
-     * {@link RegExprLabel}, this is the result of
-     * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
-     */
-    static public Set<String> getBoundVars(Edge edge) {
-        if (edge.label() instanceof RegExprLabel) {
-            return ((RegExprLabel) edge.label()).getRegExpr().boundVarSet();
-        } else {
-            return Collections.emptySet();
-        }
-    }
-
-    /**
      * Returns the set of all variables involved in a given graph. This is the
      * union of the variables involved in the edges.
      * @see #getAllVars(Edge)
@@ -72,6 +59,19 @@ public class VarSupport {
             result.addAll(getAllVars(edge));
         }
         return result;
+    }
+
+    /**
+     * Returns the set of variables bound by a given edge. If the edge is has a
+     * {@link RegExprLabel}, this is the result of
+     * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
+     */
+    static public Set<String> getBoundVars(Edge edge) {
+        if (edge.label() instanceof RegExprLabel) {
+            return ((RegExprLabel) edge.label()).getRegExpr().boundVarSet();
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     /**
@@ -88,13 +88,13 @@ public class VarSupport {
     }
 
     /**
-     * Returns the set of variable-binding edges occurring in a given graph. An
-     * edge is variable-binding if {@link #getBoundVars(Edge)} is non-empty.
+     * Returns the set of variable-containing edges occurring in a given graph. An
+     * edge is variable-containing if {@link #getAllVars(Edge)} is non-empty.
      */
     static public Set<Edge> getVarEdges(Graph graph) {
         Set<Edge> result = new HashSet<Edge>();
         for (Edge edge : graph.edgeSet()) {
-            if (!getBoundVars(edge).isEmpty()) {
+            if (!getAllVars(edge).isEmpty()) {
                 result.add(edge);
             }
         }

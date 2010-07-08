@@ -451,7 +451,7 @@ public class DefaultRuleView implements RuleView {
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
+    static private final boolean TO_RULE_DEBUG = true;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -1424,21 +1424,33 @@ public class DefaultRuleView implements RuleView {
             AbstractCondition<?> result;
             Set<FormatError> errors = new TreeSet<FormatError>();
             // check if label variables are bound
-            Set<String> boundVars = getVars(this.lhs.edgeSet(), true);
-            Set<String> lhsVars = getVars(this.lhs.edgeSet(), false);
-            if (!boundVars.containsAll(lhsVars)) {
-                lhsVars.removeAll(boundVars);
-                errors.add(new FormatError(
-                    "Left hand side variables %s not bound on left hand side",
-                    lhsVars));
+            Set<String> boundVars =
+                VarSupport.getSimpleVarBinders(this.lhs).keySet();
+            Set<Edge> varEdges = VarSupport.getVarEdges(this.lhs);
+            varEdges.addAll(VarSupport.getVarEdges(this.rhs));
+            for (Edge varEdge : varEdges) {
+                Set<String> edgeVars = VarSupport.getAllVars(varEdge);
+                edgeVars.removeAll(boundVars);
+                for (String var : edgeVars) {
+                    errors.add(new FormatError(
+                        "Variable '%s' not bound on left hand side", var,
+                        varEdge));
+                }
             }
-            Set<String> rhsVars = getVars(this.rhs.edgeSet(), false);
-            if (!boundVars.containsAll(rhsVars)) {
-                rhsVars.removeAll(boundVars);
-                errors.add(new FormatError(
-                    "Right hand side variables %s not bound on left hand side",
-                    rhsVars));
-            }
+            //            Set<String> lhsVars = getVars(this.lhs.edgeSet(), false);
+            //            if (!boundVars.containsAll(lhsVars)) {
+            //                lhsVars.removeAll(boundVars);
+            //                errors.add(new FormatError(
+            //                    "Left hand side variables %s not bound on left hand side",
+            //                    lhsVars));
+            //            }
+            //            Set<String> rhsVars = getVars(this.rhs.edgeSet(), false);
+            //            if (!boundVars.containsAll(rhsVars)) {
+            //                rhsVars.removeAll(boundVars);
+            //                errors.add(new FormatError(
+            //                    "Right hand side variables %s not bound on left hand side",
+            //                    rhsVars));
+            //            }
             Set<String> nacVars = getVars(this.nacEdgeSet, false);
             if (!boundVars.containsAll(nacVars)) {
                 nacVars.removeAll(boundVars);
@@ -1517,7 +1529,13 @@ public class DefaultRuleView implements RuleView {
             for (Edge edge : edgeSet) {
                 if (edge.label() instanceof RegExprLabel) {
                     RegExpr expr = ((RegExprLabel) edge.label()).getRegExpr();
-                    result.addAll(bound ? expr.boundVarSet() : expr.allVarSet());
+                    if (bound) {
+                        if (expr.getWildcardId() != null) {
+                            result.add(expr.getWildcardId());
+                        }
+                    } else {
+                        result.addAll(expr.allVarSet());
+                    }
                 }
             }
             return result;
