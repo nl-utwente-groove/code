@@ -451,7 +451,7 @@ public class DefaultRuleView implements RuleView {
     /** Graph factory used for building a graph view of this rule graph. */
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = true;
+    static private final boolean TO_RULE_DEBUG = false;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -1428,6 +1428,7 @@ public class DefaultRuleView implements RuleView {
                 VarSupport.getSimpleVarBinders(this.lhs).keySet();
             Set<Edge> varEdges = VarSupport.getVarEdges(this.lhs);
             varEdges.addAll(VarSupport.getVarEdges(this.rhs));
+            varEdges.addAll(this.nacEdgeSet);
             for (Edge varEdge : varEdges) {
                 Set<String> edgeVars = VarSupport.getAllVars(varEdge);
                 edgeVars.removeAll(boundVars);
@@ -1436,26 +1437,6 @@ public class DefaultRuleView implements RuleView {
                         "Variable '%s' not bound on left hand side", var,
                         varEdge));
                 }
-            }
-            //            Set<String> lhsVars = getVars(this.lhs.edgeSet(), false);
-            //            if (!boundVars.containsAll(lhsVars)) {
-            //                lhsVars.removeAll(boundVars);
-            //                errors.add(new FormatError(
-            //                    "Left hand side variables %s not bound on left hand side",
-            //                    lhsVars));
-            //            }
-            //            Set<String> rhsVars = getVars(this.rhs.edgeSet(), false);
-            //            if (!boundVars.containsAll(rhsVars)) {
-            //                rhsVars.removeAll(boundVars);
-            //                errors.add(new FormatError(
-            //                    "Right hand side variables %s not bound on left hand side",
-            //                    rhsVars));
-            //            }
-            Set<String> nacVars = getVars(this.nacEdgeSet, false);
-            if (!boundVars.containsAll(nacVars)) {
-                nacVars.removeAll(boundVars);
-                errors.add(new FormatError(
-                    "NAC variables %s not bound on left hand side", nacVars));
             }
             // check typing
             errors.addAll(checkTyping(this.typableNodes, this.typableEdges));
@@ -1512,31 +1493,6 @@ public class DefaultRuleView implements RuleView {
                 result =
                     DefaultRuleView.this.type.checkTyping(graph,
                         this.parentTypeMap);
-            }
-            return result;
-        }
-
-        /**
-         * Collects the variables from the regular expressions in a set of
-         * edges. A flag indicates if it is just the bound variables we are
-         * interested in.
-         * @param edgeSet the set of edges to investigate
-         * @param bound if <code>true</code>, collect bound variables only
-         * @return the requested set of variables
-         */
-        private Set<String> getVars(Set<? extends Edge> edgeSet, boolean bound) {
-            Set<String> result = new HashSet<String>();
-            for (Edge edge : edgeSet) {
-                if (edge.label() instanceof RegExprLabel) {
-                    RegExpr expr = ((RegExprLabel) edge.label()).getRegExpr();
-                    if (bound) {
-                        if (expr.getWildcardId() != null) {
-                            result.add(expr.getWildcardId());
-                        }
-                    } else {
-                        result.addAll(expr.allVarSet());
-                    }
-                }
             }
             return result;
         }
