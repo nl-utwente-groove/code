@@ -381,14 +381,19 @@ public class Materialisation {
             // The node is already in its own equivalence class. Nothing to do.
             result.add(this);
         } else {
-            Set<ShapeEdge> crossEdges = this.shape.getCrossingEdges(node, ec);
-            for (ShapeEdge crossEdge : crossEdges) {
-                // Clone our current materialisation.
-                Materialisation newMat = this.clone();
-                // Clear impossible configurations.
-                newMat.removeImpossibleEdges(crossEdge);
-                newMat.shape.splitEquivClassOf(node);
-                result.add(newMat);
+            // Compute all possible ways of splitting the multiplicities.
+            Set<EdgeMultConf> confs =
+                EdgeMultConf.computeConfs(this.shape, node, ec);
+            // For each possibility.
+            for (EdgeMultConf conf : confs) {
+                // Check if the configuration is feasible.
+                if (this.shape.isConfigAdmissible(conf)) {
+                    // Clone the materialisation object, do the split and
+                    // add the clone to the result set.
+                    Materialisation newMat = this.clone();
+                    newMat.shape.applyConfiguration(conf);
+                    result.add(newMat);
+                } // else discard the configuration.
             }
         }
 

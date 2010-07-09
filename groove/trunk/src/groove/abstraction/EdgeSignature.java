@@ -20,9 +20,11 @@ import groove.graph.Edge;
 import groove.graph.Label;
 
 /**
- * EDUARDO
+ * An edge signature is composed by a node (n), a label (l), and an equivalence
+ * class (C) and is used as the key for the outgoing and incoming edge
+ * multiplicity mappings.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class EdgeSignature {
 
@@ -38,7 +40,7 @@ public class EdgeSignature {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Standard constructor that just fills in the object fields. */
     public EdgeSignature(ShapeNode node, Label label,
             EquivClass<ShapeNode> equivClass) {
         this.label = label;
@@ -56,6 +58,10 @@ public class EdgeSignature {
             + ")";
     }
 
+    /** 
+     * Two edge signatures are if they have the same node, same label, and the 
+     * same equivalence class.
+     */
     @Override
     public boolean equals(Object o) {
         assert o != null : "Cannot compare to null!";
@@ -75,41 +81,49 @@ public class EdgeSignature {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /**
+     * Returns true if the edge signature, when being considered a signature
+     * for outgoing edges, contains the edge (e) given as argument.
+     * The test is true if n == src(e) && l = lbl(e) && tgt(e) \in C .
+     */
     public boolean asOutSigContains(Edge edge) {
         return this.node.equals(edge.source())
             && this.label.equals(edge.label())
             && this.equivClass.contains(edge.opposite());
     }
 
-    /** EDUARDO */
+    /**
+     * Returns true if the edge signature, when being considered a signature
+     * for incoming edges, contains the edge (e) given as argument.
+     * The test is true if n == tgt(e) && l = lbl(e) && src(e) \in C .
+     */
     public boolean asInSigContains(Edge edge) {
         return this.node.equals(edge.opposite())
             && this.label.equals(edge.label())
             && this.equivClass.contains(edge.source());
     }
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public ShapeNode getNode() {
         return this.node;
     }
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public Label getLabel() {
         return this.label;
     }
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public EquivClass<ShapeNode> getEquivClass() {
         return this.equivClass;
     }
 
-    /** EDUARDO */
+    /** Returns true if the C is a singleton set. */
     public boolean isUnique() {
         return this.equivClass.size() == 1;
     }
 
-    /** EDUARDO */
+    /** Returns true if n \in C . */
     public boolean isSelfReferencing() {
         return this.equivClass.contains(this.node);
     }

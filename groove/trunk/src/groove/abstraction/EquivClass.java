@@ -16,13 +16,37 @@
  */
 package groove.abstraction;
 
+import groove.graph.Node;
+
 import java.util.HashSet;
+import java.util.Set;
 
 /**
- * EDUARDO
+ * An equivalence class (C) is a set of elements that are similar according to
+ * a certain equivalence relation.
+ * This class is essentially a HashSet and it was created just to improve the
+ * code readability.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class EquivClass<T> extends HashSet<T> {
-    // Empty class.
+
+    /** 
+     * Method to downcast the elements of the equivalence class, in order
+     * to keep the stupid type checker of the compiler happy.
+     * Will throw a ClassCastException if called when the elements are not
+     * a sub-type of Node. Use it with care.
+     */
+    @SuppressWarnings("unchecked")
+    public Set<Node> downcast() {
+        return (Set<Node>) this;
+    }
+
+    /** Specialises the return type of the super method. */
+    @Override
+    @SuppressWarnings("unchecked")
+    public EquivClass<T> clone() {
+        return (EquivClass<T>) super.clone();
+    }
+
 }
