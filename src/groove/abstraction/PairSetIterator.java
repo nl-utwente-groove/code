@@ -102,6 +102,9 @@ public class PairSetIterator<N,M> implements Iterator<Set<Pair<N,M>>> {
         if (!this.hasNext) {
             throw new NoSuchElementException();
         } else {
+            // We have at least one next element and the indexes of build
+            // element are already set. Just iterate over the structure and
+            // construct the pairs.
             Set<Pair<N,M>> result = new HashSet<Pair<N,M>>();
             for (int i = 0; i < this.size; i++) {
                 // First take the current elements.
@@ -110,6 +113,8 @@ public class PairSetIterator<N,M> implements Iterator<Set<Pair<N,M>>> {
                 M currM = this.pairSecond[i][currIdx];
                 result.add(new Pair<N,M>(currN, currM));
             }
+            // Properly update the indexes to make sure we are pointing to the
+            // right next element.
             this.updateIndexes();
             return result;
         }
@@ -124,6 +129,7 @@ public class PairSetIterator<N,M> implements Iterator<Set<Pair<N,M>>> {
     // Other methods
     // ------------------------------------------------------------------------
 
+    /** Adjusts the indexes of the elements to be returned next. */
     private void updateIndexes() {
         int i = this.size - 1;
         boolean goUpALevel = true;
@@ -131,7 +137,7 @@ public class PairSetIterator<N,M> implements Iterator<Set<Pair<N,M>>> {
             if (this.currIdx[i] == this.pairSecond[i].length - 1) {
                 // We are at the end of the array. Go up a level, if possible.
                 if (i == 0) {
-                    // We are the top level. Cannot go up anymore.
+                    // We are at the top level. Cannot go up anymore.
                     this.hasNext = false;
                     goUpALevel = false;
                 } else {

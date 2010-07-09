@@ -29,10 +29,9 @@ import groove.view.FormatException;
 import java.io.IOException;
 
 /**
- * Performs a full abstract simulation of a grammar given as parameter.
+ * Performs a full abstract exploration of a grammar given as parameter.
  * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeGenerator {
 

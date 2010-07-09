@@ -19,9 +19,11 @@ package groove.abstraction;
 import groove.graph.DefaultNode;
 
 /**
- * EDUARDO
+ * Class that implements the nodes of a shape.
+ * This class is essentially a DefaultNode and it was created just to improve
+ * the code readability.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeNode extends DefaultNode {
 
@@ -29,17 +31,21 @@ public class ShapeNode extends DefaultNode {
     // Static Fields
     // ------------------------------------------------------------------------
 
-    /** Used only as a reference for the constructor */
+    /** Used only as a reference for the constructor. */
     public static final ShapeNode CONS = new ShapeNode(NO_NODE_NUMBER);
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Default constructor. */
     protected ShapeNode(int nr) {
         super(nr);
     }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     /** Factory constructor. */
     @Override

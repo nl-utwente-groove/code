@@ -21,9 +21,9 @@ import groove.graph.Node;
 import groove.graph.NodeFactory;
 
 /**
- * EDUARDO
+ * A factory object for creating nodes for shapes.
+ *  
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeNodeFactory implements NodeFactory {
 
@@ -31,7 +31,7 @@ public class ShapeNodeFactory implements NodeFactory {
     // Static Fields
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** The factory reference. */
     public static ShapeNodeFactory FACTORY = new ShapeNodeFactory();
 
     // ------------------------------------------------------------------------
@@ -46,6 +46,7 @@ public class ShapeNodeFactory implements NodeFactory {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    /** Returns a new ShapeNode object */
     @Override
     public Node newNode() {
         return DefaultNode.createNode(ShapeNode.CONS);
