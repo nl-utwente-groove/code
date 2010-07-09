@@ -20,9 +20,11 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * EDUARDO
+ * An equivalence relation is represented as a set of equivalence classes.
+ * This class is essentially a HashSet and it was created mainly to improve the
+ * code readability.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class EquivRelation<T> extends HashSet<EquivClass<T>> {
 
@@ -30,17 +32,20 @@ public class EquivRelation<T> extends HashSet<EquivClass<T>> {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Empty constructor. */
     public EquivRelation() {
         super();
     }
 
-    /** EDUARDO */
-    @SuppressWarnings("unchecked")
+    /**
+     * Constructs a new equivalence relation from the set of equivalence
+     * classes given. The equivalence classes are cloned to avoid reference
+     * aliasing. 
+     */
     public EquivRelation(Collection<? extends EquivClass<T>> elems) {
         super();
         for (EquivClass<T> ec : elems) {
-            this.add((EquivClass<T>) ec.clone());
+            this.add(ec.clone());
         }
     }
 
@@ -48,7 +53,14 @@ public class EquivRelation<T> extends HashSet<EquivClass<T>> {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** 
+     * Returns the equivalence class to which the given element belongs.
+     * May return null if the element is not in any equivalence class of the
+     * equivalence relation.
+     * 
+     * This method assumes that the equivalence relation is consistent, i.e.,
+     * an element belongs only to a single equivalence class.
+     *  */
     public EquivClass<T> getEquivClassOf(T elem) {
         EquivClass<T> result = null;
         for (EquivClass<T> ec : this) {
@@ -60,7 +72,11 @@ public class EquivRelation<T> extends HashSet<EquivClass<T>> {
         return result;
     }
 
-    /** EDUARDO */
+    /**
+     * Returns true if the given elements are equivalent according to the
+     * equivalence relation, i.e., if both elements belong to the same
+     * equivalence class.
+     */
     public boolean areEquivalent(T elem0, T elem1) {
         EquivClass<T> ec0 = this.getEquivClassOf(elem0);
         EquivClass<T> ec1 = this.getEquivClassOf(elem1);

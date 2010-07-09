@@ -40,10 +40,10 @@ import java.util.Set;
  * [<A,2>, <B,3>]
  * [<A,2>, <B,4>]
  * 
- * Maps returned by the next() method can share elements. Thus, these elements
- * should not be further aliased. The maps returned should not be modified.
+ * Sets returned by the next() method can share elements. Thus, these elements
+ * should not be further aliased. The sets returned should not be modified.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class PairSetIterator<N,M> implements Iterator<Set<Pair<N,M>>> {
 

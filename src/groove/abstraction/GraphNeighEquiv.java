@@ -28,9 +28,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * This class implements the neighbourhood equivalence relation on graphs.
+ * See Def. 17 on pg. 14 of the technical report "Graph Abstraction and
+ * Abstract Graph Transformation."
+ * 
+ * Each object of this type stores a reference to the graph on which the
+ * equivalence relation was computed and the radius of the iteration.
+ * To compute the relation of radius i, call the constructor and then
+ * the method refineEquivRelation() i times. 
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class GraphNeighEquiv extends EquivRelation<Node> {
 
@@ -38,15 +45,16 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     // Object Fields
     // ------------------------------------------------------------------------
 
+    /** The radius of the iteration. */
     private int radius;
-    /** EDUARDO */
+    /** The graph on which the equivalence relation was computed. */
     protected Graph graph;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Creates a new equivalence relation with radius 0. */
     public GraphNeighEquiv(Graph graph) {
         this.graph = graph;
         // This is the first iteration.
@@ -71,11 +79,12 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public int getRadius() {
         return this.radius;
     }
 
+    /** Computes the initial equivalence classes, based on node labels. */
     private Collection<EquivClass<Node>> computeInitialEquivClasses() {
         // Map from node labels to equivalence classes.
         Map<Set<Label>,EquivClass<Node>> labelsToClass =
@@ -110,7 +119,11 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return labelsToClass.values();
     }
 
-    /** EDUARDO */
+    /**
+     * Computes the next iteration of the equivalence relation.
+     * This method modifies the object, if you want to preserve the previous
+     * iteration, make sure to clone the object first.
+     */
     public void refineEquivRelation() {
         // We need these two sets because we cannot change the object
         // during iteration.
@@ -131,6 +144,12 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         this.radius = this.radius + 1;
     }
 
+    /**
+     * Refines the given equivalence class (ec) by one iteration. If ec is
+     * already stable, then nothing happens. If ec needs to be split, then
+     * the new equivalence classes created are stored in the proper set given
+     * as argument and ec is marked to be deleted. 
+     */
     private void refineEquivClass(EquivClass<Node> ec,
             Set<EquivClass<Node>> newEquivClasses,
             Set<EquivClass<Node>> delEquivClasses) {
@@ -163,9 +182,17 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         } // else do nothing.
     }
 
+    /**
+     * Returns true if the equivalence relation stored in the equivalence matrix
+     * given needs to be split into two or more new classes.
+     */
     private boolean mustSplit(boolean equiv[][]) {
         assert equiv.length > 0 && equiv[0].length > 0 : "Invalid equivalence matrix";
         boolean result = false;
+        // From the way the matrix was built, we only have to look at its
+        // first row. If there is at least one false value in the first row
+        // then we know that there are at least two nodes that are no longer
+        // equivalent.
         for (int j = 1; j < equiv[0].length; j++) {
             if (!equiv[0][j]) {
                 // We have two nodes that are no longer equivalent. Split.
@@ -176,6 +203,13 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return result;
     }
 
+    /**
+     * Split an equivalence class into two or more new equivalence classes.
+     * @param nodes - the equivalence class to be split, as an array of nodes.
+     * @param equiv - equivalence relation stored in an equivalence matrix.
+     * @param newEquivClasses - the set to store the newly created equivalence
+     *                          classes.
+     */
     private void doSplit(Node nodes[], boolean equiv[][],
             Set<EquivClass<Node>> newEquivClasses) {
 
@@ -213,7 +247,11 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         }
     }
 
-    /** EDUARDO */
+    /**
+     * Returns true if the two given nodes are still equivalent in the next
+     * iteration. This method implements the second item of Def. 17 (see
+     * comment on the class definition, top of this file).
+     */
     protected boolean areStillEquivalent(Node n0, Node n1) {
         boolean equiv = true;
         // For all labels.
@@ -239,15 +277,24 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return equiv;
     }
 
-    /** EDUARDO */
+    /**
+     * Returns true if the given edges are equivalent according to the
+     * equivalence relation, i.e., if both edges have the same label, and if
+     * both sources and targets are equivalent.
+     */
     public boolean areEquivalent(Edge e0, Edge e1) {
         return e0.label().equals(e1.label())
             && this.areEquivalent(e0.source(), e1.source())
             && this.areEquivalent(e0.opposite(), e1.opposite());
     }
 
-    /** EDUARDO */
-    public EquivClass<Edge> getEdgeEquivClass(Edge edge) {
+    /**
+     * Builds and returns the equivalence class of the given edge, based on the
+     * equivalence relation on nodes. The returned equivalence class is
+     * neither stored nor cached, so call this method consciously.
+     * Anti-lazy initialisation design pattern... :P
+     */
+    private EquivClass<Edge> getEdgeEquivClass(Edge edge) {
         EquivClass<Edge> ec = new EquivClass<Edge>();
         ec.add(edge);
         for (Edge e : this.graph.edgeSet()) {
@@ -258,7 +305,12 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return ec;
     }
 
-    /** EDUARDO */
+    /**
+     * Builds and returns the equivalence relation on edges, based on the
+     * equivalence relation on nodes. The returned equivalence relation is
+     * neither stored nor cached, so call this method consciously.
+     * Anti-lazy initialisation design pattern... :P
+     */
     public EquivRelation<Edge> getEdgesEquivRel() {
         EquivRelation<Edge> er = new EquivRelation<Edge>();
         for (Edge edge : this.graph.edgeSet()) {
