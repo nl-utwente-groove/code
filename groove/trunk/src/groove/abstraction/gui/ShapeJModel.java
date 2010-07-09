@@ -22,9 +22,9 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 
 /**
- * EDUARDO
+ * Shape version of a GraphJModel
+
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeJModel extends GraphJModel {
 

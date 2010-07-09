@@ -28,17 +28,34 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * A pre-match is a match of the left-hand side of a rule into the graph
+ * structure of a shape. See Def. 35 on page 21 of the Technical Report for
+ * more information. 
+ *  
+ * This class is only a collection of static methods and therefore should not
+ * be instantiated. Stupid packaging system of Java... >:(
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class PreMatch {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    private PreMatch() {
+        // We make the constructor private to prevent the creation of objects
+        // of this class.
+    }
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /**
+     * Computes and returns the valid pre-matches of a rule into a shape.
+     * The given host must be a shape.
+     */
     public static Set<RuleMatch> getPreMatches(GraphShape host, Rule rule) {
         assert host instanceof Shape : "Cannot use abstract methods to non-abstract graphs.";
         Shape shape = (Shape) host;
@@ -53,12 +70,20 @@ public class PreMatch {
         return preMatches;
     }
 
-    /** EDUARDO */
+    /**
+     * Returns true if the given match in the host is a valid pre-match.
+     * A pre-match is valid if the non-injective matching of the LHS
+     * respects node multiplicities.
+     */
     public static boolean isValidPreMatch(GraphShape host, RuleEvent event) {
         return isValidPreMatch(host, event.getMatch((Graph) host));
     }
 
-    /** EDUARDO */
+    /**
+     * Returns true if the given match in the host is a valid pre-match.
+     * A pre-match is valid if the non-injective matching of the LHS
+     * respects node multiplicities.
+     */
     public static boolean isValidPreMatch(GraphShape host, RuleMatch match) {
         assert host instanceof Shape : "Cannot use abstract methods to non-abstract graphs.";
 

@@ -23,17 +23,38 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * This class is only a collection of static methods for transforming shapes
+ * and therefore should not be instantiated.
+ * Stupid packaging system of Java... >:(
+ * 
  * @author Eduardo Zambon 
- * @version $Revision $
  */
 public class Transform {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    private Transform() {
+        // We make the constructor private to prevent the creation of objects
+        // of this class.
+    }
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /**
+     * Returns a set of transformed shapes produced by a rule match into a
+     * shape. The transformation produces a set of shapes because the
+     * materialisation of a shape is a non-deterministic step.
+     * 
+     * @param host - the host of the transformation, must be a Shape object.
+     * @param event - the rule event that defines a pre-match on the host.
+     * @return a set of shapes produced by the transformation.
+     *         The return set is empty if the pre-match is not valid or if the
+     *         host does not admit a valid materialisation w.r.t. the rule.
+     */
     public static Set<Shape> transform(GraphShape host, RuleEvent event) {
         assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
         Shape shape = (Shape) host;

@@ -25,17 +25,17 @@ import groove.graph.NodeEdgeMap;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Utility functions for abstraction.
+
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class Util {
 
-    /** EDUARDO */
+    /** Returns the set of labels used as node labels. */
     public static Set<Label> getNodeLabels(Graph graph, Node node) {
         HashSet<Label> nodeLabels = new HashSet<Label>();
         for (Edge edge : graph.outEdgeSet(node)) {
@@ -46,7 +46,7 @@ public class Util {
         return nodeLabels;
     }
 
-    /** EDUARDO */
+    /** Returns the set of binary edges of the graph. */
     public static Set<Edge> getBinaryEdges(Graph graph) {
         HashSet<Edge> edges = new HashSet<Edge>();
         for (Edge edge : graph.edgeSet()) {
@@ -57,7 +57,7 @@ public class Util {
         return edges;
     }
 
-    /** EDUARDO */
+    /** Returns true if the given edge is unary. */
     public static boolean isUnary(Edge edge) {
         boolean result = false;
         Label label = edge.label();
@@ -76,7 +76,10 @@ public class Util {
         return result;
     }
 
-    /** EDUARDO */
+    /** 
+     * Returns the set of outgoing edges from the given node with the
+     * given label.
+     */
     public static Set<Edge> getOutEdges(Graph graph, Node node, Label label) {
         Set<Edge> outEdges = new HashSet<Edge>();
         for (Edge edge : graph.outEdgeSet(node)) {
@@ -87,7 +90,10 @@ public class Util {
         return outEdges;
     }
 
-    /** EDUARDO */
+    /** 
+     * Returns the set of outgoing edges from the given nodes with the
+     * given label.
+     */
     public static Set<Edge> getOutEdges(Graph graph, Set<Node> nodes,
             Label label) {
         Set<Edge> outEdges = new HashSet<Edge>();
@@ -101,7 +107,10 @@ public class Util {
         return outEdges;
     }
 
-    /** EDUARDO */
+    /** 
+     * Returns the set of incoming edges to the given node with the
+     * given label.
+     */
     public static Set<Edge> getInEdges(Graph graph, Node node, Label label) {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Edge edge : graph.edgeSet(node)) {
@@ -112,7 +121,10 @@ public class Util {
         return inEdges;
     }
 
-    /** EDUARDO */
+    /** 
+     * Returns the set of incoming edges to the given nodes with the
+     * given label.
+     */
     public static Set<Edge> getInEdges(Graph graph, Set<Node> nodes, Label label) {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Node node : nodes) {
@@ -125,7 +137,7 @@ public class Util {
         return inEdges;
     }
 
-    /** EDUARDO */
+    /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static Set<Edge> getIntersectEdges(Graph graph, Node src, Node tgt,
             Label label) {
         Set<Edge> outEdges = getOutEdges(graph, src, label);
@@ -133,7 +145,7 @@ public class Util {
         return intersection(outEdges, inEdges);
     }
 
-    /** EDUARDO */
+    /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static Set<Edge> getIntersectEdges(Graph graph, Set<Node> srcs,
             Node tgt, Label label) {
         Set<Edge> outEdges = getOutEdges(graph, srcs, label);
@@ -141,7 +153,7 @@ public class Util {
         return intersection(outEdges, inEdges);
     }
 
-    /** EDUARDO */
+    /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static Set<Edge> getIntersectEdges(Graph graph, Node src,
             Set<Node> tgts, Label label) {
         Set<Edge> outEdges = getOutEdges(graph, src, label);
@@ -149,7 +161,7 @@ public class Util {
         return intersection(outEdges, inEdges);
     }
 
-    /** EDUARDO */
+    /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static Set<Edge> getIntersectEdges(Graph graph, Set<Node> srcs,
             Set<Node> tgts, Label label) {
         Set<Edge> outEdges = getOutEdges(graph, srcs, label);
@@ -188,12 +200,12 @@ public class Util {
         return result;
     }
 
-    /** EDUARDO */
+    /** Performs a reverse lookup in the node map given. */
     public static Set<Node> getReverseNodeMap(NodeEdgeMap map, Node value) {
         return getReverseNodeMap(map.nodeMap(), value);
     }
 
-    /** EDUARDO */
+    /** Performs a reverse lookup in the node map given. */
     public static Set<Node> getReverseNodeMap(Map<Node,? extends Node> map,
             Node value) {
         Set<Node> result = new HashSet<Node>();
@@ -207,12 +219,12 @@ public class Util {
         return result;
     }
 
-    /** EDUARDO */
+    /** Performs a reverse lookup in the edge map given. */
     public static Set<Edge> getReverseEdgeMap(NodeEdgeMap map, Edge value) {
         return getReverseEdgeMap(map.edgeMap(), value);
     }
 
-    /** EDUARDO */
+    /** Performs a reverse lookup in the edge map given. */
     public static Set<Edge> getReverseEdgeMap(Map<Edge,? extends Edge> map,
             Edge value) {
         Set<Edge> result = new HashSet<Edge>();

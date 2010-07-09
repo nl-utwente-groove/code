@@ -17,9 +17,9 @@
 package groove.abstraction;
 
 /**
- * EDUARDO
+ * Class that stores the parameters of the abstraction.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public final class Parameters {
 
@@ -31,41 +31,43 @@ public final class Parameters {
     private static int nodeMultBound = 1;
     /** Edge multiplicity bound (\mu). Is a natural number. Defaults to 1. */
     private static int edgeMultBound = 1;
-    /** The radius of the abstraction (i). Is a positive natural number.
-     *  Defaults to 1. */
+    /** The radius of the abstraction (i). Is a natural number. Defaults to 1. */
     private static int absRadius = 1;
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public static int getNodeMultBound() {
         return nodeMultBound;
     }
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public static int getEdgeMultBound() {
         return edgeMultBound;
     }
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public static int getAbsRadius() {
         return absRadius;
     }
 
-    /** EDUARDO */
+    /** Basic setter method. The bound given must be positive. */
     public static void setNodeMultBound(int nodeMultBound) {
+        assert nodeMultBound > 0 : "Invalid node multiplicity bound.";
         Parameters.nodeMultBound = nodeMultBound;
     }
 
-    /** EDUARDO */
+    /** Basic setter method. The bound given must be positive. */
     public static void setEdgeMultBound(int edgeMultBound) {
+        assert edgeMultBound > 0 : "Invalid edge multiplicity bound.";
         Parameters.edgeMultBound = edgeMultBound;
     }
 
-    /** EDUARDO */
+    /** Basic setter method. The radius given must be positive. */
     public static void setAbsRadius(int absRadius) {
+        assert absRadius > 0 : "Invalid abstraction radius.";
         Parameters.absRadius = absRadius;
     }
 

@@ -21,9 +21,11 @@ import groove.graph.Label;
 import groove.graph.Node;
 
 /**
- * EDUARDO
+ * Class that implements the edges of a shape.
+ * This class is essentially a DefaultEdge and it was created just to improve
+ * the code readability.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeEdge extends DefaultEdge {
 
@@ -31,24 +33,29 @@ public class ShapeEdge extends DefaultEdge {
     // Static Fields
     // ------------------------------------------------------------------------
 
-    /** Used only as a reference for the constructor */
+    /** Used only as a reference for the constructor. */
     public static final ShapeEdge CONS = new ShapeEdge();
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Default constructor. */
     protected ShapeEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target, nr);
     }
 
-    /** This is just a factory constructor so we can have a reference for an
-     *  object of this class.
+    /** 
+     * This is just a factory constructor so we can have a reference for an
+     * object of this class.
      */
     private ShapeEdge() {
         super();
     }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     /** Factory constructor. */
     @Override
@@ -58,15 +65,13 @@ public class ShapeEdge extends DefaultEdge {
         return new ShapeEdge(source, label, target, nr);
     }
 
-    // ------------------------------------------------------------------------
-    // Overridden methods
-    // ------------------------------------------------------------------------
-
+    /** Specialises the returned type. */
     @Override
     public ShapeNode source() {
         return (ShapeNode) super.source();
     }
 
+    /** Specialises the returned type. */
     @Override
     public ShapeNode opposite() {
         return (ShapeNode) super.opposite();

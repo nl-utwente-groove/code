@@ -24,9 +24,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * This class implements the neighbourhood equivalence relation on shapes.
+ * See Def. 19 on pg. 15 of the technical report "Graph Abstraction and
+ * Abstract Graph Transformation."
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeNeighEquiv extends GraphNeighEquiv {
 
@@ -34,7 +36,7 @@ public class ShapeNeighEquiv extends GraphNeighEquiv {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Default constructor. */
     public ShapeNeighEquiv(Graph graph) {
         super(graph);
         assert graph instanceof Shape : "Invalid argument type!";
@@ -44,10 +46,14 @@ public class ShapeNeighEquiv extends GraphNeighEquiv {
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /**
+     * Returns true if the two given nodes are still equivalent in the next
+     * iteration. This method implements the second item of Def. 19 (see
+     * comment on the class definition, top of this file).
+     */
     @Override
     protected boolean areStillEquivalent(Node n0, Node n1) {
-        Shape shape = this.getShape();
+        Shape shape = (Shape) this.graph;
         Set<EquivClass<ShapeNode>> kSet = new HashSet<EquivClass<ShapeNode>>();
         boolean equiv = true;
         // For all labels.
@@ -83,14 +89,6 @@ public class ShapeNeighEquiv extends GraphNeighEquiv {
             }
         }
         return equiv;
-    }
-
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    private Shape getShape() {
-        return (Shape) this.graph;
     }
 
 }

@@ -24,9 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * A multiplicity is an approximation of the cardinality of a (finite) set. 
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public final class Multiplicity {
 
@@ -58,7 +58,7 @@ public final class Multiplicity {
 
     /**
      * Creates a multiplicity.
-     * @param value a natural number or omega.
+     * @param value - a natural number or omega.
      */
     private Multiplicity(int value) {
         assert (value >= 0 || value == OMEGA_VALUE) : "Multiplicities values must be natural numbers or omega.";
@@ -69,6 +69,7 @@ public final class Multiplicity {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    /** This method is equivalent to number comparison. */
     @Override
     public boolean equals(Object o) {
         boolean result;
@@ -93,7 +94,11 @@ public final class Multiplicity {
     // Static Methods
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /**
+     * Initialises the multiplicity store so that multiplicity objects can be
+     * reused. This method must be called as a preparation for using any other
+     * abstraction classes in this package.
+     */
     public static void initMultStore() {
         int multUpperBound =
             Math.max(Parameters.getNodeMultBound(),
@@ -105,7 +110,7 @@ public final class Multiplicity {
         STORE[multUpperBound + 1] = OMEGA;
     }
 
-    /** EDUARDO */
+    /** Returns the multiplicity object with the given value. */
     public static Multiplicity getMultOf(int value) {
         assert STORE != null : "The multiplicity store must be initialized first.";
         if (value >= 0 && value < STORE.length - 1) {
@@ -115,21 +120,34 @@ public final class Multiplicity {
         }
     }
 
-    /** EDUARDO */
+    /**
+     * Returns the multiplicity of the set of nodes given, bounded by the node
+     * multiplicity bound (\nu) set in the Parameters class. 
+     */
     public static Multiplicity getNodeSetMult(Set<Node> nodes) {
         int setSize = nodes.size();
         int nodesMultBound = Parameters.getNodeMultBound();
         return getMult(setSize, nodesMultBound);
     }
 
-    /** EDUARDO */
+    /**
+     * Returns the multiplicity of the set of edges given, bounded by the edge
+     * multiplicity bound (\mu) set in the Parameters class. 
+     */
     public static Multiplicity getEdgeSetMult(Set<Edge> edges) {
         int setSize = edges.size();
         int edgesMultBound = Parameters.getEdgeMultBound();
         return getMult(setSize, edgesMultBound);
     }
 
-    /** EDUARDO */
+    /**
+     * Computes the proper bounded multiplicity.
+     * See Def. 5, pg 8 of Technical Report.
+     * @param setSize - the cardinality of a set.
+     * @param multBound - the multiplicity bound.
+     * @return setSize, if setSize <= multBound;
+     *         omega, otherwise.
+     */
     public static Multiplicity getMult(int setSize, int multBound) {
         Multiplicity result;
         if (setSize <= multBound) {
@@ -140,12 +158,17 @@ public final class Multiplicity {
         return result;
     }
 
-    /** EDUARDO */
+    /** Returns true if both given sets have the same multiplicity. */
     public static boolean haveSameMult(Set<Edge> s0, Set<Edge> s1) {
         return getEdgeSetMult(s0).equals(getEdgeSetMult(s1));
     }
 
-    /** EDUARDO */
+    /**
+     * Returns the bounded sum of the outgoing multiplicities of the edge
+     * signatures defined by the given node, label, and set of equivalence
+     * classes. See item 6 of Def. 22 on page 17 of the Technical Report for
+     * more details.
+     */
     public static Multiplicity sumOutMult(Shape shape, ShapeNode node,
             Label label, Set<EquivClass<ShapeNode>> kSet) {
         Multiplicity accumulator = getMultOf(0);
@@ -157,7 +180,12 @@ public final class Multiplicity {
         return accumulator;
     }
 
-    /** EDUARDO */
+    /**
+     * Returns the bounded sum of the incoming multiplicities of the edge
+     * signatures defined by the given node, label, and set of equivalence
+     * classes. See item 6 of Def. 22 on page 17 of the Technical Report for
+     * more details.
+     */
     public static Multiplicity sumInMult(Shape shape, ShapeNode node,
             Label label, Set<EquivClass<ShapeNode>> kSet) {
         Multiplicity accumulator = getMultOf(0);
@@ -169,7 +197,11 @@ public final class Multiplicity {
         return accumulator;
     }
 
-    /** EDUARDO */
+    /**
+     * Returns the bounded sum of the node multiplicities of the given set.
+     * See item 5 of Def. 22 on page 17 of the Technical Report for
+     * more details.
+     */
     public static Multiplicity getNodeSetMultSum(Shape shape, Set<Node> nodes) {
         Multiplicity accumulator = getMultOf(0);
         for (Node node : nodes) {
@@ -185,7 +217,7 @@ public final class Multiplicity {
 
     /**
      * Compare this multiplicity with the given parameter for order.
-     * @param mult the multiplicity to be compared with.
+     * @param mult - the multiplicity to be compared with.
      * @return a negative integer, zero, or a positive integer if this
      *         multiplicity is less than, equal to, or greater than
      *         <code>mult</code>. This also considers omega.
@@ -203,29 +235,25 @@ public final class Multiplicity {
         return result;
     }
 
-    /**
-     * @return false if the multiplicity equals zero; true, otherwise.
-     */
+    /** Returns false if the multiplicity equals zero; true, otherwise. */
     public boolean isPositive() {
         return this.value == OMEGA_VALUE || this.value > 0;
     }
 
-    /**
-     * @return false if the multiplicity is at most one; true, otherwise.
-     */
+    /** Returns false if the multiplicity is at most one; true, otherwise. */
     public boolean isAbstract() {
         return !this.isAtMost(getMultOf(1));
     }
 
     /**
-     * @param mult the multiplicity to compare.
+     * @param mult - the multiplicity to compare.
      * @return false if this is greater than mult; true, otherwise.
      */
     public boolean isAtMost(Multiplicity mult) {
         return this.compare(mult) != 1;
     }
 
-    /** EDUARDO */
+    /** Returns the bounded sum of two multiplicities. */
     public Multiplicity add(Multiplicity mult, int bound) {
         assert bound > 0 : "Invalid multiplicity bound: " + bound;
         Multiplicity result;
@@ -237,20 +265,20 @@ public final class Multiplicity {
         return result;
     }
 
-    /** EDUARDO */
+    /** Returns the bounded sum of two node multiplicities. */
     public Multiplicity addNodeMult(Multiplicity mult) {
         return this.add(mult, Parameters.getNodeMultBound());
     }
 
-    /** EDUARDO */
+    /** Returns the bounded sum of two edge multiplicities. */
     public Multiplicity addEdgeMult(Multiplicity mult) {
         return this.add(mult, Parameters.getEdgeMultBound());
     }
 
     /**
      * Subtracts mult from this.
-     * @param mult the value to be subtracted; it is required that mult <= this.
-     * @param bound the bound used in these multiplicities.
+     * @param mult - the value to be subtracted; required that mult <= this.
+     * @param bound - the bound used in these multiplicities.
      * @return a set of multiplicities. There are two cases.
      *         - If this != omega, then the result is a singleton set with
      *           this.value - mult.value .
@@ -274,17 +302,20 @@ public final class Multiplicity {
         return result;
     }
 
-    /** EDUARDO */
+    /** Returns the subtraction of two node multiplicities. */
     public Set<Multiplicity> subNodeMult(Multiplicity mult) {
         return this.sub(mult, Parameters.getNodeMultBound());
     }
 
-    /** EDUARDO */
+    /** Returns the subtraction of two edge multiplicities. */
     public Set<Multiplicity> subEdgeMult(Multiplicity mult) {
         return this.sub(mult, Parameters.getEdgeMultBound());
     }
 
-    /** EDUARDO */
+    /**
+     * Returns the subtraction of two multiplicities.
+     * Neither multiplicities may be omega.
+     */
     public Multiplicity sub(Multiplicity mult) {
         assert !this.equals(OMEGA) && !mult.equals(OMEGA);
         return this.sub(mult, 0).iterator().next();

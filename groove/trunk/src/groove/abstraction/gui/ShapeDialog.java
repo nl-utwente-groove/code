@@ -38,9 +38,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 /**
- * EDUARDO
+ * Class for debugging abstraction.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeDialog {
 
