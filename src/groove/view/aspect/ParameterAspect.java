@@ -181,7 +181,11 @@ public class ParameterAspect extends AbstractAspect {
 
         @Override
         public String getContentString() {
-            return PARAMETER_START_CHAR + super.getContentString();
+            String result = super.getContentString();
+            if (result != null) {
+                result = PARAMETER_START_CHAR + result;
+            }
+            return result;
         }
 
         /** Start character of parameter strings. */
