@@ -29,8 +29,8 @@ import groove.trans.RuleMatch;
 
 /**
  * Combines a {@link ShapeState} and a {@link ShapeTransition}.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeNextState extends ShapeState implements GraphNextState,
         GraphTransitionStub {
@@ -45,7 +45,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Default constructor, delegates to super class. */
     public ShapeNextState(Shape shape, ShapeState source, RuleEvent event) {
         super(shape);
         this.transition = new ShapeTransition(source, event, this);
@@ -186,7 +186,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
         return this.transition;
     }
 
-    /** EDUARDO */
+    /** Delegates the comparison to the stored transition. */
     public boolean isEquivalent(ShapeTransition other) {
         return this.transition.isEquivalent(other);
     }

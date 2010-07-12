@@ -33,9 +33,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * A state of the abstract GTS that stores a shape as the state configuration.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeState extends AbstractGraphState {
 
@@ -44,10 +44,8 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     private final Shape shape;
-
     private boolean closed;
-
-    /** The outgoing transitions from this state */
+    /** The outgoing transitions from this state. */
     protected final HashSet<GraphTransition> transitions =
         new HashSet<GraphTransition>();
 
@@ -137,7 +135,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     /**
-     * This implementation returns true if the underlying abstract graphs have
+     * This implementation returns true if the underlying shapes have
      * isomorphic structure with compatible multiplicities.
      */
     @Override
@@ -198,11 +196,6 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public void setLocation(Location l) {
         throw new UnsupportedOperationException();
-    }
-
-    /** Debug method. */
-    public String toText() {
-        return super.toString() + ":\n" + this.shape.toString();
     }
 
 }

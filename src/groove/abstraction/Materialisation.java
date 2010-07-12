@@ -35,9 +35,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * This class represents an attempt to materialise a certain shape, driven by
+ * a certain pre-match of a rule into the shape. We assume that the reader is
+ * familiar with the concepts of shape abstraction, in particular Sect. 6
+ * (pg 27) of the Technical Report "Graph Abstraction and Abstract Graph
+ * Transformation".
+ * 
+ * WARNING: Beware of the code in this class. It's rather tricky.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class Materialisation {
 
@@ -45,15 +51,36 @@ public class Materialisation {
     // Object fields
     // ------------------------------------------------------------------------
 
+    /**
+     * The shape we are trying to materialise. Note that this shape is
+     * modified along the construction of the materialisation. This basically
+     * implies that the materialisation object needs to be cloned every time
+     * we perform some modifying operation on the shape. 
+     */
     private Shape shape;
+    /**
+     * The pre-match of the rule into the shape. This is the starting point for
+     * the materialisation. We assume that the pre-match is a valid one.
+     */
     private RuleMatch preMatch;
+    /**
+     * Temporary storage for the elements of the shape that are abstract and
+     * need to be materialised.
+     */
     private NodeEdgeMap absElems;
+    /**
+     * The concrete match of the rule into the (partially) materialised shape.
+     */
     private NodeEdgeMap match;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
+    /**
+     * Constructs the initial materialisation object given a shape and a
+     * pre-match of a rule into the shape. The pre-match given must be valid.
+     */
     private Materialisation(Shape shape, RuleMatch preMatch) {
         this.shape = shape;
         this.preMatch = preMatch;
@@ -61,7 +88,10 @@ public class Materialisation {
         this.match = preMatch.getElementMap().clone();
     }
 
-    /** Copying constructor. */
+    /**
+     * Copying constructor. Clones the materialisation object given to avoid
+     * aliasing and undesired modifications. 
+     */
     private Materialisation(Materialisation mat) {
         this.shape = mat.shape.clone();
         this.preMatch = mat.preMatch;
@@ -88,6 +118,10 @@ public class Materialisation {
     // Static methods
     // ------------------------------------------------------------------------
 
+    /**
+     * Goes over the images of the pre-match and collects the elements of the
+     * shape that need to be materialised.
+     */
     private static NodeEdgeMap getAbstractMatchedElems(Shape shape,
             RuleMatch preMatch) {
         NodeEdgeMap elemsToMat = new NodeEdgeHashMap();
@@ -97,7 +131,8 @@ public class Materialisation {
         for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
             ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
             if (shape.getNodeMult(nodeS).isAbstract()) {
-                // We have a node in the rule that was matched to an abstract node.
+                // We have a node in the rule that was matched to an abstract
+                // node. We need to materialise this abstract node.
                 elemsToMat.putNode(nodeEntry.getKey(), nodeS);
             }
         }
@@ -111,6 +146,9 @@ public class Materialisation {
                 EdgeSignature inEs = shape.getEdgeInSignature(edgeS);
                 if (!shape.isOutEdgeSigUnique(outEs)
                     || !shape.isInEdgeSigUnique(inEs)) {
+                    // We have an edge in the rule that was matched to an edge
+                    // in the shape with a shared multiplicity. We need to
+                    // materialise this shared edge.
                     elemsToMat.putEdge(edgeR, edgeS);
                 }
             }
@@ -119,7 +157,16 @@ public class Materialisation {
         return elemsToMat;
     }
 
-    /** EDUARDO */
+    /**
+     * Constructs and returns the set of all possible materialisations of the
+     * given shape and pre-match. This method resolves all non-determinism
+     * in the materialisation phase, so the shapes in the returned
+     * materialisations are ready to be transformed by conventional rule
+     * application.
+     * Note that the returned set may be empty, even if the pre-match is valid.
+     * This is the case because the shape may not admit any valid
+     * materialisation.
+     */
     public static Set<Materialisation> getMaterialisations(Shape shape,
             RuleMatch preMatch) {
         Set<Materialisation> result = new HashSet<Materialisation>();
@@ -156,6 +203,17 @@ public class Materialisation {
     // Other methods
     // ------------------------------------------------------------------------
 
+    /**
+     * This method duplicates all nodes marked as abstract that need to be
+     * materialised. This produces several different shapes. For each of those
+     * shapes, a new materialisation object is created and the match of the
+     * rule is adjusted, i.e., the pre-match is extended over the new nodes.
+     * In the materialisation objects returned all nodes of the rule are
+     * properly matched on the nodes of the shapes. We call these 'partial'
+     * materialisations. After calling this method, the partial materialisations
+     * need to be finished, i.e., the non-determinism on the edges must be
+     * resolved. 
+     */
     private Set<Materialisation> materialiseNodesAndExtendPreMatch() {
         Set<Materialisation> result = new HashSet<Materialisation>();
 
@@ -185,7 +243,7 @@ public class Materialisation {
             // Create a new materialisation object.
             Materialisation newMat = this.clone();
             for (Pair<ShapeNode,Multiplicity> pair : nodesAndMultsPairs) {
-                // For all original node that materialised one or more copies.
+                // For all original nodes that materialised one or more copies.
                 ShapeNode origNode = pair.first();
                 Multiplicity mult = pair.second();
                 // Properly adjust the multiplicity of the original node.
@@ -203,6 +261,15 @@ public class Materialisation {
         return result;
     }
 
+    /**
+     * Extends the pre-match of a partially constructed materialisation object.
+     * In this method, the nodes of the pre-match that were mapped to abstract
+     * nodes in the shape are re-mapped to the newly materialised nodes. Note
+     * that this is step is also non-deterministic, since we may have more
+     * than one node in the rule that was mapped to the same abstract node. In
+     * this case we need to try out all possible combinations. Not all of those
+     * are actually valid configurations but this will only be checked later. 
+     */
     private Set<Materialisation> extendPreMatch() {
         Set<Materialisation> result = new HashSet<Materialisation>();
         // Process the nodes pre-matched to abstract nodes using a queue.
@@ -253,13 +320,21 @@ public class Materialisation {
         return result;
     }
 
+    /**
+     * Looks at the partially extended match and remove occurring nodes given.
+     */
     private void removePreviouslyMatchedNodes(Set<Node> nodes) {
-        // Look at the partially extended match and remove occurring nodes.
         for (Node node : this.match.nodeMap().values()) {
             nodes.remove(node);
         }
     }
 
+    /**
+     * Extends the rule match to the given shape node. The rule edges adjacent
+     * to the rule node also have their mapping updated.
+     * @param nodeR - the node in the rule.
+     * @param nodeS - the newly materialised node in the shape.
+     */
     private void extendMatch(Node nodeR, ShapeNode nodeS) {
         this.match.putNode(nodeR, nodeS);
         this.absElems.removeNode(nodeR);
@@ -293,10 +368,16 @@ public class Materialisation {
         }
     }
 
+    /** Returns true if all abstract nodes were already materialised. */
     private boolean isExtensionFinished() {
         return this.absElems.nodeMap().isEmpty();
     }
 
+    /** 
+     * Finishes the materialisation by removing impossible edge configuration
+     * and by adjusting the equivalence relation of the underlying shape. This
+     * is also a non-deterministic step.  
+     */
     private Set<Materialisation> finishMaterialisation() {
         // At this point we assume that all variations on the nodes were
         // resolved, and that the rule match is complete and fixed.
@@ -312,6 +393,10 @@ public class Materialisation {
         return this.adjustEquivRelation();
     }
 
+    /**
+     * Given an edge matched by the rule, clear all other shared edges in the
+     * shape that can no longer exist. 
+     */
     private void removeImpossibleEdges(ShapeEdge mappedEdge) {
         Multiplicity oneMult = Multiplicity.getMultOf(1);
         // Check outgoing multiplicities.
@@ -328,6 +413,7 @@ public class Materialisation {
         }
     }
 
+    /** EDUARDO: Need to fix this... */
     private Set<Materialisation> adjustEquivRelation() {
         Set<Materialisation> result = new HashSet<Materialisation>();
 
@@ -373,6 +459,7 @@ public class Materialisation {
         return result;
     }
 
+    /** EDUARDO: Need to fix this... */
     private Set<Materialisation> splitEquivClassOf(ShapeNode node) {
         Set<Materialisation> result = new HashSet<Materialisation>();
 
@@ -400,7 +487,10 @@ public class Materialisation {
         return result;
     }
 
-    /** EDUARDO */
+    /**
+     * Applies the rule match defined by this materialisation and returns the
+     * transformed shape. This shape is not yet normalised.
+     */
     public Shape applyMatch() {
         RuleEvent event =
             new SPOEvent(this.preMatch.getRule(), (VarNodeEdgeMap) this.match,
@@ -410,7 +500,7 @@ public class Materialisation {
         return result;
     }
 
-    /** EDUARDO */
+    /** Basic getter method. */
     public Shape getShape() {
         return this.shape;
     }

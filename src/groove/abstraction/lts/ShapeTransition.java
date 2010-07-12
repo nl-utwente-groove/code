@@ -23,9 +23,9 @@ import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
 
 /**
- * EDUARDO
+ * Implements a transition in the abstract GTS.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeTransition extends DefaultGraphTransition {
 
@@ -33,7 +33,7 @@ public class ShapeTransition extends DefaultGraphTransition {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Default constructor, delegates to super class. */
     public ShapeTransition(ShapeState source, RuleEvent event, ShapeState target) {
         super(source, event.getLabel(), target);
         this.event = event;

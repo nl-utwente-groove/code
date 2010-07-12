@@ -27,9 +27,10 @@ import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
 
 /**
- * EDUARDO
+ * The graph transition system for abstract exploration. All states of this
+ * GTS are of type Shape.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class AGTS extends GTS {
 
@@ -37,7 +38,7 @@ public class AGTS extends GTS {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Constructs the GTS object for the given grammar. */
     public AGTS(GraphGrammar grammar) {
         super(grammar);
         this.getRecord().setCheckIso(true);
@@ -50,6 +51,7 @@ public class AGTS extends GTS {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    /** The given state must be of type ShapeState. */
     @Override
     public GraphState addState(GraphState newState) {
         assert newState instanceof ShapeState : "Type error : " + newState
@@ -57,6 +59,9 @@ public class AGTS extends GTS {
         return super.addState(newState);
     }
 
+    /**
+     * The given transition must be of type ShapeTransition or ShapeNextState.
+     */
     @Override
     public void addTransition(GraphTransition transition) {
         assert (transition instanceof ShapeTransition)
@@ -102,14 +107,18 @@ public class AGTS extends GTS {
     // Inner classes
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Class to store the states of the GTS. */
     public static class ShapeStateSet extends GTS.StateSet {
 
-        /** EDUARDO */
+        /** Default constructor, delegates to super class. */
         public ShapeStateSet(int collapse) {
             super(collapse);
         }
 
+        /**
+         * We override this method to make sure that shapes are properly
+         * compared for isomorphism.
+         */
         @Override
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
             Shape one = (Shape) stateKey.getGraph();

@@ -78,8 +78,8 @@ public class ShapeGenerator {
         ShapeStateGenerator sgen = new ShapeStateGenerator(this.gts);
         strategy.setMatchApplier(sgen);
         scenario.play();
-        System.out.println("States: " + sgen.states);
-        System.out.println("Transitions: " + sgen.transitions);
+        System.out.println("States: " + sgen.getStateCount());
+        System.out.println("Transitions: " + sgen.getTransitionCount());
         if (scenario.isInterrupted()) {
             new Exception().printStackTrace();
         }
