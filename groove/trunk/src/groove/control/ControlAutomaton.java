@@ -17,9 +17,7 @@
 package groove.control;
 
 import groove.graph.AbstractGraphShape;
-import groove.graph.Edge;
 import groove.graph.GraphCache;
-import groove.graph.Node;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,14 +33,15 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> implements
     /** the top-level ControlShape * */
 
     private Set<ControlState> states = new HashSet<ControlState>();
-    private Set<ControlTransition> transitions = new HashSet<ControlTransition>();
+    private Set<ControlTransition> transitions =
+        new HashSet<ControlTransition>();
     private ControlState startState;
 
-    public Set<? extends Edge> edgeSet() {
+    public Set<ControlTransition> edgeSet() {
         return transitions();
     }
 
-    public Set<? extends Node> nodeSet() {
+    public Set<ControlState> nodeSet() {
         return states();
     }
 
