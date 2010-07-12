@@ -30,8 +30,8 @@ import java.util.Set;
 
 /**
  * A version of a {@link RuleEventApplier} for abstract exploration.
+ * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class ShapeStateGenerator implements RuleEventApplier {
 
@@ -50,16 +50,14 @@ public class ShapeStateGenerator implements RuleEventApplier {
     // ------------------------------------------------------------------------
 
     private final AGTS gts;
-    /** EDUARDO */
-    public int transitions = 0;
-    /** EDUARDO */
-    public int states = 1;
+    private int transitions = 0;
+    private int states = 1;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO */
+    /** Default constructor. */
     public ShapeStateGenerator(AGTS gts) {
         this.gts = gts;
     }
@@ -94,12 +92,12 @@ public class ShapeStateGenerator implements RuleEventApplier {
             } else {
                 // the state was added as a next-state
                 trans = newState;
-                /*System.out.println("New state: " + source + "--" + event
-                    + "-->" + newState.toText());*/
+                // BEGIN DEBUG CODE.
                 System.out.println("New state: " + source + "--" + event
                     + "-->" + newState);
                 new ShapeDialog((Shape) newState.getGraph(), options,
                     Integer.toString(newState.getNumber()));
+                // END DEBUG CODE.
                 this.states++;
             }
             getGTS().addTransition(trans);
@@ -110,9 +108,18 @@ public class ShapeStateGenerator implements RuleEventApplier {
         return result;
     }
 
-    /** EDUARDO */
-    public static void showShape(Shape shape) {
-        new ShapeDialog(shape, options, "");
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Basic getter method. */
+    public int getStateCount() {
+        return this.states;
+    }
+
+    /** Basic getter method. */
+    public int getTransitionCount() {
+        return this.transitions;
     }
 
 }

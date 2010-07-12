@@ -25,20 +25,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * EDUARDO
+ * EDUARDO: Comment this...
  * @author Eduardo Zambon
  * @version $Revision $
  */
 public class EdgeMultConf extends
         Pair<Map<EdgeSignature,Multiplicity>,Map<EdgeSignature,Multiplicity>> {
 
-    /** EDUARDO */
+    /** EDUARDO: Comment this... */
     public EdgeMultConf(Map<EdgeSignature,Multiplicity> first,
             Map<EdgeSignature,Multiplicity> second) {
         super(first, second);
     }
 
-    /** EDUARDO */
+    /** EDUARDO: Comment this... */
     @SuppressWarnings("unchecked")
     public static Set<EdgeMultConf> computeConfs(Shape shape, ShapeNode node,
             EquivClass<ShapeNode> ec) {
@@ -139,7 +139,7 @@ public class EdgeMultConf extends
             for (int ii = 0; ii < inSigs.length; ii++) {
                 for (int jo = 0; jo < outSigs[io].length; jo++) {
                     for (int ji = 0; ji < inSigs[ii].length; ji++) {
-                        System.out.println(io + " " + ii + " " + jo + " " + ji);
+                        //System.out.println(io + " " + ii + " " + jo + " " + ji);
                     }
                 }
             }

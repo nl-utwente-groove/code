@@ -22,20 +22,18 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 
 /**
- * Shape version of a GraphJModel
+ * Shape version of a GraphJModel.
 
  * @author Eduardo Zambon
  */
 public class ShapeJModel extends GraphJModel {
 
-    /** Creates a model from a pattern graph and options */
+    /** Creates a model from a pattern graph and options. */
     ShapeJModel(Shape shape, Options options) {
         super(shape, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
 
-    /**
-     * Returns an instance of this class for the given Shape.
-     */
+    /** Returns an instance of this class for the given Shape. */
     public static ShapeJModel getInstance(Shape shape, Options options) {
         ShapeJModel result = new ShapeJModel(shape, options);
         result.reload();
@@ -43,7 +41,7 @@ public class ShapeJModel extends GraphJModel {
     }
 
     @Override
-    /** Specialises return type */
+    /** Specialises the return type. */
     public Shape getGraph() {
         return (Shape) super.getGraph();
     }
