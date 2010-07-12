@@ -190,7 +190,10 @@ public class Imager extends CommandLineTool {
                         model = GraphJModel.newInstance(graph, new Options());
                     } else {
                         View<?> view = AspectGraph.newInstance(graph).toView();
-                        model = AspectJModel.newInstance(view, new Options());
+                        Options options = new Options();
+                        options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
+                            false);
+                        model = AspectJModel.newInstance(view, options);
                     }
 
                     JGraph jGraph = new JGraph(model, false, null);
@@ -472,6 +475,9 @@ public class Imager extends CommandLineTool {
     /** The rule filter. */
     static final ExtensionFilter ruleFilter = Groove.createRuleFilter();
 
+    /** The type filter. */
+    static final ExtensionFilter typeFilter = Groove.createTypeFilter();
+
     /** The state filter. */
     static final ExtensionFilter stateFilter = Groove.createStateFilter();
 
@@ -483,7 +489,8 @@ public class Imager extends CommandLineTool {
 
     /** An array of all filters identifying files that can be imaged. */
     static final ExtensionFilter[] acceptFilters =
-        new ExtensionFilter[] {gpsFilter, ruleFilter, stateFilter, gxlFilter};
+        new ExtensionFilter[] {gpsFilter, ruleFilter, typeFilter, stateFilter,
+            gxlFilter};
 
     private class EditorViewOption implements CommandLineOption {
         @Override
