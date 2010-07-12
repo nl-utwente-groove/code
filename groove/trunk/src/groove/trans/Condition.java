@@ -42,8 +42,7 @@ public interface Condition extends Fixable {
 
     /**
      * Indicates if this graph predicate is closed, which is to say that it has
-     * an empty context. Convenience method for
-     * <code>getContext().isEmpty()</code>.
+     * an empty context.
      * @return <code>true</code> if this predicate has an empty context.
      */
     public boolean isGround();

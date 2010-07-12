@@ -62,7 +62,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     protected AbstractCondition(RuleName name, Graph target,
             NodeEdgeMap rootMap, LabelStore labelStore,
             SystemProperties properties) {
-        this.rootMap = rootMap == null ? new NodeEdgeHashMap() : rootMap;
+        this.ground = (rootMap == null);
+        this.rootMap = this.ground ? new NodeEdgeHashMap() : rootMap;
         this.target = target;
         this.systemProperties = properties;
         if (labelStore == null && properties != null) {
@@ -132,11 +133,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         this.name = name;
     }
 
-    /**
-     * Delegates to <code>getRootMap().isEmpty()</code> as per contract.
-     */
     public boolean isGround() {
-        return getRootMap().isEmpty();
+        return this.ground;
     }
 
     /**
@@ -465,7 +463,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     private boolean fixed;
-
+    /**
+     * Flag indicating if the rule is ground.
+     */
+    private final boolean ground;
     /**
      * The pattern map of this condition, i.e., the element map from the context
      * graph to the target graph.
