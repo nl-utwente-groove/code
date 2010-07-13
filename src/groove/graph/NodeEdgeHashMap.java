@@ -71,7 +71,7 @@ public class NodeEdgeHashMap extends
 
     /**
      * Callback method to create an edge image for {@link #mapEdge(Edge)}. This
-     * implementation creates a {@link DefaultFlag} or {@link DefaultEdge} if
+     * implementation creates a @link DefaultEdge} if
      * the map contains images for the key's end nodes.
      */
     protected Edge createImage(Edge key) {
