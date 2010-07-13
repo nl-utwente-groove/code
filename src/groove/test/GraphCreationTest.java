@@ -20,7 +20,6 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -43,7 +42,7 @@ public class GraphCreationTest extends TestCase {
 
     protected Graph g;
     protected Node[] n = new Node[NR_NODES_TOTAL];
-    protected BinaryEdge[] e = new BinaryEdge[NR_EDGES];
+    protected Edge[] e = new Edge[NR_EDGES];
 
     public GraphCreationTest(String name) {
         super(name);

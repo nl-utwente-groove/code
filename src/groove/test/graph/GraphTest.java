@@ -16,17 +16,6 @@
  */
 package groove.test.graph;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
@@ -41,10 +30,21 @@ import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
-import groove.io.ExtensionFilter;
 import groove.io.DefaultGxl;
+import groove.io.ExtensionFilter;
 import groove.io.Xml;
 import groove.util.Groove;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import junit.framework.TestCase;
 
 /**
@@ -77,9 +77,9 @@ public class GraphTest extends TestCase {
     /** A c-label */
     public DefaultLabel cLabel;
     /** The a-edge of <tt>graph</tt>. */
-    public BinaryEdge aEdge;
+    public Edge aEdge;
     /** The b-edge of <tt>graph</tt>. */
-    public BinaryEdge bEdge;
+    public Edge bEdge;
     /** The source node of <tt>aEdge</tt> and <tt>bEdge</tt>. */
     public Node source;
     /** The target node of <tt>aEdge</tt>. */
@@ -140,8 +140,8 @@ public class GraphTest extends TestCase {
         this.cLabel = DefaultLabel.createLabel("c");
 
         Iterator<? extends Edge> edgeIter = this.graph.edgeSet().iterator();
-        BinaryEdge edge1 = (BinaryEdge) edgeIter.next();
-        BinaryEdge edge2 = (BinaryEdge) edgeIter.next();
+        Edge edge1 = edgeIter.next();
+        Edge edge2 = edgeIter.next();
         if (edge1.label().equals(this.aLabel)) {
             this.aEdge = edge1;
             this.bEdge = edge2;
@@ -226,7 +226,8 @@ public class GraphTest extends TestCase {
         IsoChecker checker = DefaultIsoChecker.getInstance(true);
         Object[] codes = new Object[MATCH_DOM_COUNT];
         for (int i = 0; i < codes.length; i++) {
-            codes[i] = this.matchDom[i].getCertifier(true).getGraphCertificate();
+            codes[i] =
+                this.matchDom[i].getCertifier(true).getGraphCertificate();
         }
         for (int i = 0; i < codes.length; i++) {
             for (int j = 0; j < codes.length; j++) {
@@ -238,7 +239,8 @@ public class GraphTest extends TestCase {
         }
         codes = new Object[ISO_GRAPH_COUNT];
         for (int i = 0; i < codes.length; i++) {
-            codes[i] = this.isoGraph[i].getCertifier(true).getGraphCertificate();
+            codes[i] =
+                this.isoGraph[i].getCertifier(true).getGraphCertificate();
         }
         for (int i = 0; i < codes.length; i++) {
             for (int j = 0; j < codes.length; j++) {
@@ -258,17 +260,20 @@ public class GraphTest extends TestCase {
             this.isoGraph[0].nodeCount() + this.isoGraph[0].edgeCount();
         assertEquals(elementCount, partitionMap.size());
         // iso-1
-        partitionMap = this.isoGraph[1].getCertifier(true).getNodePartitionMap();
+        partitionMap =
+            this.isoGraph[1].getCertifier(true).getNodePartitionMap();
         elementCount =
             this.isoGraph[1].nodeCount() + this.isoGraph[1].edgeCount();
         assertEquals(elementCount - 2, partitionMap.size());
         // iso-2
-        partitionMap = this.isoGraph[2].getCertifier(true).getNodePartitionMap();
+        partitionMap =
+            this.isoGraph[2].getCertifier(true).getNodePartitionMap();
         elementCount =
             this.isoGraph[2].nodeCount() + this.isoGraph[2].edgeCount();
         assertEquals(elementCount, partitionMap.size());
         // iso-3
-        partitionMap = this.isoGraph[3].getCertifier(true).getNodePartitionMap();
+        partitionMap =
+            this.isoGraph[3].getCertifier(true).getNodePartitionMap();
         elementCount =
             this.isoGraph[3].nodeCount() + this.isoGraph[3].edgeCount();
         assertTrue((elementCount - 5) >= partitionMap.size());
@@ -307,7 +312,7 @@ public class GraphTest extends TestCase {
         Label label = DefaultLabel.createLabel("test");
         Edge newEdge = this.matchDom[0].addEdge(sourceNode, label, targetNode);
         newEdge.source().equals(sourceNode);
-        ((BinaryEdge) newEdge).target().equals(targetNode);
+        newEdge.target().equals(targetNode);
         newEdge.label().equals(label);
         this.matchDom[0].containsElement(newEdge);
         assertEquals(oldNodeCount, this.matchDom[0].nodeCount());

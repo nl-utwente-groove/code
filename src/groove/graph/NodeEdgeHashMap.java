@@ -16,7 +16,6 @@
  */
 package groove.graph;
 
-
 /**
  * Default implementation of a generic node-edge-map. The implementation is
  * based on two internally stored hash maps, for the nodes and edges. Labels are
@@ -84,31 +83,18 @@ public class NodeEdgeHashMap extends
         if (labelImage == null) {
             return null;
         }
-        if (key instanceof UnaryEdge) {
-            return createUnaryEdge(sourceImage, labelImage);
+        Node targetImage = getNode(key.opposite());
+        if (targetImage == null) {
+            return null;
         } else {
-            assert key instanceof BinaryEdge : String.format(
-                "Hyper-edge %s node supperted", key);
-            Node targetImage = getNode(key.opposite());
-            if (targetImage == null) {
-                return null;
-            } else {
-                return createBinaryEdge(sourceImage, labelImage, targetImage);
-            }
+            return createBinaryEdge(sourceImage, labelImage, targetImage);
         }
-    }
-
-    /**
-     * Callback method to create a unary edge image.
-     */
-    protected UnaryEdge createUnaryEdge(Node sourceImage, Label labelImage) {
-        return new DefaultFlag(sourceImage, labelImage);
     }
 
     /**
      * Callback method to create a binary edge image.
      */
-    protected BinaryEdge createBinaryEdge(Node sourceImage, Label labelImage,
+    protected Edge createBinaryEdge(Node sourceImage, Label labelImage,
             Node targetImage) {
         return DefaultEdge.createEdge(sourceImage, labelImage, targetImage);
     }

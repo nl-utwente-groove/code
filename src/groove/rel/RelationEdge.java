@@ -16,7 +16,7 @@
  */
 package groove.rel;
 
-import groove.graph.AbstractBinaryEdge;
+import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -29,7 +29,7 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RelationEdge<V> extends AbstractBinaryEdge<Node,Label,Node> {
+public class RelationEdge<V> extends AbstractEdge<Node,Label,Node> {
     /** Yields a string description of a {@link RelationType} value. */
     public static String typeToString(RelationType type) {
         return "[" + type.getText() + "]";

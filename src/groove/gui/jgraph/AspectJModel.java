@@ -32,7 +32,6 @@ import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
 import static groove.view.aspect.RuleAspect.getRuleValue;
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -270,7 +269,7 @@ public class AspectJModel extends GraphJModel {
      * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
      */
     @Override
-    protected GraphJEdge createJEdge(BinaryEdge edge) {
+    protected GraphJEdge createJEdge(Edge edge) {
         return new AspectJEdge((AspectEdge) edge);
     }
 
@@ -631,7 +630,7 @@ public class AspectJModel extends GraphJModel {
          * added equal those of this j-edge, and the superclass is also willing.
          */
         @Override
-        public boolean addEdge(BinaryEdge edge) {
+        public boolean addEdge(Edge edge) {
             if (((AspectEdge) edge).getAspectMap().equalsAspects(
                 getEdge().getAspectMap())) {
                 return super.addEdge(edge);

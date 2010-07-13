@@ -18,7 +18,6 @@
 package groove.gui.jgraph;
 
 import groove.graph.AbstractGraph;
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -386,7 +385,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         }
 
         // Add everything else as a binary edge.
-        return addBinaryEdge((BinaryEdge) edge);
+        return addBinaryEdge(edge);
     }
 
     /**
@@ -394,7 +393,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * an existing j-edge, if the edge can be represented by it. Otherwise, it
      * will be a new j-edge.
      */
-    private GraphJEdge addBinaryEdge(BinaryEdge edge) {
+    private GraphJEdge addBinaryEdge(Edge edge) {
         Node source = edge.source();
         Node target = edge.opposite();
         // don't do this for node types, as they need to be typeset in bold
@@ -509,12 +508,12 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
-     * Creates a new j-edge using {@link #createJEdge(BinaryEdge)}, and sets the
+     * Creates a new j-edge using {@link #createJEdge(Edge)}, and sets the
      * attributes using {@link #createJEdgeAttr(JEdge)} and adds available
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      */
-    protected GraphJEdge computeJEdge(BinaryEdge edge) {
+    protected GraphJEdge computeJEdge(Edge edge) {
         GraphJEdge result = createJEdge(edge);
         result.getAttributes().applyMap(createJEdgeAttr(result));
         JEdgeLayout layout = this.layoutMap.getEdge(edge);
@@ -560,7 +559,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @return j-edge corresponding to <tt>edge</tt>
      * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
      */
-    protected GraphJEdge createJEdge(BinaryEdge edge) {
+    protected GraphJEdge createJEdge(Edge edge) {
         return new GraphJEdge(this, edge);
     }
 

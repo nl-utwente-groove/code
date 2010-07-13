@@ -20,7 +20,9 @@ package groove.graph;
  * This interface just serves as a parallel to {@link BinaryEdge}.
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated Use a binary edge with a flag label instead
  */
+@Deprecated
 public interface UnaryEdge extends Edge {
     /** End count of a unary edge. */
     static public final int END_COUNT = 1;

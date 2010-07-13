@@ -16,7 +16,6 @@
  */
 package groove.rel;
 
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
@@ -534,7 +533,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             Iterator<? extends Edge> outEdgeIter =
                 outEdgeSet(source).iterator();
             while (outEdgeIter.hasNext()) {
-                BinaryEdge outEdge = (BinaryEdge) outEdgeIter.next();
+                Edge outEdge = outEdgeIter.next();
                 Node target = outEdge.target();
                 Set<String> targetAllVarSet =
                     new HashSet<String>(sourceAllVarSet);

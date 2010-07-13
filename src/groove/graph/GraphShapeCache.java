@@ -204,7 +204,7 @@ public class GraphShapeCache implements GraphShapeListener {
         List<Map<Label,Set<Edge>>> result =
             new ArrayList<Map<Label,Set<Edge>>>();// [AbstractEdge.getMaxEndCount()+1];
         result.add(null);
-        for (int arity = 1; arity <= AbstractEdge.getMaxEndCount(); arity++) {
+        for (int arity = 1; arity <= Edge.END_COUNT; arity++) {
             result.add(new HashMap<Label,Set<Edge>>());
         }
         return result;

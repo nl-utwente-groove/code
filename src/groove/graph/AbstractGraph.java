@@ -83,7 +83,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
 
     /**
      * Factory method for edges of this graph. This implementation delegates to
-     * {@link #createEdge(Node, Label)} if <code>ends.length == 1</code>, to
      * {@link #createEdge(Node, Label, Node)} if <code>ends.length == 2</code>
      * and throws a {@link IllegalArgumentException} otherwise.
      * @param ends the endpoints of the new edge
@@ -95,7 +94,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     public Edge createEdge(Node[] ends, Label label) {
         switch (ends.length) {
         case 1:
-            return createEdge(ends[Edge.SOURCE_INDEX], label);
+            assert false : "Unary edges are not supported";
+            return null;
         case 2:
             return createEdge(ends[Edge.SOURCE_INDEX], label,
                 ends[Edge.TARGET_INDEX]);
@@ -113,7 +113,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @param target the target node of the new edge
      * @return the freshly binary created edge
      */
-    public BinaryEdge createEdge(Node source, Label label, Node target) {
+    public Edge createEdge(Node source, Label label, Node target) {
         return DefaultEdge.createEdge(source, label, target);
     }
 
@@ -126,21 +126,9 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @param constructor an object that specializes the constructor.
      * @return the freshly binary created edge
      */
-    public BinaryEdge createEdge(Node source, Label label, Node target,
+    public Edge createEdge(Node source, Label label, Node target,
             DefaultEdge constructor) {
         return DefaultEdge.createEdge(source, label, target, constructor);
-    }
-
-    /**
-     * Factory method for unary edges of this graph. This implementation returns
-     * a {@link DefaultFlag}. Subclasses may choose to throw a
-     * {@link UnsupportedOperationException} if unary edges are not supported.
-     * @param source the source node of the new edge
-     * @param label the label of the new edge
-     * @return the freshly created unary edge
-     */
-    public UnaryEdge createEdge(Node source, Label label) {
-        return new DefaultFlag(source, label);
     }
 
     public Node addNode() {
@@ -154,8 +142,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     /**
      * Creates its result using {@link #createEdge(Node, Label, Node)}.
      */
-    public BinaryEdge addEdge(Node source, Label label, Node target) {
-        BinaryEdge result = createEdge(source, label, target);
+    public Edge addEdge(Node source, Label label, Node target) {
+        Edge result = createEdge(source, label, target);
         addEdge(result);
         return result;
     }

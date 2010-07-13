@@ -1,7 +1,6 @@
 /* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
 package groove.match;
 
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -30,7 +29,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
      * Constructs a new search item. The item will match according to the
      * regular expression on the edge label.
      */
-    public RegExprEdgeSearchItem(BinaryEdge edge) {
+    public RegExprEdgeSearchItem(Edge edge) {
         super(edge);
         RegExprLabel label = (RegExprLabel) edge.label();
         this.labelAutomaton = label.getAutomaton();

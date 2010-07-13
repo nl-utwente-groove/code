@@ -16,7 +16,7 @@
  */
 package groove.view.aspect;
 
-import groove.graph.AbstractBinaryEdge;
+import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -33,7 +33,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode>
+public class AspectEdge extends AbstractEdge<AspectNode,Label,AspectNode>
         implements AspectElement {
     /**
      * Constructs a new edge, with source and target node, label, and aspect

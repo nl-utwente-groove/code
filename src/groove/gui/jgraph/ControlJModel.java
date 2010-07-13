@@ -21,7 +21,6 @@ import groove.control.ControlShape;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.Location;
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -147,7 +146,7 @@ public class ControlJModel extends GraphJModel {
      */
 
     @Override
-    protected TransitionJEdge createJEdge(BinaryEdge edge) {
+    protected TransitionJEdge createJEdge(Edge edge) {
         return new TransitionJEdge(edge);
     }
 
@@ -216,7 +215,7 @@ public class ControlJModel extends GraphJModel {
          * Creates a new instance from a given edge (required to be a
          * {@link GraphTransition}).
          */
-        TransitionJEdge(BinaryEdge edge) {
+        TransitionJEdge(Edge edge) {
             super(ControlJModel.this, edge);
         }
 

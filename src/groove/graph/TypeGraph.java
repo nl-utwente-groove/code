@@ -56,7 +56,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
 
     /** Adds the label as well as the edge. */
     @Override
-    public BinaryEdge addEdge(Node source, Label label, Node target) {
+    public Edge addEdge(Node source, Label label, Node target) {
         this.labelStore.addLabel(label);
         return super.addEdge(source, label, target);
     }

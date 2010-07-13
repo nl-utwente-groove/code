@@ -161,7 +161,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
         List<Map<Label,Set<Edge>>> result =
             new ArrayList<Map<Label,Set<Edge>>>();
         result.add(null);
-        for (int i = 0; i <= AbstractEdge.getMaxEndCount(); i++) {
+        for (int i = 0; i <= Edge.END_COUNT; i++) {
             result.add(new HashMap<Label,Set<Edge>>());
         }
         for (Edge edge : edgeSet()) {
@@ -178,9 +178,9 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     @Override
     public Set<? extends Edge> edgeSet(Node node) {
         initData();
-        Set<BinaryEdge> outEdgeSet = this.outEdgeMap.getCell(node);
-        Set<BinaryEdge> inEdgeSet = this.inEdgeMap.getCell(node);
-        return new StackedSet<BinaryEdge>(outEdgeSet, inEdgeSet, inEdgeSet);
+        Set<Edge> outEdgeSet = this.outEdgeMap.getCell(node);
+        Set<Edge> inEdgeSet = this.inEdgeMap.getCell(node);
+        return new StackedSet<Edge>(outEdgeSet, inEdgeSet, inEdgeSet);
     }
 
     @Override
@@ -207,7 +207,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     /**
      * Returns the set of incoming edges of a given node.
      */
-    public Set<BinaryEdge> inEdgeSet(Node node) {
+    public Set<Edge> inEdgeSet(Node node) {
         initData();
         return this.inEdgeMap.getCell(node);
     }
@@ -247,33 +247,33 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
             assert this.inEdgeMap == null;
             assert this.labelEdgeMaps == null;
             if (this.basis == null) {
-                this.inEdgeMap = new KeyPartition<Node,BinaryEdge>(true) {
+                this.inEdgeMap = new KeyPartition<Node,Edge>(true) {
                     @Override
                     protected Node getKey(Object value) {
-                        if (value instanceof BinaryEdge) {
-                            return ((BinaryEdge) value).target();
+                        if (value instanceof Edge) {
+                            return ((Edge) value).target();
                         } else {
                             return null;
                         }
                     }
 
                     @Override
-                    protected Set<BinaryEdge> createCell() {
+                    protected Set<Edge> createCell() {
                         return createEdgeSet(null);
                     }
                 };
-                this.outEdgeMap = new KeyPartition<Node,BinaryEdge>(true) {
+                this.outEdgeMap = new KeyPartition<Node,Edge>(true) {
                     @Override
                     protected Node getKey(Object value) {
-                        if (value instanceof BinaryEdge) {
-                            return ((BinaryEdge) value).source();
+                        if (value instanceof Edge) {
+                            return ((Edge) value).source();
                         } else {
                             return null;
                         }
                     }
 
                     @Override
-                    protected Set<BinaryEdge> createCell() {
+                    protected Set<Edge> createCell() {
                         return createEdgeSet(null);
                     }
                 };
@@ -332,9 +332,9 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     /** The (initially null) edge set of this graph. */
     EdgeSet<Edge> edgeSet;
     /** The map from nodes to sets of incident edges. */
-    KeyPartition<Node,BinaryEdge> outEdgeMap;
+    KeyPartition<Node,Edge> outEdgeMap;
     /** The map from nodes to sets of incident edges. */
-    KeyPartition<Node,BinaryEdge> inEdgeMap;
+    KeyPartition<Node,Edge> inEdgeMap;
     /** List of maps from labels to sets of edges with that label and arity. */
     List<Map<Label,Set<Edge>>> labelEdgeMaps;
     Map<Label,Map<Node,Set<Edge>>> labelMap;
@@ -430,9 +430,9 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
         /** Edge set to be filled by this target. */
         EdgeSet<Edge> edgeSet;
         /** Outgoing edge map to be filled by this target. */
-        KeyPartition<Node,BinaryEdge> outEdgeMap;
+        KeyPartition<Node,Edge> outEdgeMap;
         /** Incoming edge map to be filled by this target. */
-        KeyPartition<Node,BinaryEdge> inEdgeMap;
+        KeyPartition<Node,Edge> inEdgeMap;
         /** Label/edge map to be filled by this target. */
         List<Map<Label,Set<Edge>>> labelEdgeMaps;
         /** Label//node/edge map to be filled by this target. */
@@ -460,10 +460,10 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
             assert result;
             int arity = elem.endCount();
             // adapt node-edge map
-            result = this.outEdgeMap.add((BinaryEdge) elem);
+            result = this.outEdgeMap.add(elem);
             assert result;
             if (this.inEdgeMap != null) {
-                result = this.inEdgeMap.add((BinaryEdge) elem);
+                result = this.inEdgeMap.add(elem);
                 assert result;
             }
             // adapt label-edge map

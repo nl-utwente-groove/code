@@ -21,14 +21,80 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractEdge<N extends Node,L extends Label> implements
-        Edge {
+public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Node>
+        implements Edge {
     /**
      * Creates an edge with a given source node and label.
      */
-    protected AbstractEdge(N source, L label) {
+    protected AbstractEdge(N source, L label, TN target) {
         this.source = source;
         this.label = label;
+        this.target = target;
+    }
+
+    final public Node[] ends() {
+        return new Node[] {this.source, this.target};
+    }
+
+    @Override
+    final public Node end(int i) {
+        switch (i) {
+        case SOURCE_INDEX:
+            return this.source;
+        case TARGET_INDEX:
+            return this.target;
+        default:
+            throw new IllegalArgumentException("Illegal end index number " + i
+                + " for " + this);
+        }
+    }
+
+    @Override
+    final public int endIndex(Node node) {
+        if (this.source.equals(node)) {
+            return SOURCE_INDEX;
+        } else if (this.target.equals(node)) {
+            return TARGET_INDEX;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * This implementation tests if <tt>other</tt> equals <tt>source</tt> or
+     * <tt>target</tt>.
+     */
+    @Override
+    final public boolean hasEnd(Node other) {
+        return this.source.equals(other) || this.target.equals(other);
+    }
+
+    @Override
+    final public int endCount() {
+        return END_COUNT;
+    }
+
+    public final TN target() {
+        return this.target;
+    }
+
+    @Override
+    public TN opposite() {
+        return this.target;
+    }
+
+    /**
+     * Returns a description consisting of the source node, an arrow with the
+     * label inscribed, and the target node.
+     */
+    @Override
+    public String toString() {
+        return "" + source() + "--" + getLabelText() + "-->" + target();
+    }
+
+    /** Callback method in {@link #toString()} to print the label text. */
+    protected String getLabelText() {
+        return label().text();
     }
 
     public N source() {
@@ -40,62 +106,11 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     /**
-     * Looks up the requested node through <tt>ends()[i]</tt>.
-     */
-    public Node end(int i) {
-        return ends()[i];
-    }
-
-    /**
-     * Computes the end count through <tt>ends().length</tt>.
-     */
-    public int endCount() {
-        return ends().length;
-    }
-
-    /**
-     * Looks up <tt>node</tt> by comparing it to each <tt>end(i)</tt> in turn,
-     * and returning the first <tt>i</tt> for which the comparison holds.
-     */
-    public int endIndex(Node node) {
-        int result = -1;
-        for (int i = 0; result < 0 && i < endCount(); i++) {
-            if (end(i).equals(node)) {
-                result = i;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Looks up <tt>node</tt> by comparing it to each <tt>end(i)</tt> in turn.
-     */
-    public boolean hasEnd(Node node) {
-        boolean result = false;
-        for (int i = 0; !result && i < endCount(); i++) {
-            result = end(i).equals(node);
-        }
-        return result;
-    }
-
-    /**
-     * Yields {@link #source()} if {@link #endCount()} is 1, otherwise the end
-     * at {@link #TARGET_INDEX}.
-     */
-    public Node opposite() {
-        if (endCount() == 1) {
-            return source();
-        } else {
-            return end(Edge.TARGET_INDEX);
-        }
-    }
-
-    /**
      * Since all composites are immutable, the method just returns
      * <code>this</code>.
      */
     @Override
-    public AbstractEdge<N,L> clone() {
+    public AbstractEdge<N,L,TN> clone() {
         return this;
     }
 
@@ -116,15 +131,24 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     /**
-     * Overwrites the method to add a hash code for the label.
+     * Slightly more efficient implementation returning the same value as the
+     * super method.
      */
     protected int computeHashCode() {
-        int result = 0;
-        for (int i = 0; i < endCount(); i++) {
-            result += end(i).hashCode() << (i + 1);
-        }
-        result += label().hashCode();
-        return result;
+        return edgeHashCode();
+    }
+
+    /**
+     * Slightly more efficient implementation returning the same value as the
+     * super method.
+     */
+    protected int edgeHashCode() {
+        int labelCode = label().hashCode();
+        int sourceCode = 3 * this.source.hashCode();
+        int targetCode = (labelCode + 2) * this.target.hashCode();
+        return labelCode // + 3 * sourceCode - 2 * targetCode;
+            ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
+            + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
     }
 
     /**
@@ -192,6 +216,17 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
             && isLabelEqual((Edge) obj);
     }
 
+    // -------------------- Object and related methods --------------------
+
+    /**
+     * Improves the testing for end point equality.
+     */
+    protected boolean isEndEqual(Edge other) {
+        return (this.source.equals(other.source()))
+            && other.endCount() == END_COUNT
+            && this.target.equals(other.end(TARGET_INDEX));
+    }
+
     /**
      * Tests if another object is type equal to this one. This implementation
      * insists that the object is an {@link Edge}. Callback method from
@@ -202,19 +237,6 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      */
     protected boolean isTypeEqual(Object obj) {
         return obj instanceof Edge;
-    }
-
-    /**
-     * Tests if this composite has the same number of end points as well as
-     * equal end points as another. Callback method from {@link #equals(Object)}
-     * .
-     */
-    protected boolean isEndEqual(Edge other) {
-        boolean result = endCount() == other.endCount();
-        for (int i = 0; result && i < endCount(); i++) {
-            result = end(i).equals(other.end(i));
-        }
-        return result;
     }
 
     /**
@@ -235,6 +257,8 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      * @invariant label != null
      */
     protected final L label;
+    /** The target node of this edge. */
+    protected final TN target;
     /** The pre-computed hash code. */
     private int hashCode;
 
@@ -266,4 +290,13 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      * @invariant <tt>maxEndCount &gtr;= 1</tt>
      */
     static private int maxEndCount;
+    // constants for hash code computation
+    static private final int SOURCE_SHIFT = 1;
+    static private final int TARGET_SHIFT = 2;
+    static private final int BIT_COUNT = 32;
+    static private final int SOURCE_RIGHT_SHIFT = BIT_COUNT - SOURCE_SHIFT;
+    static private final int TARGET_RIGHT_SHIFT = BIT_COUNT - TARGET_SHIFT;
+    static {
+        AbstractEdge.setMaxEndCount(END_COUNT);
+    }
 }
