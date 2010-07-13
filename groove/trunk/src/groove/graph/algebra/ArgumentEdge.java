@@ -16,7 +16,7 @@
  */
 package groove.graph.algebra;
 
-import groove.graph.AbstractBinaryEdge;
+import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.util.Groove;
 
@@ -29,7 +29,7 @@ import groove.util.Groove;
  * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
 public class ArgumentEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
+        AbstractEdge<ProductNode,DefaultLabel,VariableNode> {
     /** Constructs a fresh edge. */
     public ArgumentEdge(ProductNode source, int number, VariableNode target) {
         super(source, DefaultLabel.createLabel("" + Groove.LC_PI + number),

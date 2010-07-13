@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.match.SearchPlanStrategy.Search;
@@ -34,13 +33,13 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
      * Constructs a new search item. The item will match any edge between the
      * end images, and record the edge label as value of the wildcard variable.
      */
-    public WildcardEdgeSearchItem(BinaryEdge edge) {
+    public WildcardEdgeSearchItem(Edge edge) {
         super(edge);
         this.labelConstraint = RegExprLabel.getWildcardGuard(edge.label());
         assert RegExprLabel.isWildcard(edge.label())
             && RegExprLabel.getWildcardId(edge.label()) == null : String.format(
             "Edge %s is not a true wildcard edge", edge);
-        assert edge.endCount() <= BinaryEdge.END_COUNT : String.format(
+        assert edge.endCount() <= Edge.END_COUNT : String.format(
             "Search item undefined for hyperedge", edge);
     }
 

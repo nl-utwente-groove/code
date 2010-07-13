@@ -17,7 +17,7 @@
 package groove.graph.algebra;
 
 import groove.algebra.Operation;
-import groove.graph.AbstractBinaryEdge;
+import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 
 /**
@@ -30,7 +30,7 @@ import groove.graph.DefaultLabel;
  * @version $Revision$
  */
 public class OperatorEdge extends
-        AbstractBinaryEdge<ProductNode,DefaultLabel,VariableNode> {
+        AbstractEdge<ProductNode,DefaultLabel,VariableNode> {
     /**
      * Constructs an edge for a given operation.
      * @param source the product node that is the source of the edge

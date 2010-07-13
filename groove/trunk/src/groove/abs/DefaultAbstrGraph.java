@@ -18,7 +18,6 @@ package groove.abs;
 
 import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.abs.Abstraction.MultInfoRelation;
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultMorphism;
@@ -812,13 +811,13 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
          * @require source and target nodes are already in the graph
          * @return the added edge, or the one that already existed, if any
          */
-        public BinaryEdge addEdge(Node source, Label label, Node target) {
+        public Edge addEdge(Node source, Label label, Node target) {
             if (!this.graph.containsElement(source)
                 || !this.graph.containsElement(target)) {
                 throw new UnsupportedOperationException(
                     "Adding edge only possible between existing nodes.");
             }
-            BinaryEdge result = DefaultEdge.createEdge(source, label, target);
+            Edge result = DefaultEdge.createEdge(source, label, target);
             this.graph.addEdge(result);
             return result;
         }

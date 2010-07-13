@@ -18,7 +18,7 @@ package groove.lts;
 
 import groove.control.ControlState;
 import groove.control.ControlTransition;
-import groove.graph.AbstractBinaryEdge;
+import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -36,7 +36,7 @@ import groove.trans.RuleMatch;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultGraphTransition extends
-        AbstractBinaryEdge<GraphState,Label,GraphState> implements
+        AbstractEdge<GraphState,Label,GraphState> implements
         GraphTransitionStub, GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between

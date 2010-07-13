@@ -16,7 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -51,7 +50,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      *         edge.source(), target() == edge.target()
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code>
      */
-    GraphJEdge(GraphJModel jModel, BinaryEdge edge) {
+    GraphJEdge(GraphJModel jModel, Edge edge) {
         this.jModel = jModel;
         this.source = edge.end(Edge.SOURCE_INDEX);
         this.target = edge.end(Edge.TARGET_INDEX);
@@ -286,7 +285,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      *          <tt>edge.target() == getTargetNode()</tt>
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
-    public boolean addEdge(BinaryEdge edge) {
+    public boolean addEdge(Edge edge) {
         boolean thisIsRegExpr = getEdge().label() instanceof RegExprLabel;
         boolean edgeIsRegExpr = edge.label() instanceof RegExprLabel;
         boolean result = (thisIsRegExpr == edgeIsRegExpr);

@@ -190,7 +190,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         List<Map<Label,DefaultEdgeSet>> result =
             new ArrayList<Map<Label,DefaultEdgeSet>>();
         result.add(null);
-        for (int i = 0; i <= AbstractEdge.getMaxEndCount(); i++) {
+        for (int i = 0; i <= Edge.END_COUNT; i++) {
             result.add(new LinkedHashMap<Label,DefaultEdgeSet>());
         }
         for (DefaultEdge edge : edgeSet()) {

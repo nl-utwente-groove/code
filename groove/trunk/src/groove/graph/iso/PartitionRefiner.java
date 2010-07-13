@@ -22,7 +22,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
@@ -320,7 +319,7 @@ public class PartitionRefiner implements CertificateStrategy {
         assert sourceCert != null : "Edge source of " + edge + " not found in "
             + this.otherNodeCertMap + "; so not in the node set "
             + this.graph.nodeSet() + " of " + this.graph;
-        if (edge instanceof UnaryEdge || source == edge.opposite()) {
+        if (source == edge.opposite()) {
             Edge1Certificate edge1Cert = new Edge1Certificate(edge, sourceCert);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
                 edge1Cert;

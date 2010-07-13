@@ -93,7 +93,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      *         labelled <tt>label</tt>
      * @see Graph#addEdge(Edge)
      */
-    BinaryEdge addEdge(Node source, Label label, Node target);
+    Edge addEdge(Node source, Label label, Node target);
 
     /**
      * Adds an edge to the graph, between given nodes and with a given label,

@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
@@ -341,28 +340,24 @@ public class GraphSearchPlanFactory {
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
             } else if (label.isNodeType()) {
-                return new NodeTypeSearchItem((BinaryEdge) edge,
-                    this.labelStore);
+                return new NodeTypeSearchItem(edge, this.labelStore);
             } else if (RegExprLabel.getWildcardId(label) != null) {
-                return new VarEdgeSearchItem((BinaryEdge) edge);
+                return new VarEdgeSearchItem(edge);
             } else if (RegExprLabel.isWildcard(label)) {
-                return new WildcardEdgeSearchItem((BinaryEdge) edge);
+                return new WildcardEdgeSearchItem(edge);
             } else if (RegExprLabel.isAtom(label)) {
                 DefaultEdge defaultEdge =
                     DefaultEdge.createEdge(edge.source(),
                         RegExprLabel.getAtomText(label), edge.opposite());
                 return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
-                return new RegExprEdgeSearchItem((BinaryEdge) edge);
+                return new RegExprEdgeSearchItem(edge);
             } else if (edge instanceof OperatorEdge) {
                 return new OperatorEdgeSearchItem((OperatorEdge) edge);
             } else if (edge instanceof ArgumentEdge) {
                 return null;
-            } else if (edge instanceof BinaryEdge) {
-                return new Edge2SearchItem((BinaryEdge) edge);
             } else {
-                throw new IllegalArgumentException(String.format(
-                    "Edge %s cannot be matched", edge));
+                return new Edge2SearchItem(edge);
             }
             return null;
         }

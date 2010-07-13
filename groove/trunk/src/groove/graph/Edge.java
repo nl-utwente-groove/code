@@ -24,17 +24,6 @@ package groove.graph;
  */
 public interface Edge extends Element {
     /**
-     * The index (in the edge ends) of the edge source.
-     * @see #source()
-     */
-    int SOURCE_INDEX = 0;
-    /**
-     * The endpoint index of the target node. Note that not every composite
-     * element has a target.
-     */
-    int TARGET_INDEX = 1;
-
-    /**
      * Yields the endpoints of this edge, i.e., the graph nodes that the edge
      * depends on. The ordering of the ends is fixed for each type of graph
      * element; in particular, the source node always comes first (as determined
@@ -108,9 +97,31 @@ public interface Edge extends Element {
     public Node opposite();
 
     /**
+     * Returns the target node of this edge. The target node has index
+     * {@link #TARGET_INDEX}.
+     * @return the target node of this edge
+     * @see #TARGET_INDEX
+     * @see #end(int)
+     * @ensure <tt>result != null && result == ends(TARGET_INDEX)</tt>
+     */
+    public Node target();
+
+    /**
      * Returns the label of this edge. The label can never be <tt>null</tt>.
      * @return the label of this edge
      * @ensure <tt>result != null</tt>
      */
     public Label label();
+
+    /**
+     * The index (in the edge ends) of the edge source.
+     * @see #source()
+     */
+    int SOURCE_INDEX = 0;
+    /**
+     * The endpoint index of the target node.
+     */
+    int TARGET_INDEX = 1;
+    /** The number of ends of a binary edge. */
+    static public final int END_COUNT = 2;
 }

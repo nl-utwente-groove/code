@@ -16,10 +16,10 @@
  */
 package groove.test;
 
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.Node;
 
 import java.util.HashSet;
@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 @SuppressWarnings("all")
 public class BinaryEdgeTest extends TestCase {
     protected Node n1, n2;
-    protected BinaryEdge e;
+    protected Edge e;
 
     public BinaryEdgeTest(String name) {
         super(name);
@@ -53,7 +53,7 @@ public class BinaryEdgeTest extends TestCase {
     }
 
     public void testCreateAndCompare() {
-        BinaryEdge e2 = DefaultEdge.createEdge(this.n1, "a", this.n2);
+        Edge e2 = DefaultEdge.createEdge(this.n1, "a", this.n2);
 
         assertEquals(this.e, e2);
         assertEquals(e2, this.e);
@@ -64,7 +64,7 @@ public class BinaryEdgeTest extends TestCase {
     }
 
     public void testCopyAndCompare() {
-        BinaryEdge e2 =
+        Edge e2 =
             DefaultEdge.createEdge(this.e.source(), this.e.label(),
                 this.e.target());
 
@@ -73,13 +73,13 @@ public class BinaryEdgeTest extends TestCase {
     }
 
     public void testHashSetEquals() {
-        BinaryEdge e2 = DefaultEdge.createEdge(this.n1, "a", this.n2);
+        Edge e2 = DefaultEdge.createEdge(this.n1, "a", this.n2);
 
-        Set<BinaryEdge> s1 = new HashSet<BinaryEdge>();
+        Set<Edge> s1 = new HashSet<Edge>();
         s1.add(this.e);
         assertTrue(s1.contains(e2));
 
-        Set<BinaryEdge> s2 = new HashSet<BinaryEdge>();
+        Set<Edge> s2 = new HashSet<Edge>();
         s2.add(e2);
         assertEquals(s1, s2);
     }

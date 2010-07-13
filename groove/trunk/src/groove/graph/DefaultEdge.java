@@ -26,7 +26,7 @@ import groove.util.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
-public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
+public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
 
     /**
      * Constructs a new edge on the basis of a given source, label and target.

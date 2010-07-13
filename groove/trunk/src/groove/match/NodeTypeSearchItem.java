@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -43,7 +42,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * @param edge the edge to be matched
      * @param labelStore label store containing the subtypes of the node type
      */
-    public NodeTypeSearchItem(BinaryEdge edge, LabelStore labelStore) {
+    public NodeTypeSearchItem(Edge edge, LabelStore labelStore) {
         this.edge = edge;
         this.source = edge.source();
         this.label = edge.label();
@@ -76,7 +75,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * Returns the edge for which this item tests.
      */
-    public BinaryEdge getEdge() {
+    public Edge getEdge() {
         return this.edge;
     }
 
@@ -164,7 +163,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * The (node type) edge for which this search item is to find an image.
      */
-    final BinaryEdge edge;
+    final Edge edge;
     /**
      * The source end of {@link #edge}, separately stored for efficiency.
      */
@@ -340,7 +339,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         boolean setImage(Edge image) {
-            assert image instanceof BinaryEdge;
             assert image.opposite() == image.source();
             if (this.sourceFind == null) {
                 if (!this.search.putNode(this.sourceIx, image.source())) {

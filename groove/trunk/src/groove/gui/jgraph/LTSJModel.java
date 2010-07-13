@@ -25,7 +25,6 @@ import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -158,7 +157,7 @@ public class LTSJModel extends GraphJModel {
      * This implementation returns a {@link LTSJModel.TransitionJEdge}.
      */
     @Override
-    protected TransitionJEdge createJEdge(BinaryEdge edge) {
+    protected TransitionJEdge createJEdge(Edge edge) {
         return new TransitionJEdge(edge);
     }
 
@@ -337,7 +336,7 @@ public class LTSJModel extends GraphJModel {
          * Creates a new instance from a given edge (required to be a
          * {@link GraphTransition}).
          */
-        TransitionJEdge(BinaryEdge edge) {
+        TransitionJEdge(Edge edge) {
             super(LTSJModel.this, edge);
         }
 
