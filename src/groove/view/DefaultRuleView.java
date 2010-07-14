@@ -1439,7 +1439,8 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // check typing
-            errors.addAll(checkTyping(this.typableNodes, this.typableEdges));
+            errors.addAll(checkTyping(this.typableNodes, this.typableEdges,
+                this.parentTypeMap));
             // the resulting rule
             if (this.index.isExistential()) {
                 result =
@@ -1451,6 +1452,23 @@ public class DefaultRuleView implements RuleView {
                         this.index.isPositive());
             }
             // add the nacs to the rule
+            // first add parent type edges for NAC nodes
+            Map<Node,Set<Label>> parentTypeMap =
+                new HashMap<Node,Set<Label>>(this.parentTypeMap);
+            for (Edge typeEdge : this.lhsMap.edgeMap().values()) {
+                if (typeEdge.label().isNodeType()) {
+                    // add the type to the parent types
+                    Set<Label> parentTypes =
+                        parentTypeMap.get(typeEdge.source());
+                    // copy rather than share the set
+                    if (parentTypes == null) {
+                        parentTypes = new HashSet<Label>();
+                    } else {
+                        parentTypes = new HashSet<Label>(parentTypes);
+                    }
+                    parentTypeMap.put(typeEdge.source(), parentTypes);
+                }
+            }
             for (Pair<Set<Node>,Set<Edge>> nacPair : AbstractGraph.getConnectedSets(
                 this.nacNodeSet, this.nacEdgeSet)) {
                 Set<Node> nacNodes = nacPair.first();
@@ -1463,15 +1481,9 @@ public class DefaultRuleView implements RuleView {
                         typableNacNodes.add(nacEdgeEnd);
                     }
                 }
-                // now add type edges for NAC nodes
                 Set<Edge> typableNacEdges = new HashSet<Edge>(nacEdges);
-                for (Edge typeEdge : this.lhsMap.edgeMap().values()) {
-                    if (typeEdge.label().isNodeType()
-                        && typableNacNodes.contains(typeEdge.source())) {
-                        typableNacEdges.add(typeEdge);
-                    }
-                }
-                errors.addAll(checkTyping(typableNacNodes, typableNacEdges));
+                errors.addAll(checkTyping(typableNacNodes, typableNacEdges,
+                    parentTypeMap));
                 // construct the NAC itself
                 result.addSubCondition(computeNac(this.lhs, nacNodes, nacEdges));
             }
@@ -1484,15 +1496,14 @@ public class DefaultRuleView implements RuleView {
 
         /** Checks the type of a graph consisting of a given set of nodes and edges. */
         private Collection<FormatError> checkTyping(Collection<Node> nodeSet,
-                Collection<Edge> edgeSet) {
+                Collection<Edge> edgeSet, Map<Node,Set<Label>> parentTypeMap) {
             Collection<FormatError> result = Collections.emptySet();
             if (DefaultRuleView.this.type != null) {
                 Graph graph = createGraph();
                 graph.addNodeSet(nodeSet);
                 graph.addEdgeSet(edgeSet);
                 result =
-                    DefaultRuleView.this.type.checkTyping(graph,
-                        this.parentTypeMap);
+                    DefaultRuleView.this.type.checkTyping(graph, parentTypeMap);
             }
             return result;
         }
