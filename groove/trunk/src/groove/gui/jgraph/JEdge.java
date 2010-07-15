@@ -125,7 +125,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      */
     public String getToolTipText() {
         return HTML_TAG.on(getEdgeDescription()).toString(); // +
-                                                                // getLabelDescription());
+        // getLabelDescription());
     }
 
     /**

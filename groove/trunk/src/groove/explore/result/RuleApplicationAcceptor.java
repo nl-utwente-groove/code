@@ -26,23 +26,23 @@ import groove.trans.Rule;
  * The invariant is defined by the application of a given rule.
  * @author Eduardo Zambon
  */
-public class RuleApplicationAcceptor extends ConditionalRuleAcceptor {
+public class RuleApplicationAcceptor extends OldConditionalAcceptor<Rule> {
     /**
      * Creates an instance with a default {@link Result}.
      */
     public RuleApplicationAcceptor() {
         this(null, new Result());
     }
-    
+
     /**
      * Constructs a new instance with a given condition and a default
      * {@link Result}.
      * @param condition the condition to be used; may be <code>null</code>.
      */
-    public RuleApplicationAcceptor(ExploreCondition<Rule> condition) {
+    public RuleApplicationAcceptor(OldExploreCondition<Rule> condition) {
         this(condition, new Result());
     }
-    
+
     /**
      * Constructs a new instance with a given Result.
      */
@@ -54,7 +54,7 @@ public class RuleApplicationAcceptor extends ConditionalRuleAcceptor {
      * Constructs a new instance with a given condition and Result.
      * @param condition the condition to be used; may be <code>null</code>.
      */
-    public RuleApplicationAcceptor(ExploreCondition<Rule> condition,
+    public RuleApplicationAcceptor(OldExploreCondition<Rule> condition,
             Result result) {
         super(condition, result);
     }
@@ -67,12 +67,12 @@ public class RuleApplicationAcceptor extends ConditionalRuleAcceptor {
     public void addUpdate(GraphShape graph, Edge edge) {
         GraphTransition transition = (GraphTransition) edge;
         IsRuleApplicableCondition condition =
-                            (IsRuleApplicableCondition) this.getCondition();
+            (IsRuleApplicableCondition) this.getCondition();
         if (condition.isSatisfied(transition)) {
             this.getResult().add(transition.target());
         }
     }
-        
+
     /** This implementation returns an {@link RuleApplicationAcceptor}. */
     @Override
     public Acceptor newInstance() {

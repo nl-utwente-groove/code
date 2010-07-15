@@ -19,15 +19,13 @@ package groove.explore.result;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 
 /**
  * Condition satisfied when a rule is applicable.
  * @author Iovka Boneva
  * 
  */
-public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
+public class IsRuleApplicableCondition extends OldExploreCondition<Rule> {
 
     /**
      * Basic constructor. The fields must be set by additional method calls.
@@ -35,7 +33,7 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
     public IsRuleApplicableCondition() {
         // empty
     }
-    
+
     /**
      * Complete constructor with all parameters of the condition.
      * @param condition the rule to be checked
@@ -45,7 +43,7 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
         this.condition = condition;
         this.negated = negated;
     }
-    
+
     @Override
     public boolean isSatisfied(GraphState state) {
         boolean result = this.condition.hasMatch(state.getGraph());
@@ -60,27 +58,5 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
      */
     public boolean isSatisfied(GraphTransition transition) {
         return transition.getEvent().getRule().equals(this.condition);
-    }
-    
-    /**
-     * Updates the condition when the grammar changes, by replacing the
-     * stored rule with one from the new grammar with the same name.
-     * Note that only enabled rules (see toGrammar) are checked. 
-     * @param grammar - the new grammar
-     * @return true - the acceptor is still valid after the grammar update
-     *         false - the acceptor is no longer valid after the update
-     */ 
-    public boolean respondToGrammarUpdate(StoredGrammarView grammar) {
-        try {
-            Rule rule = grammar.toGrammar().getRule(this.condition.getName());
-            if (rule == null)
-                return false;
-            else {
-                this.condition = rule;
-                return true;
-            }
-        } catch (FormatException e) {
-            return false;
-        }
     }
 }

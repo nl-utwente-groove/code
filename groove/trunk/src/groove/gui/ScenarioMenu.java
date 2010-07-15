@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.explore.ConditionalScenario;
 import groove.explore.Scenario;
-import groove.explore.result.ExploreCondition;
+import groove.explore.result.OldExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -223,7 +223,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
             Action generateAction = entry.getValue();
             if (scenario instanceof ConditionalScenario) {
                 if (this.simulator.getCurrentRule() != null) {
-                    ExploreCondition<Rule> explCond =
+                    OldExploreCondition<Rule> explCond =
                         new IsRuleApplicableCondition();
                     String ruleName = this.simulator.getCurrentRule().getName();
                     explCond.setCondition(gts.getGrammar().getRule(ruleName));
@@ -259,7 +259,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 Scenario scenario = entry.getKey();
                 if (scenario instanceof ConditionalScenario) {
                     Action generateAction = entry.getValue();
-                    ExploreCondition<Rule> explCond =
+                    OldExploreCondition<Rule> explCond =
                         new IsRuleApplicableCondition();
                     explCond.setCondition(gts.getGrammar().getRule(name));
                     ((ConditionalScenario<Rule>) scenario).setCondition(
