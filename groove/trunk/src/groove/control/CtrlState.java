@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -44,7 +44,6 @@ public class CtrlState implements Node, Location {
      * @param parent
      */
     public CtrlState(ControlShape parent) {
-        this.lambdaTargets = new HashSet<CtrlState>();
         this.stateNumber = Counter.inc();
     }
 
@@ -60,6 +59,14 @@ public class CtrlState implements Node, Location {
         return this.stateNumber;
     }
 
+    /** Internal number to identify the state. */
+    private final int stateNumber;
+
+    @Override
+    public String toString() {
+        return (hasSuccess() ? "S" : "q") + this.stateNumber;
+    }
+
     /**
      * Add an outgoing transition to this control state.
      */
@@ -67,10 +74,25 @@ public class CtrlState implements Node, Location {
         this.outTransitions.add(transition);
     }
 
-    @Override
-    public String toString() {
-        return (isSuccess() ? "S" : "q") + this.stateNumber;
+    /** Map from rules to sets of target states. */
+    private final Set<CtrlTransition> outTransitions =
+        new HashSet<CtrlTransition>();
+
+    /**
+     * Returns the set of bound variables in this state.
+     */
+    public Collection<String> getBoundVars() {
+        return this.boundVars;
     }
+
+    /**
+     * Sets the bound variables of this state to the elements of a given collection.
+     */
+    public void setBoundVars(Collection<String> variables) {
+        this.boundVars = new LinkedHashSet<String>(variables);
+    }
+
+    private Collection<String> boundVars = new ArrayList<String>();
 
     /**
      * Sets this state to be a conditional success state
@@ -96,102 +118,15 @@ public class CtrlState implements Node, Location {
         return this.successConditions;
     }
 
-    /**
-     * Returns all control states reachable through a single lambda transition.
-     */
-    public HashSet<CtrlState> lambdaTargets() {
-        return this.lambdaTargets;
-    }
-
-    /**
-     * Marks a variable as active (ready to use as input)
-     * @param varName the name of the variable
-     */
-    public void initializeVariable(String varName) {
-        if (!this.initializedVariables.contains(varName)) {
-            this.initializedVariables.add(varName);
-        }
-    }
-
-    /**
-     * @return a set of initialized variables
-     */
-    public List<String> getInitializedVariables() {
-        return this.initializedVariables;
-    }
-
-    /**
-     * @param varName the variable to check
-     * @return whether varName is initialized
-     */
-    public boolean isInitialized(String varName) {
-        return this.initializedVariables.contains(varName);
-    }
-
-    /**
-     * @param variables
-     */
-    public void initializeVariables(List<String> variables) {
-        for (String var : variables) {
-            this.initializeVariable(var);
-        }
-    }
-
-    /**
-     * @param variables
-     */
-    public void setInitializedVariables(List<String> variables) {
-        this.initializedVariables.clear();
-        initializeVariables(variables);
-    }
-
-    /**
-     * Returns the name of the variable at the given position in the variables list
-     * @param index the position of the parameter to return
-     * @return the name of the variable at the given position in the variables list
-     */
-    public String getVariableName(int index) {
-        return this.initializedVariables.get(index);
-    }
-
-    /**
-     * Returns the index of the given variable in this ControlState's list
-     * of variables
-     * @param variable
-     * @return the index of the given variable in this ControlState's list 
-     * of variables
-     */
-    public int getVariablePosition(String variable) {
-        return this.initializedVariables.indexOf(variable);
-    }
-
-    /** Internal number to identify the state. */
-    private final int stateNumber;
-    /** Contains the targets of outgoing lambda-transitions of this state. */
-    private final HashSet<CtrlState> lambdaTargets;
-    /** Map from rules to sets of target states. */
-    private final Set<CtrlTransition> outTransitions =
-        new HashSet<CtrlTransition>();
-    private final List<String> initializedVariables = new ArrayList<String>();
-
-    /** Sets of rules which, if all rules in an element of this set fail, mean
-     * this state is a success state.
-     */
-    private Set<Collection<String>> successConditions;
-
-    @Override
-    public String getName() {
-        return this.toString();
-    }
-
-    public boolean isSuccess() {
+    /** Indicates if this state has a success condition. */
+    public boolean hasSuccess() {
         return this.successConditions.contains(Collections.emptySet());
     }
 
     @Override
     public boolean isSuccess(Set<Rule> rules) {
         // TODO: update this to include the parameters
-        if (this.isSuccess()) {
+        if (this.hasSuccess()) {
             return true;
         } else {
             if (this.successConditions != null) {
@@ -203,6 +138,16 @@ public class CtrlState implements Node, Location {
             }
             return false;
         }
+    }
+
+    /** Sets of rules which, if all rules in an element of this set fail, mean
+     * this state is a success state.
+     */
+    private Set<Collection<String>> successConditions;
+
+    @Override
+    public String getName() {
+        return this.toString();
     }
 
     @Override
