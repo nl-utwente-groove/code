@@ -417,7 +417,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns the number of visible (i.e., numbered) parameters of the rule.
      */
     public int getVisibleParCount() {
-        return this.inPars.size() + this.outPars.size();
+        return (this.inPars == null ? 0 : this.inPars.size())
+            + (this.outPars == null ? 0 : this.outPars.size());
     }
 
     /** Returns the ordered list of input parameters. */
