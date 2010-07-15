@@ -31,7 +31,7 @@ import groove.explore.prettyparse.POptional;
 import groove.explore.prettyparse.PSeparated;
 import groove.explore.prettyparse.PSequence;
 import groove.explore.result.EdgeBoundCondition;
-import groove.explore.result.ExploreCondition;
+import groove.explore.result.OldExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
 import groove.explore.strategy.BFSStrategy;
@@ -156,7 +156,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
 
             @Override
             public Strategy create(GTS gts, Integer bound) {
-                ExploreCondition<Integer> condition = new NodeBoundCondition();
+                OldExploreCondition<Integer> condition = new NodeBoundCondition();
                 condition.setCondition(bound);
                 ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
                 strategy.setExploreCondition(condition);
@@ -178,7 +178,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
 
             @Override
             public Strategy create(GTS gts, Map<Label,Integer> bounds) {
-                ExploreCondition<Map<Label,Integer>> condition =
+                OldExploreCondition<Map<Label,Integer>> condition =
                     new EdgeBoundCondition();
                 condition.setCondition(bounds);
                 ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();

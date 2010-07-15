@@ -17,8 +17,8 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
-import groove.explore.result.ConditionalAcceptor;
-import groove.explore.result.ExploreCondition;
+import groove.explore.result.OldConditionalAcceptor;
+import groove.explore.result.OldExploreCondition;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Boundary;
@@ -74,7 +74,7 @@ public class GeneratorScenarioFactory {
      */
     public static <C> ConditionalScenario<C> getConditionalScenario(
             final Strategy strategy, final Class<?> type,
-            final ConditionalAcceptor<C> acceptor, final String description,
+            final OldConditionalAcceptor<C> acceptor, final String description,
             final String name) {
         return new ConditionalScenario<C>(strategy, acceptor, name,
             description, type);
@@ -95,7 +95,7 @@ public class GeneratorScenarioFactory {
         return new ConditionalScenario<C>(strategy, new FinalStateAcceptor(),
             name, description, type) {
             @Override
-            public void setCondition(ExploreCondition<C> explCond, String name) {
+            public void setCondition(OldExploreCondition<C> explCond, String name) {
                 super.setCondition(explCond, name);
                 assert type.isAssignableFrom(explCond.getConditionType()) : "Incompatible types: "
                     + explCond.getConditionType() + " and " + type;

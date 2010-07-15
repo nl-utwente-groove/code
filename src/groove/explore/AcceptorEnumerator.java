@@ -17,22 +17,25 @@
 package groove.explore;
 
 import groove.explore.encode.EncodedEnabledRule;
+import groove.explore.encode.EncodedRuleFormula;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.TemplateList;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.prettyparse.PAll;
 import groove.explore.prettyparse.PIdentifier;
 import groove.explore.prettyparse.POptional;
 import groove.explore.prettyparse.PSequence;
 import groove.explore.result.Acceptor;
 import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.FinalStateAcceptor;
-import groove.explore.result.InvariantViolatedAcceptor;
-import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NoStateAcceptor;
-import groove.explore.result.Result;
-import groove.explore.result.RuleApplicationAcceptor;
+import groove.explore.result.RuleApplicableCondition;
+import groove.explore.result.RuleAppliedCondition;
+import groove.explore.result.RuleFormula;
+import groove.explore.result.StateAcceptor;
+import groove.explore.result.TransitionAcceptor;
 import groove.lts.GTS;
 import groove.trans.Rule;
 
@@ -87,9 +90,8 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
             @Override
             public Acceptor create(GTS gts, Rule rule, Boolean mode) {
-                IsRuleApplicableCondition condition =
-                    new IsRuleApplicableCondition(rule, mode);
-                return new InvariantViolatedAcceptor(condition, new Result());
+                return new StateAcceptor(mode,
+                    new RuleApplicableCondition(rule));
             }
         });
 
@@ -104,9 +106,21 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
             @Override
             public Acceptor create(GTS gts, Rule rule) {
-                IsRuleApplicableCondition condition =
-                    new IsRuleApplicableCondition(rule, false);
-                return new RuleApplicationAcceptor(condition);
+                return new TransitionAcceptor(new RuleAppliedCondition(rule));
+            }
+        });
+
+        addTemplate(new Template1<Acceptor,RuleFormula>(
+            "formula",
+            "Rule Formula",
+            "This acceptor is a variant of Check Invariant that succeeds when a"
+                + " state is reached in which an arbitrary rule <i>formula</i> "
+                + "is applicable.", new PAll("formula"), "formula",
+            new EncodedRuleFormula()) {
+
+            @Override
+            public Acceptor create(GTS gts, RuleFormula formula) {
+                return new StateAcceptor(formula);
             }
         });
 

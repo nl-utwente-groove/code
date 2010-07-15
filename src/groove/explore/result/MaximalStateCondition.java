@@ -11,7 +11,7 @@ import groove.lts.GraphTransition;
  * @version $Revision $
  */
 @Deprecated
-public class MaximalStateCondition extends ExploreCondition<GraphState> {
+public class MaximalStateCondition extends OldExploreCondition<GraphState> {
     
     @Override
     public boolean isSatisfied(GraphState state) {

@@ -32,7 +32,7 @@ import groove.lts.GraphState;
  * 
  * @author Iovka Boneva
  */
-public class EdgeBoundCondition extends ExploreCondition<Map<Label,Integer>> {
+public class EdgeBoundCondition extends OldExploreCondition<Map<Label,Integer>> {
 
     @Override
     public boolean isSatisfied(GraphState state) {

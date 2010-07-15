@@ -27,7 +27,7 @@ import groove.lts.GraphState;
  * @author Iovka Boneva
  * 
  */
-public class NodeBoundCondition extends ExploreCondition<Integer> {
+public class NodeBoundCondition extends OldExploreCondition<Integer> {
 
     @Override
     public boolean isSatisfied(GraphState state) {

@@ -27,7 +27,7 @@ import groove.util.Property;
  * 
  * @param <C> Type of the object defining the condition.
  */
-public abstract class ExploreCondition<C> extends Property<GraphState> {
+public abstract class OldExploreCondition<C> extends Property<GraphState> {
     /**
      * The parameter determines whether the condition is to be checked
      * positively or negatively.

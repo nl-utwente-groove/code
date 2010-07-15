@@ -47,6 +47,15 @@ public class StringConsumer {
     }
 
     /**
+     * Consumes the entire buffer.
+     */
+    public boolean consumeAll() {
+        this.lastConsumed = this.text;
+        this.text = "";
+        return true;
+    }
+
+    /**
      * Attempts to consume a given literal at the beginning of the text.
      * The returned <code>boolean</code> indicates if the literal was found (in
      * which case it is removed from text), or not (in which case the text is

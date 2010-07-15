@@ -19,22 +19,21 @@ package groove.explore.result;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GraphState;
-import groove.trans.Rule;
 
 /**
  * Accepts states that violate an (possible negated) invariant condition on
- * states. The invariant is defined by the applicability of a given rule.
+ * states. The invariant is defined by a <code>ConditionalAcceptor</code>.
  * @author Iovka Boneva
  */
-public class InvariantViolatedAcceptor extends ConditionalRuleAcceptor {
-    
+public class InvariantViolatedAcceptor<A> extends OldConditionalAcceptor<A> {
+
     /**
      * Creates an instance with a default {@link Result}.
      */
     public InvariantViolatedAcceptor() {
         this(null, new Result());
     }
-    
+
     /**
      * Constructs a new instance with a given Result.
      */
@@ -46,7 +45,7 @@ public class InvariantViolatedAcceptor extends ConditionalRuleAcceptor {
      * Constructs a new instance with a given condition and Result.
      * @param condition the condition to be used; may be <code>null</code>.
      */
-    public InvariantViolatedAcceptor(ExploreCondition<Rule> condition,
+    public InvariantViolatedAcceptor(OldExploreCondition<A> condition,
             Result result) {
         super(condition, result);
     }
@@ -65,7 +64,7 @@ public class InvariantViolatedAcceptor extends ConditionalRuleAcceptor {
     /** This implementation returns an {@link InvariantViolatedAcceptor}. */
     @Override
     public Acceptor newInstance() {
-        return new InvariantViolatedAcceptor(getCondition(),
+        return new InvariantViolatedAcceptor<A>(getCondition(),
             getResult().newInstance());
     }
 }
