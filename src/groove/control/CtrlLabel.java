@@ -18,55 +18,54 @@ package groove.control;
 
 import groove.graph.AbstractLabel;
 import groove.trans.Rule;
-import groove.util.Fixable;
 import groove.util.Groove;
-import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlLabel extends AbstractLabel implements Fixable {
+public class CtrlLabel extends AbstractLabel {
     /** Constructs a dummy label. */
     private CtrlLabel() {
         this.rule = null;
-        try {
-            setFixed();
-        } catch (FormatException e) {
-            // can't happen
-        }
+        this.parameters = null;
+        this.guard = null;
+        this.ruleGuard = null;
     }
 
     /** Constructs a control label from a (non-{@code null}) rule. */
-    public CtrlLabel(Rule rule) {
+    public CtrlLabel(Rule rule, List<CtrlPar> pars, Collection<Rule> ruleGuard) {
         this.rule = rule;
-    }
-
-    /** Sets the guard of this label to a collection of failure rules. */
-    public void setGuard(Collection<Rule> guard) {
-        testFixed(false);
-        this.guard.addAll(guard);
-    }
-
-    /** Sets the parameters of this label to a list of control parameters. */
-    public void setParameters(List<CtrlPar> parameters) {
-        testFixed(false);
-        this.parameters = new ArrayList<CtrlPar>(parameters);
+        this.parameters =
+            pars == null ? Collections.<CtrlPar>emptyList()
+                    : new ArrayList<CtrlPar>(pars);
+        this.ruleGuard =
+            ruleGuard == null ? Collections.<Rule>emptySet()
+                    : new LinkedHashSet<Rule>(ruleGuard);
+        this.guard = new LinkedHashSet<String>();
+        for (Rule guardRule : ruleGuard) {
+            this.guard.add(guardRule.getName().text());
+        }
     }
 
     @Override
     public String text() {
-        testFixed(true);
         if (this.rule == null) {
             return "";
         } else {
             StringBuilder result =
                 new StringBuilder(this.rule.getName().toString());
+            if (!this.guard.isEmpty()) {
+                result.insert(0, Groove.toString(this.guard.toArray(), "[",
+                    "]", ","));
+            }
             if (!this.parameters.isEmpty()) {
                 result.insert(0, Groove.toString(this.parameters.toArray(),
                     "(", ")", ","));
@@ -75,41 +74,34 @@ public class CtrlLabel extends AbstractLabel implements Fixable {
         return null;
     }
 
-    @Override
-    public boolean isFixed() {
-        return this.fixed;
+    /** Returns the rule wrapped into this label. */
+    public final Rule getRule() {
+        return this.rule;
     }
 
-    @Override
-    public void setFixed() throws FormatException {
-        testFixed(false);
-        if (this.guard == null) {
-            this.guard = Collections.emptyList();
-        }
-        if (this.parameters == null) {
-            this.parameters = Collections.emptyList();
-        }
-        this.fixed = true;
+    /** Returns the list of parameters wrapped into this label. */
+    public final List<CtrlPar> getParameters() {
+        return this.parameters;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != this.fixed) {
-            throw new IllegalStateException(String.format(
-                "Illegal manipulation is %s control label", this.fixed
-                        ? "fixed" : "unfixed"));
-        }
+    /** Returns the set of failure rules names wrapped into this label. */
+    public final Set<String> getGuard() {
+        return this.guard;
     }
 
-    /** Flag storing whether the label has been fixed. */
-    private boolean fixed;
+    /** Returns the set of failure rules wrapped into this label. */
+    public final Set<Rule> getRuleGuard() {
+        return this.ruleGuard;
+    }
 
     /** The rule wrapped in this control label. */
     private final Rule rule;
-    /** Guard of this label, consisting of a list of failed rules. */
-    private List<Rule> guard;
-    /** Guard of this label, consisting of a list of failed rules. */
-    private List<CtrlPar> parameters;
+    /** Parameters of this label. */
+    private final List<CtrlPar> parameters;
+    /** Guard of this label, consisting of a list of failure rules. */
+    private final Set<String> guard;
+    /** Guard of this label, consisting of a list of failure rules. */
+    private final Set<Rule> ruleGuard;
 
     /** Dummy label, to be used as long as a real label cannot be constructed. */
     public final static CtrlLabel DUMMY_LABEL = new CtrlLabel();
