@@ -17,8 +17,8 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
-import groove.explore.result.OldConditionalAcceptor;
-import groove.explore.result.OldExploreCondition;
+import groove.explore.result.ConditionalAcceptor;
+import groove.explore.result.ExploreCondition;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -53,8 +53,8 @@ public class ConditionalScenario<C> extends DefaultScenario {
     @SuppressWarnings("unchecked")
     public void prepare(GTS gts, GraphState state) {
         super.prepare(gts, state);
-        if (getAcceptor() instanceof OldConditionalAcceptor) {
-            ((OldConditionalAcceptor<C>) getAcceptor()).setCondition(getCondition());
+        if (getAcceptor() instanceof ConditionalAcceptor) {
+            ((ConditionalAcceptor<C>) getAcceptor()).setCondition(getCondition());
         }
     }
 
@@ -64,13 +64,13 @@ public class ConditionalScenario<C> extends DefaultScenario {
      * @param name A short name for the condition, to be used for instance the
      *        name of the scenario.
      */
-    public void setCondition(OldExploreCondition<C> condition, String name) {
+    public void setCondition(ExploreCondition<C> condition, String name) {
         this.condition = condition;
         this.condName = name;
     }
 
     /** Returns the currently set exploration condition. */
-    protected OldExploreCondition<C> getCondition() {
+    protected ExploreCondition<C> getCondition() {
         return this.condition;
     }
 
@@ -79,7 +79,7 @@ public class ConditionalScenario<C> extends DefaultScenario {
         return this.type;
     }
 
-    private OldExploreCondition<C> condition;
+    private ExploreCondition<C> condition;
     private String condName = "";
     private final Class<?> type;
 }

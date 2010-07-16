@@ -16,7 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.result.OldExploreCondition;
+import groove.explore.result.ExploreCondition;
 
 /**
  * Breadth first exploration, by exploring only non explored states.
@@ -34,14 +34,14 @@ public class ConditionalBFSStrategy extends BFSStrategy implements
         return result;
     }
 
-    public void setExploreCondition(OldExploreCondition<?> condition) {
+    public void setExploreCondition(ExploreCondition<?> condition) {
         this.explCond = condition;
     }
 
-    private OldExploreCondition<?> getExplCond() {
+    private ExploreCondition<?> getExplCond() {
         return this.explCond;
     }
 
-    private OldExploreCondition<?> explCond;
+    private ExploreCondition<?> explCond;
 
 }

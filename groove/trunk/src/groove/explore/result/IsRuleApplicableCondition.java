@@ -25,7 +25,7 @@ import groove.trans.Rule;
  * @author Iovka Boneva
  * 
  */
-public class IsRuleApplicableCondition extends OldExploreCondition<Rule> {
+public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
 
     /**
      * Basic constructor. The fields must be set by additional method calls.

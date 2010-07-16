@@ -31,12 +31,10 @@ import groove.explore.result.Acceptor;
 import groove.explore.result.AnyStateAcceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.NoStateAcceptor;
-import groove.explore.result.RuleApplicableCondition;
-import groove.explore.result.RuleAppliedCondition;
-import groove.explore.result.RuleFormula;
-import groove.explore.result.StateAcceptor;
-import groove.explore.result.TransitionAcceptor;
+import groove.explore.result.Predicate;
+import groove.explore.result.PredicateAcceptor;
 import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.trans.Rule;
 
 /**
@@ -90,8 +88,11 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
             @Override
             public Acceptor create(GTS gts, Rule rule, Boolean mode) {
-                return new StateAcceptor(mode,
-                    new RuleApplicableCondition(rule));
+                Predicate<GraphState> P = new Predicate.RuleApplicable(rule);
+                if (!mode) {
+                    P = new Predicate.Not<GraphState>(P);
+                }
+                return new PredicateAcceptor(P);
             }
         });
 
@@ -106,11 +107,11 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
             @Override
             public Acceptor create(GTS gts, Rule rule) {
-                return new TransitionAcceptor(new RuleAppliedCondition(rule));
+                return new PredicateAcceptor(new Predicate.RuleApplied(rule));
             }
         });
 
-        addTemplate(new Template1<Acceptor,RuleFormula>(
+        addTemplate(new Template1<Acceptor,Predicate<GraphState>>(
             "formula",
             "Rule Formula",
             "This acceptor is a variant of Check Invariant that succeeds when a"
@@ -119,8 +120,8 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             new EncodedRuleFormula()) {
 
             @Override
-            public Acceptor create(GTS gts, RuleFormula formula) {
-                return new StateAcceptor(formula);
+            public Acceptor create(GTS gts, Predicate<GraphState> predicate) {
+                return new PredicateAcceptor(predicate);
             }
         });
 

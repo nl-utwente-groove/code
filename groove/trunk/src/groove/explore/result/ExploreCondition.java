@@ -27,7 +27,7 @@ import groove.util.Property;
  * 
  * @param <C> Type of the object defining the condition.
  */
-public abstract class OldExploreCondition<C> extends Property<GraphState> {
+public abstract class ExploreCondition<C> extends Property<GraphState> {
     /**
      * The parameter determines whether the condition is to be checked
      * positively or negatively.
@@ -48,7 +48,7 @@ public abstract class OldExploreCondition<C> extends Property<GraphState> {
     public void setCondition(C condition) {
         this.condition = condition;
     }
-   
+
     /**
      * Gets the condition.
      */
@@ -62,7 +62,7 @@ public abstract class OldExploreCondition<C> extends Property<GraphState> {
     public Class<?> getConditionType() {
         return this.condition.getClass();
     }
-    
+
     /** Indicates whether the condition is negated. */
     protected boolean negated;
     /** The condition. */
