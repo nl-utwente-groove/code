@@ -17,8 +17,8 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
-import groove.explore.result.OldConditionalAcceptor;
-import groove.explore.result.OldExploreCondition;
+import groove.explore.result.ConditionalAcceptor;
+import groove.explore.result.ExploreCondition;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
@@ -63,12 +63,12 @@ public class ScenarioFactory {
      *        the scenario.
      */
     public static <C> ConditionalScenario<C> getConditionalScenario(
-            final Strategy strategy, final OldConditionalAcceptor<C> acceptor,
+            final Strategy strategy, final ConditionalAcceptor<C> acceptor,
             final String description, final String name, final boolean negated) {
         return new ConditionalScenario<C>(strategy, acceptor, name,
             description, null) {
             @Override
-            public void setCondition(OldExploreCondition<C> condition, String name) {
+            public void setCondition(ExploreCondition<C> condition, String name) {
                 if (condition != null) {
                     condition.setNegated(negated);
                 }

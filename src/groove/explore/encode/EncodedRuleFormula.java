@@ -16,97 +16,90 @@
  */
 package groove.explore.encode;
 
-import groove.explore.result.RuleFormula;
+import groove.explore.result.Predicate;
 import groove.gui.Simulator;
 import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
 import groove.view.FormatException;
 
 /**
- * <!=========================================================================>
- * An EncodedEnabledRuleList describes an encoding of a list of enabled rules
- * by means of a comma separated String.
- * <!=========================================================================>
+ * An <code>EncodedRuleFormula</code> describes a predicate over graph states
+ * that is described by means of a rule formula. A rule formula is constructed
+ * out of rules with the logical operators <b>not</b>, <b>and</b>, <b>or</b>,
+ * and <b>implies</b>.
+ * 
+ * @see Predicate
  * @author Maarten de Mol
  */
-public class EncodedRuleFormula implements EncodedType<RuleFormula,String> {
+public class EncodedRuleFormula implements
+        EncodedType<Predicate<GraphState>,String> {
 
     // local information for parsing
     private String text;
     private int i;
     private int last_i;
+    private RuleSystem ruleSystem;
 
     @Override
-    public EncodedTypeEditor<RuleFormula,String> createEditor(
+    public EncodedTypeEditor<Predicate<GraphState>,String> createEditor(
             Simulator simulator) {
-        return new StringEditor<RuleFormula>(
-            "ruleName; !P; (P||Q); (P&&Q); (P->Q)", "", 30);
+        return new StringEditor<Predicate<GraphState>>(
+            "ruleName; !P; P||Q; P&&Q; P->Q", "", 30);
     }
 
     @Override
-    public RuleFormula parse(GTS gts, String source) throws FormatException {
-        this.text = source;
+    public Predicate<GraphState> parse(GTS gts, String text)
+        throws FormatException {
+        this.text = text;
         this.i = 0;
         this.last_i = this.text.length() - 1;
-        RuleFormula formula = parseFormula(gts.getGrammar().getRuleSystem());
+        this.ruleSystem = gts.getGrammar().getRuleSystem();
+        Predicate<GraphState> predicate = parseFormula();
+        this.ruleSystem = null; // erase local reference to rule system
         if (this.i <= this.last_i) {
-            throw new FormatException("Illegal input at end of formula.");
+            throw new FormatException("Unable to consume the entire input.");
         } else {
-            return formula;
+            return predicate;
         }
     }
 
-    private RuleFormula parseFormula(RuleSystem rs) throws FormatException {
-        if (this.i > this.last_i) {
-            throw new FormatException("Unexpected end of string.");
-        }
-        if (this.text.charAt(this.i) == '!') {
-            this.i++;
-            return RuleFormula.createNot(parseFormula(rs));
-        }
-        if (this.text.charAt(this.i) == '(') {
-            this.i++;
-            RuleFormula operand1 = parseFormula(rs);
-            if (this.i + 1 > this.last_i) {
-                throw new FormatException(
-                    "Unexpected end of string. Expected binary operator.");
-            }
-            skipSpaces();
-            String operator = this.text.substring(this.i, this.i + 2);
-            this.i = this.i + 2;
-            skipSpaces();
-            RuleFormula operand2 = parseFormula(rs);
-            if (this.i > this.last_i) {
-                throw new FormatException(
-                    "Unexpected end of string. Expected ).");
-            }
-            if (this.text.charAt(this.i) != ')') {
-                throw new FormatException("Expected ), got "
-                    + this.text.charAt(this.i) + ".");
-            }
-            this.i++;
-            if (operator.equals("&&")) {
-                return RuleFormula.createAnd(operand1, operand2);
-            } else if (operator.equals("||")) {
-                return RuleFormula.createOr(operand1, operand2);
-            } else if (operator.equals("->")) {
-                return RuleFormula.createImplies(operand1, operand2);
-            } else {
-                throw new FormatException(operator
-                    + " is not a valid operator.");
-            }
-        }
-        return parseRule(rs);
-    }
-
+    /**
+     * <---------------------------------------------------------------------->
+     * Auxiliary parsing method. Skips all spaces.
+     * <---------------------------------------------------------------------->
+     */
     private void skipSpaces() {
         while (this.i <= this.last_i && this.text.charAt(this.i) == ' ') {
             this.i++;
         }
     }
 
-    private RuleFormula parseRule(RuleSystem rs) throws FormatException {
+    /**
+      * <---------------------------------------------------------------------->
+      * Auxiliary parsing method. Parses a given literal.
+      * <---------------------------------------------------------------------->
+      */
+    private boolean parseLiteral(String literal) {
+        int upto_i = this.i + literal.length() - 1;
+        if (upto_i > this.last_i) {
+            return false;
+        }
+        if (this.text.substring(this.i, upto_i + 1).equals(literal)) {
+            this.i = upto_i + 1;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      * <---------------------------------------------------------------------->
+      * Auxiliary parsing method. Parses a rule name.
+      * <---------------------------------------------------------------------->
+      */
+    private Predicate<GraphState> parseRule() throws FormatException {
         int start_i = this.i;
         while (this.i <= this.last_i && this.text.charAt(this.i) != '('
             && this.text.charAt(this.i) != ')'
@@ -118,12 +111,64 @@ public class EncodedRuleFormula implements EncodedType<RuleFormula,String> {
             && this.text.charAt(this.i) != '!') {
             this.i++;
         }
+        if (this.i == start_i) {
+            throw new FormatException(
+                "Expected a rule name at character index " + this.i + " .");
+        }
         String ruleName = this.text.substring(start_i, this.i);
-        Rule rule = rs.getRule(ruleName);
+        Rule rule = this.ruleSystem.getRule(ruleName);
         if (rule == null) {
             throw new FormatException("'" + ruleName
                 + "' is not an enabled rule in the loaded grammar.");
         }
-        return RuleFormula.createBasic(rule);
+        return new Predicate.RuleApplicable(rule);
+    }
+
+    /**
+      * <---------------------------------------------------------------------->
+      * Main parsing method. Parses a formula as a whole.
+      * <---------------------------------------------------------------------->
+      */
+    private Predicate<GraphState> parseFormula() throws FormatException {
+        skipSpaces();
+
+        // compound formula
+        if (parseLiteral("(")) {
+            skipSpaces();
+            int bracket_open_index = this.i - 1;
+            Predicate<GraphState> predicate = parseFormula();
+            skipSpaces();
+            if (!parseLiteral(")")) {
+                throw new FormatException("Unable to find the closing bracket "
+                    + "for the open bracket at index " + bracket_open_index
+                    + ".");
+            }
+            return predicate;
+        }
+
+        // negated formula
+        if (parseLiteral("!")) {
+            skipSpaces();
+            Predicate<GraphState> predicate = parseFormula();
+            return new Predicate.Not<GraphState>(predicate);
+        }
+
+        // rule
+        Predicate<GraphState> P = parseRule();
+        skipSpaces();
+
+        // + <operator> formula
+        if (parseLiteral("&&")) {
+            Predicate<GraphState> Q = parseFormula();
+            return new Predicate.And<GraphState>(P, Q);
+        } else if (parseLiteral("||")) {
+            Predicate<GraphState> Q = parseFormula();
+            return new Predicate.Or<GraphState>(P, Q);
+        } else if (parseLiteral("->")) {
+            Predicate<GraphState> Q = parseFormula();
+            return new Predicate.Implies<GraphState>(P, Q);
+        } else {
+            return P;
+        }
     }
 }

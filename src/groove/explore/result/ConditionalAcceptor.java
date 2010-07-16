@@ -19,15 +19,15 @@ package groove.explore.result;
 /**
  * A graph state acceptor that can be fed with an external object that defines
  * the acceptance condition. The condition is given by an
- * {@link OldExploreCondition}.
+ * {@link ExploreCondition}.
  * 
  * @author Iovka Boneva
  * @param <C> The parameter type of the explore condition.
  * 
  */
-public abstract class OldConditionalAcceptor<C> extends Acceptor {
+public abstract class ConditionalAcceptor<C> extends Acceptor {
     /** Constructs a fresh acceptor without a set condition. */
-    public OldConditionalAcceptor() {
+    public ConditionalAcceptor() {
         this(null);
     }
 
@@ -35,9 +35,9 @@ public abstract class OldConditionalAcceptor<C> extends Acceptor {
      * Constructs a fresh acceptor with a given condition.
      * @param condition the condition to be used; if <code>null</code>, the
      *        condition must be set later using
-     *        {@link #setCondition(OldExploreCondition)}
+     *        {@link #setCondition(ExploreCondition)}
      */
-    public OldConditionalAcceptor(OldExploreCondition<C> condition) {
+    public ConditionalAcceptor(ExploreCondition<C> condition) {
         this(condition, null);
     }
 
@@ -45,9 +45,10 @@ public abstract class OldConditionalAcceptor<C> extends Acceptor {
      * Constructs a fresh acceptor with a given condition and Result.
      * @param condition the condition to be used; if <code>null</code>, the
      *        condition must be set later using
-     *        {@link #setCondition(OldExploreCondition)}
+     *        {@link #setCondition(ExploreCondition)}
      */
-    public OldConditionalAcceptor(OldExploreCondition<C> condition, Result result) {
+    public ConditionalAcceptor(ExploreCondition<C> condition,
+            Result result) {
         super(result);
         this.condition = condition;
     }
@@ -55,7 +56,7 @@ public abstract class OldConditionalAcceptor<C> extends Acceptor {
     /**
      * Sets the condition to be used by the acceptor.
      */
-    public void setCondition(OldExploreCondition<C> condition) {
+    public void setCondition(ExploreCondition<C> condition) {
         this.condition = condition;
     }
 
@@ -63,10 +64,10 @@ public abstract class OldConditionalAcceptor<C> extends Acceptor {
     public abstract Acceptor newInstance();
 
     /** The pre-set condition. */
-    public OldExploreCondition<C> getCondition() {
+    public ExploreCondition<C> getCondition() {
         return this.condition;
     }
 
     /** The condition. */
-    protected OldExploreCondition<C> condition;
+    protected ExploreCondition<C> condition;
 }

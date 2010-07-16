@@ -16,7 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.result.OldExploreCondition;
+import groove.explore.result.ExploreCondition;
 
 /**
  * To be extended by strategies that explore only portions of a GTS, defined by
@@ -41,6 +41,6 @@ public interface ConditionalStrategy extends Strategy {
      * exploring this state.
      * @param condition
      */
-    public void setExploreCondition(OldExploreCondition<?> condition);
+    public void setExploreCondition(ExploreCondition<?> condition);
 
 }

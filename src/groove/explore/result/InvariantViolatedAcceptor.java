@@ -25,7 +25,7 @@ import groove.lts.GraphState;
  * states. The invariant is defined by a <code>ConditionalAcceptor</code>.
  * @author Iovka Boneva
  */
-public class InvariantViolatedAcceptor<A> extends OldConditionalAcceptor<A> {
+public class InvariantViolatedAcceptor<A> extends ConditionalAcceptor<A> {
 
     /**
      * Creates an instance with a default {@link Result}.
@@ -45,7 +45,7 @@ public class InvariantViolatedAcceptor<A> extends OldConditionalAcceptor<A> {
      * Constructs a new instance with a given condition and Result.
      * @param condition the condition to be used; may be <code>null</code>.
      */
-    public InvariantViolatedAcceptor(OldExploreCondition<A> condition,
+    public InvariantViolatedAcceptor(ExploreCondition<A> condition,
             Result result) {
         super(condition, result);
     }
