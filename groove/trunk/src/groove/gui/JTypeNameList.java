@@ -150,13 +150,13 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             if (!names.isEmpty()) {
                 this.setEnabled(true);
                 this.setBackground(getColor(true));
+                this.setPreferredSize(this.getPreferredScrollableViewportSize());
             }
             if (this.model.synchronizeModel(names)) {
                 List<String> types =
                     this.panel.getGrammarView().getProperties().getTypeNames();
                 this.model.setCheckedTypes(types);
                 this.model.selectMostAppropriateType();
-                this.setPreferredSize(this.getPreferredScrollableViewportSize());
             }
         }
         this.revalidate();
@@ -173,8 +173,9 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     public Dimension getPreferredScrollableViewportSize() {
         // The longest text width in the list.
         int maxTextWidth = 0;
-        for (ListItem item : this.model.items) {
-            String text = item.dataItem;
+        Set<String> names =
+            new TreeSet<String>(this.panel.getGrammarView().getTypeNames());
+        for (String text : names) {
             // Calculate the size of the text.
             int textWidth = this.getStringWidth(text);
             if (textWidth > maxTextWidth) {
@@ -522,6 +523,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
 
             if (modelChanged) {
                 JTypeNameList.this.clearSelection();
+                this.fireContentsChanged(this, 0, this.items.size() - 1);
             }
 
             return modelChanged;
