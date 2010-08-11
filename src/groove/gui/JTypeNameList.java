@@ -46,8 +46,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
+ * Customized GUI component that implements a list of type graph names with
+ * check boxes.
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class JTypeNameList extends JList implements TypePanel.Refreshable {
 
@@ -150,7 +151,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             if (!names.isEmpty()) {
                 this.setEnabled(true);
                 this.setBackground(getColor(true));
-                this.setPreferredSize(this.getPreferredScrollableViewportSize());
             }
             if (this.model.synchronizeModel(names)) {
                 List<String> types =
@@ -159,35 +159,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 this.model.selectMostAppropriateType();
             }
         }
-        this.revalidate();
-        this.repaint();
         this.addListSelectionListener(this.selectionListener);
-    }
-
-    // EZ says: Although the code looks OK, I consider this to be a hack.
-    // The problem is how to properly calculate the width of the list.
-    // I expected this to be handled automatically by the layouter but this is
-    // not the case.
-    // Therefore, we have to override the method and do it ourselves...
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-        // The longest text width in the list.
-        int maxTextWidth = 0;
-        Set<String> names =
-            new TreeSet<String>(this.panel.getGrammarView().getTypeNames());
-        for (String text : names) {
-            // Calculate the size of the text.
-            int textWidth = this.getStringWidth(text);
-            if (textWidth > maxTextWidth) {
-                maxTextWidth = textWidth;
-            }
-        }
-        // We must also consider the cell borders.
-        int dx = 2 * INSET_BORDER.getBorderInsets().left;
-        int maxCellWidth = CHECKBOX_WIDTH + maxTextWidth + dx;
-        int visibleColumnCount = this.model.getSize();
-        int width = (visibleColumnCount * maxCellWidth);
-        return new Dimension(width, LIST_HEIGHT);
     }
 
     @Override
@@ -473,7 +445,7 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         public void selectMostAppropriateType() {
             int index = JTypeNameList.this.getSelectedIndex();
             if (index == -1) {
-                // There is not selected item. We need to choose one.
+                // There is no selected item. We need to choose one.
                 // First we try to get the first checked item.
                 List<String> checkedTypes = this.getCheckedTypes();
                 if (!checkedTypes.isEmpty()) {
@@ -575,10 +547,10 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 this.containerBox = null;
             }
             if (this.containerBox != null) {
-                // Store of max width of a cell
+                // Store the max width of a cell
                 this.checkBox.setSelected(item.checked);
                 setBackground(background);
-                // re-add the label (it gets detached if used as a stand-alone
+                // Re-add the label (it gets detached if used as a stand-alone
                 // renderer)
                 add(this.jLabel, BorderLayout.CENTER);
                 result = this;
