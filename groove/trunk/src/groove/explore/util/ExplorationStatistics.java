@@ -343,7 +343,7 @@ public class ExplorationStatistics {
             Reporter.report(new PrintWriter(sw));
             this.sb.append(sw.toString());
             println();
-            println("-------------------------------------------------------------------");
+            println("===============================================================================");
             println();
         }
 
