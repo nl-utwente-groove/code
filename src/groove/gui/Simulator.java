@@ -338,6 +338,7 @@ public class Simulator {
         this.currentTransition = null;
         this.currentEvent = null;
         this.currentState = gts == null ? null : gts.startState();
+        this.explorationStats = null;
         return result;
     }
 
