@@ -17,7 +17,6 @@
 package groove.util;
 
 import groove.explore.AcceptorEnumerator;
-import groove.explore.DefaultScenario;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.EncodedRuleMode;
@@ -25,28 +24,13 @@ import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
-import groove.explore.util.MatchApplier;
-import groove.explore.util.MatchSetCollector;
-import groove.graph.AbstractGraphShape;
-import groove.graph.DeltaGraph;
-import groove.graph.Edge;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
-import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.PaigeTarjanMcKay;
+import groove.explore.util.ExplorationStatistics;
 import groove.io.ExtensionFilter;
-import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
-import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.LTSGraph;
 import groove.lts.State;
-import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
-import groove.trans.SPOEvent;
-import groove.trans.SPORule;
-import groove.trans.SystemRecord;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -105,9 +89,6 @@ public class Generator extends CommandLineTool {
     static public final String GRAMMAR_NAME_VAR = "@";
     /** Separator between grammar name and start state name in reporting. */
     static public final char START_STATE_SEPARATOR = '@';
-
-    /** Number of bytes in a kilobyte */
-    static private final int BYTES_PER_KB = 1024;
 
     /** Local references to the command line options. */
     private final TemplatedOption<Strategy> strategyOption;
@@ -173,10 +154,12 @@ public class Generator extends CommandLineTool {
         verifyExportOptions();
         verifyExplorationOptions();
         try {
+            startLog();
             init();
             Collection<? extends Object> result = generate();
             report();
             exit(result);
+            endLog();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -422,7 +405,8 @@ public class Generator extends CommandLineTool {
      * <tt>{@link #start}</tt>.
      */
     protected void init() {
-        // empty
+        this.explorationStats = new ExplorationStatistics(getGTS());
+        this.explorationStats.configureForGenerator(this.getVerbosity());
     }
 
     /**
@@ -431,10 +415,6 @@ public class Generator extends CommandLineTool {
      */
     protected Collection<? extends Object> generate() {
         Collection<? extends Object> result;
-        final Runtime runTime = Runtime.getRuntime();
-        runTime.runFinalization();
-        runTime.gc();
-        this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
         if (getVerbosity() > LOW_VERBOSITY) {
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"
@@ -445,20 +425,15 @@ public class Generator extends CommandLineTool {
             print("\nProgress:\t");
             getGTS().addGraphListener(new GenerateProgressMonitor());
         }
-        if (getVerbosity() == HIGH_VERBOSITY) {
-            getGTS().addGraphListener(getStatisticsListener());
-        }
-        this.startTime = System.currentTimeMillis();
-
+        this.explorationStats.start();
         try {
             getExploration().play(getGTS(), null);
         } catch (FormatException e) {
             printError("The specified exploration is not "
                 + "valid for the loaded grammar.\n" + e.getMessage(), false);
         }
+        this.explorationStats.stop();
         result = getExploration().getLastResult().getValue();
-
-        this.endTime = System.currentTimeMillis();
         exportSimulation();
 
         return result;
@@ -518,56 +493,18 @@ public class Generator extends CommandLineTool {
 
     /** Prints a report of the run on the standard output. */
     protected void report() {
-        startLog();
         // Advance 2 lines (after the progress).
         if (getVerbosity() > LOW_VERBOSITY) {
             println();
             println();
         }
-        if (getVerbosity() == HIGH_VERBOSITY) {
-            Reporter.report();
-            if (isLogging()) {
-                Reporter.report(getLogWriter());
-            }
-            println();
-            println("-------------------------------------------------------------------");
-            println();
-        }
+        println(this.explorationStats.getReport());
+
         if (getVerbosity() > LOW_VERBOSITY) {
-            final Runtime runTime = Runtime.getRuntime();
-            // clear all caches to see all available memory
-            for (GraphState state : getGTS().nodeSet()) {
-                if (state instanceof AbstractCacheHolder<?>) {
-                    ((AbstractCacheHolder<?>) state).clearCache();
-                }
-                if (state instanceof GraphNextState) {
-                    ((AbstractCacheHolder<?>) ((GraphNextState) state).getEvent()).clearCache();
-                }
-            }
-            // the following is to make sure that the graph reference queue gets
-            // flushed
-            new DeltaGraph().nodeSet();
-            System.runFinalization();
-            System.gc();
-            long usedMemory = runTime.totalMemory() - runTime.freeMemory();
-            print("Statistics:");
-            reportLTS();
-            if (getVerbosity() == HIGH_VERBOSITY && Groove.GATHER_STATISTICS) {
-                reportGraphStatistics();
-                reportTransitionStatistics();
-                reportIsomorphism();
-                reportGraphElementStatistics();
-                reportCacheStatistics();
-            }
             if (getOutputFileName() != null) {
-                // String outFileName =
-                // gxlFilter.addExtension(getOutputFileName());
                 println();
                 println("LTS stored in: \t" + getOutputFileName());
             }
-            println();
-            reportTime();
-            reportSpace(usedMemory - this.startUsedMemory);
         }
         // transfer the garbage collector log (if any) to the log file (if any)
         if (isLogging()) {
@@ -592,203 +529,13 @@ public class Generator extends CommandLineTool {
                 }
             }
         }
-        endLog();
-    }
-
-    /**
-     * Reports data on the LTS generated.
-     */
-    private void reportLTS() {
-        println("\tStates:\t" + getGTS().nodeCount());
-        int spuriousStateCount = getGTS().openStateCount();
-        if (spuriousStateCount > 0) {
-            println("\tExplored:\t"
-                + (getGTS().nodeCount() - spuriousStateCount));
-        }
-        println("\tTransitions:\t" + getGTS().edgeCount());
-    }
-
-    /**
-     * Gives some statistics regarding the graphs and deltas.
-     */
-    private void reportGraphStatistics() {
-        printf("\tGraphs:\tModifiable:\t%d%n",
-            AbstractGraphShape.getModifiableGraphCount());
-        printf("\t\tFrozen:\t%d%n", AbstractGraphState.getFrozenGraphCount());
-        // printf("\t\tFraction:\t%s%n",
-        // percentage(DeltaGraph.getFrozenFraction()));
-        printf("\t\tBytes/state:\t%.1f%n", getGTS().getBytesPerState());
-    }
-
-    /**
-     * Gives some statistics regarding the generated transitions.
-     */
-    private void reportTransitionStatistics() {
-        printf("\tTransitions:\tReused:\t%d%n",
-            MatchSetCollector.getEventReuse());
-        printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
-        printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
-        printf("\tCoanchor reuse:\t%d/%d%n",
-            SPOEvent.getCoanchorImageOverlap(),
-            SPOEvent.getCoanchorImageCount());
-    }
-
-    /**
-     * Reports on the cache usage.
-     */
-    private void reportCacheStatistics() {
-        println("\tCaches:\tCreated:\t" + CacheReference.getCreateCount());
-        println("\t\tCleared:\t" + CacheReference.getClearCount());
-        println("\t\tCollected:\t" + CacheReference.getCollectCount());
-        println("\t\tReconstructed:\t" + CacheReference.getIncarnationCount());
-        println("\t\tDistribution:\t" + getCacheReconstructionDistribution());
-    }
-
-    /**
-     * Reports on the graph data.
-     */
-    private void reportGraphElementStatistics() {
-        printf("\tDefault nodes:\t%d%n",
-            groove.graph.DefaultNode.getNodeCount());
-        printf("\tDefault labels:\t%d%n",
-            groove.graph.DefaultLabel.getLabelCount());
-        printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
-        printf("\tFresh edges:\t%d%n", groove.graph.DefaultEdge.getEdgeCount());
-        double nodeAvg =
-            (double) getStatisticsListener().getNodeCount()
-                / getGTS().nodeCount();
-        printf("\tAverage:\tNodes:\t%3.1f%n", nodeAvg);
-        double edgeAvg =
-            (double) getStatisticsListener().getEdgeCount()
-                / getGTS().nodeCount();
-        printf("\t\tEdges:\t%3.1f%n", edgeAvg);
-        // println("\t\tDelta:\t" +
-        // groove.graph.DeltaGraph.getDeltaElementAvg());
-        // println("\tAnchor images:\t" +
-        // DefaultGraphTransition.getAnchorImageCount());
-    }
-
-    /**
-     * Reports statistics on isomorphism checking.
-     */
-    private void reportIsomorphism() {
-        int predicted = DefaultIsoChecker.getTotalCheckCount();
-        int falsePos2 = DefaultIsoChecker.getDistinctSimCount();
-        int falsePos1 =
-            falsePos2 + DefaultIsoChecker.getDistinctSizeCount()
-                + DefaultIsoChecker.getDistinctCertsCount();
-        int equalGraphCount = DefaultIsoChecker.getEqualGraphsCount();
-        int equalCertsCount = DefaultIsoChecker.getEqualCertsCount();
-        int equalSimCount = DefaultIsoChecker.getEqualSimCount();
-        int intCertOverlap = DefaultIsoChecker.getIntCertOverlap();
-        printf("\tIsomorphism:\tPredicted:\t%d (-%d)%n", predicted,
-            intCertOverlap);
-        printf("\t\tFalse pos 1:\t%d (%s)%n", falsePos1,
-            percentage((double) falsePos1 / (predicted - intCertOverlap)));
-        printf("\t\tFalse pos 2:\t%d (%s)%n", falsePos2,
-            percentage((double) falsePos2 / (predicted - intCertOverlap)));
-        println("\t\tEqual graphs:\t" + equalGraphCount);
-        println("\t\tEqual certificates:\t" + equalCertsCount);
-        println("\t\tEqual simulation:\t" + equalSimCount);
-        println("\t\tIterations:\t" + PaigeTarjanMcKay.getIterateCount());
-        println("\t\tSymmetry breaking:\t"
-            + PaigeTarjanMcKay.getSymmetryBreakCount());
-    }
-
-    /**
-     * Returns a string describing the distribution of cache reconstruction
-     * counts.
-     */
-    private String getCacheReconstructionDistribution() {
-        List<Integer> sizes = new ArrayList<Integer>();
-        boolean finished = false;
-        for (int incarnation = 1; !finished; incarnation++) {
-            int size = CacheReference.getFrequency(incarnation);
-            finished = size == 0;
-            if (!finished) {
-                sizes.add(size);
-            }
-        }
-        return Groove.toString(sizes.toArray());
     }
 
     /**
      * @return the total running time of the generator.
      */
     public long getRunningTime() {
-        return this.endTime - this.startTime;
-    }
-
-    /**
-     * Reports on the time usage, for any verbosity but low.
-     */
-    private void reportTime() {
-        // timing figures
-        long total = (this.endTime - this.startTime);
-        long matching = SPORule.getMatchingTime();
-        long running = DefaultScenario.getRunningTime();
-        long overhead = total - running;
-        long isoChecking = DefaultIsoChecker.getTotalTime();
-        long generateTime = MatchApplier.getGenerateTime();
-        long building = generateTime - isoChecking;
-        long measuring = Reporter.getReportTime();
-
-        // this calculation incorporates only transforming RuleMatches into
-        // RuleApplications
-        // long transforming = DefaultScenario.getTransformingTime();// -
-        // matching - building - measuring;
-
-        // bit weird maybe, but transforming is considered everything besides
-        // the calculation
-        // of matches, isomorphisms, adding to GTS, and reporter-duty: i.e. it's
-        // the "overhead" of the scenario
-        long transforming =
-            running - matching - isoChecking - building - measuring;
-        // long checktotal =
-        // matching+isoChecking+building+measuring+transforming;
-
-        println("Time (ms):\t" + total);
-
-        // println("Running:\t"+running);
-        // println("TotalComputed:\t"+checktotal);
-        // println("TotalDiff:\t"+(checktotal-total));
-
-        println("\tMatching:\t" + matching + "\t"
-            + percentage(matching / (double) total));
-        println("\tTransforming:\t" + transforming + "\t"
-            + percentage(transforming / (double) total));
-        println("\tIso checking:\t" + isoChecking + "\t"
-            + percentage(isoChecking / (double) total));
-        if (getVerbosity() == HIGH_VERBOSITY) {
-            long certifying = DefaultIsoChecker.getCertifyingTime();
-            long equalCheck = DefaultIsoChecker.getEqualCheckTime();
-            long certCheck = DefaultIsoChecker.getCertCheckTime();
-            long simCheck = DefaultIsoChecker.getSimCheckTime();
-            println("\t\tCertifying:\t" + certifying + "\t"
-                + percentage(certifying / (double) isoChecking));
-            println("\t\tEquals check:\t" + equalCheck + "\t"
-                + percentage(equalCheck / (double) isoChecking));
-            println("\t\tCert check:\t" + certCheck + "\t"
-                + percentage(certCheck / (double) isoChecking));
-            println("\t\tSim check:\t" + simCheck + "\t"
-                + percentage(simCheck / (double) isoChecking));
-        }
-        println("\tBuilding GTS:\t" + building + "\t"
-            + percentage(building / (double) total));
-        println("\tMeasuring:\t" + measuring + "\t"
-            + percentage(measuring / (double) total));
-        println("\tInitialization:\t" + overhead + "\t"
-            + percentage(overhead / (double) total));
-        println("");
-    }
-
-    /**
-     * Reports on the time usage, for any verbosity but low.
-     * @param usedMemory the final memory after generation, cache clearing and
-     *        garbage collection
-     */
-    private void reportSpace(long usedMemory) {
-        println("Space (kB):\t" + (usedMemory / BYTES_PER_KB));
+        return this.explorationStats.getRunningTime();
     }
 
     /**
@@ -864,46 +611,11 @@ public class Generator extends CommandLineTool {
         return USAGE_MESSAGE;
     }
 
-    private StatisticsListener getStatisticsListener() {
-        if (this.statisticsListener == null) {
-            this.statisticsListener = new StatisticsListener();
-        }
-        return this.statisticsListener;
-    }
-
     /**
-     * Returns a string representation of a double as a percentage.
-     */
-    private String percentage(double fraction) {
-        int percentage = (int) (fraction * 1000 + 0.5);
-        String result = "" + (percentage / 10) + "." + (percentage % 10) + "%";
-        if (result.length() == 4) {
-            return " " + result;
-        } else {
-            return result;
-        }
-    }
-
-    /**
-     * The identity for this genrator, constructed from grammar name and time of
-     * invocation.
+     * The identity for this generator, constructed from grammar name and time
+     * of invocation.
      */
     private String id;
-
-    /**
-     * The time stamp of the moment at which exploration was started.
-     */
-    private long startTime;
-
-    /**
-     * The time stamp of the moment at which exploration was ended.
-     */
-    private long endTime;
-
-    /**
-     * The amount of memory used at the moment at which exploration was started.
-     */
-    private long startUsedMemory;
 
     /**
      * The GTS that is being constructed. We make it static to enable memory
@@ -917,14 +629,15 @@ public class Generator extends CommandLineTool {
      */
     private Exploration exploration;
 
+    /** The exploration statistics for the generated state space. */
+    private ExplorationStatistics explorationStats;
+
     /** String describing the location where the grammar is to be found. */
     private String grammarLocation;
     /** String describing the start graph within the grammar. */
     private String startStateName;
     /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
-    /** Statistics listener to the GTS. */
-    private StatisticsListener statisticsListener;
 
     /** File filter for rule systems. */
     protected final ExtensionFilter ruleSystemFilter =
@@ -934,8 +647,8 @@ public class Generator extends CommandLineTool {
     /** File filter for graph state files (GST). */
     protected final ExtensionFilter gstFilter = Groove.createStateFilter();
     /** File filter for graph files (GXL or GST). */
-    protected final ExtensionFilter graphFilter =
-        new ExtensionFilter("Serialized graph files", GRAPH_FILE_EXTENSION);
+    protected final ExtensionFilter graphFilter = new ExtensionFilter(
+        "Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /**
      * The <code>ExportSimulationPathOption</code> is the command line option
@@ -1313,36 +1026,4 @@ public class Generator extends CommandLineTool {
         }
     }
 
-    /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends GraphAdapter {
-        /** Empty constructor with the correct visibility. */
-        StatisticsListener() {
-            // Auto-generated constructor stub
-        }
-
-        @Override
-        public void addUpdate(GraphShape graph, Node node) {
-            GraphState state = (GraphState) node;
-            this.nodeCount += state.getGraph().nodeCount();
-            this.edgeCount += state.getGraph().edgeCount();
-        }
-
-        @Override
-        public void addUpdate(GraphShape graph, Edge edge) {
-            // do nothing
-        }
-
-        /** Returns the number of nodes in the added states. */
-        public int getNodeCount() {
-            return this.nodeCount;
-        }
-
-        /** Returns the number of edges in the added states. */
-        public int getEdgeCount() {
-            return this.edgeCount;
-        }
-
-        private int nodeCount;
-        private int edgeCount;
-    }
 }

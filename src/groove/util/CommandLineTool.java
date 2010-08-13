@@ -495,8 +495,8 @@ public class CommandLineTool {
     private final List<String> args;
 
     /** Filter for log files. */
-    protected final ExtensionFilter logFilter =
-        new ExtensionFilter("Log files", LOG_FILE_EXTENSION);
+    protected final ExtensionFilter logFilter = new ExtensionFilter(
+        "Log files", LOG_FILE_EXTENSION);
 
     /** List of command options classes. */
     protected final List<CommandLineOption> optionsList =
@@ -558,7 +558,7 @@ public class CommandLineTool {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static protected class VerbosityOption implements CommandLineOption {
+    static public class VerbosityOption implements CommandLineOption {
         /** Name of the verbosity command line option. */
         static public final String NAME = "v";
         /** Parameter name of the verbosity command line option. */
