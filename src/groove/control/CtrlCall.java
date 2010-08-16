@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.trans.Rule;
+import groove.util.Groove;
 
 import java.util.List;
 
@@ -27,27 +28,97 @@ import java.util.List;
  * @version $Revision $
  */
 public class CtrlCall {
+    /** Constructor for the singleton success call. */
+    private CtrlCall() {
+        this.rule = null;
+        this.arguments = null;
+    }
+
     /**
      * Constructs a call from a given rule and list of arguments.
+     * @param rule the rule to be called; non-{@code null}
+     * @param arguments list of arguments for the call; non-{@code null}
      */
-    public CtrlCall(Rule rule, List<CtrlPar> arguments) {
+    public CtrlCall(Rule rule, List<CtrlArg> arguments) {
         this.arguments = arguments;
         this.rule = rule;
     }
 
-    /** Returns the arguments of the call. */
-    public final List<CtrlPar> getArgs() {
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj instanceof CtrlCall) {
+            CtrlCall other = (CtrlCall) obj;
+            if (isOmega()) {
+                result = other.isOmega();
+            } else {
+                result =
+                    getRule().equals(other.getRule())
+                        && getArgs().equals(other.getArgs());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 0;
+        if (!isOmega()) {
+            result = getRule().hashCode() ^ getArgs().hashCode();
+        }
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        String result;
+        if (isOmega()) {
+            result = "OMEGA";
+        } else {
+            result =
+                getRule().getName()
+                    + Groove.toString(getArgs().toArray(), "(", ")", ",");
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this is an omega call.
+     * @see #OMEGA
+     */
+    public boolean isOmega() {
+        return this == OMEGA;
+    }
+
+    /** 
+     * Returns the arguments of the call.
+     * @return the list of arguments; or {@code null} if this is an omega call.
+     * @see #OMEGA
+     */
+    public final List<CtrlArg> getArgs() {
         return this.arguments;
     }
 
-    /** The list of arguments of the control call. */
-    private final List<CtrlPar> arguments;
+    /** 
+     * The list of arguments of the control call.
+     */
+    private final List<CtrlArg> arguments;
 
-    /** Returns the rule being called. */
+    /** 
+     * Returns the rule being called.
+     * @return the rule being called; or {@code null} if this is an omega call. 
+     * @see #OMEGA
+     */
     public final Rule getRule() {
         return this.rule;
     }
 
     /** The rule being called. */
     private final Rule rule;
+
+    /**
+     * A special call, indicating that the control program is successful.
+     * Can be seen as a call to a rule that always matches and makes no changes.
+     */
+    public static final CtrlCall OMEGA = new CtrlCall();
 }
