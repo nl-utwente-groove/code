@@ -16,10 +16,18 @@
  */
 package groove.control;
 
-import groove.graph.AbstractGraphShape;
+import groove.graph.AbstractGraph;
+import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.GraphCache;
+import groove.graph.Node;
+import groove.trans.RuleSystem;
+import groove.util.NestedIterator;
+import groove.util.TransformIterator;
 
+import java.util.AbstractSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -28,62 +36,155 @@ import java.util.Set;
  * The class offers various operations to compose automata.
  * @author Arend Rensink
  */
-public class CtrlAut extends AbstractGraphShape<GraphCache> implements
-        ControlShape {
-    /** the top-level ControlShape * */
-
-    private Set<ControlState> states = new HashSet<ControlState>();
-    private Set<ControlTransition> transitions =
-        new HashSet<ControlTransition>();
-    private ControlState startState;
-
-    public Set<ControlTransition> edgeSet() {
-        return transitions();
+public class CtrlAut extends AbstractGraph<GraphCache> {
+    /** Constructs a new control automaton.
+     * The start state and final state are automatically initialised.
+     */
+    public CtrlAut() {
+        this.startState = createState();
+        this.finalState = createState();
     }
 
-    public Set<ControlState> nodeSet() {
-        return states();
+    @Override
+    public Graph clone() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    public void addState(ControlState state) {
-        this.states.add(state);
+    @Override
+    public boolean addEdgeWithoutCheck(Edge edge) {
+        return addEdge(edge);
     }
 
-    public void addTransition(ControlTransition ct) {
-        this.transitions.add(ct);
-
+    @Override
+    public boolean removeNodeWithoutCheck(Node node) {
+        throw new UnsupportedOperationException();
     }
 
-    public ControlState getStart() {
-        return this.startState;
+    @Override
+    public boolean addEdge(Edge edge) {
+        return this.transitions.add((CtrlTransition) edge);
     }
 
-    public void removeState(ControlState state) {
-        this.states.remove(state);
+    @Override
+    public boolean addNode(Node node) {
+        return this.states.add((CtrlState) node);
     }
 
-    public void removeTransition(ControlTransition ct) {
-        this.transitions.remove(ct);
+    @Override
+    public CtrlAut newGraph() {
+        return new CtrlAut();
     }
 
-    public void setStart(ControlState start) {
-        this.startState = start;
+    @Override
+    public boolean removeEdge(Edge edge) {
+        throw new UnsupportedOperationException();
     }
 
-    public Set<ControlState> states() {
-        return this.states;
+    @Override
+    public boolean removeNode(Node node) {
+        throw new UnsupportedOperationException();
     }
 
-    public Set<ControlTransition> transitions() {
+    @Override
+    public Set<? extends Edge> edgeSet() {
         return this.transitions;
     }
 
-    /**
-     * Returns true if the given state is a success-state.
-     * @param state
-     * @return boolean
+    public Set<CtrlState> nodeSet() {
+        return this.states;
+    }
+
+    /** Returns the start state of the automaton. */
+    public CtrlState getStart() {
+        return this.startState;
+    }
+
+    /** The start state of the automaton. */
+    private final CtrlState startState;
+
+    /** Returns the final  state of the automaton. */
+    public CtrlState getFinal() {
+        return this.finalState;
+    }
+
+    /** The final state of the automaton. */
+    private final CtrlState finalState;
+
+    /** Factory method to create a control state for this automaton. */
+    private CtrlState createState() {
+        return new CtrlState();
+    }
+
+    /** 
+     * Returns a copy of this control automaton in which all 
+     * rule names have been instantiated with actual rules.
+     * @param rules the rule system from which the actual rules are
+     * taken
      */
-    public boolean isSuccess(ControlState state) {
-        return state.isSuccess();
+    public CtrlAut instantiate(RuleSystem rules) {
+        CtrlAut result = new CtrlAut();
+        for (CtrlState state : nodeSet()) {
+
+        }
+        return result;
+    }
+
+    /** The set of states of this control automaton. */
+    private final Set<CtrlState> states = new HashSet<CtrlState>();
+
+    /** The set of transitions of this control automaton. */
+    private final Set<CtrlTransition> transitions = new TransitionSet();
+
+    /** 
+     * Offers a modifiable view on the transitions stored in the states 
+     * of this automaton.
+     */
+    private class TransitionSet extends AbstractSet<CtrlTransition> {
+        @Override
+        public boolean add(CtrlTransition e) {
+            return e.source().addTransition(e);
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            if (o instanceof CtrlTransition) {
+                return ((CtrlTransition) o).source().getTransitions().contains(
+                    o);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public Iterator<CtrlTransition> iterator() {
+            return new NestedIterator<CtrlTransition>(
+                new TransformIterator<CtrlState,Iterator<CtrlTransition>>(
+                    nodeSet().iterator()) {
+                    @Override
+                    protected Iterator<CtrlTransition> toOuter(CtrlState from) {
+                        return from.getTransitions().iterator();
+                    }
+                });
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int size() {
+            int result = 0;
+            for (CtrlState state : nodeSet()) {
+                result += state.getTransitions().size();
+            }
+            return result;
+        }
     }
 }
