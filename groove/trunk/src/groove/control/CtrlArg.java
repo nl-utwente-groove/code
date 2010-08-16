@@ -26,12 +26,12 @@ package groove.control;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlPar {
+public class CtrlArg {
     /** 
      * Constructs an input or output don't care parameter.
      * @param inPar flag indicating if the parameter is input or output
      */
-    public CtrlPar(boolean inPar) {
+    public CtrlArg(boolean inPar) {
         this.inPar = inPar;
         this.var = null;
         this.constant = null;
@@ -43,7 +43,7 @@ public class CtrlPar {
      * @param inPar flag indicating if the parameter is input or output
      * @param var the (non-{@code null}) variable to be wrapped by this parameter.
      */
-    public CtrlPar(boolean inPar, String var) {
+    public CtrlArg(boolean inPar, String var) {
         this.inPar = inPar;
         assert var != null;
         this.var = var;
@@ -54,10 +54,57 @@ public class CtrlPar {
      * Constructs a constant input parameter.
      * @param constant the (non-{@code null}) constant value.
      */
-    public CtrlPar(Object constant) {
+    public CtrlArg(Object constant) {
         this.inPar = true;
         this.constant = constant;
         this.var = null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj instanceof CtrlArg) {
+            CtrlArg other = (CtrlArg) obj;
+            result = isInPar() == other.isInPar();
+            if (result) {
+                if (isDontCare()) {
+                    result = other.isDontCare();
+                } else if (getVar() != null) {
+                    result = getVar().equals(other.getVar());
+                } else {
+                    assert getConstant() != null;
+                    result = getConstant().equals(other.getConstant());
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = isInPar() ? 1 : 2;
+        if (!isDontCare()) {
+            if (getVar() != null) {
+                result += getVar().hashCode();
+            } else {
+                result -= getConstant().hashCode();
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        String result;
+        if (isDontCare()) {
+            result = "_";
+        } else if (getVar() != null) {
+            result = isInPar() ? "" : "out ";
+            result += getVar().toString();
+        } else {
+            result = getConstant().toString();
+        }
+        return result;
     }
 
     /** Indicates whether this parameter is an input parameter. */

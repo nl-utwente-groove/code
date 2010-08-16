@@ -41,11 +41,11 @@ public class CtrlLabel extends AbstractLabel {
     }
 
     /** Constructs a control label from a (non-{@code null}) rule. */
-    public CtrlLabel(Rule rule, List<CtrlPar> pars, Collection<Rule> ruleGuard) {
+    public CtrlLabel(Rule rule, List<CtrlArg> pars, Collection<Rule> ruleGuard) {
         this.rule = rule;
         this.parameters =
-            pars == null ? Collections.<CtrlPar>emptyList()
-                    : new ArrayList<CtrlPar>(pars);
+            pars == null ? Collections.<CtrlArg>emptyList()
+                    : new ArrayList<CtrlArg>(pars);
         this.ruleGuard =
             ruleGuard == null ? Collections.<Rule>emptySet()
                     : new LinkedHashSet<Rule>(ruleGuard);
@@ -80,7 +80,7 @@ public class CtrlLabel extends AbstractLabel {
     }
 
     /** Returns the list of parameters wrapped into this label. */
-    public final List<CtrlPar> getParameters() {
+    public final List<CtrlArg> getParameters() {
         return this.parameters;
     }
 
@@ -97,7 +97,7 @@ public class CtrlLabel extends AbstractLabel {
     /** The rule wrapped in this control label. */
     private final Rule rule;
     /** Parameters of this label. */
-    private final List<CtrlPar> parameters;
+    private final List<CtrlArg> parameters;
     /** Guard of this label, consisting of a list of failure rules. */
     private final Set<String> guard;
     /** Guard of this label, consisting of a list of failure rules. */
