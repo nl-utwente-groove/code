@@ -20,11 +20,12 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 
 /**
- * Default implementation of booleans.
+ * Default implementation of the string signature.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StringAlgebra extends StringSignature<String,Boolean> implements Algebra<String> {
+public class StringAlgebra extends StringSignature<String,Boolean> implements
+        Algebra<String> {
     @Override
     public String concat(String arg0, String arg1) {
         return arg0.concat(arg1);
@@ -70,7 +71,7 @@ public class StringAlgebra extends StringSignature<String,Boolean> implements Al
             return null;
         }
     }
-    
+
     /** The name of this algebra. */
     static public final String NAME = "string";
 }

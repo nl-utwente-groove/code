@@ -16,19 +16,21 @@
  */
 package groove.control;
 
-import groove.graph.AbstractGraph;
-import groove.graph.Edge;
-import groove.graph.Graph;
+import groove.graph.AbstractGraphShape;
 import groove.graph.GraphCache;
-import groove.graph.Node;
 import groove.trans.RuleSystem;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
+import groove.view.FormatError;
+import groove.view.FormatException;
 
 import java.util.AbstractSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This class implements a control automaton graph.
@@ -36,8 +38,9 @@ import java.util.Set;
  * The class offers various operations to compose automata.
  * @author Arend Rensink
  */
-public class CtrlAut extends AbstractGraph<GraphCache> {
-    /** Constructs a new control automaton.
+public class CtrlAut extends AbstractGraphShape<GraphCache> {
+    /**
+     * Constructs a new control automaton.
      * The start state and final state are automatically initialised.
      */
     public CtrlAut() {
@@ -45,49 +48,27 @@ public class CtrlAut extends AbstractGraph<GraphCache> {
         this.finalState = createState();
     }
 
-    @Override
-    public Graph clone() {
-        // TODO Auto-generated method stub
-        return null;
+    /**
+     * Constructs a new control automaton, with a given
+     * start and final state.
+     */
+    public CtrlAut(CtrlState startState, CtrlState finalState) {
+        this.startState = startState;
+        this.finalState = finalState;
+    }
+
+    /** Adds a control transition to this automaton. */
+    public boolean addTransition(CtrlTransition edge) {
+        return this.transitions.add(edge);
+    }
+
+    /** Adds a control state to this automaton. */
+    public boolean addState(CtrlState node) {
+        return this.states.add(node);
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(Edge edge) {
-        return addEdge(edge);
-    }
-
-    @Override
-    public boolean removeNodeWithoutCheck(Node node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addEdge(Edge edge) {
-        return this.transitions.add((CtrlTransition) edge);
-    }
-
-    @Override
-    public boolean addNode(Node node) {
-        return this.states.add((CtrlState) node);
-    }
-
-    @Override
-    public CtrlAut newGraph() {
-        return new CtrlAut();
-    }
-
-    @Override
-    public boolean removeEdge(Edge edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeNode(Node node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Set<? extends Edge> edgeSet() {
+    public Set<CtrlTransition> edgeSet() {
         return this.transitions;
     }
 
@@ -121,11 +102,36 @@ public class CtrlAut extends AbstractGraph<GraphCache> {
      * rule names have been instantiated with actual rules.
      * @param rules the rule system from which the actual rules are
      * taken
+     * @throws FormatException if the rule system is not compatible with the
+     * rule calls in this automaton
      */
-    public CtrlAut instantiate(RuleSystem rules) {
-        CtrlAut result = new CtrlAut();
-        for (CtrlState state : nodeSet()) {
-
+    public CtrlAut instantiate(RuleSystem rules) throws FormatException {
+        Set<FormatError> errors = new TreeSet<FormatError>();
+        Map<CtrlState,CtrlState> oldToNewStateMap =
+            new HashMap<CtrlState,CtrlState>();
+        CtrlState newStart = getStart().instantiate(oldToNewStateMap, rules);
+        CtrlState newFinal = getFinal().instantiate(oldToNewStateMap, rules);
+        CtrlAut result = new CtrlAut(newStart, newFinal);
+        for (CtrlState oldState : nodeSet()) {
+            try {
+                result.addState(oldState.instantiate(oldToNewStateMap, rules));
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
+        }
+        for (CtrlTransition oldTrans : edgeSet()) {
+            try {
+                result.addTransition(oldTrans.instantiate(oldToNewStateMap,
+                    rules));
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
         }
         return result;
     }

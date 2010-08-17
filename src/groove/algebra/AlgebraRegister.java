@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -229,6 +230,16 @@ public class AlgebraRegister {
         return Collections.unmodifiableSet(signatureMap.keySet());
     }
 
+    /** Returns the set of all known signatures. */
+    static public Collection<Class<? extends Signature>> getSignatures() {
+        return Collections.unmodifiableCollection(signatureMap.values());
+    }
+
+    /** Returns the signature with a given name, if any. */
+    static public Class<? extends Signature> getSignature(String name) {
+        return signatureMap.get(name);
+    }
+
     /** Returns the signature name for a given algebra. */
     static public String getSignatureName(Algebra<?> algebra) {
         return getName(getSignature(algebra));
@@ -256,20 +267,42 @@ public class AlgebraRegister {
     }
 
     /**
+     * Returns the name of the signature defining a constant value with a given
+     * string representation, if any.
+     */
+    static public String getSignatureName(String value) {
+        for (Class<? extends Signature> signature : signatureMap.values()) {
+            if (isConstant(signature, value)) {
+                return getName(signature);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Tests if a string represents a constant in a given (named) signature.
      * @throws UnknownSymbolException if the signature does not exist
      */
-    static public boolean isConstant(String signatureName, String constant)
+    static public boolean isConstant(String signatureName, String value)
         throws UnknownSymbolException {
         Class<? extends Signature> signature = signatureMap.get(signatureName);
         if (signature == null) {
             throw new UnknownSymbolException(String.format(
                 "No such signature '%s'", signature));
         }
+        return isConstant(signature, value);
+    }
+
+    /**
+     * Tests if a string represents a constant in a given signature.
+     */
+    static public boolean isConstant(Class<? extends Signature> signature,
+            String value) {
         Method isValueMethod = getIsValueMethod(signature);
+        String signatureName = getName(signature);
         try {
             return (Boolean) isValueMethod.invoke(
-                getInstance().getImplementation(signatureName), constant);
+                getInstance().getImplementation(signatureName), value);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException();
         } catch (InvocationTargetException e) {
@@ -328,7 +361,7 @@ public class AlgebraRegister {
      * be the first part of the interface name, after which only
      * {@link #SIGNATURE_SUFFIX} follows.
      */
-    static private String getName(Class<? extends Signature> signature)
+    static public String getName(Class<? extends Signature> signature)
         throws IllegalArgumentException {
         String interfaceName = signature.getName();
         // take off qualification
