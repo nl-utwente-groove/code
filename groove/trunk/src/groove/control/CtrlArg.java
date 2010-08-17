@@ -129,7 +129,7 @@ public class CtrlArg {
         if (isDontCare()) {
             result = "_";
         } else if (getVar() != null) {
-            result = isOutArg() ? "out " : "";
+            result = isOutArg() ? OUT_PREFIX + " " : "";
             result += getVar().toString();
         } else {
             result = getConstRepr();
@@ -237,4 +237,8 @@ public class CtrlArg {
      * 
      */
     private final CtrlType type;
+    /** String representation of a don't care argument. */
+    public static final String DONT_CARE = "_";
+    /** Prefix used to indicate output parameters. */
+    public static final String OUT_PREFIX = "out";
 }

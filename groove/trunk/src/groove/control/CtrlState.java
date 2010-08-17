@@ -80,9 +80,34 @@ public class CtrlState implements Node {
         return this.outTransitions.add(transition);
     }
 
+    /**
+     * Removes an outgoing transition from this control state.
+     */
+    public boolean removeTransition(CtrlTransition transition) {
+        return this.outTransitions.remove(transition);
+    }
+
     /** Returns the outgoing control transitions of this control state. */
     public Set<CtrlTransition> getTransitions() {
         return this.outTransitions;
+    }
+
+    /** 
+     * Returns the set of rule names of outgoing transitions, or
+     * {@code null} if there is an outgoing omega transition. 
+     */
+    public Set<String> getInit() {
+        Set<String> result = new HashSet<String>();
+        for (CtrlTransition trans : getTransitions()) {
+            CtrlCall call = trans.label().getCall();
+            if (call.isOmega()) {
+                result = null;
+                break;
+            } else {
+                result.add(call.getRuleName());
+            }
+        }
+        return result;
     }
 
     /** Set of outgoing transitions. */
