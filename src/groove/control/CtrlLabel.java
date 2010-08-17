@@ -18,91 +18,114 @@ package groove.control;
 
 import groove.graph.AbstractLabel;
 import groove.trans.Rule;
+import groove.trans.RuleSystem;
 import groove.util.Groove;
+import groove.view.FormatError;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
+ * A control label wraps a control call and a guard, consisting of a 
+ * set of failure rules.
+ * A label is <i>virtual</i> if the call and guard are only specified by
+ * name, and <i>actual</i> if the rules are instantiated.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class CtrlLabel extends AbstractLabel {
-    /** Constructs a dummy label. */
-    private CtrlLabel() {
-        this.rule = null;
-        this.parameters = null;
+    /** 
+     * Constructs a virtual control label from a rule name,
+     * a set of call arguments, and a set of guard names.
+     */
+    public CtrlLabel(String ruleName, List<CtrlArg> args,
+            Collection<String> guardNames) {
+        this.call = new CtrlCall(ruleName, args);
         this.guard = null;
-        this.ruleGuard = null;
+        this.guardNames = new LinkedHashSet<String>(guardNames);
     }
 
-    /** Constructs a control label from a (non-{@code null}) rule. */
-    public CtrlLabel(Rule rule, List<CtrlArg> pars, Collection<Rule> ruleGuard) {
-        this.rule = rule;
-        this.parameters =
-            pars == null ? Collections.<CtrlArg>emptyList()
-                    : new ArrayList<CtrlArg>(pars);
-        this.ruleGuard =
-            ruleGuard == null ? Collections.<Rule>emptySet()
-                    : new LinkedHashSet<Rule>(ruleGuard);
-        this.guard = new LinkedHashSet<String>();
-        for (Rule guardRule : ruleGuard) {
-            this.guard.add(guardRule.getName().text());
+    /** 
+     * Constructs an actual control label from a given rule call
+     * and guard.
+     */
+    public CtrlLabel(CtrlCall call, Collection<Rule> guard) {
+        this.call = call;
+        this.guard = new LinkedHashSet<Rule>(guard);
+        this.guardNames = new LinkedHashSet<String>();
+        for (Rule guardRule : guard) {
+            this.guardNames.add(guardRule.getName().text());
         }
     }
 
     @Override
     public String text() {
-        if (this.rule == null) {
-            return "";
-        } else {
-            StringBuilder result =
-                new StringBuilder(this.rule.getName().toString());
-            if (!this.guard.isEmpty()) {
-                result.insert(0, Groove.toString(this.guard.toArray(), "[",
-                    "]", ","));
-            }
-            if (!this.parameters.isEmpty()) {
-                result.insert(0, Groove.toString(this.parameters.toArray(),
-                    "(", ")", ","));
-            }
+        StringBuilder result = new StringBuilder();
+        if (!this.guardNames.isEmpty()) {
+            result.append(Groove.toString(this.guardNames.toArray(), "[", "]",
+                ","));
         }
-        return null;
+        result.append(getCall().toString());
+        return result.toString();
     }
 
     /** Returns the rule wrapped into this label. */
-    public final Rule getRule() {
-        return this.rule;
+    public final CtrlCall getCall() {
+        return this.call;
     }
 
-    /** Returns the list of parameters wrapped into this label. */
-    public final List<CtrlArg> getParameters() {
-        return this.parameters;
-    }
+    /** The rule call wrapped in this control label. */
+    private final CtrlCall call;
 
     /** Returns the set of failure rules names wrapped into this label. */
-    public final Set<String> getGuard() {
+    public final Set<String> getGuardNames() {
+        return this.guardNames;
+    }
+
+    /** Guard of this label, consisting of a list of failure rules. */
+    private final Set<String> guardNames;
+
+    /** Returns the set of failure rules wrapped into this label. */
+    public final Set<Rule> getGuard() {
         return this.guard;
     }
 
-    /** Returns the set of failure rules wrapped into this label. */
-    public final Set<Rule> getRuleGuard() {
-        return this.ruleGuard;
+    /** Guard of this label, consisting of a list of failure rules. */
+    private final Set<Rule> guard;
+
+    /** 
+     * Returns an actual label based on this (virtual) label and a given rule 
+     * system.
+     * @throws FormatException if this call's rule name or one of the guard 
+     * names does not occur in the rule system,
+     * or the arguments of this call are not compatible with the rule parameters.  
+     */
+    public CtrlLabel instantiate(RuleSystem grammar) throws FormatException {
+        List<FormatError> errors = new ArrayList<FormatError>();
+        Collection<Rule> guard = new LinkedHashSet<Rule>();
+        for (String guardName : getGuardNames()) {
+            Rule guardRule = grammar.getRule(guardName);
+            if (guardRule == null) {
+                errors.add(new FormatError(
+                    "Failure rule '%s' does not occur in grammar", guardName));
+            } else {
+                guard.add(guardRule);
+            }
+        }
+        CtrlCall call = null;
+        try {
+            call = getCall().instantiate(grammar);
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
+        if (errors.isEmpty()) {
+            return new CtrlLabel(call, guard);
+        } else {
+            throw new FormatException(errors);
+        }
     }
-
-    /** The rule wrapped in this control label. */
-    private final Rule rule;
-    /** Parameters of this label. */
-    private final List<CtrlArg> parameters;
-    /** Guard of this label, consisting of a list of failure rules. */
-    private final Set<String> guard;
-    /** Guard of this label, consisting of a list of failure rules. */
-    private final Set<Rule> ruleGuard;
-
-    /** Dummy label, to be used as long as a real label cannot be constructed. */
-    public final static CtrlLabel DUMMY_LABEL = new CtrlLabel();
 }

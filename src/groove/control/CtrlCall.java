@@ -17,13 +17,17 @@
 package groove.control;
 
 import groove.trans.Rule;
+import groove.trans.RuleSystem;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 import java.util.List;
 
 /**
  * Encapsulates a call of a rule from a control automaton.
  * The call embodies the rule and a sequence of arguments.
+ * A call is <i>virtual</i> if the rule is only specified by
+ * name, and <i>actual</i> if the rule is instantiated.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -31,29 +35,43 @@ public class CtrlCall {
     /** Constructor for the singleton success call. */
     private CtrlCall() {
         this.rule = null;
-        this.arguments = null;
+        this.ruleName = null;
+        this.args = null;
     }
 
     /**
-     * Constructs a call from a given rule and list of arguments.
-     * @param rule the rule to be called; non-{@code null}
-     * @param arguments list of arguments for the call; non-{@code null}
+     * Constructs a virtual call for a given rule and list of arguments.
+     * @param ruleName the name of the rule to be called; non-{@code null}
+     * @param args list of arguments for the call; non-{@code null}
      */
-    public CtrlCall(Rule rule, List<CtrlArg> arguments) {
-        this.arguments = arguments;
+    public CtrlCall(String ruleName, List<CtrlArg> args) {
+        this.ruleName = ruleName;
+        this.rule = null;
+        this.args = args;
+    }
+
+    /**
+     * Constructs an actual call for a given rule and list of arguments.
+     * @param rule the rule to be called; non-{@code null}
+     * @param args list of arguments for the call; non-{@code null}
+     */
+    public CtrlCall(Rule rule, List<CtrlArg> args) {
+        this.args = args;
         this.rule = rule;
+        this.ruleName = rule.getName().text();
     }
 
     @Override
     public boolean equals(Object obj) {
-        boolean result = false;
-        if (obj instanceof CtrlCall) {
+        boolean result = obj == this;
+        if (!result && obj instanceof CtrlCall) {
             CtrlCall other = (CtrlCall) obj;
             if (isOmega()) {
                 result = other.isOmega();
             } else {
                 result =
-                    getRule().equals(other.getRule())
+                    isVirtual() == other.isVirtual()
+                        && getRuleName().equals(other.getRuleName())
                         && getArgs().equals(other.getArgs());
             }
         }
@@ -64,7 +82,10 @@ public class CtrlCall {
     public int hashCode() {
         int result = 0;
         if (!isOmega()) {
-            result = getRule().hashCode() ^ getArgs().hashCode();
+            result = getRuleName().hashCode() ^ getArgs().hashCode();
+            if (isVirtual()) {
+                result = -result;
+            }
         }
         return result;
     }
@@ -76,10 +97,19 @@ public class CtrlCall {
             result = "OMEGA";
         } else {
             result =
-                getRule().getName()
+                getRuleName()
                     + Groove.toString(getArgs().toArray(), "(", ")", ",");
         }
         return result;
+    }
+
+    /**
+     * Indicates if this is a virtual call.
+     * A call is virtual if the actual rule is only given by name, 
+     * and not instantiated.
+     */
+    public boolean isVirtual() {
+        return getRule() == null;
     }
 
     /**
@@ -96,25 +126,59 @@ public class CtrlCall {
      * @see #OMEGA
      */
     public final List<CtrlArg> getArgs() {
-        return this.arguments;
+        return this.args;
     }
 
     /** 
      * The list of arguments of the control call.
      */
-    private final List<CtrlArg> arguments;
+    private final List<CtrlArg> args;
 
     /** 
      * Returns the rule being called.
-     * @return the rule being called; or {@code null} if this is an omega call. 
-     * @see #OMEGA
+     * @return the rule being called; or {@code null} if this is an 
+     * virtual call or an omega call. 
+     * @see #isVirtual()
+     * @see #isOmega()
      */
     public final Rule getRule() {
         return this.rule;
     }
 
-    /** The rule being called. */
+    /** 
+     * The rule being called. 
+     * May be {@code null} if this is a virtual call.
+     */
     private final Rule rule;
+
+    /** 
+     * Returns the name of the rule being called.
+     * @return the name of the rule being called; or {@code null} if this is an 
+     * omega call.
+     * @see #isOmega()
+     */
+    public final String getRuleName() {
+        return this.ruleName;
+    }
+
+    /** The name of the rule being called; non-{@code null}. */
+    private final String ruleName;
+
+    /** 
+     * Returns an actual call of the rule named in this (virtual) call,
+     * based on a given rule system.
+     * @throws FormatException if this call's rule name does not occur in the rule system,
+     * or the arguments of this call are not compatible with the rule parameters.  
+     */
+    public CtrlCall instantiate(RuleSystem grammar) throws FormatException {
+        Rule rule = grammar.getRule(getRuleName());
+        if (rule == null) {
+            throw new FormatException(
+                "Called rule '%s' does not occur in grammar", getRuleName());
+        }
+        // TODO the test for argument compatibility is to be added later
+        return new CtrlCall(rule, getArgs());
+    }
 
     /**
      * A special call, indicating that the control program is successful.
