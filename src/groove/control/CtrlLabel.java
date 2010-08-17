@@ -39,6 +39,16 @@ import java.util.Set;
  */
 public class CtrlLabel extends AbstractLabel {
     /** 
+     * Constructs a virtual control label with an omega call and a
+     * given set of guard names.
+     */
+    public CtrlLabel(Collection<String> guardNames) {
+        this.call = CtrlCall.OMEGA;
+        this.guard = null;
+        this.guardNames = new LinkedHashSet<String>(guardNames);
+    }
+
+    /** 
      * Constructs a virtual control label from a rule name,
      * a set of call arguments, and a set of guard names.
      */
@@ -53,7 +63,7 @@ public class CtrlLabel extends AbstractLabel {
      * Constructs an actual control label from a given rule call
      * and guard.
      */
-    public CtrlLabel(CtrlCall call, Collection<Rule> guard) {
+    private CtrlLabel(CtrlCall call, Collection<Rule> guard) {
         this.call = call;
         this.guard = new LinkedHashSet<Rule>(guard);
         this.guardNames = new LinkedHashSet<String>();

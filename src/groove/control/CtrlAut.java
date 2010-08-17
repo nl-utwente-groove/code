@@ -53,18 +53,53 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
      * start and final state.
      */
     public CtrlAut(CtrlState startState, CtrlState finalState) {
+        addState(startState);
+        addState(finalState);
         this.startState = startState;
         this.finalState = finalState;
     }
 
     /** Adds a control transition to this automaton. */
-    public boolean addTransition(CtrlTransition edge) {
-        return this.transitions.add(edge);
+    boolean addTransition(CtrlTransition edge) {
+        boolean result = this.transitions.add(edge);
+        if (result && edge.label().getCall().isOmega()) {
+            this.omegaTransitions.add(edge);
+        }
+        return result;
+    }
+
+    /** Removes a control transition from this automaton. */
+    boolean removeTransition(CtrlTransition edge) {
+        boolean result = this.transitions.remove(edge);
+        if (result) {
+            this.omegaTransitions.remove(edge);
+        }
+        return result;
+    }
+
+    /** 
+     * Convenience method for adding a control transition between given states and with a given label.
+     */
+    CtrlTransition addTransition(CtrlState source, CtrlLabel label,
+            CtrlState target) {
+        CtrlTransition result = createTransition(source, label, target);
+        addTransition(result);
+        return result;
     }
 
     /** Adds a control state to this automaton. */
-    public boolean addState(CtrlState node) {
+    boolean addState(CtrlState node) {
+        if (node.getNumber() == this.maxStateNr + 1) {
+            this.maxStateNr++;
+        }
         return this.states.add(node);
+    }
+
+    /** Adds a fresh state to this control automaton. */
+    CtrlState addState() {
+        CtrlState result = createState();
+        addState(result);
+        return result;
     }
 
     @Override
@@ -74,6 +109,11 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
 
     public Set<CtrlState> nodeSet() {
         return this.states;
+    }
+
+    /** Returns the set of omega transitions. */
+    public Set<CtrlTransition> getOmegaTransitions() {
+        return this.omegaTransitions;
     }
 
     /** Returns the start state of the automaton. */
@@ -94,7 +134,24 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
 
     /** Factory method to create a control state for this automaton. */
     private CtrlState createState() {
-        return new CtrlState();
+        int stateNr = this.maxStateNr + 1;
+        boolean fresh = false;
+        while (!fresh) {
+            for (CtrlState state : nodeSet()) {
+                if (stateNr == state.getNumber()) {
+                    fresh = false;
+                    stateNr++;
+                    break;
+                }
+            }
+        }
+        return new CtrlState(stateNr);
+    }
+
+    /** Factory method for control transitions. */
+    private CtrlTransition createTransition(CtrlState source, CtrlLabel label,
+            CtrlState target) {
+        return new CtrlTransition(source, label, target);
     }
 
     /** 
@@ -142,6 +199,13 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     /** The set of transitions of this control automaton. */
     private final Set<CtrlTransition> transitions = new TransitionSet();
 
+    /** The set of omega transitions in this control automaton. */
+    private final Set<CtrlTransition> omegaTransitions =
+        new HashSet<CtrlTransition>();
+
+    /** Upper bound of the range of known consecutive state numbers. */
+    private int maxStateNr;
+
     /** 
      * Offers a modifiable view on the transitions stored in the states 
      * of this automaton.
@@ -181,7 +245,12 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
 
         @Override
         public boolean remove(Object o) {
-            throw new UnsupportedOperationException();
+            if (o instanceof ControlTransition) {
+                CtrlTransition trans = (CtrlTransition) o;
+                return trans.source().removeTransition(trans);
+            } else {
+                return false;
+            }
         }
 
         @Override

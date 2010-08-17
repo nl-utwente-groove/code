@@ -52,7 +52,7 @@ public class CtrlCall {
     }
 
     /**
-     * Constructs an actual call for a given rule and list of arguments.
+     * Constructs an instantiated call for a given rule and list of arguments.
      * @param rule the rule to be called; non-{@code null}
      * @param args list of arguments for the call; non-{@code null}
      */
