@@ -20,11 +20,14 @@ import groove.control.parse.Counter;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.trans.RuleSystem;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,10 +40,17 @@ import java.util.Set;
  */
 public class CtrlState implements Node {
     /**
-     * Creates a control state.
+     * Creates a control state with a fresh number.
      */
     public CtrlState() {
-        this.stateNumber = Counter.inc();
+        this(Counter.inc());
+    }
+
+    /**
+     * Creates a control state with a given number.
+     */
+    public CtrlState(int nr) {
+        this.stateNumber = nr;
     }
 
     public int compareTo(Element obj) {
@@ -82,16 +92,39 @@ public class CtrlState implements Node {
     /**
      * Returns the set of bound variables in this state.
      */
-    public Collection<String> getBoundVars() {
+    public Collection<CtrlVar> getBoundVars() {
         return this.boundVars;
     }
 
     /**
      * Sets the bound variables of this state to the elements of a given collection.
      */
-    public void setBoundVars(Collection<String> variables) {
-        this.boundVars = new LinkedHashSet<String>(variables);
+    public void setBoundVars(Collection<CtrlVar> variables) {
+        this.boundVars = new LinkedHashSet<CtrlVar>(variables);
     }
 
-    private Collection<String> boundVars = new ArrayList<String>();
+    /** The collection of bound variables of this control state. */
+    private Collection<CtrlVar> boundVars = new ArrayList<CtrlVar>();
+
+    /**
+     * Returns an instantiation of this (virtual) control state using a given 
+     * rule system.
+     * The instantiation is recorded in a state map passed as a parameter
+     * @param stateMap mapping from virtual to instantiated states
+     * @param rules the rule system used to instantiate the transition
+     * @return the image of this state in {@code stateMap}, or a fresh 
+     * instantiated control state if there is no image
+     * @throws FormatException if the rule or one of the failures do not 
+     * exist in the given rule system
+     */
+    public CtrlState instantiate(Map<CtrlState,CtrlState> stateMap,
+            RuleSystem rules) throws FormatException {
+        CtrlState result = stateMap.get(this);
+        if (result == null) {
+            result = new CtrlState(getNumber());
+            stateMap.put(this, result);
+            result.setBoundVars(getBoundVars());
+        }
+        return result;
+    }
 }

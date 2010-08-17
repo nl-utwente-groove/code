@@ -21,6 +21,7 @@ import groove.trans.RuleSystem;
 import groove.util.Groove;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -176,8 +177,12 @@ public class CtrlCall {
             throw new FormatException(
                 "Called rule '%s' does not occur in grammar", getRuleName());
         }
+        List<CtrlArg> newArgs = new ArrayList<CtrlArg>(getArgs().size());
+        for (CtrlArg arg : getArgs()) {
+            newArgs.add(arg.instantiate(grammar));
+        }
         // TODO the test for argument compatibility is to be added later
-        return new CtrlCall(rule, getArgs());
+        return new CtrlCall(rule, newArgs);
     }
 
     /**

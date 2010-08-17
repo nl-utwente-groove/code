@@ -16,65 +16,97 @@
  */
 package groove.control;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraRegister;
+import groove.graph.algebra.ValueNode;
+import groove.trans.RuleSystem;
+
 /**
- * Class representing a control parameter. These have two properties:
+ * Class representing a control argument. A control argument has two properties:
  * <ul>
- * <li>Their input/output nature
- * <li>Their content which can be <i>variable</i>, <i>constant</i> or
- * <i>don't care</i>
+ * <li>Its direction: input, output or don't care
+ * <li>Its content: <i>variable</i> or <i>constant</i>. A constant can be virtual 
+ * (only given by a string representation) or instantiated to a {@link ValueNode}.
  * </ul>
  * @author Arend Rensink
  * @version $Revision $
  */
 public class CtrlArg {
     /** 
-     * Constructs an input or output don't care parameter.
-     * @param inPar flag indicating if the parameter is input or output
+     * Constructs a don't care argument.
      */
-    public CtrlArg(boolean inPar) {
-        this.inPar = inPar;
+    public CtrlArg() {
+        this.inArg = false;
+        this.outArg = false;
         this.var = null;
-        this.constant = null;
+        this.constRepr = null;
+        this.constNode = null;
+        this.type = null;
     }
 
     /** 
-     * Constructs an input or output control parameter
+     * Constructs an input or output control argument
      * wrapping a given variable.
-     * @param inPar flag indicating if the parameter is input or output
-     * @param var the (non-{@code null}) variable to be wrapped by this parameter.
+     * @param inArg flag indicating if the argument is input or output
+     * @param var the (non-{@code null}) variable to be wrapped by this argument.
      */
-    public CtrlArg(boolean inPar, String var) {
-        this.inPar = inPar;
+    public CtrlArg(boolean inArg, CtrlVar var) {
+        this.inArg = inArg;
+        this.outArg = !inArg;
         assert var != null;
         this.var = var;
-        this.constant = null;
+        this.constRepr = null;
+        this.constNode = null;
+        this.type = var.getType();
     }
 
     /**
-     * Constructs a constant input parameter.
-     * @param constant the (non-{@code null}) constant value.
+     * Constructs a virtual constant input parameter from the string representation
+     * of a given value.
+     * It is assumed that the value represents a valid constant in some signature. 
+     * @param constRepr string representation of the (non-{@code null}) constant value.
      */
-    public CtrlArg(Object constant) {
-        this.inPar = true;
-        this.constant = constant;
+    public CtrlArg(String constRepr) {
+        this.inArg = true;
+        this.outArg = false;
+        this.constRepr = constRepr;
+        assert AlgebraRegister.getSignatureName(constRepr) != null;
+        this.constNode = null;
         this.var = null;
+        this.type =
+            CtrlType.createDataType(AlgebraRegister.getSignatureName(constRepr));
+    }
+
+    /**
+     * Constructs an instantiated constant input parameter from a given value node.
+     * @param constNode string representation of the (non-{@code null}) constant value.
+     */
+    public CtrlArg(ValueNode constNode) {
+        this.inArg = true;
+        this.outArg = false;
+        this.constRepr = constNode.getSymbol();
+        this.constNode = constNode;
+        this.var = null;
+        this.type =
+            CtrlType.createDataType(AlgebraRegister.getSignatureName(constNode.getAlgebra()));
     }
 
     @Override
     public boolean equals(Object obj) {
-        boolean result = false;
-        if (obj instanceof CtrlArg) {
+        boolean result = this == obj;
+        if (!result && obj instanceof CtrlArg) {
             CtrlArg other = (CtrlArg) obj;
-            result = isInPar() == other.isInPar();
+            result =
+                isInArg() == other.isInArg() && isOutArg() == other.isOutArg();
             if (result) {
-                if (isDontCare()) {
-                    result = other.isDontCare();
-                } else if (getVar() != null) {
-                    result = getVar().equals(other.getVar());
-                } else {
-                    assert getConstant() != null;
-                    result = getConstant().equals(other.getConstant());
-                }
+                result =
+                    getVar() == null ? other.getVar() == null
+                            : getVar().equals(other.getVar());
+            }
+            if (result) {
+                result =
+                    getConstRepr() == null ? other.getConstRepr() == null
+                            : getConstRepr().equals(other.getConstRepr());
             }
         }
         return result;
@@ -82,13 +114,11 @@ public class CtrlArg {
 
     @Override
     public int hashCode() {
-        int result = isInPar() ? 1 : 2;
-        if (!isDontCare()) {
-            if (getVar() != null) {
-                result += getVar().hashCode();
-            } else {
-                result -= getConstant().hashCode();
-            }
+        int result = isInArg() ? 1 : isOutArg() ? 2 : 3;
+        if (getVar() != null) {
+            result += getVar().hashCode();
+        } else if (getConstRepr() != null) {
+            result -= getConstRepr().hashCode();
         }
         return result;
     }
@@ -99,38 +129,112 @@ public class CtrlArg {
         if (isDontCare()) {
             result = "_";
         } else if (getVar() != null) {
-            result = isInPar() ? "" : "out ";
+            result = isOutArg() ? "out " : "";
             result += getVar().toString();
         } else {
-            result = getConstant().toString();
+            result = getConstRepr();
         }
         return result;
     }
 
-    /** Indicates whether this parameter is an input parameter. */
-    public boolean isInPar() {
-        return this.inPar;
+    /** 
+     * Indicates whether this argument is an input argument.
+     * An argument is either input, output, or don't care. 
+     */
+    public boolean isInArg() {
+        return this.inArg;
     }
 
-    /** Returns the (possibly {@code null}) variable encapsulated by this parameter. */
-    public String getVar() {
+    /** 
+     * Indicates whether this argument is an output argument. 
+     * If {@code true}, the variable must be set.
+     * An argument is either input, output, or don't care. 
+     */
+    public boolean isOutArg() {
+        return this.outArg;
+    }
+
+    /** 
+     * Indicates if this argument is a don't care; i.e., its value is irrelevant. 
+     * An argument is either input, output, or don't care. 
+     */
+    public boolean isDontCare() {
+        return !isInArg() && !isOutArg();
+    }
+
+    /** Returns the (possibly {@code null}) variable encapsulated by this argument. */
+    public CtrlVar getVar() {
         return this.var;
     }
 
-    /** Returns the (possibly {@code null}) constant encapsulated by this parameter. */
-    public Object getConstant() {
-        return this.constant;
+    /** Returns the (possibly {@code null}) constant encapsulated by this argument. */
+    public String getConstRepr() {
+        return this.constRepr;
     }
 
-    /** Indicates if this parameter is a wildcard; i.e., its value is irrelevant. */
-    public boolean isDontCare() {
-        return this.var == null && this.constant == null;
+    /** 
+     * Returns the (possibly {@code null}) constant encapsulated by this argument.
+     * The constant may be {@code null} under two circumstances:
+     * <ul>
+     * <li> The argument is a don't care or variable argument
+     * <li> The argument has not yet been instantiated
+     * </ul>
+     */
+    public ValueNode getConstNode() {
+        return this.constNode;
     }
 
-    /** Flag signalling whether this parameter is an input parameter. */
-    private final boolean inPar;
+    /** 
+     * Returns the control type of this argument.
+     * @return {@code null} if the argument is don't care;
+     * the type derived from the variable or constant otherwise.
+     */
+    public CtrlType getType() {
+        return this.type;
+    }
+
+    /**
+     * Instantiates this (virtual) control argument by providing  
+     * appropriate value nodes for constants.
+     * @param grammar the rule system specifying the appropriate
+     * data algebra
+     * @return an instantiated control argument
+     */
+    public CtrlArg instantiate(RuleSystem grammar) {
+        if (getConstRepr() == null) {
+            return this;
+        } else {
+            // find the algebra of this constant
+            AlgebraRegister register =
+                AlgebraRegister.getInstance(grammar.getProperties().getAlgebraFamily());
+            Algebra<?> algebra =
+                register.getImplementation(getType().getSignature());
+            // find the appropriate constant value itself
+            Object constant = algebra.getValue(getConstRepr());
+            // construct the control argument with the corresponding value node
+            return new CtrlArg(ValueNode.createValueNode(algebra, constant));
+        }
+
+    }
+
+    /** Flag signalling whether this argument is an input argument. */
+    private final boolean inArg;
+    /** Flag signalling whether this argument is an output argument. */
+    private final boolean outArg;
     /** The variable encapsulated by this parameter, if any. */
-    private final String var;
-    /** The constant encapsulated by this parameter, if any. */
-    private final Object constant;
+    private final CtrlVar var;
+    /** String representation of the constant encapsulated by this parameter, if any. */
+    private final String constRepr;
+    /**
+     * The constant encapsulated by this parameter, if any.
+     * May be {@code null} if the constant has not yet been instantiated. 
+     */
+    private final ValueNode constNode;
+    /** 
+     * The control type of this argument.
+     * Is {@code null} if the argument is don't care; otherwise
+     * it is derived from the variable or constant type.
+     * 
+     */
+    private final CtrlType type;
 }

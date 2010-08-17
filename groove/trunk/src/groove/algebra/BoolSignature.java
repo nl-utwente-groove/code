@@ -17,7 +17,7 @@
 package groove.algebra;
 
 /**
- * Interface for integer algebras.
+ * Interface for boolean algebras.
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
