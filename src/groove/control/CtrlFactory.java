@@ -16,6 +16,8 @@
  */
 package groove.control;
 
+import groove.view.FormatException;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,29 +33,82 @@ import java.util.Set;
  * @version $Revision $
  */
 public class CtrlFactory {
+    /** 
+     * Closes a given control automaton under the <i>as long as possible</i>
+     * operator.
+     */
+    public void buildAlap(CtrlAut aut) {
+        buildLoop(aut, aut.getStart().getInit());
+    }
+
     /** Factory method for a single rule call. */
     public CtrlAut buildCall(Map<String,CtrlVar> context, String ruleName,
             List<CtrlArg> args) {
         CtrlAut result = new CtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
-        result.addTransition(result.getStart(), createLabel(ruleName, args,
-            EMPTY_GUARD), middle);
-        result.addTransition(middle, createOmegaLabel(EMPTY_GUARD),
-            result.getFinal());
+        result.addTransition(result.getStart(), createLabel(ruleName, args),
+            middle);
+        result.addTransition(middle, createOmegaLabel(), result.getFinal());
         return result;
     }
 
-    /** Factory method for immediate, unconditional success. */
-    public CtrlAut buildTrue() {
-        CtrlAut result = new CtrlAut();
-        result.addTransition(result.getStart(), createOmegaLabel(EMPTY_GUARD),
-            result.getFinal());
-        return result;
+    /**
+     * Builds an automaton for a <i>do-until</i> construct.
+     * The result is constructed by modifying the first parameter.
+     * The second parameter is also modified.
+     * @param first the body of the loop; contains the result upon return
+     * @param second the condition of the loop; modified in the course 
+     * of the construction
+     */
+    public void buildDoUntil(CtrlAut first, CtrlAut second) {
+        buildUntilDo(second, first);
+        buildSeq(first, second);
     }
 
-    /** Adds a second control automaton sequentially after a given automaton. */
-    public void buildSequential(CtrlAut first, CtrlAut second) {
+    /**
+     * Builds an automaton for a <i>do-while</i> construct.
+     * The result is constructed by modifying the first parameter.
+     * The second parameter is also modified.
+     * @param first the body of the loop; contains the result upon return
+     * @param second the condition of the loop; modified in the course 
+     * of the construction
+     */
+    public void buildDoWhile(CtrlAut first, CtrlAut second) {
+        buildWhileDo(second, first);
+        buildSeq(first, second);
+    }
+
+    /** 
+     * Builds an <i>if-then-else</i> construct out of three automata,
+     * by modifying the first of the three.
+     */
+    public void buildIfThenElse(CtrlAut first, CtrlAut second, CtrlAut third) {
+        Set<String> guard = first.getStart().getInit();
+        buildSeq(first, second);
+        buildOr(first, third, guard);
+    }
+
+    /**
+     * Builds a new automaton by replacing all invocations of a function
+     * (encoded as rule calls to a given rule name) by the function body.
+     * The start state of the function should bind all input arguments of
+     * the calls, and the final state should bind all output arguments.
+     * The result is constructed by modifying the first parameter.
+     * @param first the calling automaton
+     * @param functionName the rule name of the calls to be replaced
+     * @param second the called automaton
+     */
+    public void buildInvoke(CtrlAut first, String functionName, CtrlAut second) {
+
+    }
+
+    /** Adds a second control automaton sequentially after a given automaton. 
+     * The result is constructed by modifying the first parameter.
+     * @param first the automaton to be executed first; contains the result upon return
+     * @param second the automaton to be executed second
+     */
+    public void buildSeq(CtrlAut first, CtrlAut second) {
         Map<CtrlState,CtrlState> secondToFirstMap = copyAut(second, first);
         // remove omega-transitions from first
         Set<CtrlTransition> firstOmega = removeOmegas(first);
@@ -76,79 +131,125 @@ public class CtrlFactory {
         }
     }
 
+    /** Adds a second control automaton as alternative to a given one. */
+    public void buildOr(CtrlAut first, CtrlAut second) {
+        buildOr(first, second, Collections.<String>emptySet());
+    }
+
+    /** Factory method for immediate, unconditional success. */
+    public CtrlAut buildTrue() {
+        CtrlAut result = new CtrlAut();
+        result.addTransition(result.getStart(), createOmegaLabel(),
+            result.getFinal());
+        return result;
+    }
+
     /** 
      * Adds a second control automaton as <i>else</i> parameter in
      * a <i>try</i> construct with the first automaton as try block.
      */
     public void buildTryElse(CtrlAut first, CtrlAut second) {
-        Map<CtrlState,CtrlState> secondToFirstMap = copyAut(second, first);
-        // get the extra guard resulting from refusing first
-        Set<String> firstInit = first.getStart().getInit();
-        // copy transitions from second to first
-        for (CtrlTransition trans : second.edgeSet()) {
-            CtrlState sourceImage = secondToFirstMap.get(trans.source());
-            CtrlState targetImage = secondToFirstMap.get(trans.target());
-            CtrlLabel label = trans.label();
-            // initial transitions have to be treated separately
-            if (sourceImage.equals(first.getStart())) {
-                // create and augmented transition, or
-                // no transition at all if omega is among the first init
-                if (firstInit != null) {
-                    CtrlLabel newLabel = createLabel(label, firstInit);
-                    first.addTransition(sourceImage, newLabel, targetImage);
-                }
-            } else {
-                first.addTransition(sourceImage, label, targetImage);
-            }
-        }
+        buildOr(first, second, first.getStart().getInit());
     }
 
-    /** Adds a second control automaton as alternative to a given one. */
-    public void buildOr(CtrlAut first, CtrlAut second) {
-        Map<CtrlState,CtrlState> secondToFirstMap = copyAut(second, first);
-        // copy transitions from second to first
-        for (CtrlTransition trans : second.edgeSet()) {
-            CtrlState sourceImage = secondToFirstMap.get(trans.source());
-            CtrlState targetImage = secondToFirstMap.get(trans.target());
-            first.addTransition(sourceImage, trans.label(), targetImage);
-        }
-    }
-
-    /** 
-     * Closes a given control automaton under the <i>as long as possible</i>
-     * operator.
+    /**
+     * Constructs an until automaton using a given automaton as condition 
+     * and adding a second automaton as until body.
+     * @param first the condition automaton; contains the result upon return
+     * @param second the until body automaton
      */
-    public void buildAlap(CtrlAut aut) {
+    public void buildUntilDo(CtrlAut first, CtrlAut second) {
         // get the automaton guard before the omegas are removed
-        Set<String> autGuard = aut.getStart().getInit();
-        Set<CtrlTransition> omegas = removeOmegas(aut);
-        // copy the initial transitions to avoid concurrent modification exceptions
-        Set<CtrlTransition> inits =
-            new HashSet<CtrlTransition>(aut.getStart().getTransitions());
-        for (CtrlTransition omega : omegas) {
-            // create cycles for all original omega transitions
-            for (CtrlTransition init : inits) {
-                CtrlLabel newLabel =
-                    createLabel(init.label(), omega.label().getGuardNames());
-                aut.addTransition(omega.source(), newLabel, init.target());
-            }
-            // create new omega transitions if the automaton guard is non-degenerate
-            if (autGuard != null) {
-                CtrlLabel newLabel = createLabel(omega.label(), autGuard);
-                aut.addTransition(omega.source(), newLabel, aut.getFinal());
+        Set<String> autGuard = first.getStart().getInit();
+        if (autGuard != null) {
+            // remove omega-transitions from first
+            Set<CtrlTransition> firstOmega = removeOmegas(first);
+            // build the until loop
+            buildOr(first, second, autGuard);
+            buildLoop(first, null);
+            // re-attach the omega-transitions
+            for (CtrlTransition omega : firstOmega) {
+                first.addTransition(omega);
             }
         }
     }
 
     /**
      * Constructs a while automaton using a given automaton as condition 
-     * and adding a second automaton as while block.
+     * and adding a second automaton as while body.
+     * The result is constructed by modifying the first parameter.
+     * @param first the condition automaton; contains the result upon return
+     * @param second the while body automaton
      */
-    public void buidWhile(CtrlAut first, CtrlAut second) {
-        Map<CtrlState,CtrlState> secondToFirstMap = copyAut(second, first);
+    public void buildWhileDo(CtrlAut first, CtrlAut second) {
         // get the automaton guard before the omegas are removed
         Set<String> autGuard = first.getStart().getInit();
-        Set<CtrlTransition> omegas = removeOmegas(first);
+        // sequentially compose first and second
+        buildSeq(first, second);
+        buildLoop(first, autGuard);
+    }
+
+    /** 
+     * Minimises a given automaton, and tests it for determinism.
+     * Also reduces the bound variables in the states to those used
+     * in later outgoing transitions.
+     * The resulting automaton may fail to satisfy the assumption that
+     * the start state has no incoming transitions, and hence it should no
+     * longer be used in constructions.
+     * @param aut the automaton to be minimised
+     * @throws FormatException if the automaton is not deterministic
+     */
+    public void minimise(CtrlAut aut) throws FormatException {
+
+    }
+
+    /** 
+     * Loops a given control automaton, while terminating under a 
+     * predefined guard.
+     * The result is constructed by modifying the parameter.
+     */
+    private void buildLoop(CtrlAut aut, Set<String> guard) {
+        Set<CtrlTransition> omegas = removeOmegas(aut);
+        // copy transitions from second to first
+        for (CtrlTransition omega : omegas) {
+            // create cycles for all original omega transitions
+            for (CtrlTransition init : aut.getStart().getTransitions()) {
+                CtrlLabel newLabel =
+                    createLabel(init.label(), omega.label().getGuardNames());
+                aut.addTransition(omega.source(), newLabel, init.target());
+            }
+            // create new omega transitions if the automaton guard is non-degenerate
+            if (guard != null) {
+                CtrlLabel newLabel = createLabel(omega.label(), guard);
+                aut.addTransition(omega.source(), newLabel, aut.getFinal());
+            }
+        }
+    }
+
+    /** 
+     * Adds a second control automaton as alternative, reachable 
+     * under a given guard. The guard may be {@code null}, meaning that
+     * the second automaton is unreachable.
+     */
+    private void buildOr(CtrlAut first, CtrlAut second, Set<String> guard) {
+        // if the guard is degenerate, the second automaton is unreachable
+        if (guard == null) {
+            Map<CtrlState,CtrlState> secondToFirstMap = copyAut(second, first);
+            // copy transitions from second to first
+            for (CtrlTransition trans : second.edgeSet()) {
+                CtrlState sourceImage = secondToFirstMap.get(trans.source());
+                CtrlState targetImage = secondToFirstMap.get(trans.target());
+                CtrlLabel label = trans.label();
+                // initial transitions have to be treated separately
+                if (sourceImage.equals(first.getStart())) {
+                    // create an augmented transition, 
+                    CtrlLabel newLabel = createLabel(label, guard);
+                    first.addTransition(sourceImage, newLabel, targetImage);
+                } else {
+                    first.addTransition(sourceImage, label, targetImage);
+                }
+            }
+        }
     }
 
     /** 
@@ -196,15 +297,14 @@ public class CtrlFactory {
             newGuards);
     }
 
-    /** Factory method for virtual control labels. */
-    private CtrlLabel createLabel(String ruleName, List<CtrlArg> args,
-            Collection<String> guard) {
-        return new CtrlLabel(ruleName, args, guard);
+    /** Factory method for virtual control labels, with an empty guard. */
+    private CtrlLabel createLabel(String ruleName, List<CtrlArg> args) {
+        return new CtrlLabel(ruleName, args, EMPTY_GUARD);
     }
 
-    /** Factory method for omega control labels. */
-    private CtrlLabel createOmegaLabel(Collection<String> guard) {
-        return new CtrlLabel(guard);
+    /** Factory method for omega control labels, with an empty guard. */
+    private CtrlLabel createOmegaLabel() {
+        return new CtrlLabel(EMPTY_GUARD);
     }
 
     /** Returns the singleton instance of this factory class. */
