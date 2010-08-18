@@ -505,8 +505,8 @@ public class Shape extends DefaultGraph implements DeltaTarget {
             for (Edge edge : this.graph.edgeSet(node)) {
                 if (Util.isUnary(edge)) {
                     // EZ says: I don't like this jump, but if I don't use it,
-                    // I will have one extra indentation level, which looks
-                    // like crap...
+                    // I will have one extra indentation level, which makes
+                    // the code look like crap...
                     continue;
                 } // else, we have a binary edge.
 
@@ -757,7 +757,7 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     }
 
     /** Duplicate all unary edges occurring in the given 'from' node. */
-    public void copyUnaryEdges(ShapeNode from, ShapeNode to) {
+    private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
         for (Edge edge : this.outEdgeSet(from)) {
             if (Util.isUnary(edge)) {
                 Label label = edge.label();
@@ -1160,13 +1160,4 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         this.cleanEdgeSigSet();
     }
 
-    /** EDUARDO: Need to implement this... */
-    public boolean isConfigAdmissible(EdgeMultConf conf) {
-        return false;
-    }
-
-    /** EDUARDO: Need to implement this... */
-    public void applyConfiguration(EdgeMultConf conf) {
-        // Empty stub.
-    }
 }

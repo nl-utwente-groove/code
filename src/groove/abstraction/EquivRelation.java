@@ -60,7 +60,7 @@ public class EquivRelation<T> extends HashSet<EquivClass<T>> {
      * 
      * This method assumes that the equivalence relation is consistent, i.e.,
      * an element belongs only to a single equivalence class.
-     *  */
+     */
     public EquivClass<T> getEquivClassOf(T elem) {
         EquivClass<T> result = null;
         for (EquivClass<T> ec : this) {

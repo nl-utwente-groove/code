@@ -193,7 +193,8 @@ public class Materialisation {
         }
 
         for (Materialisation partialMat : partialMats) {
-            result.addAll(partialMat.finishMaterialisation());
+            partialMat.finishMaterialisation();
+            result.add(partialMat);
         }
 
         return result;
@@ -265,7 +266,7 @@ public class Materialisation {
      * Extends the pre-match of a partially constructed materialisation object.
      * In this method, the nodes of the pre-match that were mapped to abstract
      * nodes in the shape are re-mapped to the newly materialised nodes. Note
-     * that this is step is also non-deterministic, since we may have more
+     * that this step is also non-deterministic, since we may have more
      * than one node in the rule that was mapped to the same abstract node. In
      * this case we need to try out all possible combinations. Not all of those
      * are actually valid configurations but this will only be checked later. 
@@ -374,23 +375,18 @@ public class Materialisation {
     }
 
     /** 
-     * Finishes the materialisation by removing impossible edge configuration
-     * and by adjusting the equivalence relation of the underlying shape. This
-     * is also a non-deterministic step.  
+     * Finishes the materialisation by removing impossible edge configurations.
      */
-    private Set<Materialisation> finishMaterialisation() {
+    private void finishMaterialisation() {
         // At this point we assume that all variations on the nodes were
         // resolved, and that the rule match is complete and fixed.
         // Now, we go through the matched edges of the rule and adjust the 
         // shared edge multiplicities.
-
         for (Edge edgeR : this.absElems.edgeMap().keySet()) {
             ShapeEdge mappedEdge = (ShapeEdge) this.match.getEdge(edgeR);
             this.removeImpossibleEdges(mappedEdge);
         }
         this.absElems.edgeMap().clear();
-
-        return this.adjustEquivRelation();
     }
 
     /**
@@ -411,80 +407,6 @@ public class Materialisation {
         if (inMult.equals(oneMult)) {
             this.shape.removeImpossibleInEdges(inEs, mappedEdge);
         }
-    }
-
-    /** EDUARDO: Need to fix this... */
-    private Set<Materialisation> adjustEquivRelation() {
-        Set<Materialisation> result = new HashSet<Materialisation>();
-
-        // Re-use the absElems map to store the nodes in the rule that
-        // need to be processed.
-        for (Entry<Node,Node> nodeEntry : this.match.nodeMap().entrySet()) {
-            this.absElems.putNode(nodeEntry.getKey(), nodeEntry.getValue());
-        }
-
-        // Process the nodes using a queue.
-        List<Materialisation> todoMats = new ArrayList<Materialisation>();
-        // Add initial element to end.
-        todoMats.add(this);
-        while (!todoMats.isEmpty()) {
-            // Remove from head.
-            Materialisation mat = todoMats.remove(0);
-            if (mat.isExtensionFinished()) {
-                // We are done with this one.
-                result.add(mat);
-            } else {
-                // Take all the nodes in the image of the LHS and put them in a
-                // singleton equivalence class.
-
-                // Take the next node.
-                Entry<Node,Node> entry =
-                    mat.absElems.nodeMap().entrySet().iterator().next();
-                Node nodeR = entry.getKey();
-                ShapeNode nodeS = (ShapeNode) entry.getValue();
-                mat.absElems.removeNode(nodeR);
-                if (mat.shape.getEquivClassOf(nodeS).size() > 1) {
-                    // Splitting an equivalence class is a non-deterministic
-                    // step because we may need to resolve shared edges.
-                    todoMats.addAll(mat.splitEquivClassOf(nodeS));
-                } else {
-                    // Nothing to do for this image node. Re-insert this
-                    // materialisation in the queue so that it gets further
-                    // processed.
-                    todoMats.add(mat);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /** EDUARDO: Need to fix this... */
-    private Set<Materialisation> splitEquivClassOf(ShapeNode node) {
-        Set<Materialisation> result = new HashSet<Materialisation>();
-
-        EquivClass<ShapeNode> ec = this.shape.getEquivClassOf(node);
-        if (ec.size() == 1) {
-            // The node is already in its own equivalence class. Nothing to do.
-            result.add(this);
-        } else {
-            // Compute all possible ways of splitting the multiplicities.
-            Set<EdgeMultConf> confs =
-                EdgeMultConf.computeConfs(this.shape, node, ec);
-            // For each possibility.
-            for (EdgeMultConf conf : confs) {
-                // Check if the configuration is feasible.
-                if (this.shape.isConfigAdmissible(conf)) {
-                    // Clone the materialisation object, do the split and
-                    // add the clone to the result set.
-                    Materialisation newMat = this.clone();
-                    newMat.shape.applyConfiguration(conf);
-                    result.add(newMat);
-                } // else discard the configuration.
-            }
-        }
-
-        return result;
     }
 
     /**
