@@ -24,30 +24,31 @@ import groove.view.FormatException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class StringSignature<MyString,Bool> implements Signature {
+@SuppressWarnings("hiding")
+public abstract class StringSignature<String,Bool> implements Signature {
     /** String concatenation. */
-    public abstract MyString concat(MyString arg0, MyString arg1);
+    public abstract String concat(String arg0, String arg1);
 
     /** Lesser-than comparison. */
-    public abstract Bool lt(MyString arg0, MyString arg1);
+    public abstract Bool lt(String arg0, String arg1);
 
     /** Lesser-or-equal comparison. */
-    public abstract Bool le(MyString arg0, MyString arg1);
+    public abstract Bool le(String arg0, String arg1);
 
     /** Greater-than comparison. */
-    public abstract Bool gt(MyString arg0, MyString arg1);
+    public abstract Bool gt(String arg0, String arg1);
 
     /** Greater-or-equal comparison. */
-    public abstract Bool ge(MyString arg0, MyString arg1);
+    public abstract Bool ge(String arg0, String arg1);
 
     /** Equality test. */
-    public abstract Bool eq(MyString arg0, MyString arg1);
+    public abstract Bool eq(String arg0, String arg1);
 
     /**
      * Tests if the string value is surrounded with double quotes.
-     * @see ExprParser#toUnquoted(String, char)
+     * @see ExprParser#toUnquoted(java.lang.String, char)
      */
-    public final boolean isValue(String value) {
+    public final boolean isValue(java.lang.String value) {
         if (value.indexOf(ExprParser.DOUBLE_QUOTE_CHAR) != 0) {
             return false;
         }
