@@ -60,9 +60,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         // This is the first iteration.
         this.radius = 0;
         // Compute and store the equivalence classes based on node labels.
-        for (EquivClass<Node> ec : computeInitialEquivClasses()) {
-            this.add(ec);
-        }
+        this.addAll(this.computeInitialEquivClasses());
     }
 
     // ------------------------------------------------------------------------
@@ -298,7 +296,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         EquivClass<Edge> ec = new EquivClass<Edge>();
         ec.add(edge);
         for (Edge e : this.graph.edgeSet()) {
-            if (areEquivalent(edge, e)) {
+            if (this.areEquivalent(edge, e)) {
                 ec.add(e);
             }
         }

@@ -59,8 +59,8 @@ public class EdgeSignature {
     }
 
     /** 
-     * Two edge signatures are if they have the same node, same label, and the 
-     * same equivalence class.
+     * Two edge signatures are equal if they have the same node, same label,
+     * and the same equivalence class.
      */
     @Override
     public boolean equals(Object o) {
@@ -84,7 +84,7 @@ public class EdgeSignature {
     /**
      * Returns true if the edge signature, when being considered a signature
      * for outgoing edges, contains the edge (e) given as argument.
-     * The test is true if n == src(e) && l = lbl(e) && tgt(e) \in C .
+     * The test is true if n == src(e) && l == lbl(e) && tgt(e) \in C .
      */
     public boolean asOutSigContains(Edge edge) {
         return this.node.equals(edge.source())
@@ -95,7 +95,7 @@ public class EdgeSignature {
     /**
      * Returns true if the edge signature, when being considered a signature
      * for incoming edges, contains the edge (e) given as argument.
-     * The test is true if n == tgt(e) && l = lbl(e) && src(e) \in C .
+     * The test is true if n == tgt(e) && l == lbl(e) && src(e) \in C .
      */
     public boolean asInSigContains(Edge edge) {
         return this.node.equals(edge.opposite())
@@ -118,7 +118,7 @@ public class EdgeSignature {
         return this.equivClass;
     }
 
-    /** Returns true if the C is a singleton set. */
+    /** Returns true if C is a singleton set. */
     public boolean isUnique() {
         return this.equivClass.size() == 1;
     }

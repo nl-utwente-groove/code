@@ -46,7 +46,7 @@ public class ShapeNodeFactory implements NodeFactory {
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Returns a new ShapeNode object */
+    /** Returns a new ShapeNode object. */
     @Override
     public Node newNode() {
         return DefaultNode.createNode(ShapeNode.CONS);

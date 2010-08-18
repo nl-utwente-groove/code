@@ -97,8 +97,10 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
     public void removeFrom(Node n, int q) throws ExceptionRemovalImpossible {
         checkInvariants();
         NodeType c = this.type.get(n);
-        this.type.put(n, new NodeType(c.getPattern(),
-            Abstraction.MULTIPLICITY.remove(c.getMult(), q)));
+        this.type.put(
+            n,
+            new NodeType(c.getPattern(), Abstraction.MULTIPLICITY.remove(
+                c.getMult(), q)));
         checkInvariants();
     }
 
@@ -114,8 +116,8 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
             old != null && Abstraction.MULTIPLICITY.isZero(multiplicityOf(old));
         Node n = old != null ? old : ensureType(p);
         NodeType c = this.type.get(n);
-        this.type.put(n, new NodeType(p, Abstraction.MULTIPLICITY.add(
-            c.getMult(), q)));
+        this.type.put(n,
+            new NodeType(p, Abstraction.MULTIPLICITY.add(c.getMult(), q)));
         checkInvariants();
         return result;
     }
@@ -412,8 +414,10 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
             return n;
         }
         n = addNode();
-        this.type.put(n, new NodeType(p, Abstraction.MULTIPLICITY.getElement(0,
-            this.precision)));
+        this.type.put(
+            n,
+            new NodeType(p, Abstraction.MULTIPLICITY.getElement(0,
+                this.precision)));
         this.invType.put(p, n);
         checkInvariants();
         return n;
@@ -657,7 +661,8 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
                 } else {
                     nodeInResult = DefaultNode.createNode();
                     result.addNode(nodeInResult);
-                    result.type.put(nodeInResult,
+                    result.type.put(
+                        nodeInResult,
                         new NodeType(pattern,
                             Abstraction.MULTIPLICITY.getElement(1,
                                 this.myPrecision)));
