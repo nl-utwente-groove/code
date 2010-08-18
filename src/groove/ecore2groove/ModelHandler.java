@@ -16,13 +16,17 @@
  */
 package groove.ecore2groove;
 
+import groove.util.Groove;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.jar.JarFile;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
@@ -51,6 +55,7 @@ public class ModelHandler {
     private Resource ir = null;
     private ResourceSet rs = null;
     private EPackage metaModelRoot = null;
+    private boolean core = false;
 
     private Vector<EClass> classes = new Vector<EClass>();
     private Vector<EEnum> enums = new Vector<EEnum>();
@@ -73,16 +78,33 @@ public class ModelHandler {
      */
     public ModelHandler(String modelLoc) {
 
+        // if modelLoc is -core, replace it with location of Ecore.ecore
+        // and set core to true
+        if (modelLoc.equals("-core")) {
+            this.core = true;
+            modelLoc = Groove.getResource("Ecore.ecore").getFile();
+        }
+
         // Create new ResourceSet and register an XMI model loader
         this.rs = new ResourceSetImpl();
         this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
             "*", new XMIResourceFactoryImpl());
 
-        // Load Ecore model
-        this.r = this.rs.createResource(URI.createURI(modelLoc));
-
+        // Load Ecore model, location refers to inside of .jar, then extract 
+        // file from it. Especially with Ecore.ecore inside GROOVE resources
         try {
-            this.r.load(new FileInputStream(modelLoc), null);
+            if (modelLoc.contains(".jar!")) {
+                String substr =
+                    modelLoc.substring(5, modelLoc.lastIndexOf(".jar!") + 4);
+                JarFile jarFile = new JarFile(substr);
+                InputStream in =
+                    jarFile.getInputStream(jarFile.getEntry("Ecore.ecore"));
+                this.r = this.rs.createResource(URI.createURI(substr));
+                this.r.load(in, null);
+            } else {
+                this.r = this.rs.createResource(URI.createURI(modelLoc));
+                this.r.load(new FileInputStream(modelLoc), null);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -243,6 +265,14 @@ public class ModelHandler {
     }
 
     /**
+     * Returns whether or not the loaded Ecore model is actually the Ecore core model.
+     * @return true if the Ecore core model is loaded as Ecore model
+     */
+    public boolean isCore() {
+        return this.core;
+    }
+
+    /**
      * @return a Vector with all EClass instances of the loaded instance model
      */
     public Vector<EObject> getiClasses() {
@@ -261,17 +291,38 @@ public class ModelHandler {
         // Create a location URI for the instanceLoc String
         URI modelURI = URI.createFileURI(instanceLoc);
 
-        //try {
-        this.ir = this.rs.getResource(modelURI, true);
+        // if the Ecore model is the core model, we must load an instance into
+        // a new ResourceSet, because it cannot be loaded as an instance of
+        // Ecore.ecore
+        if (this.core) {
+            this.rs = new ResourceSetImpl();
+            this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
+                "ecore", new XMIResourceFactoryImpl());
 
-        this.iClasses.clear();
-        for (Iterator<EObject> it = this.ir.getAllContents(); it.hasNext();) {
-            EObject obj = it.next();
-            if (obj.eClass().eClass().getName().equals("EClass")) {
-                this.iClasses.add(obj);
+            this.ir = this.rs.getResource(modelURI, true);
+
+            this.iClasses.clear();
+            for (Iterator<EObject> it = this.ir.getAllContents(); it.hasNext();) {
+                EObject obj = it.next();
+                if (obj.eClass().eClass().getName().equals("EClass")) {
+                    this.iClasses.add(obj);
+                }
+            }
+        } else {
+
+            this.ir = this.rs.getResource(modelURI, true);
+
+            this.iClasses.clear();
+            for (Iterator<EObject> it = this.ir.getAllContents(); it.hasNext();) {
+                EObject obj = it.next();
+                if (obj.eClass().eClass().getName().equals("EClass")) {
+                    this.iClasses.add(obj);
+                }
             }
         }
+
         this.instanceLoaded = true;
+
         /*} catch (Exception e) {
         	Resource new_r = null;
         	ResourceSet new_rs = null;

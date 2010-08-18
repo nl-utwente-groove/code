@@ -31,12 +31,12 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreEList;
 
 /**
  * Given a ModelHandler with an Ecore metamodel and also an instance model
@@ -66,7 +66,11 @@ public class InstanceGraphRep {
 
         // First add instances of of classes to graph, then features
         addClasses(this.mh.getiClasses());
+        //if (this.mh.isCore()) {
+        //    addCoreStructuralFeatures(this.mh.getiClasses());
+        //} else {
         addStructuralFeatures(this.mh.getiClasses());
+        //}
 
     }
 
@@ -116,38 +120,49 @@ public class InstanceGraphRep {
                     if (iClass.eGet(feature) != null) {
                         // When there are multiple values of a feature,
                         // an EcoreEList contains them
-                        try {
-                            EcoreEList<EObject> targets =
-                                (EcoreEList<EObject>) iClass.eGet(feature);
+
+                        if (feature.isMany()) {
+                            EList<EObject> targets =
+                                (EList<EObject>) iClass.eGet(feature, true);
                             boolean ordered = feature.isOrdered();
                             DefaultNode previous = null;
                             DefaultNode last = null;
 
                             for (EObject target : targets) {
 
-                                // Add node representing the EReference to ig
-                                last = addReference(iClass, feature, target);
-                                addOpposite(iClass, feature, target);
+                                // only add reference if target exists, not 
+                                // exist at this point can happen with factory
+                                if (this.iClassToNodeMap.containsKey(target)) {
+                                    // Add node representing the EReference to ig
+                                    last =
+                                        addReference(iClass, feature, target);
+                                    addOpposite(iClass, feature, target);
 
-                                // Add next edge if references are ordered
-                                if (ordered && previous != null) {
-                                    DefaultLabel label =
-                                        DefaultLabel.createLabel("next");
-                                    DefaultEdge edge =
-                                        DefaultEdge.createEdge(previous, label,
-                                            last);
-                                    this.ig.addEdge(edge);
+                                    // Add next edge if references are ordered
+                                    if (ordered && previous != null) {
+                                        DefaultLabel label =
+                                            DefaultLabel.createLabel("next");
+                                        DefaultEdge edge =
+                                            DefaultEdge.createEdge(previous,
+                                                label, last);
+                                        this.ig.addEdge(edge);
+                                    }
+                                    previous = last;
                                 }
-                                previous = last;
 
                             }
 
                             // When not an EcoreEList and also not null,
-                            //then there is a single value which is an EObject
-                        } catch (ClassCastException e) {
-                            EObject target = (EObject) iClass.eGet(feature);
-                            addReference(iClass, feature, target);
-                            addOpposite(iClass, feature, target);
+                            // then there is a single value which is an EObject
+                        } else {
+                            EObject target =
+                                (EObject) iClass.eGet(feature, true);
+                            // only add reference if target exists, not 
+                            // exist at this point can happen with factory
+                            if (this.iClassToNodeMap.containsKey(target)) {
+                                addReference(iClass, feature, target);
+                                addOpposite(iClass, feature, target);
+                            }
 
                         }
                     }
@@ -157,8 +172,8 @@ public class InstanceGraphRep {
 
                         // if (feature != null) {
                         if (feature.isMany()) {
-                            EcoreEList<Object> targets =
-                                (EcoreEList<Object>) iClass.eGet(feature);
+                            EList<Object> targets =
+                                (EList<Object>) iClass.eGet(feature, true);
                             boolean ordered = feature.isOrdered();
                             DefaultNode previous = null;
                             DefaultNode last = null;
@@ -180,7 +195,7 @@ public class InstanceGraphRep {
                                 previous = last;
                             }
                         } else {
-                            Object iTarget = iClass.eGet(feature);
+                            Object iTarget = iClass.eGet(feature, true);
                             addAttribute(iClass, feature, iTarget);
                         }
                         // }
@@ -209,8 +224,8 @@ public class InstanceGraphRep {
 
         if (oppositeRef != null) {
             if (oppositeRef.isMany()) {
-                EcoreEList<EObject> opposites =
-                    (EcoreEList<EObject>) target.eGet(oppositeRef);
+                EList<EObject> opposites =
+                    (EList<EObject>) target.eGet(oppositeRef);
                 for (EObject opposite : opposites) {
                     if (opposite.equals(iClass)
                         && this.iReferenceToNodeMap.containsKey(Triple.create(
@@ -389,4 +404,111 @@ public class InstanceGraphRep {
         return aig;
     }
 
+    /**
+     * Add representations for features to the instance graph for all the 
+     * instances of EClasses of the instance model.
+     * @param iClasses the instances of EClasses
+     * @require EClass instances must have been added to the graph 
+     * representation already
+     */
+    /*@SuppressWarnings("unchecked")
+    private void addCoreStructuralFeatures(Vector<EObject> iClasses) {
+
+        for (EObject iClass : iClasses) {
+
+            for (EStructuralFeature feature : iClass.eClass().getEAllStructuralFeatures()) {
+                if (feature.eClass().getName().equals("EReference")) {
+
+                    if (iClass.eGet(feature) != null) {
+                        // When there are multiple values of a feature,
+                        // an EcoreEList contains them
+
+                        if (feature.isMany()) {
+
+                            if (!feature.getName().equals("eSuperTypes")
+                                && !feature.isDerived()) {
+
+                                EList<EObject> targets =
+                                    (EList<EObject>) iClass.eGet(feature);
+                                boolean ordered = feature.isOrdered();
+                                DefaultNode previous = null;
+                                DefaultNode last = null;
+
+                                for (EObject target : targets) {
+
+                                    // only add reference if target exists, not 
+                                    // exist at this point can happen with factory
+                                    if (this.iClassToNodeMap.containsKey(target)) {
+                                        // Add node representing the EReference to ig
+                                        last =
+                                            addReference(iClass, feature,
+                                                target);
+                                        addOpposite(iClass, feature, target);
+
+                                        // Add next edge if references are ordered
+                                        if (ordered && previous != null) {
+                                            DefaultLabel label =
+                                                DefaultLabel.createLabel("next");
+                                            DefaultEdge edge =
+                                                DefaultEdge.createEdge(
+                                                    previous, label, last);
+                                            this.ig.addEdge(edge);
+                                        }
+                                        previous = last;
+                                    }
+
+                                }
+                            }
+                            // When not an EcoreEList and also not null,
+                            // then there is a single value which is an EObject
+                        } else {
+                            EObject target = (EObject) iClass.eGet(feature);
+                            // only add reference if target exists, not 
+                            // exist at this point can happen with factory
+                            if (this.iClassToNodeMap.containsKey(target)) {
+                                addReference(iClass, feature, target);
+                                addOpposite(iClass, feature, target);
+                            }
+
+                        }
+                    }
+
+                } else if (feature.eClass().getName().equals("EAttribute")) {
+                    if (iClass.eGet(feature) != null) {
+
+                        // if (feature != null) {
+                        if (feature.isMany()) {
+                            EList<Object> targets =
+                                (EList<Object>) iClass.eGet(feature);
+                            boolean ordered = feature.isOrdered();
+                            DefaultNode previous = null;
+                            DefaultNode last = null;
+
+                            for (Object iTarget : targets) {
+
+                                // Add node representing the EReference
+                                last = addAttribute(iClass, feature, iTarget);
+
+                                // Add next edge if references are ordered
+                                if (ordered && previous != null) {
+                                    DefaultLabel label =
+                                        DefaultLabel.createLabel("next");
+                                    DefaultEdge edge =
+                                        DefaultEdge.createEdge(previous, label,
+                                            last);
+                                    this.ig.addEdge(edge);
+                                }
+                                previous = last;
+                            }
+                        } else {
+                            Object iTarget = iClass.eGet(feature);
+                            addAttribute(iClass, feature, iTarget);
+                        }
+                        // }
+                    }
+                }
+            }
+            this.iClassReferencesDone.add(iClass);
+        }
+    }*/
 }
