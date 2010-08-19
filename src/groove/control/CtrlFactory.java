@@ -16,8 +16,10 @@
  */
 package groove.control;
 
+import groove.view.FormatError;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Class for constructing control automata.
@@ -43,7 +46,7 @@ public class CtrlFactory {
 
     /** Factory method for a single rule call. */
     public CtrlAut buildCall(Map<String,CtrlVar> context, String ruleName,
-            List<CtrlArg> args) {
+            List<CtrlPar> args) {
         CtrlAut result = new CtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
@@ -96,11 +99,165 @@ public class CtrlFactory {
      * the calls, and the final state should bind all output arguments.
      * The result is constructed by modifying the first parameter.
      * @param first the calling automaton
-     * @param functionName the rule name of the calls to be replaced
+     * @param ruleName the rule name of the calls to be replaced
      * @param second the called automaton
+     * @throws FormatException if one of the calls is not compatible with the function declaration 
      */
-    public void buildInvoke(CtrlAut first, String functionName, CtrlAut second) {
+    public void buildInvoke(CtrlAut first, String ruleName, CtrlAut second)
+        throws FormatException {
+        Set<FormatError> errors = new TreeSet<FormatError>();
+        Set<CtrlTransition> firstTrans =
+            new HashSet<CtrlTransition>(first.edgeSet());
+        for (CtrlTransition trans : firstTrans) {
+            if (trans.label().getCall().getRuleName().equals(ruleName)) {
+                try {
+                    buildReplace(first, trans, second);
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
+                }
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
+        }
+    }
 
+    /**
+     * Builds a new automaton by replacing a given invocation of a function
+     * (encoded as a control transition) by the function body.
+     * The start state of the function should bind all input arguments of
+     * the calls, and the final state should bind all output arguments.
+     * The result is constructed by modifying the first parameter.
+     * @param first the calling automaton
+     * @param callTrans the transition to be replaced
+     * @param second the called automaton
+     * @throws FormatException if the call is not compatible with the function declaration 
+     */
+    private void buildReplace(CtrlAut first, CtrlTransition callTrans,
+            CtrlAut second) throws FormatException {
+        first.removeTransition(callTrans);
+        CtrlCall call = callTrans.label().getCall();
+        String name = call.getRuleName();
+        // check compatibility of the arguments with the function parameters.
+        List<CtrlPar.Var> funcPars = second.getPars();
+        assert funcPars != null : String.format(
+            "Function body of '%s' has no parameters", name);
+        List<CtrlPar> callArgs = call.getArgs();
+        if (callArgs != null && callArgs.size() != funcPars.size()) {
+            throw new FormatException(
+                "Function call '%s' should have %d arguments", call,
+                funcPars.size());
+        }
+        Set<FormatError> errors = new TreeSet<FormatError>();
+        Map<CtrlVar,CtrlPar> argMap = new HashMap<CtrlVar,CtrlPar>();
+        for (int i = 0; i < funcPars.size(); i++) {
+            if (funcPars.get(i).compatibleWith(callArgs.get(i))) {
+                argMap.put(funcPars.get(i).getVar(), callArgs.get(i));
+            } else {
+                errors.add(new FormatError(
+                    "Function call '%s': argument '%s' not compatible with parameter",
+                    call, callArgs.get(i)));
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
+        }
+        Map<CtrlState,CtrlState> secondToFirstMap = copyAut(second, first);
+        // change the variable names in the function states
+        // to ensure disjointness with the caller's variables
+        for (CtrlState funcState : secondToFirstMap.values()) {
+            Collection<CtrlVar> newVars = new LinkedHashSet<CtrlVar>();
+            for (CtrlVar var : funcState.getBoundVars()) {
+                newVars.add(renameVar(var, argMap, name));
+            }
+            funcState.setBoundVars(newVars);
+        }
+        // now copy the transitions
+        for (CtrlTransition funcTrans : second.edgeSet()) {
+            CtrlLabel transLabel = funcTrans.label();
+            CtrlCall transCall = transLabel.getCall();
+            if (transCall.isOmega()) {
+
+            } else {
+                CtrlState newSource = secondToFirstMap.get(funcTrans.source());
+                CtrlState newTarget = secondToFirstMap.get(funcTrans.target());
+                CtrlLabel newLabel = renameLabel(transLabel, argMap, name);
+                if (newSource == null) {
+                } else {
+                    first.addTransition(newSource, newLabel, newTarget);
+                }
+            }
+        }
+    }
+
+    private CtrlLabel renameLabel(CtrlLabel label, Map<CtrlVar,CtrlPar> argMap,
+            String prefix) {
+        CtrlLabel result;
+        CtrlCall call = label.getCall();
+        List<CtrlPar> transArgs = call.getArgs();
+        if (transArgs == null) {
+            result = label;
+        } else {
+            List<CtrlPar> newArgs = new ArrayList<CtrlPar>();
+            for (CtrlPar arg : transArgs) {
+                CtrlPar newArg;
+                if (arg instanceof CtrlPar.Var) {
+                    newArg = renameVarArg((CtrlPar.Var) arg, argMap, prefix);
+                } else {
+                    newArg = arg;
+                }
+                newArgs.add(newArg);
+            }
+            result =
+                new CtrlLabel(call.getRuleName(), newArgs,
+                    label.getGuardNames());
+        }
+        return result;
+    }
+
+    /** 
+     * Renames a control variable.
+     * The new variable is looked up in a map; if this does not provide
+     * an image, the old variable name is prefixed.
+     * @param var the variable argument to be renamed
+     * @param argMap the map providing an image of {@code varArg}
+     * @param prefix text used to prefix the old name if {@code argMap} does
+     * not provide an image
+     */
+    private CtrlVar renameVar(CtrlVar var, Map<CtrlVar,CtrlPar> argMap,
+            String prefix) {
+        CtrlPar argImage = argMap.get(var);
+        if (argImage == null) {
+            return new CtrlVar(prefix + ":" + var.getName(), var.getType());
+        } else if (argImage instanceof CtrlPar.Var) {
+            return ((CtrlPar.Var) argImage).getVar();
+        } else {
+            // the variable gets mapped to a constant or wildcard
+            return null;
+        }
+    }
+
+    /** 
+     * Renames the control variable inside a variable argument.
+     * The new variable is looked up in a map; if this does not provide
+     * an image, the old variable name is prefixed.
+     * @param varArg the variable argument to be renamed
+     * @param argMap the map providing an image of {@code varArg}
+     * @param prefix text used to prefix the old name if {@code argMap} does
+     * not provide an image
+     * 
+     * TODO unfinished
+     */
+    private CtrlPar.Var renameVarArg(CtrlPar.Var varArg,
+            Map<CtrlVar,CtrlPar> argMap, String prefix) {
+        CtrlPar.Var result;
+        CtrlVar newVar = renameVar(varArg.getVar(), argMap, prefix);
+        if (varArg.isDontCare()) {
+            result = new CtrlPar.Var(newVar);
+        } else {
+            result = new CtrlPar.Var(newVar, varArg.isInOnly());
+        }
+        return result;
     }
 
     /** Adds a second control automaton sequentially after a given automaton. 
@@ -298,7 +455,7 @@ public class CtrlFactory {
     }
 
     /** Factory method for virtual control labels, with an empty guard. */
-    private CtrlLabel createLabel(String ruleName, List<CtrlArg> args) {
+    private CtrlLabel createLabel(String ruleName, List<CtrlPar> args) {
         return new CtrlLabel(ruleName, args, EMPTY_GUARD);
     }
 

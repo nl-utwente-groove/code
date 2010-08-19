@@ -43,9 +43,10 @@ public class CtrlCall {
     /**
      * Constructs a virtual call for a given rule and list of arguments.
      * @param ruleName the name of the rule to be called; non-{@code null}
-     * @param args list of arguments for the call; non-{@code null}
+     * @param args list of arguments for the call; may be {@code null} in
+     * case of a parameterless call
      */
-    public CtrlCall(String ruleName, List<CtrlArg> args) {
+    public CtrlCall(String ruleName, List<CtrlPar> args) {
         this.ruleName = ruleName;
         this.rule = null;
         this.args = args;
@@ -54,9 +55,10 @@ public class CtrlCall {
     /**
      * Constructs an instantiated call for a given rule and list of arguments.
      * @param rule the rule to be called; non-{@code null}
-     * @param args list of arguments for the call; non-{@code null}
+     * @param args list of arguments for the call; may be {@code null} in
+     * case of a parameterless call
      */
-    public CtrlCall(Rule rule, List<CtrlArg> args) {
+    public CtrlCall(Rule rule, List<CtrlPar> args) {
         this.args = args;
         this.rule = rule;
         this.ruleName = rule.getName().text();
@@ -72,8 +74,14 @@ public class CtrlCall {
             } else {
                 result =
                     isVirtual() == other.isVirtual()
-                        && getRuleName().equals(other.getRuleName())
-                        && getArgs().equals(other.getArgs());
+                        && getRuleName().equals(other.getRuleName());
+                if (result) {
+                    if (getArgs() == null) {
+                        result = other.getArgs() == null;
+                    } else {
+                        result = getArgs().equals(other.getArgs());
+                    }
+                }
             }
         }
         return result;
@@ -83,7 +91,10 @@ public class CtrlCall {
     public int hashCode() {
         int result = 0;
         if (!isOmega()) {
-            result = getRuleName().hashCode() ^ getArgs().hashCode();
+            result = getRuleName().hashCode();
+            if (getArgs() != null) {
+                result ^= getArgs().hashCode();
+            }
             if (isVirtual()) {
                 result = -result;
             }
@@ -97,9 +108,10 @@ public class CtrlCall {
         if (isOmega()) {
             result = "OMEGA";
         } else {
-            result =
-                getRuleName()
-                    + Groove.toString(getArgs().toArray(), "(", ")", ",");
+            result = getRuleName();
+            if (getArgs() != null) {
+                result += Groove.toString(getArgs().toArray(), "(", ")", ",");
+            }
         }
         return result;
     }
@@ -126,14 +138,14 @@ public class CtrlCall {
      * @return the list of arguments; or {@code null} if this is an omega call.
      * @see #OMEGA
      */
-    public final List<CtrlArg> getArgs() {
+    public final List<CtrlPar> getArgs() {
         return this.args;
     }
 
     /** 
      * The list of arguments of the control call.
      */
-    private final List<CtrlArg> args;
+    private final List<CtrlPar> args;
 
     /** 
      * Returns the rule being called.
@@ -177,9 +189,14 @@ public class CtrlCall {
             throw new FormatException(
                 "Called rule '%s' does not occur in grammar", getRuleName());
         }
-        List<CtrlArg> newArgs = new ArrayList<CtrlArg>(getArgs().size());
-        for (CtrlArg arg : getArgs()) {
-            newArgs.add(arg.instantiate(grammar));
+        List<CtrlPar> newArgs;
+        if (getArgs() == null) {
+            newArgs = null;
+        } else {
+            newArgs = new ArrayList<CtrlPar>(getArgs().size());
+            for (CtrlPar arg : getArgs()) {
+                newArgs.add(arg.instantiate(grammar));
+            }
         }
         // TODO the test for argument compatibility is to be added later
         return new CtrlCall(rule, newArgs);
