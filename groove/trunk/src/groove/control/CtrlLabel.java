@@ -52,7 +52,7 @@ public class CtrlLabel extends AbstractLabel {
      * Constructs a virtual control label from a rule name,
      * a set of call arguments, and a set of guard names.
      */
-    public CtrlLabel(String ruleName, List<CtrlArg> args,
+    public CtrlLabel(String ruleName, List<CtrlPar> args,
             Collection<String> guardNames) {
         this.call = new CtrlCall(ruleName, args);
         this.guard = null;
