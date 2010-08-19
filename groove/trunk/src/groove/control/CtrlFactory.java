@@ -50,8 +50,8 @@ public class CtrlFactory {
         CtrlAut result = new CtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
-        result.addTransition(result.getStart(), createLabel(ruleName, args),
-            middle);
+        result.addTransition(result.getStart(), createLabel(ruleName, args,
+            EMPTY_GUARD), middle);
         result.addTransition(middle, createOmegaLabel(), result.getFinal());
         return result;
     }
@@ -95,8 +95,6 @@ public class CtrlFactory {
     /**
      * Builds a new automaton by replacing all invocations of a function
      * (encoded as rule calls to a given rule name) by the function body.
-     * The start state of the function should bind all input arguments of
-     * the calls, and the final state should bind all output arguments.
      * The result is constructed by modifying the first parameter.
      * @param first the calling automaton
      * @param ruleName the rule name of the calls to be replaced
@@ -106,14 +104,35 @@ public class CtrlFactory {
     public void buildInvoke(CtrlAut first, String ruleName, CtrlAut second)
         throws FormatException {
         Set<FormatError> errors = new TreeSet<FormatError>();
+        // copy the transition set to avoid concurrent modification exceptions
         Set<CtrlTransition> firstTrans =
             new HashSet<CtrlTransition>(first.edgeSet());
+        Set<String> funcInit = second.getStart().getInit();
         for (CtrlTransition trans : firstTrans) {
-            if (trans.label().getCall().getRuleName().equals(ruleName)) {
+            CtrlLabel label = trans.label();
+            CtrlCall call = label.getCall();
+            if (call.getRuleName().equals(ruleName)) {
+                // inline the function body for function calls
                 try {
                     buildReplace(first, trans, second);
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
+                }
+            } else if (label.getGuardNames().contains(ruleName)) {
+                // replace by the initial actions of the function
+                first.removeTransition(trans);
+                // only add a new transition if the function may not
+                // immediately terminate
+                if (funcInit != null) {
+                    Collection<String> newGuard =
+                        new LinkedHashSet<String>(label.getGuardNames());
+                    newGuard.remove(ruleName);
+                    newGuard.addAll(funcInit);
+                    CtrlLabel newLabel =
+                        createLabel(call.getRuleName(), call.getArgs(),
+                            newGuard);
+                    first.addTransition(trans.source(), newLabel,
+                        trans.target());
                 }
             }
         }
@@ -173,19 +192,33 @@ public class CtrlFactory {
             funcState.setBoundVars(newVars);
         }
         // now copy the transitions
+        Collection<String> callGuard = callTrans.label().getGuardNames();
         for (CtrlTransition funcTrans : second.edgeSet()) {
             CtrlLabel transLabel = funcTrans.label();
             CtrlCall transCall = transLabel.getCall();
+            CtrlState newSource = secondToFirstMap.get(funcTrans.source());
             if (transCall.isOmega()) {
-
+                Collection<String> newGuard =
+                    new LinkedHashSet<String>(transLabel.getGuardNames());
+                if (newSource == null) {
+                    // the function can immediately terminate
+                    newSource = callTrans.source();
+                    newGuard.addAll(callGuard);
+                }
+                // add to the call source outgoing transitions from the call target
+                for (CtrlTransition targetTrans : callTrans.target().getTransitions()) {
+                    first.addTransition(newSource, createLabel(
+                        targetTrans.label(), newGuard), targetTrans.target());
+                }
             } else {
-                CtrlState newSource = secondToFirstMap.get(funcTrans.source());
                 CtrlState newTarget = secondToFirstMap.get(funcTrans.target());
                 CtrlLabel newLabel = renameLabel(transLabel, argMap, name);
                 if (newSource == null) {
-                } else {
-                    first.addTransition(newSource, newLabel, newTarget);
+                    // this is an initial transition of the function
+                    newSource = callTrans.source();
+                    newLabel = createLabel(newLabel, callGuard);
                 }
+                first.addTransition(newSource, newLabel, newTarget);
             }
         }
     }
@@ -200,24 +233,21 @@ public class CtrlFactory {
         } else {
             List<CtrlPar> newArgs = new ArrayList<CtrlPar>();
             for (CtrlPar arg : transArgs) {
-                CtrlPar newArg;
-                if (arg instanceof CtrlPar.Var) {
-                    newArg = renameVarArg((CtrlPar.Var) arg, argMap, prefix);
-                } else {
-                    newArg = arg;
-                }
-                newArgs.add(newArg);
+                newArgs.add(renameArg(arg, argMap, prefix));
             }
             result =
-                new CtrlLabel(call.getRuleName(), newArgs,
-                    label.getGuardNames());
+                createLabel(call.getRuleName(), newArgs, label.getGuardNames());
         }
         return result;
     }
 
     /** 
-     * Renames a control variable.
-     * The new variable is looked up in a map; if this does not provide
+     * Renames a control variable for the purpose of inlining a function
+     * call.
+     * The new variable is looked up in a map from function parameters to call
+     * arguments. If the image is a constant or wildcard, {@code null} is 
+     * returned, otherwise it is a variable, in which case that is used.
+     * If the map does not provide
      * an image, the old variable name is prefixed.
      * @param var the variable argument to be renamed
      * @param argMap the map providing an image of {@code varArg}
@@ -238,24 +268,26 @@ public class CtrlFactory {
     }
 
     /** 
-     * Renames the control variable inside a variable argument.
+     * Renames a control argument by adapting any control variable.
      * The new variable is looked up in a map; if this does not provide
      * an image, the old variable name is prefixed.
-     * @param varArg the variable argument to be renamed
+     * @param arg the argument to be renamed
      * @param argMap the map providing an image of {@code varArg}
      * @param prefix text used to prefix the old name if {@code argMap} does
      * not provide an image
-     * 
-     * TODO unfinished
      */
-    private CtrlPar.Var renameVarArg(CtrlPar.Var varArg,
-            Map<CtrlVar,CtrlPar> argMap, String prefix) {
-        CtrlPar.Var result;
-        CtrlVar newVar = renameVar(varArg.getVar(), argMap, prefix);
-        if (varArg.isDontCare()) {
-            result = new CtrlPar.Var(newVar);
+    private CtrlPar renameArg(CtrlPar arg, Map<CtrlVar,CtrlPar> argMap,
+            String prefix) {
+        CtrlPar result;
+        if (arg instanceof CtrlPar.Var) {
+            CtrlPar.Var varArg = (CtrlPar.Var) arg;
+            result = argMap.get(varArg.getVar());
+            if (result == null) {
+                CtrlVar newVar = renameVar(varArg.getVar(), argMap, prefix);
+                result = new CtrlPar.Var(newVar, varArg.isInOnly());
+            }
         } else {
-            result = new CtrlPar.Var(newVar, varArg.isInOnly());
+            result = arg;
         }
         return result;
     }
@@ -454,9 +486,10 @@ public class CtrlFactory {
             newGuards);
     }
 
-    /** Factory method for virtual control labels, with an empty guard. */
-    private CtrlLabel createLabel(String ruleName, List<CtrlPar> args) {
-        return new CtrlLabel(ruleName, args, EMPTY_GUARD);
+    /** Factory method for virtual control labels. */
+    private CtrlLabel createLabel(String ruleName, List<CtrlPar> args,
+            Collection<String> guard) {
+        return new CtrlLabel(ruleName, args, guard);
     }
 
     /** Factory method for omega control labels, with an empty guard. */
