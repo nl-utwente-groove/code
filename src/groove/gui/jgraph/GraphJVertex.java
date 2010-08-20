@@ -300,6 +300,10 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         Label label = getLabel(edge);
         if (label instanceof RegExprLabel) {
             result = ((RegExprLabel) label).getRegExpr().getLabels();
+            if (result.isEmpty()) {
+                result = new HashSet<Label>();
+                result.add(NO_LABEL);
+            }
         } else {
             result = new HashSet<Label>();
             result.add(label);
