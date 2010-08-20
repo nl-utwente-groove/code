@@ -228,9 +228,10 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public StringBuilder getLine(Edge edge) {
         StringBuilder result = new StringBuilder();
         Label edgeLabel = getLabel(edge);
-        if (edgeLabel instanceof RegExprLabel && edgeLabel.isBinary()) {
-            result.append(Converter.ITALIC_TAG.on(edgeLabel));
-        } else if (edge.opposite() == getNode()) {
+        //        if (edgeLabel instanceof RegExprLabel && edgeLabel.isBinary()) {
+        //            result.append(Converter.ITALIC_TAG.on(edgeLabel));
+        //        } else 
+        if (edge.opposite() == getNode()) {
             // use special node label prefixes to indicate edge role
             if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
                 AspectValue edgeRole = AspectJModel.role((AspectEdge) edge);
@@ -242,6 +243,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             }
             if (result.length() == 0) {
                 result.append(DefaultLabel.toHtmlString(edgeLabel));
+            }
+            if (edgeLabel instanceof RegExprLabel) {
+                result = Converter.ITALIC_TAG.on(result);
             }
         } else {
             // this is a binary edge displayed as a node label
