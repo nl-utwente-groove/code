@@ -70,14 +70,14 @@ public class Shape extends DefaultGraph implements DeltaTarget {
      */
     // EZ says to himself: BE CAREFUL HERE. Remember that:
     // - If 'this.graph' is an instance of a concrete graph, then the shaping
-    //   relation is an abstraction morphism that goes from elements of
+    //   relation is a shaping morphism that goes from elements of
     //   'this.graph' to elements of 'this'.
     // - If 'this.graph' is an instance of a shape and 'this' is currently
-    //   being materialised, then the shaping relation is a shaping morphism
+    //   being materialised, then the shaping relation is an abstraction morphism
     //   that goes in the OTHER direction, from elements of 'this' to elements
     //   of 'this.graph'.
     // - If 'this.graph' is an instance of a shape and 'this' has been
-    //   normalised, then the shaping relation is a shaping morphism that
+    //   normalised, then the shaping relation is an abstraction morphism that
     //   goes from elements of 'this.graph' to elements of 'this'.
     private final Map<Node,ShapeNode> nodeShaping;
     private final Map<Edge,ShapeEdge> edgeShaping;
@@ -417,7 +417,11 @@ public class Shape extends DefaultGraph implements DeltaTarget {
         this.createShapeNodes(currGraphNeighEquiv, fromShape);
         this.createShapeNodesEquivRel(prevGraphNeighEquiv);
         this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
-        this.createEdgeMultMaps(currGraphNeighEquiv, fromShape);
+        if (fromShape) {
+            this.createEdgeMultMaps((ShapeNeighEquiv) currGraphNeighEquiv);
+        } else {
+            this.createEdgeMultMaps(currGraphNeighEquiv);
+        }
 
         this.checkShapeInvariant();
     }
@@ -494,10 +498,9 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     }
 
     /**
-     * Creates the edge multiplicity maps.
+     * Creates the edge multiplicity maps from a graph neighbourhood relation.
      */
-    private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv,
-            boolean fromShape) {
+    private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv) {
         // For all nodes in the graph.
         for (Node node : this.graph.nodeSet()) {
             ShapeNode nodeS = this.getShapeNode(node);
@@ -513,41 +516,78 @@ public class Shape extends DefaultGraph implements DeltaTarget {
                 Label label = edge.label();
                 // For all equivalence classes in the shape.
                 for (EquivClass<ShapeNode> ecS : this.equivRel) {
-                    Multiplicity outMult;
-                    Multiplicity inMult;
                     Set<Node> nodesG = this.getReverseNodeMap(ecS);
                     EdgeSignature es = this.getEdgeSignature(nodeS, label, ecS);
 
-                    if (fromShape) {
-                        Shape origShape = (Shape) this.graph;
-                        // Compute the set of equivalence classes from the
-                        // shape that we need to consider.
-                        Set<EquivClass<ShapeNode>> kSet =
-                            new HashSet<EquivClass<ShapeNode>>();
-                        for (EquivClass<ShapeNode> possibleK : origShape.equivRel) {
-                            if (nodesG.containsAll(possibleK)) {
-                                kSet.add(possibleK);
-                            }
+                    // Outgoing multiplicity.
+                    Set<Edge> outInter =
+                        Util.getIntersectEdges(this.graph, node, nodesG, label);
+                    Multiplicity outMult =
+                        Multiplicity.getEdgeSetMult(outInter);
+                    // Incoming multiplicity.
+                    Set<Edge> inInter =
+                        Util.getIntersectEdges(this.graph, nodesG, node, label);
+                    Multiplicity inMult = Multiplicity.getEdgeSetMult(inInter);
+
+                    if (outMult.isPositive()) {
+                        this.setEdgeOutMult(es, outMult);
+                    } // else don't store multiplicity zero.
+                    if (inMult.isPositive()) {
+                        this.setEdgeInMult(es, inMult);
+                    } // else don't store multiplicity zero.
+                }
+            }
+        }
+        this.cleanEdgeSigSet();
+    }
+
+    /**
+     * Creates the edge multiplicity maps from a shape neighbourhood relation.
+     * See item 6 of Def. 22 on page 17 of the Technical Report.
+     */
+    private void createEdgeMultMaps(ShapeNeighEquiv currGraphNeighEquiv) {
+        // Original shape (S).
+        Shape origShape = (Shape) this.graph;
+        // For all the nodes in the new shape (T).
+        for (ShapeNode nodeT : this.nodeSet()) {
+            // First get a node from S that is part of the equivalence class
+            // that corresponds to nodeT. We may take any node from such a
+            // class because all nodes of the class have the same multiplicity
+            // sum. This was checked when the neighbourhood equivalence
+            // relation was built.
+            ShapeNode nodeS = this.getReverseNodeMap(nodeT).iterator().next();
+
+            // For all binary labels.
+            for (ShapeEdge edge : this.edgeSet(nodeT)) {
+                if (Util.isUnary(edge)) {
+                    // EZ says: I don't like this jump, but if I don't use it,
+                    // I will have one extra indentation level, which makes
+                    // the code look like crap...
+                    continue;
+                } // else, we have a binary edge.
+
+                Label label = edge.label();
+                // For all equivalence classes in the new shape (T).
+                for (EquivClass<ShapeNode> ecT : this.equivRel) {
+                    // Compute the set of equivalence classes from the original
+                    // shape that we need to consider.
+                    Set<EquivClass<ShapeNode>> kSet =
+                        new HashSet<EquivClass<ShapeNode>>();
+                    // Get the reverse map of ecT from the abstraction morphism.
+                    EquivClass<ShapeNode> ecTonS = this.getReverseEc(ecT);
+                    for (EquivClass<ShapeNode> possibleK : origShape.equivRel) {
+                        if (ecTonS.containsAll(possibleK)) {
+                            kSet.add(possibleK);
                         }
-                        // Calculate the sums.
-                        outMult =
-                            Multiplicity.sumOutMult(origShape,
-                                (ShapeNode) node, label, kSet);
-                        inMult =
-                            Multiplicity.sumInMult(origShape, (ShapeNode) node,
-                                label, kSet);
-                    } else { // From graph.
-                        // Outgoing multiplicity.
-                        Set<Edge> outInter =
-                            Util.getIntersectEdges(this.graph, node, nodesG,
-                                label);
-                        outMult = Multiplicity.getEdgeSetMult(outInter);
-                        // Incoming multiplicity.
-                        Set<Edge> inInter =
-                            Util.getIntersectEdges(this.graph, nodesG, node,
-                                label);
-                        inMult = Multiplicity.getEdgeSetMult(inInter);
-                    }
+                    } // Now we have the kSet.
+
+                    // Calculate the sums.
+                    Multiplicity outMult =
+                        Multiplicity.sumOutMult(origShape, nodeS, label, kSet);
+                    Multiplicity inMult =
+                        Multiplicity.sumInMult(origShape, nodeS, label, kSet);
+
+                    EdgeSignature es = this.getEdgeSignature(nodeT, label, ecT);
 
                     if (outMult.isPositive()) {
                         this.setEdgeOutMult(es, outMult);
@@ -628,7 +668,7 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     }
 
     /**
-     * Returns the set of nodes in the shaping relation that map to values
+     * Returns the set of nodes in the shaping relation that maps to values
      * occurring in the given equivalence class. 
      */
     private Set<Node> getReverseNodeMap(EquivClass<ShapeNode> ecS) {
@@ -639,6 +679,38 @@ public class Shape extends DefaultGraph implements DeltaTarget {
             }
         }
         return nodesG;
+    }
+
+    /**
+     * Returns the set of nodes in the shaping relation that maps to the
+     * given node.
+     * It is an error to call this method if this.graph is not a Shape. 
+     */
+    private Set<ShapeNode> getReverseNodeMap(ShapeNode nodeS) {
+        assert this.graph instanceof Shape : "Invalid method call.";
+        Set<ShapeNode> nodesG = new HashSet<ShapeNode>();
+        for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
+            if (nodeS.equals(entry.getValue())) {
+                nodesG.add((ShapeNode) entry.getKey());
+            }
+        }
+        return nodesG;
+    }
+
+    /**
+     * Returns the equivalence class in the shaping relation that maps to values
+     * occurring in the given equivalence class.
+     * It is an error to call this method if this.graph is not a Shape. 
+     */
+    private EquivClass<ShapeNode> getReverseEc(EquivClass<ShapeNode> ecS) {
+        assert this.graph instanceof Shape : "Invalid method call.";
+        EquivClass<ShapeNode> rEc = new EquivClass<ShapeNode>();
+        for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
+            if (ecS.contains(entry.getValue())) {
+                rEc.add((ShapeNode) entry.getKey());
+            }
+        }
+        return rEc;
     }
 
     /**

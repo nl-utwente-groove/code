@@ -286,8 +286,10 @@ abstract public class AbstractLayouter implements Layouter {
                         ((VertexView) view).getCachedBounds());
                 } else {
                     // store the points back into the model
-                    GraphConstants.setPoints(modelAttr,
-                        ((EdgeView) view).getPoints());
+                    List<?> points = ((EdgeView) view).getPoints();
+                    if (points != null) {
+                        GraphConstants.setPoints(modelAttr, points);
+                    }
                 }
                 change.put(cell, modelAttr);
             }
