@@ -784,6 +784,8 @@ public class ConstraintRules {
      * @param eReference the EReference
      */
     private void addOppositeConstraint(EReference eReference) {
+        // Add constraint that there must be an out- and incoming
+        // opposite edge
         DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
@@ -799,6 +801,30 @@ public class ConstraintRules {
 
         constraintRule.addEdge(refNode, refLabel, refNode);
         constraintRule.addEdge(refNode, regExprLabel, refNode);
+
+        this.constraintRules.add(constraintRule);
+
+        // Add constraint that there may not be two outgoing opposite edges
+        constraintRule = new DefaultGraph();
+        name =
+            "constraint - " + GraphLabels.getLabelNoType(eReference)
+                + " not two opposite";
+        this.ruleNames.put(constraintRule, name);
+
+        refNode = constraintRule.addNode();
+        Node erefNode1 = constraintRule.addNode();
+        Node erefNode2 = constraintRule.addNode();
+
+        Label oppositeLabel = DefaultLabel.createLabel("opposite");
+        Label erefLabel = DefaultLabel.createLabel(this.mh.getEReferenceType());
+        Label unequalLabel = DefaultLabel.createLabel("!=");
+
+        constraintRule.addEdge(refNode, refLabel, refNode);
+        constraintRule.addEdge(erefNode1, erefLabel, erefNode1);
+        constraintRule.addEdge(erefNode2, erefLabel, erefNode2);
+        constraintRule.addEdge(refNode, oppositeLabel, erefNode1);
+        constraintRule.addEdge(refNode, oppositeLabel, erefNode2);
+        constraintRule.addEdge(erefNode1, unequalLabel, erefNode2);
 
         this.constraintRules.add(constraintRule);
     }
