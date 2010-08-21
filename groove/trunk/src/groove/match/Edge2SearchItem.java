@@ -22,6 +22,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.RegExprLabel;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +44,9 @@ class Edge2SearchItem extends AbstractSearchItem {
         this.edge = edge;
         this.source = edge.source();
         this.target = edge.target();
-        this.label = edge.label();
+        this.label =
+            RegExprLabel.isSharp(edge.label())
+                    ? RegExprLabel.getSharpLabel(edge.label()) : edge.label();
         this.arity = edge.endCount();
         this.selfEdge = this.source == this.target;
         this.boundNodes = new HashSet<Node>(Arrays.asList(edge.ends()));

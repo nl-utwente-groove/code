@@ -62,9 +62,10 @@ public class RuleAspect extends AbstractAspect {
         throws FormatException {
         if (isEraser(edge)) {
             Label label = edge.getModelLabel();
-            if (!(label instanceof DefaultLabel || RegExprLabel.isWildcard(label))) {
+            if (!(label instanceof DefaultLabel
+                || RegExprLabel.isWildcard(label) || RegExprLabel.isSharp(label))) {
                 throw new FormatException(
-                    "Eraser label %s should be wildcard or atom", label);
+                    "Eraser label %s should be wildcard or atom", label, edge);
             }
         } else if (isCreator(edge)) {
             Label label = edge.label();
@@ -78,7 +79,7 @@ public class RuleAspect extends AbstractAspect {
             if (!allowed) {
                 throw new FormatException(
                     "Creator label %s should be named unguarded wildcard, merger or atom",
-                    label);
+                    label, edge);
             }
         }
         // test for merge edges between creator nodes

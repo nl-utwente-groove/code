@@ -82,7 +82,7 @@ public class RegExprLabelParser implements LabelParser {
         } else {
             try {
                 result = RegExpr.parse(text);
-                if (!(this.certain || result.isWildcard() || result.isEmpty())) {
+                if (!(this.certain || result.isWildcard() || result.isEmpty() || result.isSharp())) {
                     result = null;
                 }
             } catch (FormatException exc) {

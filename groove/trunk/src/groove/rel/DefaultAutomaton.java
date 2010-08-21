@@ -17,7 +17,6 @@
 package groove.rel;
 
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
@@ -282,14 +281,14 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         }
         for (Edge edge : edgeSet()) {
             Label label = edge.label();
-            RegExpr invOperand = RegExprLabel.getInvOperand(label);
-            boolean isInverse = invOperand != null;
-            if (isInverse && invOperand.isWildcard()
-                || RegExprLabel.isWildcard(label)) {
+            boolean isInverse = RegExprLabel.isInv(label);
+            if (isInverse) {
+                label = RegExprLabel.getInvOperand(label).toLabel();
+            }
+            if (RegExprLabel.isWildcard(label)) {
                 label = WILDCARD_LABEL;
-            } else if (isInverse) {
-                // strip the inverse operator and create a default label
-                label = DefaultLabel.createLabel(invOperand.getAtomText());
+            } else if (RegExprLabel.isSharp(label)) {
+                label = RegExprLabel.getSharpLabel(label);
             }
             for (int direction = FORWARD; direction <= BACKWARD; direction++) {
                 Node end =

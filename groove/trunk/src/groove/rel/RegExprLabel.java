@@ -48,6 +48,8 @@ public class RegExprLabel extends AbstractLabel {
     public int getKind() {
         if (getRegExpr().isWildcard()) {
             return ((RegExpr.Wildcard) getRegExpr()).getKind();
+        } else if (getRegExpr().isSharp()) {
+            return getRegExpr().getSharpLabel().getKind();
         } else {
             return super.getKind();
         }
@@ -143,11 +145,32 @@ public class RegExprLabel extends AbstractLabel {
 
     /**
      * Tests if a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Sharp}.
+     */
+    public static boolean isSharp(Label label) {
+        return (label instanceof RegExprLabel)
+            && ((RegExprLabel) label).getRegExpr().isSharp();
+    }
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Sharp}, returns the sharp type label.
+     * Returns {@code null} in all other cases.
+     */
+    public static Label getSharpLabel(Label label) {
+        if (label instanceof RegExprLabel) {
+            return ((RegExprLabel) label).getRegExpr().getSharpLabel();
+        }
+        return null;
+    }
+
+    /**
+     * Tests if a given label is a {@link RegExprLabel} wrapping a
      * {@link RegExpr.Wildcard}.
      */
     public static boolean isWildcard(Label label) {
         return (label instanceof RegExprLabel)
-            && ((RegExprLabel) label).getRegExpr() instanceof RegExpr.Wildcard;
+            && ((RegExprLabel) label).getRegExpr().isWildcard();
     }
 
     /**
@@ -157,10 +180,7 @@ public class RegExprLabel extends AbstractLabel {
      */
     public static String getWildcardId(Label label) {
         if (label instanceof RegExprLabel) {
-            RegExpr expr = ((RegExprLabel) label).getRegExpr();
-            if (expr instanceof RegExpr.Wildcard) {
-                return ((RegExpr.Wildcard) expr).getIdentifier();
-            }
+            return ((RegExprLabel) label).getRegExpr().getWildcardId();
         }
         return null;
     }
