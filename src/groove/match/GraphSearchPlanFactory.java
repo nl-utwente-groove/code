@@ -341,12 +341,12 @@ public class GraphSearchPlanFactory {
                 }
             } else if (RegExprLabel.isSharp(label)) {
                 return new Edge2SearchItem(edge);
-            } else if (label.isNodeType()) {
-                return new NodeTypeSearchItem(edge, this.labelStore);
             } else if (RegExprLabel.getWildcardId(label) != null) {
                 return new VarEdgeSearchItem(edge);
             } else if (RegExprLabel.isWildcard(label)) {
                 return new WildcardEdgeSearchItem(edge);
+            } else if (label.isNodeType()) {
+                return new NodeTypeSearchItem(edge, this.labelStore);
             } else if (RegExprLabel.isAtom(label)) {
                 DefaultEdge defaultEdge =
                     DefaultEdge.createEdge(edge.source(),

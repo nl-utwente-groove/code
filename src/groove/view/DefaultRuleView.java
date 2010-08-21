@@ -210,6 +210,16 @@ public class DefaultRuleView implements RuleView {
         }
     }
 
+    /** Returns the (possibly {@code null}) type graph of this rule. */
+    private TypeGraph getType() {
+        return this.type;
+    }
+
+    /** Indicates if this rule is typed. */
+    private boolean isTyped() {
+        return this.type != null;
+    }
+
     @Override
     public String toString() {
         return String.format("Rule view on '%s'", getName());
@@ -1106,7 +1116,9 @@ public class DefaultRuleView implements RuleView {
             } else if (!RuleAspect.inNAC(viewEdge)
                 && viewEdge.isNodeType() == 1) {
                 // add type edges to all sublevels
-                addTypeEdge(ruleEdge);
+                for (Level sublevel : this.children) {
+                    sublevel.addParentType(ruleEdge);
+                }
             }
         }
 
@@ -1115,7 +1127,7 @@ public class DefaultRuleView implements RuleView {
          * The edge is not properly part of the rule, but may be
          * necessary to check the typing.
          */
-        private void addTypeEdge(Edge ruleEdge) {
+        private void addParentType(Edge ruleEdge) {
             Set<Label> parentTypes = this.parentTypeMap.get(ruleEdge.source());
             if (parentTypes == null) {
                 this.parentTypeMap.put(ruleEdge.source(), parentTypes =
@@ -1123,7 +1135,7 @@ public class DefaultRuleView implements RuleView {
             }
             parentTypes.add(ruleEdge.label());
             for (Level sublevel : this.children) {
-                sublevel.addTypeEdge(ruleEdge);
+                sublevel.addParentType(ruleEdge);
             }
         }
 
@@ -1238,7 +1250,7 @@ public class DefaultRuleView implements RuleView {
             }
             if (RuleAspect.inRHS(viewNode)) {
                 this.typableNodes.add(lhsNode);
-                Node rhsNode = computeNodeImage(getRepresentative(viewNode));
+                Node rhsNode = getRepresentative(viewNode);
                 Node oldRhsNode = this.rhsMap.putNode(viewNode, rhsNode);
                 assert oldRhsNode == null || oldRhsNode.equals(rhsNode) : String.format(
                     "Old and new RHS images '%s' and '%s' should be the same",
@@ -1356,13 +1368,12 @@ public class DefaultRuleView implements RuleView {
          * quantification level.
          * @throws FormatException if a formatting error in the view is detected
          */
-        private AspectNode getRepresentative(AspectNode node)
-            throws FormatException {
+        private Node getRepresentative(AspectNode node) throws FormatException {
             SortedSet<AspectNode> cell = getPartition().get(node);
             assert cell != null : String.format(
                 "Partition %s does not contain cell for '%s'", getPartition(),
                 node);
-            return cell.first();
+            return this.viewToLevelMap.getNode(cell.first());
         }
 
         /**
@@ -1378,7 +1389,7 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * Computes the partition on a given quantification level.
+         * Computes the partition of rule nodes according to RHS mergers.
          */
         private Map<AspectNode,SortedSet<AspectNode>> computePartition()
             throws FormatException {
@@ -1439,8 +1450,16 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // check typing
-            errors.addAll(checkTyping(this.typableNodes, this.typableEdges,
-                this.parentTypeMap));
+            if (isTyped()) {
+                try {
+                    Map<Node,Label> typeMap =
+                        getTyping(this.typableNodes, this.typableEdges,
+                            this.parentTypeMap);
+                    checkMergerTypes(typeMap);
+                } catch (FormatException e) {
+                    errors.addAll(e.getErrors());
+                }
+            }
             // the resulting rule
             if (this.index.isExistential()) {
                 result =
@@ -1473,17 +1492,23 @@ public class DefaultRuleView implements RuleView {
                 this.nacNodeSet, this.nacEdgeSet)) {
                 Set<Node> nacNodes = nacPair.first();
                 Set<Edge> nacEdges = nacPair.second();
-                // check NAC typing
-                // first add end nodes of NAC edges
-                Set<Node> typableNacNodes = new HashSet<Node>(nacNodes);
-                for (Edge nacEdge : nacEdges) {
-                    for (Node nacEdgeEnd : nacEdge.ends()) {
-                        typableNacNodes.add(nacEdgeEnd);
+                if (isTyped()) {
+                    try {
+                        // check NAC typing
+                        // first add end nodes of NAC edges
+                        Set<Node> typableNacNodes = new HashSet<Node>(nacNodes);
+                        for (Edge nacEdge : nacEdges) {
+                            for (Node nacEdgeEnd : nacEdge.ends()) {
+                                typableNacNodes.add(nacEdgeEnd);
+                            }
+                        }
+                        Set<Edge> typableNacEdges = new HashSet<Edge>(nacEdges);
+                        getTyping(typableNacNodes, typableNacEdges,
+                            parentTypeMap);
+                    } catch (FormatException exc) {
+                        errors.addAll(exc.getErrors());
                     }
                 }
-                Set<Edge> typableNacEdges = new HashSet<Edge>(nacEdges);
-                errors.addAll(checkTyping(typableNacNodes, typableNacEdges,
-                    parentTypeMap));
                 // construct the NAC itself
                 result.addSubCondition(computeNac(this.lhs, nacNodes, nacEdges));
             }
@@ -1494,18 +1519,52 @@ public class DefaultRuleView implements RuleView {
             }
         }
 
-        /** Checks the type of a graph consisting of a given set of nodes and edges. */
-        private Collection<FormatError> checkTyping(Collection<Node> nodeSet,
-                Collection<Edge> edgeSet, Map<Node,Set<Label>> parentTypeMap) {
-            Collection<FormatError> result = Collections.emptySet();
-            if (DefaultRuleView.this.type != null) {
-                Graph graph = createGraph();
-                graph.addNodeSet(nodeSet);
-                graph.addEdgeSet(edgeSet);
-                result =
-                    DefaultRuleView.this.type.checkTyping(graph, parentTypeMap);
+        /** 
+         * Checks the type of a given set of nodes and edges.
+         * @return mapping from nodes in {@code nodeSet} to node type labels
+         * @throws FormatException if there are typing errors
+         */
+        private Map<Node,Label> getTyping(Collection<Node> nodeSet,
+                Collection<Edge> edgeSet, Map<Node,Set<Label>> parentTypeMap)
+            throws FormatException {
+            Graph graph = createGraph();
+            graph.addNodeSet(nodeSet);
+            graph.addEdgeSet(edgeSet);
+            return getType().getTyping(graph, parentTypeMap);
+        }
+
+        /**
+         * Checks sharp type equality of the mergers.
+         * @throws FormatException if there are typing errors
+         */
+        private void checkMergerTypes(Map<Node,Label> typeMap)
+            throws FormatException {
+            Collection<FormatError> errors = new TreeSet<FormatError>();
+            for (Set<AspectNode> cell : getPartition().values()) {
+                if (cell.size() > 1) {
+                    Label commonType = null;
+                    for (AspectNode mergedNode : cell) {
+                        Node representative =
+                            this.viewToLevelMap.getNode(mergedNode);
+                        Label type = typeMap.get(representative);
+                        Label sharpType = RegExprLabel.getSharpLabel(type);
+                        if (sharpType == null) {
+                            errors.add(new FormatError(
+                                "Type '%s' of merged node %s should be sharp",
+                                type, mergedNode));
+                        } else if (commonType == null) {
+                            commonType = sharpType;
+                        } else if (!commonType.equals(sharpType)) {
+                            errors.add(new FormatError(
+                                "Distinct types '%s', '%s' for merged nodes",
+                                sharpType, commonType, mergedNode));
+                        }
+                    }
+                }
             }
-            return result;
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
+            }
         }
 
         /**
@@ -1669,8 +1728,8 @@ public class DefaultRuleView implements RuleView {
         /** Retrieves the label store from the type graph, if any. */
         private LabelStore getLabelStore() {
             LabelStore result = null;
-            if (DefaultRuleView.this.type != null) {
-                result = DefaultRuleView.this.type.getLabelStore();
+            if (isTyped()) {
+                result = getType().getLabelStore();
             }
             return result;
         }
