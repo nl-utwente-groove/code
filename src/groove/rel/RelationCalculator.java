@@ -17,6 +17,7 @@
 package groove.rel;
 
 import groove.graph.GraphShape;
+import groove.rel.RegExpr.Sharp;
 
 import java.util.Iterator;
 import java.util.List;
@@ -120,6 +121,11 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
         arg.doTransitiveClosure();
         arg.doReflexiveClosure();
         return arg;
+    }
+
+    @Override
+    public NodeRelation computeSharp(Sharp expr) {
+        return this.factory.newInstance(expr.getTypeLabel());
     }
 
     /**

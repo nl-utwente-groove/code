@@ -339,6 +339,8 @@ public class GraphSearchPlanFactory {
                             negOperand.toLabel(), edge.opposite());
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
+            } else if (RegExprLabel.isSharp(label)) {
+                return new Edge2SearchItem(edge);
             } else if (label.isNodeType()) {
                 return new NodeTypeSearchItem(edge, this.labelStore);
             } else if (RegExprLabel.getWildcardId(label) != null) {

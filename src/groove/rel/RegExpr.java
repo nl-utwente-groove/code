@@ -77,7 +77,20 @@ abstract public class RegExpr { // implements VarSetSupport {
         return this instanceof Empty;
     }
 
-    /** Tests if this is {@link RegExpr.Wildcard}. */
+    /** Tests if this is a {@link RegExpr.Sharp}. */
+    public boolean isSharp() {
+        return this instanceof Sharp;
+    }
+
+    /** 
+     * Returns the type label this is a {@link RegExpr.Sharp},
+     * or {@code null} otherwise.
+     */
+    public Label getSharpLabel() {
+        return isSharp() ? ((Sharp) this).getTypeLabel() : null;
+    }
+
+    /** Tests if this is a {@link RegExpr.Wildcard}. */
     public boolean isWildcard() {
         return this instanceof Wildcard;
     }
@@ -603,6 +616,13 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /**
+     * Creates and returns a sharp test for a given node type label.
+     */
+    public static Sharp sharp(Label typeLabel) {
+        return new Sharp(typeLabel);
+    }
+
+    /**
      * Creates and returns a wildcard regular expression.
      */
     public static Wildcard wildcard() {
@@ -716,7 +736,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     static public final String EMPTY_SYMBOLIC_NAME = "Empty";
     /**
-     * Woldcard constant.
+     * Wildcard constant.
      * @see Wildcard
      */
     static public final char WILDCARD_OPERATOR = '?';
@@ -725,6 +745,16 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @see Wildcard
      */
     static public final String WILDCARD_SYMBOLIC_NAME = "Any";
+    /**
+     * Wildcard constant.
+     * @see Wildcard
+     */
+    static public final char SHARP_OPERATOR = '#';
+    /**
+     * Symbolic name of the wildcard constant.
+     * @see Wildcard
+     */
+    static public final String SHARP_SYMBOLIC_NAME = "Sharp";
     /**
      * Inverse operator.
      * @see Inv
@@ -768,7 +798,8 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     static private final RegExpr[] prototypes =
         new RegExpr[] {new Atom(), new Neg(), new Choice(), new Seq(),
-            new Inv(), new Star(), new Plus(), new Wildcard(), new Empty()};
+            new Inv(), new Star(), new Plus(), new Wildcard(), new Sharp(),
+            new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
@@ -1151,8 +1182,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * @return <tt>null</tt> if the postfix operator (given by
-         *         <tt>operator()</tt>) does not occur in <tt>tokenList</tt>
+         * @return {@code null} if {@code expr} does not equal the constant (given by
+         *         {@link #getOperator()}
          * @throws FormatException of the operator does occur in the list, but
          *         not as the last element
          */
@@ -1254,7 +1285,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * Constructs a wildcard expression with a given (possibly {@code null}) identifier and (possibly {@code null}) label constraint.
+         * Constructs a wildcard expression with a given (possibly {@code null}) 
+         * identifier and (possibly {@code null}) label constraint.
          */
         private Wildcard(String identifier, LabelConstraint constraint) {
             this();
@@ -1358,25 +1390,25 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * First tries the super implementation, but if that does not work,
-         * tries to parse <code>expr</code> as a prefix expression where the
-         * operand is an identifier (according to
-         * {@link ExprParser#isIdentifier(String)}).
+         * Tests if there is a single wildcard operator in {@code expr};
+         * if so, tests for a label prefix, and if there is text following
+         * the operator, whether that can be parsed as an identifier
+         * and/or a label constraint.
          */
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
-            RegExpr result = null;
             FormatException error =
                 new FormatException("Can't parse wildcard expression '%s'",
                     expr);
-            String[] operands = ExprParser.splitExpr(expr, getOperator());
-            if (operands.length == 1) {
-                return result;
+            int index = expr.indexOf(getOperator());
+            if (index < 0) {
+                return null;
             }
-            if (operands.length != 2) {
+            String text = expr.substring(index + 1);
+            if (text.indexOf(getOperator()) >= 0) {
                 throw error;
             }
-            String prefix = operands[0];
+            String prefix = expr.substring(0, index);
             // derive the type of labels the wildcard should match
             int kind = Label.BINARY;
             int separatorPos = prefix.length() - 1;
@@ -1389,7 +1421,6 @@ abstract public class RegExpr { // implements VarSetSupport {
             // parse the identifier and constraint expression
             String identifier = null;
             LabelConstraint constraint = new LabelConstraint(kind);
-            String text = operands[1];
             if (!text.isEmpty()) {
                 // decompose text into identifier and label list
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
@@ -1595,6 +1626,113 @@ abstract public class RegExpr { // implements VarSetSupport {
             /** The type of label we are testing for. See {@link Label#getKind()} */
             private final int kind;
         }
+    }
+
+    /**
+     * Constant expression that stands for all edges precisely matching
+     * a given type label (rather than modulo subtyping).
+     */
+    static public class Sharp extends Constant {
+        /** Creates an instance without variable identifier. */
+        public Sharp() {
+            super("" + SHARP_OPERATOR, SHARP_SYMBOLIC_NAME);
+        }
+
+        /**
+         * Constructs a sharp test for a given node type label
+         * @param typeLabel the type label
+         */
+        public Sharp(Label typeLabel) {
+            this();
+            this.typeLabel = typeLabel;
+        }
+
+        @Override
+        public RegExpr relabel(Label oldLabel, Label newLabel) {
+            RegExpr result;
+            if (getTypeLabel().equals(oldLabel)) {
+                if (newLabel.isNodeType()) {
+                    result = newInstance(newLabel);
+                } else {
+                    result = new Atom(newLabel.text());
+                }
+            } else {
+                result = this;
+            }
+            return result;
+        }
+
+        @Override
+        public Set<Label> getLabels() {
+            Set<Label> result = new HashSet<Label>();
+            result.add(getTypeLabel());
+            return result;
+        }
+
+        /**
+         * Calls {@link RegExprCalculator#computeWildcard(RegExpr.Wildcard)} on
+         * the visitor.
+         */
+        @Override
+        public <Result> Result apply(RegExprCalculator<Result> calculator) {
+            return calculator.computeSharp(this);
+        }
+
+        /**
+         * This implementation delegates to <code>super</code> if
+         * {@link #getDescription()} returns <code>null</code>, otherwise it
+         * returns the concatenation of the operator and the identifier.
+         */
+        @Override
+        public String toString() {
+            return DefaultLabel.getPrefix(DefaultLabel.NODE_TYPE)
+                + super.toString() + getTypeLabel();
+        }
+
+        /**
+         * First tries the super implementation, but if that does not work,
+         * tries to parse <code>expr</code> as a prefix expression where the
+         * operand is an identifier (according to
+         * {@link ExprParser#isIdentifier(String)}).
+         */
+        @Override
+        protected RegExpr parseOperator(String expr) throws FormatException {
+            int index = expr.indexOf(getOperator());
+            if (index < 0) {
+                return null;
+            }
+            // separate the expression into operator and text
+            String prefix = expr.substring(0, index);
+            String text = expr.substring(index + 1);
+            String nodeTypePrefix =
+                DefaultLabel.getPrefix(DefaultLabel.NODE_TYPE);
+            if (!prefix.equals(nodeTypePrefix)) {
+                throw new FormatException(
+                    "Sharp operator '%s' must be preceded by '%s'",
+                    getOperator(), nodeTypePrefix);
+            }
+            return newInstance(DefaultLabel.createLabel(text,
+                DefaultLabel.NODE_TYPE, true));
+        }
+
+        /** Returns a {@link Wildcard} with a given identifier. */
+        protected Sharp newInstance(Label typeLabel) {
+            return new Sharp(typeLabel);
+        }
+
+        /** This implementation returns a {@link Wildcard}. */
+        @Override
+        protected Constant newInstance() {
+            return new Sharp();
+        }
+
+        /** Returns the type label that should be sharply matched. */
+        public Label getTypeLabel() {
+            return this.typeLabel;
+        }
+
+        /** The type labels that should be matched sharply. */
+        private Label typeLabel;
     }
 
     /**

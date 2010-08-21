@@ -80,6 +80,13 @@ public interface RegExprCalculator<Result> {
     public Result computeAtom(RegExpr.Atom expr);
 
     /**
+     * Visitor method called by the accept method of a {@link RegExpr.Sharp}.
+     * @param expr the expression being visited
+     * @return the return value of the computation
+     */
+    public Result computeSharp(RegExpr.Sharp expr);
+
+    /**
      * Visitor method called by the accept method of a {@link RegExpr.Wildcard}.
      * @param expr the expression being visited
      * @return the return value of the computation

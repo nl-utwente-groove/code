@@ -27,6 +27,7 @@ import groove.rel.RegExpr.Inv;
 import groove.rel.RegExpr.Neg;
 import groove.rel.RegExpr.Plus;
 import groove.rel.RegExpr.Seq;
+import groove.rel.RegExpr.Sharp;
 import groove.rel.RegExpr.Star;
 import groove.rel.RegExpr.Wildcard;
 import groove.util.DefaultDispenser;
@@ -187,6 +188,17 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      * with the text of the atomic expression.
      */
     public Automaton computeAtom(Atom expr) {
+        Automaton result = createAutomaton();
+        result.addEdge(result.getStartNode(), expr.toLabel(),
+            result.getEndNode());
+        return result;
+    }
+
+    /**
+     * Returns an automaton with a single edge, from start to end node, labelled
+     * with <code>expr</code> (as a {@link RegExprLabel}).
+     */
+    public Automaton computeSharp(Sharp expr) {
         Automaton result = createAutomaton();
         result.addEdge(result.getStartNode(), expr.toLabel(),
             result.getEndNode());
