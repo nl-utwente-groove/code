@@ -5,8 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/antlr-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/groove-frontend-1_6.jar"/>
-	<classpathentry kind="lib" path="lib/groove-gxl-1_0.jar"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar"/>
 	<classpathentry kind="lib" path="lib/jgraphaddons-1_0_4.jar"/>
 	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
@@ -14,11 +12,10 @@
 	<classpathentry kind="lib" path="lib/ltl2ba4j.jar"/>
 	<classpathentry kind="lib" path="lib/ltl2buchi.jar"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
-	<classpathentry kind="lib" path="lib/xerces-2_9_1-Impl.jar"/>
 	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-gxl-1_0.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.emf.common_2.5.0.v200906151043.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore_2.5.0.v200906151043.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore.xmi_2.5.0.v200906151043.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-gxl-1_0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
