@@ -103,16 +103,18 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     }
 
     /**
-     * Tests if a give graph is correct according to this type graph.
+     * Tests if a give graph is correct according to this type graph,
+     * and if so, returns the mapping from graph nodes to node type labels.
      * @param model the graph to be checked
      * @param parentTypeMap non-null map of nodes to types that have been defined 
-     * on a parent level. May be {@code null}.
-     * @return a list of type errors found in the graph
+     * on a parent level
+     * @return mapping from nodes in {@code model} to node type labels
+     * @throws FormatException report of typing errors
      */
-    public Set<FormatError> checkTyping(Graph model,
-            Map<Node,Set<Label>> parentTypeMap) {
+    public Map<Node,Label> getTyping(Graph model,
+            Map<Node,Set<Label>> parentTypeMap) throws FormatException {
+        Map<Node,Label> result = new HashMap<Node,Label>();
         Set<FormatError> errors = new TreeSet<FormatError>();
-        Map<Node,Label> nodeTypes = new HashMap<Node,Label>();
         // detect node types
         Set<Node> untypedNodes = new HashSet<Node>(model.nodeSet());
         for (Edge edge : model.edgeSet()) {
@@ -120,39 +122,39 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             Label label = edge.label();
             if (label.isNodeType()) {
                 if (isNodeType(label)) {
-                    Label oldLabel = nodeTypes.put(node, label);
+                    Label oldLabel = result.put(node, label);
                     if (oldLabel != null) {
                         errors.add(new FormatError(
-                            "Duplicate types '%s' and '%s' on node '%s'",
-                            oldLabel, label, node));
+                            "Duplicate types %s and %s on node '%s'", oldLabel,
+                            label, node));
                     } else {
                         Set<Label> parentTypes = parentTypeMap.get(node);
                         if (parentTypes != null) {
                             for (Label parentType : parentTypes) {
                                 if (!isSubtype(label, parentType)) {
                                     errors.add(new FormatError(
-                                        "Type '%s' should be subtype of '%s' on node '%s'",
-                                        label, parentType, node));
+                                        "Type %s of node '%s' should be subtype of %s",
+                                        label, node, parentType));
                                 }
                             }
                         }
                     }
-                } else {
+                } else if (!(label instanceof RegExprLabel)) {
                     errors.add(new FormatError(
-                        "Unknown node type '%s' for node '%s'", label, node));
+                        "Unknown node type %s for node '%s'", label, node));
                 }
-                untypedNodes.remove(node);
             }
         }
+        untypedNodes.removeAll(result.keySet());
         for (Node node : model.nodeSet()) {
-            Label nodeType = nodeTypes.get(node);
+            Label nodeType = result.get(node);
             if (nodeType == null) {
                 if (node instanceof VariableNode) {
                     Algebra<?> algebra = ((VariableNode) node).getAlgebra();
                     if (algebra != null) {
                         String signature =
                             AlgebraRegister.getSignatureName(algebra);
-                        nodeTypes.put(node, DefaultLabel.createLabel(signature,
+                        result.put(node, DefaultLabel.createLabel(signature,
                             Label.NODE_TYPE));
                         untypedNodes.remove(node);
                     }
@@ -177,47 +179,58 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             }
         }
         for (Edge edge : model.edgeSet()) {
-            if (edge instanceof ArgumentEdge || edge instanceof OperatorEdge) {
+            Label edgeType = edge.label();
+            if (isNodeType(edgeType) || edge instanceof ArgumentEdge
+                || edge instanceof OperatorEdge) {
                 // leave unchecked for now
                 continue;
             }
-            Label edgeType = edge.label();
-            RegExpr expr = null;
-            if (edgeType instanceof RegExprLabel) {
-                expr = ((RegExprLabel) edgeType).getRegExpr();
-                if (expr instanceof RegExpr.Neg) {
-                    expr = expr.getNegOperand();
-                    edgeType = expr.toLabel();
-                }
+            if (RegExprLabel.isNeg(edgeType)) {
+                edgeType = RegExprLabel.getNegOperand(edgeType).toLabel();
             }
             Node source = edge.source();
-            Label sourceType = nodeTypes.get(source);
+            Label sourceType = result.get(source);
             Node target = edge.opposite();
-            Label targetType = nodeTypes.get(target);
+            Label targetType = result.get(target);
             if (sourceType == null || targetType == null) {
                 // this must be due to an untyped node
                 // which was already reported as an error
                 continue;
             }
             if (edgeType instanceof RegExprLabel) {
-                Set<Node> startNodes = new HashSet<Node>();
-                for (Edge satEdge : getSaturation().labelEdgeSet(2, sourceType)) {
-                    startNodes.add(satEdge.source());
-                }
-                Set<Node> endNodes = new HashSet<Node>();
-                for (Edge satEdge : getSaturation().labelEdgeSet(2, targetType)) {
-                    endNodes.add(satEdge.source());
-                }
-                if (((RegExprLabel) edgeType).getAutomaton().getMatches(
-                    getSaturation(), startNodes, endNodes).isEmpty()) {
+                if (RegExprLabel.isWildcard(edgeType)
+                    || RegExprLabel.getRegExpr(edgeType).containsOperator(
+                        RegExpr.wildcard())) {
                     errors.add(new FormatError(
-                        "Regular expression '%s' is incorrectly typed",
+                        "Wildcard expression '%s' not allowed in typed graphs",
                         edgeType, edge));
+                } else {
+                    Set<Node> startNodes = getNodesForType(sourceType);
+                    Set<Node> endNodes = getNodesForType(targetType);
+                    if (((RegExprLabel) edgeType).getAutomaton().getMatches(
+                        getSaturation(), startNodes, endNodes).isEmpty()) {
+                        errors.add(new FormatError(
+                            "Regular expression '%s' is incorrectly typed",
+                            edgeType, edge));
+                    }
                 }
             } else if (edgeType instanceof MergeLabel) {
-                if (sourceType != targetType) {
+                boolean error = false;
+                if (!isSharpType(sourceType)) {
                     errors.add(new FormatError(
-                        "%s-node '%s' and %s-node '%s' cannot be merged",
+                        "Merged %s-node '%s' should be sharply typed",
+                        sourceType, source));
+                    error = true;
+                }
+                if (!isSharpType(targetType)) {
+                    errors.add(new FormatError(
+                        "Merged %s-node '%s' should be sharply typed",
+                        targetType, target));
+                    error = true;
+                }
+                if (!error && !sourceType.equals(targetType)) {
+                    errors.add(new FormatError(
+                        "Merged %s-node '%s' and %s-node '%s' should be identically typed",
                         sourceType, source, targetType, target));
                 }
             } else if (edgeType.isFlag()) {
@@ -236,19 +249,22 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     || DefaultLabel.isDataType(targetType)) {
                     if (!targetType.equals(declaredTargetType)) {
                         errors.add(new FormatError(
-                            "%s-node '%s' is '%s.%s'-target and hence should be of type '%s'",
+                            "%s-node '%s' is '%s.%s'-target and hence should be of type %s",
                             targetType, target, sourceType, edgeType,
                             declaredTargetType));
                     }
                 } else if (!isSubtype(targetType, declaredTargetType)) {
                     errors.add(new FormatError(
-                        "%s-node '%s' is '%s.%s'-target and hence should be subtype of '%s'",
-                        targetType, target, sourceType, edgeType,
-                        declaredTargetType));
+                        "%s-node '%s' is '%s.%s'-target and hence should have %s-subtype",
+                        targetType, target, getActualType(sourceType),
+                        edgeType, declaredTargetType));
                 }
             }
         }
-        return errors;
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
+        }
+        return result;
     }
 
     /**
@@ -256,15 +272,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
      * @param model the graph to be checked
      * @return a list of type errors found in the graph
      */
-    public Set<FormatError> checkTyping(Graph model) {
-        return checkTyping(model, Collections.<Node,Set<Label>>emptyMap());
+    public Collection<FormatError> checkTyping(Graph model) {
+        try {
+            getTyping(model, Collections.<Node,Set<Label>>emptyMap());
+            return Collections.emptyList();
+        } catch (FormatException e) {
+            return e.getErrors();
+        }
     }
 
-    /** Tests if a given node type label occurs in this type graph. */
+    /** Tests if a given label is a node type that occurs in this type graph. */
     public boolean isNodeType(Label nodeLabel) {
-        assert nodeLabel.isNodeType() : String.format(
-            "Label '%s' is not a node type label", nodeLabel);
-        return this.labelStore.getSubtypes(nodeLabel) != null;
+        return nodeLabel.isNodeType()
+            && this.labelStore.getSubtypes(getActualType(nodeLabel)) != null;
     }
 
     /** Tests for a subtype relation between node labels. */
@@ -273,8 +293,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             "Label '%s' is not a node type label", subLabel);
         assert superLabel.isNodeType() : String.format(
             "Label '%s' is not a node type label", superLabel);
-        Set<Label> subtypes = this.labelStore.getSubtypes(superLabel);
-        return subtypes != null && subtypes.contains(subLabel);
+        Label actualSubType = getActualType(subLabel);
+        if (isSharpType(superLabel)) {
+            return actualSubType.equals(getActualType(superLabel));
+        } else {
+            Set<Label> subtypes = this.labelStore.getSubtypes(superLabel);
+            return subtypes != null && subtypes.contains(actualSubType);
+        }
     }
 
     /**
@@ -288,7 +313,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             "Label '%s' is not a node type label", nodeLabel);
         assert label.isBinary() : String.format(
             "Label '%s' is not a binary edge label", label);
-        Set<Label> supertypes = this.labelStore.getSupertypes(nodeLabel);
+        Set<Label> supertypes =
+            this.labelStore.getSupertypes(getActualType(nodeLabel));
         Set<? extends Edge> edges = labelEdgeSet(2, label);
         for (Edge edge : edges) {
             if (supertypes.contains(getType(edge.source()))) {
@@ -303,7 +329,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     public boolean hasFlag(Label node, Label flag) {
         boolean result = false;
         assert flag.isFlag() : String.format("Label '%s' is not a flag", flag);
-        Set<Label> supertypes = this.labelStore.getSupertypes(node);
+        Set<Label> supertypes =
+            this.labelStore.getSupertypes(getActualType(node));
         Set<? extends Edge> edges = labelEdgeSet(2, flag);
         for (Edge edge : edges) {
             if (supertypes.contains(getType(edge.source()))) {
@@ -338,6 +365,25 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     /** Returns the unique node type label of a given node. */
     private Label getType(Node node) {
         return ((TypeNode) node).getType();
+    }
+
+    /** 
+     * Indicates if a given type label is a sharp type.
+     * Convenience method for {@code RegExprLabel.isSharp(type)}.
+     */
+    private boolean isSharpType(Label type) {
+        return RegExprLabel.isSharp(type);
+    }
+
+    /**
+     * Returns the actual type label wrapped inside a (possibly sharp) type.
+     */
+    private Label getActualType(Label type) {
+        Label result = RegExprLabel.getSharpLabel(type);
+        if (result == null) {
+            result = type;
+        }
+        return result;
     }
 
     /** Checks if the graph satisfies the properties of a type graph. */
@@ -383,6 +429,18 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
+    }
+
+    /** 
+     * Returns the set of type nodes for a given node type label.
+     * The set is always a singleton.
+     */
+    private Set<Node> getNodesForType(Label type) {
+        Set<Node> result = new HashSet<Node>();
+        Set<? extends Edge> edgesForType = labelEdgeSet(2, getActualType(type));
+        assert edgesForType.size() == 1;
+        result.add(edgesForType.iterator().next().source());
+        return result;
     }
 
     /**
