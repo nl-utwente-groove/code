@@ -29,6 +29,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.MergeLabel;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -1452,10 +1453,11 @@ public class DefaultRuleView implements RuleView {
             // check typing
             if (isTyped()) {
                 try {
-                    Map<Node,Label> typeMap =
-                        getTyping(this.typableNodes, this.typableEdges,
-                            this.parentTypeMap);
-                    checkMergerTypes(typeMap);
+                    Map<Node,Label> lhsTypeMap =
+                        getType().getTyping(this.lhs, this.parentTypeMap);
+                    Map<Node,Label> rhsTypeMap =
+                        getType().getTyping(this.rhs, this.parentTypeMap);
+                    checkTypeSpecialisation(lhsTypeMap, rhsTypeMap);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 }
@@ -1531,6 +1533,66 @@ public class DefaultRuleView implements RuleView {
             graph.addNodeSet(nodeSet);
             graph.addEdgeSet(edgeSet);
             return getType().getTyping(graph, parentTypeMap);
+        }
+
+        /**
+         * If the RHS type for a reader node is changed w.r.t. the LHS type,
+         * the LHS type has to be sharp and the RHS type a subtype of it.
+         * @throws FormatException if there are typing errors
+         */
+        private void checkTypeSpecialisation(Map<Node,Label> lhsTypeMap,
+                Map<Node,Label> rhsTypeMap) throws FormatException {
+            Set<FormatError> errors = new TreeSet<FormatError>();
+            for (Map.Entry<Node,Label> lhsTypeEntry : lhsTypeMap.entrySet()) {
+                Node lhsNode = lhsTypeEntry.getKey();
+                Node rhsNode = this.ruleMorph.getNode(lhsNode);
+                // test if this is a reader node
+                if (rhsNode != null) {
+                    Label lhsType = lhsTypeEntry.getValue();
+                    Edge lhsEdge =
+                        DefaultEdge.createEdge(lhsNode, lhsType, lhsNode);
+                    // test if the type is preserved
+                    if (!this.ruleMorph.containsKey(lhsEdge)) {
+                        if (RegExprLabel.isSharp(lhsType)) {
+                            lhsType = RegExprLabel.getSharpLabel(lhsType);
+                        } else {
+                            errors.add(new FormatError(
+                                "Modified type '%s' should be sharp", lhsType,
+                                lhsNode));
+                        }
+                        Label rhsType = rhsTypeMap.get(rhsNode);
+                        if (RegExprLabel.isSharp(rhsType)) {
+                            rhsType = RegExprLabel.getSharpLabel(rhsType);
+                        }
+                        if (!getLabelStore().getSubtypes(lhsType).contains(
+                            rhsType)) {
+                            errors.add(new FormatError(
+                                "Specialised type '%s' should be subtype of modified type '%s'",
+                                rhsType, lhsType, lhsNode));
+                        }
+                    }
+                }
+            }
+            // Merged types are not caught, so we have to
+            // check for them separately
+            for (Edge edge : this.viewToLevelMap.edgeMap().values()) {
+                if (edge.label() instanceof MergeLabel) {
+                    // this is a merger edge
+                    Node source = edge.source();
+                    Node target = edge.target();
+                    Label sourceType = lhsTypeMap.get(source);
+                    Label targetType = lhsTypeMap.get(target);
+                    if (sourceType.equals(targetType)
+                        && !RegExprLabel.isSharp(sourceType)) {
+                        errors.add(new FormatError(
+                            "Merged type '%s' should be sharp", sourceType,
+                            source, target));
+                    }
+                }
+            }
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
+            }
         }
 
         /**
