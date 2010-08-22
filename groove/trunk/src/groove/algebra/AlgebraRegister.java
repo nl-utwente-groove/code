@@ -445,7 +445,7 @@ public class AlgebraRegister {
     static public final String DEFAULT_ALGEBRAS = "default";
     /** Name of the point algebra family. */
     static public final String POINT_ALGEBRAS = "point";
-    /** Name of the point algebra family. */
+    /** Name of the big algebra family. */
     static public final String BIG_ALGEBRAS = "big";
     /**
      * The map of registered signatures.
