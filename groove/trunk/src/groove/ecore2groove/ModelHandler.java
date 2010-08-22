@@ -201,9 +201,11 @@ public class ModelHandler {
      */
     private void checkForBigAlgebra(EDataType eAttributeType) {
         String type = eAttributeType.getInstanceTypeName();
-        if (type.equals("EBigInteger") || type.equals("ELongObject")
-            || type.equals("ELong") || type.equals("EBigDecimal")
-            || type.equals("EDouble") || type.equals("EDoubleObject")) {
+
+        if (type.equals("java.math.BigInteger") || type.equals("long")
+            || type.equals("java.lang.Long")
+            || type.equals("java.math.BigDecimal") || type.equals("double")
+            || type.equals("java.lang.Double")) {
             this.bigAlgebra = true;
         }
     }

@@ -663,20 +663,48 @@ public class ConstraintRules {
      * @param eAttribute the EAttribute
      */
     private void addValuesConstraint(EAttribute eAttribute) {
-        int lowerBound, upperBound;
+        String lowerBound = null;
+        String upperBound = null;
+        String type = null;
+
         if (eAttribute.getEAttributeType().getName().equals("EByte")
             || eAttribute.getEAttributeType().getName().equals("EByteObject")) {
-            lowerBound = -128;
-            upperBound = 127;
+            lowerBound = String.valueOf(Byte.MIN_VALUE);
+            upperBound = String.valueOf(Byte.MAX_VALUE);
+            type = "int:";
         } else if (eAttribute.getEAttributeType().getName().equals("EShort")
             || eAttribute.getEAttributeType().getName().equals("EShortObject")) {
-            lowerBound = -32768;
-            upperBound = 32767;
+            lowerBound = String.valueOf(Short.MIN_VALUE);
+            upperBound = String.valueOf(Short.MAX_VALUE);
+            type = "int:";
         } else if (eAttribute.getEAttributeType().getName().equals("EChar")
             || eAttribute.getEAttributeType().getName().equals("ECharObject")) {
-            lowerBound = 0;
-            upperBound = 65535;
-        } else {
+            lowerBound = String.valueOf(java.lang.Character.MIN_VALUE);
+            upperBound = String.valueOf(java.lang.Character.MAX_VALUE);
+            type = "int:";
+        } else if (eAttribute.getEAttributeType().getName().equals("ELong")
+            || eAttribute.getEAttributeType().getName().equals("ELongObject")) {
+            lowerBound = String.valueOf(Long.MIN_VALUE);
+            upperBound = String.valueOf(Long.MAX_VALUE);
+            type = "int:";
+        } else if (eAttribute.getEAttributeType().getName().equals("EInt")
+            || eAttribute.getEAttributeType().getName().equals("EIntegerObject")) {
+            if (this.mh.isBigAlgebra()) {
+                lowerBound = String.valueOf(Integer.MIN_VALUE);
+                upperBound = String.valueOf(Integer.MAX_VALUE);
+                type = "int:";
+            }
+        }/* else if (eAttribute.getEAttributeType().getName().equals("EFloat")
+            || eAttribute.getEAttributeType().getName().equals("EFloatObject")) {
+            lowerBound = "-" + (Float.MAX_VALUE - 1);
+            upperBound = "" + Float.MAX_VALUE;
+            type = "real:";
+         } else if (eAttribute.getEAttributeType().getName().equals("EDouble")
+           || eAttribute.getEAttributeType().getName().equals("EDouble")) {
+            lowerBound = "-" + (Double.MAX_VALUE - 1);
+            upperBound = "" + Double.MAX_VALUE;
+            type = "real:";
+         }*/else {
             return;
         }
 
@@ -699,16 +727,16 @@ public class ConstraintRules {
 
         Label attrLabel =
             DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        Label datatypeLabel = DefaultLabel.createLabel("int:");
-        Label lowerBoundLabel = DefaultLabel.createLabel("int:" + lowerBound);
-        Label upperBoundLabel = DefaultLabel.createLabel("int:" + upperBound);
+        Label datatypeLabel = DefaultLabel.createLabel(type);
+        Label lowerBoundLabel = DefaultLabel.createLabel(type + lowerBound);
+        Label upperBoundLabel = DefaultLabel.createLabel(type + upperBound);
         Label boolLabel = DefaultLabel.createLabel("bool:");
         Label trueLabel = DefaultLabel.createLabel("bool:true");
         Label valLabel = DefaultLabel.createLabel("val");
         Label arg1Label = DefaultLabel.createLabel("arg:0");
         Label arg2Label = DefaultLabel.createLabel("arg:1");
-        Label gtLabel = DefaultLabel.createLabel("int:gt");
-        Label ltLabel = DefaultLabel.createLabel("int:lt");
+        Label gtLabel = DefaultLabel.createLabel(type + "gt");
+        Label ltLabel = DefaultLabel.createLabel(type + "lt");
         Label orLabel = DefaultLabel.createLabel("bool:or");
 
         constraintRule.addEdge(attrNode, attrLabel, attrNode);
