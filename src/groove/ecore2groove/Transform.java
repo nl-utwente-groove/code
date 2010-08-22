@@ -22,6 +22,7 @@ import groove.graph.GraphInfo;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.RuleName;
+import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
@@ -193,13 +194,15 @@ public class Transform {
         grammar.putType(ecoreatg);
 
         // Set grammar properties
+        SystemProperties sp = new SystemProperties();
         List<String> typeNames = new Vector<String>();
         typeNames.add(modelName);
         typeNames.add("EcoreTypes");
-        grammar.getProperties().setTypeNames(typeNames);
+        sp.setTypeNames(typeNames);
         if (mh.isBigAlgebra()) {
-            grammar.getProperties().setAlgebra(AlgebraRegister.BIG_ALGEBRAS);
+            sp.setAlgebra(AlgebraRegister.BIG_ALGEBRAS);
         }
+        grammar.putProperties(sp);
 
         printGraph(atg, "Type graph: " + modelName + " (" + total + " ms)");
 
