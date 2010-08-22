@@ -56,6 +56,7 @@ public class ModelHandler {
     private ResourceSet rs = null;
     private EPackage metaModelRoot = null;
     private boolean core = false;
+    private boolean bigAlgebra = false;
 
     private Vector<EClass> classes = new Vector<EClass>();
     private Vector<EEnum> enums = new Vector<EEnum>();
@@ -153,6 +154,7 @@ public class ModelHandler {
                 this.attributes.add((EAttribute) obj);
                 if (((EAttribute) obj).getEAttributeType().eClass().getName() == "EDataType") {
                     this.datatypes.add(((EAttribute) obj).getEAttributeType());
+                    checkForBigAlgebra(((EAttribute) obj).getEAttributeType());
                 }
             }
         }
@@ -189,6 +191,30 @@ public class ModelHandler {
             }
         } while (!safeName);
 
+    }
+
+    /**
+     * Check if a datatype is out of bounds of normal int and float range, 
+     * and if so set the bigAlgebra boolean to true. The big AlgebraFamily will
+     * then be used in GROOVE.
+     * @param eAttributeType The datatype to check  
+     */
+    private void checkForBigAlgebra(EDataType eAttributeType) {
+        String type = eAttributeType.getInstanceTypeName();
+        if (type.equals("EBigInteger") || type.equals("ELongObject")
+            || type.equals("ELong") || type.equals("EBigDecimal")
+            || type.equals("EDouble") || type.equals("EDoubleObject")) {
+            this.bigAlgebra = true;
+        }
+    }
+
+    /**
+     * Returns whether or not a datatype in the model requires the big algebra
+     * family.
+     * @return true is the big algebra family is required for GROOVE
+     */
+    public boolean isBigAlgebra() {
+        return this.bigAlgebra;
     }
 
     /**

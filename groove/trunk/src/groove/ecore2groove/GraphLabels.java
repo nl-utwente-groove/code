@@ -119,7 +119,7 @@ public class GraphLabels {
             if (value == null) {
                 label = "int:";
             } else {
-                int intVal;
+                /*int intVal;
                 try {
                     intVal = new Integer(value.toString());
                 } catch (NumberFormatException e) {
@@ -132,7 +132,8 @@ public class GraphLabels {
                         intVal = Integer.MAX_VALUE;
                     }
                 }
-                label = "int:" + intVal;
+                label = "int:" + intVal;*/
+                label = "int:" + value.toString();
             }
         } else if (type == "boolean" || type == "java.lang.Boolean") {
             if (value == null) {
@@ -146,7 +147,7 @@ public class GraphLabels {
             if (value == null) {
                 label = "real:";
             } else {
-                float realVal;
+                /*float realVal;
                 try {
                     realVal = new Float(value.toString());
                 } catch (Exception e) {
@@ -158,7 +159,8 @@ public class GraphLabels {
                         realVal = Float.MAX_VALUE;
                     }
                 }
-                label = "real:" + realVal;
+                label = "real:" + realVal;*/
+                label = "real:" + value.toString();
             }
         } else if (type == "byte[]" || type == "char"
             || type == "java.lang.Character" || type == "java.util.Date"
