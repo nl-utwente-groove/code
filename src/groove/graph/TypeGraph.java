@@ -142,6 +142,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 } else if (!(label instanceof RegExprLabel)) {
                     errors.add(new FormatError(
                         "Unknown node type %s for node '%s'", label, node));
+                    // though we don't know the type, the node is not untyped
+                    untypedNodes.remove(node);
                 }
             }
         }
@@ -462,11 +464,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         testFixed(true);
         Graph result = new NodeSetEdgeSetGraph();
         Map<Label,Node> typeNodeMap = new HashMap<Label,Node>();
-        for (Label nodeType : getLabelStore().getLabels()) {
-            if (nodeType.isNodeType()) {
-                Node satNode = result.addNode();
-                typeNodeMap.put(nodeType, satNode);
-            }
+        for (Node typeNode : nodeSet()) {
+            result.addNode(typeNode);
+            typeNodeMap.put(getType(typeNode), typeNode);
         }
         for (Edge typeEdge : edgeSet()) {
             Label edgeType = typeEdge.label();
