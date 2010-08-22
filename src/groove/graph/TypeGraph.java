@@ -209,7 +209,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 } else {
                     Set<Node> startNodes = getNodesForType(sourceType);
                     Set<Node> endNodes = getNodesForType(targetType);
-                    if (((RegExprLabel) edgeType).getAutomaton().getMatches(
+                    if (((RegExprLabel) edgeType).getAutomaton(this.labelStore).getMatches(
                         getSaturation(), startNodes, endNodes).isEmpty()) {
                         errors.add(new FormatError(
                             "Regular expression '%s' is incorrectly typed",

@@ -21,6 +21,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.util.Property;
 
@@ -41,23 +42,15 @@ import java.util.Set;
  */
 public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /**
-     * Creates an automaton with a fresh start and end node, which does not
-     * accept the empty word.
-     */
-    public MatrixAutomaton() {
-        this.start = addNode();
-        this.end = addNode();
-    }
-
-    /**
      * Creates an automaton with a given start and end node, which does not
      * accept the empty word.
      */
-    public MatrixAutomaton(Node startNode, Node endNode) {
+    public MatrixAutomaton(Node startNode, Node endNode, LabelStore labelStore) {
         addNode(startNode);
         this.start = startNode;
         addNode(endNode);
         this.end = endNode;
+        this.labelStore = labelStore;
     }
 
     public Node getStartNode() {
@@ -187,7 +180,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     protected Set<Node> createStartImages(GraphShape graph) {
         Set<Node> result = new HashSet<Node>();
-        if (isAcceptsEmptyWord() || isInitWildcard()) {
+        if (isAcceptsEmptyWord()) {
             // too bad, all graph nodes can be start images
             result.addAll(graph.nodeSet());
         } else {
@@ -202,7 +195,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         Label[] initLabels = positive ? getInitPosLabels() : getInitInvLabels();
         for (Label initLabel : initLabels) {
             for (Edge graphEdge : graph.labelEdgeSet(2, initLabel)) {
-                Node end = positive ? graphEdge.source() : graphEdge.opposite();
+                Node end = positive ? graphEdge.source() : graphEdge.target();
                 result.add(end);
             }
         }
@@ -350,17 +343,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     }
 
     /**
-     * Indicates if the automaton has an initial (normal or inverse) edge with a
-     * wildcard label inside.
-     */
-    protected boolean isInitWildcard() {
-        if (this.initPosLabels == null) {
-            initNodeLabelEdgeMaps();
-        }
-        return this.initWildcard;
-    }
-
-    /**
      * Initializes all the node-to-label-to-edge-sets maps of this automaton.
      * @throws IllegalStateException if the method is called before the graph is
      *         fixed
@@ -383,34 +365,29 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             if (isInverse) {
                 label = RegExprLabel.getInvOperand(label).toLabel();
             }
+            Set<Label> derivedLabels;
             if (RegExprLabel.isWildcard(label)) {
-                label = WILDCARD_LABEL;
-            } else if (RegExprLabel.isSharp(label)) {
-                label = RegExprLabel.getSharpLabel(label);
+                derivedLabels =
+                    this.labelStore.getLabels(RegExprLabel.getWildcardKind(label));
+            } else if (label.isNodeType() && !RegExprLabel.isSharp(label)) {
+                derivedLabels = this.labelStore.getSubtypes(label);
+            } else {
+                derivedLabels = Collections.singleton(label);
             }
-            for (int direction = FORWARD; direction <= BACKWARD; direction++) {
-                Node end =
-                    (direction == FORWARD) ? edge.source() : edge.opposite();
-                if (isInverse) {
-                    addToNodeLabelEdgeSetMap(nodeInvLabelEdgeMap[direction],
-                        end, label, edge);
-                    if (edge.source() == getStartNode()) {
-                        initInvLabelSet.add(label);
-                    }
-                } else {
-                    addToNodeLabelEdgeSetMap(nodePosLabelEdgeMap[direction],
-                        end, label, edge);
-                    if (edge.source() == getStartNode()) {
-                        initPosLabelSet.add(label);
-                    }
+            Map<Label,Set<Edge>>[][] nodeLabelEdgeMap =
+                isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
+            for (Label derivedLabel : derivedLabels) {
+                for (int direction = FORWARD; direction <= BACKWARD; direction++) {
+                    Node end =
+                        (direction == FORWARD) ? edge.source() : edge.target();
+                    addToNodeLabelEdgeSetMap(nodeLabelEdgeMap[direction], end,
+                        derivedLabel, edge);
                 }
             }
             if (edge.source() == getStartNode()) {
-                if (label == WILDCARD_LABEL) {
-                    this.initWildcard = true;
-                } else {
-                    (isInverse ? initInvLabelSet : initPosLabelSet).add(label);
-                }
+                Set<Label> initLabelSet =
+                    isInverse ? initInvLabelSet : initPosLabelSet;
+                initLabelSet.addAll(derivedLabels);
             }
         }
         // now convert the sets of nodes to arrays of node indices
@@ -756,6 +733,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     private boolean acceptsEmptyWord;
 
+    /** Label store to be matched against. */
+    private final LabelStore labelStore;
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to corresponding sets of edges, where the node key is either
@@ -780,12 +759,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * The set of inverse labels occurring on initial edges of this automaton.
      */
     private Label[] initInvLabels;
-    /**
-     * Flag to indicate that the initial edges of this automaton include one
-     * with wildcard label. Used to create a set of initial start images if none
-     * is provided.
-     */
-    private boolean initWildcard;
     /**
      * The set of nodes of this automaton that lie on a cycle reachable from the
      * start node.
@@ -844,8 +817,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * Indication of backward matching direction.
      */
     static private final int BACKWARD = 1;
-    /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
-    static final Label WILDCARD_LABEL = RegExpr.wildcard().toLabel();
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
@@ -981,9 +952,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                         Node imageNode =
                             positive ? getOpposite(imageEdge)
                                     : getThisEnd(imageEdge);
-                        extend(keyLabelEdgeMap.get(imageEdge.label()),
-                            imageNode, imageLabel, valuation);
-                        extend(keyLabelEdgeMap.get(WILDCARD_LABEL), imageNode,
+                        extend(keyLabelEdgeMap.get(imageLabel), imageNode,
                             imageLabel, valuation);
                     }
                 }

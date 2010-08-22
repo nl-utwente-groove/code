@@ -3,6 +3,7 @@ package groove.match;
 
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.Automaton;
@@ -29,11 +30,13 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
     /**
      * Constructs a new search item. The item will match according to the
      * regular expression on the edge label.
+     * @param labelStore label store used to determine subtypes for 
+     * node type labels in the regular expression
      */
-    public RegExprEdgeSearchItem(Edge edge) {
+    public RegExprEdgeSearchItem(Edge edge, LabelStore labelStore) {
         super(edge);
         RegExprLabel label = (RegExprLabel) edge.label();
-        this.labelAutomaton = label.getAutomaton();
+        this.labelAutomaton = label.getAutomaton(labelStore);
         this.edgeExpr = label.getRegExpr();
         this.boundVars = label.getRegExpr().boundVarSet();
         this.allVars = label.getRegExpr().allVarSet();

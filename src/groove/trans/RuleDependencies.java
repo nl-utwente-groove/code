@@ -20,6 +20,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -113,18 +114,11 @@ public class RuleDependencies {
         }
     }
 
-    /**
-     * Constructs a new dependencies object, for a given set of rules and
-     * properties.
-     */
-    public RuleDependencies(Collection<Rule> rules, SystemProperties properties) {
-        this.rules = rules;
-        this.properties = properties;
-    }
-
     /** Constructs a new dependencies object, for a given rule system. */
     public RuleDependencies(RuleSystem ruleSystem) {
-        this(ruleSystem.getRules(), ruleSystem.getProperties());
+        this.rules = ruleSystem.getRules();
+        this.properties = ruleSystem.getProperties();
+        this.labelStore = ruleSystem.getLabelStore();
     }
 
     /**
@@ -425,7 +419,8 @@ public class RuleDependencies {
                 // the conversion to negOperant.toLabel() may have turned
                 // the label into a DefautLabel
                 if (label instanceof RegExprLabel) {
-                    Automaton labelAut = ((RegExprLabel) label).getAutomaton();
+                    Automaton labelAut =
+                        ((RegExprLabel) label).getAutomaton(this.labelStore);
                     // if a regular expression accepts the empty word, merging
                     // is
                     // allowed
@@ -561,6 +556,8 @@ public class RuleDependencies {
     private final Collection<Rule> rules;
     /** The system properties of the rules. */
     private final SystemProperties properties;
+    /** Alphabet of the rule system. */
+    private final LabelStore labelStore;
     /**
      * Mapping from rules to sets of enablers, i.e., rules that may increase
      * their applicability.
