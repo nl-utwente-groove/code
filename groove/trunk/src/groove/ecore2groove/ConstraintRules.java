@@ -842,15 +842,18 @@ public class ConstraintRules {
         constraintRule = new DefaultGraph();
         name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
-                + " not two opposite";
+                + " - not two opposite";
         this.ruleNames.put(constraintRule, name);
 
         refNode = constraintRule.addNode();
         Node erefNode1 = constraintRule.addNode();
         Node erefNode2 = constraintRule.addNode();
 
+        EReference opposite = eReference.getEOpposite();
         Label oppositeLabel = DefaultLabel.createLabel("opposite");
-        Label erefLabel = DefaultLabel.createLabel(this.mh.getEReferenceType());
+        Label erefLabel =
+            DefaultLabel.createLabel(GraphLabels.getLabel(opposite));
+        //Label erefLabel = DefaultLabel.createLabel(this.mh.getEReferenceType());
         Label unequalLabel = DefaultLabel.createLabel("!=");
 
         constraintRule.addEdge(refNode, refLabel, refNode);
