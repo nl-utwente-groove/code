@@ -40,7 +40,7 @@ public class VarSupport {
      * has a {@link RegExprLabel}, this is the result of
      * {@link RegExpr#allVarSet()}; otherwise, it is the empty set.
      */
-    static public Set<String> getAllVars(Edge edge) {
+    static public Set<LabelVar> getAllVars(Edge edge) {
         if (edge.label() instanceof RegExprLabel) {
             return ((RegExprLabel) edge.label()).getRegExpr().allVarSet();
         } else {
@@ -53,8 +53,8 @@ public class VarSupport {
      * union of the variables involved in the edges.
      * @see #getAllVars(Edge)
      */
-    static public Set<String> getAllVars(GraphShape graph) {
-        Set<String> result = new HashSet<String>();
+    static public Set<LabelVar> getAllVars(GraphShape graph) {
+        Set<LabelVar> result = new HashSet<LabelVar>();
         for (Edge edge : graph.edgeSet()) {
             result.addAll(getAllVars(edge));
         }
@@ -66,7 +66,7 @@ public class VarSupport {
      * {@link RegExprLabel}, this is the result of
      * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
      */
-    static public Set<String> getBoundVars(Edge edge) {
+    static public Set<LabelVar> getBoundVars(Edge edge) {
         if (edge.label() instanceof RegExprLabel) {
             return ((RegExprLabel) edge.label()).getRegExpr().boundVarSet();
         } else {
@@ -79,8 +79,8 @@ public class VarSupport {
      * the variables bound by the edges.
      * @see #getBoundVars(Edge)
      */
-    static public Set<String> getBoundVars(Graph graph) {
-        Set<String> result = new HashSet<String>();
+    static public Set<LabelVar> getBoundVars(Graph graph) {
+        Set<LabelVar> result = new HashSet<LabelVar>();
         for (Edge edge : graph.edgeSet()) {
             result.addAll(getBoundVars(edge));
         }
@@ -104,10 +104,10 @@ public class VarSupport {
     /**
      * Returns a map from bound variables in a graph to edges that bind them.
      */
-    static public Map<String,Edge> getVarBinders(Graph graph) {
-        Map<String,Edge> result = new HashMap<String,Edge>();
+    static public Map<LabelVar,Edge> getVarBinders(Graph graph) {
+        Map<LabelVar,Edge> result = new HashMap<LabelVar,Edge>();
         for (Edge binder : graph.edgeSet()) {
-            for (String boundVar : getBoundVars(binder)) {
+            for (LabelVar boundVar : getBoundVars(binder)) {
                 result.put(boundVar, binder);
             }
         }
@@ -131,10 +131,10 @@ public class VarSupport {
      * Returns a map from variables in a graph to edges that have them as a
      * named wildcard.
      */
-    static public Map<String,Edge> getSimpleVarBinders(Graph graph) {
-        Map<String,Edge> result = new HashMap<String,Edge>();
+    static public Map<LabelVar,Edge> getSimpleVarBinders(Graph graph) {
+        Map<LabelVar,Edge> result = new HashMap<LabelVar,Edge>();
         for (Edge binder : graph.edgeSet()) {
-            String id = RegExprLabel.getWildcardId(binder.label());
+            LabelVar id = RegExprLabel.getWildcardId(binder.label());
             if (id != null) {
                 result.put(id, binder);
             }

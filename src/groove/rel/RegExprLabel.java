@@ -178,7 +178,7 @@ public class RegExprLabel extends AbstractLabel {
      * {@link RegExpr.Wildcard}, returns the identifier of the wildcard, if any.
      * Returns <code>null</code> in all other cases.
      */
-    public static String getWildcardId(Label label) {
+    public static LabelVar getWildcardId(Label label) {
         if (label instanceof RegExprLabel) {
             return ((RegExprLabel) label).getRegExpr().getWildcardId();
         }

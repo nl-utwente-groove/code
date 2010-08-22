@@ -24,6 +24,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.rel.LabelVar;
 import groove.rel.VarNodeEdgeLinkedHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
@@ -54,7 +55,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             List<? extends SearchItem> plan, boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
         this.edgeIxMap = new HashMap<Edge,Integer>();
-        this.varIxMap = new HashMap<String,Integer>();
+        this.varIxMap = new HashMap<LabelVar,Integer>();
         this.plan = plan;
         this.injective = injective;
     }
@@ -156,7 +157,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * returns <code>true</code> if the variable already has a result index.
      * Callback method from search items, during activation.
      */
-    boolean isVarFound(String var) {
+    boolean isVarFound(LabelVar var) {
         return this.varIxMap.get(var) != null;
     }
 
@@ -196,7 +197,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * @param var the variable to be looked up
      * @return an index for <code>var</code>
      */
-    int getVarIx(String var) {
+    int getVarIx(LabelVar var) {
         Integer value = this.varIxMap.get(var);
         if (value == null) {
             testFixed(false);
@@ -223,8 +224,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             for (Map.Entry<Edge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
                 this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
             }
-            this.varKeys = new String[this.varIxMap.size()];
-            for (Map.Entry<String,Integer> varIxEntry : this.varIxMap.entrySet()) {
+            this.varKeys = new LabelVar[this.varIxMap.size()];
+            for (Map.Entry<LabelVar,Integer> varIxEntry : this.varIxMap.entrySet()) {
                 this.varKeys[varIxEntry.getValue()] = varIxEntry.getKey();
             }
             this.fixed = true;
@@ -261,7 +262,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Map from source graph variables to (distinct) indices.
      */
-    private final Map<String,Integer> varIxMap;
+    private final Map<LabelVar,Integer> varIxMap;
     /**
      * Array of source graph nodes, which is the inverse of {@link #nodeIxMap} .
      */
@@ -274,7 +275,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * Array of source graph variables, which is the inverse of
      * {@link #varIxMap} .
      */
-    String[] varKeys;
+    LabelVar[] varKeys;
     /**
      * Flag to indicate that the construction of the object has finished, so
      * that it can now be used for searching.
@@ -336,7 +337,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                         this.edgeAnchors[i] = edgeEntry.getValue();
                 }
                 if (anchorMap instanceof VarNodeEdgeMap) {
-                    for (Map.Entry<String,Label> varEntry : ((VarNodeEdgeMap) anchorMap).getValuation().entrySet()) {
+                    for (Map.Entry<LabelVar,Label> varEntry : ((VarNodeEdgeMap) anchorMap).getValuation().entrySet()) {
                         assert isVarFound(varEntry.getKey());
                         int i = getVarIx(varEntry.getKey());
                         this.varImages[i] =

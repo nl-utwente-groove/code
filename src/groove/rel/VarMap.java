@@ -30,23 +30,23 @@ public interface VarMap {
     /**
      * Returns a mapping from variables to labels.
      */
-    Map<String,Label> getValuation();
+    Map<LabelVar,Label> getValuation();
 
     /**
      * Returns the value stored for a given variable. Returns <code>null</code>
      * if the variable does not occur in the source or has no value in the
      * morphism.
      */
-    Label getVar(String var);
+    Label getVar(LabelVar var);
 
     /**
      * Inserts a value at a given variable. Returns the old value for the
      * variable, if any.
      */
-    Label putVar(String var, Label value);
+    Label putVar(LabelVar var, Label value);
 
     /**
      * Copies a given valuation mapping into this one.
      */
-    void putAllVar(Map<String,Label> valuation);
+    void putAllVar(Map<LabelVar,Label> valuation);
 }

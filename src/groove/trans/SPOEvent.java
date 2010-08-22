@@ -25,6 +25,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
 import groove.graph.algebra.ValueNode;
+import groove.rel.LabelVar;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -761,7 +762,7 @@ final public class SPOEvent extends
                     for (int end = 0; end < arity; end++) {
                         result.putNode(edgeKey.end(end), edgeImage.end(end));
                     }
-                    String var = RegExprLabel.getWildcardId(edgeKey.label());
+                    LabelVar var = RegExprLabel.getWildcardId(edgeKey.label());
                     if (var != null) {
                         result.putVar(var, edgeImage.label());
                     }
@@ -826,7 +827,7 @@ final public class SPOEvent extends
                 }
             }
             // add variable images
-            for (String var : getRule().getCreatorVars()) {
+            for (LabelVar var : getRule().getCreatorVars()) {
                 result.putVar(var, anchorMap.getVar(var));
             }
             return result;

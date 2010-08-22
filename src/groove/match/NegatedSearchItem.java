@@ -18,6 +18,7 @@ package groove.match;
 
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.LabelVar;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,7 +38,7 @@ class NegatedSearchItem extends AbstractSearchItem {
         this.inner = item;
         this.neededNodes = new HashSet<Node>(item.needsNodes());
         this.neededNodes.addAll(item.bindsNodes());
-        this.neededVars = new HashSet<String>(item.needsVars());
+        this.neededVars = new HashSet<LabelVar>(item.needsVars());
         this.neededVars.addAll(item.bindsVars());
     }
 
@@ -62,7 +63,7 @@ class NegatedSearchItem extends AbstractSearchItem {
      * Returns the inner condition's needed variables.
      */
     @Override
-    public Collection<String> needsVars() {
+    public Collection<LabelVar> needsVars() {
         return this.neededVars;
     }
 
@@ -88,7 +89,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     /** Union of the needed and bound nodes of the inner condition. */
     private final Collection<Node> neededNodes;
     /** Union of the needed and bound variables of the inner condition. */
-    private final Collection<String> neededVars;
+    private final Collection<LabelVar> neededVars;
 
     /** Record for the negated search item. */
     private class NegatedSearchRecord extends SingularRecord {

@@ -20,6 +20,7 @@ import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.LabelStore;
 import groove.graph.NodeEdgeMap;
+import groove.rel.LabelVar;
 import groove.util.Fixable;
 import groove.view.FormatException;
 
@@ -58,7 +59,7 @@ public interface Condition extends Fixable {
      * Set of variables in the target of this condition that also occur in root
      * elements.
      */
-    public Set<String> getRootVars();
+    public Set<LabelVar> getRootVars();
 
     /**
      * The codomain of the pattern morphism. Convenience method for

@@ -99,9 +99,9 @@ abstract public class RegExpr { // implements VarSetSupport {
      * If this is a {@link RegExpr.Wildcard}, returns the identifier of the
      * wildcard, if any; otherwise returns <code>null</code>.
      */
-    public String getWildcardId() {
+    public LabelVar getWildcardId() {
         if (this instanceof Wildcard) {
-            return ((Wildcard) this).getIdentifier();
+            return ((Wildcard) this).getLabelVar();
         } else {
             return null;
         }
@@ -331,10 +331,10 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Returns the set of all variables occurring as identifiers in
      * {@link Wildcard}-subexpressions, in the order of the sub-expressions.
      */
-    public Set<String> allVarSet() {
+    public Set<LabelVar> allVarSet() {
         // by making a linked set we make sure the order is preserved
         // and yet no identifier occurs more than once
-        Set<String> result = new LinkedHashSet<String>();
+        Set<LabelVar> result = new LinkedHashSet<LabelVar>();
         if (getWildcardId() != null) {
             result.add(getWildcardId());
         } else {
@@ -351,8 +351,8 @@ abstract public class RegExpr { // implements VarSetSupport {
      * value for it.
      * @see #allVarSet()
      */
-    public Set<String> boundVarSet() {
-        Set<String> result = new LinkedHashSet<String>();
+    public Set<LabelVar> boundVarSet() {
+        Set<LabelVar> result = new LinkedHashSet<LabelVar>();
         if (getWildcardId() != null) {
             result.add(getWildcardId());
         } else if (isChoice()) {
@@ -1277,14 +1277,6 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * Constructs a wildcard expression with a given identifier
-         * @param identifier the wildcard identifier
-         */
-        public Wildcard(String identifier) {
-            this(identifier, null);
-        }
-
-        /**
          * Constructs a wildcard expression with a given (possibly {@code null}) 
          * identifier and (possibly {@code null}) label constraint.
          */
@@ -1387,6 +1379,14 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         public String getIdentifier() {
             return this.identifier;
+        }
+
+        /**
+         * Returns the optional label variable of this wildcard expression.
+         * The variable is the identifier combined with the constraint kind.
+         */
+        public LabelVar getLabelVar() {
+            return new LabelVar(getIdentifier(), getGuard().getKind());
         }
 
         /**

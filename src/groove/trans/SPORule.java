@@ -29,6 +29,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
+import groove.rel.LabelVar;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
@@ -1072,7 +1073,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns the variables that occur in creator edges.
      * @see #getCreatorEdges()
      */
-    final String[] getCreatorVars() {
+    final LabelVar[] getCreatorVars() {
         if (this.creatorVars == null) {
             this.creatorVars = computeCreatorVars();
         }
@@ -1082,16 +1083,17 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the variables occurring in RHS edges.
      */
-    private String[] computeCreatorVars() {
-        Set<String> creatorVarSet = new HashSet<String>();
+    private LabelVar[] computeCreatorVars() {
+        Set<LabelVar> creatorVarSet = new HashSet<LabelVar>();
         for (int i = 0; i < getCreatorEdges().length; i++) {
             Edge creatorEdge = getCreatorEdges()[i];
-            String creatorVar = RegExprLabel.getWildcardId(creatorEdge.label());
+            LabelVar creatorVar =
+                RegExprLabel.getWildcardId(creatorEdge.label());
             if (creatorVar != null) {
                 creatorVarSet.add(creatorVar);
             }
         }
-        return creatorVarSet.toArray(new String[0]);
+        return creatorVarSet.toArray(new LabelVar[0]);
     }
 
     /**
@@ -1444,7 +1446,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Variables occurring in the rhsOnlyEdges
      */
-    private String[] creatorVars;
+    private LabelVar[] creatorVars;
     /**
      * A partial mapping from LHS nodes to RHS nodes, indicating which nodes are
      * merged and which nodes are deleted.

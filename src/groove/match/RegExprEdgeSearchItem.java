@@ -6,6 +6,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.Automaton;
+import groove.rel.LabelVar;
 import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
@@ -36,7 +37,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
         this.edgeExpr = label.getRegExpr();
         this.boundVars = label.getRegExpr().boundVarSet();
         this.allVars = label.getRegExpr().allVarSet();
-        this.neededVars = new HashSet<String>(this.allVars);
+        this.neededVars = new HashSet<LabelVar>(this.allVars);
         this.neededVars.removeAll(this.boundVars);
     }
 
@@ -45,7 +46,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
      * expression.
      */
     @Override
-    public Collection<String> needsVars() {
+    public Collection<LabelVar> needsVars() {
         return this.neededVars;
     }
 
@@ -53,7 +54,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
      * Returns the set of variables bound in the regular expression.
      */
     @Override
-    public Collection<String> bindsVars() {
+    public Collection<LabelVar> bindsVars() {
         return this.boundVars;
     }
 
@@ -72,8 +73,8 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
     public void activate(SearchPlanStrategy strategy) {
         super.activate(strategy);
         this.allVarsFound = true;
-        this.varIxMap = new HashMap<String,Integer>();
-        for (String var : this.allVars) {
+        this.varIxMap = new HashMap<LabelVar,Integer>();
+        for (LabelVar var : this.allVars) {
             this.allVarsFound &= strategy.isVarFound(var);
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
@@ -108,16 +109,16 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
     /** The regular expression on the edge. */
     final RegExpr edgeExpr;
     /** Collection of all variables occurring in the regular expression. */
-    final Set<String> allVars;
+    final Set<LabelVar> allVars;
     /** Collection of variables bound by the regular expression. */
-    final Set<String> boundVars;
+    final Set<LabelVar> boundVars;
     /**
      * Collection of variables used in the regular expression but not bound by
      * it.
      */
-    final Set<String> neededVars;
+    final Set<LabelVar> neededVars;
     /** Mapping from variables to the corresponding indices in the result. */
-    Map<String,Integer> varIxMap;
+    Map<LabelVar,Integer> varIxMap;
     /**
      * Mapping indicating is all variables in the regular expression have been
      * found before the search item is invoked.
@@ -138,8 +139,8 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
 
         @Override
         boolean set() {
-            Map<String,Label> valuation = new HashMap<String,Label>();
-            for (String var : RegExprEdgeSearchItem.this.allVars) {
+            Map<LabelVar,Label> valuation = new HashMap<LabelVar,Label>();
+            for (LabelVar var : RegExprEdgeSearchItem.this.allVars) {
                 Label image =
                     this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
@@ -152,7 +153,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
          * Computes the image set by querying the automaton derived for the edge
          * label.
          */
-        private NodeRelation computeRelation(Map<String,Label> valuation) {
+        private NodeRelation computeRelation(Map<LabelVar,Label> valuation) {
             NodeRelation result;
             Node sourceFind = this.sourcePreMatch;
             if (sourceFind == null && RegExprEdgeSearchItem.this.sourceFound) {
@@ -191,8 +192,8 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
             super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
             assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
                 RegExprEdgeSearchItem.this.neededVars);
-            this.freshVars = new HashSet<String>();
-            for (String var : RegExprEdgeSearchItem.this.boundVars) {
+            this.freshVars = new HashSet<LabelVar>();
+            for (LabelVar var : RegExprEdgeSearchItem.this.boundVars) {
                 if (search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var)) == null) {
                     this.freshVars.add(var);
                 }
@@ -213,8 +214,8 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
                         : Collections.singleton(this.targetFind);
             NodeRelation matches;
             if (RegExprEdgeSearchItem.this.labelAutomaton instanceof VarAutomaton) {
-                Map<String,Label> valuation = new HashMap<String,Label>();
-                for (String var : RegExprEdgeSearchItem.this.allVars) {
+                Map<LabelVar,Label> valuation = new HashMap<LabelVar,Label>();
+                for (LabelVar var : RegExprEdgeSearchItem.this.allVars) {
                     if (!this.freshVars.contains(var)) {
                         valuation.put(
                             var,
@@ -236,9 +237,9 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
         boolean setImage(Edge image) {
             boolean result = super.setImage(image);
             if (result && !this.freshVars.isEmpty()) {
-                Map<String,Label> valuation =
+                Map<LabelVar,Label> valuation =
                     ((ValuationEdge) image).getValue();
-                for (String var : this.freshVars) {
+                for (LabelVar var : this.freshVars) {
                     this.search.putVar(
                         RegExprEdgeSearchItem.this.varIxMap.get(var),
                         valuation.get(var));
@@ -250,13 +251,13 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
         @Override
         public void reset() {
             super.reset();
-            for (String var : this.freshVars) {
+            for (LabelVar var : this.freshVars) {
                 this.search.putVar(
                     RegExprEdgeSearchItem.this.varIxMap.get(var), null);
             }
         }
 
         /** The set of bound variables that are not yet pre-matched. */
-        private final Set<String> freshVars;
+        private final Set<LabelVar> freshVars;
     }
 }
