@@ -69,7 +69,8 @@ public class RuleAspect extends AbstractAspect {
             }
         } else if (isCreator(edge)) {
             Label label = edge.getModelLabel();
-            if (!(RegExprLabel.getWildcardId(label) != null || RegExprLabel.isEmpty(label))) {
+            if (label instanceof RegExprLabel
+                && !(RegExprLabel.getWildcardId(label) != null || RegExprLabel.isEmpty(label))) {
                 throw new FormatException(
                     "Creator label %s should be named wildcard, merger or atom",
                     label, edge);
