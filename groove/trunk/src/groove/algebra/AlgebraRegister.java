@@ -488,10 +488,10 @@ public class AlgebraRegister {
         pointRegister = new AlgebraRegister(pointAlgebraFamily);
         registerMap.put(POINT_ALGEBRAS, pointRegister);
         Set<Algebra<?>> bigAlgebraFamily = new HashSet<Algebra<?>>();
-        bigAlgebraFamily.add(new IntPointAlgebra());
-        bigAlgebraFamily.add(new BoolPointAlgebra());
-        bigAlgebraFamily.add(new StringPointAlgebra());
-        bigAlgebraFamily.add(new RealPointAlgebra());
+        bigAlgebraFamily.add(new BigIntAlgebra());
+        bigAlgebraFamily.add(new BoolAlgebra());
+        bigAlgebraFamily.add(new StringAlgebra());
+        bigAlgebraFamily.add(new BigDoubleAlgebra());
         bigRegister = new AlgebraRegister(bigAlgebraFamily);
         registerMap.put(BIG_ALGEBRAS, bigRegister);
     }
