@@ -256,6 +256,20 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return Collections.unmodifiableSet(this.subtypeMap.keySet());
     }
 
+    /** 
+     * Returns the set of labels of a given kind ({@link Label#BINARY}, 
+     * {@link Label#FLAG} or {@link Label#NODE_TYPE}).
+     */
+    public Set<Label> getLabels(int kind) {
+        Set<Label> result = new HashSet<Label>();
+        for (Label label : getLabels()) {
+            if (label.getKind() == kind) {
+                result.add(label);
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns a clone of this label store where all occurrences of a given
      * label are replaced by a new label.

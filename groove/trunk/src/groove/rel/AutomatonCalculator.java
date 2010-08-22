@@ -19,6 +19,7 @@ package groove.rel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.rel.RegExpr.Atom;
 import groove.rel.RegExpr.Choice;
@@ -43,6 +44,15 @@ import java.util.List;
  * @version $Revision$
  */
 public class AutomatonCalculator implements RegExprCalculator<Automaton> {
+
+    /**
+     * 
+     */
+    public AutomatonCalculator() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
     /**
      * Applies this calculator to a given regular expression, fixes the
      * resulting automaton and returns it.
@@ -231,7 +241,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      * identities (in the context of this calculator).
      */
     protected Automaton createAutomaton() {
-        return new MatrixAutomaton(createNode(), createNode());
+        return new MatrixAutomaton(createNode(), createNode(), this.labelStore);
     }
 
     /**
@@ -262,6 +272,17 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
         return DefaultNode.createNode(this.nodeDispenser);
     }
 
+    /** 
+     * Sets the label store of this calculator.
+     * The label store is used in the automaton for matching
+     * node type labels.
+     */
+    public final void setLabelStore(LabelStore labelStore) {
+        this.labelStore = labelStore;
+    }
+
+    /** Label store currently used to build automata. */
+    private LabelStore labelStore;
     /** the dispenser for automaton node identities. */
     private final DefaultDispenser nodeDispenser = new DefaultDispenser();
 }

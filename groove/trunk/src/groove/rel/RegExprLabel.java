@@ -19,6 +19,7 @@ package groove.rel;
 import groove.graph.AbstractLabel;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.util.Property;
 
 import java.util.List;
@@ -77,11 +78,14 @@ public class RegExprLabel extends AbstractLabel {
         return this.regExpr;
     }
 
-    /** Returns the regular automaton for this label. */
-    public Automaton getAutomaton() {
+    /**
+     * Returns the regular automaton for this label. 
+     * @param labelStore alphabet of the automaton,
+     * used to match node type labels properly
+     */
+    public Automaton getAutomaton(LabelStore labelStore) {
         if (this.automaton == null) {
-            // we create a new automaton calculator to ensure
-            // node numbers at the low end
+            calculator.setLabelStore(labelStore);
             this.automaton = calculator.compute(getRegExpr());
         }
         return this.automaton;
@@ -183,6 +187,19 @@ public class RegExprLabel extends AbstractLabel {
             return ((RegExprLabel) label).getRegExpr().getWildcardId();
         }
         return null;
+    }
+
+    /**
+     * If a given label is a {@link RegExprLabel} wrapping a
+     * {@link RegExpr.Wildcard}, returns the kind of label the wildcard
+     * matches against.
+     * Returns {@code -1} in all other cases.
+     */
+    public static int getWildcardKind(Label label) {
+        if (label instanceof RegExprLabel) {
+            return ((RegExprLabel) label).getRegExpr().getWildcardKind();
+        }
+        return -1;
     }
 
     /**

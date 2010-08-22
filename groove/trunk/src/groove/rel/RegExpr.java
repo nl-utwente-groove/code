@@ -119,6 +119,18 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
     }
 
+    /**
+     * If this is a {@link RegExpr.Wildcard}, returns the kind of label
+     * the wildcard matches against; otherwise returns {@code -1}.
+     */
+    public int getWildcardKind() {
+        if (this instanceof Wildcard) {
+            return ((Wildcard) this).getKind();
+        } else {
+            return -1;
+        }
+    }
+
     /** Tests if this is a {@link RegExpr.Choice}. */
     public boolean isChoice() {
         return this instanceof Choice;
