@@ -1442,13 +1442,14 @@ public class DefaultRuleView implements RuleView {
             Set<Edge> varEdges = VarSupport.getVarEdges(this.lhs);
             varEdges.addAll(VarSupport.getVarEdges(this.rhs));
             varEdges.addAll(this.nacEdgeSet);
-            Set<String> varNames = new HashSet<String>();
+            Map<String,LabelVar> varNames = new HashMap<String,LabelVar>();
             for (Edge varEdge : varEdges) {
                 Set<LabelVar> edgeVars = VarSupport.getAllVars(varEdge);
                 // check for name overlap
                 for (LabelVar var : edgeVars) {
                     String varName = var.getName();
-                    if (!varNames.add(varName)) {
+                    LabelVar oldVar = varNames.put(varName, var);
+                    if (oldVar != null && !var.equals(oldVar)) {
                         errors.add(new FormatError(
                             "Duplucate variable name '%s' for different label types",
                             varName));
