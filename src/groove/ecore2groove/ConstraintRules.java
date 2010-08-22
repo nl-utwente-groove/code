@@ -75,8 +75,10 @@ public class ConstraintRules {
                 addAbstractConstraint(eClass);
             }
         }
-        addCyclicityConstraint();
-        addOneContainerConstraint();
+        if (this.mh.getEReferences().size() != 0) {
+            addCyclicityConstraint();
+            addOneContainerConstraint();
+        }
         addRootConstraint();
     }
 
@@ -276,24 +278,28 @@ public class ConstraintRules {
 
         this.constraintRules.add(constraintRule);
 
-        // No container for root constraint rule
-        constraintRule = new DefaultGraph();
-        name = "constraint - global - rootContainer";
-        this.ruleNames.put(constraintRule, name);
+        // No container for root constraint rule, only when there are
+        // EReferences in the model
+        if (this.mh.getEReferences().size() != 0) {
+            constraintRule = new DefaultGraph();
+            name = "constraint - global - rootContainer";
+            this.ruleNames.put(constraintRule, name);
 
-        eclassNode = constraintRule.addNode();
-        Node refNode = constraintRule.addNode();
+            eclassNode = constraintRule.addNode();
+            Node refNode = constraintRule.addNode();
 
-        Label regExprLabel =
-            DefaultLabel.createLabel("path:flag:containment.val");
-        Label refLabel = DefaultLabel.createLabel(this.mh.getEReferenceType());
+            Label regExprLabel =
+                DefaultLabel.createLabel("path:flag:containment.val");
+            Label refLabel =
+                DefaultLabel.createLabel(this.mh.getEReferenceType());
 
-        constraintRule.addEdge(eclassNode, eclassLabel, eclassNode);
-        constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
-        constraintRule.addEdge(refNode, refLabel, refNode);
-        constraintRule.addEdge(refNode, regExprLabel, eclassNode);
+            constraintRule.addEdge(eclassNode, eclassLabel, eclassNode);
+            constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
+            constraintRule.addEdge(refNode, refLabel, refNode);
+            constraintRule.addEdge(refNode, regExprLabel, eclassNode);
 
-        this.constraintRules.add(constraintRule);
+            this.constraintRules.add(constraintRule);
+        }
     }
 
     /**
