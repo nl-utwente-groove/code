@@ -16,13 +16,13 @@
  */
 package groove.rel;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * An implementation of VarNodeEdgeMap that
@@ -31,32 +31,32 @@ import groove.graph.NodeEdgeMap;
  * @version $Revision $
  */
 public class VarNodeEdgeLinkedHashMap extends VarNodeEdgeHashMap {
-	/**
-	 * Constructs an empty map.
-	 */
-	public VarNodeEdgeLinkedHashMap() {
-		// empty constructor
-	}
+    /**
+     * Constructs an empty map.
+     */
+    public VarNodeEdgeLinkedHashMap() {
+        // empty constructor
+    }
 
-	/**
-	 * Constructs a clone of a given map.
-	 */
-	public VarNodeEdgeLinkedHashMap(NodeEdgeMap map) {
-		super(map);
-	}
+    /**
+     * Constructs a clone of a given map.
+     */
+    public VarNodeEdgeLinkedHashMap(NodeEdgeMap map) {
+        super(map);
+    }
 
-	@Override
-	protected Map<String, Label> createValuation() {
-		return new LinkedHashMap<String,Label>();
-	}
+    @Override
+    protected Map<LabelVar,Label> createValuation() {
+        return new LinkedHashMap<LabelVar,Label>();
+    }
 
-	@Override
-	protected Map<Edge, Edge> createEdgeMap() {
-		return new LinkedHashMap<Edge,Edge>();
-	}
+    @Override
+    protected Map<Edge,Edge> createEdgeMap() {
+        return new LinkedHashMap<Edge,Edge>();
+    }
 
-	@Override
-	protected Map<Node, Node> createNodeMap() {
-		return new LinkedHashMap<Node,Node>();
-	}
+    @Override
+    protected Map<Node,Node> createNodeMap() {
+        return new LinkedHashMap<Node,Node>();
+    }
 }

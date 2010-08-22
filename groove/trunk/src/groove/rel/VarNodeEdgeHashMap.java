@@ -60,12 +60,12 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
      *         may be <code>null</code>).
      * @throws IllegalArgumentException if the label is a regular expression but
      *         not a variable
-     * @see #getVar(String)
+     * @see #getVar(LabelVar)
      */
     @Override
     public Label getLabel(Label label) {
         if (label instanceof RegExprLabel) {
-            String var = RegExprLabel.getWildcardId(label);
+            LabelVar var = RegExprLabel.getWildcardId(label);
             if (var == null) {
                 throw new IllegalArgumentException(String.format(
                     "Label %s cannot be mapped", label));
@@ -77,19 +77,19 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
         }
     }
 
-    public Map<String,Label> getValuation() {
+    public Map<LabelVar,Label> getValuation() {
         return this.valuation;
     }
 
-    public Label getVar(String var) {
+    public Label getVar(LabelVar var) {
         return this.valuation.get(var);
     }
 
-    public Label putVar(String var, Label value) {
+    public Label putVar(LabelVar var, Label value) {
         return this.valuation.put(var, value);
     }
 
-    public void putAllVar(Map<String,Label> valuation) {
+    public void putAllVar(Map<LabelVar,Label> valuation) {
         this.valuation.putAll(valuation);
     }
 
@@ -138,10 +138,10 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
      * Callback factory method for the valuation mapping. This implementation
      * returns a {@link HashMap}.
      */
-    protected Map<String,Label> createValuation() {
-        return new HashMap<String,Label>();
+    protected Map<LabelVar,Label> createValuation() {
+        return new HashMap<LabelVar,Label>();
     }
 
     /** The internal map from variables to labels. */
-    private final Map<String,Label> valuation;
+    private final Map<LabelVar,Label> valuation;
 }

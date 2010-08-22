@@ -98,36 +98,36 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             return isAcceptsEmptyWord();
         } else {
             // keep the set of current matches (initially the start node)
-            Map<Node,? extends Map<String,String>> matchSet =
+            Map<Node,? extends Map<LabelVar,String>> matchSet =
                 Collections.singletonMap(getStartNode(),
-                    new HashMap<String,String>());
+                    new HashMap<LabelVar,String>());
             boolean accepts = false;
             // go through the word
             for (int index = 0; !accepts && !matchSet.isEmpty()
                 && index < word.size(); index++) {
                 boolean lastIndex = index == word.size() - 1;
-                Map<Node,Map<String,String>> newMatchSet =
-                    new HashMap<Node,Map<String,String>>();
-                Iterator<? extends Map.Entry<Node,? extends Map<String,String>>> matchIter =
+                Map<Node,Map<LabelVar,String>> newMatchSet =
+                    new HashMap<Node,Map<LabelVar,String>>();
+                Iterator<? extends Map.Entry<Node,? extends Map<LabelVar,String>>> matchIter =
                     matchSet.entrySet().iterator();
                 while (!accepts && matchIter.hasNext()) {
-                    Map.Entry<Node,? extends Map<String,String>> matchEntry =
+                    Map.Entry<Node,? extends Map<LabelVar,String>> matchEntry =
                         matchIter.next();
                     Node match = matchEntry.getKey();
-                    Map<String,String> idMap = matchEntry.getValue();
+                    Map<LabelVar,String> idMap = matchEntry.getValue();
                     Iterator<? extends Edge> outEdgeIter =
                         outEdgeSet(match).iterator();
                     while (!accepts && outEdgeIter.hasNext()) {
                         Edge outEdge = outEdgeIter.next();
                         Label label = outEdge.label();
-                        String wildcardId = RegExprLabel.getWildcardId(label);
+                        LabelVar wildcardId = RegExprLabel.getWildcardId(label);
                         boolean labelOK;
                         if (wildcardId == null) {
                             labelOK =
                                 RegExprLabel.isWildcard(label)
                                     || label.text().equals(word.get(index));
                         } else {
-                            idMap = new HashMap<String,String>(idMap);
+                            idMap = new HashMap<LabelVar,String>(idMap);
                             String oldIdValue =
                                 idMap.put(wildcardId, label.text());
                             labelOK =
@@ -154,7 +154,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
 
     public NodeRelation getMatches(GraphShape graph,
             Set<? extends Node> startImages, Set<? extends Node> endImages,
-            Map<String,Label> valuation) {
+            Map<LabelVar,Label> valuation) {
         if (valuation == null) {
             valuation = Collections.emptyMap();
         }
@@ -211,7 +211,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /**
      * Returns the set of all wildcard variables occurring in this automaton.
      */
-    public Set<String> allVarSet() {
+    public Set<LabelVar> allVarSet() {
         if (this.allVarSet == null) {
             initVarSets();
         }
@@ -222,7 +222,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * Returns the set of wildcard variables bound in this automaton. A variable
      * is bound if it occurs on every path from start to end node.
      */
-    public Set<String> boundVarSet() {
+    public Set<LabelVar> boundVarSet() {
         if (this.boundVarSet == null) {
             initVarSets();
         }
@@ -520,24 +520,24 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         Set<Node> remainingNodes = new HashSet<Node>();
         remainingNodes.add(getStartNode());
         // keep maps from automaton nodes to all vars and bound vars
-        Map<Node,Set<String>> allVarMap = new HashMap<Node,Set<String>>();
-        allVarMap.put(getStartNode(), new HashSet<String>());
-        Map<Node,Set<String>> boundVarMap = new HashMap<Node,Set<String>>();
-        boundVarMap.put(getStartNode(), new HashSet<String>());
+        Map<Node,Set<LabelVar>> allVarMap = new HashMap<Node,Set<LabelVar>>();
+        allVarMap.put(getStartNode(), new HashSet<LabelVar>());
+        Map<Node,Set<LabelVar>> boundVarMap = new HashMap<Node,Set<LabelVar>>();
+        boundVarMap.put(getStartNode(), new HashSet<LabelVar>());
         while (!remainingNodes.isEmpty()) {
             Node source = remainingNodes.iterator().next();
             remainingNodes.remove(source);
-            Set<String> sourceAllVarSet = allVarMap.get(source);
-            Set<String> sourceBoundVarSet = boundVarMap.get(source);
+            Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
+            Set<LabelVar> sourceBoundVarSet = boundVarMap.get(source);
             Iterator<? extends Edge> outEdgeIter =
                 outEdgeSet(source).iterator();
             while (outEdgeIter.hasNext()) {
                 Edge outEdge = outEdgeIter.next();
                 Node target = outEdge.target();
-                Set<String> targetAllVarSet =
-                    new HashSet<String>(sourceAllVarSet);
-                Set<String> targetBoundVarSet =
-                    new HashSet<String>(sourceBoundVarSet);
+                Set<LabelVar> targetAllVarSet =
+                    new HashSet<LabelVar>(sourceAllVarSet);
+                Set<LabelVar> targetBoundVarSet =
+                    new HashSet<LabelVar>(sourceBoundVarSet);
                 if (outEdge.label() instanceof RegExprLabel) {
                     RegExpr expr =
                         ((RegExprLabel) outEdge.label()).getRegExpr();
@@ -822,11 +822,11 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /**
      * Set of wildcard ids occurring in this automaton.
      */
-    private Set<String> allVarSet;
+    private Set<LabelVar> allVarSet;
     /**
      * Set of wildcard ids occurring in this automaton.
      */
-    private Set<String> boundVarSet;
+    private Set<LabelVar> boundVarSet;
     /**
      * The index of the end node.
      */
@@ -865,7 +865,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * the results of one computation are copied to the dependent ones.
          */
         protected class MatchingComputation extends
-                HashMap<Node,Set<Map<String,Label>>> {
+                HashMap<Node,Set<Map<LabelVar,Label>>> {
             /**
              * Constructs a computation for a given key-image pair, as a
              * sub-computation of another (the <i>dependent</i> computation).
@@ -878,7 +878,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              * @param valuation the initial valuation for this computation
              */
             public MatchingComputation(int keyIndex, Node image,
-                    MatchingComputation dependent, Map<String,Label> valuation) {
+                    MatchingComputation dependent, Map<LabelVar,Label> valuation) {
                 this.keyIndex = keyIndex;
                 this.image = image;
                 this.valuation = valuation;
@@ -910,7 +910,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              * @param valuation the initial valuation for this computation
              */
             public MatchingComputation(int keyIndex, Node image,
-                    Map<String,Label> valuation) {
+                    Map<LabelVar,Label> valuation) {
                 this(keyIndex, image, null, valuation);
                 // if the set of end images is not null, count the number of
                 // remaining images
@@ -930,7 +930,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              * Starts this computation. May be invoked only once.
              * @return an alias to this computation, as a set of end images
              */
-            public Map<Node,Set<Map<String,Label>>> start() {
+            public Map<Node,Set<Map<LabelVar,Label>>> start() {
                 propagate(this.keyIndex, this.image, this.valuation);
                 // store the new results in all the dependent sets, if any
                 if (this.dependents != null) {
@@ -954,7 +954,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              * @see #getOpposite(Edge)
              */
             private void propagate(int keyIndex, Node image,
-                    Map<String,Label> valuation) {
+                    Map<LabelVar,Label> valuation) {
                 extend(getPosLabelEdgeMap(keyIndex), getPosEdgeSet(image),
                     valuation, true);
                 extend(getInvLabelEdgeMap(keyIndex), getInvEdgeSet(image),
@@ -970,7 +970,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              */
             private void extend(Map<Label,int[]> keyLabelEdgeMap,
                     Collection<? extends Edge> imageEdgeSet,
-                    Map<String,Label> valuation, boolean positive) {
+                    Map<LabelVar,Label> valuation, boolean positive) {
                 if (keyLabelEdgeMap != null) {
                     Iterator<? extends Edge> imageEdgeIter =
                         imageEdgeSet.iterator();
@@ -998,7 +998,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              *        so far
              */
             private void extend(int[] keyEdgeIndices, Node imageNode,
-                    Label label, Map<String,Label> valuation) {
+                    Label label, Map<LabelVar,Label> valuation) {
                 if (keyEdgeIndices != null) {
                     for (int i = 0; MatchingAlgorithm.this.remainingImageCount != 0
                         && i < keyEdgeIndices.length; i++) {
@@ -1011,13 +1011,13 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                             if (constraint != null) {
                                 labelOk = constraint.isSatisfied(label);
                             }
-                            String id = RegExprLabel.getWildcardId(edgeLabel);
+                            LabelVar id = RegExprLabel.getWildcardId(edgeLabel);
                             if (labelOk && id != null) {
                                 // we have a wildcard id; let's look it up
                                 Label oldLabel = valuation.get(id);
                                 if (oldLabel == null) {
                                     valuation =
-                                        new HashMap<String,Label>(valuation);
+                                        new HashMap<LabelVar,Label>(valuation);
                                     valuation.put(id, label);
                                 } else {
                                     // it's a know id; check its value
@@ -1044,7 +1044,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              *        so far
              */
             private void extend(int keyIndex, Node image,
-                    Map<String,Label> valuation) {
+                    Map<LabelVar,Label> valuation) {
                 if (keyIndex == MatchingAlgorithm.this.endIndex) {
                     add(image, valuation);
                 } else if (!isCyclic(keyIndex)) {
@@ -1084,21 +1084,21 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              * Adds a combination of edge image and wildcard name valuation to
              * the currently stored result.
              */
-            public boolean add(Node image, Map<String,Label> valuation) {
+            public boolean add(Node image, Map<LabelVar,Label> valuation) {
                 if (isStoringIntermediates() || isAllowedResult(image)) {
                     if (hasVars()) {
                         // add the valuations to those stored for the image
-                        Set<Map<String,Label>> currentValuations = get(image);
+                        Set<Map<LabelVar,Label>> currentValuations = get(image);
                         if (currentValuations == null) {
                             put(image, currentValuations =
-                                new HashSet<Map<String,Label>>());
+                                new HashSet<Map<LabelVar,Label>>());
                         }
                         return currentValuations.add(valuation);
                     } else {
                         // store the result and
                         boolean result =
                             super.put(image,
-                                Collections.<Map<String,Label>>emptySet()) == null;
+                                Collections.<Map<LabelVar,Label>>emptySet()) == null;
                         if (result) {
                             if (MatchingAlgorithm.this.remainingImageCount > 0) {
                                 MatchingAlgorithm.this.remainingImageCount--;
@@ -1116,15 +1116,15 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              */
             public void addAll(MatchingComputation other) {
                 if (hasVars()) {
-                    for (Map.Entry<Node,Set<Map<String,Label>>> otherEntry : other.entrySet()) {
+                    for (Map.Entry<Node,Set<Map<LabelVar,Label>>> otherEntry : other.entrySet()) {
                         Node image = otherEntry.getKey();
-                        Set<Map<String,Label>> valuations =
+                        Set<Map<LabelVar,Label>> valuations =
                             otherEntry.getValue();
                         // add the valuations to those stored for the image
-                        Set<Map<String,Label>> currentValuations = get(image);
+                        Set<Map<LabelVar,Label>> currentValuations = get(image);
                         if (currentValuations == null) {
                             put(image, currentValuations =
-                                new HashSet<Map<String,Label>>());
+                                new HashSet<Map<LabelVar,Label>>());
                         }
                         currentValuations.addAll(valuations);
                     }
@@ -1236,7 +1236,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             /**
              * The initial valuation for the matching.
              */
-            private final Map<String,Label> valuation;
+            private final Map<LabelVar,Label> valuation;
         }
 
         /**
@@ -1278,7 +1278,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          */
         public NodeRelation computeMatches(GraphShape graph,
                 Set<? extends Node> startImages, Set<? extends Node> endImages,
-                Map<String,Label> valuation) {
+                Map<LabelVar,Label> valuation) {
             if (graph != this.graph) {
                 // we're working on a different graph, so the previous matchings
                 // are no good
@@ -1294,10 +1294,10 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                 if (isAcceptsEmptyWord() && isAllowedResult(startImage)) {
                     this.result.addSelfRelated(startImage);
                 }
-                Map<Node,Set<Map<String,Label>>> resultMap =
+                Map<Node,Set<Map<LabelVar,Label>>> resultMap =
                     new MatchingComputation(this.startIndex, startImage,
                         valuation).start();
-                for (Map.Entry<Node,Set<Map<String,Label>>> resultEntry : resultMap.entrySet()) {
+                for (Map.Entry<Node,Set<Map<LabelVar,Label>>> resultEntry : resultMap.entrySet()) {
                     Node endImage = resultEntry.getKey();
                     if (isAllowedResult(endImage)) {
                         if (hasVars()) {
@@ -1429,9 +1429,9 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * backward matching, and labels containing wildcard name valuations.
          */
         protected boolean addRelated(Node startImage, Node endImage,
-                Set<Map<String,Label>> valuations) {
+                Set<Map<LabelVar,Label>> valuations) {
             boolean res = false;
-            for (Map<String,Label> valuation : valuations) {
+            for (Map<LabelVar,Label> valuation : valuations) {
                 // Label label = new ValuationLabel(valuation);
                 ValuationEdge edge;
                 switch (this.direction) {
@@ -1450,7 +1450,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * Callback factory method for a {@link ValuationEdge}.
          */
         protected ValuationEdge createValuationEdge(Node source, Node target,
-                Map<String,Label> valuation) {
+                Map<LabelVar,Label> valuation) {
             return new ValuationEdge(source, target, valuation);
         }
 

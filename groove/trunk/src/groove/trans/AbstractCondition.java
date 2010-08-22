@@ -30,6 +30,7 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
+import groove.rel.LabelVar;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
@@ -98,9 +99,9 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return this.rootMap;
     }
 
-    public Set<String> getRootVars() {
+    public Set<LabelVar> getRootVars() {
         if (this.rootVars == null) {
-            this.rootVars = new HashSet<String>();
+            this.rootVars = new HashSet<LabelVar>();
             for (Edge rootEdge : getRootMap().edgeMap().keySet()) {
                 this.rootVars.addAll(VarSupport.getAllVars(rootEdge));
             }
@@ -333,7 +334,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             }
         }
         if (contextMap instanceof VarNodeEdgeMap) {
-            for (String var : getRootVars()) {
+            for (LabelVar var : getRootVars()) {
                 Label image = ((VarNodeEdgeMap) contextMap).getVar(var);
                 if (image == null) {
                     return null;
@@ -474,7 +475,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     private final NodeEdgeMap rootMap;
 
     /** Set of all variables occurring in root elements. */
-    private Set<String> rootVars;
+    private Set<LabelVar> rootVars;
 
     /** The target graph of this morphism. */
     private final Graph target;

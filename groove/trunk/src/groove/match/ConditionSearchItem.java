@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.LabelVar;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
@@ -46,7 +47,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         this.condition = condition;
         this.rootMap = condition.getRootMap();
         this.neededNodes = this.rootMap.nodeMap().keySet();
-        this.neededVars = new HashSet<String>();
+        this.neededVars = new HashSet<LabelVar>();
         for (Edge edge : this.rootMap.edgeMap().keySet()) {
             this.neededVars.addAll(VarSupport.getAllVars(edge));
         }
@@ -58,7 +59,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public Collection<String> needsVars() {
+    public Collection<LabelVar> needsVars() {
         return this.neededVars;
     }
 
@@ -72,8 +73,8 @@ class ConditionSearchItem extends AbstractSearchItem {
         for (Node node : this.neededNodes) {
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
-        this.varIxMap = new HashMap<String,Integer>();
-        for (String var : this.neededVars) {
+        this.varIxMap = new HashMap<LabelVar,Integer>();
+        for (LabelVar var : this.neededVars) {
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }
@@ -96,11 +97,11 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The source nodes of the root map. */
     private final Set<Node> neededNodes;
     /** The variables occurring in edges of the root map. */
-    private final Set<String> neededVars;
+    private final Set<LabelVar> neededVars;
     /** Mapping from the needed nodes to indices in the matcher. */
     Map<Node,Integer> nodeIxMap;
     /** Mapping from the needed nodes to indices in the matcher. */
-    Map<String,Integer> varIxMap;
+    Map<LabelVar,Integer> varIxMap;
 
     /**
      * Search record for a graph condition.
@@ -118,7 +119,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                 contextMap.putNode(nodeIxEntry.getKey(),
                     this.search.getNode(nodeIxEntry.getValue()));
             }
-            for (Map.Entry<String,Integer> varIxEntry : ConditionSearchItem.this.varIxMap.entrySet()) {
+            for (Map.Entry<LabelVar,Integer> varIxEntry : ConditionSearchItem.this.varIxMap.entrySet()) {
                 contextMap.putVar(varIxEntry.getKey(),
                     this.search.getVar(varIxEntry.getValue()));
             }

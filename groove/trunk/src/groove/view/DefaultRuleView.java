@@ -35,6 +35,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
+import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -1436,15 +1437,25 @@ public class DefaultRuleView implements RuleView {
             AbstractCondition<?> result;
             Set<FormatError> errors = new TreeSet<FormatError>();
             // check if label variables are bound
-            Set<String> boundVars =
+            Set<LabelVar> boundVars =
                 VarSupport.getSimpleVarBinders(this.lhs).keySet();
             Set<Edge> varEdges = VarSupport.getVarEdges(this.lhs);
             varEdges.addAll(VarSupport.getVarEdges(this.rhs));
             varEdges.addAll(this.nacEdgeSet);
+            Set<String> varNames = new HashSet<String>();
             for (Edge varEdge : varEdges) {
-                Set<String> edgeVars = VarSupport.getAllVars(varEdge);
+                Set<LabelVar> edgeVars = VarSupport.getAllVars(varEdge);
+                // check for name overlap
+                for (LabelVar var : edgeVars) {
+                    String varName = var.getName();
+                    if (!varNames.add(varName)) {
+                        errors.add(new FormatError(
+                            "Duplucate variable name '%s' for different label types",
+                            varName));
+                    }
+                }
                 edgeVars.removeAll(boundVars);
-                for (String var : edgeVars) {
+                for (LabelVar var : edgeVars) {
                     errors.add(new FormatError(
                         "Variable '%s' not bound on left hand side", var,
                         varEdge));
@@ -1596,40 +1607,6 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * Checks sharp type equality of the mergers.
-         * @throws FormatException if there are typing errors
-         */
-        private void checkMergerTypes(Map<Node,Label> typeMap)
-            throws FormatException {
-            Collection<FormatError> errors = new TreeSet<FormatError>();
-            for (Set<AspectNode> cell : getPartition().values()) {
-                if (cell.size() > 1) {
-                    Label commonType = null;
-                    for (AspectNode mergedNode : cell) {
-                        Node representative =
-                            this.viewToLevelMap.getNode(mergedNode);
-                        Label type = typeMap.get(representative);
-                        Label sharpType = RegExprLabel.getSharpLabel(type);
-                        if (sharpType == null) {
-                            errors.add(new FormatError(
-                                "Type '%s' of merged node %s should be sharp",
-                                type, mergedNode));
-                        } else if (commonType == null) {
-                            commonType = sharpType;
-                        } else if (!commonType.equals(sharpType)) {
-                            errors.add(new FormatError(
-                                "Distinct types '%s', '%s' for merged nodes",
-                                sharpType, commonType, mergedNode));
-                        }
-                    }
-                }
-            }
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
-        }
-
-        /**
          * Constructs a negative application condition based on a LHS graph and
          * a set of graph elements that should make up the NAC target. The
          * connection between LHS and NAC target is given by identity, i.e.,
@@ -1678,11 +1655,11 @@ public class DefaultRuleView implements RuleView {
                     // for all variables in the edge, add a LHS edge to the nac
                     // that
                     // binds the variable, if any
-                    Set<String> vars = VarSupport.getAllVars(edge);
+                    Set<LabelVar> vars = VarSupport.getAllVars(edge);
                     if (!vars.isEmpty()) {
-                        Map<String,Edge> lhsVarBinders =
+                        Map<LabelVar,Edge> lhsVarBinders =
                             VarSupport.getVarBinders(lhs);
-                        for (String nacVar : vars) {
+                        for (LabelVar nacVar : vars) {
                             Edge nacVarBinder = lhsVarBinders.get(nacVar);
                             if (nacVarBinder != null) {
                                 // add the edge and its end nodes to the nac, as

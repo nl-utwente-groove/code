@@ -23,6 +23,7 @@ import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ class AnchorSearchItem extends AbstractSearchItem {
             Collection<? extends Edge> edges) {
         this.nodes = new HashSet<Node>(nodes);
         this.edges = new HashSet<Edge>(edges);
-        this.vars = new HashSet<String>();
+        this.vars = new HashSet<LabelVar>();
         for (Edge edge : edges) {
             this.vars.addAll(VarSupport.getAllVars(edge));
         }
@@ -70,7 +71,7 @@ class AnchorSearchItem extends AbstractSearchItem {
 
     /** This implementation returns the set of pre-matched variables. */
     @Override
-    public Collection<String> bindsVars() {
+    public Collection<LabelVar> bindsVars() {
         return this.vars;
     }
 
@@ -99,8 +100,8 @@ class AnchorSearchItem extends AbstractSearchItem {
                 this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
             }
         }
-        this.varIxMap = new HashMap<String,Integer>();
-        for (String var : this.vars) {
+        this.varIxMap = new HashMap<LabelVar,Integer>();
+        for (LabelVar var : this.vars) {
             assert !strategy.isVarFound(var) : String.format(
                 "Variable %s is not fresh", var);
             this.varIxMap.put(var, strategy.getVarIx(var));
@@ -153,7 +154,7 @@ class AnchorSearchItem extends AbstractSearchItem {
                     this.unmatched.add(edgeEntry.getKey());
                 }
             }
-            for (Map.Entry<String,Integer> varEntry : this.varIxMap.entrySet()) {
+            for (Map.Entry<LabelVar,Integer> varEntry : this.varIxMap.entrySet()) {
                 if (search.getVar(varEntry.getValue()) == null) {
                     this.unmatched.add(varEntry.getKey());
                 }
@@ -167,7 +168,7 @@ class AnchorSearchItem extends AbstractSearchItem {
     /** The set of pre-matched edges. */
     private final Set<Edge> edges;
     /** The set of pre-matched variables. */
-    private final Set<String> vars;
+    private final Set<LabelVar> vars;
     /**
      * Mapping from pre-matched nodes (in {@link #nodes}) to their indices in
      * the result.
@@ -182,7 +183,7 @@ class AnchorSearchItem extends AbstractSearchItem {
      * Mapping from pre-matched variables (in {@link #vars}) to their indices
      * in the result.
      */
-    private Map<String,Integer> varIxMap;
+    private Map<LabelVar,Integer> varIxMap;
     /** The set of unmatched graph elements (that should have been pre-matched) . */
     private Set<Object> unmatched;
 }

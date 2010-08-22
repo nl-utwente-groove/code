@@ -22,6 +22,7 @@ import groove.graph.Element;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.LabelVar;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +45,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<String> bindsVars() {
+    public Collection<LabelVar> bindsVars() {
         return Collections.emptySet();
     }
 
@@ -65,7 +66,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<String> needsVars() {
+    public Collection<LabelVar> needsVars() {
         return Collections.emptySet();
     }
 

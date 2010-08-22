@@ -46,5 +46,5 @@ public interface VarAutomaton extends Automaton {// , VarSetSupport {
      *        constraint
      */
     NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages,
-            Set<? extends Node> endImages, Map<String,Label> valuation);
+            Set<? extends Node> endImages, Map<LabelVar,Label> valuation);
 }

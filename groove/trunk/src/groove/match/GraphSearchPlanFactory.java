@@ -27,6 +27,7 @@ import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
@@ -168,7 +169,7 @@ public class GraphSearchPlanFactory {
             // compute the set of remaining (unmatched) edges and variables
             this.remainingEdges = new LinkedHashSet<Edge>(graph.edgeSet());
             this.remainingVars =
-                new LinkedHashSet<String>(VarSupport.getAllVars(graph));
+                new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
             this.labelStore = labelStore;
         }
 
@@ -420,7 +421,7 @@ public class GraphSearchPlanFactory {
         /**
          * The set of variables to be matched.
          */
-        private final Set<String> remainingVars;
+        private final Set<LabelVar> remainingVars;
         /** The label store containing the subtype relation. */
         private final LabelStore labelStore;
         /**
@@ -525,7 +526,7 @@ public class GraphSearchPlanFactory {
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes,
-                Set<String> remainingVars) {
+                Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
         }
@@ -548,7 +549,7 @@ public class GraphSearchPlanFactory {
             while (!missing && neededNodeIter.hasNext()) {
                 missing = this.remainingNodes.contains(neededNodeIter.next());
             }
-            Iterator<String> neededVarIter = item.needsVars().iterator();
+            Iterator<LabelVar> neededVarIter = item.needsVars().iterator();
             while (!missing && neededVarIter.hasNext()) {
                 missing = this.remainingVars.contains(neededVarIter.next());
             }
@@ -558,7 +559,7 @@ public class GraphSearchPlanFactory {
         /** The set of (as yet) unscheduled nodes. */
         private final Set<Node> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
-        private final Set<String> remainingVars;
+        private final Set<LabelVar> remainingVars;
     }
 
     /**
@@ -569,7 +570,7 @@ public class GraphSearchPlanFactory {
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<Node> remainingNodes,
-                Set<String> remainingVars) {
+                Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
         }
@@ -593,7 +594,7 @@ public class GraphSearchPlanFactory {
                     result++;
                 }
             }
-            for (String var : item.bindsVars()) {
+            for (LabelVar var : item.bindsVars()) {
                 if (!this.remainingVars.contains(var)) {
                     result++;
                 }
@@ -604,7 +605,7 @@ public class GraphSearchPlanFactory {
         /** The set of (as yet) unscheduled nodes. */
         private final Set<Node> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
-        private final Set<String> remainingVars;
+        private final Set<LabelVar> remainingVars;
     }
 
     /**
@@ -638,7 +639,7 @@ public class GraphSearchPlanFactory {
                     result++;
                 }
             }
-            for (String var : item.bindsVars()) {
+            for (LabelVar var : item.bindsVars()) {
                 if (this.remainingVars.contains(var)) {
                     result++;
                 }

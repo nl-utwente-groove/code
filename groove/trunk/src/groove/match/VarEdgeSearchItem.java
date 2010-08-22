@@ -19,6 +19,7 @@ package groove.match;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.LabelVar;
 import groove.rel.RegExprLabel;
 
 import java.util.Collection;
@@ -52,7 +53,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
      * bound by this item.
      */
     @Override
-    public Collection<String> bindsVars() {
+    public Collection<LabelVar> bindsVars() {
         return this.boundVars;
     }
 
@@ -83,14 +84,15 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     }
 
     boolean isLabelConstraintSatisfied(Label label) {
-        return this.labelConstraint == null
+        return label.getKind() == this.var.getKind()
+            && this.labelConstraint == null
             || this.labelConstraint.isSatisfied(label);
     }
 
     /** The variable bound in the wildcard (not <code>null</code>). */
-    private final String var;
+    private final LabelVar var;
     /** Singleton set consisting of <code>var</code>. */
-    private final Collection<String> boundVars;
+    private final Collection<LabelVar> boundVars;
     /** The index of {@link #var} in the result. */
     int varIx;
     /**

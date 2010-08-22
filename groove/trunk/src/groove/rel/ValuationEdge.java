@@ -16,10 +16,10 @@
  */
 package groove.rel;
 
-import java.util.Map;
-
 import groove.graph.Label;
 import groove.graph.Node;
+
+import java.util.Map;
 
 /**
  * Special relation edge of type {@link RelationType#VALUATION}, used to store
@@ -27,12 +27,12 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ValuationEdge extends RelationEdge<Map<String,Label>> {
+public class ValuationEdge extends RelationEdge<Map<LabelVar,Label>> {
     /**
      * Creates an edge for a given source and target node and valuation. The
      * resulting edge is of type {@link RelationType#VALUATION}.
      */
-    public ValuationEdge(Node source, Node target, Map<String,Label> valuation) {
+    public ValuationEdge(Node source, Node target, Map<LabelVar,Label> valuation) {
         super(source, RelationType.VALUATION, target, valuation);
     }
 }
