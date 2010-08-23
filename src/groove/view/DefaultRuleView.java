@@ -1499,6 +1499,7 @@ public class DefaultRuleView implements RuleView {
                     } else {
                         parentTypes = new HashSet<Label>(parentTypes);
                     }
+                    parentTypes.add(typeEdge.label());
                     parentTypeMap.put(typeEdge.source(), parentTypes);
                 }
             }

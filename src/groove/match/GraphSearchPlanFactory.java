@@ -354,7 +354,7 @@ public class GraphSearchPlanFactory {
                         RegExprLabel.getAtomText(label), edge.opposite());
                 return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
-                return new RegExprEdgeSearchItem(edge, labelStore);
+                return new RegExprEdgeSearchItem(edge, this.labelStore);
             } else if (edge instanceof OperatorEdge) {
                 return new OperatorEdgeSearchItem((OperatorEdge) edge);
             } else if (edge instanceof ArgumentEdge) {
