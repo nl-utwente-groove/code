@@ -121,10 +121,9 @@ public class PreMatch {
             for (Edge edge : map.edgeMap().values()) {
                 ShapeEdge edgeS = (ShapeEdge) edge;
                 Set<Edge> edgesG = Util.getReverseEdgeMap(map, edgeS);
-                //Multiplicity eGMult = Multiplicity.getEdgeSetMult(edgesG);
                 Multiplicity eGMult =
                     Multiplicity.getMult(edgesG.size(),
-                        Parameters.getNodeMultBound());
+                        Parameters.getEdgeMultBound());
 
                 // Outgoing multiplicities.
                 if (!eGMult.isAtMost(shape.getEdgeOutMult(edgeS))) {
