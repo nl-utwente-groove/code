@@ -90,7 +90,8 @@ public class ConstraintRules {
         for (EEnum eEnum : eEnums) {
             addNoLiteralsConstraint(eEnum);
             addManyLiteralsConstraint(eEnum);
-            addNoValConstraint(eEnum);
+            addNoIncValConstraint(eEnum);
+            addManyIncValConstraint(eEnum);
         }
     }
 
@@ -1238,7 +1239,7 @@ public class ConstraintRules {
      * Method to add no val constraint rule for a given EEnum
      * @param eEnum the EEnum
      */
-    private void addNoValConstraint(EEnum eEnum) {
+    private void addNoIncValConstraint(EEnum eEnum) {
         DefaultGraph constraintRule = new DefaultGraph();
 
         String name =
@@ -1257,6 +1258,39 @@ public class ConstraintRules {
         constraintRule.addEdge(attrNode, attrLabel, attrNode);
         constraintRule.addEdge(attrNode, notLabel, attrNode);
         constraintRule.addEdge(attrNode, valLabel, enumNode);
+
+        this.constraintRules.add(constraintRule);
+
+    }
+
+    /**
+     * Method to add many val constraint rule for a given EEnum
+     * @param eEnum the EEnum
+     */
+    private void addManyIncValConstraint(EEnum eEnum) {
+        DefaultGraph constraintRule = new DefaultGraph();
+
+        String name =
+            "constraint - " + GraphLabels.getLabelNoType(eEnum)
+                + " - manyIncVal";
+        this.ruleNames.put(constraintRule, name);
+
+        Node enumNode = constraintRule.addNode();
+        Node attrNode1 = constraintRule.addNode();
+        Node attrNode2 = constraintRule.addNode();
+
+        Label enumLabel = DefaultLabel.createLabel(GraphLabels.getLabel(eEnum));
+        Label attrLabel = DefaultLabel.createLabel(this.mh.getEAttributeType());
+        Label unequalLabel = DefaultLabel.createLabel("!=");
+        Label regExprLabel =
+            DefaultLabel.createLabel("path:val." + GraphLabels.getLabel(eEnum));
+
+        constraintRule.addEdge(enumNode, enumLabel, enumNode);
+        constraintRule.addEdge(attrNode1, attrLabel, attrNode1);
+        constraintRule.addEdge(attrNode2, attrLabel, attrNode2);
+        constraintRule.addEdge(attrNode1, unequalLabel, attrNode2);
+        constraintRule.addEdge(attrNode1, regExprLabel, enumNode);
+        constraintRule.addEdge(attrNode2, regExprLabel, enumNode);
 
         this.constraintRules.add(constraintRule);
 
