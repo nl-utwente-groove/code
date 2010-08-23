@@ -90,6 +90,7 @@ public class ConstraintRules {
         for (EEnum eEnum : eEnums) {
             addNoLiteralsConstraint(eEnum);
             addManyLiteralsConstraint(eEnum);
+            addNoValConstraint(eEnum);
         }
     }
 
@@ -1231,6 +1232,34 @@ public class ConstraintRules {
         constraintRule.addEdge(targetNode1, unequalLabel, targetNode2);
 
         this.constraintRules.add(constraintRule);
+    }
+
+    /**
+     * Method to add no val constraint rule for a given EEnum
+     * @param eEnum the EEnum
+     */
+    private void addNoValConstraint(EEnum eEnum) {
+        DefaultGraph constraintRule = new DefaultGraph();
+
+        String name =
+            "constraint - " + GraphLabels.getLabelNoType(eEnum) + " - noIncVal";
+        this.ruleNames.put(constraintRule, name);
+
+        Node enumNode = constraintRule.addNode();
+        Node attrNode = constraintRule.addNode();
+
+        Label enumLabel = DefaultLabel.createLabel(GraphLabels.getLabel(eEnum));
+        Label attrLabel = DefaultLabel.createLabel(this.mh.getEAttributeType());
+        Label valLabel = DefaultLabel.createLabel("val");
+        Label notLabel = DefaultLabel.createLabel("not:");
+
+        constraintRule.addEdge(enumNode, enumLabel, enumNode);
+        constraintRule.addEdge(attrNode, attrLabel, attrNode);
+        constraintRule.addEdge(attrNode, notLabel, attrNode);
+        constraintRule.addEdge(attrNode, valLabel, enumNode);
+
+        this.constraintRules.add(constraintRule);
+
     }
 
     /**
