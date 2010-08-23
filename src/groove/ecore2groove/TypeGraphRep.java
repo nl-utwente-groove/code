@@ -52,6 +52,7 @@ public class TypeGraphRep {
     private TypeGraph ecoreTG = new TypeGraph();
     private Node eClassNode = DefaultNode.createNode();
     private Node eReferenceNode = DefaultNode.createNode();
+    private Node eAttributeNode = DefaultNode.createNode();
     //private Node eContReferenceNode = DefaultNode.createNode();
 
     private Map<EClass,DefaultNode> eClassToNodeMap =
@@ -97,11 +98,14 @@ public class TypeGraphRep {
 
         this.ecoreTG.addNode(this.eClassNode);
         this.ecoreTG.addNode(this.eReferenceNode);
+        this.ecoreTG.addNode(this.eAttributeNode);
         //ecoreTG.addNode(eContReferenceNode);		
 
         Label eClassLabel = DefaultLabel.createLabel(this.mh.getEClassType());
         Label eReferenceLabel =
             DefaultLabel.createLabel(this.mh.getEReferenceType());
+        Label eAttributeLabel =
+            DefaultLabel.createLabel(this.mh.getEAttributeType());
         Label rootLabel = DefaultLabel.createLabel("flag:root");
         Label contLabel = DefaultLabel.createLabel("flag:containment");
 
@@ -111,6 +115,8 @@ public class TypeGraphRep {
             this.eReferenceNode);
         this.ecoreTG.addEdge(this.eReferenceNode, contLabel,
             this.eReferenceNode);
+        this.ecoreTG.addEdge(this.eAttributeNode, eAttributeLabel,
+            this.eAttributeNode);
 
     }
 
@@ -328,6 +334,12 @@ public class TypeGraphRep {
             DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
             this.tg.addNode(node);
             this.tg.addEdge(edge);
+
+            // Add sub: label from the eAttribute to the EReference type node
+            Label subLabel = DefaultLabel.createLabel("sub:");
+            this.ecoreTG.addNode(node);
+            this.ecoreTG.addEdge(edge);
+            this.ecoreTG.addEdge(node, subLabel, this.eAttributeNode);
 
             // add edge from container EClass of EAttribute
             Node source =
