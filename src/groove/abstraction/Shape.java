@@ -27,7 +27,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.util.Pair;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -686,7 +685,7 @@ public class Shape extends DefaultGraph implements DeltaTarget {
      * given node.
      * It is an error to call this method if this.graph is not a Shape. 
      */
-    private Set<ShapeNode> getReverseNodeMap(ShapeNode nodeS) {
+    public Set<ShapeNode> getReverseNodeMap(ShapeNode nodeS) {
         assert this.graph instanceof Shape : "Invalid method call.";
         Set<ShapeNode> nodesG = new HashSet<ShapeNode>();
         for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
@@ -882,101 +881,89 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     }
 
     /**
-     * Materialises nodes in the shape. Note that all edges adjacent to the
-     * nodes being materialised are also duplicated.
-     * @param nodes - a set of pairs indicating which nodes need to be
-     *                materialised and how many copies are wanted.
-     * @return a set of pairs with original node identity and the set of
-     *         multiplicities that this node may have in the materialisation.
+     * Materialises a node in the shape. Note that all edges adjacent to the
+     * node being materialised are also duplicated.
+     * @param nodeS - the node in the shape to be materialised.
+     * @param copies - the number of new nodes that will be produced from
+     *                 nodeS.
+     * @return a set of multiplicities that the given node may have in
+     *         the materialisation.
      */
-    public Set<Pair<ShapeNode,Set<Multiplicity>>> materialiseNodes(
-            Set<Pair<ShapeNode,Integer>> nodes) {
-        Set<Pair<ShapeNode,Set<Multiplicity>>> result =
-            new HashSet<Pair<ShapeNode,Set<Multiplicity>>>();
+    public Set<Multiplicity> materialiseNode(ShapeNode nodeS, int copies) {
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
+        ShapeNode origNode = nodeS;
 
-        // For all nodes that need to be materialised.
-        for (Pair<ShapeNode,Integer> pair : nodes) {
-            ShapeNode origNode = pair.first();
-
-            int numberNewNodes = pair.second().intValue();
-            Multiplicity oneMult = Multiplicity.getMultOf(1);
-
-            // Create the new nodes.
-            ShapeNode newNodes[] = new ShapeNode[numberNewNodes];
-            EquivClass<ShapeNode> origNodeEc = this.getEquivClassOf(origNode);
-            for (int i = 0; i < numberNewNodes; i++) {
-                ShapeNode newNode = this.createNode();
-                newNodes[i] = newNode;
-                // Add the new node to the shape. Call the super method because
-                // we have additional information on the node to be added.
-                super.addNode(newNode);
-                // The new node is concrete so set its multiplicity to one.
-                this.setNodeMult(newNode, oneMult);
-                // Copy the labels from the original node.
-                this.copyUnaryEdges(origNode, newNode);
-                // Add the new node to the equivalence class of the original node.
-                origNodeEc.add(newNode);
-                // Update the shaping morphism.
-                this.nodeShaping.put(newNode, origNode);
-            }
-
-            // Now that we have all new nodes, duplicate all incoming and
-            // outgoing edges were the original node occurs. Also, update
-            // all maps of the shape accordingly.
-
-            // Outgoing edges with origNode as source.
-            Set<ShapeEdge> newEdges = new HashSet<ShapeEdge>(numberNewNodes);
-            for (ShapeEdge origEdge : this.outBinaryEdgeSet(origNode)) {
-                Label label = origEdge.label();
-                ShapeNode target = origEdge.opposite();
-                Multiplicity origEdgeOutMult = this.getEdgeOutMult(origEdge);
-                for (ShapeNode newNode : newNodes) {
-                    ShapeEdge newEdge = this.createEdge(newNode, label, target);
-                    newEdges.add(newEdge);
-                    // Update the outgoing multiplicity map.
-                    EdgeSignature newEdgeSig =
-                        this.getEdgeOutSignature(newEdge);
-                    this.setEdgeOutMult(newEdgeSig, origEdgeOutMult);
-                    // Update the shaping morphism.
-                    this.edgeShaping.put(newEdge, origEdge);
-                }
-            }
-            // We add the new edges in the end to avoid concurrent modification
-            // errors from the iterator in the loop.
-            this.addEdgeSetWithoutCheck(newEdges);
-
-            // Incoming edges with origNode as target.
-            newEdges.clear();
-            for (ShapeEdge origEdge : this.inBinaryEdgeSet(origNode)) {
-                Label label = origEdge.label();
-                ShapeNode source = origEdge.source();
-                Multiplicity origEdgeInMult = this.getEdgeInMult(origEdge);
-                for (ShapeNode newNode : newNodes) {
-                    ShapeEdge newEdge = this.createEdge(source, label, newNode);
-                    newEdges.add(newEdge);
-                    // Update the incoming multiplicity map.
-                    EdgeSignature newEdgeSig = this.getEdgeInSignature(newEdge);
-                    this.setEdgeInMult(newEdgeSig, origEdgeInMult);
-                    // Update the shaping morphism.
-                    this.edgeShaping.put(newEdge, origEdge);
-                }
-            }
-            // We add the new edges in the end to avoid concurrent modification
-            // errors from the iterator in the loop.
-            this.addEdgeSetWithoutCheck(newEdges);
-
-            // OK, we materialised the node, now store the multiplicity set
-            // that will come out from the original node.
-            Multiplicity toSub = Multiplicity.getMultOf(numberNewNodes);
-            Set<Multiplicity> mults =
-                this.getNodeMult(origNode).subNodeMult(toSub);
-            result.add(new Pair<ShapeNode,Set<Multiplicity>>(origNode, mults));
+        // Create the new nodes.
+        ShapeNode newNodes[] = new ShapeNode[copies];
+        EquivClass<ShapeNode> origNodeEc = this.getEquivClassOf(origNode);
+        for (int i = 0; i < copies; i++) {
+            ShapeNode newNode = this.createNode();
+            newNodes[i] = newNode;
+            // Add the new node to the shape. Call the super method because
+            // we have additional information on the node to be added.
+            super.addNode(newNode);
+            // The new node is concrete so set its multiplicity to one.
+            this.setNodeMult(newNode, oneMult);
+            // Copy the labels from the original node.
+            this.copyUnaryEdges(origNode, newNode);
+            // Add the new node to the equivalence class of the original node.
+            origNodeEc.add(newNode);
+            // Update the shaping morphism.
+            this.nodeShaping.put(newNode, origNode);
         }
+
+        // Now that we have all new nodes, duplicate all incoming and
+        // outgoing edges were the original node occurs. Also, update
+        // all maps of the shape accordingly.
+
+        // Outgoing edges with origNode as source.
+        Set<ShapeEdge> newEdges = new HashSet<ShapeEdge>(copies);
+        for (ShapeEdge origEdge : this.outBinaryEdgeSet(origNode)) {
+            Label label = origEdge.label();
+            ShapeNode target = origEdge.opposite();
+            Multiplicity origEdgeOutMult = this.getEdgeOutMult(origEdge);
+            for (ShapeNode newNode : newNodes) {
+                ShapeEdge newEdge = this.createEdge(newNode, label, target);
+                newEdges.add(newEdge);
+                // Update the outgoing multiplicity map.
+                EdgeSignature newEdgeSig = this.getEdgeOutSignature(newEdge);
+                this.setEdgeOutMult(newEdgeSig, origEdgeOutMult);
+                // Update the shaping morphism.
+                this.edgeShaping.put(newEdge, origEdge);
+            }
+        }
+        // We add the new edges in the end to avoid concurrent modification
+        // errors from the iterator in the loop.
+        this.addEdgeSetWithoutCheck(newEdges);
+
+        // Incoming edges with origNode as target.
+        newEdges.clear();
+        for (ShapeEdge origEdge : this.inBinaryEdgeSet(origNode)) {
+            Label label = origEdge.label();
+            ShapeNode source = origEdge.source();
+            Multiplicity origEdgeInMult = this.getEdgeInMult(origEdge);
+            for (ShapeNode newNode : newNodes) {
+                ShapeEdge newEdge = this.createEdge(source, label, newNode);
+                newEdges.add(newEdge);
+                // Update the incoming multiplicity map.
+                EdgeSignature newEdgeSig = this.getEdgeInSignature(newEdge);
+                this.setEdgeInMult(newEdgeSig, origEdgeInMult);
+                // Update the shaping morphism.
+                this.edgeShaping.put(newEdge, origEdge);
+            }
+        }
+        // We add the new edges in the end to avoid concurrent modification
+        // errors from the iterator in the loop.
+        this.addEdgeSetWithoutCheck(newEdges);
 
         // Basic consistency check.
         this.checkShapeInvariant();
 
-        return result;
+        // OK, we materialised the node, now create the multiplicity set
+        // that will come out from the original node.
+        Multiplicity toSub = Multiplicity.getMultOf(copies);
+        Set<Multiplicity> mults = this.getNodeMult(origNode).subNodeMult(toSub);
+        return mults;
     }
 
     /** Basic getter method. */
