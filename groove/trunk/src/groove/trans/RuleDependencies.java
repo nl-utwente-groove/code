@@ -24,6 +24,7 @@ import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.TypeGraph;
 import groove.rel.Automaton;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
@@ -119,6 +120,7 @@ public class RuleDependencies {
         this.rules = ruleSystem.getRules();
         this.properties = ruleSystem.getProperties();
         this.labelStore = ruleSystem.getLabelStore();
+        this.type = ruleSystem.getType();
     }
 
     /**
@@ -347,7 +349,7 @@ public class RuleDependencies {
             && !this.properties.isCheckDangling()) {
             Node lhsNode = lhsNodeIter.next();
             if (!ruleMorphism.containsKey(lhsNode)) {
-                consumed.add(ALL_LABEL);
+                consumed.addAll(getIncidentLabels(lhs, lhsNode));
             }
         }
         // determine the set of edges consumed
@@ -364,7 +366,7 @@ public class RuleDependencies {
         while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
             Edge rhsEdge = rhsEdgeIter.next();
             if (!ruleMorphism.containsValue(rhsEdge)) {
-                produced.addAll(getMatchedLabels(rhsEdge.label()));
+                produced.add(getSharpLabel(rhsEdge.label()));
             }
         }
         // determine if the rule contains a merger
@@ -505,7 +507,7 @@ public class RuleDependencies {
     }
 
     /**
-     * Returns the (default) labels that may be matched by a given
+     * Returns the (default) labels that may be matched modulo subtyping by a given
      * condition label - such as a sharp label, wildcard, or other
      * type of regular expression.
      * The label may not wrap {@link RegExpr.Neg}.
@@ -535,6 +537,62 @@ public class RuleDependencies {
     }
 
     /**
+     * Returns the (default) label that may be precisely matched by a given
+     * condition label - such as a default label or wildcard.
+     * The label may not wrap {@link RegExpr.Neg}.
+     */
+    private Label getSharpLabel(Label label) {
+        assert !RegExprLabel.isNeg(label);
+        Label result;
+        if (RegExprLabel.isWildcard(label)) {
+            result = ALL_LABEL;
+        } else {
+            assert label instanceof DefaultLabel;
+            result = label;
+        }
+        return result;
+    }
+
+    /**
+     * Computes an over-approximation of the labels that will be
+     * deleted if a node is deleted from a graph.
+     */
+    private Set<Label> getIncidentLabels(Graph graph, Node node) {
+        Set<Label> result;
+        if (this.type == null) {
+            result = Collections.singleton(ALL_LABEL);
+        } else {
+            result = new HashSet<Label>();
+            // the type labels that can be matched by the node
+            Set<Label> typeLabels = null;
+            for (Edge incidentEdge : graph.edgeSet(node)) {
+                Label label = incidentEdge.label();
+                if (label.isNodeType() && !RegExprLabel.isWildcard(label)) {
+                    if (RegExprLabel.isSharp(label)) {
+                        typeLabels =
+                            Collections.singleton(RegExprLabel.getSharpLabel(label));
+                    } else {
+                        typeLabels = this.labelStore.getSubtypes(label);
+                    }
+                    break;
+                }
+            }
+            assert typeLabels != null : String.format("No type label among %s",
+                graph.edgeSet(node));
+            for (Label typeLabel : typeLabels) {
+                // find the type node
+                Node typeNode =
+                    this.type.labelEdgeSet(2, typeLabel).iterator().next().source();
+                // now find all incident labels of the type node
+                for (Edge typeEdge : this.type.edgeSet(typeNode)) {
+                    result.add(typeEdge.label());
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Factory method to create a set of rules.
      */
     protected Set<Rule> createRuleSet() {
@@ -547,6 +605,8 @@ public class RuleDependencies {
     private final SystemProperties properties;
     /** Alphabet of the rule system. */
     private final LabelStore labelStore;
+    /** Type graph of the rule system. */
+    private final TypeGraph type;
     /**
      * Mapping from rules to sets of enablers, i.e., rules that may increase
      * their applicability.
