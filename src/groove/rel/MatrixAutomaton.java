@@ -17,6 +17,7 @@
 package groove.rel;
 
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
@@ -264,6 +265,24 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             initVarSets();
         }
         return !this.boundVarSet.contains(var);
+    }
+
+    @Override
+    public Set<Label> getAlphabet() {
+        Set<Label> result = new HashSet<Label>();
+        for (Edge edge : edgeSet()) {
+            Label label = edge.label();
+            if (RegExprLabel.isInv(label)) {
+                label = RegExprLabel.getInvOperand(label).toLabel();
+            }
+            if (RegExprLabel.isSharp(label)) {
+                label = RegExprLabel.getSharpLabel(label);
+            }
+            assert label instanceof DefaultLabel : String.format(
+                "Regular expression label %s should not occur", label);
+            result.add(label);
+        }
+        return result;
     }
 
     /**
