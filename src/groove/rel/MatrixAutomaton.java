@@ -17,7 +17,6 @@
 package groove.rel;
 
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
@@ -275,12 +274,13 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             if (RegExprLabel.isInv(label)) {
                 label = RegExprLabel.getInvOperand(label).toLabel();
             }
-            if (RegExprLabel.isSharp(label)) {
-                label = RegExprLabel.getSharpLabel(label);
+            if (RegExprLabel.isWildcard(label)) {
+                result.addAll(this.labelStore.getLabels(RegExprLabel.getWildcardKind(label)));
+            } else if (RegExprLabel.isSharp(label)) {
+                result.add(RegExprLabel.getSharpLabel(label));
+            } else {
+                result.addAll(this.labelStore.getSubtypes(label));
             }
-            assert label instanceof DefaultLabel : String.format(
-                "Regular expression label %s should not occur", label);
-            result.add(label);
         }
         return result;
     }
@@ -751,6 +751,10 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * Flag to indicate that the automaton is to accept the empty word.
      */
     private boolean acceptsEmptyWord;
+
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
+    }
 
     /** Label store to be matched against. */
     private final LabelStore labelStore;
