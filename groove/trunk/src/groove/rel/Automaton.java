@@ -19,6 +19,7 @@ package groove.rel;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 
 import java.util.List;
@@ -50,8 +51,11 @@ public interface Automaton extends Graph {
     /** Tests if this automaton accepts a given word. */
     boolean accepts(List<String> word);
 
-    /** Returns the set of labels that actually occur in the automaton. */
+    /** Returns the set of labels that can be matched by the automaton. */
     Set<Label> getAlphabet();
+
+    /** Returns the label store used by this automaton. */
+    LabelStore getLabelStore();
 
     /**
      * Returns a relation consisting of pairs of nodes of a given graph between

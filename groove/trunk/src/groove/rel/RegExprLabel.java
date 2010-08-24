@@ -84,7 +84,8 @@ public class RegExprLabel extends AbstractLabel {
      * used to match node type labels properly
      */
     public Automaton getAutomaton(LabelStore labelStore) {
-        if (this.automaton == null) {
+        if (this.automaton == null
+            || this.automaton.getLabelStore() != labelStore) {
             calculator.setLabelStore(labelStore);
             this.automaton = calculator.compute(getRegExpr());
         }
