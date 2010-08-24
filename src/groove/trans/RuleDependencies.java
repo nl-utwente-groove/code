@@ -356,8 +356,7 @@ public class RuleDependencies {
             Edge lhsEdge = lhsEdgeIter.next();
             if (!ruleMorphism.containsKey(lhsEdge)) {
                 // the only regular expressions allowed on erasers are wildcards
-                consumed.add(RegExprLabel.isWildcard(lhsEdge.label())
-                        ? ALL_LABEL : lhsEdge.label());
+                consumed.addAll(getMatchedLabels(lhsEdge.label()));
             }
         }
         // determine the set of edges produced
@@ -365,8 +364,7 @@ public class RuleDependencies {
         while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
             Edge rhsEdge = rhsEdgeIter.next();
             if (!ruleMorphism.containsValue(rhsEdge)) {
-                produced.add(RegExprLabel.isWildcard(rhsEdge.label())
-                        ? ALL_LABEL : rhsEdge.label());
+                produced.addAll(getMatchedLabels(rhsEdge.label()));
             }
         }
         // determine if the rule contains a merger
@@ -406,44 +404,22 @@ public class RuleDependencies {
         freshTargetEdges.removeAll(pattern.edgeMap().values());
         for (Edge edge : freshTargetEdges) {
             Label label = edge.label();
-            if (label instanceof RegExprLabel) {
-                Set<Label> posOrNeg;
-                RegExpr negOperand = RegExprLabel.getNegOperand(label);
-                if (negOperand == null) {
-                    posOrNeg = positive;
-                    isolatedNodes.removeAll(Arrays.asList(edge.ends()));
-                } else {
-                    label = negOperand.toLabel();
-                    posOrNeg = negative;
-                }
-                // the conversion to negOperant.toLabel() may have turned
-                // the label into a DefautLabel
-                if (label instanceof RegExprLabel) {
-                    Automaton labelAut =
-                        ((RegExprLabel) label).getAutomaton(this.labelStore);
-                    // if a regular expression accepts the empty word, merging
-                    // is
-                    // allowed
-                    if (labelAut.isAcceptsEmptyWord()) {
-                        posOrNeg.add(MERGE_LABEL);
-                    }
-                    if (RegExprLabel.isWildcard(label)
-                        || RegExprLabel.getRegExpr(label).containsOperator(
-                            RegExpr.wildcard())) {
-                        // testing for a wildcard means all labels are tested
-                        // for
-                        posOrNeg.add(ALL_LABEL);
-                    } else {
-                        // all the labels in the regular expression's automaton
-                        // are
-                        // tested for
-                        posOrNeg.addAll(labelAut.getAlphabet());
-                    }
-                } else {
-                    posOrNeg.add(label);
-                }
+            // flag indicating that the edge always tests positively
+            // for the presence of connecting structure
+            boolean presence = true;
+            Set<Label> affectedSet;
+            if (RegExprLabel.isNeg(label)) {
+                label = RegExprLabel.getNegOperand(label).toLabel();
+                affectedSet = negative;
+                presence = false;
             } else {
-                positive.add(label);
+                affectedSet = positive;
+                presence =
+                    !(label instanceof RegExprLabel && ((RegExprLabel) label).getAutomaton(
+                        this.labelStore).isAcceptsEmptyWord());
+            }
+            affectedSet.addAll(getMatchedLabels(label));
+            if (presence) {
                 isolatedNodes.removeAll(Arrays.asList(edge.ends()));
             }
         }
@@ -526,6 +502,36 @@ public class RuleDependencies {
         // map.put(key, valueSet = createRuleSet());
         // }
         valueSet.add(value);
+    }
+
+    /**
+     * Returns the (default) labels that may be matched by a given
+     * condition label - such as a sharp label, wildcard, or other
+     * type of regular expression.
+     * The label may not wrap {@link RegExpr.Neg}.
+     */
+    private Set<Label> getMatchedLabels(Label label) {
+        assert !RegExprLabel.isNeg(label);
+        Set<Label> result = new HashSet<Label>();
+        if (RegExprLabel.isWildcard(label)) {
+            result.add(ALL_LABEL);
+        } else if (RegExprLabel.isSharp(label)) {
+            result.add(RegExprLabel.getSharpLabel(label));
+        } else if (label instanceof RegExprLabel) {
+            Automaton labelAut =
+                ((RegExprLabel) label).getAutomaton(this.labelStore);
+            // if a regular expression accepts the empty word, 
+            // its matching is affected by merging
+            if (labelAut.isAcceptsEmptyWord()) {
+                result.add(MERGE_LABEL);
+            }
+            // all the labels in the regular expression's automaton
+            // are tested for
+            result.addAll(labelAut.getAlphabet());
+        } else {
+            result.addAll(this.labelStore.getSubtypes(label));
+        }
+        return result;
     }
 
     /**
