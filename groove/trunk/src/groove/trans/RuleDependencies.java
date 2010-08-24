@@ -437,24 +437,7 @@ public class RuleDependencies {
                         // all the labels in the regular expression's automaton
                         // are
                         // tested for
-                        for (Edge labelAutEdge : labelAut.edgeSet()) {
-                            Label innerLabel = labelAutEdge.label();
-                            if (innerLabel instanceof RegExprLabel) {
-                                // this must be an inverted label
-                                RegExpr expr =
-                                    ((RegExprLabel) innerLabel).getRegExpr();
-                                assert expr instanceof RegExpr.Inv : String.format(
-                                    "Regular expression label %s should not occur",
-                                    innerLabel);
-                                // take the inverted label instead
-                                innerLabel =
-                                    ((RegExpr.Inv) expr).getOperand().toLabel();
-                                assert innerLabel instanceof DefaultLabel : String.format(
-                                    "Automaton edge '%s' should not occur",
-                                    labelAutEdge);
-                            }
-                            posOrNeg.add(innerLabel);
-                        }
+                        posOrNeg.addAll(labelAut.getAlphabet());
                     }
                 } else {
                     posOrNeg.add(label);
