@@ -76,13 +76,6 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,T
     public TV getTypeView(String name);
 
     /**
-     * Returns the type graph view set for the grammar.
-     * @return the type graph view for the grammar, or <code>null</code> if
-     *         there is no type graph set.
-     */
-    public TV getTypeView();
-
-    /**
      * Returns the control view associated with a given (named) control program.
      * @param name the name of the control program to return the view of;
      * @return the corresponding control program view, or <code>null</code> if

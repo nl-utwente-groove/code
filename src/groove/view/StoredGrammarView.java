@@ -161,14 +161,6 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * @return an arbitrary type view from the list of set type graphs.
-     */
-    public TypeView getTypeView() {
-        List<String> setTypes = this.getSetTypeNames();
-        return setTypes.isEmpty() ? null : getTypeView(setTypes.get(0));
-    }
-
-    /**
      * Lazily creates a list of selected type views.
      * @param checkedTypes the list of checked types to construct the type graph.
      * @return a list of type views that yield a composite type graph.
@@ -186,10 +178,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      * @return a list of type views that yield a composite type graph.
      */
     public TypeViewList getTypeViews() {
-        if (this.composedTypeView == null) {
-            this.composedTypeView = new TypeViewList();
-        }
-        return this.composedTypeView;
+        return getTypeViews(getSetTypeNames());
     }
 
     /**
@@ -366,7 +355,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         // We have constructed all views of the type graphs.
         // Make the composition now.
         try {
-            this.getTypeViews().toModel();
+            result.setType(this.getTypeViews().toModel());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -432,27 +421,21 @@ public class StoredGrammarView implements GrammarView, Observer {
                     getStartGraphView().getView()));
             }
         }
-        this.labelStore = new LabelStore();
-        for (RuleName ruleName : getRuleNames()) {
-            this.labelStore.addLabels(getRuleView(ruleName).getLabels());
-        }
-        // add types from all known graphs to label store
-        for (String graphName : getGraphNames()) {
-            this.labelStore.addLabels(getGraphView(graphName).getLabels());
-        }
-        if (getStartGraphView() != null) {
-            this.labelStore.addLabels(getStartGraphView().getLabels());
-        }
-        // add subtyping relation from properties to label store
-        if (getTypeView() == null) {
+        if (result.getType() == null) {
+            this.labelStore = new LabelStore();
+            for (RuleName ruleName : getRuleNames()) {
+                this.labelStore.addLabels(getRuleView(ruleName).getLabels());
+            }
+            // add types from all known graphs to label store
+            for (String graphName : getGraphNames()) {
+                this.labelStore.addLabels(getGraphView(graphName).getLabels());
+            }
+            if (getStartGraphView() != null) {
+                this.labelStore.addLabels(getStartGraphView().getLabels());
+            }
             this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
         } else {
-            try {
-                this.labelStore.add(getTypeView().toModel().getLabelStore());
-                this.labelStore.setFixed();
-            } catch (FormatException e) {
-                // the type view has errors; don't add subtype labels
-            }
+            this.labelStore = result.getType().getLabelStore();
         }
         result.setLabelStore(this.labelStore);
         try {
@@ -673,16 +656,6 @@ public class StoredGrammarView implements GrammarView, Observer {
         public List<FormatError> getErrors() {
             this.initialise();
             return this.errors;
-        }
-
-        /**
-         * Looks into the type view map.
-         * @param typeName the type graph name to look.
-         * @return the associated view on the given name.
-         *         May be <code>null</code>.
-         */
-        public TypeView getTypeViewByName(String typeName) {
-            return this.typeViewMap.get(typeName);
         }
 
         /**
