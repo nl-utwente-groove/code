@@ -93,15 +93,15 @@ public class Transform {
      */
     private static void toEcore(String[] args) throws IOException {
         long start = new Date().getTime();
+        long total = new Date().getTime();
 
         String grammarLoc = args[0];
         String modelLoc = args[1];
         String instancesLoc = args[2];
 
         ModelHandler mh = new ModelHandler(modelLoc);
-
-        System.out.println("Loaded " + modelLoc + " ("
-            + (new Date().getTime() - start) + " ms)");
+        System.out.println("Loaded Ecore model: " + mh.getModelName() + " ("
+            + (new Date().getTime() - start) + " ms)"); // print duration
 
         // Create a GROOVE file store
         start = new Date().getTime();
@@ -111,13 +111,13 @@ public class Transform {
         if (f.exists() && f.isDirectory() && f.canRead()) {
             grammar = SystemStoreFactory.newStore(f, true);
             grammar.reload(); // reload to initialize
-            System.out.println("Loaded " + grammarLoc + " ("
-                + (new Date().getTime() - start) + " ms)");
         } else {
             System.out.println(grammarLoc
                 + " does not exist, is not a directory or cannot be read!");
             System.exit(1);
         }
+        System.out.println("Loaded or created graph grammar: " + f.getName()
+            + " (" + (new Date().getTime() - start) + " ms)"); //print duration
 
         // Make sure the output directory exists and is writable
         File f2 = new File(instancesLoc);
@@ -142,10 +142,11 @@ public class Transform {
             InstanceModelRep im = new InstanceModelRep(mh, instanceGraph);
             mh.saveModel(im.getInstanceModel(), instancesLoc + File.separator
                 + graphName);
-            System.out.println("Stored: " + instancesLoc + File.separator
-                + graphName + " (" + (new Date().getTime() - start) + " ms)");
+            System.out.println("Created instance model: " + graphName + " ("
+                + (new Date().getTime() - start) + " ms)");
         }
 
+        System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
     }
 
     /**
@@ -156,25 +157,29 @@ public class Transform {
      * 				args[n] == grammarLocation</tt>
      */
     private static void toGROOVE(String[] args) throws IOException {
-        long start = new Date().getTime();
-        long total;
+        long total = new Date().getTime();
 
+        // Initialize ModelHandler
+        long start = new Date().getTime(); // timing
         String modelLoc = args[0];
         ModelHandler mh = new ModelHandler(modelLoc);
+        System.out.println("Loaded Ecore model: " + mh.getModelName() + " ("
+            + (new Date().getTime() - start) + " ms)"); // print duration
+
+        // Create TypeGraph
+        start = new Date().getTime(); // timing
         TypeGraphRep tgr = new TypeGraphRep(mh);
         String modelName = mh.getModelName();
+        System.out.println("Created type graphs: " + modelName + " ("
+            + (new Date().getTime() - start) + " ms)"); //print duration
 
-        total = new Date().getTime() - start;
-
-        // Create a file store
-        start = new Date().getTime();
-
+        // Create or load graph grammar
+        start = new Date().getTime(); // timing
         File f = new File(args[args.length - 1]);
         SystemStore grammar = SystemStoreFactory.newStore(f, true);
         grammar.reload(); // reload to initialize
-
-        System.out.println("Loaded or created " + args[args.length - 1] + " ("
-            + (new Date().getTime() - start) + " ms)");
+        System.out.println("Loaded or created graph grammar: " + f.getName()
+            + " (" + (new Date().getTime() - start) + " ms)"); //print duration
 
         // Get type graphs to store
         AspectGraph atg = tgr.getTypeGraph();
@@ -189,7 +194,14 @@ public class Transform {
         ecoreatg.getInfo().setFile(f + File.separator + "EcoreTypes.gty");
         ecoreatg.getInfo().setName("EcoreTypes");
 
-        // Store type graphs
+        // Store type graphs, but first delete the old ones
+        Set<String> typeGraphsToDelete = new HashSet<String>();
+        for (String graphName : grammar.getTypes().keySet()) {
+            typeGraphsToDelete.add(graphName);
+        }
+        for (String graphName : typeGraphsToDelete) {
+            grammar.deleteType(graphName);
+        }
         grammar.putType(atg);
         grammar.putType(ecoreatg);
 
@@ -204,7 +216,7 @@ public class Transform {
         }
         grammar.putProperties(sp);
 
-        printGraph(atg, "Type graph: " + modelName + " (" + total + " ms)");
+        //printGraph(atg, "Type graph: " + modelName + " (" + total + " ms)");
 
         // Delete all former constraints since we are remaking them
         // and old ones need to go
@@ -235,11 +247,11 @@ public class Transform {
             arg.getInfo().getProperties(true).setPriority(50);
             grammar.putRule(arg);
 
-            printGraph(arg, "Constraint rule: " + name);
+            // printGraph(arg, "Constraint rule: " + name);
             number++;
         }
-        System.out.println(number + " constraint rules took "
-            + (new Date().getTime() - start) + " ms");
+        System.out.println("Created constraint rules: " + number + " ("
+            + (new Date().getTime() - start) + " ms)");
 
         // Load instance models and create instance graph representations
         for (int i = 1; i < args.length - 1; i++) {
@@ -250,7 +262,13 @@ public class Transform {
                 instanceLoc.substring(instanceLoc.lastIndexOf(File.separatorChar) + 1);
 
             mh.loadInstance(instanceLoc);
+            System.out.println("Loaded instance model: " + instanceName + " ("
+                + (new Date().getTime() - start) + " ms)");
+
+            start = new Date().getTime();
             InstanceGraphRep igr = new InstanceGraphRep(mh);
+            System.out.println("Created instance graph: " + instanceName + " ("
+                + (new Date().getTime() - start) + " ms)");
 
             AspectGraph aig = igr.getInstanceGraph();
 
@@ -261,20 +279,10 @@ public class Transform {
 
             grammar.putGraph(aig);
 
-            printGraph(aig, "Instance graph: " + instanceName + " ("
-                + (new Date().getTime() - start) + " ms)");
         }
-    }
 
-    /**
-     * Print information of a graph to System.out with header prefixed
-     * @param ag The AspectGraph to print 
-     * @param header The header information
-     */
-    private static void printGraph(AspectGraph ag, String header) {
-        System.out.println(header);
-        // System.out.println(ag);
-        // System.out.println(ag.getInfo() + "\n");
+        System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
+
     }
 
 }

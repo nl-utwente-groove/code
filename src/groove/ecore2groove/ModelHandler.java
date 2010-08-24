@@ -130,7 +130,10 @@ public class ModelHandler {
                     modelPackage);
                 //if (metaModelRoot.getName().equals(findEPackage)) {
                 if (modelPackage.getESuperPackage() == null) {
-                    this.metaModelRoot = modelPackage;
+                    if (this.metaModelRoot == null
+                        || this.metaModelRoot.eContents().size() < modelPackage.eContents().size()) {
+                        this.metaModelRoot = modelPackage;
+                    }
                 }
             }
         }
@@ -159,6 +162,11 @@ public class ModelHandler {
                 }
             }
         }
+        /*
+        System.out.println("Number of EClasses: " + this.classes.size());
+        System.out.println("Number of EReferences: " + this.references.size());
+        System.out.println("Number of EAttributes: " + this.attributes.size()
+            + "\n");*/
 
         // Vector with classes and enums used to check safe names
         Vector<EClassifier> elements = new Vector<EClassifier>();
@@ -215,6 +223,10 @@ public class ModelHandler {
      */
     private void checkForBigAlgebra(EDataType eAttributeType) {
         String type = eAttributeType.getInstanceTypeName();
+
+        if (type == null) {
+            return;
+        }
 
         if (type.equals("java.math.BigInteger") || type.equals("long")
             || type.equals("java.lang.Long")

@@ -695,6 +695,8 @@ public class ConstraintRules {
                 lowerBound = String.valueOf(Integer.MIN_VALUE);
                 upperBound = String.valueOf(Integer.MAX_VALUE);
                 type = "int:";
+            } else {
+                return;
             }
         }/* else if (eAttribute.getEAttributeType().getName().equals("EFloat")
             || eAttribute.getEAttributeType().getName().equals("EFloatObject")) {
