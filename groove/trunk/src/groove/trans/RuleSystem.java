@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.util.CollectionOfCollections;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -378,6 +379,19 @@ public class RuleSystem {
      * @see #getRules()
      */
     private Collection<Rule> ruleSet;
+
+    /** Sets the type graph of this rule system. */
+    public final TypeGraph getType() {
+        return this.type;
+    }
+
+    /** Returns the (possibly {@code null}) type graph of this rule system. */
+    public final void setType(TypeGraph type) {
+        this.type = type;
+    }
+
+    /** Type graph of this rule system; possibly {@code null}. */
+    private TypeGraph type;
     /**
      * The properties bundle of this rule system.
      */

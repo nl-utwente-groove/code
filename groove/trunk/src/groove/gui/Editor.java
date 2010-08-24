@@ -2082,9 +2082,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         public void actionPerformed(ActionEvent evt) {
             if (getType() != null) {
                 String typeName = showTypeGraphSelectionDialog();
-                showPreviewDialog(
-                    getTypeViewList().getTypeViewByName(typeName),
-                    Options.OK_BUTTON);
+                showPreviewDialog(getTypeViewList().getTypeViewMap().get(
+                    typeName), Options.OK_BUTTON);
             } else {
                 super.actionPerformed(evt);
                 if (!setRole(TYPE_INDEX)) {
@@ -2119,7 +2118,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             String typeName = showTypeGraphSelectionDialog();
-            showPreviewDialog(getTypeViewList().getTypeViewByName(typeName),
+            showPreviewDialog(getTypeViewList().getTypeViewMap().get(typeName),
                 Options.OK_BUTTON);
         }
     }
