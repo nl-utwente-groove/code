@@ -13,9 +13,9 @@
 	<classpathentry kind="lib" path="lib/ltl2buchi.jar"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/org.eclipse.emf.common_2.5.0.v200906151043.jar"/>
-	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore_2.5.0.v200906151043.jar"/>
-	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore.xmi_2.5.0.v200906151043.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-gxl-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-common-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-ecore-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-ecore-xmi-2_5_0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
