@@ -1,0 +1,7 @@
+# Layout information for loose-nodes.gps\addType.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+e n46 n46 "new:Type" 500 500 152 143 209 116 210 176 152 143 12
+e n46 n46 "not:Type" 500 500 152 143 94 113 93 174 152 143 12
+n n46 143 134 18 18 
