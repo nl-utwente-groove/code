@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="lib/emf-common-2_5_0.jar"/>
 	<classpathentry kind="lib" path="lib/emf-ecore-2_5_0.jar"/>
 	<classpathentry kind="lib" path="lib/emf-ecore-xmi-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
