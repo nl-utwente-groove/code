@@ -539,8 +539,8 @@ public class Simulator {
         boolean result = false;
         try {
             if (graph.hasErrors()) {
-                showErrorDialog("Errors in graph",
-                    new FormatException(graph.getErrors()));
+                showErrorDialog("Errors in graph", new FormatException(
+                    graph.getErrors()));
             } else {
                 getGrammarStore().putGraph(graph);
                 result = true;
@@ -553,9 +553,8 @@ public class Simulator {
             }
             result = true;
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while saving graph '%s'",
-                    GraphInfo.getName(graph)), exc);
+            showErrorDialog(String.format("Error while saving graph '%s'",
+                GraphInfo.getName(graph)), exc);
         }
         return result;
     }
@@ -576,8 +575,8 @@ public class Simulator {
             updateGrammar();
             result = true;
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while saving rule '%s'", ruleName), exc);
+            showErrorDialog(String.format("Error while saving rule '%s'",
+                ruleName), exc);
         } catch (UnsupportedOperationException u) {
             showErrorDialog("Current grammar is read-only", u);
         }
@@ -608,9 +607,8 @@ public class Simulator {
                 result = true;
             }
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while saving type graph '%s'",
-                    GraphInfo.getName(typeGraph)), exc);
+            showErrorDialog(String.format("Error while saving type graph '%s'",
+                GraphInfo.getName(typeGraph)), exc);
         }
         return result;
     }
@@ -914,8 +912,8 @@ public class Simulator {
             setGrammarView(grammar);
             updateGrammar();
         } catch (IllegalArgumentException exc) {
-            showErrorDialog(
-                String.format("Can't create grammar at '%s'", grammarFile), exc);
+            showErrorDialog(String.format("Can't create grammar at '%s'",
+                grammarFile), exc);
         } catch (IOException exc) {
             showErrorDialog(String.format(
                 "Error while creating grammar at '%s'", grammarFile), exc);
@@ -1003,9 +1001,8 @@ public class Simulator {
                 refresh();
             }
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while renaming graph '%s'",
-                    GraphInfo.getName(graph)), exc);
+            showErrorDialog(String.format("Error while renaming graph '%s'",
+                GraphInfo.getName(graph)), exc);
         }
     }
 
@@ -1018,9 +1015,8 @@ public class Simulator {
             getGrammarStore().renameRule(oldName, newName);
             updateGrammar();
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while renaming rule '%s'",
-                    GraphInfo.getName(graph)), exc);
+            showErrorDialog(String.format("Error while renaming rule '%s'",
+                GraphInfo.getName(graph)), exc);
         }
     }
 
@@ -1044,9 +1040,9 @@ public class Simulator {
             }
             result = true;
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while renaming type graph '%s'",
-                    GraphInfo.getName(graph)), exc);
+            showErrorDialog(String.format(
+                "Error while renaming type graph '%s'",
+                GraphInfo.getName(graph)), exc);
         }
         return result;
     }
@@ -1172,9 +1168,8 @@ public class Simulator {
         try {
             this.graphLoader.marshalGraph(graph, selectedFile);
         } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while saving graph to '%s'", selectedFile),
-                exc);
+            showErrorDialog(String.format("Error while saving graph to '%s'",
+                selectedFile), exc);
         }
     }
 
@@ -2622,8 +2617,8 @@ public class Simulator {
      */
     boolean confirmOverwriteRule(RuleName ruleName) {
         int response =
-            JOptionPane.showConfirmDialog(getFrame(),
-                String.format("Replace existing rule '%s'?", ruleName), null,
+            JOptionPane.showConfirmDialog(getFrame(), String.format(
+                "Replace existing rule '%s'?", ruleName), null,
                 JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
@@ -2854,8 +2849,8 @@ public class Simulator {
     /**
      * The graph loader used for saving graphs (states and LTS).
      */
-    private final Xml<AspectGraph> graphLoader = new AspectGxl(
-        new LayedOutXml());
+    private final Xml<AspectGraph> graphLoader =
+        new AspectGxl(new LayedOutXml());
 
     /**
      * The graph loader used for graphs in .aut format
@@ -2895,8 +2890,8 @@ public class Simulator {
     /**
      * Extension filter for CADP <code>.aut</code> files.
      */
-    private final ExtensionFilter autFilter = new ExtensionFilter(
-        "CADP .aut files", Groove.AUT_EXTENSION);
+    private final ExtensionFilter autFilter =
+        new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
 
     /**
      * Extension filter for rule files.
@@ -4357,8 +4352,8 @@ public class Simulator {
                     URL url = new URL(input);
                     doLoadGrammar(url);
                 } catch (MalformedURLException e) {
-                    showErrorDialog(
-                        String.format("Invalid URL '%s'", e.getMessage()), e);
+                    showErrorDialog(String.format("Invalid URL '%s'",
+                        e.getMessage()), e);
                 }
             }
         }
@@ -5460,27 +5455,30 @@ public class Simulator {
     static private final ExtensionFilter GPS_FILTER =
         Groove.createRuleSystemFilter();
     /** Filter for rule system files. Old version. */
-    static private final ExtensionFilter GPS_1_0_FILTER = new ExtensionFilter(
-        "Groove production system Version 1.0", ".gps", true);
+    static private final ExtensionFilter GPS_1_0_FILTER =
+        new ExtensionFilter("Groove production system Version 1.0", ".gps",
+            true);
     /** File filter for jar files. */
-    static private final ExtensionFilter JAR_FILTER = new ExtensionFilter(
-        "Jar-file containing Groove production system", ".gps.jar", false) {
-        @Override
-        public boolean accept(File file) {
-            return super.accept(file) || file.isDirectory()
-                && !GPS_FILTER.hasExtension(file.getName());
-        }
-    };
+    static private final ExtensionFilter JAR_FILTER =
+        new ExtensionFilter("Jar-file containing Groove production system",
+            ".gps.jar", false) {
+            @Override
+            public boolean accept(File file) {
+                return super.accept(file) || file.isDirectory()
+                    && !GPS_FILTER.hasExtension(file.getName());
+            }
+        };
     /** File filter for zip files. */
-    static private final ExtensionFilter ZIP_FILTER = new ExtensionFilter(
-        "Zip-file containing Groove production system", ".gps.zip", false) {
-        @Override
-        public boolean accept(File file) {
-            return super.accept(file) || file.isDirectory()
-                && !GPS_FILTER.hasExtension(file.getName());
-        }
+    static private final ExtensionFilter ZIP_FILTER =
+        new ExtensionFilter("Zip-file containing Groove production system",
+            ".gps.zip", false) {
+            @Override
+            public boolean accept(File file) {
+                return super.accept(file) || file.isDirectory()
+                    && !GPS_FILTER.hasExtension(file.getName());
+            }
 
-    };
+        };
 
     /**
      * Empty FileFilterAction.
@@ -5540,8 +5538,8 @@ public class Simulator {
     /**
      * Preferred dimension of the graph view.
      */
-    static private final Dimension GRAPH_VIEW_PREFERRED_SIZE = new Dimension(
-        GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
+    static private final Dimension GRAPH_VIEW_PREFERRED_SIZE =
+        new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
 
     /** Flag controlling if types should be used. */
     private static final boolean USE_TYPES = true;
