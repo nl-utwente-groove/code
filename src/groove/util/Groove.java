@@ -79,8 +79,8 @@ public class Groove {
     /** Unicode character for down-triangle. */
     public static final char DOWN_ARROW = '\u2193';
     /** The default sample directory. */
-    public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR
-        + "samples";
+    public static final String SAMPLE_DIR =
+        WORKING_DIR + FILE_SEPARATOR + "samples";
 
     /** Tests if a given role string equals {@link #GRAPH_ROLE}. */
     static public boolean isGraphRole(String role) {
@@ -164,137 +164,137 @@ public class Groove {
     /** Extension for property files. */
     public static final String PROPERTY_EXTENSION = ".properties";
     /** File name for GUI properties. */
-    public static final String GUI_PROPERTIES_FILE = "groove.gui"
-        + PROPERTY_EXTENSION;
+    public static final String GUI_PROPERTIES_FILE =
+        "groove.gui" + PROPERTY_EXTENSION;
     /** File name for XML properties. */
-    public static final String XML_PROPERTIES_FILE = "groove.xml"
-        + PROPERTY_EXTENSION;
+    public static final String XML_PROPERTIES_FILE =
+        "groove.xml" + PROPERTY_EXTENSION;
 
     // Icons
 
     /** Cancel action icon. */
-    public static final ImageIcon CANCEL_ICON = new ImageIcon(
-        Groove.getResource("cancel-smaller.gif"));
+    public static final ImageIcon CANCEL_ICON =
+        new ImageIcon(Groove.getResource("cancel-smaller.gif"));
     /** Copy action icon. */
-    public static final ImageIcon COPY_ICON = new ImageIcon(
-        Groove.getResource("copy.gif"));
+    public static final ImageIcon COPY_ICON =
+        new ImageIcon(Groove.getResource("copy.gif"));
     /** Cut action icon. */
-    public static final ImageIcon CUT_ICON = new ImageIcon(
-        Groove.getResource("cut.gif"));
+    public static final ImageIcon CUT_ICON =
+        new ImageIcon(Groove.getResource("cut.gif"));
     /** Delete action icon. */
-    public static final ImageIcon DELETE_ICON = new ImageIcon(
-        Groove.getResource("delete.gif"));
+    public static final ImageIcon DELETE_ICON =
+        new ImageIcon(Groove.getResource("delete.gif"));
     /** Disable action icon. */
-    public static final ImageIcon DISABLE_ICON = new ImageIcon(
-        Groove.getResource("disable-smaller.gif"));
+    public static final ImageIcon DISABLE_ICON =
+        new ImageIcon(Groove.getResource("disable-smaller.gif"));
     /** Edit action icon. */
-    public static final ImageIcon EDIT_ICON = new ImageIcon(
-        Groove.getResource("edit.gif"));
+    public static final ImageIcon EDIT_ICON =
+        new ImageIcon(Groove.getResource("edit.gif"));
     /** Enable action icon. */
-    public static final ImageIcon ENABLE_ICON = new ImageIcon(
-        Groove.getResource("enable.gif"));
+    public static final ImageIcon ENABLE_ICON =
+        new ImageIcon(Groove.getResource("enable.gif"));
     /** Icon for a New action. */
-    public static final ImageIcon NEW_ICON = new ImageIcon(
-        getResource("new.gif"));
+    public static final ImageIcon NEW_ICON =
+        new ImageIcon(getResource("new.gif"));
     /** Icon for a New Graph action. */
-    public static final ImageIcon NEW_GRAPH_ICON = new ImageIcon(
-        getResource("new-G.gif"));
+    public static final ImageIcon NEW_GRAPH_ICON =
+        new ImageIcon(getResource("new-G.gif"));
     /** Icon for a New Rule action. */
-    public static final ImageIcon NEW_RULE_ICON = new ImageIcon(
-        getResource("new-R.gif"));
+    public static final ImageIcon NEW_RULE_ICON =
+        new ImageIcon(getResource("new-R.gif"));
     /** Icon for a New Type action. */
-    public static final ImageIcon NEW_TYPE_ICON = new ImageIcon(
-        getResource("new-T.gif"));
+    public static final ImageIcon NEW_TYPE_ICON =
+        new ImageIcon(getResource("new-T.gif"));
     /** Rename action icon. */
-    public static final ImageIcon RENAME_ICON = new ImageIcon(
-        Groove.getResource("rename.gif"));
+    public static final ImageIcon RENAME_ICON =
+        new ImageIcon(Groove.getResource("rename.gif"));
     /** Redo action icon. */
-    public static final ImageIcon REDO_ICON = new ImageIcon(
-        Groove.getResource("redo.gif"));
+    public static final ImageIcon REDO_ICON =
+        new ImageIcon(Groove.getResource("redo.gif"));
     /** Undo action icon. */
-    public static final ImageIcon UNDO_ICON = new ImageIcon(
-        Groove.getResource("undo.gif"));
+    public static final ImageIcon UNDO_ICON =
+        new ImageIcon(Groove.getResource("undo.gif"));
     /** Icon for GPS folders. */
-    public static final ImageIcon GPS_FOLDER_ICON = new ImageIcon(
-        getResource("gps.gif"));
+    public static final ImageIcon GPS_FOLDER_ICON =
+        new ImageIcon(getResource("gps.gif"));
     /** Graph editing mode icon. */
-    public static final ImageIcon GRAPH_MODE_ICON = new ImageIcon(
-        getResource("graph-mode.gif"));
+    public static final ImageIcon GRAPH_MODE_ICON =
+        new ImageIcon(getResource("graph-mode.gif"));
     /** Icon for Control Panel. */
-    public static final ImageIcon CONTROL_FRAME_ICON = new ImageIcon(
-        getResource("cp-frame.gif"));
+    public static final ImageIcon CONTROL_FRAME_ICON =
+        new ImageIcon(getResource("cp-frame.gif"));
     /** Icon for Control Files. */
-    public static final ImageIcon CONTROL_FILE_ICON = new ImageIcon(
-        getResource("control-file.gif"));
+    public static final ImageIcon CONTROL_FILE_ICON =
+        new ImageIcon(getResource("control-file.gif"));
     /** Icon for graphs. */
-    public static final ImageIcon GRAPH_ICON = new ImageIcon(
-        getResource("graph.gif"));
+    public static final ImageIcon GRAPH_ICON =
+        new ImageIcon(getResource("graph.gif"));
     /** Icon for graph (GXL or GST) files. */
-    public static final ImageIcon GRAPH_FILE_ICON = new ImageIcon(
-        getResource("graph-file.gif"));
+    public static final ImageIcon GRAPH_FILE_ICON =
+        new ImageIcon(getResource("graph-file.gif"));
     /** Icon for the state panel of the simulator. */
-    public static final ImageIcon GRAPH_FRAME_ICON = new ImageIcon(
-        getResource("graph-frame.gif"));
+    public static final ImageIcon GRAPH_FRAME_ICON =
+        new ImageIcon(getResource("graph-frame.gif"));
     /** Icon for graph with emphasised match. */
-    public static final ImageIcon GRAPH_MATCH_ICON = new ImageIcon(
-        getResource("graph-match.gif"));
+    public static final ImageIcon GRAPH_MATCH_ICON =
+        new ImageIcon(getResource("graph-match.gif"));
     /** Small icon for production rules. */
-    public static final ImageIcon RULE_SMALL_ICON = new ImageIcon(
-        getResource("rule-small.gif"));
+    public static final ImageIcon RULE_SMALL_ICON =
+        new ImageIcon(getResource("rule-small.gif"));
     /** Icon for production rules. */
-    public static final ImageIcon RULE_ICON = new ImageIcon(
-        getResource("rule.gif"));
+    public static final ImageIcon RULE_ICON =
+        new ImageIcon(getResource("rule.gif"));
     /** Icon for rule (GPR) files. */
-    public static final ImageIcon RULE_FILE_ICON = new ImageIcon(
-        getResource("rule-file.gif"));
+    public static final ImageIcon RULE_FILE_ICON =
+        new ImageIcon(getResource("rule-file.gif"));
     /** Icon for the rule panel of the simulator. */
-    public static final ImageIcon RULE_FRAME_ICON = new ImageIcon(
-        getResource("rule-frame.gif"));
+    public static final ImageIcon RULE_FRAME_ICON =
+        new ImageIcon(getResource("rule-frame.gif"));
     /** Rule editing mode icon. */
-    public static final ImageIcon RULE_MODE_ICON = new ImageIcon(
-        getResource("rule-mode.gif"));
+    public static final ImageIcon RULE_MODE_ICON =
+        new ImageIcon(getResource("rule-mode.gif"));
     /** Icon for the LTS panel of the simulator. */
-    public static final ImageIcon LTS_FRAME_ICON = new ImageIcon(
-        getResource("lts-frame.gif"));
+    public static final ImageIcon LTS_FRAME_ICON =
+        new ImageIcon(getResource("lts-frame.gif"));
     /** Icon for type (GTY) files. */
-    public static final ImageIcon TYPE_FILE_ICON = new ImageIcon(
-        getResource("type-file.gif"));
+    public static final ImageIcon TYPE_FILE_ICON =
+        new ImageIcon(getResource("type-file.gif"));
     /** Icon for Type Panel. */
-    public static final ImageIcon TYPE_FRAME_ICON = new ImageIcon(
-        getResource("type-frame.gif"));
+    public static final ImageIcon TYPE_FRAME_ICON =
+        new ImageIcon(getResource("type-frame.gif"));
     /** Type editing mode icon. */
-    public static final ImageIcon TYPE_MODE_ICON = new ImageIcon(
-        getResource("type-mode.gif"));
+    public static final ImageIcon TYPE_MODE_ICON =
+        new ImageIcon(getResource("type-mode.gif"));
     /** GROOVE project icon in 16x16 format. */
-    public static final ImageIcon GROOVE_ICON_16x16 = new ImageIcon(
-        getResource("groove-g-16x16.gif"));
+    public static final ImageIcon GROOVE_ICON_16x16 =
+        new ImageIcon(getResource("groove-g-16x16.gif"));
     /** GROOVE project icon in 32x32 format. */
-    public static final ImageIcon GROOVE_ICON_32x32 = new ImageIcon(
-        getResource("groove-g-32x32.gif"));
+    public static final ImageIcon GROOVE_ICON_32x32 =
+        new ImageIcon(getResource("groove-g-32x32.gif"));
     /** GROOVE project icon in blue colour - 32x32 format. */
-    public static final ImageIcon GROOVE_BLUE_ICON_32x32 = new ImageIcon(
-        getResource("groove-blue-g-32x32.gif"));
+    public static final ImageIcon GROOVE_BLUE_ICON_32x32 =
+        new ImageIcon(getResource("groove-blue-g-32x32.gif"));
     /** Transparent open up-arrow icon. */
-    public static final ImageIcon OPEN_UP_ARROW_ICON = new ImageIcon(
-        getResource("open-up-arrow.gif"));
+    public static final ImageIcon OPEN_UP_ARROW_ICON =
+        new ImageIcon(getResource("open-up-arrow.gif"));
     /** Transparent open down-arrow icon. */
-    public static final ImageIcon OPEN_DOWN_ARROW_ICON = new ImageIcon(
-        getResource("open-down-arrow.gif"));
+    public static final ImageIcon OPEN_DOWN_ARROW_ICON =
+        new ImageIcon(getResource("open-down-arrow.gif"));
     /** Paste action icon. */
-    public static final ImageIcon PASTE_ICON = new ImageIcon(
-        Groove.getResource("paste.gif"));
+    public static final ImageIcon PASTE_ICON =
+        new ImageIcon(Groove.getResource("paste.gif"));
     /** Special icon denoting choice e/a. */
-    public static final ImageIcon E_A_CHOICE_ICON = new ImageIcon(
-        getResource("e-a-choice.gif"));
+    public static final ImageIcon E_A_CHOICE_ICON =
+        new ImageIcon(getResource("e-a-choice.gif"));
     /** Save action icon. */
-    public static final ImageIcon SAVE_ICON = new ImageIcon(
-        Groove.getResource("save.gif"));
+    public static final ImageIcon SAVE_ICON =
+        new ImageIcon(Groove.getResource("save.gif"));
     /** Save as action icon. */
-    public static final ImageIcon SAVE_AS_ICON = new ImageIcon(
-        Groove.getResource("saveas.gif"));
+    public static final ImageIcon SAVE_AS_ICON =
+        new ImageIcon(Groove.getResource("saveas.gif"));
     /** Start action icon. */
-    public static final ImageIcon START_ICON = new ImageIcon(
-        Groove.getResource("start.gif"));
+    public static final ImageIcon START_ICON =
+        new ImageIcon(Groove.getResource("start.gif"));
     /** The file containing the configuration for allowed scenarios. */
     public static final String ALLOWED_SCENARIOS_CONFIGURATION_FILE =
         "configuration";
@@ -584,8 +584,18 @@ public class Groove {
         }
         File file = new File(filename);
         // System.err.println("Storing graph as " + file.getAbsolutePath());
-        gxlGraphLoader.marshalGraph(graph, file);
+        saveGraph(graph, file);
         return file;
+    }
+
+    /**
+     * Attempts to save a graph to a given file.
+     * @param graph the graph to be saved
+     * @param file the intended file
+     * @throws IOException if saving ran into problems
+     */
+    static public void saveGraph(Graph graph, File file) throws IOException {
+        gxlGraphLoader.marshalGraph(graph, file);
     }
 
     /**
