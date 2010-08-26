@@ -436,21 +436,22 @@ public class SystemProperties extends java.util.Properties implements Fixable,
             hasChanged = true;
         }
         // change the subtype relation
-        try {
-            LabelStore subtypeStore =
-                LabelStore.createLabelStore(getSubtypes());
-            LabelStore newSubtypeStore =
-                subtypeStore.relabel(oldLabel, newLabel);
-            if (subtypeStore != newSubtypeStore) {
-                result.setSubtypes(newSubtypeStore.toDirectSubtypeString());
-                hasChanged = true;
+        if (getTypeNames().isEmpty()) {
+            try {
+                LabelStore subtypeStore =
+                    LabelStore.createLabelStore(getSubtypes());
+                LabelStore newSubtypeStore =
+                    subtypeStore.relabel(oldLabel, newLabel);
+                if (subtypeStore != newSubtypeStore) {
+                    result.setSubtypes(newSubtypeStore.toDirectSubtypeString());
+                    hasChanged = true;
+                }
+            } catch (FormatException exc) {
+                assert false : String.format(
+                    "Subtype string '%s' gives rise to format error: %s",
+                    getSubtypes(), exc.getMessage());
             }
-        } catch (FormatException exc) {
-            assert false : String.format(
-                "Subtype string '%s' gives rise to format error: %s",
-                getSubtypes(), exc.getMessage());
         }
-
         return hasChanged ? result : this;
     }
 
