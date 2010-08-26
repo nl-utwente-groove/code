@@ -234,6 +234,10 @@ public class Transform {
         start = new Date().getTime();
         int number = 0;
         ConstraintRules constraints = new ConstraintRules(mh);
+        System.out.println("Created constraint rules ("
+            + (new Date().getTime() - start) + " ms)");
+
+        start = new Date().getTime();
         for (DefaultGraph constraintRule : constraints.getConstraints()) {
             // GraphInfo.setRuleRole(constraintRule);
             AspectGraph arg =
@@ -250,7 +254,7 @@ public class Transform {
             // printGraph(arg, "Constraint rule: " + name);
             number++;
         }
-        System.out.println("Created constraint rules: " + number + " ("
+        System.out.println("Stored constraint rules: " + number + " ("
             + (new Date().getTime() - start) + " ms)");
 
         // Load instance models and create instance graph representations
