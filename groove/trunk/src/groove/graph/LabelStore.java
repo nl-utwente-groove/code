@@ -251,7 +251,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return result;
     }
 
-    /** Returns an unmodifiable view on the set of all known type labels. */
+    /** Returns an unmodifiable view on the set of all known labels. */
     public Set<Label> getLabels() {
         return Collections.unmodifiableSet(this.subtypeMap.keySet());
     }

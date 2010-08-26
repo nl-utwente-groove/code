@@ -42,17 +42,59 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class TypeGraph extends NodeSetEdgeSetGraph {
+    /** Constructs a fresh type graph. */
+    public TypeGraph() {
+        GraphInfo.setTypeRole(this);
+    }
+
     @Override
     public boolean addNode(Node node) {
         assert node instanceof TypeNode;
+        assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
+        this.predefinedNodes = true;
         return super.addNode(node);
     }
 
-    /** @throw UnsupportedOperationException always */
+    /** 
+     * This method is not supported for type graphs; use {@link #addNode(Label)}
+     * instead.
+     * @throw UnsupportedOperationException always 
+     */
     @Override
     public Node addNode() {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * Adds a type node with a given (node type) label.
+     * Also adds a self-edge with that label.
+     * This method should not be combined with {@link #addNode(Node)} to
+     * the same type graph, as then there is no guarantee of distinct node
+     * numbers.
+     * @param label the label for the type node; must satisfy {@link Label#isNodeType()}
+     * @return the created and added node type
+     */
+    public TypeNode addNode(Label label) {
+        assert label.isNodeType();
+        assert !this.predefinedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
+        this.maxNodeNr++;
+        TypeNode result = new TypeNode(this.maxNodeNr, label);
+        super.addNode(result);
+        addEdge(result, label, result);
+        this.generatedNodes = true;
+        return result;
+    }
+
+    /** Flag indicating that {@link #addNode(Label)} has been used
+     * to add type nodes.
+     */
+    private boolean generatedNodes;
+    /** Flag indicating that {@link #addNode(Node)} has been used
+     * to add type nodes.
+     */
+    private boolean predefinedNodes;
+    /** Highest node number occurring in this type graph. */
+    private int maxNodeNr;
 
     /** Adds the label as well as the edge. */
     @Override

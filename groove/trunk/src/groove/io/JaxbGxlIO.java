@@ -24,12 +24,16 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeGraph;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
 import groove.view.FormatError;
+import groove.view.aspect.TypeAspect;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -110,10 +115,10 @@ public class JaxbGxlIO implements GxlIO {
     }
 
     /**
-     * Converts an attributed graph to an untyped GXL graph. The attributes are
-     * encoded in <tt>AttributeLabel</tt>s.
-     * @param graph a graph with only <tt>AttributeLabel</tt>s
-     * @return the resulting GXL graph
+     * Converts a graph to an untyped GXL graph.
+     * Node types and flag labels as well as {@link ValueNode}s are converted 
+     * to prefixed form.
+     * If the graph is a {@link TypeGraph}, subtype edges are also added.
      */
     private GraphType graphToGxl(Graph graph) {
         GraphType gxlGraph = this.factory.createGraphType();
@@ -148,14 +153,28 @@ public class JaxbGxlIO implements GxlIO {
         // add the edges
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
-            EdgeType gxlEdge = this.factory.createEdgeType();
-            gxlEdge.setFrom(nodeMap.get(edge.source()));
-            gxlEdge.setTo(nodeMap.get(edge.opposite()));
-            AttrType labelAttr = this.factory.createAttrType();
-            labelAttr.setName(LABEL_ATTR_NAME);
-            labelAttr.setString(DefaultLabel.toPrefixedString(edge.label()));
-            gxlEdge.getAttr().add(labelAttr);
+            EdgeType gxlEdge =
+                createGxlEdge(nodeMap, edge.source(), edge.label(),
+                    edge.target());
             nodesEdges.add(gxlEdge);
+        }
+        // add subtype edges if the graph is a type graph
+        if (graph instanceof TypeGraph) {
+            LabelStore labelStore = ((TypeGraph) graph).getLabelStore();
+            Map<Label,Set<Label>> subtypeMap = labelStore.getDirectSubtypeMap();
+            for (Map.Entry<Label,Set<Label>> subtypeEntry : subtypeMap.entrySet()) {
+                for (Label subtype : subtypeEntry.getValue()) {
+                    for (Edge subtypeEdge : graph.labelEdgeSet(2, subtype)) {
+                        Label supertype = subtypeEntry.getKey();
+                        for (Edge supertypeEdge : graph.labelEdgeSet(2,
+                            supertype)) {
+                            nodesEdges.add(createGxlEdge(nodeMap,
+                                subtypeEdge.source(), SUBTYPE_LABEL,
+                                supertypeEdge.source()));
+                        }
+                    }
+                }
+            }
         }
         // add the graph info
         GraphInfo info = GraphInfo.getInfo(graph, false);
@@ -184,15 +203,23 @@ public class JaxbGxlIO implements GxlIO {
         return gxlGraph;
     }
 
+    private EdgeType createGxlEdge(Map<Node,NodeType> nodeMap, Node source,
+            Label label, Node target) {
+        EdgeType result = this.factory.createEdgeType();
+        result.setFrom(nodeMap.get(source));
+        result.setTo(nodeMap.get(target));
+        AttrType labelAttr = this.factory.createAttrType();
+        labelAttr.setName(LABEL_ATTR_NAME);
+        labelAttr.setString(DefaultLabel.toPrefixedString(label));
+        result.getAttr().add(labelAttr);
+        return result;
+    }
+
     /**
-     * Converts an untyped GXL graph to an attributed (groove) graph. Node
-     * attributes are ignored. Edge attributes are encoded in
-     * <tt>AttributeLabel</tt>s. The method returns a map from GXL node ids to
-     * <tt>Node</tt>s.
-     * 
+     * Converts an untyped GXL graph to a (groove) graph.
+     * The method returns a map from GXL node ids to {@link Node}s.
      * @param gxlGraph the source of the unmarshalling
-     * @return pair consisting of the resulting attribute graph (with only
-     *         <tt>AttributeLabel</tt>s) and a non-<code>null</code> map
+     * @return pair consisting of the resulting graph and a non-<code>null</code> map
      */
     private Pair<Graph,Map<String,Node>> gxlToGraph(GraphType gxlGraph) {
         Graph graph = this.graphFactory.newGraph();
@@ -363,4 +390,7 @@ public class JaxbGxlIO implements GxlIO {
     static private final String DEFAULT_GRAPH_NAME = "graph";
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
+    /** Subtype label. */
+    static private final Label SUBTYPE_LABEL =
+        DefaultLabel.createLabel(TypeAspect.SUB.getPrefix());
 }
