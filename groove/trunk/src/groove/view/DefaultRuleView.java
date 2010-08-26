@@ -20,6 +20,7 @@ package groove.view;
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -1568,7 +1569,7 @@ public class DefaultRuleView implements RuleView {
                     if (!this.ruleMorph.containsKey(lhsEdge)) {
                         if (RegExprLabel.isSharp(lhsType)) {
                             lhsType = RegExprLabel.getSharpLabel(lhsType);
-                        } else {
+                        } else if (!DefaultLabel.isDataType(lhsType)) {
                             errors.add(new FormatError(
                                 "Modified type '%s' should be sharp", lhsType,
                                 lhsNode));
