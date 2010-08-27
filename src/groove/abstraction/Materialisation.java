@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
@@ -94,7 +95,13 @@ public class Materialisation {
         this.shape = mat.shape.clone();
         this.preMatch = mat.preMatch;
         this.match = mat.match.clone();
-        this.tasks = new LinkedList<MatOp>(mat.tasks);
+        this.tasks = new LinkedList<MatOp>();
+        // Update the materialisation reference in the tasks.
+        for (MatOp origOp : mat.tasks) {
+            MatOp cloneOp = origOp.clone();
+            cloneOp.setMat(this);
+            this.tasks.add(cloneOp);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -103,8 +110,8 @@ public class Materialisation {
 
     @Override
     public String toString() {
-        return "Materialisation:\nShape:\n" + this.shape.toString() + "Match: "
-            + this.match.toString() + "\n";
+        return "Materialisation:\nShape:\n" + this.shape + "Match: "
+            + this.match + "\nTasks: " + this.tasks + "\n";
     }
 
     @Override
@@ -218,7 +225,7 @@ public class Materialisation {
                 // node. We need to materialise this abstract node.
                 // Check the nodes on the rule that were mapped to nodeS.
                 Set<Node> nodesR = Util.getReverseNodeMap(originalMap, nodeS);
-                this.tasks.add(new MaterialiseNode(nodeS, nodesR));
+                this.tasks.add(new MaterialiseNode(this, nodeS, nodesR));
                 processedNodes.add(nodeS);
             }
         }
@@ -226,6 +233,65 @@ public class Materialisation {
         // EDUARDO: Construct the edge images...
         // EDUARDO: Check that all nodes of the LHS are in the same equivalence class...
 
+    }
+
+    /**
+     * Extends the rule match to the given shape node. The rule edges adjacent
+     * to the rule node also have their mapping updated.
+     * @param nodeR - the node in the rule.
+     * @param nodeS - the newly materialised node in the shape.
+     */
+    private void extendMatch(Node nodeR, ShapeNode nodeS) {
+        this.match.putNode(nodeR, nodeS);
+        // Look for all edges where nodeR occurs and update the edge map.
+        for (Entry<Edge,Edge> edgeEntry : this.match.edgeMap().entrySet()) {
+            Edge edgeR = edgeEntry.getKey();
+            ShapeEdge origEdgeS = (ShapeEdge) edgeEntry.getValue();
+            // Start with the nodes from the original edge.
+            ShapeNode srcS = origEdgeS.source();
+            ShapeNode tgtS = origEdgeS.opposite();
+
+            boolean modifyMatch = false;
+            if (edgeR.source().equals(nodeR)) {
+                srcS = nodeS;
+                modifyMatch = true;
+            }
+            if (edgeR.opposite().equals(nodeR)) {
+                tgtS = nodeS;
+                modifyMatch = true;
+            }
+
+            if (modifyMatch) {
+                // Get the new edge from the shape.
+                // Variables srcS and tgtS were already properly updated.
+                ShapeEdge newEdgeS =
+                    this.shape.getShapeEdge(srcS, origEdgeS.label(), tgtS);
+                if (newEdgeS != null) {
+                    this.match.putEdge(edgeR, newEdgeS);
+                }
+            }
+        }
+    }
+
+    /**
+     * Given an edge matched by the rule, clear all other shared edges in the
+     * shape that can no longer exist. 
+     */
+    private void removeImpossibleEdges(ShapeEdge mappedEdge) {
+        // EDUARDO: fix this method...
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
+        // Check outgoing multiplicities.
+        EdgeSignature outEs = this.shape.getEdgeOutSignature(mappedEdge);
+        Multiplicity outMult = this.shape.getEdgeSigOutMult(outEs);
+        if (outMult.equals(oneMult)) {
+            this.shape.removeImpossibleOutEdges(outEs, mappedEdge);
+        }
+        // Check incoming multiplicities.
+        EdgeSignature inEs = this.shape.getEdgeInSignature(mappedEdge);
+        Multiplicity inMult = this.shape.getEdgeSigInMult(inEs);
+        if (inMult.equals(oneMult)) {
+            this.shape.removeImpossibleInEdges(inEs, mappedEdge);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -238,9 +304,31 @@ public class Materialisation {
 
     private abstract class MatOp {
 
-        protected Set<Materialisation> result = new HashSet<Materialisation>();
+        public static final int MAX_PRIORITY = 3;
+
+        protected Materialisation mat;
+        protected Set<Materialisation> result;
+
+        protected MatOp() {
+            this.mat = null;
+            this.result = new HashSet<Materialisation>();
+        }
+
+        public MatOp(Materialisation mat) {
+            this.mat = mat;
+            this.result = new HashSet<Materialisation>();
+        }
+
+        @Override
+        abstract public MatOp clone();
 
         abstract public void perform();
+
+        abstract public int getPriority();
+
+        public void setMat(Materialisation mat) {
+            this.mat = mat;
+        }
 
         public boolean isSuccesful() {
             return !this.result.isEmpty();
@@ -262,9 +350,33 @@ public class Materialisation {
         private ShapeNode nodeS;
         private Set<Node> nodesR;
 
-        public MaterialiseNode(ShapeNode nodeS, Set<Node> nodesR) {
+        public MaterialiseNode(Materialisation mat, ShapeNode nodeS,
+                Set<Node> nodesR) {
+            super(mat);
             this.nodeS = nodeS;
             this.nodesR = nodesR;
+        }
+
+        private MaterialiseNode(MaterialiseNode matNode) {
+            super();
+            this.setMat(matNode.mat);
+            this.nodeS = matNode.nodeS;
+            this.nodesR = matNode.nodesR;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new MaterialiseNode(this);
+        }
+
+        @Override
+        public String toString() {
+            return "MaterialiseNode: " + this.nodeS + ", " + this.nodesR;
+        }
+
+        @Override
+        public int getPriority() {
+            return 0;
         }
 
         @Override
@@ -274,41 +386,44 @@ public class Materialisation {
             int copies = this.nodesR.size();
             // Materialise the node and get the new multiplicity set back.
             Set<Multiplicity> mults =
-                Materialisation.this.shape.materialiseNode(this.nodeS, copies);
+                this.mat.shape.materialiseNode(this.nodeS, copies);
             // Look in the shaping morphism to get the new nodes that were
             // materialised from the original node.
             Set<ShapeNode> newNodes =
-                Materialisation.this.shape.getReverseNodeMap(this.nodeS);
+                this.mat.shape.getReverseNodeMap(this.nodeS);
             // Remove the original node from the set of new nodes because
             // the original node will not help to extend the match.
             newNodes.remove(this.nodeS);
 
-            // Create the new tasks that need to be performed after this one.
-            // First, extend the pre-match into the new nodes.
-            ExtendPreMatch extendPreMatch =
-                new ExtendPreMatch(this.nodesR, newNodes);
-            Materialisation.this.tasks.add(extendPreMatch);
-            // Second, make sure that all materialised nodes will be in a
-            // singleton equivalence class.
-            for (ShapeNode newNode : newNodes) {
-                SingulariseNode singulariseNode = new SingulariseNode(newNode);
-                Materialisation.this.tasks.add(singulariseNode);
-            }
-
-            // Check if the need to clone the materialisation object.
-            if (mults.size() == 1) {
-                // No, we don't need to clone.
-                // Properly adjust the multiplicity of the original node.
-                Multiplicity mult = mults.iterator().next();
-                Materialisation.this.shape.setNodeMult(this.nodeS, mult);
-                this.result.add(Materialisation.this);
-            } else {
-                // Yes, we do need to clone.
-                for (Multiplicity mult : mults) {
-                    Materialisation newMat = Materialisation.this.clone();
-                    newMat.shape.setNodeMult(this.nodeS, mult);
-                    this.result.add(newMat);
+            // Create the new materialisation objects.
+            for (Multiplicity mult : mults) {
+                Materialisation newMat;
+                // Check if we need to clone the materialisation object.
+                if (mults.size() == 1) {
+                    // No, we don't need to clone.
+                    newMat = this.mat;
+                } else {
+                    // Yes, we do need to clone.
+                    newMat = this.mat.clone();
                 }
+                // Update the multiplicity of the original node.
+                newMat.shape.setNodeMult(this.nodeS, mult);
+
+                // Create the new tasks that will be performed after this one.
+                // First, extend the pre-match into the new nodes.
+                ExtendPreMatch extendPreMatch =
+                    new ExtendPreMatch(newMat, this.nodesR, newNodes);
+                newMat.tasks.add(extendPreMatch);
+                // Second, make sure that all materialised nodes will be in a
+                // singleton equivalence class.
+                for (ShapeNode newNode : newNodes) {
+                    SingulariseNode singulariseNode =
+                        new SingulariseNode(newMat, newNode);
+                    newMat.tasks.add(singulariseNode);
+                }
+                // Add this new materialisation to the result set of this
+                // operation.
+                this.result.add(newMat);
             }
         }
 
@@ -323,14 +438,129 @@ public class Materialisation {
         private Set<Node> nodesR;
         private Set<ShapeNode> newNodes;
 
-        public ExtendPreMatch(Set<Node> nodesR, Set<ShapeNode> newNodes) {
+        public ExtendPreMatch(Materialisation mat, Set<Node> nodesR,
+                Set<ShapeNode> newNodes) {
+            super(mat);
             this.nodesR = nodesR;
             this.newNodes = newNodes;
         }
 
+        private ExtendPreMatch(ExtendPreMatch extPm) {
+            super();
+            this.setMat(extPm.mat);
+            this.nodesR = extPm.nodesR;
+            this.newNodes = extPm.newNodes;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new ExtendPreMatch(this);
+        }
+
+        @Override
+        public String toString() {
+            return "ExtendPreMatch: " + this.nodesR + ", " + this.newNodes;
+        }
+
+        @Override
+        public int getPriority() {
+            return 1;
+        }
+
+        /**
+         * Extends the pre-match of a partially constructed materialisation
+         * object. In this method, the nodes of the pre-match that were mapped
+         * to abstract nodes in the shape are re-mapped to the newly
+         * materialised nodes. Note that this step is also non-deterministic,
+         * since we may have more than one node in the rule that was mapped to
+         * the same abstract node. In this case we need to try out all possible
+         * combinations. Not all of those are actually valid configurations but
+         * this will only be checked later. 
+         */
         @Override
         public void perform() {
-            // 
+            // Compute all possible matches of nodesR into newNodes.
+            Set<NodeEdgeMap> matches =
+                SetPermutation.getPermutationSet(this.nodesR, this.newNodes);
+
+            for (NodeEdgeMap match : matches) {
+                Materialisation newMat;
+                // Check if we need to clone the materialisation object.
+                if (matches.size() == 1) {
+                    // No, we don't need to clone.
+                    newMat = this.mat;
+                } else {
+                    // Yes, we do need to clone.
+                    newMat = this.mat.clone();
+                }
+
+                // For all nodes in the match permutation, adjust the match of
+                // the materialisation.
+                for (Entry<Node,Node> entry : match.nodeMap().entrySet()) {
+                    Node nodeR = entry.getKey();
+                    ShapeNode nodeS = (ShapeNode) entry.getValue();
+                    newMat.extendMatch(nodeR, nodeS);
+                }
+
+                // Create the new tasks that will be performed after this one.
+                // Cleanup impossible edges. 
+                CleanupImpossibleEdges cleanupImpossibleEdges =
+                    new CleanupImpossibleEdges(newMat);
+                newMat.tasks.add(cleanupImpossibleEdges);
+
+                // Add this new materialisation to the result set of this
+                // operation.
+                this.result.add(newMat);
+            }
+        }
+    }
+
+    // ----------------------------
+    // Class CleanupImpossibleEdges
+    // ----------------------------
+
+    private class CleanupImpossibleEdges extends MatOp {
+
+        public CleanupImpossibleEdges(Materialisation mat) {
+            super(mat);
+        }
+
+        private CleanupImpossibleEdges(CleanupImpossibleEdges cleanIe) {
+            super();
+            this.setMat(cleanIe.mat);
+        }
+
+        @Override
+        public MatOp clone() {
+            return new CleanupImpossibleEdges(this);
+        }
+
+        @Override
+        public String toString() {
+            return "CleanupImpossibleEdges";
+        }
+
+        @Override
+        public int getPriority() {
+            return 2;
+        }
+
+        /** 
+         * Finishes the materialisation by removing impossible edge
+         * configurations.
+         */
+        @Override
+        public void perform() {
+            // At this point we assume that all variations on the nodes were
+            // resolved, and that the rule match is complete and fixed.
+            // Now, we go through the matched edges of the rule and adjust the 
+            // shared edge multiplicities.
+            for (Edge edgeR : this.mat.match.edgeMap().keySet()) {
+                ShapeEdge edgeS = (ShapeEdge) this.mat.match.getEdge(edgeR);
+                this.mat.removeImpossibleEdges(edgeS);
+            }
+            // This operation is deterministic. No need to clone.
+            this.result.add(this.mat);
         }
 
     }
@@ -343,13 +573,35 @@ public class Materialisation {
 
         private ShapeNode nodeS;
 
-        public SingulariseNode(ShapeNode nodeS) {
+        public SingulariseNode(Materialisation mat, ShapeNode nodeS) {
+            super(mat);
             this.nodeS = nodeS;
+        }
+
+        private SingulariseNode(SingulariseNode singNode) {
+            super();
+            this.setMat(singNode.mat);
+            this.nodeS = singNode.nodeS;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new SingulariseNode(this);
+        }
+
+        @Override
+        public String toString() {
+            return "SingulariseNode: " + this.nodeS;
+        }
+
+        @Override
+        public int getPriority() {
+            return 3;
         }
 
         @Override
         public void perform() {
-            //
+            this.result.add(this.mat);
         }
 
     }
