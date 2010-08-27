@@ -65,7 +65,7 @@ public class Version {
     // during Ant compilation!
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "07.06.2010"; // eventually automatically
+    public static final String DATE = "25.08.2010"; // eventually automatically
     // set during Ant
     // compilation!
 
@@ -78,10 +78,10 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "4.0.1+";
+    public static final String NUMBER = "4.0.2+";
 
     /** Minimum Java JRE version required. */
-    static public final String NUMBER_JAVAMIN = "1.5";
+    static public final String NUMBER_JAVAMIN = "1.6";
 
     /** Title of this project. */
     static public final String TITLE = "GROOVE";
