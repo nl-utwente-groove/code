@@ -26,6 +26,11 @@ import groove.view.FormatException;
  */
 public class StringAlgebra extends StringSignature<String,Boolean> implements
         Algebra<String> {
+    /** Empty constructor for the singleton instance. */
+    private StringAlgebra() {
+        // empty
+    }
+
     @Override
     public String concat(String arg0, String arg1) {
         return arg0.concat(arg1);
@@ -74,4 +79,6 @@ public class StringAlgebra extends StringSignature<String,Boolean> implements
 
     /** The name of this algebra. */
     static public final String NAME = "string";
+    /** The singleton instance of this class. */
+    static public final StringAlgebra instance = new StringAlgebra();
 }

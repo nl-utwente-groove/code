@@ -542,7 +542,17 @@ public class StoredGrammarView implements GrammarView, Observer {
         store.reload();
         StoredGrammarView result = store.toGrammarView();
         if (startGraphName != null) {
-            result.setStartGraph(startGraphName);
+            if (result.getGraphNames().contains(startGraphName)) {
+                result.setStartGraph(startGraphName);
+            } else {
+                Graph plainGraph = Groove.loadGraph(startGraphName);
+                if (plainGraph == null) {
+                    throw new IOException(String.format(
+                        "Cannot load start graph %s", startGraphName));
+                } else {
+                    result.setStartGraph(AspectGraph.newInstance(plainGraph));
+                }
+            }
         }
         return result;
     }

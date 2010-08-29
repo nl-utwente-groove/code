@@ -21,7 +21,13 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BoolPointAlgebra extends BoolSignature<Object> implements Algebra<Object> {
+public class BoolPointAlgebra extends BoolSignature<Object> implements
+        Algebra<Object> {
+    /** Private constructor for the singleton instance. */
+    private BoolPointAlgebra() {
+        // empty
+    }
+
     @Override
     public Object and(Object arg0, Object arg1) {
         return singleBool;
@@ -58,4 +64,6 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements Algebra<O
     public static final String NAME = "pbool";
     /** Singleton object of this algebra. */
     public static final Object singleBool = "B";
+    /** Singleton instance of this algebra. */
+    public static final BoolPointAlgebra instance = new BoolPointAlgebra();
 }
