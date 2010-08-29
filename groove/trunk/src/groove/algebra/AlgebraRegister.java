@@ -474,24 +474,24 @@ public class AlgebraRegister {
     static {
         registerMap = new HashMap<String,AlgebraRegister>();
         Set<Algebra<?>> defaultAlgebraFamily = new HashSet<Algebra<?>>();
-        defaultAlgebraFamily.add(new JavaIntAlgebra());
-        defaultAlgebraFamily.add(new BoolAlgebra());
-        defaultAlgebraFamily.add(new StringAlgebra());
-        defaultAlgebraFamily.add(new JavaDoubleAlgebra());
+        defaultAlgebraFamily.add(JavaIntAlgebra.instance);
+        defaultAlgebraFamily.add(BoolAlgebra.instance);
+        defaultAlgebraFamily.add(StringAlgebra.instance);
+        defaultAlgebraFamily.add(JavaDoubleAlgebra.instance);
         defaultRegister = new AlgebraRegister(defaultAlgebraFamily);
         registerMap.put(DEFAULT_ALGEBRAS, defaultRegister);
         Set<Algebra<?>> pointAlgebraFamily = new HashSet<Algebra<?>>();
-        pointAlgebraFamily.add(new IntPointAlgebra());
-        pointAlgebraFamily.add(new BoolPointAlgebra());
-        pointAlgebraFamily.add(new StringPointAlgebra());
-        pointAlgebraFamily.add(new RealPointAlgebra());
+        pointAlgebraFamily.add(IntPointAlgebra.instance);
+        pointAlgebraFamily.add(BoolPointAlgebra.instance);
+        pointAlgebraFamily.add(StringPointAlgebra.instance);
+        pointAlgebraFamily.add(RealPointAlgebra.instance);
         pointRegister = new AlgebraRegister(pointAlgebraFamily);
         registerMap.put(POINT_ALGEBRAS, pointRegister);
         Set<Algebra<?>> bigAlgebraFamily = new HashSet<Algebra<?>>();
-        bigAlgebraFamily.add(new BigIntAlgebra());
-        bigAlgebraFamily.add(new BoolAlgebra());
-        bigAlgebraFamily.add(new StringAlgebra());
-        bigAlgebraFamily.add(new BigDoubleAlgebra());
+        bigAlgebraFamily.add(BigIntAlgebra.instance);
+        bigAlgebraFamily.add(BoolAlgebra.instance);
+        bigAlgebraFamily.add(StringAlgebra.instance);
+        bigAlgebraFamily.add(BigDoubleAlgebra.instance);
         bigRegister = new AlgebraRegister(bigAlgebraFamily);
         registerMap.put(BIG_ALGEBRAS, bigRegister);
     }

@@ -105,11 +105,21 @@ public class Generator extends CommandLineTool {
      * Attempts to load a graph grammar from a given location provided as a
      * parameter with either default start state or a start state provided as a
      * second parameter.
-     * @param args the first argument is the grammar location name; if provided,
-     *        the second argument is the start graph filename.
+     * @param args generator options, grammar and start graph name
      */
     static public void main(String[] args) {
-        new Generator(new LinkedList<String>(Arrays.asList(args))).start();
+        generate(args);
+    }
+
+    /**
+     * Loads a graph grammar from a given location provided as a
+     * parameter with either default start state or a start state provided as a
+     * second parameter, and returns the generated transition system.
+     * @param args generator options, grammar and start graph name
+     * @return the generated transition system
+     */
+    static public GTS generate(String[] args) {
+        return new Generator(new LinkedList<String>(Arrays.asList(args))).start();
     }
 
     /**
@@ -149,7 +159,7 @@ public class Generator extends CommandLineTool {
      * <tt>{@link #init}</tt>, <tt>{@link #generate}</tt> and
      * <tt>{@link #exit}</tt>.
      */
-    public void start() {
+    public GTS start() {
         processArguments();
         verifyExportOptions();
         verifyExplorationOptions();
@@ -163,6 +173,7 @@ public class Generator extends CommandLineTool {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return gts;
     }
 
     /**
@@ -545,7 +556,7 @@ public class Generator extends CommandLineTool {
     protected void exit(Collection<? extends Object> result) throws IOException {
         if (getFinalSaveName() != null) {
             if (result.isEmpty()) {
-                System.out.println("No resulting graphs");
+                printlnMedium("No resulting graphs");
             } else {
                 for (State finalState : getGTS().getFinalStates()) {
                     String outFileName = getFinalSaveName() + "-" + finalState;
@@ -553,7 +564,7 @@ public class Generator extends CommandLineTool {
                     Groove.saveGraph(((GraphState) finalState).getGraph(),
                         outFileName);
                 }
-                System.out.printf("Resulting graphs saved: %s%n",
+                printfMedium("Resulting graphs saved: %s%n",
                     getGTS().getFinalStates());
             }
         }
@@ -647,8 +658,8 @@ public class Generator extends CommandLineTool {
     /** File filter for graph state files (GST). */
     protected final ExtensionFilter gstFilter = Groove.createStateFilter();
     /** File filter for graph files (GXL or GST). */
-    protected final ExtensionFilter graphFilter = new ExtensionFilter(
-        "Serialized graph files", GRAPH_FILE_EXTENSION);
+    protected final ExtensionFilter graphFilter =
+        new ExtensionFilter("Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /**
      * The <code>ExportSimulationPathOption</code> is the command line option

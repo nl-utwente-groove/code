@@ -243,12 +243,22 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      * @see File#getName()
      */
     static public String getPureName(File file) {
-        String name = file.getName();
-        int index = name.lastIndexOf(SEPARATOR);
+        return getPureName(file.getName());
+    }
+
+    /**
+     * Returns the name part of a file name, without extension. The extension is
+     * taken to be the part from the last #SEPARATOR occurrence (inclusive).
+     * @param filename the filename to be stripped
+     * @return the name part of <code>file.getName()</code>, without the
+     *         extension
+     */
+    static public String getPureName(String filename) {
+        int index = filename.lastIndexOf(SEPARATOR);
         if (index < 0) {
-            return name;
+            return filename;
         } else {
-            return name.substring(0, index);
+            return filename.substring(0, index);
         }
     }
 

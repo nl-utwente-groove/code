@@ -22,8 +22,12 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RealPointAlgebra extends RealSignature<Object,Object,Object> implements
-        Algebra<Object> {
+public class RealPointAlgebra extends RealSignature<Object,Object,Object>
+        implements Algebra<Object> {
+    /** Private constructor for the singleton instance. */
+    private RealPointAlgebra() {
+        // empty
+    }
 
     public String getName() {
         return NAME;
@@ -118,4 +122,6 @@ public class RealPointAlgebra extends RealSignature<Object,Object,Object> implem
     public static final String singleBool = "B";
     /** Point value of the real algebra. */
     public static final String singleReal = "R";
+    /** Singleton instance of this algebra. */
+    public static final RealPointAlgebra instance = new RealPointAlgebra();
 }

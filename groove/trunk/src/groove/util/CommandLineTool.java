@@ -398,6 +398,30 @@ public class CommandLineTool {
     }
 
     /**
+     * Prints formatted text to the standard output and, if logging is
+     * activated, to the log file, provided the verbosity of the tool is at
+     * least <tt>{@link #MEDIUM_VERBOSITY}</tt>. Convenience method for
+     * <tt>println(text, MEDIUM_VERBOSITY)</tt>.
+     */
+    protected void printfMedium(String text, Object... args) {
+        if (this.verbosity >= MEDIUM_VERBOSITY) {
+            printf(text, args);
+        }
+    }
+
+    /**
+     * Prints formatted text to the standard output and, if logging is
+     * activated, to the log file, provided the verbosity of the tool is at
+     * least <tt>{@link #HIGH_VERBOSITY}</tt>. Convenience method for
+     * <tt>println(text, HIGH_VERBOSITY)</tt>.
+     */
+    protected void printfHigh(String text, Object... args) {
+        if (this.verbosity >= HIGH_VERBOSITY) {
+            printf(text, args);
+        }
+    }
+
+    /**
      * Prints a line of text to the log file if logging is activated.
      * @param text the line to be printed
      */
@@ -495,8 +519,8 @@ public class CommandLineTool {
     private final List<String> args;
 
     /** Filter for log files. */
-    protected final ExtensionFilter logFilter = new ExtensionFilter(
-        "Log files", LOG_FILE_EXTENSION);
+    protected final ExtensionFilter logFilter =
+        new ExtensionFilter("Log files", LOG_FILE_EXTENSION);
 
     /** List of command options classes. */
     protected final List<CommandLineOption> optionsList =

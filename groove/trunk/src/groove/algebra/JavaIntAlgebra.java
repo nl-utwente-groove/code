@@ -18,13 +18,18 @@ package groove.algebra;
 
 import java.math.BigInteger;
 
-
 /**
  * Integer algebra based on the java type {@link Integer}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> implements Algebra<Integer> {
+public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String>
+        implements Algebra<Integer> {
+    /** Private constructor for the singleton instance. */
+    private JavaIntAlgebra() {
+        // empty
+    }
+
     @Override
     public Integer add(Integer arg0, Integer arg1) {
         return arg0 + arg1;
@@ -32,7 +37,7 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> impleme
 
     @Override
     public Integer div(Integer arg0, Integer arg1) {
-        return arg0/arg1;
+        return arg0 / arg1;
     }
 
     @Override
@@ -62,12 +67,12 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> impleme
 
     @Override
     public Integer max(Integer arg0, Integer arg1) {
-        return Math.max(arg0,arg1);
+        return Math.max(arg0, arg1);
     }
 
     @Override
     public Integer min(Integer arg0, Integer arg1) {
-        return Math.min(arg0,arg1);
+        return Math.min(arg0, arg1);
     }
 
     @Override
@@ -87,7 +92,7 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> impleme
 
     @Override
     public Integer sub(Integer arg0, Integer arg1) {
-        return arg0-arg1;
+        return arg0 - arg1;
     }
 
     @Override
@@ -101,7 +106,7 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> impleme
     public Integer getValue(String symbol) {
         return new BigInteger(symbol).intValue();
     }
-    
+
     /**
      * Delegates to {@link Integer#toString()}.
      */
@@ -113,7 +118,9 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String> impleme
     public String getName() {
         return NAME;
     }
-    
+
     /** Name of the algebra. */
     public static final String NAME = "jint";
+    /** Singleton instance of this algebra. */
+    public static final JavaIntAlgebra instance = new JavaIntAlgebra();
 }

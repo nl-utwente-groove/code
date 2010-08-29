@@ -21,7 +21,13 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BoolAlgebra extends BoolSignature<Boolean> implements Algebra<Boolean> {
+public class BoolAlgebra extends BoolSignature<Boolean> implements
+        Algebra<Boolean> {
+    /** Private constructor for the singleton instance. */
+    private BoolAlgebra() {
+        // empty
+    }
+
     @Override
     public Boolean and(Boolean arg0, Boolean arg1) {
         return arg0 && arg1;
@@ -53,7 +59,9 @@ public class BoolAlgebra extends BoolSignature<Boolean> implements Algebra<Boole
     public Boolean getValue(String constant) {
         return constant.equals("true");
     }
-    
+
     /** The name of this algebra. */
     static public final String NAME = "sbool";
+    /** Singleton instance of this algebra. */
+    public static final BoolAlgebra instance = new BoolAlgebra();
 }

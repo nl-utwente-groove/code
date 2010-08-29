@@ -18,13 +18,18 @@ package groove.algebra;
 
 import java.math.BigInteger;
 
-
 /**
  * Integer algebra based on the java type {@link Integer}.
  * @author Arend Rensink
  * @version $Revision: 1580 $
  */
-public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String> implements Algebra<BigInteger> {
+public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String>
+        implements Algebra<BigInteger> {
+    /** Private constructor for the singleton instance. */
+    private BigIntAlgebra() {
+        // empty
+    }
+
     @Override
     public BigInteger add(BigInteger arg0, BigInteger arg1) {
         return arg0.add(arg1);
@@ -101,7 +106,7 @@ public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String> imple
     public BigInteger getValue(String symbol) {
         return new BigInteger(symbol);
     }
-    
+
     /**
      * Delegates to {@link Integer#toString()}.
      */
@@ -113,7 +118,10 @@ public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String> imple
     public String getName() {
         return NAME;
     }
-    
+
     /** Name of the algebra. */
     public static final String NAME = "jint";
+    /** Singleton instance of this algebra. */
+    public static final BigIntAlgebra instance = new BigIntAlgebra();
+
 }

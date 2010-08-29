@@ -24,6 +24,10 @@ package groove.algebra;
  */
 public class StringPointAlgebra extends StringSignature<Object,Object>
         implements Algebra<Object> {
+    /** Private constructor for the singleton instance. */
+    private StringPointAlgebra() {
+        // empty
+    }
 
     @Override
     public Object concat(Object arg0, Object arg1) {
@@ -69,7 +73,7 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
 
     /** Name of this algebra. */
     public static final String NAME = "pstring";
-    
+
     /** 
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
@@ -78,4 +82,6 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
     public static final String singleBool = "B";
     /** Point value of the string algebra. */
     public static final String singleString = "S";
+    /** Singleton instance of this algebra. */
+    public static final StringPointAlgebra instance = new StringPointAlgebra();
 }

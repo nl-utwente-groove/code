@@ -25,7 +25,13 @@ import java.math.MathContext;
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
-public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String> implements Algebra<BigDecimal> {
+public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String>
+        implements Algebra<BigDecimal> {
+    /** Private constructor for the singleton instance. */
+    private BigDoubleAlgebra() {
+        // empty
+    }
+
     @Override
     public BigDecimal add(BigDecimal arg0, BigDecimal arg1) {
         return arg0.add(arg1);
@@ -43,22 +49,26 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String> i
 
     @Override
     public Boolean ge(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() >= 0 || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() >= 0
+            || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean gt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() > 0 && !approximatelyEquals(arg0,arg1);
+        return arg0.subtract(arg1).signum() > 0
+            && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean le(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() <= 0 || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() <= 0
+            || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean lt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() < 0 && !approximatelyEquals(arg0,arg1);
+        return arg0.subtract(arg1).signum() < 0
+            && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
@@ -95,9 +105,9 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String> i
      * Creates a new {@link BigDecimal}.
      */
     public BigDecimal getValue(String symbol) {
-        return new BigDecimal(symbol,MathContext.DECIMAL128);
+        return new BigDecimal(symbol, MathContext.DECIMAL128);
     }
-    
+
     /**
      * Delegates to {@link Double#toString()}.
      */
@@ -112,7 +122,8 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String> i
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(BigDecimal d1, BigDecimal d2) {
-        return d1.subtract(d2).abs().doubleValue() < (d1.abs().doubleValue() + d2.abs().doubleValue()) * TOLERANCE;
+        return d1.subtract(d2).abs().doubleValue() < (d1.abs().doubleValue() + d2.abs().doubleValue())
+            * TOLERANCE;
     }
 
     /**
@@ -121,7 +132,9 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String> i
      * {@link #approximatelyEquals(BigDecimal, BigDecimal)}.
      */
     public static final double TOLERANCE = 1e-30;
-    
+
     /** Name of the algebra. */
     public static final String NAME = "jdouble";
+    /** Singleton instance of this algebra. */
+    public static final BigDoubleAlgebra instance = new BigDoubleAlgebra();
 }

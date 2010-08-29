@@ -23,7 +23,13 @@ import java.math.BigDecimal;
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
-public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> implements Algebra<Double> {
+public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String>
+        implements Algebra<Double> {
+    /** Private constructor for the singleton instance. */
+    private JavaDoubleAlgebra() {
+        // empty
+    }
+
     @Override
     public Double add(Double arg0, Double arg1) {
         return arg0 + arg1;
@@ -31,7 +37,7 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
 
     @Override
     public Double div(Double arg0, Double arg1) {
-        return arg0/arg1;
+        return arg0 / arg1;
     }
 
     @Override
@@ -46,7 +52,7 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
 
     @Override
     public Boolean gt(Double arg0, Double arg1) {
-        return arg0 > arg1 && !approximatelyEquals(arg0,arg1);
+        return arg0 > arg1 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
@@ -56,17 +62,17 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
 
     @Override
     public Boolean lt(Double arg0, Double arg1) {
-        return arg0 < arg1 && !approximatelyEquals(arg0,arg1);
+        return arg0 < arg1 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Double max(Double arg0, Double arg1) {
-        return Math.max(arg0,arg1);
+        return Math.max(arg0, arg1);
     }
 
     @Override
     public Double min(Double arg0, Double arg1) {
-        return Math.min(arg0,arg1);
+        return Math.min(arg0, arg1);
     }
 
     @Override
@@ -81,7 +87,7 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
 
     @Override
     public Double sub(Double arg0, Double arg1) {
-        return arg0-arg1;
+        return arg0 - arg1;
     }
 
     @Override
@@ -95,7 +101,7 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
     public Double getValue(String symbol) {
         return new BigDecimal(symbol).doubleValue();
     }
-    
+
     /**
      * Delegates to {@link Double#toString()}.
      */
@@ -110,7 +116,7 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(double d1, double d2) {
-        return Math.abs(d1 - d2) < (Math.abs(d1) + Math.abs(d2))*TOLERANCE;
+        return Math.abs(d1 - d2) < (Math.abs(d1) + Math.abs(d2)) * TOLERANCE;
     }
 
     /**
@@ -119,7 +125,9 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String> impl
      * {@link #approximatelyEquals(double, double)}.
      */
     public static final double TOLERANCE = 0.0000001;
-    
+
     /** Name of the algebra. */
     public static final String NAME = "jdouble";
+    /** Singleton instance of this algebra. */
+    public static final JavaDoubleAlgebra instance = new JavaDoubleAlgebra();
 }

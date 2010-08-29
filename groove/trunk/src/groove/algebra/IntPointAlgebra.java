@@ -22,8 +22,12 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class IntPointAlgebra extends IntSignature<Object,Object,Object> implements
-        Algebra<Object> {
+public class IntPointAlgebra extends IntSignature<Object,Object,Object>
+        implements Algebra<Object> {
+    /** Private constructor for the singleton instance. */
+    private IntPointAlgebra() {
+        // empty
+    }
 
     public String getName() {
         return NAME;
@@ -123,4 +127,6 @@ public class IntPointAlgebra extends IntSignature<Object,Object,Object> implemen
     public static final String singleBool = "B";
     /** Point value of the int algebra. */
     public static final String singleInt = "I";
+    /** Singleton instance of this algebra. */
+    public static final IntPointAlgebra instance = new IntPointAlgebra();
 }
