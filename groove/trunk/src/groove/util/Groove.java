@@ -676,7 +676,8 @@ public class Groove {
      * with an explicitly given start graph name, and return it. Adds the
      * <tt>.gps</tt> extension if the file has no extension.
      * @param dirname the name of the directory to load the graph grammar from
-     * @param startfilename the name of the start graph
+     * @param startfilename the name of the start graph; if {@code null}, the
+     * default start graph is used
      * @return the graph grammar made up by <code>dirname</code> and
      *         <code>startfilename</code>
      * @throws IOException if <code>dirname</code> or <code>startfilename</code>
