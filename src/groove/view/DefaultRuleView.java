@@ -1489,8 +1489,10 @@ public class DefaultRuleView implements RuleView {
             // first add parent type edges for NAC nodes
             Map<Node,Set<Label>> parentTypeMap =
                 new HashMap<Node,Set<Label>>(this.parentTypeMap);
-            for (Edge typeEdge : this.lhsMap.edgeMap().values()) {
-                if (typeEdge.label().isNodeType()) {
+            for (Map.Entry<Edge,Edge> lhsEdgeEntry : this.lhsMap.edgeMap().entrySet()) {
+                Edge typeEdge = lhsEdgeEntry.getValue();
+                if (RuleAspect.inLHS((AspectEdge) lhsEdgeEntry.getKey())
+                    && typeEdge.label().isNodeType()) {
                     // add the type to the parent types
                     Set<Label> parentTypes =
                         parentTypeMap.get(typeEdge.source());

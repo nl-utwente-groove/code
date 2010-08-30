@@ -1398,7 +1398,11 @@ abstract public class RegExpr { // implements VarSetSupport {
          * The variable is the identifier combined with the constraint kind.
          */
         public LabelVar getLabelVar() {
-            return new LabelVar(getIdentifier(), getGuard().getKind());
+            if (this.labelVar == null && getIdentifier() != null) {
+                this.labelVar =
+                    new LabelVar(getIdentifier(), getGuard().getKind());
+            }
+            return this.labelVar;
         }
 
         /**
@@ -1531,6 +1535,9 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         /** The (optional) identifier for this wildcard. */
         private String identifier;
+
+        /** The (optional) label variable derived from the identifier and label kind. */
+        private LabelVar labelVar;
 
         /** Opening bracket of a wildcard constraint. */
         static private final char CONSTRAINT_OPEN = '[';
