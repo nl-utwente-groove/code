@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
@@ -69,7 +70,7 @@ public class Materialisation {
      * The queue of operations that need to be performed on the materialisation
      * object. When this queue is empty, the materialisation is complete. 
      */
-    private Queue<MatOp> tasks;
+    private PriorityQueue<MatOp> tasks;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -83,7 +84,7 @@ public class Materialisation {
         this.shape = shape;
         this.preMatch = preMatch;
         this.match = preMatch.getElementMap().clone();
-        this.tasks = new LinkedList<MatOp>();
+        this.tasks = new PriorityQueue<MatOp>();
         this.planTasks();
     }
 
@@ -95,7 +96,7 @@ public class Materialisation {
         this.shape = mat.shape.clone();
         this.preMatch = mat.preMatch;
         this.match = mat.match.clone();
-        this.tasks = new LinkedList<MatOp>();
+        this.tasks = new PriorityQueue<MatOp>();
         // Update the materialisation reference in the tasks.
         for (MatOp origOp : mat.tasks) {
             MatOp cloneOp = origOp.clone();
@@ -278,7 +279,6 @@ public class Materialisation {
      * shape that can no longer exist. 
      */
     private void removeImpossibleEdges(ShapeEdge mappedEdge) {
-        // EDUARDO: fix this method...
         Multiplicity oneMult = Multiplicity.getMultOf(1);
         // Check outgoing multiplicities.
         EdgeSignature outEs = this.shape.getEdgeOutSignature(mappedEdge);
@@ -302,9 +302,7 @@ public class Materialisation {
     // Class MatOp
     // -----------
 
-    private abstract class MatOp {
-
-        public static final int MAX_PRIORITY = 3;
+    private abstract class MatOp implements Comparable<MatOp> {
 
         protected Materialisation mat;
         protected Set<Materialisation> result;
@@ -317,6 +315,21 @@ public class Materialisation {
         public MatOp(Materialisation mat) {
             this.mat = mat;
             this.result = new HashSet<Materialisation>();
+        }
+
+        @Override
+        public int compareTo(MatOp o) {
+            int thisOp = this.getPriority();
+            int otherOp = o.getPriority();
+            int result;
+            if (thisOp == otherOp) {
+                result = 0;
+            } else if (thisOp < otherOp) {
+                result = -1;
+            } else {
+                result = 1;
+            }
+            return result;
         }
 
         @Override
@@ -372,6 +385,18 @@ public class Materialisation {
         @Override
         public String toString() {
             return "MaterialiseNode: " + this.nodeS + ", " + this.nodesR;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof MaterialiseNode) {
+                MaterialiseNode other = (MaterialiseNode) o;
+                result =
+                    this.nodeS.equals(other.nodeS)
+                        && this.nodesR.equals(other.nodesR);
+            }
+            return result;
         }
 
         @Override
@@ -463,6 +488,18 @@ public class Materialisation {
         }
 
         @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof ExtendPreMatch) {
+                ExtendPreMatch other = (ExtendPreMatch) o;
+                result =
+                    this.nodesR.equals(other.nodesR)
+                        && this.newNodes.equals(other.newNodes);
+            }
+            return result;
+        }
+
+        @Override
         public int getPriority() {
             return 1;
         }
@@ -541,6 +578,11 @@ public class Materialisation {
         }
 
         @Override
+        public boolean equals(Object o) {
+            return (o instanceof CleanupImpossibleEdges);
+        }
+
+        @Override
         public int getPriority() {
             return 2;
         }
@@ -592,6 +634,16 @@ public class Materialisation {
         @Override
         public String toString() {
             return "SingulariseNode: " + this.nodeS;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof SingulariseNode) {
+                SingulariseNode other = (SingulariseNode) o;
+                result = this.nodeS.equals(other.nodeS);
+            }
+            return result;
         }
 
         @Override
