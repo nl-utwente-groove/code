@@ -21,7 +21,6 @@ import groove.abstraction.Transform;
 import groove.abstraction.gui.ShapeDialog;
 import groove.control.Location;
 import groove.explore.util.RuleEventApplier;
-import groove.gui.Options;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
@@ -34,16 +33,6 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public class ShapeStateGenerator implements RuleEventApplier {
-
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    private static Options options = new Options();
-    static {
-        options.setValue(Options.SHOW_NODE_IDS_OPTION, 1);
-        options.setValue(Options.SHOW_VERTEX_LABELS_OPTION, 0);
-    }
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -95,7 +84,7 @@ public class ShapeStateGenerator implements RuleEventApplier {
                 // BEGIN DEBUG CODE.
                 System.out.println("New state: " + source + "--" + event
                     + "-->" + newState);
-                new ShapeDialog((Shape) newState.getGraph(), options,
+                new ShapeDialog((Shape) newState.getGraph(),
                     Integer.toString(newState.getNumber()));
                 // END DEBUG CODE.
                 this.states++;
