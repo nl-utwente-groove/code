@@ -44,10 +44,22 @@ import javax.swing.JTable;
  */
 public class ShapeDialog {
 
+    /** Options for the dialog. */
+    private static Options options = new Options();
+    static {
+        options.setValue(Options.SHOW_NODE_IDS_OPTION, 1);
+        options.setValue(Options.SHOW_VERTEX_LABELS_OPTION, 0);
+    }
+
     private final JGraph jgraph;
     JFrame frame;
     Shape shape;
     String title;
+
+    /** Creates and shows a shape in a pop-up window. */
+    public ShapeDialog(Shape shape, String windowTitle) {
+        this(shape, options, windowTitle);
+    }
 
     /** Creates and shows a shape in a pop-up window. */
     public ShapeDialog(Shape shape, Options options, String windowTitle) {

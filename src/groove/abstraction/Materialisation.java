@@ -216,7 +216,8 @@ public class Materialisation {
     private void planTasks() {
         NodeEdgeMap originalMap = this.preMatch.getElementMap();
 
-        // Check the node images.
+        // Search for nodes in the match image that have abstract
+        // multiplicities. 
         Set<ShapeNode> processedNodes = new HashSet<ShapeNode>();
         for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
             ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
@@ -231,7 +232,28 @@ public class Materialisation {
             }
         }
 
-        // EDUARDO: Construct the edge images...
+        // Search for edges in the match image that have shared
+        // multiplicities.
+        Set<ShapeEdge> processedEdges = new HashSet<ShapeEdge>();
+        for (Entry<Edge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
+            Edge edgeR = edgeEntry.getKey();
+            ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
+            if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)
+                && !processedNodes.contains(edgeS.source())
+                && !processedNodes.contains(edgeS.opposite())) {
+
+                EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
+                EdgeSignature inEs = this.shape.getEdgeInSignature(edgeS);
+                if (!this.shape.isOutEdgeSigUnique(outEs)
+                    || !this.shape.isInEdgeSigUnique(inEs)) {
+                    // We have an edge in the rule that was matched to an edge
+                    // in the shape with a shared multiplicity. We need to
+                    // materialise this shared edge.
+                    this.tasks.add(new MaterialiseEdge(this, edgeS, edgeR));
+                }
+            }
+        }
+
         // EDUARDO: Check that all nodes of the LHS are in the same equivalence class...
 
     }
@@ -272,6 +294,18 @@ public class Materialisation {
                 }
             }
         }
+    }
+
+    private void extendMatch(Edge edgeR, ShapeEdge edgeS) {
+        // The pre-condition of this method is that both source and target
+        // nodes a properly matched.
+        ShapeNode matchedSrc = (ShapeNode) this.match.getNode(edgeR.source());
+        ShapeNode matchedTgt = (ShapeNode) this.match.getNode(edgeR.opposite());
+        assert matchedSrc.equals(edgeS.source())
+            && matchedTgt.equals(edgeS.opposite());
+
+        // OK, the pre-condition holds. Put the edge in the match.
+        this.match.putEdge(edgeR, edgeS);
     }
 
     /**
@@ -552,6 +586,71 @@ public class Materialisation {
         }
     }
 
+    // ---------------------
+    // Class MaterialiseEdge
+    // ---------------------
+
+    private class MaterialiseEdge extends MatOp {
+
+        private ShapeEdge edgeS;
+        private Edge edgeR;
+
+        public MaterialiseEdge(Materialisation mat, ShapeEdge edgeS, Edge edgeR) {
+            super(mat);
+            this.edgeS = edgeS;
+            this.edgeR = edgeR;
+        }
+
+        private MaterialiseEdge(MaterialiseEdge matEdge) {
+            super();
+            this.setMat(matEdge.mat);
+            this.edgeS = matEdge.edgeS;
+            this.edgeR = matEdge.edgeR;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new MaterialiseEdge(this);
+        }
+
+        @Override
+        public String toString() {
+            return "MaterialiseEdge: " + this.edgeS + ", " + this.edgeR;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof MaterialiseEdge) {
+                MaterialiseEdge other = (MaterialiseEdge) o;
+                result =
+                    this.edgeS.equals(other.edgeS)
+                        && this.edgeR.equals(other.edgeR);
+            }
+            return result;
+        }
+
+        @Override
+        public int getPriority() {
+            return 2;
+        }
+
+        @Override
+        public void perform() {
+            this.mat.extendMatch(this.edgeR, this.edgeS);
+
+            // Create the new tasks that will be performed after this one.
+            // Cleanup impossible edges. 
+            CleanupImpossibleEdges cleanupImpossibleEdges =
+                new CleanupImpossibleEdges(this.mat);
+            this.mat.tasks.add(cleanupImpossibleEdges);
+
+            // This operation is deterministic. No need to clone.
+            this.result.add(this.mat);
+        }
+
+    }
+
     // ----------------------------
     // Class CleanupImpossibleEdges
     // ----------------------------
@@ -584,7 +683,7 @@ public class Materialisation {
 
         @Override
         public int getPriority() {
-            return 2;
+            return 3;
         }
 
         /** 
@@ -648,7 +747,7 @@ public class Materialisation {
 
         @Override
         public int getPriority() {
-            return 3;
+            return 4;
         }
 
         @Override
