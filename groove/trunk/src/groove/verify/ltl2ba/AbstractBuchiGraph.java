@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2010 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -28,47 +28,39 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public abstract class AbstractBuchiGraph implements BuchiGraph
-{
+public abstract class AbstractBuchiGraph implements BuchiGraph {
     private Set<BuchiLocation> initialLocations;
 
     private Set<BuchiLocation> acceptingLocations;
 
     @Override
-    public Set<BuchiLocation> initialLocations()
-    {
+    public Set<BuchiLocation> initialLocations() {
+        if (null == this.initialLocations) {
+            this.initialLocations = new HashSet<BuchiLocation>();
+        }
         return this.initialLocations;
     }
 
     @Override
-    public Set<BuchiLocation> acceptingLocations()
-    {
+    public Set<BuchiLocation> acceptingLocations() {
+        if (null == this.acceptingLocations) {
+            this.acceptingLocations = new HashSet<BuchiLocation>();
+        }
         return this.acceptingLocations;
     }
 
     @Override
-    public boolean addInitialLocation(BuchiLocation location)
-    {
-        if (null == this.initialLocations)
-        {
-            this.initialLocations = new HashSet<BuchiLocation>();
-        }
-        return this.initialLocations.add(location);
+    public boolean addInitialLocation(BuchiLocation location) {
+        return initialLocations().add(location);
     }
 
     @Override
-    public boolean addAcceptingLocation(BuchiLocation location)
-    {
-        if (null == this.acceptingLocations)
-        {
-            this.acceptingLocations = new HashSet<BuchiLocation>();
-        }
-        return this.acceptingLocations.add(location);
+    public boolean addAcceptingLocation(BuchiLocation location) {
+        return acceptingLocations().add(location);
     }
 
     @Override
-    public boolean addTransition(BuchiTransition transition)
-    {
+    public boolean addTransition(BuchiTransition transition) {
         return transition.source().addTransition(transition);
     }
 }
