@@ -1561,17 +1561,17 @@ public class DefaultRuleView implements RuleView {
             Set<FormatError> errors = new TreeSet<FormatError>();
             for (Map.Entry<Node,Label> lhsTypeEntry : lhsTypeMap.entrySet()) {
                 Node lhsNode = lhsTypeEntry.getKey();
+                Label lhsType = lhsTypeEntry.getValue();
                 Node rhsNode = this.ruleMorph.getNode(lhsNode);
                 // test if this is a reader node
-                if (rhsNode != null) {
-                    Label lhsType = lhsTypeEntry.getValue();
+                if (rhsNode != null && !DefaultLabel.isDataType(lhsType)) {
                     Edge lhsEdge =
                         DefaultEdge.createEdge(lhsNode, lhsType, lhsNode);
                     // test if the type is preserved
                     if (!this.ruleMorph.containsKey(lhsEdge)) {
                         if (RegExprLabel.isSharp(lhsType)) {
                             lhsType = RegExprLabel.getSharpLabel(lhsType);
-                        } else if (!DefaultLabel.isDataType(lhsType)) {
+                        } else {
                             errors.add(new FormatError(
                                 "Modified type '%s' should be sharp", lhsType,
                                 lhsNode));
