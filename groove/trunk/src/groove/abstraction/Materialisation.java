@@ -16,15 +16,24 @@
  */
 package groove.abstraction;
 
+import groove.abstraction.gui.ShapeDialog;
 import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
+import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -213,6 +222,75 @@ public class Materialisation {
         return this.tasks.remove();
     }
 
+    /**
+     * Checks if the match in the materialisation is concrete. See items 3, 4,
+     * and 5 of Def. 35 in pg. 21 of the technical report. 
+     * @return true if all three items are satisfied; false, otherwise.
+     */
+    public boolean isMatchingConcrete() {
+        // Item 3: check that all nodes in the image of the LHS have
+        // multiplicity one.
+        boolean complyToNodeMult = true;
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
+        // For all nodes in the image of the LHS.
+        for (Node node : this.match.nodeMap().values()) {
+            ShapeNode nodeS = (ShapeNode) node;
+            if (!this.shape.getNodeMult(nodeS).equals(oneMult)) {
+                complyToNodeMult = false;
+                break;
+            }
+        }
+
+        // Item 4: check that for all nodes in the image of the LHS, their
+        // equivalence class is a singleton set.
+        boolean complyToEquivClass = true;
+        if (complyToNodeMult) {
+            // For all nodes in the image of the LHS.
+            for (Node node : this.match.nodeMap().values()) {
+                ShapeNode nodeS = (ShapeNode) node;
+                if (this.shape.getEquivClassOf(nodeS).size() != 1) {
+                    complyToEquivClass = false;
+                    break;
+                }
+            }
+        }
+
+        // Item 5: check that for any two nodes in the image of the LHS, their
+        // outgoing and incoming multiplicities are equal and correspond to
+        // the number of edges in the underlying graph structure of the shape.
+        boolean complyToEdgeMult = true;
+        if (complyToNodeMult && complyToEquivClass) {
+            // For all binary labels.
+            for (Label label : Util.binaryLabelSet(this.shape)) {
+                // For all nodes v in the image of the LHS.
+                for (Node n0 : this.match.nodeMap().values()) {
+                    ShapeNode v = (ShapeNode) n0;
+                    // For all nodes w in the image of the LHS.
+                    for (Node n1 : this.match.nodeMap().values()) {
+                        ShapeNode w = (ShapeNode) n1;
+                        EquivClass<ShapeNode> ecW =
+                            this.shape.getEquivClassOf(w);
+                        EdgeSignature es =
+                            this.shape.getEdgeSignature(v, label, ecW);
+                        Multiplicity outMult = this.shape.getEdgeSigOutMult(es);
+                        Multiplicity inMult = this.shape.getEdgeSigInMult(es);
+                        Set<Edge> vInterW =
+                            Util.getIntersectEdges(this.shape, v, w, label);
+                        Multiplicity interMult =
+                            Multiplicity.getEdgeSetMult(vInterW);
+                        if (!outMult.equals(interMult)
+                            || !inMult.equals(interMult)) {
+                            complyToEdgeMult = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return complyToNodeMult && complyToEquivClass && complyToEdgeMult;
+    }
+
     private void planTasks() {
         NodeEdgeMap originalMap = this.preMatch.getElementMap();
 
@@ -241,7 +319,8 @@ public class Materialisation {
             if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)
                 && !processedNodes.contains(edgeS.source())
                 && !processedNodes.contains(edgeS.opposite())) {
-
+                // This edge needs to be handled here because there will be
+                // no node materialisation for any of the edge ends.
                 EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
                 EdgeSignature inEs = this.shape.getEdgeInSignature(edgeS);
                 if (!this.shape.isOutEdgeSigUnique(outEs)
@@ -254,7 +333,24 @@ public class Materialisation {
             }
         }
 
-        // EDUARDO: Check that all nodes of the LHS are in the same equivalence class...
+        // Check that all nodes of the LHS are in the same equivalence class.
+        for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
+            ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
+            boolean isSingletonEc =
+                this.shape.getEquivClassOf(nodeS).size() == 1;
+            if (!processedNodes.contains(nodeS)
+                && !this.shape.getNodeMult(nodeS).isAbstract()
+                && !isSingletonEc) {
+                // We have a node in the rule that was matched to a concrete
+                // node but the equivalence class of this concrete node (nodeS)
+                // is not a singleton class. We need to put this nodeS in its 
+                // own equivalence class. This operation needs to be created
+                // here because the nodeS is already concrete so there will be
+                // no calls to MaterialiseNode with nodeS as a parameter.
+                this.tasks.add(new SingulariseNode(this, nodeS));
+                processedNodes.add(nodeS);
+            }
+        }
 
     }
 
@@ -290,7 +386,21 @@ public class Materialisation {
                 ShapeEdge newEdgeS =
                     this.shape.getShapeEdge(srcS, origEdgeS.label(), tgtS);
                 if (newEdgeS != null) {
-                    this.match.putEdge(edgeR, newEdgeS);
+                    EdgeSignature outEs =
+                        this.shape.getEdgeOutSignature(newEdgeS);
+                    EdgeSignature inEs =
+                        this.shape.getEdgeInSignature(newEdgeS);
+                    if (!this.shape.isOutEdgeSigUnique(outEs)
+                        || !this.shape.isInEdgeSigUnique(inEs)) {
+                        // We have an edge in the rule that was matched to an 
+                        // edge in the shape with a shared multiplicity. We
+                        // need to materialise this shared edge. Create the
+                        // proper operation.
+                        this.tasks.add(new MaterialiseEdge(this, newEdgeS,
+                            edgeR));
+                    } else {
+                        this.match.putEdge(edgeR, newEdgeS);
+                    }
                 }
             }
         }
@@ -298,7 +408,7 @@ public class Materialisation {
 
     private void extendMatch(Edge edgeR, ShapeEdge edgeS) {
         // The pre-condition of this method is that both source and target
-        // nodes a properly matched.
+        // nodes are properly matched.
         ShapeNode matchedSrc = (ShapeNode) this.match.getNode(edgeR.source());
         ShapeNode matchedTgt = (ShapeNode) this.match.getNode(edgeR.opposite());
         assert matchedSrc.equals(edgeS.source())
@@ -755,6 +865,45 @@ public class Materialisation {
             this.result.add(this.mat);
         }
 
+    }
+
+    /** Test method. */
+    private static void test0() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-1").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-1");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    String test;
+                    if (mat.isMatchingConcrete()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Test method. */
+    public static void main(String args[]) {
+        Multiplicity.initMultStore();
+        test0();
     }
 
 }
