@@ -195,7 +195,24 @@ public class DefaultGraphView implements GraphView {
         }
         // test against the type graph, if any
         if (this.type != null) {
-            Collection<FormatError> typeErrors = this.type.checkTyping(model);
+            Collection<FormatError> typeErrors;
+            try {
+                TypeGraph.Typing typing = this.type.checkTyping(model);
+                typeErrors = new TreeSet<FormatError>();
+                for (Element elem : typing.getAbstractElements()) {
+                    if (elem instanceof Node) {
+                        typeErrors.add(new FormatError(
+                            "Graph may not contain abstract %s-node",
+                            typing.getType((Node) elem), elem));
+                    } else {
+                        typeErrors.add(new FormatError(
+                            "Graph may not contain abstract %s-edge",
+                            ((Edge) elem).label(), elem));
+                    }
+                }
+            } catch (FormatException e) {
+                typeErrors = e.getErrors();
+            }
             if (!typeErrors.isEmpty()) {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
@@ -325,7 +342,7 @@ public class DefaultGraphView implements GraphView {
             && !value.equals(AttributeAspect.PRODUCT)
             && !value.equals(AttributeAspect.ARGUMENT)
             || value.getAspect() instanceof TypeAspect
-            && !value.equals(TypeAspect.SUB);
+            && !value.equals(TypeAspect.SUB) && !value.equals(TypeAspect.ABS);
     }
 
     /**

@@ -610,6 +610,11 @@ public class JAttr {
      */
     static private final Color NESTED_BACKGROUND = Color.WHITE;
 
+    /**
+     * Dash pattern used for nesting elements.
+     */
+    static private final float[] ABSTRACT_DASH = new float[] {6.0f, 2.0f};
+
     static {
         Map<AspectValue,String> RULE_PREFIXES =
             new HashMap<AspectValue,String>();
@@ -666,6 +671,10 @@ public class JAttr {
     static public final AttributeMap NESTING_EDGE_ATTR;
     /** Collection of attributes for subtype edges. */
     static public final AttributeMap SUBTYPE_EDGE_ATTR;
+    /** Collection of attributes for abstract type nodes. */
+    static public final AttributeMap ABSTRACT_NODE_ATTR;
+    /** Collection of attributes for abstract type edges. */
+    static public final AttributeMap ABSTRACT_EDGE_ATTR;
     static {
         for (AspectValue role : RuleAspect.getInstance().getValues()) {
             // edge attributes
@@ -746,6 +755,11 @@ public class JAttr {
         GraphConstants.setLineEnd(SUBTYPE_EDGE_ATTR, SUBTYPE_ARROW);
         GraphConstants.setEndFill(SUBTYPE_EDGE_ATTR, false);
         GraphConstants.setEndSize(SUBTYPE_EDGE_ATTR, JAttr.SUBTYPE_ARROW_SIZE);
+        ABSTRACT_NODE_ATTR = JAttr.DEFAULT_NODE_ATTR.clone();
+        GraphConstants.setDashPattern(ABSTRACT_NODE_ATTR, JAttr.ABSTRACT_DASH);
+        ABSTRACT_EDGE_ATTR = JAttr.DEFAULT_EDGE_ATTR.clone();
+        GraphConstants.setDashPattern(ABSTRACT_EDGE_ATTR, JAttr.ABSTRACT_DASH);
+        GraphConstants.setFont(ABSTRACT_EDGE_ATTR, ITALIC_FONT);
     }
 
     /** Specialised class to avoid casting for {@link #clone()}. */

@@ -254,6 +254,9 @@ public class DefaultTypeView implements TypeView {
             Label modelLabel = viewEdge.getModelLabel();
             Edge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);
+            if (TypeAspect.isAbstract(viewEdge)) {
+                model.setAbstract(modelEdge);
+            }
             elementMap.putEdge(viewEdge, modelEdge);
         }
     }

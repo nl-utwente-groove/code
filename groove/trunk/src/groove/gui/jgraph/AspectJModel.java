@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.ABSTRACT_EDGE_ATTR;
+import static groove.gui.jgraph.JAttr.ABSTRACT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.NESTING_EDGE_ATTR;
 import static groove.gui.jgraph.JAttr.NESTING_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
@@ -203,6 +205,8 @@ public class AspectJModel extends GraphJModel {
         AspectNode aspectNode = (AspectNode) node;
         if (getNestingValue(aspectNode) != null) {
             result = NESTING_NODE_ATTR.clone();
+        } else if (TypeAspect.isAbstract(aspectNode)) {
+            result = ABSTRACT_NODE_ATTR.clone();
         } else {
             AspectValue role = role(aspectNode);
             result = RULE_NODE_ATTR.get(role).clone();
@@ -219,6 +223,8 @@ public class AspectJModel extends GraphJModel {
         AspectEdge aspectEdge = (AspectEdge) edge;
         if (TypeAspect.isSubtype(aspectEdge)) {
             result.applyMap(SUBTYPE_EDGE_ATTR);
+        } else if (TypeAspect.isAbstract(aspectEdge)) {
+            result.applyMap(ABSTRACT_EDGE_ATTR);
         } else if (NestingAspect.isMetaElement(aspectEdge)) {
             result.applyMap(NESTING_EDGE_ATTR);
         } else {

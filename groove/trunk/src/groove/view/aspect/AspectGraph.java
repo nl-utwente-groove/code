@@ -245,6 +245,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 result.addEdge(edgeImage);
                 elementMap.putEdge(edge, edgeImage);
                 edgeImage.initAspects();
+                // add abstract type inference
+                if (edgeImage.getModelLabel().isNodeType()
+                    && TypeAspect.isAbstract(edgeImage)) {
+                    edgeImage.source().addInferredValue(TypeAspect.ABS);
+                }
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
