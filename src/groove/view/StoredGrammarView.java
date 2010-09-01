@@ -18,14 +18,10 @@ package groove.view;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.GraphGrammar;
@@ -618,8 +614,6 @@ public class StoredGrammarView implements GrammarView, Observer {
         private Map<String,TypeView> typeViewMap;
         private TypeGraph model;
         private List<FormatError> errors;
-        private Map<Label,TypeNode> labelToTypeNodeMap;
-        private int lastUsedNodeNr;
 
         private TypeViewList() {
             this(getSetTypeNames());
@@ -636,8 +630,6 @@ public class StoredGrammarView implements GrammarView, Observer {
                     this.errors.addAll(typeView.getErrors());
                 }
             }
-            this.labelToTypeNodeMap = new HashMap<Label,TypeNode>();
-            this.lastUsedNodeNr = -1;
         }
 
         /**
@@ -684,14 +676,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                 this.model = new TypeGraph();
                 for (TypeView view : this.typeViewMap.values()) {
                     try {
-                        TypeGraph type = view.toModel();
-                        for (Node typeNode : type.nodeSet()) {
-                            this.addTypeNode(typeNode);
-                        }
-                        for (Edge typeEdge : type.edgeSet()) {
-                            this.addTypeEdge(typeEdge);
-                        }
-                        this.model.getLabelStore().add(type.getLabelStore());
+                        this.model.add(view.toModel());
                     } catch (FormatException e) {
                         this.errors.addAll(e.getErrors());
                     } catch (IllegalArgumentException e) {
@@ -699,43 +684,11 @@ public class StoredGrammarView implements GrammarView, Observer {
                     }
                 }
                 if (this.errors.isEmpty()) {
-                    this.model.getLabelStore().calculateSubtypes();
                     this.model.setFixed();
                 } else {
                     this.model = null;
                 }
             }
-        }
-
-        private void addTypeNode(Node typeNode) {
-            assert typeNode instanceof TypeNode : "Wrong node type: "
-                + typeNode;
-            this.model.addNode(this.getMappedTypeNode((TypeNode) typeNode));
-        }
-
-        private void addTypeEdge(Edge typeEdge) {
-            Node source = typeEdge.source();
-            Node target = typeEdge.opposite();
-            assert source instanceof TypeNode : "Wrong node type: " + source;
-            assert target instanceof TypeNode : "Wrong node type: " + target;
-            TypeNode sourceType = getMappedTypeNode((TypeNode) source);
-            TypeNode targetType = getMappedTypeNode((TypeNode) target);
-            this.model.addEdge(sourceType, typeEdge.label(), targetType);
-        }
-
-        private TypeNode getMappedTypeNode(TypeNode from) {
-            Label fromLabel = from.getType();
-            TypeNode to = this.labelToTypeNodeMap.get(fromLabel);
-            if (to == null) {
-                to = new TypeNode(this.getNewNodeNr(), fromLabel);
-                this.labelToTypeNodeMap.put(fromLabel, to);
-            }
-            return to;
-        }
-
-        private int getNewNodeNr() {
-            this.lastUsedNodeNr++;
-            return this.lastUsedNodeNr;
         }
     }
 }

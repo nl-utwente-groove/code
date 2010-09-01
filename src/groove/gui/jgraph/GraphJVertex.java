@@ -37,6 +37,7 @@ import groove.util.Converter;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -228,12 +229,12 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     public StringBuilder getLine(Edge edge) {
         StringBuilder result = new StringBuilder();
         Label edgeLabel = getLabel(edge);
-        if (edge.opposite() == getNode()) {
+        if (edge.target() == getNode()) {
             // use special node label prefixes to indicate edge role
             if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
-                AspectValue edgeRole = AspectJModel.role((AspectEdge) edge);
-                AspectValue sourceRole =
-                    AspectJModel.role(((AspectEdge) edge).source());
+                AspectEdge aspectEdge = (AspectEdge) edge;
+                AspectValue edgeRole = AspectJModel.role(aspectEdge);
+                AspectValue sourceRole = AspectJModel.role(aspectEdge.source());
                 if (edgeRole != null && !edgeRole.equals(sourceRole)) {
                     result.append(DefaultLabel.toHtmlString(edgeLabel, edgeRole));
                 }
@@ -242,14 +243,15 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 result.append(DefaultLabel.toHtmlString(edgeLabel));
             }
             if (edgeLabel instanceof RegExprLabel
-                && !RegExprLabel.isSharp(edgeLabel)) {
+                && !RegExprLabel.isSharp(edgeLabel)
+                || edge instanceof AspectEdge
+                && TypeAspect.isAbstract((AspectEdge) edge)) {
                 result = Converter.ITALIC_TAG.on(result);
             }
         } else {
             // this is a binary edge displayed as a node label
             result.append(edgeLabel);
-            GraphJVertex oppositeVertex =
-                this.jModel.getJVertex(edge.opposite());
+            GraphJVertex oppositeVertex = this.jModel.getJVertex(edge.target());
             Node actualTarget = oppositeVertex.getActualNode();
             if (actualTarget instanceof ValueNode) {
                 result.append(ASSIGN_TEXT);
@@ -420,7 +422,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
     public boolean addSelfEdge(Edge edge) {
-        if (this.vertexLabelled && edge.source() == edge.opposite()) {
+        if (this.vertexLabelled && edge.source() == edge.target()) {
             getUserObject().add(edge);
             return true;
         } else {

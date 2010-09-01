@@ -1466,9 +1466,9 @@ public class DefaultRuleView implements RuleView {
             // check typing
             if (isTyped()) {
                 try {
-                    Map<Node,Label> lhsTypeMap =
+                    TypeGraph.Typing lhsTypeMap =
                         getType().getTyping(this.lhs, this.parentTypeMap);
-                    Map<Node,Label> rhsTypeMap =
+                    TypeGraph.Typing rhsTypeMap =
                         getType().getTyping(this.rhs, this.parentTypeMap);
                     checkTypeSpecialisation(lhsTypeMap, rhsTypeMap);
                 } catch (FormatException e) {
@@ -1521,7 +1521,7 @@ public class DefaultRuleView implements RuleView {
                             }
                         }
                         Set<Edge> typableNacEdges = new HashSet<Edge>(nacEdges);
-                        getTyping(typableNacNodes, typableNacEdges,
+                        checkTyping(typableNacNodes, typableNacEdges,
                             parentTypeMap);
                     } catch (FormatException exc) {
                         errors.addAll(exc.getErrors());
@@ -1539,16 +1539,15 @@ public class DefaultRuleView implements RuleView {
 
         /** 
          * Checks the type of a given set of nodes and edges.
-         * @return mapping from nodes in {@code nodeSet} to node type labels
          * @throws FormatException if there are typing errors
          */
-        private Map<Node,Label> getTyping(Collection<Node> nodeSet,
+        private void checkTyping(Collection<Node> nodeSet,
                 Collection<Edge> edgeSet, Map<Node,Set<Label>> parentTypeMap)
             throws FormatException {
             Graph graph = createGraph();
             graph.addNodeSet(nodeSet);
             graph.addEdgeSet(edgeSet);
-            return getType().getTyping(graph, parentTypeMap);
+            getType().getTyping(graph, parentTypeMap);
         }
 
         /**
@@ -1556,10 +1555,10 @@ public class DefaultRuleView implements RuleView {
          * the LHS type has to be sharp and the RHS type a subtype of it.
          * @throws FormatException if there are typing errors
          */
-        private void checkTypeSpecialisation(Map<Node,Label> lhsTypeMap,
-                Map<Node,Label> rhsTypeMap) throws FormatException {
+        private void checkTypeSpecialisation(TypeGraph.Typing lhsTyping,
+                TypeGraph.Typing rhsTyping) throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
-            for (Map.Entry<Node,Label> lhsTypeEntry : lhsTypeMap.entrySet()) {
+            for (Map.Entry<Node,Label> lhsTypeEntry : lhsTyping.getTypeMap().entrySet()) {
                 Node lhsNode = lhsTypeEntry.getKey();
                 Label lhsType = lhsTypeEntry.getValue();
                 Node rhsNode = this.ruleMorph.getNode(lhsNode);
@@ -1569,41 +1568,57 @@ public class DefaultRuleView implements RuleView {
                         DefaultEdge.createEdge(lhsNode, lhsType, lhsNode);
                     // test if the type is preserved
                     if (!this.ruleMorph.containsKey(lhsEdge)) {
-                        if (RegExprLabel.isSharp(lhsType)) {
-                            lhsType = RegExprLabel.getSharpLabel(lhsType);
-                        } else {
+                        if (!lhsTyping.isSharp(lhsNode)) {
                             errors.add(new FormatError(
                                 "Modified type '%s' should be sharp", lhsType,
                                 lhsNode));
                         }
-                        Label rhsType = rhsTypeMap.get(rhsNode);
+                        Label rhsType = rhsTyping.getType(rhsNode);
                         if (RegExprLabel.isSharp(rhsType)) {
                             rhsType = RegExprLabel.getSharpLabel(rhsType);
                         }
                         if (!getLabelStore().getSubtypes(lhsType).contains(
                             rhsType)) {
                             errors.add(new FormatError(
-                                "Specialised type '%s' should be subtype of modified type '%s'",
+                                "New type '%s' should be subtype of modified type '%s'",
                                 rhsType, lhsType, lhsNode));
                         }
                     }
                 }
             }
-            // Merged types are not caught, so we have to
-            // check for them separately
+            // Merged equal types are not caught, so we have to
+            // check them for sharpness separately
             for (Edge edge : this.viewToLevelMap.edgeMap().values()) {
                 if (edge.label() instanceof MergeLabel) {
                     // this is a merger edge
                     Node source = edge.source();
-                    Node target = edge.target();
-                    Label sourceType = lhsTypeMap.get(source);
-                    Label targetType = lhsTypeMap.get(target);
-                    if (sourceType.equals(targetType)
-                        && !RegExprLabel.isSharp(sourceType)) {
+                    if (!lhsTyping.isSharp(source)) {
                         errors.add(new FormatError(
-                            "Merged type '%s' should be sharp", sourceType,
-                            source, target));
+                            "Merged type '%s' should be sharp",
+                            lhsTyping.getType(source), source));
                     }
+                    Node target = edge.target();
+                    if (!lhsTyping.isSharp(target)) {
+                        errors.add(new FormatError(
+                            "Merged type '%s' should be sharp",
+                            lhsTyping.getType(target), target));
+                    }
+                }
+            }
+            // check for creation of abstract elements
+            Set<Element> abstractElems =
+                new HashSet<Element>(rhsTyping.getAbstractElements());
+            abstractElems.removeAll(this.ruleMorph.nodeMap().values());
+            abstractElems.removeAll(this.ruleMorph.edgeMap().values());
+            for (Element elem : abstractElems) {
+                if (elem instanceof Node) {
+                    errors.add(new FormatError(
+                        "Creation of abstract %s-node not allowed",
+                        rhsTyping.getType((Node) elem), elem));
+                } else {
+                    errors.add(new FormatError(
+                        "Creation of abstract %s-edge not allowed",
+                        ((Edge) elem).label(), elem));
                 }
             }
             if (!errors.isEmpty()) {

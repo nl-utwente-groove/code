@@ -153,8 +153,13 @@ public class JaxbGxlIO implements GxlIO {
         // add the edges
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
+            String prefixedLabel = DefaultLabel.toPrefixedString(edge.label());
+            if (graph instanceof TypeGraph
+                && ((TypeGraph) graph).isAbstract(edge)) {
+                prefixedLabel = ABSTRACT_PREFIX + prefixedLabel;
+            }
             EdgeType gxlEdge =
-                createGxlEdge(nodeMap, edge.source(), edge.label(),
+                createGxlEdge(nodeMap, edge.source(), prefixedLabel,
                     edge.target());
             nodesEdges.add(gxlEdge);
         }
@@ -169,7 +174,7 @@ public class JaxbGxlIO implements GxlIO {
                         for (Edge supertypeEdge : graph.labelEdgeSet(2,
                             supertype)) {
                             nodesEdges.add(createGxlEdge(nodeMap,
-                                subtypeEdge.source(), SUBTYPE_LABEL,
+                                subtypeEdge.source(), SUBTYPE_PREFIX,
                                 supertypeEdge.source()));
                         }
                     }
@@ -204,13 +209,13 @@ public class JaxbGxlIO implements GxlIO {
     }
 
     private EdgeType createGxlEdge(Map<Node,NodeType> nodeMap, Node source,
-            Label label, Node target) {
+            String labelText, Node target) {
         EdgeType result = this.factory.createEdgeType();
         result.setFrom(nodeMap.get(source));
         result.setTo(nodeMap.get(target));
         AttrType labelAttr = this.factory.createAttrType();
         labelAttr.setName(LABEL_ATTR_NAME);
-        labelAttr.setString(DefaultLabel.toPrefixedString(label));
+        labelAttr.setString(labelText);
         result.getAttr().add(labelAttr);
         return result;
     }
@@ -391,6 +396,6 @@ public class JaxbGxlIO implements GxlIO {
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
     /** Subtype label. */
-    static private final Label SUBTYPE_LABEL =
-        DefaultLabel.createLabel(TypeAspect.SUB.getPrefix());
+    static private final String ABSTRACT_PREFIX = TypeAspect.ABS.getPrefix();
+    static private final String SUBTYPE_PREFIX = TypeAspect.SUB.getPrefix();
 }

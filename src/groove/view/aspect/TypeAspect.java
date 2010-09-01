@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.view.FormatException;
 
@@ -31,37 +32,33 @@ public class TypeAspect extends AbstractAspect {
         super(TYPE_ASPECT_NAME);
     }
 
-    //    @Override
-    //    public void checkEdge(AspectEdge edge, AspectGraph graph)
-    //        throws FormatException {
-    //        boolean isSelfEdge = edge.source().equals(edge.opposite());
-    //        if (isNodeType(edge) && !isSelfEdge) {
-    //            throw new FormatException(
-    //                "Node type label '%s' not allowed on edges", edge.label(), edge);
-    //        } else if (isFlag(edge) && !isSelfEdge) {
-    //            throw new FormatException("Flag label '%s' not allowed on edges",
-    //                edge.label(), edge);
-    //        }
-    //    }
-    //
-    //    /** Indicates if a given aspect edge stands for a node type. */
-    //    public static boolean isNodeType(AspectEdge edge) {
-    //        AspectValue value = edge.getValue(getInstance());
-    //        return NODE_TYPE.equals(value);
-    //    }
+    @Override
+    public void checkEdge(AspectEdge edge, AspectGraph graph)
+        throws FormatException {
+        if (!GraphInfo.hasTypeRole(graph)) {
+            if (isSubtype(edge)) {
+                throw new FormatException(
+                    "%s-prefixed edges only allowed in type graphs", SUB_NAME,
+                    edge);
+            } else if (isAbstract(edge)) {
+                throw new FormatException(
+                    "%s-prefixed edges only allowed in type graphs", ABS_NAME,
+                    edge);
+            }
+        }
+    }
+
+    /** Indicates if a given aspect edge is an abstract edge. */
+    public static boolean isAbstract(AspectElement elem) {
+        AspectValue value = elem.getValue(getInstance());
+        return ABS.equals(value);
+    }
 
     /** Indicates if a given aspect edge is a subtype edge. */
     public static boolean isSubtype(AspectEdge edge) {
         AspectValue value = edge.getValue(getInstance());
         return SUB.equals(value);
     }
-
-    //
-    //    /** Indicates if a given aspect edge stands for a flag. */
-    //    public static boolean isFlag(AspectEdge edge) {
-    //        AspectValue value = edge.getValue(getInstance());
-    //        return FLAG.equals(value);
-    //    }
 
     /** Indicates if a given aspect edge stands for a path. */
     public static boolean isPath(AspectEdge edge) {
@@ -96,6 +93,10 @@ public class TypeAspect extends AbstractAspect {
     static public final String PATH_NAME = "path";
     /** The path aspect value. */
     static public final AspectValue PATH;
+    /** Name of the abstract aspect value. */
+    static public final String ABS_NAME = "abs";
+    /** The abstract aspect value. */
+    static public final AspectValue ABS;
     /** Name of the subtype aspect value. */
     static public final String SUB_NAME = "sub";
     /** The subtype aspect value. */
@@ -107,14 +108,13 @@ public class TypeAspect extends AbstractAspect {
 
     static {
         try {
-            //            NODE_TYPE = instance.addEdgeValue(DefaultLabel.NODE_TYPE_PREFIX);
-            //            NODE_TYPE.setLabelParser(TypedLabelParser.getInstance(Label.NODE_TYPE));
-            //            FLAG = instance.addEdgeValue(DefaultLabel.FLAG_PREFIX);
-            //            FLAG.setLabelParser(TypedLabelParser.getInstance(Label.FLAG));
             PATH = instance.addEdgeValue(PATH_NAME);
             PATH.setLabelParser(RegExprLabelParser.getInstance(true));
             SUB = instance.addEdgeValue(SUB_NAME);
             SUB.setLabelParser(EmptyLabelParser.getInstance());
+            SUB.setIncompatible(RuleAspect.getInstance());
+            ABS = instance.addEdgeValue(ABS_NAME);
+            ABS.setIncompatible(RuleAspect.getInstance());
             EMPTY = instance.addEdgeValue(EMPTY_NAME);
             EMPTY.setLabelParser(FreeLabelParser.getInstance());
             // incompatibilities
