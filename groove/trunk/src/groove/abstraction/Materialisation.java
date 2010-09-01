@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
@@ -92,6 +93,7 @@ public class Materialisation {
     private Materialisation(Shape shape, RuleMatch preMatch) {
         this.shape = shape;
         this.preMatch = preMatch;
+        // EDUARDO: This copy of the pre-match doesn't make sense anymore...
         this.match = preMatch.getElementMap().clone();
         this.tasks = new PriorityQueue<MatOp>();
         this.planTasks();
@@ -173,6 +175,8 @@ public class Materialisation {
             Materialisation mat = queue.remove();
             if (mat.isFinished()) {
                 // This one is done.
+                // EDUARDO: turn this assertion on when the code is complete.
+                // assert mat.isMatchingConcrete();
                 result.add(mat);
             } else { // Process the next operation on the materialisation.
                 MatOp op = mat.getNextOp();
@@ -227,7 +231,7 @@ public class Materialisation {
      * and 5 of Def. 35 in pg. 21 of the technical report. 
      * @return true if all three items are satisfied; false, otherwise.
      */
-    public boolean isMatchingConcrete() {
+    public boolean hasConcreteMatch() {
         // Item 3: check that all nodes in the image of the LHS have
         // multiplicity one.
         boolean complyToNodeMult = true;
@@ -652,47 +656,36 @@ public class Materialisation {
          * Extends the pre-match of a partially constructed materialisation
          * object. In this method, the nodes of the pre-match that were mapped
          * to abstract nodes in the shape are re-mapped to the newly
-         * materialised nodes. Note that this step is also non-deterministic,
-         * since we may have more than one node in the rule that was mapped to
-         * the same abstract node. In this case we need to try out all possible
-         * combinations. Not all of those are actually valid configurations but
-         * this will only be checked later. 
+         * materialised nodes.
+         * This method used to be non-deterministic. Now we only take an
+         * arbitrary match because the transformation always leads to an
+         * isomorphic shape. This still has to be proven.
          */
         @Override
         public void perform() {
-            // Compute all possible matches of nodesR into newNodes.
-            Set<NodeEdgeMap> matches =
-                SetPermutation.getPermutationSet(this.nodesR, this.newNodes);
+            assert (this.nodesR.size() == this.newNodes.size()) : "Sets should have the same size!";
 
-            for (NodeEdgeMap match : matches) {
-                Materialisation newMat;
-                // Check if we need to clone the materialisation object.
-                if (matches.size() == 1) {
-                    // No, we don't need to clone.
-                    newMat = this.mat;
-                } else {
-                    // Yes, we do need to clone.
-                    newMat = this.mat.clone();
-                }
-
-                // For all nodes in the match permutation, adjust the match of
-                // the materialisation.
-                for (Entry<Node,Node> entry : match.nodeMap().entrySet()) {
-                    Node nodeR = entry.getKey();
-                    ShapeNode nodeS = (ShapeNode) entry.getValue();
-                    newMat.extendMatch(nodeR, nodeS);
-                }
-
-                // Create the new tasks that will be performed after this one.
-                // Cleanup impossible edges. 
-                CleanupImpossibleEdges cleanupImpossibleEdges =
-                    new CleanupImpossibleEdges(newMat);
-                newMat.tasks.add(cleanupImpossibleEdges);
-
-                // Add this new materialisation to the result set of this
-                // operation.
-                this.result.add(newMat);
+            // Both sets have the same size. Go over both of them at the same
+            // time, and take the returned values of the iterator as the match.
+            int nodeSetsSize = this.nodesR.size();
+            Iterator<Node> nodesRIter = this.nodesR.iterator();
+            Iterator<ShapeNode> newNodesIter = this.newNodes.iterator();
+            for (int i = 0; i < nodeSetsSize; i++) {
+                Node nodeR = nodesRIter.next();
+                ShapeNode nodeS = newNodesIter.next();
+                // Adjust the match of the materialisation.
+                this.mat.extendMatch(nodeR, nodeS);
             }
+
+            // Create the new tasks that will be performed after this one.
+            // Cleanup impossible edges. 
+            CleanupImpossibleEdges cleanupImpossibleEdges =
+                new CleanupImpossibleEdges(this.mat);
+            this.mat.tasks.add(cleanupImpossibleEdges);
+
+            // Add this materialisation to the result set of this
+            // operation.
+            this.result.add(this.mat);
         }
     }
 
@@ -884,7 +877,7 @@ public class Materialisation {
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
                     String test;
-                    if (mat.isMatchingConcrete()) {
+                    if (mat.hasConcreteMatch()) {
                         test = "concrete";
                     } else {
                         test = "abstract";
