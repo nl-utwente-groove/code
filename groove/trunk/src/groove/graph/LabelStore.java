@@ -48,10 +48,9 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     /** Adds all labels and subtypes from another label store to this one. */
     public void add(LabelStore other) {
         testFixed(false);
-        addLabels(other.getLabels());
-        for (Map.Entry<Label,Set<Label>> directSubtypeEntry : other.directSubtypeMap.entrySet()) {
-            for (Label subtype : directSubtypeEntry.getValue()) {
-                addSubtype(directSubtypeEntry.getKey(), subtype);
+        for (Map.Entry<Label,Set<Label>> dirSubEntry : other.getDirSubMap().entrySet()) {
+            for (Label subtype : dirSubEntry.getValue()) {
+                addSubtype(dirSubEntry.getKey(), subtype);
             }
         }
     }
@@ -59,12 +58,13 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     /** Adds a label to the set of known labels. */
     public void addLabel(Label label) {
         testFixed(false);
-        if (!this.subtypeMap.containsKey(label)) {
+        if (!getDirSubMap().containsKey(label)) {
             Set<Label> subtypes = new TreeSet<Label>();
             subtypes.add(label);
-            this.subtypeMap.put(label, subtypes);
+            getSubMap().put(label, subtypes);
             Set<Label> directSubtypes = new TreeSet<Label>();
-            this.directSubtypeMap.put(label, directSubtypes);
+            getDirSubMap().put(label, directSubtypes);
+            invalidateSupertypes();
         }
     }
 
@@ -106,40 +106,110 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         }
         addLabel(type);
         addLabel(subtype);
-        if (getSubtypes(subtype).contains(type)) {
+        if (getSubs(subtype).contains(type)) {
             throw new IllegalArgumentException(String.format(
                 "The relation '%s %c %s' introduces a cyclic type dependency",
                 type, SUPERTYPE_SYMBOL, subtype));
         }
-        if (this.directSubtypeMap.get(type).add(subtype)) {
+        if (getDirSubs(type).add(subtype)) {
             // transitively close the relation
-            Set<Label> subsubtypes = this.subtypeMap.get(subtype);
-            for (Map.Entry<Label,Set<Label>> typeEntry : this.subtypeMap.entrySet()) {
+            Set<Label> subsubtypes = getSubs(subtype);
+            for (Map.Entry<Label,Set<Label>> typeEntry : getSubMap().entrySet()) {
                 if (typeEntry.getValue().contains(type)) {
                     typeEntry.getValue().addAll(subsubtypes);
                 }
             }
         }
+        invalidateSupertypes();
     }
 
     /** Removes a direct subtype pair from the subtyping relation. */
     public void removeSubtype(Label type, Label subtype) {
         testFixed(false);
-        if (this.directSubtypeMap.get(type).remove(subtype)) {
+        if (getDirectSubtypes(type).remove(subtype)) {
             // recalculate the transitive closure of the subtypes
-            calculateSubtypes();
+            invalidateSubtypes();
         }
+    }
+
+    /**
+     * Returns an unmodifiable view on the set of direct subtypes of a given
+     * node type label. Returns <code>null</code> if the label is unknown.
+     * @param label the label to determine the direct subtypes for
+     * @return the direct subtypes of <code>label</code>, or <code>null</code>
+     *         if <code>label</code> is not a known label.
+     */
+    public Set<Label> getDirectSubtypes(Label label) {
+        return Collections.unmodifiableSet(getDirSubs(label));
+    }
+
+    /**
+     * Internal, modifiable version of {@link #getDirectSubtypes(Label)}.
+     */
+    private Set<Label> getDirSubs(Label label) {
+        return getDirSubMap().get(label);
+    }
+
+    /**
+     * Returns an unmodifiable view on the map from labels to direct subtypes.
+     * @return A map from known labels to their direct subtypes
+     */
+    public Map<Label,Set<Label>> getDirectSubtypeMap() {
+        return Collections.unmodifiableMap(getDirSubMap());
+    }
+
+    /**
+     * Internal, modifiable version of {@link #getDirectSubtypeMap()}.
+     */
+    private Map<Label,Set<Label>> getDirSubMap() {
+        return this.dirSubMap;
+    }
+
+    /**
+     * Returns an unmodifiable view on the set of subtypes of a given label.
+     * The set of subtypes is reflexively defined, i.e., it includes the type
+     * itself. Returns <code>null</code> if the label is unknown.
+     * @param label the label to determine the subtypes for
+     * @return the subtypes of <code>label</code>, or <code>null</code> if
+     *         <code>label</code> is not a known label.
+     */
+    public Set<Label> getSubtypes(Label label) {
+        return Collections.unmodifiableSet(getSubs(label));
+    }
+
+    /**
+     * Internal, modifiable version of {@link #getSubtypes(Label)}.
+     */
+    private Set<Label> getSubs(Label label) {
+        return getSubMap().get(label);
+    }
+
+    /**
+     * Returns an unmodifiable transitively and reflexively closed
+     * mapping from types to subtypes.
+     */
+    public Map<Label,Set<Label>> getSubtypeMap() {
+        return Collections.unmodifiableMap(getSubMap());
+    }
+
+    /**
+     * Internal, modifiable version of {@link #getSubtypeMap()}.
+     */
+    private Map<Label,Set<Label>> getSubMap() {
+        if (this.subMap == null) {
+            this.subMap = computeSubtypeMap();
+        }
+        return this.subMap;
     }
 
     /**
      * Recalculates the subtype relation by transitively closing the direct
      * subtype relation.
      */
-    public void calculateSubtypes() {
+    private Map<Label,Set<Label>> computeSubtypeMap() {
         // first order all types consistently with the subtype relation.
         Set<Label> allTypes = new LinkedHashSet<Label>();
-        Set<Label> remaining =
-            new HashSet<Label>(this.directSubtypeMap.keySet());
+        Set<Label> remaining = new HashSet<Label>(getDirSubMap().keySet());
         while (!remaining.isEmpty()) {
             Iterator<Label> remainingIter = remaining.iterator();
             boolean bottomTypeFound = false;
@@ -155,49 +225,16 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                 "No bottom type found in %s", remaining);
         }
         // now build up the transitive closure
-        this.subtypeMap.clear();
+        Map<Label,Set<Label>> result = new TreeMap<Label,Set<Label>>();
         for (Label type : allTypes) {
             Set<Label> subtypes = new TreeSet<Label>();
-            this.subtypeMap.put(type, subtypes);
+            result.put(type, subtypes);
             subtypes.add(type);
-            for (Label directSubtype : getDirectSubtypes(type)) {
-                subtypes.addAll(this.subtypeMap.get(directSubtype));
+            for (Label directSubtype : getDirSubs(type)) {
+                subtypes.addAll(result.get(directSubtype));
             }
         }
-    }
-
-    /**
-     * Returns an unmodifiable view on the set of direct subtypes of a given
-     * node type label. Returns <code>null</code> if the label is unknown or not
-     * a node type label.
-     * @param label the label to determine the direct subtypes for
-     * @return the direct subtypes of <code>label</code>, or <code>null</code>
-     *         if <code>label</code> is not a known node type label.
-     */
-    public Set<Label> getDirectSubtypes(Label label) {
-        Set<Label> result = this.directSubtypeMap.get(label);
-        return result == null ? null : Collections.unmodifiableSet(result);
-    }
-
-    /**
-     * Returns an unmodifiable view on the map from labels to direct subtypes.
-     * @return A map from known labels to their direct subtypes
-     */
-    public Map<Label,Set<Label>> getDirectSubtypeMap() {
-        return Collections.unmodifiableMap(this.directSubtypeMap);
-    }
-
-    /**
-     * Returns an unmodifiable view on the set of subtypes of a given * label.
-     * The set of subtypes is reflexively defined, i.e., it includes the type
-     * itself. Returns <code>null</code> if the label is unknown.
-     * @param label the label to determine the subtypes for
-     * @return the subtypes of <code>label</code>, or <code>null</code> if
-     *         <code>label</code> is not a known type label.
-     */
-    public Set<Label> getSubtypes(Label label) {
-        Set<Label> result = this.subtypeMap.get(label);
-        return result == null ? null : Collections.unmodifiableSet(result);
+        return result;
     }
 
     /**
@@ -210,7 +247,19 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      *         <code>label</code> is not a known label.
      */
     public Set<Label> getSupertypes(Label label) {
-        return getInverse(this.subtypeMap).get(label);
+        return Collections.unmodifiableSet(getSupertypeMap().get(label));
+    }
+
+    /**
+     * Returns a reflexively and transitively closed mapping from the type
+     * labels in this label store to their supertypes. The map is the inverse 
+     * of the subtype map. 
+     */
+    public Map<Label,Set<Label>> getSupertypeMap() {
+        if (this.superMap == null) {
+            this.superMap = getInverse(getSubMap());
+        }
+        return Collections.unmodifiableMap(this.superMap);
     }
 
     /**
@@ -222,7 +271,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      *         <code>label</code> is not a known label.
      */
     public Set<Label> getDirectSupertypes(Label label) {
-        return getInverse(this.directSubtypeMap).get(label);
+        return Collections.unmodifiableSet(getDirectSupertypeMap().get(label));
     }
 
     /**
@@ -231,7 +280,10 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      * @return A map from known labels to their direct supertypes
      */
     public Map<Label,Set<Label>> getDirectSupertypeMap() {
-        return getInverse(this.directSubtypeMap);
+        if (this.dirSuperMap == null) {
+            this.dirSuperMap = getInverse(getDirSubMap());
+        }
+        return Collections.unmodifiableMap(this.dirSuperMap);
     }
 
     /**
@@ -253,7 +305,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
 
     /** Returns an unmodifiable view on the set of all known labels. */
     public Set<Label> getLabels() {
-        return Collections.unmodifiableSet(this.subtypeMap.keySet());
+        return getDirectSubtypeMap().keySet();
     }
 
     /** 
@@ -281,16 +333,12 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      */
     public LabelStore relabel(Label oldLabel, Label newLabel)
         throws FormatException {
-        //        if (getLabels().contains(newLabel)) {
-        //            throw new IllegalArgumentException(String.format(
-        //                "New label '%s' is already in label set", getLabels()));
-        //        }
         LabelStore result = this;
-        if (!oldLabel.equals(newLabel) && this.subtypeMap.containsKey(oldLabel)) {
+        if (!oldLabel.equals(newLabel) && getDirSubs(oldLabel) != null) {
             // check for subtype cycles
             if (getLabels().contains(newLabel)
-                && (getSubtypes(oldLabel).contains(newLabel) || getSubtypes(
-                    newLabel).contains(oldLabel))) {
+                && (getSubs(oldLabel).contains(newLabel) || getSubs(newLabel).contains(
+                    oldLabel))) {
                 throw new FormatException(
                     "Renaming '%s' to '%s' causes a subtype cycle", oldLabel,
                     newLabel);
@@ -298,18 +346,15 @@ public class LabelStore extends DefaultFixable implements Cloneable {
             result = clone();
             result.addLabel(newLabel);
             if (newLabel.isNodeType()) {
-                result.directSubtypeMap.get(newLabel).addAll(
-                    getDirectSubtypes(oldLabel));
+                result.getDirSubs(newLabel).addAll(getDirSubs(oldLabel));
             }
-            result.directSubtypeMap.remove(oldLabel);
-            result.subtypeMap.remove(oldLabel);
-            for (Map.Entry<Label,Set<Label>> subtypeEntry : result.directSubtypeMap.entrySet()) {
-                Set<Label> subtypes = subtypeEntry.getValue();
+            result.getDirSubMap().remove(oldLabel);
+            for (Map.Entry<Label,Set<Label>> subEntry : result.getDirSubMap().entrySet()) {
+                Set<Label> subtypes = subEntry.getValue();
                 if (subtypes.remove(oldLabel) && newLabel.isNodeType()) {
                     subtypes.add(newLabel);
                 }
             }
-            result.calculateSubtypes();
         }
         return result;
     }
@@ -320,14 +365,19 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof LabelStore
-            && this.directSubtypeMap.equals(((LabelStore) obj).directSubtypeMap);
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof LabelStore)) {
+            return false;
+        }
+        return getDirSubMap().equals(((LabelStore) obj).getDirSubMap());
     }
 
     /** Returns the hash code of the direct subtyping relation. */
     @Override
     public int hashCode() {
-        return this.directSubtypeMap.hashCode();
+        return getDirSubMap().hashCode();
     }
 
     @Override
@@ -336,7 +386,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         SortedSet<Label> sortedLabels = new TreeSet<Label>(getLabels());
         for (Label label : sortedLabels) {
             result.append(String.format("%s > %s%n", label,
-                this.directSubtypeMap.get(label)));
+                getDirectSubtypes(label)));
         }
         return result.toString();
     }
@@ -356,9 +406,9 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     public String toDirectSubtypeString() {
         StringBuilder result = new StringBuilder();
         boolean firstLabel = true;
-        for (Map.Entry<Label,Set<Label>> directSubtypeEntry : this.directSubtypeMap.entrySet()) {
+        for (Map.Entry<Label,Set<Label>> dirSubEntry : getDirSubMap().entrySet()) {
             // only treat proper entries
-            if (directSubtypeEntry.getValue().isEmpty()) {
+            if (dirSubEntry.getValue().isEmpty()) {
                 continue;
             }
             if (!firstLabel) {
@@ -366,10 +416,10 @@ public class LabelStore extends DefaultFixable implements Cloneable {
             } else {
                 firstLabel = false;
             }
-            result.append(directSubtypeEntry.getKey().text());
+            result.append(dirSubEntry.getKey().text());
             result.append(" " + SUPERTYPE_SYMBOL + " ");
             boolean firstSubtype = true;
-            for (Label subType : directSubtypeEntry.getValue()) {
+            for (Label subType : dirSubEntry.getValue()) {
                 if (firstSubtype) {
                     firstSubtype = false;
                 } else {
@@ -399,10 +449,10 @@ public class LabelStore extends DefaultFixable implements Cloneable {
             addLabel(type);
             for (Label subtype : subtypeEntry.getValue()) {
                 addLabel(subtype);
-                this.directSubtypeMap.get(type).add(subtype);
+                getDirectSubtypes(type).add(subtype);
             }
         }
-        calculateSubtypes();
+        invalidateSubtypes();
     }
 
     /**
@@ -448,12 +498,27 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return result;
     }
 
-    /** Mapping from a type label to its set of subtypes (including itself). */
-    private final Map<Label,Set<Label>> subtypeMap =
-        new TreeMap<Label,Set<Label>>();
+    /** Resets the subtype map to {@code null}. */
+    private void invalidateSubtypes() {
+        this.subMap = null;
+        invalidateSupertypes();
+    }
+
+    /** Resets the supertype maps to {@code null}. */
+    private void invalidateSupertypes() {
+        this.dirSuperMap = null;
+        this.superMap = null;
+    }
+
     /** Mapping from a type label to its set of direct subtypes. */
-    private final Map<Label,Set<Label>> directSubtypeMap =
+    private final Map<Label,Set<Label>> dirSubMap =
         new TreeMap<Label,Set<Label>>();
+    /** Mapping from a type label to its set of subtypes (including itself). */
+    private Map<Label,Set<Label>> subMap;
+    /** Mapping from a type label to its set of direct subtypes. */
+    private Map<Label,Set<Label>> dirSuperMap;
+    /** Mapping from a type label to its set of subtypes (including itself). */
+    private Map<Label,Set<Label>> superMap;
 
     /** Creates and prints a label store out of a property string. */
     static public void main(String[] args) {
