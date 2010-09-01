@@ -192,4 +192,24 @@ public class TestMultiplicity extends TestCase {
         assertTrue(result.size() == 1 && result.contains(zero));
     }
 
+    public void testMultiply() {
+        Parameters.setEdgeMultBound(2);
+        Multiplicity.initMultStore();
+        Multiplicity zero = Multiplicity.getMultOf(0);
+        Multiplicity one = Multiplicity.getMultOf(1);
+        Multiplicity two = Multiplicity.getMultOf(2);
+        Multiplicity omega = Multiplicity.OMEGA;
+
+        assertTrue(zero.multiply(zero).equals(zero));
+        assertTrue(zero.multiply(one).equals(zero));
+        assertTrue(zero.multiply(two).equals(zero));
+        assertTrue(zero.multiply(omega).equals(zero));
+        assertTrue(one.multiply(one).equals(one));
+        assertTrue(one.multiply(two).equals(two));
+        assertTrue(one.multiply(omega).equals(omega));
+        assertTrue(two.multiply(two).equals(omega));
+        assertTrue(two.multiply(omega).equals(omega));
+        assertTrue(omega.multiply(omega).equals(omega));
+    }
+
 }

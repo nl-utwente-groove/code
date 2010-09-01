@@ -320,4 +320,14 @@ public final class Multiplicity {
         assert !this.equals(OMEGA) && !mult.equals(OMEGA);
         return this.sub(mult, 0).iterator().next();
     }
+
+    /** Returns the bounded product of two multiplicities. */
+    public Multiplicity multiply(Multiplicity mult) {
+        int value = this.value * mult.value;
+        if ((value < 0)
+            || (this.value == OMEGA_VALUE && mult.value == OMEGA_VALUE)) {
+            value = OMEGA_VALUE;
+        }
+        return getMult(value, Parameters.getEdgeMultBound());
+    }
 }

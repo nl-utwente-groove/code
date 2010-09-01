@@ -42,6 +42,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
+@Deprecated
 public class SetPermutation {
 
     // ------------------------------------------------------------------------

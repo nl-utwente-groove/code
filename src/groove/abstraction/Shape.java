@@ -1186,6 +1186,64 @@ public class Shape extends DefaultGraph implements DeltaTarget {
     }
 
     /**
+     * Checks if the shape admits concretisations by looking at opposite
+     * outgoing and incoming multiplicities from equivalence classes.
+     * @return true if the multiplicity configuration is valid, false otherwise.
+     */
+    public boolean isAdmissible() {
+        boolean result = true;
+        // For all binary labels.
+        outerLoop: for (Label label : Util.binaryLabelSet(this)) {
+            // For all equivalence classes. (As outgoing)
+            for (EquivClass<ShapeNode> ecO : this.equivRel) {
+                // For all equivalence classes. (As incoming)
+                for (EquivClass<ShapeNode> ecI : this.equivRel) {
+                    // Accumulators for test of item 2.
+                    Multiplicity outMultSum = Multiplicity.getMultOf(0);
+                    Multiplicity inMultSum = Multiplicity.getMultOf(0);
+
+                    // For all nodes in the outgoing equivalence class.
+                    for (ShapeNode nO : ecO) {
+                        Multiplicity nOMult = this.getNodeMult(nO);
+                        EdgeSignature nOEs =
+                            this.getEdgeSignature(nO, label, ecI);
+                        Multiplicity eOMult = this.getEdgeSigOutMult(nOEs);
+                        Multiplicity outMult = nOMult.multiply(eOMult);
+
+                        // For all nodes in the incoming equivalence class.
+                        for (ShapeNode nI : ecI) {
+                            Multiplicity nIMult = this.getNodeMult(nI);
+                            EdgeSignature nIEs =
+                                this.getEdgeSignature(nI, label, ecO);
+                            Multiplicity eIMult = this.getEdgeSigInMult(nIEs);
+                            Multiplicity inMult = nIMult.multiply(eIMult);
+
+                            // Test item 1.
+                            if (!inMult.isAtMost(outMult)) {
+                                // Violation of condition.
+                                result = false;
+                                break outerLoop;
+                            }
+
+                            // Accumulate the values.
+                            outMultSum = outMultSum.addEdgeMult(outMult);
+                            inMultSum = inMultSum.addEdgeMult(inMult);
+                        }
+                    }
+
+                    // Check item 2.
+                    if (!outMultSum.isAtMost(inMultSum)) {
+                        // Violation of condition.
+                        result = false;
+                        break outerLoop;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Check if the shape is in a state that complies to the shape invariant.
      * See last item of Def. 7, pg. 10.
      */
