@@ -49,6 +49,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     public void add(LabelStore other) {
         testFixed(false);
         for (Map.Entry<Label,Set<Label>> dirSubEntry : other.getDirSubMap().entrySet()) {
+            addLabel(dirSubEntry.getKey());
             for (Label subtype : dirSubEntry.getValue()) {
                 addSubtype(dirSubEntry.getKey(), subtype);
             }
@@ -126,7 +127,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     /** Removes a direct subtype pair from the subtyping relation. */
     public void removeSubtype(Label type, Label subtype) {
         testFixed(false);
-        if (getDirectSubtypes(type).remove(subtype)) {
+        if (getDirSubs(type).remove(subtype)) {
             // recalculate the transitive closure of the subtypes
             invalidateSubtypes();
         }
@@ -140,7 +141,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      *         if <code>label</code> is not a known label.
      */
     public Set<Label> getDirectSubtypes(Label label) {
-        return Collections.unmodifiableSet(getDirSubs(label));
+        Set<Label> result = getDirSubs(label);
+        return result == null ? null : Collections.unmodifiableSet(result);
     }
 
     /**
@@ -174,7 +176,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      *         <code>label</code> is not a known label.
      */
     public Set<Label> getSubtypes(Label label) {
-        return Collections.unmodifiableSet(getSubs(label));
+        Set<Label> result = getSubs(label);
+        return result == null ? null : Collections.unmodifiableSet(result);
     }
 
     /**
@@ -215,7 +218,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
             boolean bottomTypeFound = false;
             while (remainingIter.hasNext()) {
                 Label bottomType = remainingIter.next();
-                if (allTypes.containsAll(getDirectSubtypes(bottomType))) {
+                if (allTypes.containsAll(getDirSubs(bottomType))) {
                     remainingIter.remove();
                     allTypes.add(bottomType);
                     bottomTypeFound = true;
@@ -247,7 +250,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      *         <code>label</code> is not a known label.
      */
     public Set<Label> getSupertypes(Label label) {
-        return Collections.unmodifiableSet(getSupertypeMap().get(label));
+        Set<Label> result = getSupertypeMap().get(label);
+        return result == null ? null : Collections.unmodifiableSet(result);
     }
 
     /**
@@ -271,7 +275,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      *         <code>label</code> is not a known label.
      */
     public Set<Label> getDirectSupertypes(Label label) {
-        return Collections.unmodifiableSet(getDirectSupertypeMap().get(label));
+        Set<Label> result = getDirectSupertypeMap().get(label);
+        return result == null ? null : Collections.unmodifiableSet(result);
     }
 
     /**
@@ -385,8 +390,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         StringBuilder result = new StringBuilder();
         SortedSet<Label> sortedLabels = new TreeSet<Label>(getLabels());
         for (Label label : sortedLabels) {
-            result.append(String.format("%s > %s%n", label,
-                getDirectSubtypes(label)));
+            result.append(String.format("%s > %s%n", label, getDirSubs(label)));
         }
         return result.toString();
     }
@@ -449,7 +453,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
             addLabel(type);
             for (Label subtype : subtypeEntry.getValue()) {
                 addLabel(subtype);
-                getDirectSubtypes(type).add(subtype);
+                getDirSubs(type).add(subtype);
             }
         }
         invalidateSubtypes();
