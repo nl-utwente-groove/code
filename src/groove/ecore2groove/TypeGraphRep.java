@@ -24,7 +24,6 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
-import groove.view.aspect.AspectGraph;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -163,6 +162,15 @@ public class TypeGraphRep {
                     DefaultEdge.createEdge(this.eClassToNodeMap.get(aClass),
                         "sub:", this.eClassToNodeMap.get(superType));
                 this.tg.addEdge(edge);
+                /*TypeNode superNode =
+                    (TypeNode) this.eClassToNodeMap.get(superType);
+                TypeNode subNode = (TypeNode) this.eClassToNodeMap.get(aClass);
+
+                try {
+                    this.tg.addSubtype(superNode, subNode);
+                } catch (FormatException e) {
+                    e.printStackTrace();
+                }*/
             }
         }
 
@@ -369,12 +377,12 @@ public class TypeGraphRep {
      * Get the type graph that represents the Ecore meta model
      * @return the type graph
      */
-    public AspectGraph getTypeGraph() {
+    public TypeGraph getTypeGraph() {
         // Create aspect graph from type graph to store
         GraphInfo.setTypeRole(this.tg);
-        AspectGraph atg = AspectGraph.getFactory().fromPlainGraph(this.tg);
+        //AspectGraph atg = AspectGraph.getFactory().fromPlainGraph(this.tg);
 
-        return atg;
+        return this.tg;
     }
 
     /**
@@ -382,12 +390,12 @@ public class TypeGraphRep {
      * represent EClasses or EReferences.
      * @return the Ecore type graph
      */
-    public AspectGraph getEcoreTypeGraph() {
+    public TypeGraph getEcoreTypeGraph() {
         // Create aspect graph from type graph to store
         GraphInfo.setTypeRole(this.ecoreTG);
-        AspectGraph atg = AspectGraph.getFactory().fromPlainGraph(this.ecoreTG);
+        //AspectGraph atg = AspectGraph.getFactory().fromPlainGraph(this.ecoreTG);
 
-        return atg;
+        return this.ecoreTG;
     }
 
     /*

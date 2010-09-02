@@ -20,6 +20,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -182,6 +183,7 @@ public class ConstraintRules {
         constraintRule.addEdge(node, eclassLabel, node);
         constraintRule.addEdge(node, regExprLabel, node);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -213,6 +215,7 @@ public class ConstraintRules {
         constraintRule.addEdge(contRefNode, contLabel, contRefNode);
         constraintRule.addEdge(contRefNode, valLabel, eclassNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Not many containers
@@ -236,6 +239,7 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode1, regExprLabel, eclassNode);
         constraintRule.addEdge(refNode2, regExprLabel, eclassNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -263,6 +267,7 @@ public class ConstraintRules {
         constraintRule.addEdge(node2, flagLabel, node2);
         constraintRule.addEdge(node1, unequalLabel, node2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Not zero root elements constraint rule
@@ -278,6 +283,7 @@ public class ConstraintRules {
         constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
         constraintRule.addEdge(eclassNode, notLabel, eclassNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // No container for root constraint rule, only when there are
@@ -300,6 +306,7 @@ public class ConstraintRules {
             constraintRule.addEdge(refNode, refLabel, refNode);
             constraintRule.addEdge(refNode, regExprLabel, eclassNode);
 
+            GraphInfo.setRuleRole(constraintRule);
             this.constraintRules.add(constraintRule);
         }
     }
@@ -326,6 +333,7 @@ public class ConstraintRules {
         constraintRule.addEdge(node, refLabel, node);
         constraintRule.addEdge(node, notContLabel, node);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -352,6 +360,7 @@ public class ConstraintRules {
         constraintRule.addEdge(node, refLabel, node);
         constraintRule.addEdge(node, contLabel, node);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -397,6 +406,7 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode1, nextLabel, notFeatureNode1);
         constraintRule.addEdge(featureNode2, nextLabel, notFeatureNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Not two head constraint rule
@@ -427,6 +437,7 @@ public class ConstraintRules {
         constraintRule.addEdge(notFeatureNode1, nextLabel, featureNode1);
         constraintRule.addEdge(notFeatureNode2, nextLabel, featureNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Not two in constraint rule
@@ -452,6 +463,7 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode1, nextLabel, featureNode3);
         constraintRule.addEdge(featureNode2, nextLabel, featureNode3);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Not two out constraint rule
@@ -477,6 +489,7 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode3, nextLabel, featureNode1);
         constraintRule.addEdge(featureNode3, nextLabel, featureNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Not circular constraint rule
@@ -496,6 +509,7 @@ public class ConstraintRules {
         constraintRule.addEdge(sourceNode, nameLabel, featureNode1);
         constraintRule.addEdge(featureNode1, nextPlusLabel, featureNode1);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -567,6 +581,7 @@ public class ConstraintRules {
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - ekeys";
         this.ruleNames.put(constraintRule, name);
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -656,6 +671,7 @@ public class ConstraintRules {
             addDataTypeCheck(constraintRule, eAttribute, contNode1, contNode2);
         }
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -761,6 +777,7 @@ public class ConstraintRules {
         constraintRule.addEdge(compare3Node, arg2Label, bool2Node);
         constraintRule.addEdge(compare3Node, orLabel, bool3Node);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -814,6 +831,7 @@ public class ConstraintRules {
         constraintRule.addEdge(compareNode, arg2Label, defaultValNode);
         constraintRule.addEdge(compareNode, compareLabel, boolNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -840,6 +858,7 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode, refLabel, refNode);
         constraintRule.addEdge(refNode, regExprLabel, refNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
         // Add constraint that there may not be two outgoing opposite edges
@@ -867,6 +886,7 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode, oppositeLabel, erefNode2);
         constraintRule.addEdge(erefNode1, unequalLabel, erefNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -912,6 +932,7 @@ public class ConstraintRules {
             }
         }
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -958,6 +979,7 @@ public class ConstraintRules {
             }
         }
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -1008,6 +1030,7 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode1, valLabel, targetNode);
         constraintRule.addEdge(refNode2, valLabel, targetNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -1055,6 +1078,7 @@ public class ConstraintRules {
         constraintRule.addEdge(targetNode1, lookLabel, targetNode1);
         constraintRule.addEdge(targetNode2, matchLabel, targetNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -1095,6 +1119,7 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode2, valLabel, targetNode);
         constraintRule.addEdge(refNode1, unequalLabel, refNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -1127,6 +1152,7 @@ public class ConstraintRules {
         constraintRule.addEdge(containerNode, notLabel, containerNode);
         constraintRule.addEdge(containerNode, nameLabel, featureNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -1162,6 +1188,7 @@ public class ConstraintRules {
         constraintRule.addEdge(containerNode2, nameLabel, featureNode);
         constraintRule.addEdge(containerNode1, unequalLabel, containerNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -1191,6 +1218,7 @@ public class ConstraintRules {
         constraintRule.addEdge(targetNode, notLabel, targetNode);
         constraintRule.addEdge(featureNode, valLabel, targetNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -1234,6 +1262,7 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode, valLabel, targetNode2);
         constraintRule.addEdge(targetNode1, unequalLabel, targetNode2);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
@@ -1261,6 +1290,7 @@ public class ConstraintRules {
         constraintRule.addEdge(attrNode, notLabel, attrNode);
         constraintRule.addEdge(attrNode, valLabel, enumNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -1294,6 +1324,7 @@ public class ConstraintRules {
         constraintRule.addEdge(attrNode1, regExprLabel, enumNode);
         constraintRule.addEdge(attrNode2, regExprLabel, enumNode);
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -1317,6 +1348,8 @@ public class ConstraintRules {
                 DefaultEdge.createEdge(node, "not:" + labelText, node);
             constraintRule.addEdge(edge);
         }
+
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
 
     }
@@ -1357,6 +1390,7 @@ public class ConstraintRules {
             DefaultEdge edge = DefaultEdge.createEdge(node, regExpr, node);
             constraintRule.addEdge(edge);
 
+            GraphInfo.setRuleRole(constraintRule);
             this.constraintRules.add(constraintRule);
         }
 
@@ -1385,6 +1419,7 @@ public class ConstraintRules {
             }
         }
 
+        GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
     }
 
