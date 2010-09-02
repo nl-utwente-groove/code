@@ -240,9 +240,14 @@ public class Transform {
         start = new Date().getTime();
         for (DefaultGraph constraintRule : constraints.getConstraints()) {
             // GraphInfo.setRuleRole(constraintRule);
-            AspectGraph arg =
-                AspectGraph.getFactory().fromPlainGraph(constraintRule);
-
+            AspectGraph arg;
+            try {
+                arg = AspectGraph.getFactory().fromPlainGraph(constraintRule);
+            } catch (Exception e) {
+                System.out.println("Error with: "
+                    + constraints.getName(constraintRule));
+                continue;
+            }
             String name = constraints.getName(constraintRule);
             arg.getInfo().setFile(f + File.separator + name + ".gty");
             arg.getInfo().setName(name);

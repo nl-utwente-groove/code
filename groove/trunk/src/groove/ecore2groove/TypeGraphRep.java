@@ -18,12 +18,12 @@ package groove.ecore2groove;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
+import groove.graph.TypeNode;
 import groove.view.aspect.AspectGraph;
 
 import java.util.HashMap;
@@ -50,21 +50,20 @@ public class TypeGraphRep {
     private ModelHandler mh;
     private TypeGraph tg = new TypeGraph();
     private TypeGraph ecoreTG = new TypeGraph();
-    private Node eClassNode = DefaultNode.createNode();
-    private Node eReferenceNode = DefaultNode.createNode();
-    private Node eAttributeNode = DefaultNode.createNode();
-    //private Node eContReferenceNode = DefaultNode.createNode();
 
-    private Map<EClass,DefaultNode> eClassToNodeMap =
-        new HashMap<EClass,DefaultNode>();
-    private Map<EEnum,DefaultNode> eEnumToNodeMap =
-        new HashMap<EEnum,DefaultNode>();
-    private Map<EReference,DefaultNode> eReferenceToNodeMap =
-        new HashMap<EReference,DefaultNode>();
-    private Map<EAttribute,DefaultNode> eAttributeToNodeMap =
-        new HashMap<EAttribute,DefaultNode>();
-    private Map<EDataType,DefaultNode> eDataTypeToNodeMap =
-        new HashMap<EDataType,DefaultNode>();
+    private TypeNode eClassNode;
+    private TypeNode eReferenceNode;
+    private TypeNode eAttributeNode;
+    private TypeNode eEnumNode;
+
+    private Map<EClass,Node> eClassToNodeMap = new HashMap<EClass,Node>();
+    private Map<EEnum,Node> eEnumToNodeMap = new HashMap<EEnum,Node>();
+    private Map<EReference,Node> eReferenceToNodeMap =
+        new HashMap<EReference,Node>();
+    private Map<EAttribute,Node> eAttributeToNodeMap =
+        new HashMap<EAttribute,Node>();
+    private Map<EDataType,Node> eDataTypeToNodeMap =
+        new HashMap<EDataType,Node>();
     private Map<EEnumLiteral,Edge> eEnumLiteralToEdgeMap =
         new HashMap<EEnumLiteral,Edge>();
 
@@ -96,27 +95,30 @@ public class TypeGraphRep {
      */
     private void addEcoreTypes() {
 
-        this.ecoreTG.addNode(this.eClassNode);
-        this.ecoreTG.addNode(this.eReferenceNode);
-        this.ecoreTG.addNode(this.eAttributeNode);
-        //ecoreTG.addNode(eContReferenceNode);		
-
         Label eClassLabel = DefaultLabel.createLabel(this.mh.getEClassType());
         Label eReferenceLabel =
             DefaultLabel.createLabel(this.mh.getEReferenceType());
         Label eAttributeLabel =
             DefaultLabel.createLabel(this.mh.getEAttributeType());
+        Label eEnumLabel = DefaultLabel.createLabel(this.mh.getEEnumType());
         Label rootLabel = DefaultLabel.createLabel("flag:root");
         Label contLabel = DefaultLabel.createLabel("flag:containment");
+        Label absValLabel = DefaultLabel.createLabel("abs:val");
+        Label absWildcardLabel = DefaultLabel.createLabel("abs:?");
 
-        this.ecoreTG.addEdge(this.eClassNode, eClassLabel, this.eClassNode);
+        this.eClassNode = this.ecoreTG.addNode(eClassLabel);
+        this.eReferenceNode = this.ecoreTG.addNode(eReferenceLabel);
+        this.eAttributeNode = this.ecoreTG.addNode(eAttributeLabel);
+        this.eEnumNode = this.ecoreTG.addNode(eEnumLabel);
+        //ecoreTG.addNode(eContReferenceNode);          
+
         this.ecoreTG.addEdge(this.eClassNode, rootLabel, this.eClassNode);
-        this.ecoreTG.addEdge(this.eReferenceNode, eReferenceLabel,
-            this.eReferenceNode);
         this.ecoreTG.addEdge(this.eReferenceNode, contLabel,
             this.eReferenceNode);
-        this.ecoreTG.addEdge(this.eAttributeNode, eAttributeLabel,
-            this.eAttributeNode);
+        this.ecoreTG.addEdge(this.eAttributeNode, absValLabel, this.eEnumNode);
+        this.ecoreTG.addEdge(this.eReferenceNode, absValLabel, this.eClassNode);
+        this.ecoreTG.addEdge(this.eClassNode, absWildcardLabel,
+            this.eReferenceNode);
 
     }
 
@@ -131,19 +133,16 @@ public class TypeGraphRep {
 
             // Add new labeled type node to tg 
             String labelText = GraphLabels.getLabel(aClass);
-            DefaultNode node = DefaultNode.createNode();
             DefaultLabel label = DefaultLabel.createLabel(labelText);
-            DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
-            this.tg.addNode(node);
-            this.tg.addEdge(edge);
-
             Label subLabel = DefaultLabel.createLabel("sub:");
-            this.ecoreTG.addNode(node);
-            this.ecoreTG.addEdge(edge);
-            this.ecoreTG.addEdge(node, subLabel, this.eClassNode);
+            Node node = this.tg.addNode(label);
 
             // Add map of EClass to node representing it
             this.eClassToNodeMap.put(aClass, node);
+
+            // add as subtype to Ecore typegraph
+            Node ecoreNode = this.ecoreTG.addNode(label);
+            this.ecoreTG.addEdge(ecoreNode, subLabel, this.eClassNode);
         }
     }
 
@@ -180,15 +179,16 @@ public class TypeGraphRep {
 
             // Add new labeled type node to tg 
             String labelText = GraphLabels.getLabel(aEnum);
-            DefaultNode node = DefaultNode.createNode();
             DefaultLabel label = DefaultLabel.createLabel(labelText);
-            DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
-            this.tg.addNode(node);
-            this.tg.addEdge(edge);
+            Label subLabel = DefaultLabel.createLabel("sub:");
+            Node node = this.tg.addNode(label);
 
             // Add map of EClass to node representing it
             this.eEnumToNodeMap.put(aEnum, node);
 
+            // add as subtype to Ecore typegraph
+            Node ecoreNode = this.ecoreTG.addNode(label);
+            this.ecoreTG.addEdge(ecoreNode, subLabel, this.eEnumNode);
         }
     }
 
@@ -230,26 +230,22 @@ public class TypeGraphRep {
             if (labelText != "") {
 
                 boolean present = false;
-                DefaultNode node = null;
+                Node node = null;
 
                 // See if a node labeled labelText is already in the graph
                 // If so, set present to true and node to this found node
                 for (Edge edge : this.tg.edgeSet()) {
                     if (edge.label().text().equals(labelText)) {
                         present = true;
-                        node = (DefaultNode) edge.source();
+                        node = edge.source();
                         break;
                     }
                 }
 
                 // If node is not present yet, create and add it
                 if (!present) {
-                    node = DefaultNode.createNode();
                     DefaultLabel label = DefaultLabel.createLabel(labelText);
-                    DefaultEdge edge =
-                        DefaultEdge.createEdge(node, label, node);
-                    this.tg.addNode(node);
-                    this.tg.addEdge(edge);
+                    node = this.tg.addNode(label);
                 }
 
                 // Add map of datatype to the node representing it
@@ -271,19 +267,16 @@ public class TypeGraphRep {
 
             // Add new labeled type node to tg to represent the reference 
             String labelText = GraphLabels.getLabel(aReference);
-            DefaultNode node = DefaultNode.createNode();
             DefaultLabel label = DefaultLabel.createLabel(labelText);
-            DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
-            this.tg.addNode(node);
-            this.tg.addEdge(edge);
+            Node node = this.tg.addNode(label);
 
             // add edges from source and to target of EReference
+            Label sourceLabel = DefaultLabel.createLabel(aReference.getName());
+            Label targetLabel = DefaultLabel.createLabel("val");
             Node source =
                 this.eClassToNodeMap.get(aReference.getEContainingClass());
             Node target =
                 this.eClassToNodeMap.get(aReference.getEReferenceType());
-            Label sourceLabel = DefaultLabel.createLabel(aReference.getName());
-            Label targetLabel = DefaultLabel.createLabel("val");
             this.tg.addEdge(source, sourceLabel, node);
             this.tg.addEdge(node, targetLabel, target);
 
@@ -307,11 +300,10 @@ public class TypeGraphRep {
 
             // Add sub: label from the aReference to the EReference type node
             Label subLabel = DefaultLabel.createLabel("sub:");
-            this.ecoreTG.addNode(node);
-            this.ecoreTG.addEdge(edge);
-            this.ecoreTG.addEdge(node, subLabel, this.eReferenceNode);
+            Node ecoreNode = this.ecoreTG.addNode(label);
+            this.ecoreTG.addEdge(ecoreNode, subLabel, this.eReferenceNode);
 
-            // Add map of EClass to node representing it
+            // Add map of EReference to node representing it
             this.eReferenceToNodeMap.put(aReference, node);
         }
     }
@@ -329,17 +321,13 @@ public class TypeGraphRep {
 
             // Add new labeled type node to tg to represent the attribute 
             String labelText = GraphLabels.getLabel(aAttribute);
-            DefaultNode node = DefaultNode.createNode();
             DefaultLabel label = DefaultLabel.createLabel(labelText);
-            DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
-            this.tg.addNode(node);
-            this.tg.addEdge(edge);
+            Node node = this.tg.addNode(label);
 
             // Add sub: label from the eAttribute to the EReference type node
             Label subLabel = DefaultLabel.createLabel("sub:");
-            this.ecoreTG.addNode(node);
-            this.ecoreTG.addEdge(edge);
-            this.ecoreTG.addEdge(node, subLabel, this.eAttributeNode);
+            Node ecoreNode = this.ecoreTG.addNode(label);
+            this.ecoreTG.addEdge(ecoreNode, subLabel, this.eAttributeNode);
 
             // add edge from container EClass of EAttribute
             Node source =
