@@ -308,7 +308,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     if (((RegExprLabel) edgeType).getAutomaton(this.labelStore).getMatches(
                         getSaturation(), startNodes, endNodes).isEmpty()) {
                         errors.add(new FormatError(
-                            "Regular expression '%s' is incorrectly typed",
+                            "Regular expression '%s' not matched by path in type graph",
                             edgeType, edge));
                     }
                 }
