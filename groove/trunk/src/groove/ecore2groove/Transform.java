@@ -182,8 +182,10 @@ public class Transform {
             + " (" + (new Date().getTime() - start) + " ms)"); //print duration
 
         // Get type graphs to store
-        AspectGraph atg = tgr.getTypeGraph();
-        AspectGraph ecoreatg = tgr.getEcoreTypeGraph();
+        AspectGraph atg =
+            AspectGraph.getFactory().fromPlainGraph(tgr.getTypeGraph());
+        AspectGraph ecoreatg =
+            AspectGraph.getFactory().fromPlainGraph(tgr.getEcoreTypeGraph());
 
         // Set info about how to store type graph
         if (modelName.equals("EcoreTypes")) {
@@ -239,6 +241,7 @@ public class Transform {
 
         start = new Date().getTime();
         for (DefaultGraph constraintRule : constraints.getConstraints()) {
+
             // GraphInfo.setRuleRole(constraintRule);
             AspectGraph arg;
             try {
@@ -246,6 +249,7 @@ public class Transform {
             } catch (Exception e) {
                 System.out.println("Error with: "
                     + constraints.getName(constraintRule));
+                e.printStackTrace();
                 continue;
             }
             String name = constraints.getName(constraintRule);
@@ -279,7 +283,21 @@ public class Transform {
             System.out.println("Created instance graph: " + instanceName + " ("
                 + (new Date().getTime() - start) + " ms)");
 
-            AspectGraph aig = igr.getInstanceGraph();
+            AspectGraph aig =
+                AspectGraph.getFactory().fromPlainGraph(igr.getInstanceGraph());
+
+            /*DefaultGraph instance = igr.getInstanceGraph();
+            TypeGraph tg = tgr.getTypeGraph();
+            tg.add(tgr.getEcoreTypeGraph());
+            Typing typing = null;
+            try {
+                typing = tg.checkTyping(instance);
+            } catch (FormatException e) {
+                System.out.println("\n" + tg);
+                System.out.println("\n" + instance);
+                e.printStackTrace();
+            }
+            System.out.println(typing);*/
 
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);
@@ -292,6 +310,10 @@ public class Transform {
 
         System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
 
-    }
+        /*System.out.println("\nTest typing...");
+        
+        TypeGraph tg = new TypeGraph();
+        tg.grammar.getTypes().get("EcoreType");*/
 
+    }
 }

@@ -20,9 +20,9 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.view.aspect.AspectGraph;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -397,11 +397,9 @@ public class InstanceGraphRep {
      * Get method for the graph that represents the instance model
      * @return the instance graph
      */
-    public AspectGraph getInstanceGraph() {
-        AspectGraph aig = new AspectGraph();
-        aig = aig.fromPlainGraph(this.ig);
-
-        return aig;
+    public DefaultGraph getInstanceGraph() {
+        GraphInfo.setGraphRole(this.ig);
+        return this.ig;
     }
 
     /**
