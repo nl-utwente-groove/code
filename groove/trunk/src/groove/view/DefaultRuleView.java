@@ -1566,8 +1566,11 @@ public class DefaultRuleView implements RuleView {
                 if (rhsNode != null && !DefaultLabel.isDataType(lhsType)) {
                     Edge lhsEdge =
                         DefaultEdge.createEdge(lhsNode, lhsType, lhsNode);
-                    // test if the type is preserved
-                    if (!this.ruleMorph.containsKey(lhsEdge)) {
+                    // test if the type is deleted
+                    // note that (in case of nested levels) the type edge
+                    // may actually fail to exist in the lhs
+                    if (this.lhs.containsElement(lhsEdge)
+                        && !this.ruleMorph.containsKey(lhsEdge)) {
                         if (!lhsTyping.isSharp(lhsNode)) {
                             errors.add(new FormatError(
                                 "Modified type '%s' should be sharp", lhsType,

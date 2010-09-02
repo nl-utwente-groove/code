@@ -411,15 +411,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
      */
     public Edge getTypeEdge(Label sourceType, Label label) {
         Edge result = null;
+        Label resultType = null;
         assert sourceType.isNodeType() : String.format(
             "Label '%s' is not a node type label", sourceType);
         Set<Label> supertypes =
             this.labelStore.getSupertypes(getActualType(sourceType));
         Set<? extends Edge> edges = labelEdgeSet(2, label);
         for (Edge edge : edges) {
-            if (supertypes.contains(getType(edge.source()))) {
-                result = edge;
-                break;
+            Label edgeType = getType(edge.source());
+            if (supertypes.contains(edgeType)) {
+                if (result == null || isSubtype(edgeType, resultType)) {
+                    result = edge;
+                    resultType = edgeType;
+                }
             }
         }
         return result;
