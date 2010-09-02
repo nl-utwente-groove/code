@@ -22,7 +22,6 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
-import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -297,11 +296,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             }
             Edge typeEdge = null;
             if (edgeType instanceof RegExprLabel) {
-                if (RegExprLabel.isWildcard(edgeType)
-                    || RegExprLabel.getRegExpr(edgeType).containsOperator(
-                        RegExpr.wildcard())) {
+                if (RegExprLabel.getWildcardId(edgeType) != null) {
                     errors.add(new FormatError(
-                        "Wildcard expression '%s' not allowed in typed graphs",
+                        "Wildcard expression '%s' not supported in typed rules",
                         edgeType, edge));
                 } else {
                     Set<Node> startNodes =
