@@ -71,6 +71,7 @@ public class ModelHandler {
     private String eClassType = "type:EClass";
     private String eReferenceType = "type:EReference";
     private String eAttributeType = "type:EAttribute";
+    private String eEnumType = "type:EEnum";
 
     /**
      * Constructor for a new ModelHandler. It loads an ecore model and
@@ -213,6 +214,19 @@ public class ModelHandler {
             }
         } while (!safeName);
 
+        // Check if EEnum type is safe to use,
+        // or keep suffixing underscores until it is
+        do {
+            safeName = true;
+            for (EClassifier element : elements) {
+                if (GraphLabels.getLabel(element).equals(this.eEnumType)) {
+                    safeName = false;
+                    this.eEnumType += "_";
+                    break;
+                }
+            }
+        } while (!safeName);
+
     }
 
     /**
@@ -270,6 +284,15 @@ public class ModelHandler {
      */
     public String getEAttributeType() {
         return this.eAttributeType;
+    }
+
+    /**
+     * Get the String to safely represent the EEnum type node
+     * in the ecore type graph
+     * @return the string to represent the EEnum type node
+     */
+    public String getEEnumType() {
+        return this.eEnumType;
     }
 
     /**
