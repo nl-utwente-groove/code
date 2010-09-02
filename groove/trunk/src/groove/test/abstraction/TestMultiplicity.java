@@ -198,6 +198,7 @@ public class TestMultiplicity extends TestCase {
         Multiplicity zero = Multiplicity.getMultOf(0);
         Multiplicity one = Multiplicity.getMultOf(1);
         Multiplicity two = Multiplicity.getMultOf(2);
+        Multiplicity four = Multiplicity.getMultOf(4);
         Multiplicity omega = Multiplicity.OMEGA;
 
         assertTrue(zero.multiply(zero).equals(zero));
@@ -207,7 +208,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(one.multiply(one).equals(one));
         assertTrue(one.multiply(two).equals(two));
         assertTrue(one.multiply(omega).equals(omega));
-        assertTrue(two.multiply(two).equals(omega));
+        assertTrue(two.multiply(two).equals(four));
         assertTrue(two.multiply(omega).equals(omega));
         assertTrue(omega.multiply(omega).equals(omega));
     }

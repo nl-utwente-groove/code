@@ -100,14 +100,15 @@ public final class Multiplicity {
      * abstraction classes in this package.
      */
     public static void initMultStore() {
-        int multUpperBound =
-            Math.max(Parameters.getNodeMultBound(),
-                Parameters.getEdgeMultBound());
-        STORE = new Multiplicity[multUpperBound + 2];
-        for (int i = 0; i <= multUpperBound; i++) {
+        // We take a guess on the maximum number of multiplicities we are going
+        // to need. We take 10 as a guess. This doesn't mean we can't create
+        // multiplicities objects with value larger than 9, just that these
+        // multiplicities are not stored.
+        int multUpperBound = 10;
+        STORE = new Multiplicity[multUpperBound];
+        for (int i = 0; i < multUpperBound; i++) {
             STORE[i] = new Multiplicity(i);
         }
-        STORE[multUpperBound + 1] = OMEGA;
     }
 
     /** Returns the multiplicity object with the given value. */
@@ -321,13 +322,13 @@ public final class Multiplicity {
         return this.sub(mult, 0).iterator().next();
     }
 
-    /** Returns the bounded product of two multiplicities. */
+    /** Returns the unbounded product of two multiplicities. */
     public Multiplicity multiply(Multiplicity mult) {
         int value = this.value * mult.value;
         if ((value < 0)
             || (this.value == OMEGA_VALUE && mult.value == OMEGA_VALUE)) {
             value = OMEGA_VALUE;
         }
-        return getMult(value, Parameters.getEdgeMultBound());
+        return getMultOf(value);
     }
 }
