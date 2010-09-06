@@ -213,4 +213,23 @@ public class TestMultiplicity extends TestCase {
         assertTrue(omega.multiply(omega).equals(omega));
     }
 
+    public void testOverlap() {
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
+        Multiplicity zero = Multiplicity.getMultOf(0);
+        Multiplicity one = Multiplicity.getMultOf(1);
+        Multiplicity two = Multiplicity.getMultOf(2);
+        Multiplicity three = Multiplicity.getMultOf(3);
+        Multiplicity omega = Multiplicity.OMEGA;
+
+        assertFalse(zero.overlaps(two));
+        assertFalse(two.overlaps(three));
+        assertFalse(omega.overlaps(zero));
+        assertFalse(omega.overlaps(one));
+        assertTrue(omega.overlaps(two));
+        assertTrue(omega.overlaps(three));
+        assertFalse(one.overlaps(omega));
+        assertTrue(three.overlaps(omega));
+    }
+
 }

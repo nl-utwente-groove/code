@@ -331,4 +331,23 @@ public final class Multiplicity {
         }
         return getMultOf(value);
     }
+
+    /** Checks if the both multiplicities have at least one value in common. */
+    public boolean overlaps(Multiplicity mult) {
+        boolean result;
+        int bound = Parameters.getEdgeMultBound();
+
+        if (this.value != OMEGA_VALUE && mult.value != OMEGA_VALUE) {
+            // Both multiplicities have one precise value.
+            result = this.value == mult.value;
+        } else if (this.value != OMEGA_VALUE && mult.value == OMEGA_VALUE) {
+            result = this.value > bound;
+        } else if (this.value == OMEGA_VALUE && mult.value != OMEGA_VALUE) {
+            result = mult.value > bound;
+        } else {
+            // Both multiplicities are omega.
+            result = true;
+        }
+        return result;
+    }
 }
